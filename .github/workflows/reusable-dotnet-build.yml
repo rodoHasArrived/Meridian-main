@@ -1,0 +1,153 @@
+# Reusable .NET Build and Test Workflow
+# Called by other workflows to perform standard build/test operations
+# Reduces duplication and ensures consistent build configuration
+#
+# Usage:
+#   jobs:
+#     build:
+#       uses: ./.github/workflows/reusable-dotnet-build.yml
+#       with:
+#         collect-coverage: true
+#         cache-suffix: my-workflow
+#       secrets: inherit
+
+name: Reusable .NET Build
+
+on:
+  workflow_call:
+    inputs:
+      runs-on:
+        description: 'Runner OS (e.g. ubuntu-latest, windows-latest, macos-latest)'
+        required: false
+        type: string
+        default: 'ubuntu-latest'
+      dotnet-version:
+        description: '.NET SDK version'
+        required: false
+        type: string
+        default: '9.0.x'
+      configuration:
+        description: 'Build configuration'
+        required: false
+        type: string
+        default: 'Release'
+      run-tests:
+        description: 'Run tests after build'
+        required: false
+        type: boolean
+        default: true
+      collect-coverage:
+        description: 'Collect code coverage'
+        required: false
+        type: boolean
+        default: false
+      fetch-depth:
+        description: 'Git fetch depth (0 for full history)'
+        required: false
+        type: number
+        default: 1
+      cache-suffix:
+        description: 'Cache key suffix for isolation'
+        required: false
+        type: string
+        default: ''
+      upload-artifacts:
+        description: 'Upload build artifacts'
+        required: false
+        type: boolean
+        default: false
+      artifact-name:
+        description: 'Name for uploaded artifacts'
+        required: false
+        type: string
+        default: 'build-output'
+      timeout-minutes:
+        description: 'Job timeout in minutes'
+        required: false
+        type: number
+        default: 15
+    outputs:
+      build-result:
+        description: 'Build result (success/failure)'
+        value: ${{ jobs.build.outputs.result }}
+
+jobs:
+  build:
+    name: Build & Test
+    runs-on: ${{ inputs.runs-on }}
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+    outputs:
+      result: ${{ steps.build.outcome }}
+
+    env:
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+      DOTNET_NOLOGO: true
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+      DOTNET_GENERATE_ASPNET_CERTIFICATE: false
+      DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: 1
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: ${{ inputs.fetch-depth }}
+
+      - name: Setup .NET with Cache
+        uses: ./.github/actions/setup-dotnet-cache
+        with:
+          dotnet-version: ${{ inputs.dotnet-version }}
+          cache-suffix: ${{ inputs.cache-suffix }}
+
+      - name: Restore dependencies
+        run: dotnet restore Meridian.sln -p:EnableWindowsTargeting=true --verbosity minimal
+
+      - name: Build
+        id: build
+        shell: bash
+        run: |
+          dotnet build Meridian.sln -c ${{ inputs.configuration }} --no-restore -p:EnableWindowsTargeting=true --verbosity minimal
+
+      - name: Run tests
+        if: inputs.run-tests
+        shell: bash
+        env:
+          MSYS_NO_PATHCONV: 1
+        run: |
+          dotnet test Meridian.sln \
+            -c ${{ inputs.configuration }} \
+            --no-build \
+            -p:EnableWindowsTargeting=true \
+            --verbosity minimal \
+            --logger "trx;LogFileName=test-results.trx" \
+            --results-directory ./artifacts/test-results \
+            --filter "Category!=Integration" \
+            --blame-hang-timeout 60s \
+            ${{ inputs.collect-coverage && '--collect:"XPlat Code Coverage"' || '' }}
+
+      - name: Upload coverage
+        if: inputs.collect-coverage && success()
+        uses: codecov/codecov-action@v5.5.3
+        with:
+          directory: ./artifacts/test-results
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Upload build artifacts
+        if: inputs.upload-artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.artifact-name }}
+          path: |
+            src/**/bin/${{ inputs.configuration }}/
+            !src/**/bin/${{ inputs.configuration }}/**/ref/
+          retention-days: 5
+
+      - name: Upload diagnostics on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: diagnostics-${{ inputs.cache-suffix || 'default' }}
+          path: |
+            ./artifacts/test-results/**/*.trx
+            ./artifacts/test-results/**/coverage.cobertura.xml
+          retention-days: 3

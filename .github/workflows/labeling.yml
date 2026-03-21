@@ -1,0 +1,89 @@
+# Unified Label Management Workflow
+# Handles auto-labeling PRs/issues and syncing repository labels
+
+name: Labeling
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  issues:
+    types: [opened, reopened]
+  workflow_dispatch:
+    inputs:
+      sync_labels:
+        description: 'Sync labels from labels.yml'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  auto-label-pr:
+    name: Auto Label PR
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Label based on changed files
+        uses: actions/labeler@v6.0.1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          configuration-path: .github/labeler.yml
+          sync-labels: true
+
+      - name: Label based on PR size
+        uses: codelytv/pr-size-labeler@v1.10.3
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          xs_label: 'size/xs'
+          xs_max_size: 10
+          s_label: 'size/s'
+          s_max_size: 100
+          m_label: 'size/m'
+          m_max_size: 500
+          l_label: 'size/l'
+          l_max_size: 1000
+          xl_label: 'size/xl'
+          fail_if_xl: false
+          message_if_xl: >
+            This PR is very large. Consider breaking it into smaller PRs for easier review.
+          files_to_ignore: |
+            *.md
+            *.txt
+            docs/**
+
+  sync-labels:
+    name: Sync Repository Labels
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.event.inputs.sync_labels == 'true'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Sync labels from configuration
+        uses: EndBug/label-sync@v2.3.3
+        with:
+          config-file: .github/labels.yml
+          delete-other-labels: false
+          dry-run: false
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate sync summary
+        run: |
+          echo "## Label Sync Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Labels synchronized from \`.github/labels.yml\`" >> $GITHUB_STEP_SUMMARY

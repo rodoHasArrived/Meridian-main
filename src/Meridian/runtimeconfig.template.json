@@ -1,0 +1,12 @@
+{
+  "configProperties": {
+    "System.GC.Server": true,
+    "System.GC.Concurrent": true,
+    "System.GC.RetainVM": true,
+    "System.GC.HeapHardLimit": 0,
+    "System.GC.LOHThreshold": 85000,
+    "System.GC.HeapCount": 0,
+    "System.Threading.ThreadPool.MinThreads": 8,
+    "System.Threading.ThreadPool.MaxThreads": 100
+  }
+}

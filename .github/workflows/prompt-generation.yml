@@ -1,0 +1,510 @@
+# Auto-Generate AI Prompts from Workflow Results
+#
+# This workflow analyzes CI/CD run results (failures, patterns, annotations)
+# and generates targeted AI assistant prompts to help fix identified issues.
+#
+# Triggers:
+#   - Manual dispatch: specify a workflow name and optional run ID
+#   - Automatic: runs after key workflows complete (if they failed)
+#
+# Outputs:
+#   - New/updated .prompt.yml files in .github/prompts/
+#   - JSON analysis results as artifact
+#   - PR with generated prompts (optional)
+
+name: Prompt Generation
+
+on:
+  workflow_dispatch:
+    inputs:
+      workflow:
+        description: 'Workflow file name to analyze (e.g., test-matrix.yml)'
+        required: true
+        type: string
+      run_id:
+        description: 'Specific run ID (0 = most recent failed run)'
+        required: false
+        default: '0'
+        type: string
+      dry_run:
+        description: 'Preview changes without committing'
+        required: false
+        default: 'false'
+        type: boolean
+      create_pr:
+        description: 'Create PR for generated prompts'
+        required: false
+        default: 'true'
+        type: boolean
+
+  workflow_run:
+    workflows:
+      - "Test Matrix"
+      - "Code Quality"
+      - "Security Scanning"
+      - "Performance Benchmarks"
+      - "Docker Build"
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+
+concurrency:
+  group: prompt-generation-${{ github.workflow }}-${{ github.event_name == 'workflow_run' && github.event.workflow_run.id || github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  generate-prompts:
+    name: Generate Prompts from Workflow Results
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    # For workflow_run: only run if the triggering workflow failed
+    # For workflow_dispatch: always run
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'failure')
+
+    env:
+      HAS_MODELS_TOKEN: ${{ secrets.MODELS_GITHUB_TOKEN != '' }}
+
+    outputs:
+      has_changes: ${{ steps.check-changes.outputs.has_changes }}
+      prompts_generated: ${{ steps.generate.outputs.total_generated }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Determine workflow to analyze
+        id: resolve
+        run: |
+          set -euo pipefail
+
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            WORKFLOW="${{ github.event.inputs.workflow }}"
+            RUN_ID="${{ github.event.inputs.run_id }}"
+          else
+            # workflow_run event - extract workflow filename
+            WORKFLOW_NAME="${{ github.event.workflow_run.name }}"
+            RUN_ID="${{ github.event.workflow_run.id }}"
+
+            # Map workflow name to file name
+            case "$WORKFLOW_NAME" in
+              "Test Matrix")       WORKFLOW="test-matrix.yml" ;;
+              "Code Quality")      WORKFLOW="code-quality.yml" ;;
+              "Security Scanning") WORKFLOW="security.yml" ;;
+              "Performance Benchmarks") WORKFLOW="benchmark.yml" ;;
+              "Docker Build")      WORKFLOW="docker.yml" ;;
+              *)                   WORKFLOW=$(echo "$WORKFLOW_NAME" | tr '[:upper:] ' '[:lower:]-').yml ;;
+            esac
+          fi
+
+          echo "workflow=$WORKFLOW" >> "$GITHUB_OUTPUT"
+          echo "run_id=${RUN_ID:-0}" >> "$GITHUB_OUTPUT"
+          echo "Resolved workflow: $WORKFLOW (run: ${RUN_ID:-0})"
+
+      - name: Validate workflow target
+        run: |
+          set -euo pipefail
+
+          WORKFLOW_NAME="${{ steps.resolve.outputs.workflow }}"
+
+          # Ensure the workflow input is a plain file name from .github/workflows.
+          if [[ "$WORKFLOW_NAME" == *"/"* || "$WORKFLOW_NAME" == *".."* || "$WORKFLOW_NAME" != *.yml ]]; then
+            echo "::error::Invalid workflow name '$WORKFLOW_NAME'. Provide a .yml file name from .github/workflows/."
+            exit 1
+          fi
+
+          WORKFLOW_FILE=".github/workflows/$WORKFLOW_NAME"
+          if [ ! -f "$WORKFLOW_FILE" ]; then
+            echo "::error::Workflow file '$WORKFLOW_FILE' does not exist."
+            exit 1
+          fi
+
+          echo "Validated target workflow file: $WORKFLOW_FILE"
+
+      - name: Read existing prompts
+        id: existing
+        run: |
+          set -euo pipefail
+
+          shopt -s nullglob
+          PROMPT_FILES=(.github/prompts/*.prompt.yml)
+          COUNT=${#PROMPT_FILES[@]}
+
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+          echo "Found $COUNT existing prompts"
+
+          # List them for context
+          echo "### Existing Prompts" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          for f in "${PROMPT_FILES[@]}"; do
+            name=$(awk -F': ' '$1 == "name" {print $2; exit}' "$f")
+            echo "- \`$(basename "$f")\`: ${name:-unknown}" >> "$GITHUB_STEP_SUMMARY"
+          done
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Generate prompts from workflow results
+        id: generate
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          DRY_RUN_FLAG=""
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.dry_run }}" == "true" ]]; then
+            DRY_RUN_FLAG="--dry-run"
+          fi
+
+          python3 build/scripts/docs/generate-prompts.py \
+            --workflow "${{ steps.resolve.outputs.workflow }}" \
+            --run-id "${{ steps.resolve.outputs.run_id }}" \
+            --output .github/prompts/ \
+            --json-output prompt-generation-results.json \
+            --summary \
+            $DRY_RUN_FLAG \
+            2>&1 | tee prompt-generation.log
+
+          # Extract total generated count for output
+          if [ -f prompt-generation-results.json ]; then
+            TOTAL=$(python3 -c "import json; print(json.load(open('prompt-generation-results.json')).get('total_generated', 0))")
+            echo "total_generated=$TOTAL" >> "$GITHUB_OUTPUT"
+          else
+            echo "total_generated=0" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build changed prompt summary
+        id: changed-prompts
+        if: always()
+        run: |
+          set -euo pipefail
+
+          mapfile -t CHANGED_FILES < <(git diff --name-only -- .github/prompts/ | grep '\.prompt\.yml$' || true)
+
+          {
+            echo "files<<EOF"
+            for f in "${CHANGED_FILES[@]}"; do
+              [ -n "$f" ] && echo "$f"
+            done
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+          {
+            echo "rows<<EOF"
+
+            if [ -d .github/prompts ]; then
+              shopt -s nullglob
+              for f in .github/prompts/*.prompt.yml; do
+                if printf '%s\n' "${CHANGED_FILES[@]}" | grep -Fxq "$f"; then
+                  name=$(awk -F': ' '$1 == "name" {print $2; exit}' "$f")
+                  echo "| \`$(basename "$f")\` | ${name:-unknown} |"
+                fi
+              done
+            fi
+
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Append generation log to summary
+        if: always()
+        run: |
+          if [ -f prompt-generation.log ]; then
+            {
+              echo ""
+              echo "### Generation Log"
+              echo ""
+              echo '```'
+              tail -50 prompt-generation.log
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: AI-enhanced prompt refinement
+        id: ai-refine
+        if: |
+          steps.generate.outputs.total_generated > 0 &&
+          (github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'failure') &&
+          env.HAS_MODELS_TOKEN == 'true'
+        continue-on-error: true
+        uses: actions/ai-inference@v1
+        with:
+          token: ${{ secrets.MODELS_GITHUB_TOKEN }}
+          model: gpt-4o-mini
+          max-tokens: 2000
+          prompt: |
+            You are an AI prompt engineering expert reviewing auto-generated prompts
+            for a .NET market data collection project.
+
+            Review these generation results and suggest improvements:
+            1. Are the generated prompts specific enough to be actionable?
+            2. Do they overlap with existing prompts?
+            3. What additional context would make them more useful?
+
+            Keep suggestions under 200 words in markdown format.
+
+            Generation results:
+            ${{ steps.generate.outputs.total_generated }} prompts generated
+            for workflow: ${{ steps.resolve.outputs.workflow }}
+
+
+      - name: Note skipped AI review
+        if: always() && steps.generate.outputs.total_generated > 0 && env.HAS_MODELS_TOKEN != 'true'
+        run: |
+          {
+            echo "### AI Prompt Quality Review"
+            echo ""
+            echo "Skipped: set \`MODELS_GITHUB_TOKEN\` to enable \`actions/ai-inference\` prompt-quality analysis without using the default workflow token."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Append AI review to summary
+        if: always() && steps.ai-refine.outputs.response != ''
+        run: |
+          {
+            echo ""
+            echo "### AI Prompt Quality Review"
+            echo ""
+            echo "${{ steps.ai-refine.outputs.response }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Check for changes
+        id: check-changes
+        run: |
+          set -euo pipefail
+          git add .github/prompts/
+
+          if git diff --staged --quiet; then
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+            echo "No new or updated prompts generated." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+            {
+              echo "### Changed Prompt Files"
+              echo ""
+              git diff --staged --name-only -- .github/prompts/
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload generation results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prompt-generation-results
+          if-no-files-found: warn
+          path: |
+            prompt-generation-results.json
+            prompt-generation.log
+          retention-days: 30
+
+      - name: Show dry-run diff
+        if: |
+          steps.check-changes.outputs.has_changes == 'true' &&
+          github.event_name == 'workflow_dispatch' &&
+          github.event.inputs.dry_run == 'true'
+        run: |
+          {
+            echo "### Dry-Run Diff"
+            echo ""
+            echo '```diff'
+            git diff --staged -- .github/prompts/ | head -200
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Create pull request
+        id: create-pr
+        if: |
+          steps.check-changes.outputs.has_changes == 'true' &&
+          (
+            (github.event_name == 'workflow_dispatch' && github.event.inputs.create_pr == 'true' && github.event.inputs.dry_run != 'true') ||
+            (github.event_name == 'workflow_run')
+          )
+        continue-on-error: true
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: |
+            docs: auto-generate prompts from ${{ steps.resolve.outputs.workflow }} results
+
+            Generated ${{ steps.generate.outputs.total_generated }} prompt(s) based on
+            workflow run analysis.
+
+            [skip ci]
+          title: "docs: auto-generate prompts from ${{ steps.resolve.outputs.workflow }} results"
+          body: |
+            ## Summary
+
+            Auto-generated AI assistant prompts based on workflow run analysis.
+
+            - **Workflow analyzed:** `${{ steps.resolve.outputs.workflow }}`
+            - **Run ID:** `${{ steps.resolve.outputs.run_id }}`
+            - **Prompts generated:** ${{ steps.generate.outputs.total_generated }}
+
+            ### Generated Prompts
+
+            These prompts help AI assistants address issues found in CI/CD runs:
+
+            | File | Purpose |
+            |------|---------|
+            ${{ steps.changed-prompts.outputs.rows }}
+
+            ### How to Use
+
+            Reference these prompts in your AI assistant:
+            ```
+            Read .github/prompts/<prompt-file> and use it to fix the CI issues
+            ```
+
+            ---
+            *Auto-generated by the Prompt Generation workflow.*
+          branch: automation/prompt-generation
+          delete-branch: true
+          labels: |
+            documentation
+            automation
+            prompts
+
+      - name: Direct commit fallback
+        if: |
+          steps.check-changes.outputs.has_changes == 'true' &&
+          (steps.create-pr.outcome == 'failure' ||
+            (
+              steps.create-pr.outcome == 'skipped' &&
+              github.event_name == 'workflow_run'
+            ))
+        run: |
+          set -euo pipefail
+          echo "::warning::PR creation failed or skipped. Checking if direct commit is needed."
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add .github/prompts/
+
+          # Only commit if there are staged changes
+          if git diff --staged --quiet; then
+            echo "::notice::No changes to commit on main branch. Changes may have been pushed to a branch already."
+            exit 0
+          fi
+
+          git commit -m "docs: auto-generate prompts from ${{ steps.resolve.outputs.workflow }} results [skip ci]"
+          git pull --rebase origin ${{ github.ref_name }} || true
+          git push
+
+      - name: Resolve Copilot dispatch ref
+        id: copilot-ref
+        if: |
+          steps.check-changes.outputs.has_changes == 'true' &&
+          (github.event_name != 'workflow_dispatch' || github.event.inputs.dry_run != 'true')
+        run: |
+          set -euo pipefail
+
+          if [ "${{ steps.create-pr.outcome }}" = "success" ]; then
+            echo "dispatch_ref=automation/prompt-generation" >> "$GITHUB_OUTPUT"
+            echo "dispatch_mode=pull-request-branch" >> "$GITHUB_OUTPUT"
+          elif [ "${{ steps.create-pr.outcome }}" = "failure" ] || \
+               { [ "${{ steps.create-pr.outcome }}" = "skipped" ] && [ "${{ github.event_name }}" = "workflow_run" ]; }; then
+            echo "dispatch_ref=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+            echo "dispatch_mode=current-branch" >> "$GITHUB_OUTPUT"
+          else
+            echo "dispatch_ref=" >> "$GITHUB_OUTPUT"
+            echo "dispatch_mode=not-dispatched" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Trigger Copilot workflow for generated prompts
+        id: trigger-copilot
+        if: steps.copilot-ref.outputs.dispatch_ref != ''
+        continue-on-error: true
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const promptFiles = `${{ steps.changed-prompts.outputs.files }}`
+              .split('\n')
+              .map(x => x.trim())
+              .filter(Boolean);
+
+            const targetRef = '${{ steps.copilot-ref.outputs.dispatch_ref }}';
+            const workflowName = '${{ steps.resolve.outputs.workflow }}';
+            const runId = '${{ steps.resolve.outputs.run_id }}';
+            const totalGenerated = '${{ steps.generate.outputs.total_generated }}';
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const prUrl = '${{ steps.create-pr.outputs.pull-request-url }}';
+
+            const requestContext = [
+              `Prompt generation workflow completed for ${workflowName}.`,
+              `Generated/updated prompts: ${totalGenerated}.`,
+              `Prompt files: ${promptFiles.length ? promptFiles.join(', ') : 'No changed files detected.'}`,
+              `Prompt generation run: ${runUrl}`,
+              prUrl ? `Prompt update PR: ${prUrl}` : 'Prompt update PR: not created.',
+              `Analyze these prompts and propose implementation-ready fixes for the failing workflow findings.`,
+              `Original analyzed run id: ${runId}`,
+            ].join('\n');
+
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'copilot-swe-agent-copilot.yml',
+              ref: targetRef,
+              inputs: {
+                request_context: requestContext,
+              },
+            });
+
+            core.setOutput('prompt_files', promptFiles.join(', '));
+            core.setOutput('triggered_ref', targetRef);
+
+      - name: Note Copilot trigger status
+        if: always() && steps.copilot-ref.outputs.dispatch_ref != ''
+        run: |
+          {
+            echo ""
+            echo "### Copilot Workflow Trigger"
+            echo ""
+            if [ "${{ steps.trigger-copilot.outcome }}" = "success" ]; then
+              echo "Triggered \\`copilot-swe-agent-copilot.yml\\` on ref \\`${{ steps.trigger-copilot.outputs.triggered_ref }}\\` (${{ steps.copilot-ref.outputs.dispatch_mode }})."
+              echo "Prompt files passed as context: ${{ steps.trigger-copilot.outputs.prompt_files }}"
+            else
+              echo "⚠️ Unable to trigger Copilot workflow automatically (outcome: ${{ steps.trigger-copilot.outcome }})."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+
+  # ─── Report ──────────────────────────────────────────────────────────
+  report:
+    name: Prompt Generation Report
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: generate-prompts
+    if: always()
+    steps:
+      - name: Publish final summary
+        run: |
+          {
+            echo "# Prompt Generation Report"
+            echo ""
+            echo "**Trigger:** ${{ github.event_name }}"
+            echo "**Branch:** ${{ github.ref_name }}"
+            echo ""
+            echo "| Metric | Value |"
+            echo "|--------|-------|"
+            echo "| Prompts generated | ${{ needs.generate-prompts.outputs.prompts_generated || '0' }} |"
+            echo "| Changes detected | ${{ needs.generate-prompts.outputs.has_changes || 'false' }} |"
+            echo "| Job result | ${{ needs.generate-prompts.result }} |"
+          } >> "$GITHUB_STEP_SUMMARY"

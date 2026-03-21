@@ -1,0 +1,20 @@
+{
+  "description": "Alpaca extended-hours trade on NYSE ARCA (venue code 'P') with condition 'T' (FormT_ExtendedHours).",
+  "raw": {
+    "symbol": "AAPL",
+    "source": "ALPACA",
+    "venue": "P",
+    "conditions": ["T"],
+    "price": 183.20,
+    "size": 50,
+    "sequenceNumber": 2001
+  },
+  "expected": {
+    "canonicalSymbol": "AAPL",
+    "canonicalVenue": "ARCX",
+    "tier": "Enriched",
+    "canonicalizationVersion": 1,
+    "rawSymbolUnchanged": true,
+    "canonicalConditions": ["FormT_ExtendedHours"]
+  }
+}

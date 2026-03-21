@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <AssemblyName>Meridian.FSharp.Tests</AssemblyName>
+    <RootNamespace>Meridian.FSharp.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="DomainTests.fs" />
+    <Compile Include="ValidationTests.fs" />
+    <Compile Include="CalculationTests.fs" />
+    <Compile Include="CanonicalizationTests.fs" />
+    <Compile Include="PipelineTests.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="FSharp.Core" />
+    <PackageReference Include="FsUnit.xUnit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Meridian.FSharp\Meridian.FSharp.fsproj" />
+  </ItemGroup>
+</Project>

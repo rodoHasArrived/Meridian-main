@@ -1,0 +1,98 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <!-- Assembly Information -->
+    <AssemblyName>Meridian</AssemblyName>
+    <Version>1.0.0</Version>
+    <Authors>Meridian Team</Authors>
+    <Description>Cross-platform market data collection system for real-time data ingestion</Description>
+    <Product>Meridian</Product>
+    <Copyright>Copyright © 2024 Meridian Team</Copyright>
+
+    <!-- Single-file publishing -->
+    <PublishSingleFile>true</PublishSingleFile>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
+    <PublishTrimmed>true</PublishTrimmed>
+    <TrimMode>partial</TrimMode>
+    <PublishReadyToRun>true</PublishReadyToRun>
+
+    <!-- SelfContained only during publish -->
+    <SelfContained Condition="'$(PublishProtocol)' != ''">true</SelfContained>
+    <SelfContained Condition="'$(PublishProtocol)' == ''">false</SelfContained>
+
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <ApplicationIcon Condition="Exists('app.ico')">app.ico</ApplicationIcon>
+    <ApplicationManifest Condition="Exists('app.manifest')">app.manifest</ApplicationManifest>
+    <Deterministic>true</Deterministic>
+    <DebugType>embedded</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <EnableStockSharp Condition="'$(EnableStockSharp)' == ''">false</EnableStockSharp>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(EnableStockSharp)' == 'true'">
+    <DefineConstants>$(DefineConstants);STOCKSHARP;STOCKSHARP_RITHMIC;STOCKSHARP_IQFEED;STOCKSHARP_CQG;STOCKSHARP_INTERACTIVEBROKERS</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(RuntimeIdentifier)' == ''">
+    <RuntimeIdentifiers>win-x64;win-arm64;linux-x64;linux-arm64;osx-x64;osx-arm64</RuntimeIdentifiers>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows')) Or '$(RuntimeIdentifier.StartsWith(`win`))' == 'true'">
+    <UseWindowsForms>false</UseWindowsForms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <TrimmerRootAssembly Include="System.Text.Json" />
+  </ItemGroup>
+
+  <!-- Host-level dependencies (entry point, Lean integration, benchmarking) -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <PackageReference Include="Serilog" />
+    <PackageReference Include="Serilog.Extensions.Logging" />
+
+    <!-- ASP.NET Core - Web Dashboard Support -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Swashbuckle.AspNetCore" />
+
+    <!-- QuantConnect Lean Engine Integration (host-level) -->
+    <PackageReference Include="QuantConnect.Lean" />
+    <PackageReference Include="QuantConnect.Lean.Engine" />
+    <PackageReference Include="QuantConnect.Common" />
+    <PackageReference Include="QuantConnect.Indicators" />
+
+    <!-- BenchmarkDotNet (host-level) -->
+    <PackageReference Include="BenchmarkDotNet" />
+  </ItemGroup>
+
+  <!-- Layer Assembly References -->
+  <ItemGroup>
+    <ProjectReference Include="..\Meridian.Application\Meridian.Application.csproj" />
+    <ProjectReference Include="..\Meridian.Infrastructure\Meridian.Infrastructure.csproj" />
+    <ProjectReference Include="..\Meridian.Storage\Meridian.Storage.csproj" />
+    <ProjectReference Include="..\Meridian.Core\Meridian.Core.csproj" />
+    <ProjectReference Include="..\Meridian.Domain\Meridian.Domain.csproj" />
+    <ProjectReference Include="..\Meridian.Contracts\Meridian.Contracts.csproj" />
+    <ProjectReference Include="..\Meridian.ProviderSdk\Meridian.ProviderSdk.csproj" />
+    <ProjectReference Include="..\Meridian.Ui.Shared\Meridian.Ui.Shared.csproj" />
+  </ItemGroup>
+
+  <!-- Web Dashboard Templates -->
+  <ItemGroup>
+    <Content Include="wwwroot\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,38 @@
+name: README Tree Sync
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync-readme-tree:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Update repository tree markers
+        uses: RavelloH/readme-tree@latest
+        with:
+          ignoregit: 'yes'
+
+      - name: Commit updated markdown trees
+        run: |
+          if git diff --quiet; then
+            echo "No README tree changes detected."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "docs: sync repository tree"
+          git push

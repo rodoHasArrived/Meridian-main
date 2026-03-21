@@ -1,0 +1,224 @@
+@startuml Activity Diagram - Data Collection Process Flow
+!theme plain
+skinparam activityShape octagon
+
+title Meridian - Data Collection Process Flow
+
+start
+
+:Load Configuration;
+note right
+  - appsettings.json
+  - Environment variables
+  - Command line args
+end note
+
+:Validate Configuration;
+
+if (Configuration Valid?) then (yes)
+else (no)
+    :Log Validation Errors;
+    stop
+endif
+
+partition "Initialization" {
+    :Initialize Collectors;
+    note right
+      - QuoteCollector
+      - TradeDataCollector
+      - MarketDepthCollector
+    end note
+
+    :Create EventPipeline;
+    note right
+      Bounded channel
+      capacity: 50,000
+    end note
+
+    :Initialize Storage Sink;
+
+    :Create Data Provider;
+    note right
+      Based on DataSource config:
+      - Alpaca
+      - Interactive Brokers
+      - Polygon
+    end note
+}
+
+partition "Subscription" {
+    :Load Symbol List;
+
+    while (More Symbols?) is (yes)
+        :Register Symbol with Collectors;
+        :Subscribe via Provider;
+
+        if (Subscribe Trades?) then (yes)
+            :Subscribe Trade Stream;
+        endif
+
+        if (Subscribe Depth?) then (yes)
+            :Subscribe Order Book;
+        endif
+    endwhile (no)
+}
+
+partition "Connection" {
+    :Connect to Provider;
+
+    repeat
+        :Attempt Connection;
+
+        if (Connected?) then (yes)
+            break
+        else (no)
+            :Wait (Exponential Backoff);
+            note right
+              2s → 4s → 8s → 16s → 30s max
+            end note
+        endif
+
+        if (Max Retries?) then (yes)
+            :Log Connection Failed;
+            stop
+        endif
+    repeat while (Retry)
+
+    :Start Receive Loop;
+}
+
+fork
+    partition "Event Processing Loop" #LightBlue {
+        while (Running?) is (yes)
+            :Receive Market Event;
+
+            switch (Event Type?)
+                case (Trade)
+                    :Process in TradeDataCollector;
+
+                    :Validate Sequence;
+                    if (Sequence Gap?) then (yes)
+                        :Emit Integrity Event;
+                    endif
+
+                    :Infer Aggressor;
+                    note right
+                      Compare price to BBO
+                    end note
+
+                    :Update Order Flow Stats;
+                    :Publish Trade Event;
+                    :Publish OrderFlow Event;
+
+                case (Quote)
+                    :Process in QuoteCollector;
+                    :Update BBO State;
+                    :Publish Quote Event;
+
+                case (Depth)
+                    :Process in MarketDepthCollector;
+                    :Apply Delta Operation;
+
+                    if (Valid Position?) then (yes)
+                        :Update Order Book;
+                        :Build Snapshot;
+                        :Publish L2Snapshot Event;
+                    else (no)
+                        :Emit Depth Integrity Event;
+                        :Mark Stream Stale;
+
+                        if (Auto-Reset Threshold?) then (yes)
+                            :Reset Order Book;
+                        endif
+                    endif
+            endswitch
+
+        endwhile (Shutdown)
+    }
+
+fork again
+    partition "Pipeline Consumer" #LightGreen {
+        while (Running?) is (yes)
+            :Read Batch from Channel;
+
+            while (Events in Batch?) is (yes)
+                :Append to Storage Sink;
+
+                if (MassTransit Enabled?) then (yes)
+                    :Publish to Message Bus;
+                endif
+            endwhile (no)
+
+            :Update Metrics;
+        endwhile (Shutdown)
+    }
+
+fork again
+    partition "Periodic Flush" #LightYellow {
+        while (Running?) is (yes)
+            :Wait 5 seconds;
+            :Flush All Writers;
+            :Update Last Flush Time;
+        endwhile (Shutdown)
+    }
+
+fork again
+    partition "Config Watcher" #LightPink {
+        while (Running?) is (yes)
+            :Monitor appsettings.json;
+
+            if (File Changed?) then (yes)
+                :Reload Configuration;
+                :Validate New Config;
+
+                if (Valid?) then (yes)
+                    :Calculate Symbol Diff;
+
+                    while (Removed Symbols?) is (yes)
+                        :Unsubscribe Symbol;
+                        :Cleanup State;
+                    endwhile (no)
+
+                    while (Added Symbols?) is (yes)
+                        :Register Symbol;
+                        :Subscribe Symbol;
+                    endwhile (no)
+
+                    :Log Config Reloaded;
+                else (no)
+                    :Log Validation Error;
+                    :Keep Previous Config;
+                endif
+            endif
+        endwhile (Shutdown)
+    }
+
+fork again
+    partition "Health Monitor" #LightCyan {
+        while (Running?) is (yes)
+            :Wait 10 seconds;
+            :Check Provider Connection;
+
+            if (Heartbeat Timeout?) then (yes)
+                :Emit HealthDegraded Event;
+
+                if (Consecutive Failures > Threshold?) then (yes)
+                    :Trigger Reconnect;
+                endif
+            endif
+
+            :Update Health Metrics;
+        endwhile (Shutdown)
+    }
+end fork
+
+partition "Graceful Shutdown" {
+    :Disconnect Provider;
+    :Flush Pipeline;
+    :Close Storage Writers;
+    :Dispose Resources;
+}
+
+stop
+
+@enduml

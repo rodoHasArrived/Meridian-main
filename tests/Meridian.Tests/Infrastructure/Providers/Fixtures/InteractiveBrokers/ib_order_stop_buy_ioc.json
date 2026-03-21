@@ -1,0 +1,10 @@
+{
+  "description": "IB stop buy order for MSFT, immediate-or-cancel.",
+  "orderId": 1003,
+  "symbol": "MSFT",
+  "orderType": "STP",
+  "side": "BUY",
+  "quantity": 200,
+  "tif": "IOC",
+  "auxPrice": 410.00
+}

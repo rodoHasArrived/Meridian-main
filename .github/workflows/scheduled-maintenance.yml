@@ -1,0 +1,1261 @@
+# Scheduled Maintenance Workflow (Consolidated)
+#
+# Comprehensive weekly maintenance covering:
+#   - Full test suite with code coverage
+#   - Dependency health (outdated, deprecated, vulnerable)
+#   - Repository health audit (metrics, TODOs, large files)
+#   - Workflow hygiene (YAML validation, deprecated actions, cron conflicts)
+#   - Documentation link validation
+#   - Stale branch cleanup
+#   - Build size tracking and bloat detection
+#   - GitHub Actions cache management
+#   - AI-powered project health report
+#
+# Schedule: Weekly on Sunday at 8:00 UTC
+# Complements: nightly.yml (daily tests), security.yml (weekly Monday scans)
+
+name: Scheduled Maintenance
+
+on:
+  schedule:
+    # Run weekly on Sunday at 8:00 UTC (distributed to avoid conflicts with nightly at 1 AM)
+    - cron: '0 8 * * 0'
+  workflow_dispatch:
+    inputs:
+      run_full_tests:
+        description: 'Run full test suite'
+        required: false
+        default: 'true'
+        type: boolean
+      run_dependency_check:
+        description: 'Run dependency health check'
+        required: false
+        default: 'true'
+        type: boolean
+      run_repo_health:
+        description: 'Run repository health audit'
+        required: false
+        default: 'true'
+        type: boolean
+      run_workflow_hygiene:
+        description: 'Run workflow hygiene checks'
+        required: false
+        default: 'true'
+        type: boolean
+      run_docs_check:
+        description: 'Run documentation link validation'
+        required: false
+        default: 'true'
+        type: boolean
+      run_branch_cleanup:
+        description: 'Run stale branch cleanup'
+        required: false
+        default: 'true'
+        type: boolean
+      run_build_tracking:
+        description: 'Run build size tracking'
+        required: false
+        default: 'true'
+        type: boolean
+      cache_action:
+        description: 'Cache management action'
+        required: false
+        default: 'clean-old'
+        type: choice
+        options:
+          - none
+          - list
+          - clean-old
+          - clean-all
+
+permissions:
+  contents: read
+  issues: write
+  actions: write
+  pull-requests: read
+  models: read
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ─── Full Test Suite ───────────────────────────────────────────────────
+  full-test-suite:
+    name: Full Test Suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: github.event_name == 'schedule' || github.event.inputs.run_full_tests == 'true'
+    outputs:
+      test_result: ${{ steps.tests.outcome }}
+      fsharp_result: ${{ steps.fsharp-tests.outcome }}
+      test_count: ${{ steps.parse-results.outputs.test_count }}
+      pass_count: ${{ steps.parse-results.outputs.pass_count }}
+      fail_count: ${{ steps.parse-results.outputs.fail_count }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET with Cache
+        uses: ./.github/actions/setup-dotnet-cache
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
+
+      - name: Build
+        run: |
+          dotnet build Meridian.sln -c Release --no-restore /p:EnableWindowsTargeting=true
+
+      - name: Run all unit tests
+        id: tests
+        run: |
+          dotnet test tests/Meridian.Tests/Meridian.Tests.csproj \
+            -c Release \
+            --no-build \
+            --verbosity normal \
+            --collect:"XPlat Code Coverage" \
+            --results-directory ./TestResults \
+            --logger "trx;LogFileName=weekly-test-results.trx" \
+            --filter "Category!=Integration"
+
+      - name: Run F# tests
+        id: fsharp-tests
+        run: |
+          dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj -c Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./TestResults /p:EnableWindowsTargeting=true
+        continue-on-error: true
+
+      - name: Parse test results
+        id: parse-results
+        if: always()
+        run: |
+          TEST_COUNT=0
+          PASS_COUNT=0
+          FAIL_COUNT=0
+
+          if [ -f "./TestResults/weekly-test-results.trx" ]; then
+            TEST_COUNT=$(grep -oP 'total="\K[0-9]+' ./TestResults/weekly-test-results.trx | head -1 || echo "0")
+            PASS_COUNT=$(grep -oP 'passed="\K[0-9]+' ./TestResults/weekly-test-results.trx | head -1 || echo "0")
+            FAIL_COUNT=$(grep -oP 'failed="\K[0-9]+' ./TestResults/weekly-test-results.trx | head -1 || echo "0")
+          fi
+
+          echo "test_count=$TEST_COUNT" >> $GITHUB_OUTPUT
+          echo "pass_count=$PASS_COUNT" >> $GITHUB_OUTPUT
+          echo "fail_count=$FAIL_COUNT" >> $GITHUB_OUTPUT
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: weekly-test-results
+          path: ./TestResults/
+          retention-days: 14
+
+      - name: Generate test summary
+        if: always()
+        run: |
+          echo "## Weekly Test Suite Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Date:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Total Tests | ${{ steps.parse-results.outputs.test_count }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Passed | ${{ steps.parse-results.outputs.pass_count }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Failed | ${{ steps.parse-results.outputs.fail_count }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| C# Tests | ${{ steps.tests.outcome }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| F# Tests | ${{ steps.fsharp-tests.outcome }} |" >> $GITHUB_STEP_SUMMARY
+
+  # ─── Dependency Health Check ───────────────────────────────────────────
+  dependency-health:
+    name: Dependency Health Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: github.event_name == 'schedule' || github.event.inputs.run_dependency_check == 'true'
+    outputs:
+      outdated_summary: ${{ steps.outdated.outputs.summary }}
+      vulnerable_summary: ${{ steps.vulnerable.outputs.summary }}
+      outdated_count: ${{ steps.outdated.outputs.outdated_count }}
+      deprecated_count: ${{ steps.deprecated.outputs.deprecated_count }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET with Cache
+        uses: ./.github/actions/setup-dotnet-cache
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
+
+      - name: Check for outdated packages
+        id: outdated
+        run: |
+          echo "## Dependency Health Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Generated:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "### Outdated Packages" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          dotnet list Meridian.sln package --outdated 2>&1 | tee outdated.txt | head -50 >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+          OUTDATED_COUNT=$(grep -cE "^   > " outdated.txt || true)
+          echo "outdated_count=$OUTDATED_COUNT" >> $GITHUB_OUTPUT
+
+          # Save for AI analysis
+          echo "summary<<OUTDATEDEOF" >> $GITHUB_OUTPUT
+          head -30 outdated.txt >> $GITHUB_OUTPUT
+          echo "OUTDATEDEOF" >> $GITHUB_OUTPUT
+
+      - name: Check for deprecated packages
+        id: deprecated
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Deprecated Packages" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          dotnet list Meridian.sln package --deprecated 2>&1 | tee deprecated.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+          DEPRECATED_COUNT=$(grep -cE "^   > " deprecated.txt || true)
+          echo "deprecated_count=$DEPRECATED_COUNT" >> $GITHUB_OUTPUT
+
+      - name: Check for vulnerable packages
+        id: vulnerable
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Vulnerable Packages" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          dotnet list Meridian.sln package --vulnerable --include-transitive 2>&1 | tee vulnerable.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+          # Save for AI analysis
+          echo "summary<<VULNEOF" >> $GITHUB_OUTPUT
+          head -30 vulnerable.txt >> $GITHUB_OUTPUT
+          echo "VULNEOF" >> $GITHUB_OUTPUT
+
+  # ─── Repository Health Audit ─────────────────────────────────────────
+  repository-health:
+    name: Repository Health Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: github.event_name == 'schedule' || github.event.inputs.run_repo_health == 'true'
+    outputs:
+      cs_file_count: ${{ steps.metrics.outputs.cs_file_count }}
+      fs_file_count: ${{ steps.metrics.outputs.fs_file_count }}
+      test_file_count: ${{ steps.metrics.outputs.test_file_count }}
+      todo_count: ${{ steps.todos.outputs.todo_count }}
+      fixme_count: ${{ steps.todos.outputs.fixme_count }}
+      hack_count: ${{ steps.todos.outputs.hack_count }}
+      large_file_count: ${{ steps.large-files.outputs.large_file_count }}
+      repo_size_mb: ${{ steps.metrics.outputs.repo_size_mb }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Collect repository metrics
+        id: metrics
+        run: |
+          echo "## Repository Health Audit" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Generated:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # File counts
+          CS_FILES=$(find src tests benchmarks -name "*.cs" 2>/dev/null | wc -l)
+          FS_FILES=$(find src tests -name "*.fs" 2>/dev/null | wc -l)
+          TEST_FILES=$(find tests -name "*Tests.cs" -o -name "*Test.cs" -o -name "*Tests.fs" 2>/dev/null | wc -l)
+          CSPROJ_FILES=$(find . -name "*.csproj" -o -name "*.fsproj" 2>/dev/null | wc -l)
+          WORKFLOW_FILES=$(find .github/workflows -name "*.yml" 2>/dev/null | wc -l)
+          DOC_FILES=$(find docs -name "*.md" 2>/dev/null | wc -l)
+          TOTAL_SRC_LINES=$(find src -name "*.cs" -o -name "*.fs" 2>/dev/null | xargs wc -l 2>/dev/null | tail -1 | awk '{print $1}')
+          TOTAL_TEST_LINES=$(find tests -name "*.cs" -o -name "*.fs" 2>/dev/null | xargs wc -l 2>/dev/null | tail -1 | awk '{print $1}')
+          REPO_SIZE=$(du -sm . --exclude=.git 2>/dev/null | awk '{print $1}')
+
+          echo "cs_file_count=$CS_FILES" >> $GITHUB_OUTPUT
+          echo "fs_file_count=$FS_FILES" >> $GITHUB_OUTPUT
+          echo "test_file_count=$TEST_FILES" >> $GITHUB_OUTPUT
+          echo "repo_size_mb=$REPO_SIZE" >> $GITHUB_OUTPUT
+
+          echo "### Codebase Metrics" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Count |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| C# Source Files | $CS_FILES |" >> $GITHUB_STEP_SUMMARY
+          echo "| F# Source Files | $FS_FILES |" >> $GITHUB_STEP_SUMMARY
+          echo "| Test Files | $TEST_FILES |" >> $GITHUB_STEP_SUMMARY
+          echo "| Project Files | $CSPROJ_FILES |" >> $GITHUB_STEP_SUMMARY
+          echo "| Workflow Files | $WORKFLOW_FILES |" >> $GITHUB_STEP_SUMMARY
+          echo "| Documentation Files | $DOC_FILES |" >> $GITHUB_STEP_SUMMARY
+          echo "| Source Lines (approx) | $TOTAL_SRC_LINES |" >> $GITHUB_STEP_SUMMARY
+          echo "| Test Lines (approx) | $TOTAL_TEST_LINES |" >> $GITHUB_STEP_SUMMARY
+          echo "| Repository Size | ${REPO_SIZE} MB |" >> $GITHUB_STEP_SUMMARY
+
+      - name: Scan for TODOs and FIXMEs
+        id: todos
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### TODO/FIXME/HACK Markers" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          TODO_COUNT=$(grep -rn "TODO" src/ tests/ --include="*.cs" --include="*.fs" 2>/dev/null | wc -l)
+          FIXME_COUNT=$(grep -rn "FIXME" src/ tests/ --include="*.cs" --include="*.fs" 2>/dev/null | wc -l)
+          HACK_COUNT=$(grep -rn "HACK" src/ tests/ --include="*.cs" --include="*.fs" 2>/dev/null | wc -l)
+
+          echo "todo_count=$TODO_COUNT" >> $GITHUB_OUTPUT
+          echo "fixme_count=$FIXME_COUNT" >> $GITHUB_OUTPUT
+          echo "hack_count=$HACK_COUNT" >> $GITHUB_OUTPUT
+
+          echo "| Marker | Count |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| TODO | $TODO_COUNT |" >> $GITHUB_STEP_SUMMARY
+          echo "| FIXME | $FIXME_COUNT |" >> $GITHUB_STEP_SUMMARY
+          echo "| HACK | $HACK_COUNT |" >> $GITHUB_STEP_SUMMARY
+
+          if [ "$FIXME_COUNT" -gt 0 ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "<details><summary>FIXME locations (click to expand)</summary>" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            grep -rn "FIXME" src/ tests/ --include="*.cs" --include="*.fs" 2>/dev/null | head -25 >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            echo "</details>" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ "$HACK_COUNT" -gt 0 ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "<details><summary>HACK locations (click to expand)</summary>" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            grep -rn "HACK" src/ tests/ --include="*.cs" --include="*.fs" 2>/dev/null | head -25 >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            echo "</details>" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Detect large files
+        id: large-files
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Large Files (>500KB)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          LARGE_FILES=$(find . -not -path './.git/*' -type f -size +500k 2>/dev/null)
+          LARGE_COUNT=$(echo "$LARGE_FILES" | grep -c . 2>/dev/null || true)
+          echo "large_file_count=$LARGE_COUNT" >> $GITHUB_OUTPUT
+
+          if [ "$LARGE_COUNT" -gt 0 ]; then
+            echo "| File | Size |" >> $GITHUB_STEP_SUMMARY
+            echo "|------|------|" >> $GITHUB_STEP_SUMMARY
+            echo "$LARGE_FILES" | while read -r file; do
+              if [ -n "$file" ]; then
+                SIZE=$(du -h "$file" 2>/dev/null | awk '{print $1}')
+                echo "| \`$file\` | $SIZE |" >> $GITHUB_STEP_SUMMARY
+              fi
+            done
+          else
+            echo "No files over 500KB found (excluding .git)." >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Check for common code issues
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Code Pattern Checks" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Check for .Result or .Wait() anti-patterns
+          SYNC_OVER_ASYNC=$(grep -rn "\.Result\b\|\.Wait()" src/ --include="*.cs" 2>/dev/null | grep -v "//.*\.Result\|//.*\.Wait()\|TestResult\|ParseResult\|ActionResult\|IActionResult\|ValidationResult\|HealthCheckResult\|MaintenanceResult\|BackfillResult\|ExportResult" | wc -l)
+          TASK_RUN_IO=$(grep -rn "Task\.Run" src/ --include="*.cs" 2>/dev/null | wc -l)
+          MISSING_CT=$(grep -rn "async Task\|async ValueTask" src/ --include="*.cs" 2>/dev/null | grep -v "CancellationToken\|cancellationToken\|ct\b" | wc -l)
+
+          echo "| Pattern | Count | Severity |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|-------|----------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Sync-over-async (.Result/.Wait) | $SYNC_OVER_ASYNC | $([ $SYNC_OVER_ASYNC -gt 5 ] && echo 'Warning' || echo 'OK') |" >> $GITHUB_STEP_SUMMARY
+          echo "| Task.Run usage | $TASK_RUN_IO | $([ $TASK_RUN_IO -gt 10 ] && echo 'Review' || echo 'OK') |" >> $GITHUB_STEP_SUMMARY
+          echo "| Async methods missing CancellationToken | $MISSING_CT | $([ $MISSING_CT -gt 20 ] && echo 'Warning' || echo 'OK') |" >> $GITHUB_STEP_SUMMARY
+
+  # ─── Workflow Hygiene ────────────────────────────────────────────────
+  workflow-hygiene:
+    name: Workflow Hygiene
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.event_name == 'schedule' || github.event.inputs.run_workflow_hygiene == 'true'
+    outputs:
+      yaml_valid: ${{ steps.yaml-check.outputs.valid }}
+      deprecated_actions: ${{ steps.action-versions.outputs.deprecated_count }}
+      cron_conflicts: ${{ steps.cron-check.outputs.conflict_count }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install PyYAML
+        run: pip install pyyaml
+
+      - name: Validate all workflow YAML
+        id: yaml-check
+        run: |
+          echo "## Workflow Hygiene Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### YAML Syntax Validation" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          VALID=true
+          VALID_COUNT=0
+          INVALID_COUNT=0
+
+          for file in .github/workflows/*.yml; do
+            if [ -f "$file" ]; then
+              BASENAME=$(basename "$file")
+              if python3 -c "import yaml; yaml.safe_load(open('$file'))" 2>/dev/null; then
+                VALID_COUNT=$((VALID_COUNT + 1))
+              else
+                echo "- **INVALID:** \`$BASENAME\`" >> $GITHUB_STEP_SUMMARY
+                INVALID_COUNT=$((INVALID_COUNT + 1))
+                VALID=false
+              fi
+            fi
+          done
+
+          echo "valid=$VALID" >> $GITHUB_OUTPUT
+
+          if [ "$INVALID_COUNT" -eq 0 ]; then
+            echo "All **$VALID_COUNT** workflow files have valid YAML syntax." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**$INVALID_COUNT** file(s) have invalid YAML syntax." >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Check for deprecated action versions
+        id: action-versions
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Action Version Audit" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          DEPRECATED_COUNT=0
+
+          # Check for old checkout versions (v1-v3)
+          OLD_CHECKOUT=$(grep -rn "actions/checkout@v[1-3]" .github/workflows/ 2>/dev/null || true)
+          if [ -n "$OLD_CHECKOUT" ]; then
+            echo "**Deprecated checkout versions found:**" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            echo "$OLD_CHECKOUT" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            DEPRECATED_COUNT=$((DEPRECATED_COUNT + $(echo "$OLD_CHECKOUT" | wc -l)))
+          fi
+
+          # Check for old upload/download artifact v1-v3
+          OLD_ARTIFACTS=$(grep -rn "actions/upload-artifact@v[1-3]\|actions/download-artifact@v[1-3]" .github/workflows/ 2>/dev/null || true)
+          if [ -n "$OLD_ARTIFACTS" ]; then
+            echo "**Deprecated artifact action versions found:**" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            echo "$OLD_ARTIFACTS" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            DEPRECATED_COUNT=$((DEPRECATED_COUNT + $(echo "$OLD_ARTIFACTS" | wc -l)))
+          fi
+
+          # Check for old setup-dotnet v1-v4
+          OLD_DOTNET=$(grep -rn "actions/setup-dotnet@v[1-4]" .github/workflows/ 2>/dev/null || true)
+          if [ -n "$OLD_DOTNET" ]; then
+            echo "**Deprecated setup-dotnet versions found:**" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            echo "$OLD_DOTNET" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            DEPRECATED_COUNT=$((DEPRECATED_COUNT + $(echo "$OLD_DOTNET" | wc -l)))
+          fi
+
+          # Check for old github-script v1-v6
+          OLD_SCRIPT=$(grep -rn "actions/github-script@v[1-6]" .github/workflows/ 2>/dev/null || true)
+          if [ -n "$OLD_SCRIPT" ]; then
+            echo "**Deprecated github-script versions found:**" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            echo "$OLD_SCRIPT" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            DEPRECATED_COUNT=$((DEPRECATED_COUNT + $(echo "$OLD_SCRIPT" | wc -l)))
+          fi
+
+          # Check for old setup-python v1-v4
+          OLD_PYTHON=$(grep -rn "actions/setup-python@v[1-4]\b" .github/workflows/ 2>/dev/null || true)
+          if [ -n "$OLD_PYTHON" ]; then
+            echo "**Deprecated setup-python versions found:**" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            echo "$OLD_PYTHON" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            DEPRECATED_COUNT=$((DEPRECATED_COUNT + $(echo "$OLD_PYTHON" | wc -l)))
+          fi
+
+          echo "deprecated_count=$DEPRECATED_COUNT" >> $GITHUB_OUTPUT
+
+          if [ "$DEPRECATED_COUNT" -eq 0 ]; then
+            echo "All action versions are up to date." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**$DEPRECATED_COUNT** deprecated action reference(s) found." >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Check for cron schedule conflicts
+        id: cron-check
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Cron Schedule Map" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "| Workflow | Cron Expression | Description |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|----------------|-------------|" >> $GITHUB_STEP_SUMMARY
+
+          CONFLICT_COUNT=0
+          SCHEDULES=""
+
+          for file in .github/workflows/*.yml; do
+            if [ -f "$file" ]; then
+              BASENAME=$(basename "$file")
+              # Extract cron expressions
+              CRONS=$(grep -A1 "schedule:" "$file" 2>/dev/null | grep "cron:" | sed "s/.*cron: '//;s/'$//" || true)
+              if [ -n "$CRONS" ]; then
+                while IFS= read -r cron; do
+                  if [ -n "$cron" ]; then
+                    # Parse cron for human-readable time
+                    HOUR=$(echo "$cron" | awk '{print $2}')
+                    DAY=$(echo "$cron" | awk '{print $5}')
+                    case "$DAY" in
+                      0) DAY_NAME="Sunday" ;;
+                      1) DAY_NAME="Monday" ;;
+                      "1-5") DAY_NAME="Weekdays" ;;
+                      "*") DAY_NAME="Daily" ;;
+                      "1-7") DAY_NAME="1st week" ;;
+                      *) DAY_NAME="$DAY" ;;
+                    esac
+                    echo "| \`$BASENAME\` | \`$cron\` | ${DAY_NAME} at ${HOUR}:00 UTC |" >> $GITHUB_STEP_SUMMARY
+                    SCHEDULES="$SCHEDULES|$HOUR-$DAY|$BASENAME"
+                  fi
+                done <<< "$CRONS"
+              fi
+            fi
+          done
+
+          # Detect same hour+day combinations
+          CONFLICTS=$(echo "$SCHEDULES" | tr '|' '\n' | grep -v "^$" | sort | uniq -d | wc -l)
+          echo "conflict_count=$CONFLICTS" >> $GITHUB_OUTPUT
+
+          if [ "$CONFLICTS" -gt 0 ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Warning:** $CONFLICTS potential schedule conflict(s) detected." >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Audit workflow permissions
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Permission Audit" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Workflow | Write Permissions |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------------------|" >> $GITHUB_STEP_SUMMARY
+
+          for file in .github/workflows/*.yml; do
+            BASENAME=$(basename "$file")
+            WRITE_PERMS=$(grep -A10 "^permissions:" "$file" 2>/dev/null | grep "write" | sed 's/^ *//' | tr '\n' ', ' || true)
+            if [ -n "$WRITE_PERMS" ]; then
+              echo "| \`$BASENAME\` | $WRITE_PERMS |" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+
+  # ─── Documentation Link Validation ──────────────────────────────────
+  documentation-check:
+    name: Documentation Link Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.event_name == 'schedule' || github.event.inputs.run_docs_check == 'true'
+    outputs:
+      broken_link_count: ${{ steps.check-links.outputs.broken_count }}
+      orphan_doc_count: ${{ steps.orphan-docs.outputs.orphan_count }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check internal markdown links
+        id: check-links
+        run: |
+          echo "## Documentation Health" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Internal Link Validation" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          BROKEN_COUNT=0
+          CHECKED_COUNT=0
+
+          # Check markdown files for internal links
+          find docs/ -name "*.md" -type f 2>/dev/null | while read -r mdfile; do
+            # Extract relative links (not http/https, not anchors-only)
+            grep -oP '\[.*?\]\(\K[^)]+' "$mdfile" 2>/dev/null | grep -v "^http\|^#\|^mailto:" | while read -r link; do
+              CHECKED_COUNT=$((CHECKED_COUNT + 1))
+              # Strip anchor
+              LINK_PATH=$(echo "$link" | sed 's/#.*//')
+              if [ -n "$LINK_PATH" ]; then
+                # Resolve relative to the markdown file's directory
+                DIR=$(dirname "$mdfile")
+                TARGET="$DIR/$LINK_PATH"
+                if [ ! -e "$TARGET" ]; then
+                  echo "- **Broken:** \`$mdfile\` -> \`$link\`" >> broken-links.txt
+                  BROKEN_COUNT=$((BROKEN_COUNT + 1))
+                fi
+              fi
+            done
+          done
+
+          # Also check from repo root references
+          find . -maxdepth 2 -name "*.md" -not -path "./.git/*" -type f 2>/dev/null | while read -r mdfile; do
+            grep -oP '\[.*?\]\(\K[^)]+' "$mdfile" 2>/dev/null | grep -v "^http\|^#\|^mailto:" | while read -r link; do
+              LINK_PATH=$(echo "$link" | sed 's/#.*//')
+              if [ -n "$LINK_PATH" ]; then
+                DIR=$(dirname "$mdfile")
+                TARGET="$DIR/$LINK_PATH"
+                if [ ! -e "$TARGET" ]; then
+                  echo "- **Broken:** \`$mdfile\` -> \`$link\`" >> broken-links.txt
+                fi
+              fi
+            done
+          done
+
+          # Deduplicate and count
+          if [ -f broken-links.txt ]; then
+            sort -u broken-links.txt > broken-links-dedup.txt
+            BROKEN_TOTAL=$(wc -l < broken-links-dedup.txt)
+            echo "broken_count=$BROKEN_TOTAL" >> $GITHUB_OUTPUT
+
+            if [ "$BROKEN_TOTAL" -gt 0 ]; then
+              echo "Found **$BROKEN_TOTAL** broken internal link(s):" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              head -30 broken-links-dedup.txt >> $GITHUB_STEP_SUMMARY
+              if [ "$BROKEN_TOTAL" -gt 30 ]; then
+                echo "" >> $GITHUB_STEP_SUMMARY
+                echo "_...and $((BROKEN_TOTAL - 30)) more._" >> $GITHUB_STEP_SUMMARY
+              fi
+            fi
+          else
+            echo "broken_count=0" >> $GITHUB_OUTPUT
+            echo "No broken internal links found." >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Detect orphaned documentation
+        id: orphan-docs
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Documentation Coverage" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          ORPHAN_COUNT=0
+
+          # Check for doc files not referenced from any other markdown file
+          find docs/ -name "*.md" -not -name "README.md" -not -name "CHANGELOG.md" -type f 2>/dev/null | while read -r docfile; do
+            BASENAME=$(basename "$docfile")
+            # Check if any other file references this doc
+            REFS=$(grep -rl "$BASENAME" docs/ README.md CLAUDE.md .github/ 2>/dev/null | grep -v "$docfile" | head -1)
+            if [ -z "$REFS" ]; then
+              echo "- \`$docfile\`" >> orphan-docs.txt
+              ORPHAN_COUNT=$((ORPHAN_COUNT + 1))
+            fi
+          done
+
+          if [ -f orphan-docs.txt ]; then
+            ORPHAN_TOTAL=$(wc -l < orphan-docs.txt)
+            echo "orphan_count=$ORPHAN_TOTAL" >> $GITHUB_OUTPUT
+
+            if [ "$ORPHAN_TOTAL" -gt 0 ]; then
+              echo "<details><summary>$ORPHAN_TOTAL potentially unreferenced doc file(s) (click to expand)</summary>" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              head -40 orphan-docs.txt >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "</details>" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "orphan_count=0" >> $GITHUB_OUTPUT
+            echo "All documentation files are referenced." >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Documentation freshness check
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Documentation Freshness" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          STALE_DAYS=180
+          STALE_COUNT=0
+
+          echo "Files not modified in the last $STALE_DAYS days:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          STALE_DOCS=$(find docs/ -name "*.md" -mtime +$STALE_DAYS -type f 2>/dev/null | head -20)
+          if [ -n "$STALE_DOCS" ]; then
+            echo "<details><summary>Stale docs (click to expand)</summary>" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "$STALE_DOCS" | while read -r file; do
+              LAST_MOD=$(git log -1 --format="%ai" -- "$file" 2>/dev/null || stat -c %y "$file" 2>/dev/null | cut -d' ' -f1)
+              echo "- \`$file\` (last modified: $LAST_MOD)" >> $GITHUB_STEP_SUMMARY
+            done
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "</details>" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "All documentation files have been modified within the last $STALE_DAYS days." >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # ─── Stale Branch Cleanup ───────────────────────────────────────────
+  stale-branch-cleanup:
+    name: Stale Branch Cleanup
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.event_name == 'schedule' || github.event.inputs.run_branch_cleanup == 'true'
+    outputs:
+      merged_count: ${{ steps.merged.outputs.merged_count }}
+      stale_count: ${{ steps.stale.outputs.stale_count }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: List merged branches
+        id: merged
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const { data: branches } = await github.rest.repos.listBranches({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 100,
+            });
+
+            const defaultBranch = context.payload.repository?.default_branch || 'main';
+            const protectedNames = [defaultBranch, 'develop', 'release', 'staging'];
+
+            // Find merged branches via closed PRs
+            const { data: closedPRs } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'closed',
+              sort: 'updated',
+              direction: 'desc',
+              per_page: 50,
+            });
+
+            const mergedBranches = closedPRs
+              .filter(pr => pr.merged_at)
+              .map(pr => pr.head.ref)
+              .filter(ref => !protectedNames.includes(ref));
+
+            // Cross-reference with existing branches
+            const branchNames = branches.map(b => b.name);
+            const stalemerged = mergedBranches.filter(b => branchNames.includes(b));
+            const uniqueStale = [...new Set(stalemerged)];
+
+            const lines = [
+              '## Stale Branch Report',
+              '',
+              `**Total remote branches:** ${branches.length}`,
+              `**Merged branches still present:** ${uniqueStale.length}`,
+              '',
+            ];
+
+            if (uniqueStale.length > 0) {
+              lines.push('### Merged Branches (candidates for deletion)');
+              lines.push('');
+              lines.push('| Branch | Merged PR |');
+              lines.push('|--------|-----------|');
+              for (const branch of uniqueStale.slice(0, 30)) {
+                const pr = closedPRs.find(p => p.head.ref === branch && p.merged_at);
+                const prRef = pr ? `#${pr.number}` : 'N/A';
+                lines.push(`| \`${branch}\` | ${prRef} |`);
+              }
+            }
+
+            const fs = require('fs');
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, lines.join('\n') + '\n');
+
+            core.setOutput('merged_count', uniqueStale.length.toString());
+
+      - name: Identify stale unmerged branches
+        id: stale
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const { data: branches } = await github.rest.repos.listBranches({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 100,
+            });
+
+            const defaultBranch = context.payload.repository?.default_branch || 'main';
+            const ninetyDaysAgo = new Date();
+            ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+
+            let staleCount = 0;
+            const staleBranches = [];
+
+            for (const branch of branches) {
+              if (branch.name === defaultBranch) continue;
+
+              try {
+                const { data: commit } = await github.rest.repos.getCommit({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  ref: branch.commit.sha,
+                });
+
+                const commitDate = new Date(commit.commit.committer.date);
+                if (commitDate < ninetyDaysAgo) {
+                  staleBranches.push({
+                    name: branch.name,
+                    lastCommit: commit.commit.committer.date,
+                    author: commit.commit.author.name,
+                  });
+                  staleCount++;
+                }
+              } catch (e) {
+                // skip branches we can't read
+              }
+
+              // Rate limit protection
+              if (staleBranches.length >= 30) break;
+            }
+
+            const lines = [''];
+            if (staleBranches.length > 0) {
+              lines.push('### Stale Unmerged Branches (>90 days inactive)');
+              lines.push('');
+              lines.push('| Branch | Last Commit | Author |');
+              lines.push('|--------|-------------|--------|');
+              for (const b of staleBranches) {
+                lines.push(`| \`${b.name}\` | ${b.lastCommit.split('T')[0]} | ${b.author} |`);
+              }
+            } else {
+              lines.push('No stale unmerged branches found (>90 days).');
+            }
+
+            const fs = require('fs');
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, lines.join('\n') + '\n');
+
+            core.setOutput('stale_count', staleCount.toString());
+
+  # ─── Build Size Tracking ────────────────────────────────────────────
+  build-size-tracking:
+    name: Build Size Tracking
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    if: github.event_name == 'schedule' || github.event.inputs.run_build_tracking == 'true'
+    outputs:
+      total_build_size_mb: ${{ steps.measure.outputs.total_size_mb }}
+      main_dll_size_kb: ${{ steps.measure.outputs.main_dll_kb }}
+      build_time_seconds: ${{ steps.measure.outputs.build_time }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET with Cache
+        uses: ./.github/actions/setup-dotnet-cache
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
+
+      - name: Build and measure
+        id: measure
+        run: |
+          echo "## Build Size Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Timed build
+          START_TIME=$(date +%s)
+          dotnet build Meridian.sln -c Release --no-restore /p:EnableWindowsTargeting=true 2>&1 | tail -5
+          END_TIME=$(date +%s)
+          BUILD_TIME=$((END_TIME - START_TIME))
+          echo "build_time=$BUILD_TIME" >> $GITHUB_OUTPUT
+
+          echo "### Build Performance" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Build time:** ${BUILD_TIME}s" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Measure output sizes
+          echo "### Output Sizes by Project" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Project | DLL Size | Total Output |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|----------|--------------|" >> $GITHUB_STEP_SUMMARY
+
+          TOTAL_SIZE=0
+          MAIN_DLL_KB=0
+
+          for projdir in src/Meridian src/Meridian.Contracts src/Meridian.FSharp src/Meridian.Ui src/Meridian.Ui.Shared src/Meridian.Wpf; do
+            PROJNAME=$(basename "$projdir")
+            BINDIR="$projdir/bin/Release"
+
+            if [ -d "$BINDIR" ]; then
+              # Find the main DLL
+              DLL_FILE=$(find "$BINDIR" -name "$PROJNAME.dll" -type f 2>/dev/null | head -1)
+              DLL_SIZE="N/A"
+              if [ -n "$DLL_FILE" ]; then
+                DLL_BYTES=$(stat -c %s "$DLL_FILE" 2>/dev/null || echo 0)
+                DLL_KB=$((DLL_BYTES / 1024))
+                DLL_SIZE="${DLL_KB} KB"
+
+                if [ "$PROJNAME" = "Meridian" ]; then
+                  MAIN_DLL_KB=$DLL_KB
+                fi
+              fi
+
+              # Total directory size
+              DIR_SIZE=$(du -sm "$BINDIR" 2>/dev/null | awk '{print $1}')
+              TOTAL_SIZE=$((TOTAL_SIZE + DIR_SIZE))
+
+              echo "| $PROJNAME | $DLL_SIZE | ${DIR_SIZE} MB |" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+
+          echo "main_dll_kb=$MAIN_DLL_KB" >> $GITHUB_OUTPUT
+          echo "total_size_mb=$TOTAL_SIZE" >> $GITHUB_OUTPUT
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Total build output:** ${TOTAL_SIZE} MB" >> $GITHUB_STEP_SUMMARY
+
+      - name: Publish size analysis
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Publish Size (self-contained estimate)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          dotnet publish src/Meridian/Meridian.csproj \
+            -c Release \
+            --no-build \
+            -o ./publish-output 2>&1 | tail -3 || true
+
+          if [ -d "./publish-output" ]; then
+            PUBLISH_SIZE=$(du -sm ./publish-output 2>/dev/null | awk '{print $1}')
+            FILE_COUNT=$(find ./publish-output -type f 2>/dev/null | wc -l)
+            echo "- **Publish output:** ${PUBLISH_SIZE} MB ($FILE_COUNT files)" >> $GITHUB_STEP_SUMMARY
+
+            # Top 10 largest files
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "<details><summary>Top 10 largest published files</summary>" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            find ./publish-output -type f -exec du -h {} + 2>/dev/null | sort -rh | head -10 >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            echo "</details>" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # ─── Cache Management (absorbed from cache-management.yml) ─────────────
+  cache-management:
+    name: Cache Management
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: List caches
+        if: |
+          github.event.inputs.cache_action == 'list' ||
+          github.event_name == 'schedule'
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const caches = await github.rest.actions.getActionsCacheList({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+            console.log(`Total caches: ${caches.data.total_count}`);
+            console.log('Cache list:');
+            caches.data.actions_caches.forEach(cache => {
+              console.log(`- ${cache.key} (${(cache.size_in_bytes / 1024 / 1024).toFixed(2)} MB, last accessed: ${cache.last_accessed_at})`);
+            });
+
+            // Write summary
+            const lines = [
+              '## Cache Management Report',
+              '',
+              `**Total caches:** ${caches.data.total_count}`,
+              '',
+              '| Cache Key | Size (MB) | Last Accessed |',
+              '|-----------|-----------|---------------|',
+            ];
+            caches.data.actions_caches.forEach(cache => {
+              lines.push(`| \`${cache.key.substring(0, 60)}\` | ${(cache.size_in_bytes / 1024 / 1024).toFixed(2)} | ${cache.last_accessed_at} |`);
+            });
+
+            const totalMB = caches.data.actions_caches.reduce((sum, c) => sum + c.size_in_bytes, 0) / 1024 / 1024;
+            lines.push('');
+            lines.push(`**Total cache size:** ${totalMB.toFixed(2)} MB`);
+
+            const fs = require('fs');
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, lines.join('\n') + '\n');
+
+      - name: Clean old caches (>30 days)
+        if: |
+          github.event.inputs.cache_action == 'clean-old' ||
+          github.event_name == 'schedule'
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const caches = await github.rest.actions.getActionsCacheList({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+            let deletedCount = 0;
+            let freedBytes = 0;
+            for (const cache of caches.data.actions_caches) {
+              const lastAccessed = new Date(cache.last_accessed_at);
+              if (lastAccessed < thirtyDaysAgo) {
+                console.log(`Deleting old cache: ${cache.key}`);
+                await github.rest.actions.deleteActionsCacheById({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  cache_id: cache.id,
+                });
+                deletedCount++;
+                freedBytes += cache.size_in_bytes;
+              }
+            }
+            const freedMB = (freedBytes / 1024 / 1024).toFixed(2);
+            console.log(`Deleted ${deletedCount} old caches (freed ${freedMB} MB)`);
+
+            const fs = require('fs');
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,
+              `\n### Cache Cleanup\n\nDeleted **${deletedCount}** stale caches (freed **${freedMB} MB**).\n`
+            );
+
+      - name: Clean all caches
+        if: github.event.inputs.cache_action == 'clean-all'
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const caches = await github.rest.actions.getActionsCacheList({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+
+            for (const cache of caches.data.actions_caches) {
+              console.log(`Deleting cache: ${cache.key}`);
+              await github.rest.actions.deleteActionsCacheById({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                cache_id: cache.id,
+              });
+            }
+            console.log(`Deleted all ${caches.data.total_count} caches`);
+
+  # ─── AI Comprehensive Health Report ──────────────────────────────────
+  ai-health-report:
+    name: AI Project Health Report
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs:
+      - full-test-suite
+      - dependency-health
+      - repository-health
+      - workflow-hygiene
+      - documentation-check
+      - stale-branch-cleanup
+      - build-size-tracking
+      - cache-management
+    if: always()
+
+    steps:
+      - name: AI comprehensive health analysis
+        id: ai-health
+        continue-on-error: true
+        uses: actions/ai-inference@v1
+        with:
+          model: gpt-4o-mini
+          max-tokens: 2000
+          prompt: |
+            You are a senior .NET DevOps engineer reviewing a comprehensive weekly maintenance
+            report for Meridian, a .NET 9.0 market data collection application with
+            ~500 source files, Central Package Management, and 21 CI/CD workflows.
+
+            ## Test Suite
+            - Result: ${{ needs.full-test-suite.result }}
+            - Total tests: ${{ needs.full-test-suite.outputs.test_count }}
+            - Passed: ${{ needs.full-test-suite.outputs.pass_count }}
+            - Failed: ${{ needs.full-test-suite.outputs.fail_count }}
+
+            ## Dependencies
+            - Health check result: ${{ needs.dependency-health.result }}
+            - Outdated packages: ${{ needs.dependency-health.outputs.outdated_count }}
+            - Deprecated packages: ${{ needs.dependency-health.outputs.deprecated_count }}
+            - Outdated summary: ${{ needs.dependency-health.outputs.outdated_summary }}
+            - Vulnerable summary: ${{ needs.dependency-health.outputs.vulnerable_summary }}
+
+            ## Repository Health
+            - Audit result: ${{ needs.repository-health.result }}
+            - C# files: ${{ needs.repository-health.outputs.cs_file_count }}
+            - F# files: ${{ needs.repository-health.outputs.fs_file_count }}
+            - Test files: ${{ needs.repository-health.outputs.test_file_count }}
+            - TODOs: ${{ needs.repository-health.outputs.todo_count }}
+            - FIXMEs: ${{ needs.repository-health.outputs.fixme_count }}
+            - HACKs: ${{ needs.repository-health.outputs.hack_count }}
+            - Large files (>500KB): ${{ needs.repository-health.outputs.large_file_count }}
+            - Repo size: ${{ needs.repository-health.outputs.repo_size_mb }} MB
+
+            ## Workflow Hygiene
+            - Result: ${{ needs.workflow-hygiene.result }}
+            - YAML valid: ${{ needs.workflow-hygiene.outputs.yaml_valid }}
+            - Deprecated actions: ${{ needs.workflow-hygiene.outputs.deprecated_actions }}
+            - Cron conflicts: ${{ needs.workflow-hygiene.outputs.cron_conflicts }}
+
+            ## Documentation
+            - Result: ${{ needs.documentation-check.result }}
+            - Broken links: ${{ needs.documentation-check.outputs.broken_link_count }}
+            - Orphan docs: ${{ needs.documentation-check.outputs.orphan_doc_count }}
+
+            ## Branches
+            - Merged branches still present: ${{ needs.stale-branch-cleanup.outputs.merged_count }}
+            - Stale unmerged branches (>90d): ${{ needs.stale-branch-cleanup.outputs.stale_count }}
+
+            ## Build
+            - Build time: ${{ needs.build-size-tracking.outputs.build_time_seconds }}s
+            - Main DLL size: ${{ needs.build-size-tracking.outputs.main_dll_size_kb }} KB
+            - Total output: ${{ needs.build-size-tracking.outputs.total_build_size_mb }} MB
+
+            Provide a structured health report in markdown:
+            1) **Overall Health Grade** (A-F) with brief justification
+            2) **Critical Issues** requiring immediate attention (if any)
+            3) **Dependency Recommendations** - upgrade priorities, breaking change warnings
+            4) **Maintenance Actions** - top 5 recommended actions ranked by impact
+            5) **Trends to Watch** - areas that may become problematic if not addressed
+
+            Keep response under 500 words.
+
+      - name: Post AI health report to summary
+        if: always()
+        run: |
+          echo "## AI Project Health Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -n "${{ steps.ai-health.outputs.response }}" ]; then
+            echo "${{ steps.ai-health.outputs.response }}" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "_AI health report was not available for this run._" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # ─── Maintenance Summary ───────────────────────────────────────────────
+  maintenance-summary:
+    name: Maintenance Summary
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs:
+      - full-test-suite
+      - dependency-health
+      - repository-health
+      - workflow-hygiene
+      - documentation-check
+      - stale-branch-cleanup
+      - build-size-tracking
+      - cache-management
+      - ai-health-report
+    if: always()
+
+    steps:
+      - name: Generate maintenance report
+        run: |
+          echo "# Weekly Maintenance Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Generated:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "## Job Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Full Test Suite | ${{ needs.full-test-suite.result == 'success' && 'Passed' || (needs.full-test-suite.result == 'skipped' && 'Skipped' || 'Failed') }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Dependency Health | ${{ needs.dependency-health.result == 'success' && 'Passed' || (needs.dependency-health.result == 'skipped' && 'Skipped' || 'Failed') }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Repository Health | ${{ needs.repository-health.result == 'success' && 'Completed' || (needs.repository-health.result == 'skipped' && 'Skipped' || 'Failed') }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Workflow Hygiene | ${{ needs.workflow-hygiene.result == 'success' && 'Passed' || (needs.workflow-hygiene.result == 'skipped' && 'Skipped' || 'Failed') }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Documentation Check | ${{ needs.documentation-check.result == 'success' && 'Passed' || (needs.documentation-check.result == 'skipped' && 'Skipped' || 'Failed') }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Stale Branch Cleanup | ${{ needs.stale-branch-cleanup.result == 'success' && 'Completed' || (needs.stale-branch-cleanup.result == 'skipped' && 'Skipped' || 'Failed') }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Build Size Tracking | ${{ needs.build-size-tracking.result == 'success' && 'Completed' || (needs.build-size-tracking.result == 'skipped' && 'Skipped' || 'Failed') }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Cache Management | ${{ needs.cache-management.result == 'success' && 'Completed' || (needs.cache-management.result == 'skipped' && 'Skipped' || 'Failed') }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| AI Health Report | ${{ needs.ai-health-report.result == 'success' && 'Completed' || (needs.ai-health-report.result == 'skipped' && 'Skipped' || 'Unavailable') }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Key metrics summary
+          echo "## Key Metrics" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Tests (pass/total) | ${{ needs.full-test-suite.outputs.pass_count }}/${{ needs.full-test-suite.outputs.test_count }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Outdated packages | ${{ needs.dependency-health.outputs.outdated_count }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| TODOs in code | ${{ needs.repository-health.outputs.todo_count }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| FIXMEs in code | ${{ needs.repository-health.outputs.fixme_count }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Broken doc links | ${{ needs.documentation-check.outputs.broken_link_count }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Merged branches to clean | ${{ needs.stale-branch-cleanup.outputs.merged_count }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Stale branches (>90d) | ${{ needs.stale-branch-cleanup.outputs.stale_count }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Build time | ${{ needs.build-size-tracking.outputs.build_time_seconds }}s |" >> $GITHUB_STEP_SUMMARY
+          echo "| Build output size | ${{ needs.build-size-tracking.outputs.total_build_size_mb }} MB |" >> $GITHUB_STEP_SUMMARY
+
+      - name: Create issue on critical failures
+        if: |
+          needs.full-test-suite.result == 'failure' ||
+          needs.dependency-health.result == 'failure'
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const date = new Date().toISOString().split('T')[0];
+            const title = `Weekly maintenance: critical failures on ${date}`;
+
+            const failedJobs = [];
+            if ('${{ needs.full-test-suite.result }}' === 'failure') failedJobs.push('Full Test Suite');
+            if ('${{ needs.dependency-health.result }}' === 'failure') failedJobs.push('Dependency Health');
+
+            const body = [
+              '## Weekly Maintenance Critical Failures',
+              '',
+              `**Date:** ${date}`,
+              `**Run:** ${context.payload.repository.html_url}/actions/runs/${context.runId}`,
+              '',
+              '### Failed Jobs',
+              ...failedJobs.map(j => `- ${j}`),
+              '',
+              'Please investigate the workflow run for details.',
+            ].join('\n');
+
+            // Check for existing open issue
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'automated,maintenance',
+              per_page: 5,
+            });
+
+            if (issues.length === 0) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body,
+                labels: ['automated', 'maintenance', 'bug'],
+              });
+            }

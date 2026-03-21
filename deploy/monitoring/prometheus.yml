@@ -1,0 +1,23 @@
+# =============================================================================
+# Prometheus Configuration for Meridian
+# =============================================================================
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - /etc/prometheus/alert-rules.yml
+
+scrape_configs:
+  # Meridian metrics
+  - job_name: 'meridian'
+    static_configs:
+      - targets: ['meridian:8080']
+    metrics_path: /metrics
+    scheme: http
+
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']

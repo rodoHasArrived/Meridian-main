@@ -1,0 +1,20 @@
+{
+  "description": "Alpaca odd-lot trade on NYSE (venue code 'N') with condition 'U' (OddLot).",
+  "raw": {
+    "symbol": "AAPL",
+    "source": "ALPACA",
+    "venue": "N",
+    "conditions": ["U"],
+    "price": 183.45,
+    "size": 7,
+    "sequenceNumber": 1002
+  },
+  "expected": {
+    "canonicalSymbol": "AAPL",
+    "canonicalVenue": "XNYS",
+    "tier": "Enriched",
+    "canonicalizationVersion": 1,
+    "rawSymbolUnchanged": true,
+    "canonicalConditions": ["OddLot"]
+  }
+}

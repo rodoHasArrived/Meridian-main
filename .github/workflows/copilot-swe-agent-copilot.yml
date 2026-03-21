@@ -1,0 +1,164 @@
+name: Copilot SWE Agent / Copilot
+
+on:
+  workflow_dispatch:
+    inputs:
+      request_context:
+        description: 'What should Copilot focus on?'
+        required: false
+        type: string
+      issue_number:
+        description: 'Optional issue/PR number to tie this run to'
+        required: false
+        type: string
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  actions: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: copilot-swe-agent-${{ github.event.issue.number || github.run_id }}
+  cancel-in-progress: false
+
+env:
+  RESULTS_FILE: copilot-swe-results.md
+
+jobs:
+  copilot-visibility:
+    name: Prepare Copilot context and publish results
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      contains(github.event.comment.body, '@copilot') ||
+      contains(github.event.comment.body, '/copilot')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Copilot run brief
+        id: brief
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const eventName = context.eventName;
+            const actor = context.actor;
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const issueNumberInput = context.payload.inputs?.issue_number;
+            const issueNumber = Number(issueNumberInput || context.payload.issue?.number || 0);
+            const target = issueNumber > 0 ? `#${issueNumber}` : 'ad-hoc run';
+
+            let requestText = '';
+            if (eventName === 'workflow_dispatch') {
+              requestText = context.payload.inputs?.request_context || 'No manual context provided.';
+            } else {
+              requestText = context.payload.comment?.body || 'No comment body available.';
+            }
+
+            let targetMeta = '';
+            if (issueNumber > 0) {
+              const issue = await github.rest.issues.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber,
+              });
+
+              const isPr = Boolean(issue.data.pull_request);
+              targetMeta = [
+                `- Target: #${issueNumber} (${isPr ? 'Pull Request' : 'Issue'})`,
+                `- Title: ${issue.data.title}`,
+                `- URL: ${issue.data.html_url}`,
+                `- Labels: ${(issue.data.labels || []).map(l => typeof l === 'string' ? l : l.name).join(', ') || 'none'}`,
+              ].join('\n');
+            } else {
+              targetMeta = '- Target: Not linked to a specific issue or PR.';
+            }
+
+            const body = [
+              '# Copilot SWE Agent Run Brief',
+              '',
+              '## Request Summary',
+              `- Trigger: ${eventName}`,
+              `- Requested by: @${actor}`,
+              `- Workflow run: ${runUrl}`,
+              `- Request target: ${target}`,
+              '',
+              '## User Request',
+              '```text',
+              requestText.trim(),
+              '```',
+              '',
+              '## Linked Artifact and Visibility Plan',
+              '- This run uploads a markdown artifact with the run brief and context.',
+              '- A comment is posted back to the linked issue/PR for visibility.',
+              '- The job summary contains direct links for triage and handoff.',
+              '',
+              '## Linked Target Metadata',
+              targetMeta,
+              ''
+            ].join('\n');
+
+            await require('fs').promises.writeFile(process.env.RESULTS_FILE, body, 'utf8');
+            core.setOutput('issue_number', issueNumber > 0 ? String(issueNumber) : '');
+            core.setOutput('run_url', runUrl);
+
+      - name: Add workflow summary
+        run: |
+          {
+            echo "## Copilot SWE Agent Visibility Summary"
+            echo ""
+            echo "- **Run URL**: ${{ steps.brief.outputs.run_url }}"
+            if [ -n "${{ steps.brief.outputs.issue_number }}" ]; then
+              echo "- **Linked item**: #${{ steps.brief.outputs.issue_number }}"
+            else
+              echo "- **Linked item**: _none provided_"
+            fi
+            echo "- **Artifact**: \`${{ env.RESULTS_FILE }}\`"
+            echo ""
+            echo "### Next steps"
+            echo "1. Download the run brief artifact."
+            echo "2. Use it as the prompt context for Copilot SWE Agent execution."
+            echo "3. Post implementation outcomes back to the linked issue/PR."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload Copilot brief artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: copilot-swe-agent-brief-${{ github.run_id }}
+          path: ${{ env.RESULTS_FILE }}
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Post visibility comment
+        if: steps.brief.outputs.issue_number != ''
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const issueNumber = Number('${{ steps.brief.outputs.issue_number }}');
+            const runUrl = '${{ steps.brief.outputs.run_url }}';
+            const artifactUrl = `${runUrl}#artifacts`;
+
+            const body = [
+              '## 🤖 Copilot SWE Agent visibility update',
+              '',
+              `A Copilot preparation run has been generated for this thread.`,
+              '',
+              `- Workflow run: ${runUrl}`,
+              `- Artifact (run brief): ${artifactUrl}`,
+              '',
+              '### Why this helps',
+              '- Centralizes prompt context and target metadata in one downloadable file.',
+              '- Makes outcomes discoverable without opening raw logs.',
+              '- Provides a repeatable handoff format for contributors and reviewers.',
+            ].join('\n');
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              body,
+            });

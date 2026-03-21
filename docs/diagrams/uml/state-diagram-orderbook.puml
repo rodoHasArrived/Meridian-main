@@ -1,0 +1,81 @@
+@startuml State Diagram - Order Book Stream States
+!theme plain
+
+title Meridian - Order Book Stream State Machine
+
+state "Order Book Per-Symbol State" as OrderBook {
+
+    [*] --> Unsubscribed
+
+    state Unsubscribed {
+        Unsubscribed : No data collection
+        Unsubscribed : Book not allocated
+    }
+
+    state Subscribed {
+        Subscribed : Registered with collector
+        Subscribed : Awaiting first snapshot
+
+        state Fresh {
+            Fresh : entry/ Clear stale flag
+            Fresh : entry/ Reset integrity window
+            Fresh : Data is reliable
+            Fresh : Processing deltas normally
+
+            state ReceivingData {
+                ReceivingData : Processing inserts/updates/deletes
+                ReceivingData : Building L2 snapshots
+            }
+
+            state IdleTimeout {
+                IdleTimeout : No data for threshold period
+                IdleTimeout : May indicate connection issue
+            }
+
+            ReceivingData --> IdleTimeout : [No events for 60s]
+            IdleTimeout --> ReceivingData : [Event received]
+        }
+
+        state Stale {
+            Stale : entry/ Set stale flag
+            Stale : entry/ Emit DepthIntegrityEvent
+            Stale : entry/ Start integrity window
+            Stale : Data may be unreliable
+            Stale : Continue receiving but flag as stale
+
+            state IntegrityWindow {
+                IntegrityWindow : Tracking errors in 15s window
+                IntegrityWindow : Counting consecutive failures
+            }
+
+            state PendingReset {
+                PendingReset : 3+ errors in window
+                PendingReset : Auto-reset triggered
+            }
+
+            IntegrityWindow --> PendingReset : [3+ errors in 15s]
+        }
+
+        Fresh --> Stale : Integrity Error
+        note on link
+            Errors:
+            - Sequence gap
+            - Invalid position
+            - Out of order
+        end note
+
+        Stale --> Fresh : ManualReset()
+        Stale --> Fresh : [Quiet period > 15s]
+        PendingReset --> Fresh : AutoReset()
+    }
+
+    Unsubscribed --> Subscribed : RegisterSubscription(symbol)
+    Subscribed --> Unsubscribed : UnregisterSubscription(symbol)
+
+    note right of Subscribed
+        State tracked per symbol in
+        ConcurrentDictionary<string, SymbolOrderBookBuffer>
+    end note
+}
+
+@enduml

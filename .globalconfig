@@ -1,0 +1,12 @@
+is_global = true
+
+# ============================================================================
+# Meridian - Global Analyzer Configuration
+# ============================================================================
+# This file configures Roslyn analyzers and code style rules globally.
+# It works alongside Directory.Build.props which handles MSBuild warnings.
+#
+# NOTE: Diagnostic suppressions (IL2026, IL2070, CS1587) are handled in
+#       Directory.Build.props via NoWarn property for better MSBuild integration.
+#       See Directory.Build.props lines 10-13 for the canonical suppressions.
+# ============================================================================

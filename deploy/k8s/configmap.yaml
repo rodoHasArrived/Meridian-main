@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: meridian-config
+  namespace: meridian
+  labels:
+    app.kubernetes.io/name: meridian
+    app.kubernetes.io/component: config
+data:
+  # Timezone for the application
+  TZ: "UTC"
+
+  # Application settings (non-sensitive)
+  ASPNETCORE_URLS: "http://+:8080"
+  DOTNET_RUNNING_IN_CONTAINER: "true"
+  MDC_DATA_ROOT: "/app/data"
+
+  # Logging configuration
+  Logging__LogLevel__Default: "Information"
+  Logging__LogLevel__Microsoft: "Warning"

@@ -1,0 +1,49 @@
+name: 'Setup .NET with Cache'
+description: 'Sets up .NET SDK with NuGet package caching for consistent builds'
+author: 'Meridian'
+
+inputs:
+  dotnet-version:
+    description: '.NET SDK version pattern (e.g. 9.0.x). Uses pre-installed SDK when available.'
+    required: false
+    default: '9.0.x'
+  cache-suffix:
+    description: 'Optional suffix for cache key to isolate caches between workflows'
+    required: false
+    default: ''
+
+outputs:
+  cache-hit:
+    description: 'Whether the cache was hit'
+    value: ${{ steps.nuget-cache.outputs.cache-hit }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v5.1.0
+      with:
+        dotnet-version: ${{ inputs.dotnet-version }}
+
+    - name: Print SDK version
+      shell: bash
+      run: dotnet --version
+
+    - name: Cache NuGet packages
+      id: nuget-cache
+      uses: actions/cache@v5.0.3
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ inputs.cache-suffix && format('{0}-', inputs.cache-suffix) || '' }}${{ hashFiles('**/*.csproj', '**/*.fsproj', 'Directory.Build.props', 'Directory.Packages.props', 'global.json') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-${{ inputs.cache-suffix && format('{0}-', inputs.cache-suffix) || '' }}
+          ${{ runner.os }}-nuget-
+
+    - name: Configure NuGet
+      shell: bash
+      run: |
+        # Disable telemetry for faster operations
+        echo "DOTNET_CLI_TELEMETRY_OPTOUT=1" >> $GITHUB_ENV
+        echo "DOTNET_NOLOGO=true" >> $GITHUB_ENV
+        echo "DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1" >> $GITHUB_ENV
+        echo "DOTNET_GENERATE_ASPNET_CERTIFICATE=false" >> $GITHUB_ENV

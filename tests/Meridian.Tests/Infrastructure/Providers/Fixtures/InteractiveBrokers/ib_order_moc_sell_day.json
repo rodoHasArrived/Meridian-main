@@ -1,0 +1,9 @@
+{
+  "description": "IB market-on-close sell order for NVDA, day session.",
+  "orderId": 1005,
+  "symbol": "NVDA",
+  "orderType": "MOC",
+  "side": "SELL",
+  "quantity": 10,
+  "tif": "DAY"
+}

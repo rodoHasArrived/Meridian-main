@@ -1,0 +1,78 @@
+# Configuration for labeler - https://github.com/actions/labeler
+
+# Documentation changes
+documentation:
+  - changed-files:
+    - any-glob-to-any-file: 'docs/**/*'
+    - any-glob-to-any-file: '**/*.md'
+
+# Test files
+tests:
+  - changed-files:
+    - any-glob-to-any-file: 'tests/**/*'
+    - any-glob-to-any-file: '**/*Tests.cs'
+    - any-glob-to-any-file: '**/*Tests.fs'
+
+# CI/CD workflows
+ci/cd:
+  - changed-files:
+    - any-glob-to-any-file: '.github/workflows/**/*'
+    - any-glob-to-any-file: '.github/**/*.yml'
+
+# Benchmark and hot-path performance code
+performance:
+  - changed-files:
+    - any-glob-to-any-file: 'benchmarks/**/*'
+    - any-glob-to-any-file: 'src/Meridian.Application/Pipeline/**/*'
+    - any-glob-to-any-file: 'src/Meridian.Domain/Collectors/**/*'
+    - any-glob-to-any-file: 'src/Meridian.Core/Performance/**/*'
+    - any-glob-to-any-file: 'src/Meridian.Core/Serialization/**/*'
+
+# Event pipeline and data flow
+pipeline:
+  - changed-files:
+    - any-glob-to-any-file: 'src/Meridian.Application/Pipeline/**/*'
+    - any-glob-to-any-file: 'src/Meridian.Domain/Events/**/*'
+    - any-glob-to-any-file: 'src/Meridian.Application/Canonicalization/**/*'
+
+# Docker related
+docker:
+  - changed-files:
+    - any-glob-to-any-file: '**/Dockerfile*'
+    - any-glob-to-any-file: '**/docker-compose*.yml'
+    - any-glob-to-any-file: 'deploy/docker/**/*'
+
+# Provider implementations
+provider:
+  - changed-files:
+    - any-glob-to-any-file: '**/Providers/**/*'
+    - any-glob-to-any-file: '**/Infrastructure/Adapters/**/*'
+
+# Storage implementations
+storage:
+  - changed-files:
+    - any-glob-to-any-file: '**/Storage/**/*'
+
+# UI changes
+ui:
+  - changed-files:
+    - any-glob-to-any-file: 'src/Meridian.Ui/**/*'
+    - any-glob-to-any-file: 'src/Meridian.Wpf/**/*'
+
+# Configuration files
+configuration:
+  - changed-files:
+    - any-glob-to-any-file: 'config/**/*'
+    - any-glob-to-any-file: '**/appsettings*.json'
+
+# Microservices
+microservices:
+  - changed-files:
+    - any-glob-to-any-file: 'src/Microservices/**/*'
+
+# Dependencies
+dependencies:
+  - changed-files:
+    - any-glob-to-any-file: '**/*.csproj'
+    - any-glob-to-any-file: '**/*.fsproj'
+    - any-glob-to-any-file: 'Directory.Build.props'

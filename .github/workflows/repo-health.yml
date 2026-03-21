@@ -1,0 +1,107 @@
+name: Repo Health
+
+on:
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+  pull_request:
+    branches: ["main", "develop"]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: repo-health-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_VERSION: "9.0.x"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+
+jobs:
+  maintenance-route:
+    name: Maintenance Route
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET with cache
+        uses: ./.github/actions/setup-dotnet-cache
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run setup
+        run: bash scripts/ai/setup-ai-agent.sh
+
+      - name: Run routed maintenance
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            bash scripts/ai/route-maintenance.sh "origin/${{ github.base_ref }}"
+          else
+            bash scripts/ai/maintenance-full.sh
+          fi
+
+      - name: Upload maintenance artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maintenance-artifacts
+          path: |
+            .ai/maintenance-status.json
+            .ai/MAINTENANCE_STATUS.md
+            .ai/changed-files.txt
+            .ai/setup-status.json
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Publish summary
+        if: always()
+        run: |
+          echo "## Repo Health" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          if [[ -f .ai/MAINTENANCE_STATUS.md ]]; then
+            cat .ai/MAINTENANCE_STATUS.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "_No maintenance summary produced._" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Structured PR status
+        if: always() && github.event_name == 'pull_request'
+        run: |
+          echo "## Structured Checks" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          if [[ -f .ai/maintenance-status.json ]]; then
+            python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+            import json
+            from pathlib import Path
+            path = Path(".ai/maintenance-status.json")
+            data = json.loads(path.read_text())
+            print(f"Mode: `{data.get('mode', 'unknown')}`")
+            print("")
+            print("| Step | Status |")
+            print("|---|---|")
+            for step in data.get("steps", []):
+                status = step.get("status", "unknown")
+                icon = {"passed":"✅", "warning":"⚠️", "failed":"❌"}.get(status, "•")
+                print(f"| {step.get('name','?')} | {icon} {status} |")
+            PY
+          fi

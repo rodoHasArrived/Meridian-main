@@ -1,0 +1,118 @@
+using FluentAssertions;
+using Meridian.Application.Commands;
+using Meridian.Application.Composition.Startup;
+using Meridian.Application.Config;
+using Meridian.Application.Services;
+using Serilog;
+using Xunit;
+
+namespace Meridian.Tests.Application.Composition.Startup;
+
+[Collection("Sequential")]
+public sealed class SharedStartupBootstrapperTests : IDisposable
+{
+    private readonly string? _originalConfigPath = Environment.GetEnvironmentVariable("MDC_CONFIG_PATH");
+    private readonly ILogger _log = new LoggerConfiguration().CreateLogger();
+    private readonly List<string> _tempDirectories = [];
+
+    [Fact]
+    public void ResolveConfigPath_PrefersCliArgumentOverEnvironmentVariable()
+    {
+        Environment.SetEnvironmentVariable("MDC_CONFIG_PATH", "/env/config.json");
+        var cliArgs = CliArguments.Parse(["--config", "/cli/config.json"]);
+
+        var resolved = SharedStartupHelpers.ResolveConfigPath(cliArgs);
+
+        resolved.Should().Be("/cli/config.json");
+    }
+
+    [Fact]
+    public void ResolveConfigPath_UsesEnvironmentVariableWhenCliArgumentMissing()
+    {
+        Environment.SetEnvironmentVariable("MDC_CONFIG_PATH", "/env/config.json");
+        var cliArgs = CliArguments.Parse([]);
+
+        var resolved = SharedStartupHelpers.ResolveConfigPath(cliArgs);
+
+        resolved.Should().Be("/env/config.json");
+    }
+
+    [Fact]
+    public async Task RunAsync_WebModeCancellation_StopsDashboardServerGracefully()
+    {
+        var cfg = new AppConfig { DataRoot = CreateTempDirectory() };
+        var cliArgs = CliArguments.Parse([]);
+        var deployment = DeploymentContext.ForWeb("test.json", port: 4321);
+        using var cts = new CancellationTokenSource();
+        await using var configService = new ConfigurationService(_log);
+
+        FakeDashboardServer? server = null;
+        var orchestrator = new HostModeOrchestrator(
+            _log,
+            (configPath, port) =>
+            {
+                server = new FakeDashboardServer(configPath, port, cts);
+                return server;
+            });
+
+        var exitCode = await orchestrator.RunAsync(cliArgs, cfg, "test.json", configService, deployment, cts.Token);
+
+        exitCode.Should().Be(0);
+        server.Should().NotBeNull();
+        server!.ConfigPath.Should().Be("test.json");
+        server.Port.Should().Be(4321);
+        server.StartCallCount.Should().Be(1);
+        server.StopCallCount.Should().Be(1);
+        server.DisposeCallCount.Should().Be(1);
+        server.StopCancellationToken.CanBeCanceled.Should().BeFalse();
+    }
+
+    public void Dispose()
+    {
+        Environment.SetEnvironmentVariable("MDC_CONFIG_PATH", _originalConfigPath);
+        (_log as IDisposable)?.Dispose();
+
+        foreach (var path in _tempDirectories.Where(Directory.Exists))
+        {
+            Directory.Delete(path, recursive: true);
+        }
+    }
+
+    private string CreateTempDirectory()
+    {
+        var path = Path.Combine(Path.GetTempPath(), "meridian-startup-tests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(path);
+        _tempDirectories.Add(path);
+        return path;
+    }
+
+    private sealed class FakeDashboardServer(string configPath, int port, CancellationTokenSource cts) : IHostDashboardServer
+    {
+        public string ConfigPath { get; } = configPath;
+        public int Port { get; } = port;
+        public int StartCallCount { get; private set; }
+        public int StopCallCount { get; private set; }
+        public int DisposeCallCount { get; private set; }
+        public CancellationToken StopCancellationToken { get; private set; }
+
+        public Task StartAsync(CancellationToken ct = default)
+        {
+            StartCallCount++;
+            cts.Cancel();
+            return Task.CompletedTask;
+        }
+
+        public Task StopAsync(CancellationToken ct = default)
+        {
+            StopCallCount++;
+            StopCancellationToken = ct;
+            return Task.CompletedTask;
+        }
+
+        public ValueTask DisposeAsync()
+        {
+            DisposeCallCount++;
+            return ValueTask.CompletedTask;
+        }
+    }
+}

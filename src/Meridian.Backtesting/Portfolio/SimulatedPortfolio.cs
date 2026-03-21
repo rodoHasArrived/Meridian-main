@@ -1,0 +1,836 @@
+namespace Meridian.Backtesting.Portfolio;
+
+/// <summary>
+/// Tracks simulated cash, margin, positions, and a typed cash-flow ledger.
+/// All mutations are single-threaded (called from the engine replay loop).
+/// </summary>
+internal sealed class SimulatedPortfolio
+{
+    private readonly BacktestLedger? _ledger;
+    private readonly string _defaultBrokerageAccountId;
+    private readonly Dictionary<string, AccountState> _accounts;
+    private readonly Dictionary<string, decimal> _lastPrices = new(StringComparer.OrdinalIgnoreCase);
+    private readonly List<CashFlowEntry> _cashFlows = [];
+    private decimal _prevEquity;
+
+    public decimal Cash => _accounts.Values.Sum(static account => account.Cash);
+    public decimal MarginBalance => _accounts.Values.Sum(static account => account.MarginBalance);
+    public IReadOnlyDictionary<string, decimal> LastPrices => _lastPrices;
+
+    public SimulatedPortfolio(
+        decimal initialCash,
+        ICommissionModel commission,
+        double annualMarginRate,
+        double annualShortRebateRate,
+        BacktestLedger? ledger = null,
+        DateTimeOffset startTimestamp = default)
+        : this(
+            [FinancialAccount.CreateDefaultBrokerage(initialCash, annualMarginRate, annualShortRebateRate)],
+            BacktestDefaults.DefaultBrokerageAccountId,
+            commission,
+            ledger,
+            startTimestamp)
+    {
+    }
+
+    public SimulatedPortfolio(
+        IReadOnlyList<FinancialAccount> accounts,
+        string defaultBrokerageAccountId,
+        ICommissionModel commission,
+        BacktestLedger? ledger = null,
+        DateTimeOffset startTimestamp = default)
+    {
+        ArgumentNullException.ThrowIfNull(accounts);
+        ArgumentException.ThrowIfNullOrWhiteSpace(defaultBrokerageAccountId);
+
+        _ledger = ledger;
+        _defaultBrokerageAccountId = defaultBrokerageAccountId.Trim();
+        _accounts = accounts
+            .Select(account => account.Normalize())
+            .ToDictionary(account => account.AccountId, account => new AccountState(account), StringComparer.OrdinalIgnoreCase);
+
+        if (_accounts.Count == 0)
+            throw new ArgumentException("At least one financial account must be configured.", nameof(accounts));
+
+        if (!_accounts.TryGetValue(_defaultBrokerageAccountId, out var defaultAccount))
+            throw new ArgumentException($"Default brokerage account '{_defaultBrokerageAccountId}' was not configured.", nameof(defaultBrokerageAccountId));
+
+        if (defaultAccount.Account.Kind != FinancialAccountKind.Brokerage)
+            throw new ArgumentException($"Default account '{_defaultBrokerageAccountId}' must be a brokerage account.", nameof(defaultBrokerageAccountId));
+
+        _prevEquity = _accounts.Values.Sum(static account => account.Cash);
+        var openingTimestamp = startTimestamp == default ? DateTimeOffset.UtcNow : startTimestamp;
+
+        foreach (var account in _accounts.Values)
+        {
+            if (account.Cash <= 0 || _ledger is null)
+                continue;
+
+            _ledger.PostLines(
+                openingTimestamp,
+                $"Initial capital deposit – {account.Account.DisplayName}",
+                [
+                    (LedgerAccounts.CashAccount(account.Account.AccountId), account.Cash, 0m),
+                    (LedgerAccounts.CapitalAccountFor(account.Account.AccountId), 0m, account.Cash),
+                ],
+                BuildAccountMetadata(account, "capital"));
+        }
+    }
+
+    // ── Price updates ────────────────────────────────────────────────────────
+
+    public void UpdateLastPrice(string symbol, decimal price) => _lastPrices[symbol] = price;
+
+    // ── Order fill processing ────────────────────────────────────────────────
+
+    public void ProcessFill(FillEvent fill)
+    {
+        var account = ResolveBrokerageAccount(fill.AccountId);
+        var accountId = account.Account.AccountId;
+        var symbol = fill.Symbol;
+        var qty = fill.FilledQuantity;
+        var price = fill.FillPrice;
+        var commission = fill.Commission;
+
+        account.Positions.TryGetValue(symbol, out var existingQty);
+
+        if (qty < 0 && existingQty <= 0 && !account.Rules.AllowShortSelling)
+            throw new InvalidOperationException($"Account '{accountId}' does not permit short selling.");
+
+        var cashImpact = -(qty * price) - commission;
+        var projectedCash = account.Cash + cashImpact;
+        if (projectedCash < 0m && !account.Rules.AllowMargin)
+            throw new InvalidOperationException($"Account '{accountId}' does not permit margin borrowing.");
+
+        account.Cash = projectedCash;
+        account.MarginBalance = account.Cash < 0m ? account.Cash : 0m;
+
+        var newQty = existingQty + qty;
+        account.Positions[symbol] = newQty;
+
+        decimal? realised = null;
+        decimal costBasisRemoved = 0m;
+        decimal? shortRealised = null;
+        decimal shortOriginalProceeds = 0m;
+        long shortOpenQty = 0L;
+
+        if (qty > 0)
+        {
+            if (!account.Lots.TryGetValue(symbol, out var queue))
+            {
+                queue = new Queue<(long, decimal)>();
+                account.Lots[symbol] = queue;
+            }
+
+            var longBuyQty = existingQty >= 0 ? qty : Math.Max(qty + existingQty, 0L);
+            if (longBuyQty > 0)
+                queue.Enqueue((longBuyQty, price));
+
+            account.AvgCost[symbol] = ComputeAvgCost(account, symbol);
+        }
+        else if (qty < 0 && existingQty > 0)
+        {
+            var closeQty = Math.Min(-qty, existingQty);
+            realised = RealiseFifo(account, symbol, closeQty, price);
+            account.RealizedPnl[symbol] = account.RealizedPnl.GetValueOrDefault(symbol) + realised.Value;
+            costBasisRemoved = closeQty * price - realised.Value;
+        }
+
+        if (qty < 0)
+        {
+            shortOpenQty = existingQty <= 0
+                ? -qty
+                : Math.Max(-qty - existingQty, 0L);
+        }
+
+        if (shortOpenQty > 0)
+        {
+            if (!account.ShortLots.TryGetValue(symbol, out var shortQueue))
+            {
+                shortQueue = new Queue<(long, decimal)>();
+                account.ShortLots[symbol] = shortQueue;
+            }
+
+            shortQueue.Enqueue((shortOpenQty, price));
+        }
+
+        if (qty > 0 && existingQty < 0)
+        {
+            var coverQty = Math.Min(qty, -existingQty);
+            (shortRealised, shortOriginalProceeds) = RealiseShortFifo(account, symbol, coverQty, price);
+            account.RealizedPnl[symbol] = account.RealizedPnl.GetValueOrDefault(symbol) + shortRealised.Value;
+        }
+
+        if (newQty == 0)
+        {
+            account.Positions.Remove(symbol);
+            account.AvgCost.Remove(symbol);
+        }
+        else
+        {
+            account.AvgCost[symbol] = ComputeAvgCost(account, symbol);
+        }
+
+        _cashFlows.Add(new TradeCashFlow(fill.FilledAt, cashImpact, symbol, qty, price, accountId));
+
+        if (commission > 0)
+            _cashFlows.Add(new CommissionCashFlow(fill.FilledAt, -commission, symbol, fill.OrderId, accountId));
+
+        // Post double-entry journal entries to ledger
+        PostFillLedgerEntries(account, fill, qty, price, commission, existingQty, realised, costBasisRemoved, shortOpenQty, shortRealised, shortOriginalProceeds);
+        CleanupSymbolIfFlat(account, symbol);
+    }
+
+    public void ApplyAssetEvent(AssetEvent assetEvent)
+    {
+        ArgumentNullException.ThrowIfNull(assetEvent);
+
+        var account = ResolveBrokerageAccount(null);
+        var symbol = assetEvent.Symbol;
+        var targetSymbol = assetEvent.DestinationSymbol;
+        var existingQty = account.Positions.GetValueOrDefault(symbol);
+        var impactedUnits = existingQty;
+        decimal totalCashImpact = 0m;
+
+        if (assetEvent.HasPositionTransformation && existingQty != 0)
+        {
+            totalCashImpact += ApplyPositionTransformation(account, assetEvent, existingQty, targetSymbol);
+        }
+
+        if (assetEvent.CashPerShare != 0m && existingQty != 0)
+        {
+            totalCashImpact += ApplyPerShareCashAdjustment(account, assetEvent, existingQty);
+        }
+
+        if (account.Cash < 0)
+            account.MarginBalance = Math.Min(account.MarginBalance, account.Cash);
+
+        _cashFlows.Add(new AssetEventCashFlow(
+            assetEvent.EffectiveAt,
+            totalCashImpact,
+            symbol,
+            assetEvent.EventType,
+            impactedUnits,
+            assetEvent.CashPerShare,
+            assetEvent.TargetSymbol,
+            assetEvent.PositionFactor,
+            assetEvent.Description));
+    }
+
+    // ── Day-end accruals ─────────────────────────────────────────────────────
+
+    public void AccrueDailyInterest(DateOnly date)
+    {
+        var ts = new DateTimeOffset(date.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+
+        foreach (var account in _accounts.Values)
+        {
+            if (account.MarginBalance < 0)
+            {
+                var interest = account.MarginBalance * (decimal)(account.Rules.AnnualMarginRate / 252.0);
+                account.Cash += interest;
+                account.MarginBalance = account.Cash < 0m ? account.Cash : 0m;
+                _cashFlows.Add(new MarginInterestCashFlow(ts, interest, account.MarginBalance, account.Rules.AnnualMarginRate, account.Account.AccountId));
+
+                var charge = Math.Abs(interest);
+                _ledger?.PostLines(
+                    ts,
+                    $"Margin interest accrual – {account.Account.DisplayName} ({account.Rules.AnnualMarginRate:P2} p.a.)",
+                    [
+                        (LedgerAccounts.MarginInterestExpenseFor(account.Account.AccountId), charge, 0m),
+                        (LedgerAccounts.CashAccount(account.Account.AccountId), 0m, charge),
+                    ],
+                    BuildAccountMetadata(account, "margin_interest"));
+            }
+
+            if (account.Rules.AnnualCashInterestRate > 0 && account.Cash > 0)
+            {
+                var cashInterest = account.Cash * (decimal)(account.Rules.AnnualCashInterestRate / 252.0);
+                account.Cash += cashInterest;
+                _cashFlows.Add(new CashInterestCashFlow(ts, cashInterest, account.Rules.AnnualCashInterestRate, account.Account.AccountId));
+                _ledger?.PostLines(
+                    ts,
+                    $"Cash interest accrual – {account.Account.DisplayName} ({account.Rules.AnnualCashInterestRate:P2} p.a.)",
+                    [
+                        (LedgerAccounts.CashAccount(account.Account.AccountId), cashInterest, 0m),
+                        (LedgerAccounts.CashInterestIncomeFor(account.Account.AccountId), 0m, cashInterest),
+                    ],
+                    BuildAccountMetadata(account, "cash_interest"));
+            }
+
+            foreach (var (symbol, qty) in account.Positions)
+            {
+                if (qty >= 0)
+                    continue;
+
+                var lastPrice = _lastPrices.GetValueOrDefault(symbol, 0m);
+                if (lastPrice <= 0)
+                    continue;
+
+                var shortNotional = Math.Abs(qty) * lastPrice;
+                var rebate = shortNotional * (decimal)(account.Rules.AnnualShortRebateRate / 252.0);
+                account.Cash += rebate;
+                _cashFlows.Add(new ShortRebateCashFlow(ts, rebate, symbol, Math.Abs(qty), account.Rules.AnnualShortRebateRate, account.Account.AccountId));
+
+                _ledger?.PostLines(
+                    ts,
+                    $"Short rebate – {symbol} / {account.Account.DisplayName} ({account.Rules.AnnualShortRebateRate:P2} p.a.)",
+                    [
+                        (LedgerAccounts.CashAccount(account.Account.AccountId), rebate, 0m),
+                        (LedgerAccounts.ShortRebateIncomeFor(account.Account.AccountId), 0m, rebate),
+                    ],
+                    BuildAccountMetadata(account, "short_rebate", symbol));
+            }
+        }
+    }
+
+    // ── Snapshot ─────────────────────────────────────────────────────────────
+
+    public PortfolioSnapshot TakeSnapshot(DateTimeOffset timestamp, DateOnly date)
+    {
+        var positions = BuildAggregatePositions();
+        var accountSnapshots = BuildAccountSnapshots();
+        var longMv = accountSnapshots.Values.Sum(snapshot => snapshot.LongMarketValue);
+        var shortMv = accountSnapshots.Values.Sum(snapshot => snapshot.ShortMarketValue);
+        var equity = accountSnapshots.Values.Sum(snapshot => snapshot.Equity);
+        var dailyReturn = _prevEquity == 0 ? 0m : (equity - _prevEquity) / _prevEquity;
+        _prevEquity = equity;
+
+        var dayCashFlows = _cashFlows.ToList();
+        _cashFlows.Clear();
+
+        return new PortfolioSnapshot(timestamp, date, Cash, MarginBalance, longMv, shortMv, equity, dailyReturn, positions, accountSnapshots, dayCashFlows);
+    }
+
+    public decimal ComputeCurrentEquity() => BuildAccountSnapshots().Values.Sum(snapshot => snapshot.Equity);
+
+    public IReadOnlyDictionary<string, Position> GetCurrentPositions() => BuildAggregatePositions();
+
+    public IReadOnlyDictionary<string, FinancialAccountSnapshot> GetAccountSnapshots() => BuildAccountSnapshots();
+
+    // ── Private helpers ──────────────────────────────────────────────────────
+
+    private decimal ApplyPerShareCashAdjustment(AccountState account, AssetEvent assetEvent, long quantity)
+    {
+        var amount = quantity * assetEvent.CashPerShare;
+        account.Cash += amount;
+        PostAssetCashLedgerEntry(assetEvent, amount, quantity, assetEvent.Symbol, assetEvent.TargetSymbol);
+        return amount;
+    }
+
+    private decimal ApplyPositionTransformation(AccountState account, AssetEvent assetEvent, long existingQty, string targetSymbol)
+    {
+        var factor = assetEvent.PositionFactor;
+        if (factor == 0m)
+            throw new InvalidOperationException($"Asset event factor cannot be zero for {assetEvent.Symbol}.");
+
+        var transformedQtyDecimal = existingQty * factor;
+        var transformedQty = ConvertToWholeUnits(transformedQtyDecimal);
+        var fractionalUnits = transformedQtyDecimal - transformedQty;
+        var referencePrice = ResolveReferencePrice(account, assetEvent, existingQty, factor);
+        var cashInLieu = fractionalUnits * referencePrice;
+
+        var transformedLongLots = TransformLots(account.Lots.GetValueOrDefault(assetEvent.Symbol), factor);
+        var transformedShortLots = TransformLots(account.ShortLots.GetValueOrDefault(assetEvent.Symbol), factor);
+        var transformedRealized = account.RealizedPnl.GetValueOrDefault(assetEvent.Symbol);
+        var existingTargetRealized = account.RealizedPnl.GetValueOrDefault(targetSymbol);
+        var transformedPrice = referencePrice > 0m ? referencePrice : _lastPrices.GetValueOrDefault(assetEvent.Symbol, 0m);
+
+        RemoveSymbolState(account, assetEvent.Symbol);
+
+        if (transformedQty != 0)
+        {
+            account.Positions[targetSymbol] = account.Positions.GetValueOrDefault(targetSymbol) + transformedQty;
+            MergeLots(account.Lots, targetSymbol, transformedLongLots);
+            MergeLots(account.ShortLots, targetSymbol, transformedShortLots);
+            account.AvgCost[targetSymbol] = ComputeAvgCost(account, targetSymbol);
+            account.RealizedPnl[targetSymbol] = existingTargetRealized + transformedRealized;
+            if (transformedPrice > 0m)
+                _lastPrices[targetSymbol] = transformedPrice;
+        }
+
+        if (cashInLieu != 0m)
+        {
+            account.Cash += cashInLieu;
+            PostAssetCashLedgerEntry(assetEvent, cashInLieu, existingQty, assetEvent.Symbol, targetSymbol, suffix: "cash in lieu");
+        }
+
+        return cashInLieu;
+    }
+
+    private decimal ResolveReferencePrice(AccountState account, AssetEvent assetEvent, long existingQty, decimal factor)
+    {
+        if (assetEvent.ReferencePrice is { } explicitReference && explicitReference > 0m)
+            return explicitReference;
+
+        if (_lastPrices.TryGetValue(assetEvent.DestinationSymbol, out var destinationPrice) && destinationPrice > 0m)
+            return destinationPrice;
+
+        if (_lastPrices.TryGetValue(assetEvent.Symbol, out var sourcePrice) && sourcePrice > 0m)
+            return factor == 0m ? sourcePrice : sourcePrice / Math.Abs(factor);
+
+        var avgCost = account.AvgCost.GetValueOrDefault(assetEvent.Symbol, 0m);
+        if (avgCost > 0m)
+            return factor == 0m ? avgCost : avgCost / Math.Abs(factor);
+
+        return existingQty == 0 ? 0m : 1m;
+    }
+
+    private void PostAssetCashLedgerEntry(
+        AssetEvent assetEvent,
+        decimal amount,
+        long quantity,
+        string symbol,
+        string? relatedSymbol,
+        string? suffix = null)
+    {
+        if (_ledger is null || amount == 0m)
+            return;
+
+        var counterpartyAccount = SelectAssetEventAccount(assetEvent.EventType, amount);
+        var description = string.IsNullOrWhiteSpace(assetEvent.Description)
+            ? $"{assetEvent.EventType} – {symbol}" + (string.IsNullOrWhiteSpace(relatedSymbol) || relatedSymbol.Equals(symbol, StringComparison.OrdinalIgnoreCase)
+                ? string.Empty
+                : $" -> {relatedSymbol}") + (string.IsNullOrWhiteSpace(suffix) ? string.Empty : $" ({suffix})")
+            : assetEvent.Description + (string.IsNullOrWhiteSpace(suffix) ? string.Empty : $" ({suffix})");
+
+        if (amount > 0)
+        {
+            _ledger.PostLines(
+                assetEvent.EffectiveAt,
+                description,
+                [
+                    (LedgerAccounts.Cash, amount, 0m),
+                    (counterpartyAccount, 0m, amount),
+                ]);
+        }
+        else
+        {
+            var outflow = Math.Abs(amount);
+            _ledger.PostLines(
+                assetEvent.EffectiveAt,
+                description,
+                [
+                    (counterpartyAccount, outflow, 0m),
+                    (LedgerAccounts.Cash, 0m, outflow),
+                ]);
+        }
+    }
+
+    private static LedgerAccount SelectAssetEventAccount(AssetEventType eventType, decimal amount) => eventType switch
+    {
+        AssetEventType.Dividend => amount >= 0m ? LedgerAccounts.DividendIncome : LedgerAccounts.DividendExpense,
+        AssetEventType.Coupon => amount >= 0m ? LedgerAccounts.CouponIncome : LedgerAccounts.CouponExpense,
+        AssetEventType.Fee => LedgerAccounts.CorporateActionExpense,
+        _ => amount >= 0m ? LedgerAccounts.CorporateActionIncome : LedgerAccounts.CorporateActionExpense,
+    };
+
+    private static long ConvertToWholeUnits(decimal quantity) => quantity >= 0m
+        ? (long)Math.Floor(quantity)
+        : (long)Math.Ceiling(quantity);
+
+    private static Queue<(long qty, decimal price)> TransformLots(Queue<(long qty, decimal price)>? source, decimal factor)
+    {
+        var result = new Queue<(long qty, decimal price)>();
+        if (source is null || source.Count == 0)
+            return result;
+
+        foreach (var (qty, price) in source)
+        {
+            var transformedQty = ConvertToWholeUnits(qty * factor);
+            if (transformedQty == 0)
+                continue;
+
+            var transformedPrice = factor == 0m ? price : price / Math.Abs(factor);
+            result.Enqueue((Math.Abs(transformedQty), transformedPrice));
+        }
+
+        return result;
+    }
+
+    private static void MergeLots(
+        Dictionary<string, Queue<(long qty, decimal price)>> store,
+        string symbol,
+        Queue<(long qty, decimal price)> lots)
+    {
+        if (lots.Count == 0)
+            return;
+
+        if (!store.TryGetValue(symbol, out var existing))
+        {
+            store[symbol] = new Queue<(long qty, decimal price)>(lots);
+            return;
+        }
+
+        foreach (var lot in lots)
+            existing.Enqueue(lot);
+    }
+
+    private void RemoveSymbolState(AccountState account, string symbol)
+    {
+        account.Positions.Remove(symbol);
+        account.AvgCost.Remove(symbol);
+        account.Lots.Remove(symbol);
+        account.ShortLots.Remove(symbol);
+        _lastPrices.Remove(symbol);
+        account.RealizedPnl.Remove(symbol);
+    }
+
+    private void CleanupSymbolIfFlat(AccountState account, string symbol)
+    {
+        if (account.Positions.GetValueOrDefault(symbol) != 0)
+            return;
+
+        account.Positions.Remove(symbol);
+        account.AvgCost.Remove(symbol);
+
+        if (account.Lots.TryGetValue(symbol, out var lots) && lots.Count == 0)
+            account.Lots.Remove(symbol);
+        if (account.ShortLots.TryGetValue(symbol, out var shortLots) && shortLots.Count == 0)
+            account.ShortLots.Remove(symbol);
+    }
+
+    private void PostFillLedgerEntries(
+        AccountState account,
+        FillEvent fill,
+        long qty,
+        decimal price,
+        decimal commission,
+        long existingQty,
+        decimal? realised,
+        decimal costBasisRemoved,
+        long shortOpenQty,
+        decimal? shortRealised,
+        decimal shortOriginalProceeds)
+    {
+        if (_ledger is null)
+            return;
+
+        var ts = fill.FilledAt;
+        var symbol = fill.Symbol;
+        var accountId = account.Account.AccountId;
+        var securitiesAccount = LedgerAccounts.Securities(symbol, accountId);
+        var shortPayableAccount = LedgerAccounts.ShortSecuritiesPayable(symbol, accountId);
+        var cashAccount = LedgerAccounts.CashAccount(accountId);
+        var fillMetadata = BuildAccountMetadata(account, "fill", symbol, fill.OrderId, fill.FillId);
+
+        var longBuyQty = qty > 0
+            ? (existingQty >= 0 ? qty : Math.Max(qty + existingQty, 0L))
+            : 0L;
+
+        if (longBuyQty > 0)
+        {
+            var cost = longBuyQty * price;
+            _ledger.PostLines(
+                ts,
+                $"Buy {longBuyQty} {symbol} @ {price:F4} – {account.Account.DisplayName}",
+                [
+                    (securitiesAccount, cost, 0m),
+                    (cashAccount, 0m, cost),
+                ],
+                fillMetadata with { ActivityType = "buy" });
+        }
+        else if (qty < 0 && existingQty > 0 && realised.HasValue)
+        {
+            var closeQty = Math.Min(-qty, existingQty);
+            var proceeds = closeQty * price;
+            var gain = realised.Value;
+
+            List<(LedgerAccount account, decimal debit, decimal credit)> lines;
+
+            if (gain > 0)
+            {
+                lines =
+                [
+                    (cashAccount, proceeds, 0m),
+                    (securitiesAccount, 0m, costBasisRemoved),
+                    (LedgerAccounts.RealizedGainFor(accountId), 0m, gain),
+                ];
+            }
+            else if (gain < 0)
+            {
+                lines =
+                [
+                    (cashAccount, proceeds, 0m),
+                    (LedgerAccounts.RealizedLossFor(accountId), Math.Abs(gain), 0m),
+                    (securitiesAccount, 0m, costBasisRemoved),
+                ];
+            }
+            else
+            {
+                lines =
+                [
+                    (cashAccount, proceeds, 0m),
+                    (securitiesAccount, 0m, costBasisRemoved),
+                ];
+            }
+
+            _ledger.PostLines(ts, $"Sell {closeQty} {symbol} @ {price:F4} – {account.Account.DisplayName}", lines, fillMetadata with { ActivityType = "sell" });
+        }
+
+        if (shortOpenQty > 0)
+        {
+            var shortProceeds = shortOpenQty * price;
+            _ledger.PostLines(
+                ts,
+                $"Short sell {shortOpenQty} {symbol} @ {price:F4} – {account.Account.DisplayName}",
+                [
+                    (cashAccount, shortProceeds, 0m),
+                    (shortPayableAccount, 0m, shortProceeds),
+                ],
+                fillMetadata with { ActivityType = "short_sell" });
+        }
+
+        if (qty > 0 && existingQty < 0 && shortRealised.HasValue)
+        {
+            var coverQty = Math.Min(qty, -existingQty);
+            var coverCost = coverQty * price;
+            var gain = shortRealised.Value;
+
+            List<(LedgerAccount account, decimal debit, decimal credit)> lines;
+
+            if (gain > 0)
+            {
+                lines =
+                [
+                    (shortPayableAccount, shortOriginalProceeds, 0m),
+                    (cashAccount, 0m, coverCost),
+                    (LedgerAccounts.RealizedGainFor(accountId), 0m, gain),
+                ];
+            }
+            else if (gain < 0)
+            {
+                lines =
+                [
+                    (shortPayableAccount, shortOriginalProceeds, 0m),
+                    (LedgerAccounts.RealizedLossFor(accountId), Math.Abs(gain), 0m),
+                    (cashAccount, 0m, coverCost),
+                ];
+            }
+            else
+            {
+                lines =
+                [
+                    (shortPayableAccount, shortOriginalProceeds, 0m),
+                    (cashAccount, 0m, coverCost),
+                ];
+            }
+
+            _ledger.PostLines(ts, $"Cover short {coverQty} {symbol} @ {price:F4} – {account.Account.DisplayName}", lines, fillMetadata with { ActivityType = "cover_short" });
+        }
+
+        if (commission > 0)
+        {
+            _ledger.PostLines(
+                ts,
+                $"Commission – {symbol} order {fill.OrderId} – {account.Account.DisplayName}",
+                [
+                    (LedgerAccounts.CommissionExpenseFor(accountId), commission, 0m),
+                    (cashAccount, 0m, commission),
+                ],
+                fillMetadata with { ActivityType = "commission" });
+        }
+    }
+
+    private JournalEntryMetadata BuildAccountMetadata(
+        AccountState account,
+        string activityType,
+        string? symbol = null,
+        Guid? orderId = null,
+        Guid? fillId = null)
+        => new(
+            ActivityType: activityType,
+            Symbol: symbol,
+            OrderId: orderId,
+            FillId: fillId,
+            FinancialAccountId: account.Account.AccountId,
+            Institution: account.Account.Institution);
+
+    private AccountState ResolveBrokerageAccount(string? accountId)
+    {
+        var normalizedAccountId = string.IsNullOrWhiteSpace(accountId)
+            ? _defaultBrokerageAccountId
+            : accountId.Trim();
+
+        if (!_accounts.TryGetValue(normalizedAccountId, out var account))
+            throw new InvalidOperationException($"Account '{normalizedAccountId}' was not configured.");
+
+        if (account.Account.Kind != FinancialAccountKind.Brokerage)
+            throw new InvalidOperationException($"Account '{normalizedAccountId}' is not a brokerage account.");
+
+        return account;
+    }
+
+    private IReadOnlyDictionary<string, Position> BuildAggregatePositions()
+    {
+        var grouped = new Dictionary<string, List<Position>>(StringComparer.OrdinalIgnoreCase);
+        foreach (var account in _accounts.Values)
+        {
+            foreach (var position in BuildPositions(account).Values)
+            {
+                if (!grouped.TryGetValue(position.Symbol, out var list))
+                {
+                    list = [];
+                    grouped[position.Symbol] = list;
+                }
+
+                list.Add(position);
+            }
+        }
+
+        var result = new Dictionary<string, Position>(StringComparer.OrdinalIgnoreCase);
+        foreach (var (symbol, positions) in grouped)
+        {
+            var totalQty = positions.Sum(static position => position.Quantity);
+            if (totalQty == 0)
+                continue;
+
+            var totalCost = positions.Sum(position => Math.Abs(position.Quantity) * position.AverageCostBasis);
+            var avgCost = positions.Sum(position => Math.Abs(position.Quantity)) == 0
+                ? 0m
+                : totalCost / positions.Sum(position => Math.Abs(position.Quantity));
+            var unrealised = positions.Sum(static position => position.UnrealizedPnl);
+            var realised = positions.Sum(static position => position.RealizedPnl);
+            result[symbol] = new Position(symbol, totalQty, avgCost, unrealised, realised);
+        }
+
+        return result;
+    }
+
+    private IReadOnlyDictionary<string, FinancialAccountSnapshot> BuildAccountSnapshots()
+    {
+        return _accounts.Values.ToDictionary(
+            account => account.Account.AccountId,
+            account =>
+            {
+                var positions = BuildPositions(account);
+                var longMv = positions.Values.Where(position => position.Quantity > 0)
+                    .Sum(position => position.NotionalValue(_lastPrices.GetValueOrDefault(position.Symbol, position.AverageCostBasis)));
+                var shortMv = positions.Values.Where(position => position.Quantity < 0)
+                    .Sum(position => position.NotionalValue(_lastPrices.GetValueOrDefault(position.Symbol, position.AverageCostBasis)));
+                var equity = account.Cash + longMv + shortMv;
+                return new FinancialAccountSnapshot(
+                    account.Account.AccountId,
+                    account.Account.DisplayName,
+                    account.Account.Kind,
+                    account.Account.Institution,
+                    account.Cash,
+                    account.MarginBalance,
+                    longMv,
+                    shortMv,
+                    equity,
+                    positions,
+                    account.Rules);
+            },
+            StringComparer.OrdinalIgnoreCase);
+    }
+
+    private IReadOnlyDictionary<string, Position> BuildPositions(AccountState account)
+    {
+        var result = new Dictionary<string, Position>(StringComparer.OrdinalIgnoreCase);
+        foreach (var (symbol, qty) in account.Positions)
+        {
+            if (qty == 0)
+                continue;
+
+            var avgCost = account.AvgCost.GetValueOrDefault(symbol, 0m);
+            var lastPrice = _lastPrices.GetValueOrDefault(symbol, avgCost);
+            var unrealised = (lastPrice - avgCost) * qty;
+            var realised = account.RealizedPnl.GetValueOrDefault(symbol, 0m);
+            result[symbol] = new Position(symbol, qty, avgCost, unrealised, realised);
+        }
+
+        return result;
+    }
+
+    private static decimal ComputeAvgCost(AccountState account, string symbol)
+    {
+        if (!account.Lots.TryGetValue(symbol, out var queue) || queue.Count == 0)
+            return 0m;
+
+        var totalQty = 0L;
+        var totalCost = 0m;
+        foreach (var (q, p) in queue)
+        {
+            totalQty += q;
+            totalCost += q * p;
+        }
+
+        return totalQty == 0 ? 0m : totalCost / totalQty;
+    }
+
+    private static decimal RealiseFifo(AccountState account, string symbol, long closeQty, decimal sellPrice)
+    {
+        if (!account.Lots.TryGetValue(symbol, out var queue))
+            return 0m;
+
+        var realised = 0m;
+        var remaining = closeQty;
+        while (remaining > 0 && queue.Count > 0)
+        {
+            var (lotQty, lotPrice) = queue.Peek();
+            if (lotQty <= remaining)
+            {
+                realised += lotQty * (sellPrice - lotPrice);
+                remaining -= lotQty;
+                queue.Dequeue();
+            }
+            else
+            {
+                realised += remaining * (sellPrice - lotPrice);
+                queue = new Queue<(long, decimal)>(queue.Skip(1).Prepend((lotQty - remaining, lotPrice)));
+                account.Lots[symbol] = queue;
+                remaining = 0;
+            }
+        }
+
+        account.AvgCost[symbol] = ComputeAvgCost(account, symbol);
+        return realised;
+    }
+
+    private static (decimal realised, decimal shortSaleProceeds) RealiseShortFifo(AccountState account, string symbol, long coverQty, decimal coverPrice)
+    {
+        if (!account.ShortLots.TryGetValue(symbol, out var queue))
+            return (0m, coverQty * coverPrice);
+
+        var realised = 0m;
+        var shortSaleProceeds = 0m;
+        var remaining = coverQty;
+
+        while (remaining > 0 && queue.Count > 0)
+        {
+            var (lotQty, lotShortPrice) = queue.Peek();
+            var lotClose = Math.Min(lotQty, remaining);
+            var lotProceeds = lotClose * lotShortPrice;
+            realised += lotProceeds - lotClose * coverPrice;
+            shortSaleProceeds += lotProceeds;
+
+            if (lotQty <= remaining)
+            {
+                remaining -= lotQty;
+                queue.Dequeue();
+            }
+            else
+            {
+                queue = new Queue<(long, decimal)>(queue.Skip(1).Prepend((lotQty - remaining, lotShortPrice)));
+                account.ShortLots[symbol] = queue;
+                remaining = 0;
+            }
+        }
+
+        return (realised, shortSaleProceeds);
+    }
+
+    private sealed class AccountState(FinancialAccount account)
+    {
+        public FinancialAccount Account { get; } = account;
+        public FinancialAccountRules Rules { get; } = account.Rules ?? new FinancialAccountRules();
+        public decimal Cash { get; set; } = account.InitialCash;
+        public decimal MarginBalance { get; set; }
+        public Dictionary<string, Queue<(long qty, decimal price)>> Lots { get; } = new(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, Queue<(long qty, decimal price)>> ShortLots { get; } = new(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, long> Positions { get; } = new(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, decimal> AvgCost { get; } = new(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, decimal> RealizedPnl { get; } = new(StringComparer.OrdinalIgnoreCase);
+    }
+}

@@ -1,0 +1,2108 @@
+
+======================================================================
+  AI Architecture Guard — Meridian
+======================================================================
+  Files scanned : 3374
+  Total findings: 351  ([31;1m86 CRITICAL[0m  [33;1m265 WARNING[0m)
+
+  [36m■[0m DEP: Forbidden dependency directions
+    [31;1m[CRITICAL][0m [2mDEP-004[0m
+      /home/user/Meridian/src/Meridian.ProviderSdk/IMarketDataClient.cs:3
+      ProviderSdk references a non-Contracts project — violates ProviderSdk → Contracts-only rule.
+      [2m> using Meridian.Infrastructure.Adapters.Core;[0m
+      [32;1mFix: Remove the forbidden using directive.[0m
+
+    [31;1m[CRITICAL][0m [2mDEP-004[0m
+      /home/user/Meridian/src/Meridian.ProviderSdk/IMarketDataClient.cs:4
+      ProviderSdk references a non-Contracts project — violates ProviderSdk → Contracts-only rule.
+      [2m> using Meridian.Infrastructure.Contracts;[0m
+      [32;1mFix: Remove the forbidden using directive.[0m
+
+    [31;1m[CRITICAL][0m [2mDEP-004[0m
+      /home/user/Meridian/src/Meridian.ProviderSdk/IProviderMetadata.cs:1
+      ProviderSdk references a non-Contracts project — violates ProviderSdk → Contracts-only rule.
+      [2m> using Meridian.Infrastructure.Adapters.Core;[0m
+      [32;1mFix: Remove the forbidden using directive.[0m
+
+    [31;1m[CRITICAL][0m [2mDEP-004[0m
+      /home/user/Meridian/src/Meridian.ProviderSdk/IProviderMetadata.cs:2
+      ProviderSdk references a non-Contracts project — violates ProviderSdk → Contracts-only rule.
+      [2m> using Meridian.Infrastructure.Contracts;[0m
+      [32;1mFix: Remove the forbidden using directive.[0m
+
+    [31;1m[CRITICAL][0m [2mDEP-004[0m
+      /home/user/Meridian/src/Meridian.ProviderSdk/IOptionsChainProvider.cs:3
+      ProviderSdk references a non-Contracts project — violates ProviderSdk → Contracts-only rule.
+      [2m> using Meridian.Infrastructure.Adapters.Core;[0m
+      [32;1mFix: Remove the forbidden using directive.[0m
+
+    [31;1m[CRITICAL][0m [2mDEP-004[0m
+      /home/user/Meridian/src/Meridian.ProviderSdk/IOptionsChainProvider.cs:4
+      ProviderSdk references a non-Contracts project — violates ProviderSdk → Contracts-only rule.
+      [2m> using Meridian.Infrastructure.Contracts;[0m
+      [32;1mFix: Remove the forbidden using directive.[0m
+
+    [31;1m[CRITICAL][0m [2mDEP-004[0m
+      /home/user/Meridian/src/Meridian.ProviderSdk/DataSourceAttribute.cs:1
+      ProviderSdk references a non-Contracts project — violates ProviderSdk → Contracts-only rule.
+      [2m> using Meridian.Infrastructure.Contracts;[0m
+      [32;1mFix: Remove the forbidden using directive.[0m
+
+    [31;1m[CRITICAL][0m [2mDEP-004[0m
+      /home/user/Meridian/src/Meridian.ProviderSdk/IProviderModule.cs:1
+      ProviderSdk references a non-Contracts project — violates ProviderSdk → Contracts-only rule.
+      [2m> using Meridian.Infrastructure.DataSources;[0m
+      [32;1mFix: Remove the forbidden using directive.[0m
+
+  [36m■[0m ADR: Missing [ImplementsAdr] and [DataSource] attributes on providers
+    [33;1m[WARNING][0m [2mADR-005[0m
+      /home/user/Meridian/src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpSymbolSearchProvider.cs:36
+      Provider class is missing [DataSource("name")] attribute. Required for DataSourceRegistry discovery (ADR-005).
+      [32;1mFix: Add [DataSource("provider-name")] above the class.[0m
+
+    [33;1m[WARNING][0m [2mADR-005[0m
+      /home/user/Meridian/src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpHistoricalDataProvider.cs:39
+      Provider class is missing [DataSource("name")] attribute. Required for DataSourceRegistry discovery (ADR-005).
+      [32;1mFix: Add [DataSource("provider-name")] above the class.[0m
+
+    [33;1m[WARNING][0m [2mADR-005[0m
+      /home/user/Meridian/src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs:23
+      Provider class is missing [DataSource("name")] attribute. Required for DataSourceRegistry discovery (ADR-005).
+      [32;1mFix: Add [DataSource("provider-name")] above the class.[0m
+
+    [33;1m[WARNING][0m [2mADR-005[0m
+      /home/user/Meridian/src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:30
+      Provider class is missing [DataSource("name")] attribute. Required for DataSourceRegistry discovery (ADR-005).
+      [32;1mFix: Add [DataSource("provider-name")] above the class.[0m
+
+    [31;1m[CRITICAL][0m [2mADR-001[0m
+      /home/user/Meridian/src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:18
+      Provider class implements IMarketDataClient / IHistoricalDataProvider but is missing [ImplementsAdr] attribute(s). Add [ImplementsAdr("ADR-001", "...")] and [ImplementsAdr("ADR-004", "...")].
+      [32;1mFix: Add [ImplementsAdr("ADR-001", "Core provider contract")] above the class.[0m
+
+    [33;1m[WARNING][0m [2mADR-005[0m
+      /home/user/Meridian/src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:18
+      Provider class is missing [DataSource("name")] attribute. Required for DataSourceRegistry discovery (ADR-005).
+      [32;1mFix: Add [DataSource("provider-name")] above the class.[0m
+
+    [33;1m[WARNING][0m [2mADR-005[0m
+      /home/user/Meridian/src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs:1
+      Provider class is missing [DataSource("name")] attribute. Required for DataSourceRegistry discovery (ADR-005).
+      [32;1mFix: Add [DataSource("provider-name")] above the class.[0m
+
+    [33;1m[WARNING][0m [2mADR-005[0m
+      /home/user/Meridian/src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs:34
+      Provider class is missing [DataSource("name")] attribute. Required for DataSourceRegistry discovery (ADR-005).
+      [32;1mFix: Add [DataSource("provider-name")] above the class.[0m
+
+    [31;1m[CRITICAL][0m [2mADR-001[0m
+      /home/user/Meridian/src/Meridian.Infrastructure/Adapters/Core/ISymbolSearchProvider.cs:83
+      Provider class implements IMarketDataClient / IHistoricalDataProvider but is missing [ImplementsAdr] attribute(s). Add [ImplementsAdr("ADR-001", "...")] and [ImplementsAdr("ADR-004", "...")].
+      [32;1mFix: Add [ImplementsAdr("ADR-001", "Core provider contract")] above the class.[0m
+
+    [33;1m[WARNING][0m [2mADR-005[0m
+      /home/user/Meridian/src/Meridian.Infrastructure/Adapters/Core/ISymbolSearchProvider.cs:83
+      Provider class is missing [DataSource("name")] attribute. Required for DataSourceRegistry discovery (ADR-005).
+      [32;1mFix: Add [DataSource("provider-name")] above the class.[0m
+
+    [33;1m[WARNING][0m [2mADR-005[0m
+      /home/user/Meridian/src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:20
+      Provider class is missing [DataSource("name")] attribute. Required for DataSourceRegistry discovery (ADR-005).
+      [32;1mFix: Add [DataSource("provider-name")] above the class.[0m
+
+    [33;1m[WARNING][0m [2mADR-005[0m
+      /home/user/Meridian/src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:37
+      Provider class is missing [DataSource("name")] attribute. Required for DataSourceRegistry discovery (ADR-005).
+      [32;1mFix: Add [DataSource("provider-name")] above the class.[0m
+
+  [36m■[0m CHAN: ADR-013: Raw Channel.Create* bypasses EventPipelinePolicy
+    [31;1m[CRITICAL][0m [2mCHAN-001[0m
+      /home/user/Meridian/src/Meridian.Execution/OrderManagementSystem.cs:31
+      Raw Channel.CreateBounded/CreateUnbounded call. Use EventPipelinePolicy.*.CreateChannel<T>() instead (ADR-013).
+      [2m> _executionChannel = Channel.CreateBounded<ExecutionReport>([0m
+      [32;1mFix: Replace with EventPipelinePolicy.Default.CreateChannel<T>().[0m
+
+    [31;1m[CRITICAL][0m [2mCHAN-001[0m
+      /home/user/Meridian/src/Meridian.Core/Pipeline/EventPipelinePolicy.cs:111
+      Raw Channel.CreateBounded/CreateUnbounded call. Use EventPipelinePolicy.*.CreateChannel<T>() instead (ADR-013).
+      [2m> return Channel.CreateBounded<T>(ToBoundedOptions(singleReader, singleWriter));[0m
+      [32;1mFix: Replace with EventPipelinePolicy.Default.CreateChannel<T>().[0m
+
+  [36m■[0m SINK: ADR-007: Direct FileStream writes bypass AtomicFileWriter
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Packaging/PortableDataPackager.Creation.cs:353
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> Stream stream = File.OpenRead(path);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Packaging/PortableDataPackager.Creation.cs:409
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await using var packageStream = File.Create(packagePath);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Packaging/PortableDataPackager.Creation.cs:467
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await using var sourceStream = File.OpenRead(sourcePath);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Packaging/PortableDataPackager.Creation.cs:574
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await using var fileStream = File.OpenRead(file.FullPath);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Packaging/PortableDataPackager.Creation.cs:593
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> using var stream = new FileStream(packagePath, FileMode.Open, FileAccess.ReadWrite);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Packaging/PortableDataPackager.Validation.cs:21
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> using var stream = File.OpenRead(packagePath);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Packaging/PortableDataPackager.Validation.cs:33
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await using var fileStream = File.OpenRead(packagePath);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Packaging/PortableDataPackager.Validation.cs:62
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> using var stream = File.OpenRead(packagePath);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Packaging/PortableDataPackager.Validation.cs:92
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> using var stream = File.OpenRead(packagePath);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Packaging/PortableDataPackager.Validation.cs:180
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await using var stream = File.OpenRead(path);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Store/JsonlMarketDataStore.cs:76
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await using var fs = File.OpenRead(file);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Archival/SchemaVersionManager.cs:253
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await File.WriteAllTextAsync(outputPath, json, ct);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Archival/SchemaVersionManager.cs:288
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await File.WriteAllTextAsync(registryPath, registryJson, ct);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Archival/WriteAheadLog.cs:370
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await using var input = File.OpenRead(walFile);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Archival/WriteAheadLog.cs:371
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await using var output = File.Create(archivePath);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Archival/WriteAheadLog.cs:393
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> _currentWalFile = new FileStream([0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Archival/WriteAheadLog.cs:520
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await using var stream = new FileStream([0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Archival/WriteAheadLog.cs:718
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await using var stream = new FileStream([0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Archival/WriteAheadLog.cs:779
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await using var outStream = new FileStream([0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Services/DataQualityService.cs:437
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await using var stream = File.OpenRead(path);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Services/FileMaintenanceService.cs:448
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await using var stream = File.OpenRead(filePath);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Services/FileMaintenanceService.cs:487
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await File.WriteAllLinesAsync(filePath, validLines, ct);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Services/FileMaintenanceService.cs:513
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await using var input = File.OpenRead(filePath);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Services/FileMaintenanceService.cs:514
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await using var output = File.Create(outputPath);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Services/FileMaintenanceService.cs:530
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await using var output = File.Create(mergedPath);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Services/StorageCatalogService.cs:648
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await File.WriteAllTextAsync(manifestPath, json, ct);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Services/StorageCatalogService.cs:661
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await File.WriteAllTextAsync(outputPath, json, ct);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Services/StorageCatalogService.cs:849
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await using var fileStream = File.OpenRead(filePath);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Services/StorageCatalogService.cs:921
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await using var stream = File.OpenRead(filePath);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Services/StorageCatalogService.cs:993
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await File.WriteAllTextAsync(path, json, ct);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Services/MetadataTagService.cs:201
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await File.WriteAllTextAsync(_metadataStorePath, json, ct);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Services/TierMigrationService.cs:303
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await using var sourceStream = File.OpenRead(source);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Services/TierMigrationService.cs:304
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await using var targetStream = File.Create(target);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Services/TierMigrationService.cs:321
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await using var sourceStream = File.OpenRead(source);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Services/DataLineageService.cs:157
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await File.WriteAllTextAsync(_lineageStorePath, json, ct);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Services/ParquetConversionService.cs:178
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> Stream stream = File.OpenRead(path);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Services/ParquetConversionService.cs:275
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await using var fileStream = File.Create(path);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Services/SymbolRegistryService.cs:342
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await File.WriteAllTextAsync(_registryPath, json, ct);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Services/StorageChecksumService.cs:33
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, FileOptions.Asy[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Services/FilePermissionsService.cs:265
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> File.WriteAllText(testFile, "test");[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Services/SourceRegistry.cs:219
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await File.WriteAllTextAsync(_persistencePath, json);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Replay/JsonlReplayer.cs:42
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await using var fs = File.OpenRead(file);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs:213
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> using var mmf = MemoryMappedFile.CreateFromFile(file, FileMode.Open, null, 0, MemoryMappedFileAccess.Read);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs:316
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await using var fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read, 64 * 1024, useAsync: true);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:273
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await File.WriteAllTextAsync(tempPath, json, ct);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:523
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await File.WriteAllTextAsync(tempPath, json, ct);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Export/ExportValidator.cs:155
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> File.WriteAllText(probe, string.Empty);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Export/AnalysisExportService.Formats.cs:135
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> File.OpenRead(sourceFile.Path), CompressionMode.Decompress);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Export/AnalysisExportService.Formats.cs:136
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await using var output = File.Create(outputPath);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Export/AnalysisExportService.Formats.cs:187
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await using var zipStream = File.Create(zipPath);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Export/AnalysisExportService.Formats.cs:233
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await File.WriteAllTextAsync(ddlPath, GenerateDdl(request.EventTypes), ct);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Export/AnalysisExportService.Formats.Arrow.cs:103
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await using var stream = File.Create(path);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Export/AnalysisExportService.Formats.Arrow.cs:120
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await using var stream = File.Create(path);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Export/AnalysisQualityReport.cs:72
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await File.WriteAllTextAsync(mdPath, GenerateMarkdownReport(report), ct);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Export/AnalysisQualityReport.cs:80
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await File.WriteAllTextAsync(jsonPath, json, ct);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Export/AnalysisQualityReport.cs:185
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> Stream stream = File.OpenRead(path);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Export/AnalysisQualityReport.cs:643
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await File.WriteAllTextAsync(path, sb.ToString(), ct);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Export/AnalysisQualityReport.cs:662
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await File.WriteAllTextAsync(path, sb.ToString(), ct);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Export/AnalysisQualityReport.cs:682
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await File.WriteAllTextAsync(path, sb.ToString(), ct);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Export/AnalysisExportService.Formats.Parquet.cs:107
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await using var fileStream = File.Create(path);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Export/AnalysisExportService.Formats.Parquet.cs:132
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await using var fileStream = File.Create(path);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Export/AnalysisExportService.Formats.Xlsx.cs:52
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await using var zipStream = new FileStream(outputPath, FileMode.Create);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Export/ExportVerificationReport.cs:164
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await using var stream = File.OpenRead(path);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Export/AnalysisExportService.IO.cs:64
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await File.WriteAllTextAsync(dictPath, sb.ToString(), ct);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Export/AnalysisExportService.IO.cs:99
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await File.WriteAllTextAsync(scriptPath, script, ct);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Export/AnalysisExportService.IO.cs:351
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await File.WriteAllTextAsync(manifestPath, json, ct);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Export/AnalysisExportService.IO.cs:360
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> Stream stream = File.OpenRead(path);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Export/AnalysisExportService.IO.cs:408
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> await using var stream = File.OpenRead(path);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Sinks/ParquetStorageSink.cs:250
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> using var groupWriter = await ParquetWriter.CreateAsync(TradeSchema, File.Create(path));[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Sinks/ParquetStorageSink.cs:303
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> using var groupWriter = await ParquetWriter.CreateAsync(QuoteSchema, File.Create(path));[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Sinks/ParquetStorageSink.cs:328
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> using var groupWriter = await ParquetWriter.CreateAsync(L2Schema, File.Create(path));[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Sinks/ParquetStorageSink.cs:398
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> using var groupWriter = await ParquetWriter.CreateAsync(BarSchema, File.Create(path));[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Sinks/ParquetStorageSink.cs:431
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> using var groupWriter = await ParquetWriter.CreateAsync(genericSchema, File.Create(path));[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+    [31;1m[CRITICAL][0m [2mSINK-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Sinks/JsonlStorageSink.cs:413
+      Direct FileStream/File.Write* in storage path. All sink writes must go through AtomicFileWriter (ADR-007). Direct writes produce partial JSONL records on crash.
+      [2m> Stream fs = new FileStream(path, FileMode.Append, FileAccess.Write, FileShare.Read, 1 << 16, useAsync: true);[0m
+      [32;1mFix: Route the write through AtomicFileWriter.WriteAsync().[0m
+
+  [36m■[0m JSON: ADR-014: JsonSerializer must use source-generated context
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.McpServer/Tools/SymbolTools.cs:44
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Serialize(new[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.McpServer/Tools/SymbolTools.cs:81
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Serialize(new { error = "Symbol is required." }, JsonOpts);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.McpServer/Tools/SymbolTools.cs:89
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Serialize(new { message = $"Symbol '{symbol}' is already configured." }, JsonOpts);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.McpServer/Tools/SymbolTools.cs:102
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Serialize(new[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.McpServer/Tools/SymbolTools.cs:123
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Serialize(new { error = "Symbol is required." }, JsonOpts);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.McpServer/Tools/SymbolTools.cs:131
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Serialize(new { message = $"Symbol '{symbol}' was not found in configuration." }, JsonOpts);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.McpServer/Tools/SymbolTools.cs:143
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Serialize(new[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.McpServer/Tools/ProviderTools.cs:43
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Serialize(providers, JsonOpts);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.McpServer/Tools/ProviderTools.cs:58
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Serialize(new { message = "No backfill has been run yet." }, JsonOpts);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.McpServer/Tools/ProviderTools.cs:60
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Serialize(new[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.McpServer/Tools/BackfillTools.cs:58
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Serialize(new { error = "At least one symbol is required." }, JsonOpts);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.McpServer/Tools/BackfillTools.cs:64
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Serialize(new { error = $"Invalid 'from' date: '{from}'. Use yyyy-MM-dd." }, JsonOpts);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.McpServer/Tools/BackfillTools.cs:69
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Serialize(new { error = $"Invalid 'to' date: '{to}'. Use yyyy-MM-dd." }, JsonOpts);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.McpServer/Tools/BackfillTools.cs:82
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Serialize(new { error = "Backfill was cancelled." }, JsonOpts);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.McpServer/Tools/BackfillTools.cs:87
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Serialize(new { error = ex.Message }, JsonOpts);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.McpServer/Tools/BackfillTools.cs:90
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Serialize(new[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.McpServer/Tools/StorageTools.cs:49
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Serialize(stats, JsonOpts);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.McpServer/Tools/StorageTools.cs:78
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Serialize(new { count = symbols.Length, symbols }, JsonOpts);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.McpServer/Tools/StorageTools.cs:103
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Serialize(new { error = "Symbol is required." }, JsonOpts);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.McpServer/Tools/StorageTools.cs:111
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Serialize(new { error = $"Invalid 'from' date: '{from}'. Use yyyy-MM-dd." }, JsonOpts);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.McpServer/Tools/StorageTools.cs:116
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Serialize(new { error = $"Invalid 'to' date: '{to}'. Use yyyy-MM-dd." }, JsonOpts);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.McpServer/Tools/StorageTools.cs:134
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Serialize(new { error = "Query was cancelled." }, JsonOpts);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.McpServer/Tools/StorageTools.cs:139
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Serialize(new { error = ex.Message }, JsonOpts);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.McpServer/Tools/StorageTools.cs:152
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Serialize(new[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.McpServer/Resources/MarketDataResources.cs:48
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Serialize(new[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.McpServer/Resources/MarketDataResources.cs:83
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Serialize(new[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.McpServer/Resources/MarketDataResources.cs:104
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Serialize(new[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:238
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var data = JsonSerializer.Deserialize<OpenFigiFilterResponse>(json);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:319
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var data = JsonSerializer.Deserialize<List<OpenFigiMappingResponse>>(json);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs:113
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> response = JsonSerializer.Deserialize<TwelveDataResponse>(json);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:422
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Deserialize<T>(json);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs:367
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Deserialize<T>(json);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:515
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var lines = dateBars.Select(b => JsonSerializer.Serialize(b));[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs:67
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var job = JsonSerializer.Deserialize<BackfillJob>(json);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs:442
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(job, new JsonSerializerOptions[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs:590
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var bar = System.Text.Json.JsonSerializer.Deserialize<HistoricalBar>(line);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Infrastructure/Adapters/_Template/TemplateMarketDataClient.cs:157
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> //   var auth = JsonSerializer.Serialize(new { action = "auth", key = _options.ApiKey });[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs:144
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var data = JsonSerializer.Deserialize<PolygonTickersResponse>(json);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs:198
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var data = JsonSerializer.Deserialize<PolygonTickerDetailsResponse>(json);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:232
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var authMessage = JsonSerializer.Serialize(new { action = "auth", @params = _options.ApiKey });[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:302
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> JsonSerializer.Serialize(new { action = "subscribe", @params = channels }), ct)[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:311
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> JsonSerializer.Serialize(new { action = "subscribe", @params = channels }), ct)[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:321
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> JsonSerializer.Serialize(new { action = "subscribe", @params = channels }), ct)[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:563
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> JsonSerializer.Serialize(new { action = "subscribe", @params = channel }),[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:578
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> JsonSerializer.Serialize(new { action = "unsubscribe", @params = channel }),[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:466
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var data = JsonSerializer.Deserialize<NYSEHistoricalBarsResponse>(json);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:533
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var data = JsonSerializer.Deserialize<NYSEIntradayBarsResponse>(json);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:583
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var data = JsonSerializer.Deserialize<NYSEDividendsResponse>(json);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:630
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var data = JsonSerializer.Deserialize<NYSESplitsResponse>(json);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:691
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var tokenResponse = JsonSerializer.Deserialize<NYSETokenResponse>(json);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:841
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var message = JsonSerializer.Serialize(new[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:866
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var message = JsonSerializer.Serialize(new { action = "unsubscribe_all" });[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs:140
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var authMsg = JsonSerializer.Serialize(new { action = "auth", key = _opt.KeyId, secret = _opt.SecretKey });[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs:163
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var authMsg = JsonSerializer.Serialize(new { action = "auth", key = _opt.KeyId, secret = _opt.SecretKey });[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs:276
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(msg, s_serializerOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Mcp/Tools/ConventionTools.cs:23
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> sb.AppendLine("| JSON serialization | `JsonSerializer.Serialize(obj, MyContext.Default.MyType)` | `JsonSerializer.Serial[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:91
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var schedule = JsonSerializer.Deserialize<BackfillSchedule>(json, _jsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:395
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(schedule, _jsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Config/ConfigWatcher.cs:112
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var cfg = JsonSerializer.Deserialize<AppConfig>(json, AppConfigJsonOptions.Read);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Config/ConfigValidatorCli.cs:51
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> config = JsonSerializer.Deserialize<AppConfig>(json, AppConfigJsonOptions.Read);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Config/ConfigValidatorCli.cs:138
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var config = JsonSerializer.Deserialize<AppConfig>(json, AppConfigJsonOptions.Read);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Config/Credentials/CredentialTestingService.cs:470
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var statuses = JsonSerializer.Deserialize<Dictionary<string, StoredCredentialStatus>>(json);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Config/Credentials/CredentialTestingService.cs:497
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(statuses, new JsonSerializerOptions { WriteIndented = true });[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:275
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var tokenResponse = JsonSerializer.Deserialize<OAuthTokenResponse>(responseContent);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:335
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var tokens = JsonSerializer.Deserialize<Dictionary<string, OAuthToken>>(json);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:362
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(tokens, new JsonSerializerOptions { WriteIndented = true });[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Pipeline/IngestionJobService.cs:73
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var job = JsonSerializer.Deserialize<IngestionJob>(json, _jsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Pipeline/IngestionJobService.cs:367
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(job, _jsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Pipeline/SchemaUpcasterRegistry.cs:138
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> currentJson = System.Text.Json.JsonSerializer.Serialize([0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Services/ConfigurationWizard.cs:708
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(config, JsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Services/ConfigurationWizard.cs:748
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(config, JsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Services/SampleDataGenerator.cs:143
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(evt, jsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Services/DiagnosticBundleService.cs:95
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var manifestJson = JsonSerializer.Serialize(manifest, new JsonSerializerOptions[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Services/DiagnosticBundleService.cs:198
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(sanitized, new JsonSerializerOptions[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Services/DiagnosticBundleService.cs:236
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(metrics, new JsonSerializerOptions[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Services/ConfigTemplateGenerator.cs:45
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> Json = JsonSerializer.Serialize(config, JsonOptions),[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Services/ConfigTemplateGenerator.cs:91
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> Json = JsonSerializer.Serialize(config, JsonOptions),[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Services/ConfigTemplateGenerator.cs:131
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> Json = JsonSerializer.Serialize(config, JsonOptions),[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Services/ConfigTemplateGenerator.cs:185
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> Json = JsonSerializer.Serialize(config, JsonOptions),[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Services/ConfigTemplateGenerator.cs:241
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> Json = JsonSerializer.Serialize(config, JsonOptions),[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Services/ConfigTemplateGenerator.cs:290
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> Json = JsonSerializer.Serialize(config, JsonOptions),[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Services/ConfigTemplateGenerator.cs:331
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> Json = JsonSerializer.Serialize(config, JsonOptions),[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Services/ConfigTemplateGenerator.cs:388
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> Json = JsonSerializer.Serialize(config, JsonOptions),[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Services/ConfigTemplateGenerator.cs:402
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var config = JsonSerializer.Deserialize<AppConfig>(json, new JsonSerializerOptions[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Services/DailySummaryWebhook.cs:364
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Serialize(payload);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Services/DailySummaryWebhook.cs:403
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Serialize(payload);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Services/DailySummaryWebhook.cs:442
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Serialize(payload);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Services/DailySummaryWebhook.cs:447
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Serialize(summary, new JsonSerializerOptions { WriteIndented = true });[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Services/DailySummaryWebhook.cs:454
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> WebhookType.Slack => JsonSerializer.Serialize(new { text = title != null ? $"*{title}*\n{message}" : message }),[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Services/DailySummaryWebhook.cs:455
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> WebhookType.Discord => JsonSerializer.Serialize(new { content = title != null ? $"**{title}**\n{message}" : message }),[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Services/DailySummaryWebhook.cs:456
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> WebhookType.Teams => JsonSerializer.Serialize(new { @type = "MessageCard", summary = title ?? "Notification", text = mes[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Services/DailySummaryWebhook.cs:457
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> _ => JsonSerializer.Serialize(new { title, message, timestamp = DateTimeOffset.UtcNow })[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Commands/ConfigPresetCommand.cs:112
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(config, JsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Commands/SymbolCommands.cs:240
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> content = JsonSerializer.Serialize(symbolNames, new JsonSerializerOptions { WriteIndented = true });[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Commands/SymbolCommands.cs:282
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var symbols = JsonSerializer.Deserialize<string[]>(content);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Http/ConfigStore.cs:74
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Deserialize<AppConfig>(json, AppConfigJsonOptions.Read) ?? new AppConfig();[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Http/ConfigStore.cs:93
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(cfg, AppConfigJsonOptions.Write);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Http/ConfigStore.cs:169
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Deserialize<ProviderMetricsStatus>(json, new JsonSerializerOptions[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Monitoring/ProviderLatencyService.cs:169
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Serialize(summary, new JsonSerializerOptions[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Monitoring/StatusHttpServer.cs:223
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(response, s_jsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Monitoring/StatusHttpServer.cs:282
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(payload, s_jsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Monitoring/StatusHttpServer.cs:294
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(providers, s_jsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Monitoring/StatusHttpServer.cs:313
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(status, s_jsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Monitoring/StatusHttpServer.cs:368
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(response, s_jsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Monitoring/StatusHttpServer.cs:385
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(new { error = error ?? "Health report unavailable" }, s_jsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Monitoring/StatusHttpServer.cs:400
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var reportJson = JsonSerializer.Serialize(report, s_jsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Monitoring/StatusHttpServer.cs:461
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var payload = JsonSerializer.Serialize(new { error = "Unauthorized" });[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Monitoring/StatusHttpServer.cs:474
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(response, s_jsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Monitoring/StatusHttpServer.cs:490
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(new { error, providers = Array.Empty<object>() }, s_jsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Monitoring/StatusHttpServer.cs:495
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var responseJson = JsonSerializer.Serialize(summary, s_jsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Monitoring/StatusHttpServer.cs:511
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(new { error, connections = Array.Empty<object>() }, s_jsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Monitoring/StatusHttpServer.cs:516
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var responseJson = JsonSerializer.Serialize(snapshot, s_jsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Monitoring/DataQuality/DataQualityReportGenerator.cs:481
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Serialize(report, s_jsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Monitoring/DataQuality/DataQualityReportGenerator.cs:593
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Serialize(report, s_jsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Backfill/BackfillStatusStore.cs:29
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(result, JsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Backfill/BackfillStatusStore.cs:44
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Deserialize<BackfillResult>(json, JsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Subscriptions/Services/TemplateService.cs:182
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var templates = JsonSerializer.Deserialize<List<SymbolTemplate>>(json, new JsonSerializerOptions[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Subscriptions/Services/TemplateService.cs:196
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(templates, new JsonSerializerOptions[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Subscriptions/Services/WatchlistService.cs:293
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var imported = JsonSerializer.Deserialize<Watchlist>(json, new JsonSerializerOptions[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Subscriptions/Services/WatchlistService.cs:327
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Serialize(watchlist, new JsonSerializerOptions[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Subscriptions/Services/WatchlistService.cs:362
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var watchlists = JsonSerializer.Deserialize<List<Watchlist>>(json, new JsonSerializerOptions[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Subscriptions/Services/WatchlistService.cs:376
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(watchlists, new JsonSerializerOptions[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Subscriptions/Services/SchedulingService.cs:399
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var schedules = JsonSerializer.Deserialize<List<SubscriptionSchedule>>(json, new JsonSerializerOptions[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Subscriptions/Services/SchedulingService.cs:419
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(_schedules.Values.ToList(), new JsonSerializerOptions[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs:258
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var cached = JsonSerializer.Deserialize<List<SymbolMetadata>>(json, new JsonSerializerOptions[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs:286
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(_cache.Values.ToList(), new JsonSerializerOptions[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Packaging/PortableDataPackager.Creation.cs:604
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> await JsonSerializer.SerializeAsync(entryStream, manifest,[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Packaging/PortableDataPackager.Validation.cs:29
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return await JsonSerializer.DeserializeAsync<PackageManifest>(entryStream, cancellationToken: ct);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Packaging/PortableDataPackager.Validation.cs:49
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Deserialize<PackageManifest>(jsonBuilder.ToString());[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Store/JsonlMarketDataStore.cs:92
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> evt = JsonSerializer.Deserialize<MarketEvent>([0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Archival/SchemaVersionManager.cs:377
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(dict);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Archival/WriteAheadLog.cs:862
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Deserialize<T>(Payload, MarketDataJsonContext.HighPerformanceOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Services/StorageCatalogService.cs:58
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var catalog = JsonSerializer.Deserialize<StorageCatalog>(json);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Services/StorageCatalogService.cs:329
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var index = JsonSerializer.Deserialize<DirectoryIndex>(json);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Services/MetadataTagService.cs:196
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(data, new JsonSerializerOptions[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Services/MetadataTagService.cs:228
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var data = JsonSerializer.Deserialize<MetadataStore>(json, new JsonSerializerOptions[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Services/DataLineageService.cs:152
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(data, new JsonSerializerOptions[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Services/DataLineageService.cs:201
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var data = JsonSerializer.Deserialize<LineageStore>(json, new JsonSerializerOptions[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Services/StorageSearchService.cs:583
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> evt = JsonSerializer.Deserialize<MarketEvent>(line);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Services/SymbolRegistryService.cs:49
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var registry = JsonSerializer.Deserialize<SymbolRegistry>(json);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Services/SourceRegistry.cs:165
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var data = JsonSerializer.Deserialize<RegistryData>(json);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Replay/JsonlReplayer.cs:57
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> { evt = JsonSerializer.Deserialize<MarketEvent>(line, MarketDataJsonContext.HighPerformanceOptions); }[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs:377
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> results[i] = JsonSerializer.Deserialize<MarketEvent>(lines[i], MarketDataJsonContext.HighPerformanceOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs:402
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> evt = JsonSerializer.Deserialize<MarketEvent>(line, MarketDataJsonContext.HighPerformanceOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:239
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var schedules = JsonSerializer.Deserialize<List<ArchiveMaintenanceSchedule>>(json, s_jsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:270
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(schedules, s_jsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:493
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var executions = JsonSerializer.Deserialize<List<MaintenanceExecution>>(json, s_jsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:520
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(executions, s_jsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Export/AnalysisExportService.IO.cs:346
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(manifest, new JsonSerializerOptions[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Sinks/ParquetStorageSink.cs:340
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[9], snapshots.Select(s => System.Text.Json.Json[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Sinks/ParquetStorageSink.cs:341
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[10], snapshots.Select(s => System.Text.Json.Jso[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Storage/Sinks/ParquetStorageSink.cs:427
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var payloads = events.Select(e => System.Text.Json.JsonSerializer.Serialize(e.Payload)).ToArray();[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/PortablePackagerService.cs:181
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var manifest = JsonSerializer.Deserialize<PackageManifest>(manifestJson);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/PortablePackagerService.cs:275
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> JsonSerializer.Serialize(manifest, new JsonSerializerOptions { WriteIndented = true }), ct);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/SymbolMappingService.cs:56
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> _config = JsonSerializer.Deserialize<SymbolMappingsConfig>(json, JsonOptions)[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/SymbolMappingService.cs:85
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(_config, JsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/OnboardingTourService.cs:220
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var progress = JsonSerializer.Deserialize<OnboardingProgress>(json);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/OnboardingTourService.cs:256
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(progress, new JsonSerializerOptions { WriteIndented = true });[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/StatusServiceBase.cs:280
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var apiStatus = JsonSerializer.Deserialize<ApiStatusResponse>(json, _jsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/StatusServiceBase.cs:322
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var providerStatus = JsonSerializer.Deserialize<ProviderStatusResponse>(json, _jsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/StatusServiceBase.cs:355
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var providers = JsonSerializer.Deserialize<List<ProviderInfo>>(json, _jsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:65
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var presets = JsonSerializer.Deserialize<List<ExportPreset>>(json);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:106
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(_presets, options);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:271
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(presetsToExport, options);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:286
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var importedPresets = JsonSerializer.Deserialize<List<ExportPreset>>(json);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/ApiClientService.cs:185
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Deserialize<T>(json, JsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/ApiClientService.cs:218
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var data = JsonSerializer.Deserialize<T>(json, JsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/ApiClientService.cs:260
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> ? new StringContent(JsonSerializer.Serialize(body, JsonOptions), Encoding.UTF8, "application/json")[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/ApiClientService.cs:270
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Deserialize<T>(json, JsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/ApiClientService.cs:297
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> ? new StringContent(JsonSerializer.Serialize(body, JsonOptions), Encoding.UTF8, "application/json")[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/ApiClientService.cs:313
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var data = JsonSerializer.Deserialize<T>(json, JsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/ApiClientService.cs:370
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var data = JsonSerializer.Deserialize<T>(json, JsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs:543
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var jobs = JsonSerializer.Deserialize<List<ExportJob>>(json);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs:569
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(_jobs.Values.ToList(), new JsonSerializerOptions[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs:117
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(install, SerializerOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs:170
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> await File.WriteAllTextAsync(_installationFilePath, JsonSerializer.Serialize(installation, SerializerOptions), ct);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs:188
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> await File.WriteAllTextAsync(_runtimeFilePath, JsonSerializer.Serialize(runtimeInfo, SerializerOptions), ct);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs:309
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Deserialize<BackendInstallationInfo>(json, SerializerOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs:316
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Deserialize<BackendRuntimeInfo>(json, SerializerOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/CollectionSessionService.cs:47
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> _sessionsConfig = JsonSerializer.Deserialize<CollectionSessionsConfig>(json, new JsonSerializerOptions[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/CollectionSessionService.cs:71
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(_sessionsConfig, new JsonSerializerOptions[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/BackfillProviderConfigService.cs:449
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var prev = System.Text.Json.JsonSerializer.Deserialize<BackfillProviderOptionsDto>(previousJson);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/BackfillProviderConfigService.cs:450
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var next = System.Text.Json.JsonSerializer.Deserialize<BackfillProviderOptionsDto>(newJson);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:270
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> ? JsonSerializer.Serialize(previousOptions, SharedJsonOptions)[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:272
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var newJson = JsonSerializer.Serialize(options, SharedJsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:300
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> ? JsonSerializer.Serialize(previousOptions, SharedJsonOptions)[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/ManifestService.cs:193
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Deserialize<DataManifest>(json, new JsonSerializerOptions[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/ManifestService.cs:507
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(manifest, new JsonSerializerOptions[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/ConfigService.cs:43
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Deserialize<AppConfig>(json, _jsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/ConfigService.cs:53
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(config, _jsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs:167
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var checkpoint = JsonSerializer.Deserialize<BackfillCheckpoint>(json, _jsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs:228
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var checkpoint = JsonSerializer.Deserialize<BackfillCheckpoint>(json, _jsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs:281
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(checkpoint, _jsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs:292
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Deserialize<BackfillCheckpoint>(json, _jsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/ActivityFeedService.cs:356
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var items = JsonSerializer.Deserialize<List<ActivityItem>>(json, _jsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/ActivityFeedService.cs:382
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(_activities.ToList(), _jsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/SchemaServiceBase.cs:31
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Serialize([0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/SchemaServiceBase.cs:309
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Serialize(dictionary, new JsonSerializerOptions[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs:519
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> JsonSerializer.Serialize(qualityReport, new JsonSerializerOptions { WriteIndented = true }), ct);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs:1101
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var notebookJson = JsonSerializer.Serialize(notebook, new JsonSerializerOptions { WriteIndented = true });[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs:1137
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Serialize(schema, new JsonSerializerOptions { WriteIndented = true });[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Wpf/MainWindow.xaml.cs:684
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(state, new JsonSerializerOptions { WriteIndented = true });[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Wpf/MainWindow.xaml.cs:704
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var state = JsonSerializer.Deserialize<PersistedWindowState>(json);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:215
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var data = JsonSerializer.Deserialize<JsonElement>(json);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs:218
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var data = JsonSerializer.Deserialize<JsonElement>(json);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs:440
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var data = JsonSerializer.Deserialize<JsonElement>(json);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Wpf/ViewModels/DataQualityViewModel.cs:343
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var data = JsonSerializer.Deserialize<JsonElement>(json);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Wpf/ViewModels/DataQualityViewModel.cs:574
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var data = JsonSerializer.Deserialize<JsonElement>(json);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Wpf/ViewModels/DataQualityViewModel.cs:637
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var data = JsonSerializer.Deserialize<JsonElement>(json);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Wpf/ViewModels/DataQualityViewModel.cs:667
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var data = JsonSerializer.Deserialize<JsonElement>(json);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Wpf/ViewModels/DataQualityViewModel.cs:919
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Deserialize<JsonElement>(json);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs:260
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var data = JsonSerializer.Deserialize<JsonElement>(json);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs:319
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var quote = JsonSerializer.Deserialize<JsonElement>(json);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Wpf/Views/DataBrowserPage.xaml.cs:138
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(new[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Wpf/Views/DataQualityPage.xaml.cs:116
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var data = JsonSerializer.Deserialize<JsonElement>(json);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Wpf/Views/DataQualityPage.xaml.cs:370
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var data = JsonSerializer.Deserialize<JsonElement>(json);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Wpf/Views/DataQualityPage.xaml.cs:454
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var data = JsonSerializer.Deserialize<JsonElement>(json);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Wpf/Views/DataQualityPage.xaml.cs:489
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var data = JsonSerializer.Deserialize<JsonElement>(json);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Wpf/Views/DataQualityPage.xaml.cs:686
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var data = JsonSerializer.Deserialize<JsonElement>(json);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Wpf/Services/SchemaService.cs:85
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var dictionary = JsonSerializer.Deserialize<DataDictionary>(json, new JsonSerializerOptions[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Wpf/Services/SchemaService.cs:105
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(dictionary, new JsonSerializerOptions[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Wpf/Services/WatchlistService.cs:338
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Serialize(watchlist, new JsonSerializerOptions[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Wpf/Services/WatchlistService.cs:355
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var imported = JsonSerializer.Deserialize<Watchlist>(json, new JsonSerializerOptions[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Wpf/Services/WatchlistService.cs:387
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var remoteWatchlists = JsonSerializer.Deserialize<List<Watchlist>>(json, new JsonSerializerOptions[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Wpf/Services/WatchlistService.cs:501
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var watchlists = JsonSerializer.Deserialize<List<Watchlist>>(json, new JsonSerializerOptions[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Wpf/Services/WatchlistService.cs:548
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(toSave, new JsonSerializerOptions[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Wpf/Services/RetentionAssuranceService.cs:75
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var settingsData = JsonSerializer.Deserialize<RetentionSettingsData>(fileJson);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Wpf/Services/RetentionAssuranceService.cs:116
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(settingsData, new JsonSerializerOptions { WriteIndented = true });[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Wpf/Services/RetentionAssuranceService.cs:485
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var manifest = JsonSerializer.Deserialize<Dictionary<string, object>>(manifestJson);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Wpf/Services/RetentionAssuranceService.cs:680
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(report, options);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Wpf/Services/RetentionAssuranceService.cs:693
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(report, new JsonSerializerOptions { WriteIndented = true });[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Wpf/Services/ConfigService.cs:217
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> JsonSerializer.Serialize(defaultOptions, SharedJsonOptions));[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Wpf/Services/ConfigService.cs:235
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Deserialize<AppConfigDto>(json, SharedJsonOptions) ?? new AppConfigDto();[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Wpf/Services/ConfigService.cs:254
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(config, SharedJsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Wpf/Services/CredentialService.cs:216
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> _vault = JsonSerializer.Deserialize<Dictionary<string, StoredCredential>>(json) ?? new();[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Wpf/Services/CredentialService.cs:233
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(_vault);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Wpf/Services/CredentialService.cs:445
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var metadata = JsonSerializer.Deserialize<Dictionary<string, CredentialMetadata>>(json);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Wpf/Services/CredentialService.cs:475
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(snapshot, new JsonSerializerOptions { WriteIndented = true });[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Wpf/Services/CredentialService.cs:632
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var account = JsonSerializer.Deserialize<JsonElement>(content);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Wpf/Services/CredentialService.cs:874
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var tokenResponse = JsonSerializer.Deserialize<OAuthTokenResponse>(json);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Wpf/Services/WorkspaceService.cs:69
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var data = JsonSerializer.Deserialize<WorkspaceData>(json);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Wpf/Services/WorkspaceService.cs:111
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Wpf/Services/WorkspaceService.cs:253
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return Task.FromResult(JsonSerializer.Serialize(workspace, new JsonSerializerOptions { WriteIndented = true }));[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Wpf/Services/WorkspaceService.cs:262
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var workspace = JsonSerializer.Deserialize<WorkspaceTemplate>(json);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Wpf/Services/ArchiveHealthService.cs:457
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(status, new JsonSerializerOptions[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:235
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var json = JsonSerializer.Serialize(ssePayload, sseJsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian/Program.cs:505
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var cfg = JsonSerializer.Deserialize<AppConfig>(json, AppConfigJsonOptions.Read);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian/Integrations/Lean/MeridianQuoteData.cs:85
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var marketEvent = JsonSerializer.Deserialize<MarketEvent>(line);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian/Integrations/Lean/MeridianTradeData.cs:77
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var marketEvent = JsonSerializer.Deserialize<MarketEvent>(line);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Contracts/Api/UiApiClient.cs:163
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Deserialize<T>(json, _jsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Contracts/Api/UiApiClient.cs:179
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var data = JsonSerializer.Deserialize<T>(json, _jsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Contracts/Api/UiApiClient.cs:193
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> : new StringContent(JsonSerializer.Serialize(payload, _jsonOptions), Encoding.UTF8, "application/json");[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Contracts/Api/UiApiClient.cs:202
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> return JsonSerializer.Deserialize<T>(json, _jsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Contracts/Api/UiApiClient.cs:215
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> : new StringContent(JsonSerializer.Serialize(payload, _jsonOptions), Encoding.UTF8, "application/json");[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+    [33;1m[WARNING][0m [2mJSON-001[0m
+      /home/user/Meridian/src/Meridian.Contracts/Api/UiApiClient.cs:225
+      Possible reflection-based JsonSerializer call. Ensure a source-generated context (e.g. MarketDataJsonContext.Default.*) is passed as the second argument (ADR-014).
+      [2m> var data = JsonSerializer.Deserialize<T>(json, _jsonOptions);[0m
+      [32;1mFix: Change to: JsonSerializer.Serialize(value, MarketDataJsonContext.Default.MyType)[0m
+
+[31;1m  ✗ 86 CRITICAL finding(s). Fix before submitting.[0m
+

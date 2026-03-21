@@ -1,0 +1,269 @@
+// Resilience Patterns Diagram
+// Meridian v1.6.1
+// Last Updated: 2026-02-21
+//
+// This diagram shows the resilience patterns implemented in the system,
+// including circuit breakers, retry policies, failover, and rate limiting.
+//
+// Generate: dot -Tpng resilience-patterns.dot -o resilience-patterns.png
+//           dot -Tsvg resilience-patterns.dot -o resilience-patterns.svg
+
+digraph ResiliencePatterns {
+  rankdir=TB;
+  graph [fontname="Helvetica", fontsize=12, bgcolor="white", compound=true, pad=0.5];
+  node  [fontname="Helvetica", fontsize=10, shape=box, style="rounded,filled"];
+  edge  [fontname="Helvetica", fontsize=9, color="#4a5568"];
+
+  // Title
+  labelloc="t";
+  label="Meridian - Resilience Patterns\nFault Tolerance & Recovery Mechanisms | v1.6.1";
+
+  // Circuit Breaker Pattern
+  subgraph cluster_circuit_breaker {
+    label="Circuit Breaker Pattern";
+    color="#e53e3e";
+    style="rounded";
+    bgcolor="#fee2e2";
+
+    CB_IMPL [fillcolor="#fc8181", fontcolor="white",
+             label="CircuitBreaker<T>\n\nPolly-based implementation\nPer-provider isolation"];
+
+    subgraph cluster_cb_states {
+      label="States";
+      style="dashed";
+      color="#991b1b";
+
+      CB_CLOSED [shape=ellipse, fillcolor="#9ae6b4",
+                 label="CLOSED\n\nNormal operation\nRequests pass through"];
+      CB_OPEN [shape=ellipse, fillcolor="#fc8181", fontcolor="white",
+               label="OPEN\n\nFast-fail mode\nRequests rejected"];
+      CB_HALF [shape=ellipse, fillcolor="#fbd38d",
+               label="HALF-OPEN\n\nTest mode\nLimited requests"];
+    }
+
+    CB_CONFIG [shape=note, fillcolor="#fecaca",
+               label="Configuration:\n\nFailure threshold: 5\nSampling duration: 30s\nBreak duration: 60s\nSuccess threshold: 3"];
+
+    CB_CLOSED -> CB_OPEN [label="failures >= 5\nin 30s", color="#e53e3e"];
+    CB_OPEN -> CB_HALF [label="after 60s\ncooldown", color="#ed8936"];
+    CB_HALF -> CB_CLOSED [label="3 successes", color="#38a169"];
+    CB_HALF -> CB_OPEN [label="1 failure", color="#e53e3e"];
+  }
+
+  // Retry Pattern
+  subgraph cluster_retry {
+    label="Retry Pattern (WebSocketResiliencePolicy)";
+    color="#805ad5";
+    style="rounded";
+    bgcolor="#ede9fe";
+
+    RETRY_IMPL [fillcolor="#c4b5fd",
+                label="Polly Retry Policy\n\nExponential backoff\nJitter randomization"];
+
+    subgraph cluster_retry_strategy {
+      label="Retry Strategy";
+      style="dashed";
+      color="#6b21a8";
+
+      RETRY_1 [shape=box, fillcolor="#ddd6fe",
+               label="Attempt 1\nImmediate"];
+      RETRY_2 [shape=box, fillcolor="#ddd6fe",
+               label="Attempt 2\nWait 2s (+ jitter)"];
+      RETRY_3 [shape=box, fillcolor="#ddd6fe",
+               label="Attempt 3\nWait 4s (+ jitter)"];
+      RETRY_4 [shape=box, fillcolor="#ddd6fe",
+               label="Attempt 4\nWait 8s (+ jitter)"];
+      RETRY_5 [shape=box, fillcolor="#ddd6fe",
+               label="Attempt 5\nWait 16s (+ jitter)"];
+      RETRY_FAIL [shape=box, fillcolor="#fecaca",
+                  label="Give Up\nTrigger failover"];
+    }
+
+    RETRY_CONFIG [shape=note, fillcolor="#e9d5ff",
+                  label="Configuration:\n\nMax retries: 5\nBase delay: 2s\nMax delay: 30s\nJitter: 0-1s random"];
+
+    RETRY_1 -> RETRY_2 [label="fail"];
+    RETRY_2 -> RETRY_3 [label="fail"];
+    RETRY_3 -> RETRY_4 [label="fail"];
+    RETRY_4 -> RETRY_5 [label="fail"];
+    RETRY_5 -> RETRY_FAIL [label="fail"];
+  }
+
+  // Provider Failover
+  subgraph cluster_failover {
+    label="Provider Failover (AutomaticFailoverManager)";
+    color="#2c7a7b";
+    style="rounded";
+    bgcolor="#d1fae5";
+
+    FAILOVER_IMPL [fillcolor="#6ee7b7",
+                   label="Automatic Failover\n\nHealth-based routing\nPriority selection"];
+
+    subgraph cluster_providers {
+      label="Provider Priority";
+      style="dashed";
+      color="#047857";
+
+      P_PRIMARY [shape=box, fillcolor="#9ae6b4",
+                 label="Primary: IB/Alpaca\nPriority: 1\nStatus: Active"];
+      P_SECONDARY [shape=box, fillcolor="#a7f3d0",
+                   label="Secondary: NYSE\nPriority: 2\nStatus: Standby"];
+      P_TERTIARY [shape=box, fillcolor="#bbf7d0",
+                  label="Tertiary: StockSharp\nPriority: 3\nStatus: Standby"];
+    }
+
+    FAILOVER_EVENTS [shape=note, fillcolor="#c6f6d5",
+                     label="Failover Triggers:\n\n• Circuit breaker opens\n• Connection timeout\n• Rate limit exceeded\n• Provider error"];
+
+    P_PRIMARY -> P_SECONDARY [label="failover", color="#e53e3e", style=dashed];
+    P_SECONDARY -> P_TERTIARY [label="failover", color="#e53e3e", style=dashed];
+    P_TERTIARY -> P_PRIMARY [label="recovery\n(periodic check)", color="#38a169", style=dashed];
+  }
+
+  // Historical Provider Failover
+  subgraph cluster_hist_failover {
+    label="Historical Provider Failover (CompositeHistoricalDataProvider)";
+    color="#38a169";
+    style="rounded";
+    bgcolor="#f0fff4";
+
+    HIST_COMPOSITE [fillcolor="#68d391",
+                    label="Composite Provider\n\nPriority-based selection\nAutomatic rotation"];
+
+    subgraph cluster_hist_priority {
+      label="Provider Chain";
+      style="dashed";
+      color="#047857";
+
+      H1 [shape=box, fillcolor="#9ae6b4", label="NYSE (5)"];
+      H2 [shape=box, fillcolor="#9ae6b4", label="Alpaca (5)"];
+      H3 [shape=box, fillcolor="#a7f3d0", label="Yahoo (10)"];
+      H4 [shape=box, fillcolor="#a7f3d0", label="Polygon (15)"];
+      H5 [shape=box, fillcolor="#bbf7d0", label="Stooq (20)"];
+      H6 [shape=box, fillcolor="#bbf7d0", label="Others (25+)"];
+    }
+
+    HIST_COMPOSITE -> H1;
+    HIST_COMPOSITE -> H2;
+    H1 -> H3 [label="if fail/limit", style=dashed, color="#e53e3e"];
+    H2 -> H3 [label="if fail/limit", style=dashed, color="#e53e3e"];
+    H3 -> H4 [label="if fail/limit", style=dashed, color="#e53e3e"];
+    H4 -> H5 [label="if fail/limit", style=dashed, color="#e53e3e"];
+    H5 -> H6 [label="if fail/limit", style=dashed, color="#e53e3e"];
+  }
+
+  // Rate Limiting
+  subgraph cluster_rate_limit {
+    label="Rate Limiting";
+    color="#ed8936";
+    style="rounded";
+    bgcolor="#fffaf0";
+
+    RATE_IMPL [fillcolor="#fbd38d",
+               label="RateLimiter\n\nToken bucket algorithm\nPer-provider limits"];
+
+    subgraph cluster_limits {
+      label="Provider Limits";
+      style="dashed";
+      color="#c05621";
+
+      RL_ALPACA [shape=box, fillcolor="#feebc8",
+                 label="Alpaca\n200 req/min"];
+      RL_YAHOO [shape=box, fillcolor="#feebc8",
+                label="Yahoo Finance\n100 req/min"];
+      RL_POLYGON [shape=box, fillcolor="#feebc8",
+                  label="Polygon\n5 req/min (free)"];
+      RL_TIINGO [shape=box, fillcolor="#feebc8",
+                 label="Tiingo\n50 req/hour"];
+    }
+
+    RATE_BEHAVIOR [shape=note, fillcolor="#fed7aa",
+                   label="Behavior on Limit:\n\n• Queue request\n• Wait for token\n• Switch provider\n• Reject if all exhausted"];
+  }
+
+  // Connection Management
+  subgraph cluster_connection {
+    label="Connection Management (EnhancedIBConnectionManager)";
+    color="#2b6cb0";
+    style="rounded";
+    bgcolor="#dbeafe";
+
+    CONN_IMPL [fillcolor="#93c5fd",
+               label="Connection Manager\n\nState machine\nHeartbeat monitoring"];
+
+    subgraph cluster_conn_states {
+      label="Connection States";
+      style="dashed";
+      color="#1e40af";
+
+      CONN_DISC [shape=ellipse, fillcolor="#fecaca",
+                 label="DISCONNECTED"];
+      CONN_ING [shape=ellipse, fillcolor="#fbd38d",
+                label="CONNECTING"];
+      CONN_ED [shape=ellipse, fillcolor="#9ae6b4",
+               label="CONNECTED"];
+      CONN_RECON [shape=ellipse, fillcolor="#93c5fd",
+                  label="RECONNECTING"];
+    }
+
+    CONN_CONFIG [shape=note, fillcolor="#bfdbfe",
+                 label="Configuration:\n\nHeartbeat interval: 5s\nTimeout: 30s\nMax reconnects: 10\nReconnect delay: 5s"];
+
+    CONN_DISC -> CONN_ING [label="connect()", color="#2b6cb0"];
+    CONN_ING -> CONN_ED [label="success", color="#38a169"];
+    CONN_ING -> CONN_DISC [label="timeout", color="#e53e3e"];
+    CONN_ED -> CONN_RECON [label="lost", color="#ed8936"];
+    CONN_RECON -> CONN_ED [label="restored", color="#38a169"];
+    CONN_RECON -> CONN_DISC [label="max retries", color="#e53e3e"];
+  }
+
+  // Graceful Degradation
+  subgraph cluster_degradation {
+    label="Graceful Degradation";
+    color="#718096";
+    style="rounded";
+    bgcolor="#f7fafc";
+
+    DEGRADE_IMPL [fillcolor="#e2e8f0",
+                  label="Degradation Strategy\n\nMaintain partial service\nPrioritize critical data"];
+
+    subgraph cluster_degrade_modes {
+      label="Degradation Levels";
+      style="dashed";
+      color="#4a5568";
+
+      D_FULL [shape=box, fillcolor="#9ae6b4",
+              label="FULL\n\nAll providers active\nAll data types"];
+      D_PARTIAL [shape=box, fillcolor="#fbd38d",
+                 label="PARTIAL\n\nSome providers down\nCore data only"];
+      D_MINIMAL [shape=box, fillcolor="#fc8181", fontcolor="white",
+                 label="MINIMAL\n\nHistorical only\nNo real-time"];
+    }
+
+    DEGRADE_ACTIONS [shape=note, fillcolor="#edf2f7",
+                     label="Actions:\n\n• Disable non-critical features\n• Reduce polling frequency\n• Cache more aggressively\n• Alert operators"];
+
+    D_FULL -> D_PARTIAL [label="provider fails", color="#ed8936"];
+    D_PARTIAL -> D_MINIMAL [label="multiple fail", color="#e53e3e"];
+    D_MINIMAL -> D_PARTIAL [label="recovery", color="#38a169"];
+    D_PARTIAL -> D_FULL [label="all recovered", color="#38a169"];
+  }
+
+  // Integration Lines
+  CB_IMPL -> RETRY_IMPL [style=dashed, label="wraps"];
+  RETRY_IMPL -> FAILOVER_IMPL [style=dashed, label="triggers on exhaust"];
+  FAILOVER_IMPL -> CONN_IMPL [style=dashed, label="manages connections"];
+  RATE_IMPL -> HIST_COMPOSITE [style=dashed, label="enforces limits"];
+  FAILOVER_IMPL -> DEGRADE_IMPL [style=dashed, label="updates mode"];
+
+  // Legend
+  subgraph cluster_legend {
+    label="Legend";
+    style="rounded";
+    color="#666666";
+    bgcolor="#fafafa";
+
+    LEG [shape=plaintext,
+         label="Green = Healthy/Success\nYellow = Warning/Transitioning\nRed = Error/Failed\n\n━━ Normal flow\n─ ─ Error/Recovery flow"];
+  }
+}

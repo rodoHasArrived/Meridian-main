@@ -1,0 +1,258 @@
+name: Nightly Testing
+
+on:
+  schedule:
+    # Run every day at 1 AM UTC (shifted from 2 AM to avoid midnight spike)
+    - cron: '0 1 * * *'
+  workflow_dispatch: # Allow manual trigger
+
+permissions:
+  contents: read
+  issues: write
+  models: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_GENERATE_ASPNET_CERTIFICATE: false
+
+jobs:
+  # All three top-level jobs (test-matrix, benchmark, integration-tests) run in parallel
+  test-matrix:
+    name: Test on ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    uses: ./.github/workflows/reusable-dotnet-build.yml
+    with:
+      runs-on: ${{ matrix.os }}
+      collect-coverage: true
+      cache-suffix: nightly
+      timeout-minutes: 20
+    secrets: inherit
+
+  benchmark:
+    name: Run Benchmarks
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup .NET with Cache
+      uses: ./.github/actions/setup-dotnet-cache
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+        cache-suffix: nightly
+
+    - name: Run benchmarks
+      shell: bash
+      run: |
+        dotnet run \
+          --project benchmarks/Meridian.Benchmarks/Meridian.Benchmarks.csproj \
+          -c Release \
+          -- --exporters json
+
+    - name: Upload benchmark results
+      uses: actions/upload-artifact@v4
+      with:
+        name: benchmark-results
+        path: BenchmarkDotNet.Artifacts/results/
+        retention-days: 14
+
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup .NET with Cache
+      uses: ./.github/actions/setup-dotnet-cache
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+        cache-suffix: nightly
+
+    - name: Prepare config
+      shell: bash
+      run: |
+        cp config/appsettings.sample.json config/appsettings.json || true
+        mkdir -p data logs
+
+    - name: Build
+      run: dotnet build Meridian.sln -c Release /p:EnableWindowsTargeting=true --verbosity minimal
+
+    - name: Run self-tests
+      shell: bash
+      run: |
+        dotnet run \
+          --project src/Meridian/Meridian.csproj \
+          --no-build \
+          -c Release \
+          -- --selftest
+
+  notify:
+    name: Notify on Failure
+    needs: [test-matrix, benchmark, integration-tests]
+    runs-on: ubuntu-latest
+    if: failure()
+    timeout-minutes: 5
+
+    steps:
+    - name: Create issue on failure
+      uses: actions/github-script@v8
+      with:
+        script: |
+          const title = `Nightly tests failed on ${new Date().toISOString().split('T')[0]}`;
+          const body = `The nightly test suite failed. Please check the [workflow run](${context.payload.repository.html_url}/actions/runs/${context.runId}) for details.`;
+
+          // Check if similar issue already exists — add comment instead of duplicate
+          const issues = await github.rest.issues.listForRepo({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            state: 'open',
+            labels: 'automated,nightly-tests',
+          });
+
+          if (issues.data.length === 0) {
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['automated', 'nightly-tests', 'bug'],
+            });
+          } else {
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issues.data[0].number,
+              body: `Still failing: [run #${context.runId}](${context.payload.repository.html_url}/actions/runs/${context.runId})`,
+            });
+          }
+
+  notify-on-success:
+    name: Close failure issue on success
+    needs: [test-matrix, benchmark, integration-tests]
+    runs-on: ubuntu-latest
+    if: success()
+    timeout-minutes: 5
+
+    steps:
+    - name: Close nightly failure issue if all tests pass
+      uses: actions/github-script@v8
+      with:
+        script: |
+          const issues = await github.rest.issues.listForRepo({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            state: 'open',
+            labels: 'automated,nightly-tests',
+          });
+
+          for (const issue of issues.data) {
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              body: `✅ Nightly tests passed in [run #${context.runId}](${context.payload.repository.html_url}/actions/runs/${context.runId}). Closing as resolved.`,
+            });
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              state: 'closed',
+              state_reason: 'completed'
+            });
+          }
+
+  # ─── AI Failure Analysis ────────────────────────────────────────────
+
+  ai-failure-analysis:
+    name: AI Failure Analysis
+    needs: [test-matrix, benchmark, integration-tests]
+    runs-on: ubuntu-latest
+    if: |
+      always() &&
+      (needs.test-matrix.result == 'failure' || needs.benchmark.result == 'failure' || needs.integration-tests.result == 'failure')
+    timeout-minutes: 5
+
+    steps:
+      - name: AI diagnose failures
+        id: ai-diagnosis
+        continue-on-error: true
+        uses: actions/ai-inference@v1
+        with:
+          model: gpt-4o-mini
+          max-tokens: 1500
+          prompt: |
+            You are a .NET build/test infrastructure engineer analyzing nightly test failures for a market data collection application (.NET 9.0).
+
+            Test matrix result: ${{ needs.test-matrix.result }}
+            Benchmark result: ${{ needs.benchmark.result }}
+            Integration tests result: ${{ needs.integration-tests.result }}
+
+            The nightly suite runs:
+            - Cross-platform tests on ubuntu, windows, macos
+            - BenchmarkDotNet performance benchmarks
+            - Integration tests with self-test mode (--selftest)
+
+            Based on which jobs failed, provide:
+            1) **Likely Root Causes** - common reasons for these specific failure types
+            2) **Triage Priority** (P1-P4) based on which jobs failed
+            3) **Recommended Investigation Steps** - what to check first
+            4) If only certain platforms failed, note platform-specific issues
+
+            Keep response under 250 words in markdown format.
+
+      - name: Post AI analysis to summary
+        if: always()
+        run: |
+          echo "## AI Failure Diagnosis" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -n "${{ steps.ai-diagnosis.outputs.response }}" ]; then
+            echo "${{ steps.ai-diagnosis.outputs.response }}" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "_AI diagnosis was not available for this run._" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # ─── Nightly Summary ──────────────────────────────────────────────
+
+  nightly-summary:
+    name: Nightly Summary
+    needs: [test-matrix, benchmark, integration-tests, ai-failure-analysis]
+    runs-on: ubuntu-latest
+    if: always()
+    timeout-minutes: 2
+
+    steps:
+    - name: Generate nightly summary
+      shell: bash
+      run: |
+        {
+          echo "# Nightly Test Suite Summary"
+          echo ""
+          echo "| Job | Status |"
+          echo "|-----|--------|"
+          echo "| Test Matrix | ${{ needs.test-matrix.result == 'success' && '✅ Passed' || (needs.test-matrix.result == 'skipped' && '⏭️ Skipped' || '❌ Failed') }} |"
+          echo "| Benchmarks | ${{ needs.benchmark.result == 'success' && '✅ Passed' || (needs.benchmark.result == 'skipped' && '⏭️ Skipped' || '❌ Failed') }} |"
+          echo "| Integration | ${{ needs.integration-tests.result == 'success' && '✅ Passed' || (needs.integration-tests.result == 'skipped' && '⏭️ Skipped' || '❌ Failed') }} |"
+        } >> "$GITHUB_STEP_SUMMARY"
+
+        if [[ "${{ needs.test-matrix.result }}" == "success" ]] && \
+           [[ "${{ needs.benchmark.result }}" == "success" ]] && \
+           [[ "${{ needs.integration-tests.result }}" == "success" ]]; then
+          echo "## ✅ All nightly checks passed!" >> "$GITHUB_STEP_SUMMARY"
+        else
+          echo "## ❌ Some nightly checks failed" >> "$GITHUB_STEP_SUMMARY"
+        fi

@@ -1,0 +1,189 @@
+// Project Dependency Diagram - Meridian
+// Generated from actual .csproj and .fsproj ProjectReference entries
+// Render with: dot -Tsvg project-dependencies.dot -o project-dependencies.svg
+
+digraph ProjectDependencies {
+    // Graph settings
+    rankdir=TB;
+    fontname="Segoe UI, Helvetica, Arial, sans-serif";
+    fontsize=14;
+    label="Meridian - Project Dependencies";
+    labelloc=t;
+    labeljust=c;
+    compound=true;
+    nodesep=0.6;
+    ranksep=0.8;
+    splines=ortho;
+
+    // Node defaults
+    node [
+        shape=box,
+        style="rounded,filled",
+        fontname="Segoe UI, Helvetica, Arial, sans-serif",
+        fontsize=10,
+        margin="0.15,0.08"
+    ];
+
+    // Edge defaults
+    edge [
+        color="#666666",
+        arrowsize=0.7
+    ];
+
+    // ==================== Layer 0: Foundation ====================
+    subgraph cluster_layer0 {
+        label="Layer 0: Foundation";
+        style="rounded,dashed";
+        color="#cccccc";
+        fontsize=11;
+
+        Contracts [label="Contracts\n(API models, DTOs)", fillcolor="#E8F5E9"];
+        FSharp [label="FSharp\n(F# domain, validation)", fillcolor="#E8F5E9"];
+    }
+
+    // ==================== Layer 1: Core Domain & SDK ====================
+    subgraph cluster_layer1 {
+        label="Layer 1: Core Domain & SDK";
+        style="rounded,dashed";
+        color="#cccccc";
+        fontsize=11;
+
+        ProviderSdk [label="ProviderSdk\n(IDataSource, IMarketDataClient)", fillcolor="#E3F2FD"];
+        Domain [label="Domain\n(collectors, events, models)", fillcolor="#E3F2FD"];
+        Core [label="Core\n(config, logging, serialization)", fillcolor="#E3F2FD"];
+    }
+
+    // ==================== Layer 2: Infrastructure & Storage ====================
+    subgraph cluster_layer2 {
+        label="Layer 2: Infrastructure & Storage";
+        style="rounded,dashed";
+        color="#cccccc";
+        fontsize=11;
+
+        Infrastructure [label="Infrastructure\n(providers, resilience, HTTP)", fillcolor="#FFF3E0"];
+        Storage [label="Storage\n(sinks, export, archival, WAL)", fillcolor="#FFF3E0"];
+    }
+
+    // ==================== Layer 3: Application ====================
+    subgraph cluster_layer3 {
+        label="Layer 3: Application Logic";
+        style="rounded,dashed";
+        color="#cccccc";
+        fontsize=11;
+
+        Application [label="Application\n(pipeline, backfill, monitoring)", fillcolor="#FCE4EC"];
+    }
+
+    // ==================== Layer 4: UI & Presentation ====================
+    subgraph cluster_layer4 {
+        label="Layer 4: UI & Presentation";
+        style="rounded,dashed";
+        color="#cccccc";
+        fontsize=11;
+
+        UiShared [label="Ui.Shared\n(HTTP endpoints)", fillcolor="#F3E5F5"];
+        UiServices [label="Ui.Services\n(desktop services)", fillcolor="#F3E5F5", style="rounded,filled,dashed"];
+        Ui [label="Ui\n(web dashboard)", fillcolor="#F3E5F5"];
+        Wpf [label="Wpf\n(WPF desktop app)", fillcolor="#F3E5F5", style="rounded,filled,dashed"];
+    }
+
+    // ==================== Layer 5: Entry Point ====================
+    subgraph cluster_layer5 {
+        label="Layer 5: Entry Point";
+        style="rounded,dashed";
+        color="#cccccc";
+        fontsize=11;
+
+        MainApp [label="Meridian\n(entry point, CLI)", fillcolor="#FFEBEE"];
+    }
+
+    // ==================== Test Projects ====================
+    subgraph cluster_tests {
+        label="Test Projects";
+        style="rounded,dashed";
+        color="#999999";
+        fontsize=11;
+
+        Tests [label="Tests\n(140 test files)", fillcolor="#ECEFF1"];
+        FSharpTests [label="FSharp.Tests\n(4 test files)", fillcolor="#ECEFF1"];
+        WpfTests [label="Wpf.Tests\n(19 test files)", fillcolor="#ECEFF1", style="rounded,filled,dashed"];
+        UiTests [label="Ui.Tests\n(50 test files)", fillcolor="#ECEFF1", style="rounded,filled,dashed"];
+    }
+
+    // ==================== Benchmarks ====================
+    subgraph cluster_benchmarks {
+        label="Benchmarks";
+        style="rounded,dashed";
+        color="#999999";
+        fontsize=11;
+
+        Benchmarks [label="Benchmarks\n(BenchmarkDotNet)", fillcolor="#ECEFF1"];
+    }
+
+    // ==================== EDGES: Layer 1 -> Layer 0 ====================
+    ProviderSdk -> Contracts;
+    Domain -> Contracts;
+    Domain -> ProviderSdk;
+    Core -> Contracts;
+    Core -> Domain;
+    Core -> ProviderSdk;
+
+    // ==================== EDGES: Layer 2 -> Layer 1 ====================
+    Infrastructure -> Core;
+    Infrastructure -> Domain;
+    Infrastructure -> Contracts;
+    Infrastructure -> ProviderSdk;
+
+    Storage -> Core;
+    Storage -> Domain;
+    Storage -> Contracts;
+    Storage -> ProviderSdk;
+
+    // ==================== EDGES: Layer 3 -> Layer 2 ====================
+    Application -> Infrastructure;
+    Application -> Storage;
+    Application -> Core;
+    Application -> Domain;
+    Application -> Contracts;
+    Application -> ProviderSdk;
+
+    // ==================== EDGES: Layer 4 -> Layer 3 ====================
+    UiShared -> Application;
+    UiShared -> Contracts;
+    Ui -> UiShared;
+    UiServices -> Contracts [style=dashed, label="source\nlink"];
+    Wpf -> UiServices [style=dashed];
+
+    // ==================== EDGES: Layer 5 -> Layer 4 ====================
+    MainApp -> Application;
+    MainApp -> Infrastructure;
+    MainApp -> Storage;
+    MainApp -> Core;
+    MainApp -> Domain;
+    MainApp -> Contracts;
+    MainApp -> ProviderSdk;
+    MainApp -> UiShared;
+
+    // ==================== EDGES: Tests ====================
+    Tests -> MainApp [style=dotted, color="#999999"];
+    Tests -> Application [style=dotted, color="#999999"];
+    Tests -> Infrastructure [style=dotted, color="#999999"];
+    Tests -> Storage [style=dotted, color="#999999"];
+    Tests -> Core [style=dotted, color="#999999"];
+    Tests -> Domain [style=dotted, color="#999999"];
+    Tests -> UiShared [style=dotted, color="#999999"];
+
+    FSharpTests -> FSharp [style=dotted, color="#999999"];
+
+    WpfTests -> Wpf [style=dotted, color="#999999"];
+    WpfTests -> UiServices [style=dotted, color="#999999"];
+    WpfTests -> Contracts [style=dotted, color="#999999"];
+
+    UiTests -> UiServices [style=dotted, color="#999999"];
+
+    // ==================== EDGES: Benchmarks ====================
+    Benchmarks -> MainApp [style=dotted, color="#999999"];
+    Benchmarks -> Application [style=dotted, color="#999999"];
+    Benchmarks -> Core [style=dotted, color="#999999"];
+    Benchmarks -> Domain [style=dotted, color="#999999"];
+}

@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: meridian-data
+  namespace: meridian
+  labels:
+    app.kubernetes.io/name: meridian
+    app.kubernetes.io/component: storage
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      # Adjust based on expected data volume.
+      # 1 day of tick data for ~20 symbols is roughly 1-5 GB.
+      storage: 50Gi
+  # Uncomment and set to use a specific StorageClass:
+  # storageClassName: gp3

@@ -1,0 +1,540 @@
+<Page x:Class="Meridian.Wpf.Views.HelpPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      mc:Ignorable="d"
+      d:DesignHeight="900" d:DesignWidth="1200"
+      Background="{DynamicResource ConsoleBackgroundDarkBrush}"
+      AutomationProperties.Name="Help">
+
+    <Page.Resources>
+        <Style x:Key="KeyboardShortcutStyle" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource ConsoleBackgroundMediumBrush}" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Padding" Value="8,4" />
+            <Setter Property="Margin" Value="0,4" />
+        </Style>
+    </Page.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24">
+        <StackPanel MaxWidth="1000">
+            <!-- Header -->
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                <TextBlock Text="{StaticResource IconHelp}"
+                           FontFamily="{StaticResource SymbolThemeFontFamily}"
+                           FontSize="28"
+                           Foreground="{StaticResource InfoColorBrush}"
+                           VerticalAlignment="Center" />
+                <TextBlock Text="Help &amp; Getting Started"
+                           Style="{StaticResource PageTitleStyle}"
+                           Margin="12,0,0,0"
+                           VerticalAlignment="Center" />
+            </StackPanel>
+
+            <TextBlock Text="Learn how to use Meridian with interactive tutorials, documentation, and keyboard shortcuts."
+                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                       Margin="0,0,0,24" />
+
+            <!-- Quick Start Tutorial -->
+            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
+                <StackPanel>
+                    <Grid Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Orientation="Horizontal">
+                            <TextBlock Text="{StaticResource IconPlay}"
+                                       FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                       FontSize="18"
+                                       Foreground="{StaticResource InfoColorBrush}"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text="Interactive Quick Start"
+                                       Style="{StaticResource CardHeaderStyle}"
+                                       Margin="8,0,0,0" />
+                        </StackPanel>
+
+                        <Button Grid.Column="1"
+                                x:Name="StartTutorialButton"
+                                Content="Start Tutorial"
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                Click="StartTutorial_Click" />
+                    </Grid>
+
+                    <TextBlock Text="New to Meridian? Follow our step-by-step tutorial to get up and running in minutes."
+                               TextWrapping="Wrap"
+                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                               Margin="0,0,0,16" />
+
+                    <!-- Quick Start Steps Preview -->
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Column="0" Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                                CornerRadius="8" Padding="12">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="{StaticResource IconProvider}"
+                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                           FontSize="24"
+                                           Foreground="{StaticResource InfoColorBrush}"
+                                           HorizontalAlignment="Center" />
+                                <TextBlock Text="1. Provider" HorizontalAlignment="Center" FontWeight="SemiBold"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,8,0,4" />
+                                <TextBlock Text="Select data source" HorizontalAlignment="Center"
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Column="2" Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                                CornerRadius="8" Padding="12">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="{StaticResource IconKey}"
+                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                           FontSize="24"
+                                           Foreground="{StaticResource InfoColorBrush}"
+                                           HorizontalAlignment="Center" />
+                                <TextBlock Text="2. Credentials" HorizontalAlignment="Center" FontWeight="SemiBold"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,8,0,4" />
+                                <TextBlock Text="Enter API keys" HorizontalAlignment="Center"
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Column="4" Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                                CornerRadius="8" Padding="12">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="{StaticResource IconList}"
+                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                           FontSize="24"
+                                           Foreground="{StaticResource InfoColorBrush}"
+                                           HorizontalAlignment="Center" />
+                                <TextBlock Text="3. Symbols" HorizontalAlignment="Center" FontWeight="SemiBold"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,8,0,4" />
+                                <TextBlock Text="Add subscriptions" HorizontalAlignment="Center"
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Column="6" Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                                CornerRadius="8" Padding="12">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="{StaticResource IconDatabase}"
+                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                           FontSize="24"
+                                           Foreground="{StaticResource InfoColorBrush}"
+                                           HorizontalAlignment="Center" />
+                                <TextBlock Text="4. Storage" HorizontalAlignment="Center" FontWeight="SemiBold"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,8,0,4" />
+                                <TextBlock Text="Configure output" HorizontalAlignment="Center"
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Column="8" Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                                CornerRadius="8" Padding="12">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="{StaticResource IconPlay}"
+                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                           FontSize="24"
+                                           Foreground="{StaticResource InfoColorBrush}"
+                                           HorizontalAlignment="Center" />
+                                <TextBlock Text="5. Start" HorizontalAlignment="Center" FontWeight="SemiBold"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,8,0,4" />
+                                <TextBlock Text="Begin collecting" HorizontalAlignment="Center"
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Keyboard Shortcuts -->
+            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                        <TextBlock Text="{StaticResource IconKeyboard}"
+                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="18"
+                                   Foreground="{StaticResource InfoColorBrush}"
+                                   VerticalAlignment="Center" />
+                        <TextBlock Text="Keyboard Shortcuts"
+                                   Style="{StaticResource CardHeaderStyle}"
+                                   Margin="8,0,0,0" />
+                    </StackPanel>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="48" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Navigation Shortcuts -->
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Navigation" FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       Margin="0,0,0,12" />
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="120" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource KeyboardShortcutStyle}">
+                                    <TextBlock Text="Ctrl + 1" FontFamily="Cascadia Code, Consolas"
+                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                </Border>
+                                <TextBlock Grid.Row="0" Grid.Column="1" Text="Go to Dashboard" VerticalAlignment="Center"
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="8,0,0,0" />
+
+                                <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource KeyboardShortcutStyle}">
+                                    <TextBlock Text="Ctrl + 2" FontFamily="Cascadia Code, Consolas"
+                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                </Border>
+                                <TextBlock Grid.Row="1" Grid.Column="1" Text="Go to Symbols" VerticalAlignment="Center"
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="8,0,0,0" />
+
+                                <Border Grid.Row="2" Grid.Column="0" Style="{StaticResource KeyboardShortcutStyle}">
+                                    <TextBlock Text="Ctrl + 3" FontFamily="Cascadia Code, Consolas"
+                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                </Border>
+                                <TextBlock Grid.Row="2" Grid.Column="1" Text="Go to Storage" VerticalAlignment="Center"
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="8,0,0,0" />
+
+                                <Border Grid.Row="3" Grid.Column="0" Style="{StaticResource KeyboardShortcutStyle}">
+                                    <TextBlock Text="Ctrl + ," FontFamily="Cascadia Code, Consolas"
+                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                </Border>
+                                <TextBlock Grid.Row="3" Grid.Column="1" Text="Open Settings" VerticalAlignment="Center"
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="8,0,0,0" />
+
+                                <Border Grid.Row="4" Grid.Column="0" Style="{StaticResource KeyboardShortcutStyle}">
+                                    <TextBlock Text="F1" FontFamily="Cascadia Code, Consolas"
+                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                </Border>
+                                <TextBlock Grid.Row="4" Grid.Column="1" Text="Open Help" VerticalAlignment="Center"
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="8,0,0,0" />
+                            </Grid>
+                        </StackPanel>
+
+                        <!-- Action Shortcuts -->
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="Actions" FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       Margin="0,0,0,12" />
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="120" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource KeyboardShortcutStyle}">
+                                    <TextBlock Text="Ctrl + S" FontFamily="Cascadia Code, Consolas"
+                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                </Border>
+                                <TextBlock Grid.Row="0" Grid.Column="1" Text="Start Collector" VerticalAlignment="Center"
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="8,0,0,0" />
+
+                                <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource KeyboardShortcutStyle}">
+                                    <TextBlock Text="Ctrl + Shift + S" FontFamily="Cascadia Code, Consolas"
+                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                </Border>
+                                <TextBlock Grid.Row="1" Grid.Column="1" Text="Stop Collector" VerticalAlignment="Center"
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="8,0,0,0" />
+
+                                <Border Grid.Row="2" Grid.Column="0" Style="{StaticResource KeyboardShortcutStyle}">
+                                    <TextBlock Text="Ctrl + R" FontFamily="Cascadia Code, Consolas"
+                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                </Border>
+                                <TextBlock Grid.Row="2" Grid.Column="1" Text="Refresh Status" VerticalAlignment="Center"
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="8,0,0,0" />
+
+                                <Border Grid.Row="3" Grid.Column="0" Style="{StaticResource KeyboardShortcutStyle}">
+                                    <TextBlock Text="Ctrl + N" FontFamily="Cascadia Code, Consolas"
+                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                </Border>
+                                <TextBlock Grid.Row="3" Grid.Column="1" Text="Add New Symbol" VerticalAlignment="Center"
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="8,0,0,0" />
+
+                                <Border Grid.Row="4" Grid.Column="0" Style="{StaticResource KeyboardShortcutStyle}">
+                                    <TextBlock Text="Ctrl + E" FontFamily="Cascadia Code, Consolas"
+                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                </Border>
+                                <TextBlock Grid.Row="4" Grid.Column="1" Text="Export Data" VerticalAlignment="Center"
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="8,0,0,0" />
+                            </Grid>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Documentation Links -->
+            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                        <TextBlock Text="{StaticResource IconFolder}"
+                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="18"
+                                   Foreground="{StaticResource InfoColorBrush}"
+                                   VerticalAlignment="Center" />
+                        <TextBlock Text="Documentation"
+                                   Style="{StaticResource CardHeaderStyle}"
+                                   Margin="8,0,0,0" />
+                    </StackPanel>
+
+                    <WrapPanel>
+                        <Button Style="{StaticResource SecondaryButtonStyle}"
+                                Click="OpenArchitectureDoc_Click"
+                                Margin="0,0,8,8">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{StaticResource IconChart}"
+                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                           FontSize="14"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Text="Architecture Guide" Margin="8,0,0,0" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+
+                        <Button Style="{StaticResource SecondaryButtonStyle}"
+                                Click="OpenConfigurationDoc_Click"
+                                Margin="0,0,8,8">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{StaticResource IconSettings}"
+                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                           FontSize="14"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Text="Configuration Reference" Margin="8,0,0,0" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+
+                        <Button Style="{StaticResource SecondaryButtonStyle}"
+                                Click="OpenApiDoc_Click"
+                                Margin="0,0,8,8">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{StaticResource IconNetwork}"
+                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                           FontSize="14"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Text="API Documentation" Margin="8,0,0,0" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+
+                        <Button Style="{StaticResource SecondaryButtonStyle}"
+                                Click="OpenLeanIntegrationDoc_Click"
+                                Margin="0,0,8,8">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{StaticResource IconChart}"
+                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                           FontSize="14"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Text="QuantConnect Integration" Margin="8,0,0,0" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+
+                        <Button Style="{StaticResource SecondaryButtonStyle}"
+                                Click="OpenIBSetupDoc_Click"
+                                Margin="0,0,8,8">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{StaticResource IconProvider}"
+                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                           FontSize="14"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Text="Interactive Brokers Setup" Margin="8,0,0,0" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+
+                        <Button Style="{StaticResource SecondaryButtonStyle}"
+                                Click="OpenOperatorRunbookDoc_Click"
+                                Margin="0,0,8,8">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{StaticResource IconTerminal}"
+                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                           FontSize="14"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Text="Operator Runbook" Margin="8,0,0,0" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- FAQ -->
+            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                        <TextBlock Text="{StaticResource IconHelp}"
+                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="18"
+                                   Foreground="{StaticResource InfoColorBrush}"
+                                   VerticalAlignment="Center" />
+                        <TextBlock Text="Frequently Asked Questions"
+                                   Style="{StaticResource CardHeaderStyle}"
+                                   Margin="8,0,0,0" />
+                    </StackPanel>
+
+                    <Expander Header="How do I connect to Interactive Brokers?" Margin="0,0,0,8">
+                        <TextBlock TextWrapping="Wrap" Padding="0,8,0,0"
+                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}">
+1. Install and run TWS (Trader Workstation) or IB Gateway
+2. Enable API connections in TWS: Edit → Global Configuration → API → Settings
+3. Set the port (7496 for live, 7497 for paper trading)
+4. Start the collector with the --ib-host and --ib-port arguments
+                        </TextBlock>
+                    </Expander>
+
+                    <Expander Header="What data providers are supported?" Margin="0,0,0,8">
+                        <TextBlock TextWrapping="Wrap" Padding="0,8,0,0"
+                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}">
+• Interactive Brokers (IB) - Full Level 2 depth and tick-by-tick trades
+• Alpaca - Real-time trades and quotes via WebSocket (free IEX tier available)
+• Historical backfill from Yahoo Finance, Stooq, and Nasdaq Data Link
+                        </TextBlock>
+                    </Expander>
+
+                    <Expander Header="How do I export data for backtesting?" Margin="0,0,0,8">
+                        <TextBlock TextWrapping="Wrap" Padding="0,8,0,0"
+                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}">
+Use the Data Export page to export collected data in various formats:
+• CSV for general analysis tools
+• Parquet for efficient columnar storage
+• QuantConnect Lean format for algorithmic backtesting
+• Direct database export to PostgreSQL, TimescaleDB, or ClickHouse
+                        </TextBlock>
+                    </Expander>
+
+                    <Expander Header="Where is my data stored?" Margin="0,0,0,8">
+                        <TextBlock TextWrapping="Wrap" Padding="0,8,0,0"
+                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}">
+By default, data is stored in the 'data' folder relative to the application directory.
+You can configure the storage location, naming convention, and compression settings
+in the Storage page. Files are organized by symbol, type, and date in JSONL format.
+                        </TextBlock>
+                    </Expander>
+
+                    <Expander Header="How do I schedule automated data collection?">
+                        <TextBlock TextWrapping="Wrap" Padding="0,8,0,0"
+                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}">
+Use the Service Manager to configure auto-start with Windows and set up
+scheduled collection based on trading hours. The Trading Hours Manager lets
+you configure market sessions and holidays for different exchanges.
+                        </TextBlock>
+                    </Expander>
+                </StackPanel>
+            </Border>
+
+            <!-- Support -->
+            <Border Style="{StaticResource CardStyle}">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                        <TextBlock Text="{StaticResource IconHelp}"
+                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="18"
+                                   Foreground="{StaticResource InfoColorBrush}"
+                                   VerticalAlignment="Center" />
+                        <TextBlock Text="Get Support"
+                                   Style="{StaticResource CardHeaderStyle}"
+                                   Margin="8,0,0,0" />
+                    </StackPanel>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Column="0" Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                                CornerRadius="8" Padding="16">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="{StaticResource IconNetwork}"
+                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                           FontSize="32"
+                                           Foreground="{StaticResource InfoColorBrush}"
+                                           HorizontalAlignment="Center" />
+                                <TextBlock Text="GitHub Issues" HorizontalAlignment="Center" FontWeight="SemiBold"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,8,0,4" />
+                                <TextBlock Text="Report bugs and request features" HorizontalAlignment="Center"
+                                           TextAlignment="Center"
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" Margin="0,0,0,8" />
+                                <Button Content="Open GitHub"
+                                        Style="{StaticResource GhostButtonStyle}"
+                                        HorizontalAlignment="Center"
+                                        Click="OpenGitHub_Click" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Column="2" Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                                CornerRadius="8" Padding="16">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="{StaticResource IconBell}"
+                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                           FontSize="32"
+                                           Foreground="{StaticResource InfoColorBrush}"
+                                           HorizontalAlignment="Center" />
+                                <TextBlock Text="Community Discord" HorizontalAlignment="Center" FontWeight="SemiBold"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,8,0,4" />
+                                <TextBlock Text="Chat with other users" HorizontalAlignment="Center"
+                                           TextAlignment="Center"
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" Margin="0,0,0,8" />
+                                <Button Content="Join Discord"
+                                        Style="{StaticResource GhostButtonStyle}"
+                                        HorizontalAlignment="Center"
+                                        Click="OpenDiscord_Click" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Column="4" Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                                CornerRadius="8" Padding="16">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="&#xE715;"
+                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                           FontSize="32"
+                                           Foreground="{StaticResource InfoColorBrush}"
+                                           HorizontalAlignment="Center" />
+                                <TextBlock Text="Email Support" HorizontalAlignment="Center" FontWeight="SemiBold"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,8,0,4" />
+                                <TextBlock Text="Direct assistance" HorizontalAlignment="Center"
+                                           TextAlignment="Center"
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" Margin="0,0,0,8" />
+                                <Button Content="Contact Us"
+                                        Style="{StaticResource GhostButtonStyle}"
+                                        HorizontalAlignment="Center"
+                                        Click="OpenEmail_Click" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

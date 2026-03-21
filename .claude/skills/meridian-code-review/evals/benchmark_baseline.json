@@ -1,0 +1,81 @@
+{
+  "_comment": "Accepted baseline pass rates per eval. If a run drops more than 10pp below baseline, aggregate_benchmark.py will warn. Set after a verified strong run. Update when the skill is intentionally improved.",
+  "_last_updated": "2026-03-16",
+  "_update_instructions": "Run evals, verify the output quality manually, then update the 'accepted_pass_rate' values to match the verified run's pass_rate per eval_id.",
+  "baselines": [
+    {
+      "eval_id": 1,
+      "description": "DashboardPage MVVM code-behind review",
+      "accepted_pass_rate": 0.80,
+      "total_assertions": 10
+    },
+    {
+      "eval_id": 2,
+      "description": "Pipeline flush loop performance review",
+      "accepted_pass_rate": 0.80,
+      "total_assertions": 9
+    },
+    {
+      "eval_id": 3,
+      "description": "Alpaca provider ProviderSdk compliance",
+      "accepted_pass_rate": 0.75,
+      "total_assertions": 12
+    },
+    {
+      "eval_id": 4,
+      "description": "Backfill service error handling",
+      "accepted_pass_rate": 0.80,
+      "total_assertions": 10
+    },
+    {
+      "eval_id": 5,
+      "description": "Unit test quality review",
+      "accepted_pass_rate": 0.80,
+      "total_assertions": 10
+    },
+    {
+      "eval_id": 6,
+      "description": "F# interop boundary review",
+      "accepted_pass_rate": 0.75,
+      "total_assertions": 8
+    },
+    {
+      "eval_id": 7,
+      "description": "Order book validator data integrity",
+      "accepted_pass_rate": 0.80,
+      "total_assertions": 9
+    },
+    {
+      "eval_id": 8,
+      "description": "Cross-project dependency violations",
+      "accepted_pass_rate": 0.80,
+      "total_assertions": 10
+    },
+    {
+      "eval_id": 9,
+      "description": "JsonlStorageSink storage integrity (new)",
+      "accepted_pass_rate": 0.75,
+      "total_assertions": 8
+    },
+    {
+      "eval_id": 10,
+      "description": "ViewModel + View pair multi-file review (new)",
+      "accepted_pass_rate": 0.75,
+      "total_assertions": 9
+    },
+    {
+      "eval_id": 11,
+      "description": "F# QuoteValidator + C# consumer interop round-trip (new)",
+      "accepted_pass_rate": 0.75,
+      "total_assertions": 8
+    },
+    {
+      "eval_id": 12,
+      "description": "IHistoricalDataProvider full compliance (new)",
+      "accepted_pass_rate": 0.75,
+      "total_assertions": 10
+    }
+  ],
+  "regression_threshold_pp": 10,
+  "overall_minimum_pass_rate": 0.75
+}

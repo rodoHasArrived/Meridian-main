@@ -1,0 +1,14 @@
+{
+  "name": "meridian-tools",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Build tools for Meridian",
+  "scripts": {
+    "generate-icons": "node build/node/generate-icons.mjs",
+    "generate-diagrams": "node build/node/generate-diagrams.mjs"
+  },
+  "devDependencies": {
+    "@viz-js/viz": "^3.25.0",
+    "sharp": "^0.34.5"
+  }
+}

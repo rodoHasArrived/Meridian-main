@@ -1,0 +1,63 @@
+{
+  "$schema": "condition-codes-schema",
+  "version": 1,
+  "description": "Provider-specific trade condition code to canonical condition mapping. Key format: 'PROVIDER:raw_code' -> CanonicalTradeCondition enum name.",
+  "mappings": {
+    "ALPACA": {
+      "@": "Regular",
+      "T": "FormT_ExtendedHours",
+      "I": "Intermarket_Sweep",
+      "X": "CrossTrade",
+      "O": "OpeningPrint",
+      "6": "ClosingPrint",
+      "Z": "SoldOutOfSequence",
+      "H": "Halted",
+      "U": "OddLot",
+      "W": "AveragePrice",
+      "Q": "OpeningPrint",
+      "M": "ClosingPrint",
+      "4": "DerivativelyPriced",
+      "B": "Bunched",
+      "C": "Cash",
+      "N": "NextDay",
+      "P": "PriorReferencePrice",
+      "V": "Contingent",
+      "7": "Acquisition"
+    },
+    "POLYGON": {
+      "0": "Regular",
+      "1": "Acquisition",
+      "2": "AveragePrice",
+      "5": "ClosingPrint",
+      "7": "CrossTrade",
+      "10": "DerivativelyPriced",
+      "12": "FormT_ExtendedHours",
+      "14": "Intermarket_Sweep",
+      "15": "OddLot",
+      "16": "OpeningPrint",
+      "22": "Contingent",
+      "29": "SellerInitiated",
+      "30": "SellerInitiated",
+      "31": "SellerInitiated",
+      "32": "SellerInitiated",
+      "33": "SellerInitiated",
+      "37": "OddLot",
+      "38": "CorrectedConsolidated",
+      "41": "SoldOutOfSequence",
+      "52": "Halted",
+      "53": "Halted"
+    },
+    "IB": {
+      "RegularTrade": "Regular",
+      "OddLot": "OddLot",
+      "FormT": "FormT_ExtendedHours",
+      "ExtendedHours": "FormT_ExtendedHours",
+      "Halted": "Halted",
+      "OpeningPrice": "OpeningPrint",
+      "ClosingPrice": "ClosingPrint",
+      "AveragePrice": "AveragePrice"
+    },
+    "STOCKSHARP": {
+    }
+  }
+}

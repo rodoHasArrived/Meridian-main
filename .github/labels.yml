@@ -1,0 +1,157 @@
+# Repository Labels Configuration
+# Used by the label sync workflow to ensure consistent labels across the repository
+# Run: gh label sync --labels .github/labels.yml
+
+# Status labels
+- name: stale
+  color: "D3D3D3"
+  description: "Issue or PR has been inactive for an extended period"
+
+- name: blocked
+  color: "D93F0B"
+  description: "Blocked by another issue or external dependency"
+
+- name: in-progress
+  color: "1D76DB"
+  description: "Currently being worked on"
+
+- name: wip
+  color: "FBCA04"
+  description: "Work in progress - not ready for review"
+
+- name: do-not-merge
+  color: "B60205"
+  description: "PR should not be merged yet"
+
+- name: work-in-progress
+  color: "FBCA04"
+  description: "Work in progress"
+
+# Priority labels
+- name: pinned
+  color: "006B75"
+  description: "Important - exempt from auto-close"
+
+- name: priority/high
+  color: "D93F0B"
+  description: "High priority"
+
+- name: priority/medium
+  color: "FBCA04"
+  description: "Medium priority"
+
+- name: priority/low
+  color: "0E8A16"
+  description: "Low priority"
+
+# Type labels
+- name: bug
+  color: "D73A4A"
+  description: "Something isn't working"
+
+- name: enhancement
+  color: "A2EEEF"
+  description: "New feature or request"
+
+- name: security
+  color: "D93F0B"
+  description: "Security related issue"
+
+- name: documentation
+  color: "0075CA"
+  description: "Improvements or additions to documentation"
+
+- name: tests
+  color: "BFD4F2"
+  description: "Related to tests"
+
+- name: performance
+  color: "5319E7"
+  description: "Performance related"
+
+# Area labels
+- name: provider
+  color: "C5DEF5"
+  description: "Related to data providers"
+
+- name: storage
+  color: "D4C5F9"
+  description: "Related to storage/persistence"
+
+- name: ui
+  color: "7057FF"
+  description: "Related to user interface"
+
+- name: microservices
+  color: "0052CC"
+  description: "Related to microservices"
+
+- name: ci/cd
+  color: "EDEDED"
+  description: "CI/CD and workflow related"
+
+- name: docker
+  color: "0DB7ED"
+  description: "Docker related"
+
+- name: configuration
+  color: "F9D0C4"
+  description: "Related to configuration"
+
+- name: dependencies
+  color: "0366D6"
+  description: "Related to dependencies"
+
+- name: code
+  color: "1D76DB"
+  description: "Code changes"
+
+# Size labels
+- name: size/XS
+  color: "3CBF00"
+  description: "Extra small change (<10 lines)"
+
+- name: size/S
+  color: "5D9801"
+  description: "Small change (10-49 lines)"
+
+- name: size/M
+  color: "7F7203"
+  description: "Medium change (50-199 lines)"
+
+- name: size/L
+  color: "A14C05"
+  description: "Large change (200-499 lines)"
+
+- name: size/XL
+  color: "C32607"
+  description: "Extra large change (500+ lines)"
+
+# Community labels
+- name: help-wanted
+  color: "008672"
+  description: "Extra attention is needed"
+
+- name: good-first-issue
+  color: "7057FF"
+  description: "Good for newcomers"
+
+- name: needs-triage
+  color: "D876E3"
+  description: "Needs triage and categorization"
+
+- name: needs-reproduction
+  color: "FBCA04"
+  description: "Needs reproduction steps or more info"
+
+- name: duplicate
+  color: "CFD3D7"
+  description: "This issue or PR already exists"
+
+- name: wontfix
+  color: "FFFFFF"
+  description: "This will not be worked on"
+
+- name: invalid
+  color: "E4E669"
+  description: "This doesn't seem right"

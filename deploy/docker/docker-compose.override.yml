@@ -1,0 +1,44 @@
+# =============================================================================
+# Meridian - Docker Compose Override for Development
+# =============================================================================
+#
+# This file automatically layers on top of docker-compose.yml when both are
+# in the same directory. It provides development-friendly defaults:
+#   - Fixture/offline mode (no real API keys needed)
+#   - Debug-friendly environment variables
+#   - Extra port mappings
+#
+# Usage:
+#   docker compose -f deploy/docker/docker-compose.yml \
+#                  -f deploy/docker/docker-compose.override.yml up -d
+#
+# Or from the deploy/docker/ directory:
+#   docker compose up -d
+#
+# =============================================================================
+
+services:
+  meridian:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile
+      # Use build cache for faster iteration
+      args:
+        BUILDKIT_INLINE_CACHE: 1
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - DOTNET_RUNNING_IN_CONTAINER=true
+      - TZ=UTC
+      # Fixture mode: generates synthetic data so no API keys are needed
+      - MDC__FIXTURE_MODE=true
+      - Logging__LogLevel__Default=Debug
+      - Logging__LogLevel__Microsoft=Warning
+    ports:
+      - "8080:8080"
+    # Override healthcheck for faster feedback in dev
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s

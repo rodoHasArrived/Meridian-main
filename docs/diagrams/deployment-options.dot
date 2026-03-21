@@ -1,0 +1,288 @@
+// Deployment Options Diagram
+// Meridian v1.6.1
+// Last Updated: 2026-02-21
+//
+// This diagram shows the different deployment options available,
+// from standalone console to distributed Kubernetes clusters.
+//
+// Generate: dot -Tpng deployment-options.dot -o deployment-options.png
+//           dot -Tsvg deployment-options.dot -o deployment-options.svg
+
+digraph DeploymentOptions {
+  rankdir=TB;
+  graph [fontname="Helvetica", fontsize=12, bgcolor="white", compound=true, pad=0.5];
+  node  [fontname="Helvetica", fontsize=10, shape=box, style="rounded,filled"];
+  edge  [fontname="Helvetica", fontsize=9, color="#4a5568"];
+
+  // Title
+  labelloc="t";
+  label="Meridian - Deployment Options\nFrom Development to Production | v1.6.1";
+
+  // Option 1: Standalone Console
+  subgraph cluster_standalone {
+    label="Option 1: Standalone Console (Simplest)";
+    color="#38a169";
+    style="rounded";
+    bgcolor="#f0fff4";
+
+    STANDALONE [fillcolor="#68d391",
+                label="Standalone Deployment\n\nSingle .NET Console App\nAll-in-one process\nLocal file storage"];
+
+    subgraph cluster_standalone_components {
+      label="Components";
+      style="dashed";
+      color="#047857";
+
+      SA_CORE [shape=box, fillcolor="#9ae6b4",
+               label="Meridian\n[Console App]\n\nCore + Collectors\nStorage + HTTP"];
+      SA_DATA [shape=cylinder, fillcolor="#c6f6d5",
+               label="./data/\n[Local Storage]\n\nJSONL files"];
+      SA_CONFIG [shape=note, fillcolor="#bbf7d0",
+                 label="appsettings.json\nEnvironment vars"];
+    }
+
+    STANDALONE_USE [shape=note, fillcolor="#9ae6b4",
+                    label="Best For:\n\n• Development\n• Single machine\n• Low volume\n• Quick setup"];
+
+    STANDALONE_CMD [shape=note, fillcolor="#c6f6d5",
+                    label="Run Command:\n\ndotnet run --project src/Meridian\n\nOr with UI:\ndotnet run -- --ui --http-port 8080"];
+  }
+
+  // Option 2: Docker Compose
+  subgraph cluster_docker {
+    label="Option 2: Docker Compose (Development/Staging)";
+    color="#2b6cb0";
+    style="rounded";
+    bgcolor="#dbeafe";
+
+    DOCKER [fillcolor="#93c5fd",
+            label="Docker Compose\n\nContainerized deployment\nService orchestration\nNetwork isolation"];
+
+    subgraph cluster_docker_services {
+      label="Services (docker-compose.yml)";
+      style="dashed";
+      color="#1e40af";
+
+      DC_COLLECTOR [shape=box, fillcolor="#bfdbfe",
+                    label="meridian-collector\n[Container]\n\nCore application\nPort: 8080"];
+      DC_RABBIT [shape=box, fillcolor="#bfdbfe",
+                 label="rabbitmq\n[Container]\n\nMessage broker\nPort: 5672, 15672"];
+      DC_PROM [shape=box, fillcolor="#bfdbfe",
+               label="prometheus\n[Container]\n\nMetrics\nPort: 9090"];
+      DC_GRAFANA [shape=box, fillcolor="#bfdbfe",
+                  label="grafana\n[Container]\n\nDashboards\nPort: 3000"];
+    }
+
+    DOCKER_VOLUMES [shape=note, fillcolor="#93c5fd",
+                    label="Volumes:\n\n• ./data:/app/data\n• ./config:/app/config\n• prometheus-data\n• grafana-data"];
+
+    DOCKER_USE [shape=note, fillcolor="#bfdbfe",
+                label="Best For:\n\n• Team development\n• CI/CD testing\n• Staging environment\n• Reproducible builds"];
+
+    DOCKER_CMD [shape=note, fillcolor="#dbeafe",
+                label="Run Commands:\n\ndocker-compose up -d\ndocker-compose logs -f meridian-collector\ndocker-compose down"];
+  }
+
+  // Option 3: Docker Microservices
+  subgraph cluster_docker_micro {
+    label="Option 3: Docker Microservices (Production-Ready)";
+    color="#805ad5";
+    style="rounded";
+    bgcolor="#ede9fe";
+
+    DOCKER_MICRO [fillcolor="#c4b5fd",
+                  label="Microservices Deployment\n\nDistributed architecture\nHorizontal scaling\nService isolation"];
+
+    subgraph cluster_micro_services {
+      label="Services (docker-compose.microservices.yml)";
+      style="dashed";
+      color="#6b21a8";
+
+      DM_GATEWAY [shape=box, fillcolor="#ddd6fe",
+                  label="gateway:5000\n[ASP.NET Core]"];
+      DM_TRADE [shape=box, fillcolor="#ddd6fe",
+                label="trade-svc:5001\n[Worker]"];
+      DM_ORDERBOOK [shape=box, fillcolor="#ddd6fe",
+                    label="orderbook-svc:5002\n[Worker]"];
+      DM_QUOTE [shape=box, fillcolor="#ddd6fe",
+                label="quote-svc:5003\n[Worker]"];
+      DM_HIST [shape=box, fillcolor="#ddd6fe",
+               label="historical-svc:5004\n[Worker]"];
+      DM_VAL [shape=box, fillcolor="#ddd6fe",
+              label="validation-svc:5005\n[Worker]"];
+      DM_RABBIT [shape=box, fillcolor="#e9d5ff",
+                 label="rabbitmq\n[Broker]"];
+    }
+
+    DOCKER_MICRO_USE [shape=note, fillcolor="#c4b5fd",
+                      label="Best For:\n\n• High throughput\n• Scalable workloads\n• Service isolation\n• Fault tolerance"];
+  }
+
+  // Option 4: Kubernetes
+  subgraph cluster_k8s {
+    label="Option 4: Kubernetes (Enterprise Production)";
+    color="#e53e3e";
+    style="rounded";
+    bgcolor="#fee2e2";
+
+    K8S [fillcolor="#fc8181", fontcolor="white",
+         label="Kubernetes Deployment\n\nCloud-native\nAuto-scaling\nSelf-healing"];
+
+    subgraph cluster_k8s_resources {
+      label="Kubernetes Resources";
+      style="dashed";
+      color="#991b1b";
+
+      K8S_DEPLOY [shape=box, fillcolor="#fecaca",
+                  label="Deployments\n\n• meridian-gateway (3 replicas)\n• meridian-trade (5 replicas)\n• meridian-quote (5 replicas)\n• meridian-orderbook (3 replicas)"];
+      K8S_SVC [shape=box, fillcolor="#fecaca",
+               label="Services\n\n• ClusterIP (internal)\n• LoadBalancer (gateway)\n• NodePort (debug)"];
+      K8S_CONFIG [shape=box, fillcolor="#fecaca",
+                  label="ConfigMaps/Secrets\n\n• appsettings.json\n• API credentials\n• TLS certificates"];
+      K8S_HPA [shape=box, fillcolor="#fecaca",
+               label="HPA (Auto-scaling)\n\n• CPU > 70%: scale up\n• CPU < 30%: scale down\n• Min: 2, Max: 20"];
+    }
+
+    K8S_STORAGE [shape=note, fillcolor="#feb2b2",
+                 label="Storage:\n\n• PersistentVolumeClaim\n• StorageClass: fast-ssd\n• S3 for archives"];
+
+    K8S_USE [shape=note, fillcolor="#fc8181", fontcolor="white",
+             label="Best For:\n\n• Enterprise scale\n• Multi-region\n• High availability\n• Auto-healing"];
+
+    K8S_CMD [shape=note, fillcolor="#fecaca",
+             label="Deploy Commands:\n\nkubectl apply -f deploy/k8s/\nhelm install meridian ./charts/meridian\nkubectl scale deploy meridian-trade --replicas=10"];
+  }
+
+  // Option 5: Cloud Managed
+  subgraph cluster_cloud {
+    label="Option 5: Cloud Managed Services";
+    color="#ed8936";
+    style="rounded";
+    bgcolor="#fffaf0";
+
+    CLOUD [fillcolor="#fbd38d",
+           label="Cloud-Native Deployment\n\nManaged infrastructure\nPay-per-use\nGlobal distribution"];
+
+    subgraph cluster_cloud_services {
+      label="Cloud Services";
+      style="dashed";
+      color="#c05621";
+
+      subgraph cluster_azure {
+        label="Azure";
+        style="rounded";
+        color="#0078d4";
+
+        AZURE_AKS [shape=box, fillcolor="#feebc8",
+                   label="AKS\nManaged Kubernetes"];
+        AZURE_SB [shape=box, fillcolor="#feebc8",
+                  label="Service Bus\nMessage broker"];
+        AZURE_BLOB [shape=box, fillcolor="#feebc8",
+                    label="Blob Storage\nData archive"];
+      }
+
+      subgraph cluster_aws {
+        label="AWS";
+        style="rounded";
+        color="#ff9900";
+
+        AWS_EKS [shape=box, fillcolor="#fed7aa",
+                 label="EKS\nManaged Kubernetes"];
+        AWS_MQ [shape=box, fillcolor="#fed7aa",
+                label="Amazon MQ\nRabbitMQ managed"];
+        AWS_S3 [shape=box, fillcolor="#fed7aa",
+                label="S3 + Glacier\nTiered storage"];
+      }
+    }
+
+    CLOUD_USE [shape=note, fillcolor="#fbd38d",
+               label="Best For:\n\n• Global deployment\n• Elastic scaling\n• Managed services\n• Compliance (SOC2, etc.)"];
+  }
+
+  // Option 6: Windows Service / systemd
+  subgraph cluster_service {
+    label="Option 6: System Service (Bare Metal)";
+    color="#718096";
+    style="rounded";
+    bgcolor="#f7fafc";
+
+    SERVICE [fillcolor="#e2e8f0",
+             label="System Service\n\nNative OS service\nAuto-start on boot\nService management"];
+
+    subgraph cluster_service_types {
+      label="Service Types";
+      style="dashed";
+      color="#4a5568";
+
+      SVC_SYSTEMD [shape=box, fillcolor="#edf2f7",
+                   label="systemd (Linux)\n\nmdc.service\nsystemctl start meridian"];
+      SVC_WIN [shape=box, fillcolor="#edf2f7",
+               label="Windows Service\n\nsc.exe / NSSM\nAuto-restart"];
+    }
+
+    SERVICE_USE [shape=note, fillcolor="#e2e8f0",
+                 label="Best For:\n\n• Bare metal servers\n• VMs without containers\n• Legacy infrastructure\n• Simple operations"];
+
+    SERVICE_FILES [shape=note, fillcolor="#edf2f7",
+                   label="Files:\n\ndeploy/systemd/meridian.service\nscripts/install/install-service.sh"];
+  }
+
+  // Pre-Deployment Setup (NEW)
+  subgraph cluster_presetup {
+    label="Pre-Deployment: First-Time Setup";
+    color="#ed8936";
+    style="rounded";
+    bgcolor="#fffaf0";
+
+    PRESETUP [fillcolor="#fbd38d",
+              label="First-Time Setup\n\nRun before any deployment\nOne-time configuration"];
+
+    subgraph cluster_setup_options {
+      label="Setup Options";
+      style="dashed";
+      color="#c05621";
+
+      SETUP_WIZARD [shape=box, fillcolor="#feebc8",
+                    label="Interactive Wizard\n\ndotnet run -- --wizard\n\n8-step guided setup\nBest for new users"];
+
+      SETUP_AUTO [shape=box, fillcolor="#feebc8",
+                  label="Auto-Configure\n\ndotnet run -- --auto-config\n\nFrom env variables\nBest for CI/CD"];
+
+      SETUP_VALIDATE [shape=box, fillcolor="#feebc8",
+                      label="Validate Setup\n\ndotnet run -- --dry-run\n\nTest without starting\nVerify configuration"];
+    }
+
+    SETUP_OUTPUT [shape=note, fillcolor="#fed7aa",
+                  label="Output:\n\nappsettings.json\nProvider credentials validated\nConnectivity tested"];
+  }
+
+  // Decision Flow
+  DECISION [shape=diamond, fillcolor="#fef3c7",
+            label="Choose Based On:\n\nScale? Complexity?\nTeam expertise?\nInfrastructure?"];
+
+  // Pre-setup flow
+  PRESETUP -> SETUP_WIZARD [style=dashed];
+  PRESETUP -> SETUP_AUTO [style=dashed];
+  SETUP_WIZARD -> SETUP_OUTPUT [color="#ed8936"];
+  SETUP_AUTO -> SETUP_OUTPUT [color="#ed8936"];
+  SETUP_OUTPUT -> SETUP_VALIDATE [style=dashed];
+  SETUP_OUTPUT -> DECISION [color="#ed8936", label="Then choose\ndeployment"];
+
+  DECISION -> STANDALONE [label="Simple, single user", color="#38a169"];
+  DECISION -> DOCKER [label="Team dev, CI/CD", color="#2b6cb0"];
+  DECISION -> DOCKER_MICRO [label="Production, scaling", color="#805ad5"];
+  DECISION -> K8S [label="Enterprise, multi-region", color="#e53e3e"];
+  DECISION -> CLOUD [label="Cloud-native, managed", color="#ed8936"];
+  DECISION -> SERVICE [label="Bare metal, VMs", color="#718096"];
+
+  // Complexity/Scale axis
+  subgraph cluster_scale {
+    label="Complexity vs Scale";
+    style="rounded";
+    color="#666666";
+    bgcolor="#fafafa";
+
+    SCALE [shape=plaintext,
+           label="Standalone → Docker → Microservices → Kubernetes → Cloud\n─────────────────────────────────────────────────────────►\n       Simple                                    Complex\n       Low Scale                              Enterprise Scale"];
+  }
+}

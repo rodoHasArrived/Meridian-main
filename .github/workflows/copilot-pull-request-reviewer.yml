@@ -1,0 +1,437 @@
+name: Copilot Pull Request Reviewer
+
+# Runs on every PR so all changes receive a review comment.
+# The analysis step filters to .cs/.fs files internally; PRs with
+# no code changes receive an "APPROVED – no findings" comment.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+
+jobs:
+  code-review:
+    name: Six-Lens Code Review
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5.2.0
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
+
+      - name: Build (catch compile errors early)
+        id: build
+        run: |
+          dotnet build Meridian.sln -c Release --no-restore /p:EnableWindowsTargeting=true 2>&1 | tee build_output.txt
+          echo "exit_code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+
+      - name: Run tests (no-build)
+        id: tests
+        continue-on-error: true
+        run: |
+          dotnet test tests/Meridian.Tests/Meridian.Tests.csproj \
+            -c Release --no-build /p:EnableWindowsTargeting=true \
+            --filter "Category!=Integration" \
+            --blame-hang-timeout 60s \
+            --logger "trx;LogFileName=test_results.trx" \
+            2>&1 | tee test_output.txt
+          echo "exit_code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+
+      - name: Collect changed files
+        id: changed-files
+        run: |
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+
+          # Get changed .cs / .fs files (added or modified only)
+          CHANGED=$(git diff --name-only --diff-filter=AM "$BASE_SHA" "$HEAD_SHA" \
+            | grep -E '\.(cs|fs)$' | head -40)
+
+          echo "changed_files<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$CHANGED" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+          CHANGED_COUNT=$(echo "$CHANGED" | grep -c '.' || true)
+          echo "count=$CHANGED_COUNT" >> "$GITHUB_OUTPUT"
+
+      - name: Analyse changed files against review lenses
+        id: analyse
+        run: |
+          python3 - <<'PYEOF'
+          import subprocess, sys, re, os, json
+
+          changed_raw = """${{ steps.changed-files.outputs.changed_files }}"""
+          changed_files = [f.strip() for f in changed_raw.splitlines() if f.strip()]
+
+          # ── helpers ──────────────────────────────────────────────────────────
+          def read_file(path):
+              try:
+                  with open(path, encoding="utf-8", errors="replace") as fh:
+                      return fh.read()
+              except Exception:
+                  return ""
+
+          def count_matches(pattern, text, flags=re.MULTILINE):
+              return len(re.findall(pattern, text, flags))
+
+          # ── per-file findings ─────────────────────────────────────────────────
+          findings = {
+              "mvvm":        [],
+              "performance": [],
+              "error":       [],
+              "tests":       [],
+              "provider":    [],
+              "conventions": [],
+          }
+
+          critical_count = 0
+          warning_count  = 0
+          info_count     = 0
+
+          for path in changed_files:
+              if not os.path.exists(path):
+                  continue
+
+              src = read_file(path)
+              is_codebehind = path.endswith(".xaml.cs")
+              is_test       = "/Tests/" in path or path.endswith("Tests.cs") or path.endswith("Tests.fs")
+              is_benchmark  = "/Benchmarks/" in path or "Benchmark" in path
+              is_provider   = "/Adapters/" in path or "Provider" in path or "Client" in path
+              is_fsharp     = path.endswith(".fs")
+              short         = path.replace("src/", "").replace("tests/", "tests/")
+
+              # ── Lens 1: MVVM ────────────────────────────────────────────────
+              if is_codebehind:
+                  if count_matches(r'\.(Text|Content|Visibility|Background|Foreground)\s*=', src):
+                      findings["mvvm"].append(
+                          f"**[M-CRITICAL]** `{short}`: Direct UI element mutation (`.Text =`, `.Visibility =`) in code-behind — move to ViewModel bindings.")
+                      critical_count += 1
+                  if count_matches(r'private.*_(?!logger|options|ct|cancellation)\w+\s*[=;]', src) > 3:
+                      findings["mvvm"].append(
+                          f"**[M-WARNING]** `{short}`: Multiple private state fields in code-behind — extract to ViewModel.")
+                      warning_count += 1
+                  if count_matches(r'new\s+System\.Timers\.Timer|new\s+DispatcherTimer', src):
+                      findings["mvvm"].append(
+                          f"**[M-WARNING]** `{short}`: Timer managed in code-behind — move timer lifecycle to ViewModel using `PeriodicTimer`.")
+                      warning_count += 1
+
+              # ── Lens 2: Real-Time Performance ───────────────────────────────
+              if not is_test:
+                  if count_matches(r'\.Result\b|\.Wait\(\)', src):
+                      findings["performance"].append(
+                          f"**[P-CRITICAL]** `{short}`: Blocking async call (`.Result` / `.Wait()`) detected — causes deadlocks on the UI/pipeline thread.")
+                      critical_count += 1
+                  if count_matches(r'Dispatcher\.Invoke\b(?!Async)', src):
+                      findings["performance"].append(
+                          f"**[P-CRITICAL]** `{short}`: Synchronous `Dispatcher.Invoke` blocks the UI thread — replace with `Dispatcher.InvokeAsync`.")
+                      critical_count += 1
+                  if count_matches(r'Task\.Run\s*\(', src) and not is_benchmark:
+                      findings["performance"].append(
+                          f"**[P-WARNING]** `{short}`: `Task.Run` used for I/O-bound work — wastes thread-pool threads; use `await` directly.")
+                      warning_count += 1
+                  if count_matches(r'Channel\.CreateUnbounded|Channel\.CreateBounded\b(?!.*Policy)', src):
+                      findings["performance"].append(
+                          f"**[P-WARNING]** `{short}`: Raw `Channel.Create*` without `EventPipelinePolicy` — use `EventPipelinePolicy.*.CreateChannel<T>()` (ADR-013).")
+                      warning_count += 1
+                  if count_matches(r'JsonSerializer\.(?:Serialize|Deserialize)\s*<(?!.*JsonSerializerContext)', src):
+                      findings["performance"].append(
+                          f"**[P-WARNING]** `{short}`: Reflection-based JSON serialization — use source-generated `JsonSerializerContext` (ADR-014).")
+                      warning_count += 1
+                  if count_matches(r'IOptions<(?!.*Monitor)', src) and not is_test:
+                      findings["performance"].append(
+                          f"**[P-INFO]** `{short}`: `IOptions<T>` is snapshot-only — use `IOptionsMonitor<T>` for hot-reload support.")
+                      info_count += 1
+
+              # ── Lens 3: Error Handling ───────────────────────────────────────
+              if count_matches(r'catch\s*\(\s*Exception\s+\w*\s*\)(?!\s*when)', src):
+                  findings["error"].append(
+                      f"**[E-WARNING]** `{short}`: Bare `catch (Exception)` — use specific types from `Core/Exceptions/` (e.g. `DataProviderException`, `StorageException`).")
+                  warning_count += 1
+              if count_matches(r'catch\s*\(.*OperationCanceledException', src) and is_provider:
+                  findings["error"].append(
+                      f"**[E-WARNING]** `{short}`: `OperationCanceledException` caught in provider — must not treat cancellation as a provider failure; re-throw or propagate.")
+                  warning_count += 1
+              if count_matches(r'throw\s+new\s+Exception\b|throw\s+new\s+ApplicationException\b', src):
+                  findings["error"].append(
+                      f"**[E-WARNING]** `{short}`: `throw new Exception/ApplicationException` — derive from `MeridianException` instead.")
+                  warning_count += 1
+
+              # ── Lens 4: Test Quality ─────────────────────────────────────────
+              if is_test:
+                  if count_matches(r'\[Fact\]\s*\n\s*public\s+async\s+void', src):
+                      findings["tests"].append(
+                          f"**[T-CRITICAL]** `{short}`: `async void` test method — xUnit won't await it; use `async Task`.")
+                      critical_count += 1
+                  if count_matches(r'Task\.Delay|Thread\.Sleep', src):
+                      findings["tests"].append(
+                          f"**[T-WARNING]** `{short}`: `Task.Delay`/`Thread.Sleep` in test — use `TaskCompletionSource` or `SemaphoreSlim` for deterministic synchronisation.")
+                      warning_count += 1
+                  methods = re.findall(r'public\s+(?:async\s+)?Task\s+(\w+)\s*\(', src)
+                  bad = [m for m in methods if not re.match(r'.+_.+_.+', m)]
+                  if bad:
+                      findings["tests"].append(
+                          f"**[T-INFO]** `{short}`: Test method(s) `{', '.join(bad[:3])}` don't follow `Method_Scenario_Expected` naming convention.")
+                      info_count += 1
+
+              # ── Lens 5: Provider Compliance ──────────────────────────────────
+              if is_provider and not is_test:
+                  if count_matches(r'Task\.Delay', src):
+                      findings["provider"].append(
+                          f"**[B-WARNING]** `{short}`: `Task.Delay` used for rate-limiting — call `WaitForRateLimitSlotAsync(ct)` from `BaseHistoricalDataProvider` instead.")
+                      warning_count += 1
+                  if not count_matches(r'\[ImplementsAdr\b', src) and not is_fsharp:
+                      findings["provider"].append(
+                          f"**[B-INFO]** `{short}`: Missing `[ImplementsAdr]` attribute — add traceability to the ADR being implemented.")
+                      info_count += 1
+                  if count_matches(r'\[DataSource\b', src) == 0 and ("Client" in path or "DataSource" in path):
+                      findings["provider"].append(
+                          f"**[B-INFO]** `{short}`: Missing `[DataSource]` attribute — required for attribute-based provider discovery (ADR-005).")
+                      info_count += 1
+
+              # ── Lens 6: Conventions ──────────────────────────────────────────
+              if count_matches(r'_logger\.Log\w+\(\$"', src):
+                  findings["conventions"].append(
+                      f"**[C-WARNING]** `{short}`: String interpolation inside logger call — use structured logging parameters `_logger.LogX(\"..{{Param}}\", value)` instead.")
+                  warning_count += 1
+              if count_matches(r'new HttpClient\s*\(', src) and not is_test:
+                  findings["conventions"].append(
+                      f"**[C-CRITICAL]** `{short}`: `new HttpClient()` instantiated directly — use `IHttpClientFactory` (ADR-010) to avoid socket exhaustion.")
+                  critical_count += 1
+              if count_matches(r'public\s+(?!sealed|abstract|static|partial)\w+\s+class\s+', src) and not is_test and not is_fsharp:
+                  findings["conventions"].append(
+                      f"**[C-INFO]** `{short}`: Non-sealed public class — mark as `sealed` unless designed for inheritance.")
+                  info_count += 1
+
+          # ── format output ─────────────────────────────────────────────────────
+          lines = []
+
+          def section(title, items, emoji):
+              if not items:
+                  return
+              lines.append(f"\n### {emoji} {title}\n")
+              for item in items:
+                  lines.append(f"- {item}")
+
+          section("MVVM Architecture Compliance",    findings["mvvm"],        "🏗️")
+          section("Real-Time Performance",           findings["performance"], "⚡")
+          section("Error Handling & Resilience",     findings["error"],       "🛡️")
+          section("Test Code Quality",               findings["tests"],       "🧪")
+          section("Provider & Backfill Compliance",  findings["provider"],    "🔌")
+          section("Conventions & Cross-Cutting",     findings["conventions"], "📐")
+
+          total = critical_count + warning_count + info_count
+
+          if total == 0:
+              verdict      = "✅ **APPROVED** — No issues found in changed files."
+              badge_colour = "brightgreen"
+          elif critical_count > 0:
+              verdict      = f"🚫 **REQUEST CHANGES** — {critical_count} critical issue(s) must be resolved before merge."
+              badge_colour = "red"
+          else:
+              verdict      = f"⚠️ **REQUEST CHANGES** — {warning_count} warning(s) and {info_count} info item(s) should be addressed."
+              badge_colour = "yellow"
+
+          result = {
+              "verdict":        verdict,
+              "critical_count": critical_count,
+              "warning_count":  warning_count,
+              "info_count":     info_count,
+              "findings_md":    "\n".join(lines),
+              "files_reviewed": len(changed_files),
+          }
+
+          with open("review_result.json", "w") as fh:
+              json.dump(result, fh)
+
+          print(f"FILES={len(changed_files)}, CRITICAL={critical_count}, WARNING={warning_count}, INFO={info_count}")
+          PYEOF
+
+      - name: Read build output
+        id: build-summary
+        run: |
+          if [ -f build_output.txt ]; then
+            ERRORS=$(grep -c "error\|Error" build_output.txt || true)
+            WARNINGS=$(grep -c "warning\|Warning" build_output.txt || true)
+            echo "build_errors=$ERRORS"   >> "$GITHUB_OUTPUT"
+            echo "build_warnings=$WARNINGS" >> "$GITHUB_OUTPUT"
+          else
+            echo "build_errors=0"   >> "$GITHUB_OUTPUT"
+            echo "build_warnings=0" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Read test output
+        id: test-summary
+        run: |
+          if [ -f test_output.txt ]; then
+            PASSED=$(grep -oP 'Passed:\s*\K\d+' test_output.txt | tail -1 || echo "0")
+            FAILED=$(grep -oP 'Failed:\s*\K\d+'  test_output.txt | tail -1 || echo "0")
+            SKIPPED=$(grep -oP 'Skipped:\s*\K\d+' test_output.txt | tail -1 || echo "0")
+            echo "passed=$PASSED"   >> "$GITHUB_OUTPUT"
+            echo "failed=$FAILED"   >> "$GITHUB_OUTPUT"
+            echo "skipped=$SKIPPED" >> "$GITHUB_OUTPUT"
+          else
+            echo "passed=0"  >> "$GITHUB_OUTPUT"
+            echo "failed=0"  >> "$GITHUB_OUTPUT"
+            echo "skipped=0" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Post PR review comment
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const fs   = require('fs');
+            const path = require('path');
+
+            // ── load analysis results ─────────────────────────────────────────
+            let result = {};
+            try {
+              result = JSON.parse(fs.readFileSync('review_result.json', 'utf8'));
+            } catch (e) {
+              result = { verdict: '⚠️ Analysis script failed.', findings_md: '', critical_count: 0, warning_count: 0, info_count: 0, files_reviewed: 0 };
+            }
+
+            const buildErrors   = parseInt('${{ steps.build-summary.outputs.build_errors }}'   || '0');
+            const buildWarnings = parseInt('${{ steps.build-summary.outputs.build_warnings }}' || '0');
+            const testPassed    = parseInt('${{ steps.test-summary.outputs.passed }}'          || '0');
+            const testFailed    = parseInt('${{ steps.test-summary.outputs.failed }}'          || '0');
+            const testSkipped   = parseInt('${{ steps.test-summary.outputs.skipped }}'         || '0');
+            const buildOk       = '${{ steps.build.outputs.exit_code }}' === '0';
+            const testsOk       = '${{ steps.tests.outputs.exit_code }}'  === '0';
+
+            const changedList   = `${{ steps.changed-files.outputs.changed_files }}`
+              .split('\n').filter(Boolean)
+              .map(f => `  - \`${f}\``)
+              .join('\n') || '  _(none)_';
+
+            // ── build badge ───────────────────────────────────────────────────
+            const buildBadge = buildOk
+              ? '![Build](https://img.shields.io/badge/build-passing-brightgreen)'
+              : '![Build](https://img.shields.io/badge/build-FAILING-red)';
+
+            const testBadge = testFailed === 0
+              ? `![Tests](https://img.shields.io/badge/tests-${testPassed}%20passed-brightgreen)`
+              : `![Tests](https://img.shields.io/badge/tests-${testFailed}%20failed-red)`;
+
+            // ── compose comment body ──────────────────────────────────────────
+            const body = [
+              `## 🔍 Copilot Code Review — Six-Lens Analysis`,
+              ``,
+              `${buildBadge} ${testBadge}`,
+              ``,
+              `> **${result.verdict}**`,
+              ``,
+              `### 📋 Summary`,
+              ``,
+              `| Metric | Value |`,
+              `|--------|-------|`,
+              `| Files reviewed | ${result.files_reviewed} |`,
+              `| 🔴 Critical | ${result.critical_count} |`,
+              `| 🟡 Warning  | ${result.warning_count} |`,
+              `| 🔵 Info     | ${result.info_count} |`,
+              `| Build errors | ${buildErrors} |`,
+              `| Tests passed | ${testPassed} / ${testPassed + testFailed + testSkipped} |`,
+              ``,
+              `<details>`,
+              `<summary>📁 Changed files (${result.files_reviewed})</summary>`,
+              ``,
+              changedList,
+              ``,
+              `</details>`,
+              ``,
+              `---`,
+              ``,
+              result.findings_md || '_No findings — all changed files passed the six-lens review._',
+              ``,
+              `---`,
+              ``,
+              `<details>`,
+              `<summary>ℹ️ About this review</summary>`,
+              ``,
+              `This review applies the **six-lens framework** from [code-review-agent.md](.github/agents/code-review-agent.md):`,
+              ``,
+              `1. 🏗️ **MVVM Architecture** — thin code-behind, BindableBase, dependency rules`,
+              `2. ⚡ **Real-Time Performance** — blocking calls, hot-path allocations, channel policies, ADR-014 JSON`,
+              `3. 🛡️ **Error Handling & Resilience** — exception hierarchy, provider reconnection, shutdown paths`,
+              `4. 🧪 **Test Quality** — naming convention, async patterns, no sleep/delay`,
+              `5. 🔌 **Provider Compliance** — interface completeness, rate limiting, \`[ImplementsAdr]\` attributes`,
+              `6. 📐 **Conventions** — structured logging, \`IHttpClientFactory\`, sealed classes, ADRs`,
+              ``,
+              `Severity scale: 🔴 **CRITICAL** (must fix before merge) · 🟡 **WARNING** (should address) · 🔵 **INFO** (minor)`,
+              ``,
+              `</details>`,
+            ].join('\n');
+
+            // ── post or update the review comment ─────────────────────────────
+            const { data: comments } = await github.rest.issues.listComments({
+              owner:      context.repo.owner,
+              repo:       context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const BOT_MARKER = '## 🔍 Copilot Code Review — Six-Lens Analysis';
+            const existing   = comments.find(c =>
+              c.user.type === 'Bot' && c.body.includes(BOT_MARKER)
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner:      context.repo.owner,
+                repo:       context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+              console.log(`Updated existing review comment #${existing.id}`);
+            } else {
+              await github.rest.issues.createComment({
+                owner:      context.repo.owner,
+                repo:       context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+              console.log('Posted new review comment.');
+            }
+
+            // ── submit a formal PR review (approve or request changes) ────────
+            if (result.critical_count > 0 || !buildOk || testFailed > 0) {
+              await github.rest.pulls.createReview({
+                owner:      context.repo.owner,
+                repo:       context.repo.repo,
+                pull_number: context.issue.number,
+                event:      'REQUEST_CHANGES',
+                body:       `**Six-Lens Code Review** — ${result.critical_count} critical issue(s) detected. See the detailed comment above for all findings.`,
+              });
+            } else if (result.warning_count === 0 && result.info_count === 0) {
+              await github.rest.pulls.createReview({
+                owner:      context.repo.owner,
+                repo:       context.repo.repo,
+                pull_number: context.issue.number,
+                event:      'APPROVE',
+                body:       '**Six-Lens Code Review** — All checks passed. No issues found in changed files. ✅',
+              });
+            } else {
+              await github.rest.pulls.createReview({
+                owner:      context.repo.owner,
+                repo:       context.repo.repo,
+                pull_number: context.issue.number,
+                event:      'COMMENT',
+                body:       `**Six-Lens Code Review** — ${result.warning_count} warning(s) and ${result.info_count} info item(s). See the detailed comment above for full findings.`,
+              });
+            }

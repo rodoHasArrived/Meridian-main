@@ -1,0 +1,269 @@
+// Storage Architecture Diagram
+// Meridian v1.6.1
+// Last Updated: 2026-02-21
+//
+// This diagram shows the archival-first storage pipeline with WAL,
+// compression profiles, tiered storage, and export capabilities.
+//
+// Generate: dot -Tpng storage-architecture.dot -o storage-architecture.png
+//           dot -Tsvg storage-architecture.dot -o storage-architecture.svg
+
+digraph StorageArchitecture {
+  rankdir=TB;
+  graph [fontname="Helvetica", fontsize=12, bgcolor="white", compound=true, pad=0.5];
+  node  [fontname="Helvetica", fontsize=10, shape=box, style="rounded,filled"];
+  edge  [fontname="Helvetica", fontsize=9, color="#4a5568"];
+
+  // Title
+  labelloc="t";
+  label="Meridian - Storage Architecture\nArchival-First Pipeline | v1.6.1";
+
+  // Input Events
+  subgraph cluster_input {
+    label="Input Events";
+    color="#805ad5";
+    style="rounded";
+    bgcolor="#faf5ff";
+
+    EVENTS [shape=oval, fillcolor="#ddd6fe",
+            label="Market Events\nfrom Pipeline"];
+
+    EVENT_TYPES [shape=note, fillcolor="#ede9fe",
+                 label="Event Types:\n• Trade (tick-by-tick)\n• BboQuote (L1)\n• LOBSnapshot (L2)\n• OrderFlowStatistics\n• IntegrityEvent\n• Heartbeat"];
+  }
+
+  // Write Path - WAL
+  subgraph cluster_wal {
+    label="Write-Ahead Log (Durability Layer)";
+    color="#c53030";
+    style="rounded";
+    bgcolor="#fee2e2";
+
+    WAL [shape=cylinder, fillcolor="#fc8181", fontcolor="white",
+         label="WriteAheadLog\n[Crash-Safe Journal]\n\nAppend-only log\nTransaction semantics\nPer-record SHA256\nCommit/Rollback support"];
+
+    subgraph cluster_wal_config {
+      label="WAL Configuration";
+      style="dashed";
+      color="#991b1b";
+
+      WAL_MODES [shape=note, fillcolor="#fecaca",
+                 label="Sync Modes:\n\nNoSync - Fastest (OS buffering)\nBatchedSync - Balanced (100ms flush)\nEveryWrite - Durable (fsync each)"];
+
+      WAL_RECOVERY [shape=note, fillcolor="#fecaca",
+                    label="Recovery:\n\nAutomatic on restart\nReplay uncommitted\nChecksum validation"];
+    }
+  }
+
+  // Hot Storage - JSONL
+  subgraph cluster_hot {
+    label="Hot Storage (Real-Time Tier)";
+    color="#ed8936";
+    style="rounded";
+    bgcolor="#fffaf0";
+
+    JSONL [shape=cylinder, fillcolor="#fbd38d",
+           label="JSONL Files\n[Append-Only Storage]\n\nHuman-readable JSON\nLine-delimited format\nPer-symbol/date files\nOptional Gzip streaming"];
+
+    subgraph cluster_organization {
+      label="File Organization (JsonlStoragePolicy)";
+      style="dashed";
+      color="#c05621";
+
+      NAMING [shape=note, fillcolor="#feebc8",
+              label="Naming Conventions:\n\nBySymbol: {root}/{symbol}/{type}/{date}.jsonl\nByDate: {root}/{date}/{symbol}/{type}.jsonl\nByType: {root}/{type}/{symbol}/{date}.jsonl\nFlat: {root}/{symbol}_{type}_{date}.jsonl"];
+
+      PARTITION [shape=note, fillcolor="#feebc8",
+                 label="Date Partitioning:\n\nNone - Single file (append)\nDaily - One per day (default)\nHourly - High volume\nMonthly - Long-term"];
+    }
+
+    RETENTION [fillcolor="#fbd38d",
+               label="DataRetentionPolicy\n\nTime-based (RetentionDays)\nCapacity-based (MaxTotalBytes)\nEager enforcement on write"];
+  }
+
+  // Compression Layer
+  subgraph cluster_compress {
+    label="Compression Profiles (CompressionProfileManager)";
+    color="#805ad5";
+    style="rounded";
+    bgcolor="#ede9fe";
+
+    COMPRESS [fillcolor="#ddd6fe",
+              label="Compression Manager\n[Tiered Profiles]\n\nAutomatic profile selection\nBased on data age/access pattern"];
+
+    subgraph cluster_profiles {
+      label="Available Profiles";
+      style="dashed";
+      color="#6b21a8";
+
+      LZ4 [shape=box, fillcolor="#c4b5fd",
+           label="LZ4 Level 1\n[Real-Time Profile]\n\n~500 MB/s throughput\n2.5x compression ratio\nMinimal CPU overhead"];
+
+      ZSTD_STD [shape=box, fillcolor="#c4b5fd",
+                label="ZSTD Level 3\n[High-Volume Profile]\n\n~300 MB/s throughput\n4x compression ratio\nSPY, QQQ, high-tick"];
+
+      ZSTD_WARM [shape=box, fillcolor="#c4b5fd",
+                 label="ZSTD Level 6\n[Warm Archive Profile]\n\n~150 MB/s throughput\n5x compression ratio\nRecent archives"];
+
+      ZSTD_COLD [shape=box, fillcolor="#c4b5fd",
+                 label="ZSTD Level 19\n[Cold Archive Profile]\n\n~20 MB/s throughput\n10x compression ratio\nLong-term storage"];
+
+      GZIP [shape=box, fillcolor="#c4b5fd",
+            label="Gzip Level 6\n[Portable Profile]\n\n~80 MB/s throughput\n3x compression ratio\nExternal sharing"];
+    }
+  }
+
+  // Archive Storage - Parquet
+  subgraph cluster_archive {
+    label="Archive Storage (Analytics Tier)";
+    color="#2c7a7b";
+    style="rounded";
+    bgcolor="#d1fae5";
+
+    PARQUET [shape=cylinder, fillcolor="#6ee7b7",
+             label="Parquet Files\n[Columnar Storage]\n\n10-20x compression\nAnalytics-optimized\nPredicate pushdown\nColumn pruning"];
+
+    subgraph cluster_schema {
+      label="Schema Management";
+      style="dashed";
+      color="#047857";
+
+      SCHEMAS [fillcolor="#a7f3d0",
+               label="SchemaVersionManager\n\nSemantic versioning (v1.0.0)\nAutomatic migration\nBackward compatibility\nJSON Schema export"];
+
+      SCHEMA_TYPES [shape=note, fillcolor="#bbf7d0",
+                    label="Per-Type Schemas:\n\nTradeSchema v1.0\nQuoteSchema v1.0\nDepthSchema v1.0\nIntegritySchema v1.0"];
+    }
+
+    REPLAYER [fillcolor="#a7f3d0",
+              label="JsonlReplayer\n\nBacktesting support\nAuto-decompress .gz\nChronological ordering\nLINQ filtering"];
+  }
+
+  // Tiered Storage
+  subgraph cluster_tiers {
+    label="Tiered Storage (TieredStorageManager)";
+    color="#38a169";
+    style="rounded";
+    bgcolor="#f0fff4";
+
+    subgraph cluster_tier_levels {
+      label="Storage Tiers";
+      style="dashed";
+      color="#047857";
+
+      HOT_TIER [shape=folder, fillcolor="#9ae6b4",
+                label="Hot Tier\n[SSD/NVMe]\n\n0-7 days\nFastest access\nJSONL format"];
+
+      WARM_TIER [shape=folder, fillcolor="#9ae6b4",
+                 label="Warm Tier\n[HDD/Block Storage]\n\n7-30 days\nCompressed JSONL\nParquet conversion"];
+
+      COLD_TIER [shape=folder, fillcolor="#9ae6b4",
+                 label="Cold Tier\n[S3/Azure Blob/Glacier]\n\n30+ days\nParquet only\nInfrequent access"];
+    }
+
+    MIGRATION [fillcolor="#68d391",
+               label="TierMigrationService\n\nAutomatic lifecycle policies\nAge-based migration\nAccess pattern analysis\nCost optimization"];
+  }
+
+  // Export System
+  subgraph cluster_export {
+    label="Export System (AnalysisExportService)";
+    color="#2b6cb0";
+    style="rounded";
+    bgcolor="#dbeafe";
+
+    EXPORT [fillcolor="#bfdbfe",
+            label="Export Service\n[Multi-Format Output]\n\nDate range filtering\nSymbol selection\nFormat conversion"];
+
+    subgraph cluster_formats {
+      label="Export Formats";
+      style="dashed";
+      color="#1e40af";
+
+      PYTHON_EXP [shape=box, fillcolor="#93c5fd",
+                  label="Python/Pandas\n\nParquet files\ndatetime64[ns] timestamps\nCategory dtypes\npyarrow compatible"];
+
+      R_EXP [shape=box, fillcolor="#93c5fd",
+             label="R Statistics\n\nCSV format\nNA handling\nPOSIXct timestamps\ndata.table compatible"];
+
+      LEAN_EXP [shape=box, fillcolor="#93c5fd",
+                label="QuantConnect Lean\n\nNative Lean format\nZIP packaging\nSymbol mapping\nResolution handling"];
+
+      EXCEL_EXP [shape=box, fillcolor="#93c5fd",
+                 label="Microsoft Excel\n\nXLSX format\nMulti-sheet workbook\nFormatted tables\nCharts included"];
+
+      PG_EXP [shape=box, fillcolor="#93c5fd",
+              label="PostgreSQL\n\nCSV + DDL scripts\nCOPY command ready\nTimescaleDB hypertables\nIndexing hints"];
+    }
+  }
+
+  // Quality Assessment
+  subgraph cluster_quality {
+    label="Data Quality (AnalysisQualityReportGenerator)";
+    color="#e53e3e";
+    style="rounded";
+    bgcolor="#fee2e2";
+
+    QUALITY [fillcolor="#fecaca",
+             label="Quality Assessment\n\nMulti-dimensional scoring\nAutomated grading"];
+
+    subgraph cluster_metrics {
+      label="Quality Metrics";
+      style="dashed";
+      color="#991b1b";
+
+      QUALITY_DIMS [shape=note, fillcolor="#feb2b2",
+                    label="Dimensions (weighted):\n\nCompleteness (30%)\nAccuracy (25%)\nTimeliness (20%)\nConsistency (15%)\nValidity (10%)"];
+
+      QUALITY_CHECKS [shape=note, fillcolor="#feb2b2",
+                      label="Checks:\n\nOutlier detection (4 sigma)\nGap detection (missing periods)\nSequence validation\nPrice reasonability"];
+    }
+
+    GRADES [shape=note, fillcolor="#fecaca",
+            label="Quality Grades:\n\nA+ (95-100%) Excellent\nA  (90-94%)  Good\nB  (80-89%)  Acceptable\nC  (70-79%)  Marginal\nD  (60-69%)  Poor\nF  (<60%)    Failing"];
+  }
+
+  // Data Flow
+  EVENTS -> WAL [color="#c53030", penwidth=2, label="1. Journal"];
+  WAL -> JSONL [color="#ed8936", penwidth=2, label="2. Persist"];
+  JSONL -> COMPRESS [color="#805ad5", label="3. Compress"];
+  COMPRESS -> PARQUET [color="#2c7a7b", penwidth=2, label="4. Archive"];
+
+  // Compression profile selection
+  COMPRESS -> LZ4 [style=dashed];
+  COMPRESS -> ZSTD_STD [style=dashed];
+  COMPRESS -> ZSTD_WARM [style=dashed];
+  COMPRESS -> ZSTD_COLD [style=dashed];
+  COMPRESS -> GZIP [style=dashed];
+
+  // Schema management
+  PARQUET -> SCHEMAS [color="#2c7a7b"];
+  SCHEMAS -> SCHEMA_TYPES [style=dashed];
+
+  // Tiered storage flow
+  JSONL -> HOT_TIER [color="#38a169"];
+  MIGRATION -> HOT_TIER [style=dashed];
+  MIGRATION -> WARM_TIER [style=dashed];
+  MIGRATION -> COLD_TIER [style=dashed];
+  HOT_TIER -> WARM_TIER [color="#38a169", label="age > 7d"];
+  WARM_TIER -> COLD_TIER [color="#38a169", label="age > 30d"];
+  PARQUET -> WARM_TIER [color="#2c7a7b"];
+  PARQUET -> COLD_TIER [color="#2c7a7b", style=dashed];
+
+  // Export flow
+  PARQUET -> EXPORT [color="#2b6cb0"];
+  JSONL -> EXPORT [color="#2b6cb0"];
+  EXPORT -> PYTHON_EXP [color="#2b6cb0"];
+  EXPORT -> R_EXP [color="#2b6cb0"];
+  EXPORT -> LEAN_EXP [color="#2b6cb0"];
+  EXPORT -> EXCEL_EXP [color="#2b6cb0"];
+  EXPORT -> PG_EXP [color="#2b6cb0"];
+
+  // Quality assessment
+  EXPORT -> QUALITY [color="#e53e3e", label="assess"];
+  QUALITY -> QUALITY_DIMS [style=dashed];
+  QUALITY -> QUALITY_CHECKS [style=dashed];
+
+  // Replay capability
+  JSONL -> REPLAYER [style=dashed, color="#2c7a7b"];
+}

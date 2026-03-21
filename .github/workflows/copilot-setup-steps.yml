@@ -1,0 +1,71 @@
+name: Copilot Setup Steps
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - '**/*.csproj'
+      - '**/*.fsproj'
+      - 'Directory.Build.props'
+      - 'Directory.Packages.props'
+      - 'global.json'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/copilot-setup-steps.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_GENERATE_ASPNET_CERTIFICATE: false
+
+jobs:
+  copilot-setup-steps:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET with Cache
+        uses: ./.github/actions/setup-dotnet-cache
+        with:
+          dotnet-version: '9.0.x'
+          cache-suffix: 'copilot'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Restore .NET dependencies
+        run: dotnet restore Meridian.sln /p:EnableWindowsTargeting=true --verbosity minimal
+
+      - name: Build solution
+        continue-on-error: true
+        run: dotnet build Meridian.sln -c Release --no-restore /p:EnableWindowsTargeting=true --verbosity minimal
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Run C# tests
+        continue-on-error: true
+        run: >
+          dotnet test tests/Meridian.Tests/Meridian.Tests.csproj
+          -c Release --no-build /p:EnableWindowsTargeting=true
+          --verbosity minimal --filter "Category!=Integration" --blame-hang-timeout 60s
+
+      - name: Run F# tests
+        continue-on-error: true
+        run: >
+          dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj
+          -c Release --no-build /p:EnableWindowsTargeting=true
+          --verbosity minimal --blame-hang-timeout 60s

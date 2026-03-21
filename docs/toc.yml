@@ -1,0 +1,171 @@
+- name: Documentation Home
+  href: README.md
+
+- name: User Guide
+  href: HELP.md
+
+- name: Getting Started
+  href: getting-started/README.md
+
+- name: Architecture
+  items:
+    - name: Overview
+      href: architecture/overview.md
+    - name: C4 Diagrams
+      href: architecture/c4-diagrams.md
+    - name: Domain Model
+      href: architecture/domains.md
+    - name: Layer Boundaries
+      href: architecture/layer-boundaries.md
+    - name: Provider Management
+      href: architecture/provider-management.md
+    - name: Storage Design
+      href: architecture/storage-design.md
+    - name: Crystallized Storage Format
+      href: architecture/crystallized-storage-format.md
+    - name: Deterministic Canonicalization
+      href: architecture/deterministic-canonicalization.md
+    - name: Desktop Layers
+      href: architecture/desktop-layers.md
+    - name: UI Redesign
+      href: architecture/ui-redesign.md
+    - name: Why This Architecture
+      href: architecture/why-this-architecture.md
+
+- name: ADR
+  href: adr/README.md
+
+- name: Providers
+  items:
+    - name: Data Sources
+      href: providers/data-sources.md
+    - name: Provider Comparison
+      href: providers/provider-comparison.md
+    - name: Backfill Guide
+      href: providers/backfill-guide.md
+    - name: Alpaca Setup
+      href: providers/alpaca-setup.md
+    - name: Interactive Brokers Setup
+      href: providers/interactive-brokers-setup.md
+    - name: IB Free Equity Reference
+      href: providers/interactive-brokers-free-equity-reference.md
+
+- name: Operations
+  items:
+    - name: Deployment
+      href: operations/deployment.md
+    - name: Operator Runbook
+      href: operations/operator-runbook.md
+    - name: Performance Tuning
+      href: operations/performance-tuning.md
+    - name: High Availability
+      href: operations/high-availability.md
+    - name: Service Level Objectives
+      href: operations/service-level-objectives.md
+    - name: Portable Data Packager
+      href: operations/portable-data-packager.md
+    - name: MSIX Packaging
+      href: operations/msix-packaging.md
+
+- name: Development
+  items:
+    - name: Repository Organization
+      href: development/repository-organization-guide.md
+    - name: Provider Implementation
+      href: development/provider-implementation.md
+    - name: WPF Implementation Notes
+      href: development/wpf-implementation-notes.md
+    - name: Desktop Testing Guide
+      href: development/desktop-testing-guide.md
+    - name: Central Package Management
+      href: development/central-package-management.md
+    - name: GitHub Actions Summary
+      href: development/github-actions-summary.md
+    - name: Build Observability
+      href: development/build-observability.md
+    - name: Documentation Contribution Guide
+      href: development/documentation-contribution-guide.md
+    - name: Documentation Automation
+      href: development/documentation-automation.md
+    - name: Adding Custom Rules
+      href: development/adding-custom-rules.md
+    - name: Expanding Scripts
+      href: development/expanding-scripts.md
+
+- name: Integrations
+  items:
+    - name: QuantConnect Lean Integration
+      href: integrations/lean-integration.md
+    - name: F# Integration
+      href: integrations/fsharp-integration.md
+    - name: Language Strategy
+      href: integrations/language-strategy.md
+
+- name: Reference
+  items:
+    - name: API Reference
+      href: reference/api-reference.md
+    - name: Data Dictionary
+      href: reference/data-dictionary.md
+    - name: Data Uniformity
+      href: reference/data-uniformity.md
+    - name: Environment Variables
+      href: reference/environment-variables.md
+    - name: Design Review Memo
+      href: reference/design-review-memo.md
+
+- name: Security
+  items:
+    - name: Known Vulnerabilities
+      href: security/known-vulnerabilities.md
+
+- name: Status & Planning
+  items:
+    - name: Overview
+      href: status/README.md
+    - name: Roadmap
+      href: status/ROADMAP.md
+    - name: Feature Inventory
+      href: status/FEATURE_INVENTORY.md
+    - name: Improvements
+      href: status/IMPROVEMENTS.md
+    - name: Changelog
+      href: status/CHANGELOG.md
+    - name: Production Status
+      href: status/production-status.md
+
+- name: Evaluations
+  items:
+    - name: Overview
+      href: evaluations/README.md
+    - name: Data Quality Monitoring
+      href: evaluations/data-quality-monitoring-evaluation.md
+    - name: Historical Data Providers
+      href: evaluations/historical-data-providers-evaluation.md
+    - name: Storage Architecture
+      href: evaluations/storage-architecture-evaluation.md
+    - name: Realtime Streaming Architecture
+      href: evaluations/realtime-streaming-architecture-evaluation.md
+    - name: Ingestion Orchestration
+      href: evaluations/ingestion-orchestration-evaluation.md
+    - name: Operational Readiness
+      href: evaluations/operational-readiness-evaluation.md
+
+- name: AI Docs
+  items:
+    - name: AI Overview
+      href: ai/README.md
+    - name: AI Known Errors
+      href: ai/ai-known-errors.md
+    - name: Copilot Instructions
+      href: ai/copilot/instructions.md
+
+- name: Diagrams
+  items:
+    - name: Overview
+      href: diagrams/README.md
+    - name: UML Diagrams
+      href: diagrams/uml/README.md
+
+- name: Dependencies
+  href: DEPENDENCIES.md

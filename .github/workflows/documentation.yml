@@ -1,0 +1,1839 @@
+# Consolidated Documentation, AI Instruction Sync & TODO Automation
+#
+# Replaces and combines:
+#   - docs-comprehensive.yml (Documentation & Workflow Automation)
+#   - docs-auto-update.yml (Docs Auto-Update)
+#   - docs-structure-sync.yml (Docs Structure Sync)
+#   - ai-instructions-sync.yml (AI Instructions Sync)
+#   - todo-automation.yml (TODO Scanning & Documentation)
+#   - docs-check.yml (Documentation Checks — markdown lint, link repair, example validation)
+#
+# All documentation generation, validation, AI instruction sync,
+# known-error intake, and TODO scanning is unified here.
+# No functionality removed.
+#
+# v2 optimizations:
+#   - Parallel job execution (validate-docs + regenerate-docs + scan-todos)
+#   - Unified any_changed output to simplify conditions
+#   - New expansion jobs: health-dashboard, link-repair, validate-examples,
+#     rules-engine, generate-changelog, coverage-report
+#   - Improved error diagnostics and GITHUB_STEP_SUMMARY
+#   - validate-docs uses changed-file detection to lint only modified markdown on PRs
+
+name: Documentation Automation
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - 'docs/**'
+      - '*.md'
+      - 'CLAUDE.md'
+      - '.github/workflows/**'
+      - '.github/agents/**'
+      - 'build/scripts/docs/**'
+      - 'build/dotnet/DocGenerator/**'
+      - 'build/**/*.py'
+      - 'src/**'
+      - 'tests/**'
+      - 'benchmarks/**'
+      - 'config/appsettings.sample.json'
+  pull_request:
+    branches: ["main"]
+    paths:
+      - 'docs/**'
+      - '*.md'
+      - 'CLAUDE.md'
+      - '.github/workflows/**'
+      - '.github/agents/**'
+      - 'build/scripts/docs/**'
+      - 'build/dotnet/DocGenerator/**'
+      - 'src/**'
+  schedule:
+    - cron: '0 3 * * 1'
+  workflow_dispatch:
+    inputs:
+      regenerate:
+        description: 'Force regenerate generated docs and AI instruction files'
+        required: false
+        default: 'false'
+        type: boolean
+      update_all:
+        description: 'Update all auto-generated documentation outputs'
+        required: false
+        default: 'false'
+        type: boolean
+      dry_run:
+        description: 'Show changes without committing'
+        required: false
+        default: 'true'
+        type: boolean
+      create_pr:
+        description: 'Create PR for generated updates (manual runs only)'
+        required: false
+        default: 'false'
+        type: boolean
+      issue_number:
+        description: 'Optional issue number to ingest into docs/ai/ai-known-errors.md'
+        required: false
+        type: string
+      force_update:
+        description: 'Force regenerate all structure documentation'
+        required: false
+        default: 'false'
+        type: boolean
+      scan_todos:
+        description: 'Run TODO scan and documentation update'
+        required: false
+        default: 'true'
+        type: boolean
+      create_issues:
+        description: 'Create GitHub issues for untracked TODOs'
+        required: false
+        default: false
+        type: boolean
+      include_notes:
+        description: 'Include NOTE comments in TODO documentation'
+        required: false
+        default: true
+        type: boolean
+      use_copilot:
+        description: 'Use AI to generate TODO triage recommendations'
+        required: false
+        default: true
+        type: boolean
+      run_expansion:
+        description: 'Run expansion features (health dashboard, link repair, etc.)'
+        required: false
+        default: true
+        type: boolean
+  issues:
+    types: [opened, edited, labeled, reopened]
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  models: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: documentation-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  PYTHON_VERSION: '3.11'
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  # ─── AI Known Errors Intake ──────────────────────────────────────────
+  # This job only runs when triggered by:
+  #   1. An issue with the 'ai-known-error' label is opened/edited/labeled/reopened
+  #   2. Manual workflow_dispatch with an issue_number parameter
+  # It will SKIP on push/pull_request/schedule events (this is expected behavior)
+  ai-known-errors-intake:
+    name: AI Known Errors Intake
+    if: |
+      (github.event_name == 'issues' && contains(github.event.issue.labels.*.name, 'ai-known-error')) ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.issue_number && github.event.inputs.issue_number != '')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Resolve issue payload for workflow_dispatch
+        if: github.event_name == 'workflow_dispatch'
+        id: fetch_issue
+        uses: actions/github-script@v8
+        with:
+          issue_number: ${{ github.event.inputs.issue_number }}
+          script: |
+            const issue_number = Number(core.getInput('issue_number'));
+            if (!issue_number) {
+              core.setFailed('workflow_dispatch requires a numeric issue_number input for intake.');
+              return;
+            }
+
+            const { data } = await github.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number,
+            });
+
+            core.setOutput('number', String(data.number));
+            core.setOutput('title', data.title || '');
+            core.setOutput('body', data.body || '');
+
+      - name: Update docs/ai/ai-known-errors.md from issue
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          DISPATCH_ISSUE_NUMBER: ${{ steps.fetch_issue.outputs.number }}
+          DISPATCH_ISSUE_TITLE: ${{ steps.fetch_issue.outputs.title }}
+          DISPATCH_ISSUE_BODY: ${{ steps.fetch_issue.outputs.body }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          python3 - <<'PY'
+          import datetime
+          import os
+          import pathlib
+          import re
+
+          def text(name: str) -> str:
+              return os.environ.get(name, "") or ""
+
+          event_name = text("EVENT_NAME")
+          if event_name == "workflow_dispatch":
+              number = text("DISPATCH_ISSUE_NUMBER")
+              title = text("DISPATCH_ISSUE_TITLE")
+              body = text("DISPATCH_ISSUE_BODY")
+          else:
+              number = text("ISSUE_NUMBER")
+              title = text("ISSUE_TITLE")
+              body = text("ISSUE_BODY")
+
+          if not number:
+              raise SystemExit("No issue number found.")
+
+          doc = pathlib.Path("docs/ai/ai-known-errors.md")
+          current = doc.read_text(encoding="utf-8")
+          marker = f"#{number}"
+          if marker in current:
+              print(f"Entry already exists for issue {number}; skipping")
+              raise SystemExit(0)
+
+          def section(name: str, fallback: str) -> str:
+              m = re.search(rf"(?ims)^##\s*{re.escape(name)}\s*$\n(.*?)(?=^##\s+|\Z)", body)
+              if not m:
+                  return fallback
+              value = m.group(1).strip()
+              return value if value else fallback
+
+          def normalize_lines(value: str) -> str:
+              lines = [ln.rstrip() for ln in value.splitlines() if ln.strip()]
+              return "\n".join(lines) if lines else "Not provided."
+
+          def checkbox_lines(value: str) -> str:
+              items = []
+              for ln in value.splitlines():
+                  s = ln.strip()
+                  if not s:
+                      continue
+                  s = re.sub(r"^[-*]\s*", "", s)
+                  s = re.sub(r"^\[[ xX]\]\s*", "", s)
+                  items.append(f"  - [ ] {s}")
+              if not items:
+                  items = ["  - [ ] Add prevention checks from the linked issue."]
+              return "\n".join(items)
+
+          def command_lines(value: str) -> str:
+              cmds = []
+              in_code = False
+              for ln in value.splitlines():
+                  if ln.strip().startswith("```"):
+                      in_code = not in_code
+                      continue
+                  s = ln.strip()
+                  if not s:
+                      continue
+                  if in_code:
+                      cmds.append(f"  - `{s}`")
+                  elif s.startswith("-"):
+                      cmds.append(f"  - `{s.lstrip('- ').strip('`')}`")
+                  elif re.match(r"^[A-Za-z0-9_.\-/]+", s):
+                      cmds.append(f"  - `{s.strip('`')}`")
+              if not cmds:
+                  cmds = ["  - `# add verification commands`"]
+              return "\n".join(cmds)
+
+          area = normalize_lines(section("Area", "process"))
+          symptoms = normalize_lines(section("Symptoms", title or "Issue description not provided."))
+          root = normalize_lines(section("Root cause", "Root cause not yet documented."))
+          prevention = checkbox_lines(section("Prevention checklist", ""))
+          verification = command_lines(section("Verification commands", ""))
+          repo = text("GITHUB_REPOSITORY")
+          references = normalize_lines(section("References", f"- https://github.com/{repo}/issues/{number}"))
+
+          today = datetime.datetime.utcnow().date().isoformat()
+
+          block = f"""
+          ## [{today}] #{number} {title or 'Untitled issue'}
+          - Area: {area}
+          - Symptoms:
+            {symptoms.replace(chr(10), chr(10) + '  ')}
+          - Root cause:
+            {root.replace(chr(10), chr(10) + '  ')}
+          - Prevention checklist:
+          {prevention}
+          - Verification commands:
+          {verification}
+          - References:
+            {references.replace(chr(10), chr(10) + '  ')}
+          """.strip()
+
+          updated = current.rstrip() + "\n\n" + block + "\n"
+          doc.write_text(updated, encoding="utf-8")
+          print(f"Appended issue {number} to {doc}")
+          PY
+
+      - name: Check for changes
+        id: changes
+        run: |
+          if git diff --quiet -- docs/ai/ai-known-errors.md; then
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create PR with known-error update
+        if: steps.changes.outputs.has_changes == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "docs: ingest ai-known-error issue into registry"
+          title: "docs: ingest ai-known-error issue into registry"
+          body: |
+            ## Summary
+            - ingest a labeled AI issue into `docs/ai/ai-known-errors.md`
+            - preserve source issue reference for traceability
+
+            ## Trigger
+            - `${{ github.event_name }}` event
+          branch: automation/ai-known-errors-intake
+          delete-branch: true
+          labels: |
+            documentation
+            automation
+
+  # ─── Change Detection ────────────────────────────────────────────────
+  # This job runs for push/pull_request/schedule/workflow_dispatch events.
+  # It SKIPS on 'issues' events since issue events only trigger ai-known-errors-intake.
+  detect-changes:
+    name: Detect Documentation & Structure Changes
+    if: github.event_name != 'issues'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      any_changed: ${{ steps.aggregate.outputs.any_changed }}
+      docs_changed: ${{ steps.filter.outputs.docs }}
+      structure_changed: ${{ steps.filter.outputs.structure }}
+      workflow_changed: ${{ steps.filter.outputs.workflows }}
+      providers_changed: ${{ steps.filter.outputs.providers }}
+      interfaces_changed: ${{ steps.filter.outputs.interfaces }}
+      adrs_changed: ${{ steps.filter.outputs.adrs }}
+      config_changed: ${{ steps.filter.outputs.config }}
+      microservices_changed: ${{ steps.filter.outputs.microservices }}
+      ai_files_changed: ${{ steps.filter.outputs.ai_files }}
+      src_changed: ${{ steps.filter.outputs.src }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Detect changed areas
+        id: filter
+        uses: dorny/paths-filter@v4.0.1
+        with:
+          filters: |
+            docs:
+              - 'docs/**'
+              - '*.md'
+              - 'CLAUDE.md'
+            workflows:
+              - '.github/workflows/**'
+            structure:
+              - 'src/**'
+              - 'tests/**'
+              - 'benchmarks/**'
+              - 'build/**'
+              - added|deleted: 'src/**'
+              - added|deleted: 'docs/**'
+            providers:
+              - 'src/Meridian/Infrastructure/Adapters/**'
+            interfaces:
+              - 'src/Meridian/Infrastructure/IMarketDataClient.cs'
+              - 'src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider*.cs'
+            adrs:
+              - 'docs/adr/**'
+            config:
+              - 'config/appsettings.sample.json'
+            microservices:
+              - 'src/Microservices/**'
+            ai_files:
+              - 'docs/ai/**'
+              - '.github/agents/**'
+              - 'CLAUDE.md'
+            src:
+              - 'src/**/*.cs'
+              - 'src/**/*.fs'
+
+      - name: Compute any_changed flag
+        id: aggregate
+        run: |
+          if [[ "${{ steps.filter.outputs.docs }}" == "true" ]] || \
+             [[ "${{ steps.filter.outputs.structure }}" == "true" ]] || \
+             [[ "${{ steps.filter.outputs.workflows }}" == "true" ]] || \
+             [[ "${{ steps.filter.outputs.providers }}" == "true" ]] || \
+             [[ "${{ steps.filter.outputs.interfaces }}" == "true" ]] || \
+             [[ "${{ steps.filter.outputs.adrs }}" == "true" ]] || \
+             [[ "${{ steps.filter.outputs.config }}" == "true" ]] || \
+             [[ "${{ steps.filter.outputs.microservices }}" == "true" ]] || \
+             [[ "${{ steps.filter.outputs.ai_files }}" == "true" ]] || \
+             [[ "${{ steps.filter.outputs.src }}" == "true" ]] || \
+             [[ "${{ github.event_name }}" == "workflow_dispatch" ]] || \
+             [[ "${{ github.event_name }}" == "schedule" ]]; then
+            echo "any_changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "any_changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  # ─── Validate Documentation Quality ──────────────────────────────────
+  # Runs in PARALLEL with regenerate-docs and scan-todos
+  validate-docs:
+    name: Validate Documentation Quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: detect-changes
+    if: |
+      needs.detect-changes.outputs.any_changed == 'true'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Detect changed markdown files
+        id: changed_markdown
+        uses: tj-actions/changed-files@v47
+        with:
+          separator: "\n"
+          files: |
+            **/*.md
+
+      - name: Install markdown linter
+        if: steps.changed_markdown.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch'
+        run: npm install --global markdownlint-cli2
+
+      - name: Markdown lint (changed files only)
+        if: steps.changed_markdown.outputs.any_changed == 'true' && github.event_name != 'workflow_dispatch'
+        run: |
+          mapfile -t changed_files << 'EOF'
+          ${{ steps.changed_markdown.outputs.all_changed_files }}
+          EOF
+
+          if [ "${#changed_files[@]}" -eq 0 ]; then
+            echo "No markdown files changed."
+            exit 0
+          fi
+
+          echo "Linting ${#changed_files[@]} markdown file(s)."
+          markdownlint-cli2 "${changed_files[@]}"
+
+      - name: Markdown lint (full scan on manual dispatch)
+        if: github.event_name == 'workflow_dispatch'
+        uses: DavidAnson/markdownlint-cli2-action@v22.0.0
+        with:
+          globs: |
+            **/*.md
+            !**/node_modules/**
+            !**/bin/**
+            !**/obj/**
+        continue-on-error: true
+
+      - name: Link validation
+        uses: gaurav-nelson/github-action-markdown-link-check@1.0.17
+        with:
+          use-quiet-mode: 'yes'
+          use-verbose-mode: 'no'
+          folder-path: 'docs/'
+          max-depth: 5
+        continue-on-error: true
+
+      - name: ADR inventory
+        run: |
+          set -euo pipefail
+          echo "## ADR Verification Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          ADR_COUNT=$(find docs -path "*/adr/*.md" -o -path "*/decisions/*.md" 2>/dev/null | wc -l)
+          echo "Found $ADR_COUNT ADR files" >> $GITHUB_STEP_SUMMARY
+
+      - name: Run documentation rules engine
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          if [ -f "build/scripts/docs/rules-engine.py" ] && [ -f "build/rules/doc-rules.yaml" ]; then
+            python3 build/scripts/docs/rules-engine.py \
+              --rules build/rules/doc-rules.yaml \
+              --output docs/status/rules-report.md \
+              --summary >> "$GITHUB_STEP_SUMMARY" 2>&1 || true
+          else
+            echo "Rules engine not configured, skipping." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Validate docs structure (README presence + lifecycle front matter)
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          echo "## Docs Structure Validation" >> $GITHUB_STEP_SUMMARY
+          if [ -f "build/scripts/docs/validate-docs-structure.py" ]; then
+            python3 build/scripts/docs/validate-docs-structure.py \
+              --docs-dir docs \
+              --github-actions 2>&1 | tee /tmp/docs-structure-report.txt
+            echo "" >> $GITHUB_STEP_SUMMARY
+            cat /tmp/docs-structure-report.txt >> $GITHUB_STEP_SUMMARY
+          else
+            echo "validate-docs-structure.py not found, skipping." >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Link repair analysis (non-blocking)
+        continue-on-error: true
+        run: |
+          mkdir -p .artifacts
+          python3 build/scripts/docs/repair-links.py \
+            --root . \
+            --docs-dir docs \
+            --output .artifacts/link-repair-report.md \
+            --summary | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Code example validation report (non-blocking)
+        continue-on-error: true
+        run: |
+          mkdir -p .artifacts
+          python3 build/scripts/docs/validate-examples.py \
+            --root . \
+            --docs-dir docs \
+            --output .artifacts/examples-validation-report.md \
+            --summary | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload docs validation reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: docs-validation-reports
+          path: .artifacts/
+          if-no-files-found: ignore
+
+  # ─── Regenerate All Documentation ────────────────────────────────────
+  # Runs in PARALLEL with validate-docs and scan-todos
+  regenerate-docs:
+    name: Regenerate Docs, Structure & AI Instructions
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: detect-changes
+    if: |
+      needs.detect-changes.outputs.any_changed == 'true'
+    outputs:
+      has_changes: ${{ steps.changes.outputs.has_changes }}
+      changed_files: ${{ steps.changes.outputs.changed_files }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Setup .NET with Cache
+        uses: ./.github/actions/setup-dotnet-cache
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Build project for metadata extraction
+        run: |
+          set -euo pipefail
+          dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
+          dotnet build src/Meridian/Meridian.csproj -c Release --no-restore /p:EnableWindowsTargeting=true /p:GenerateDocumentationFile=true
+        continue-on-error: true
+
+      # --- Structure docs ---
+      - name: Generate structure and workflow docs
+        run: |
+          set -euo pipefail
+          mkdir -p docs/generated
+          python3 build/scripts/docs/generate-structure-docs.py --output docs/generated/repository-structure.md --format markdown
+          python3 build/scripts/docs/generate-structure-docs.py --output docs/generated/workflows-overview.md --workflows-only
+
+      # --- Provider docs ---
+      - name: Generate provider registry
+        if: |
+          needs.detect-changes.outputs.providers_changed == 'true' ||
+          needs.detect-changes.outputs.interfaces_changed == 'true' ||
+          github.event.inputs.update_all == 'true' ||
+          github.event.inputs.force_update == 'true' ||
+          github.event_name == 'schedule'
+        run: |
+          set -euo pipefail
+          python3 build/scripts/docs/generate-structure-docs.py \
+            --output docs/generated/provider-registry.md \
+            --providers-only \
+            --extract-attributes
+
+      # --- ADR compliance and index ---
+      - name: Verify ADR compliance
+        if: |
+          needs.detect-changes.outputs.adrs_changed == 'true' ||
+          github.event.inputs.update_all == 'true' ||
+          github.event_name == 'schedule'
+        run: |
+          set -euo pipefail
+          if [ -d "build/dotnet/DocGenerator" ]; then
+            dotnet run --project build/dotnet/DocGenerator/DocGenerator.csproj --no-build -c Release -- verify-adrs \
+              --adr-dir docs/adr \
+              --src-dir . || true
+          fi
+
+      - name: Generate ADR index
+        run: |
+          set -euo pipefail
+          mkdir -p docs/generated
+          echo "# Architecture Decision Records" > docs/generated/adr-index.md
+          echo "" >> docs/generated/adr-index.md
+          echo "> Auto-generated on $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> docs/generated/adr-index.md
+          echo "" >> docs/generated/adr-index.md
+          echo "| ADR | Title | Status |" >> docs/generated/adr-index.md
+          echo "|-----|-------|--------|" >> docs/generated/adr-index.md
+
+          for adr in docs/adr/*.md; do
+            if [ -f "$adr" ]; then
+              filename=$(basename "$adr")
+              title=$(head -1 "$adr" | sed 's/^# //')
+              status="Accepted"
+              if grep -qi "status:.*superseded" "$adr"; then
+                status="Superseded"
+              elif grep -qi "status:.*deprecated" "$adr"; then
+                status="Deprecated"
+              fi
+              echo "| [$filename](../adr/$filename) | $title | $status |" >> docs/generated/adr-index.md
+            fi
+          done
+
+          echo "" >> docs/generated/adr-index.md
+          echo "---" >> docs/generated/adr-index.md
+          echo "*This file is auto-generated. Do not edit manually.*" >> docs/generated/adr-index.md
+
+      # --- Configuration schema ---
+      - name: Generate configuration schema
+        run: |
+          set -euo pipefail
+          mkdir -p docs/generated
+
+          cat > docs/generated/configuration-schema.md << 'EOD'
+          # Configuration Schema
+
+          > Auto-generated from `config/appsettings.sample.json`
+
+          This document describes the configuration options available in the Meridian.
+
+          ## Configuration Sections
+
+          EOD
+
+          if [ -f "config/appsettings.sample.json" ]; then
+            python3 -c "
+          import json
+          import sys
+
+          try:
+              with open('config/appsettings.sample.json', 'r') as f:
+                  config = json.load(f)
+
+              for section, value in config.items():
+                  print(f'### {section}')
+                  print('')
+                  if isinstance(value, dict):
+                      print('| Setting | Type | Description |')
+                      print('|---------|------|-------------|')
+                      for key, val in value.items():
+                          val_type = type(val).__name__
+                          print(f'| \`{key}\` | {val_type} | - |')
+                  else:
+                      print(f'Type: \`{type(value).__name__}\`')
+                  print('')
+          except Exception as e:
+              print(f'Error parsing config: {e}', file=sys.stderr)
+          " >> docs/generated/configuration-schema.md
+          fi
+
+          echo "---" >> docs/generated/configuration-schema.md
+          echo "*This file is auto-generated. Do not edit manually.*" >> docs/generated/configuration-schema.md
+
+      # --- Project context ---
+      - name: Generate project context doc
+        run: |
+          set -euo pipefail
+          if [ -d "build/dotnet/DocGenerator" ]; then
+            dotnet restore build/dotnet/DocGenerator/DocGenerator.csproj
+            dotnet build build/dotnet/DocGenerator/DocGenerator.csproj -c Release -v q || true
+            dotnet run --project build/dotnet/DocGenerator/DocGenerator.csproj --no-build -c Release -- context --src src/Meridian --output docs/generated/project-context.md || true
+          fi
+
+      # --- AI instruction sync ---
+      - name: Validate documentation automation inputs
+        run: |
+          set -euo pipefail
+          required=(
+            "build/scripts/docs/generate-structure-docs.py"
+            "build/scripts/docs/update-claude-md.py"
+            "docs/generated/repository-structure.md"
+          )
+
+          for path in "${required[@]}"; do
+            if [ ! -e "$path" ]; then
+              echo "::error::Missing required file: $path"
+              exit 1
+            fi
+          done
+
+      - name: Sync AI instruction files
+        run: |
+          set -euo pipefail
+          files=(
+            "CLAUDE.md"
+            "docs/ai/copilot/instructions.md"
+            ".github/agents/documentation-agent.md"
+          )
+
+          for file in "${files[@]}"; do
+            if [ -f "$file" ]; then
+              python3 build/scripts/docs/update-claude-md.py \
+                --claude-md "$file" \
+                --structure-source docs/generated/repository-structure.md
+            else
+              echo "Skipping missing AI instruction file: $file"
+            fi
+          done
+
+      # --- Health dashboard (expansion) ---
+      - name: Generate documentation health dashboard
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          if [ -f "build/scripts/docs/generate-health-dashboard.py" ]; then
+            mkdir -p docs/status
+            python3 build/scripts/docs/generate-health-dashboard.py \
+              --output docs/status/health-dashboard.md \
+              --json-output docs-health.json
+            echo "### Documentation Health" >> "$GITHUB_STEP_SUMMARY"
+            head -20 docs/status/health-dashboard.md >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || true
+          fi
+
+      # --- Documentation coverage report ---
+      - name: Generate documentation coverage report
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          if [ -f "build/scripts/docs/generate-coverage.py" ]; then
+            mkdir -p docs/generated
+            python3 build/scripts/docs/generate-coverage.py \
+              --output docs/generated/documentation-coverage.md \
+              --summary >> "$GITHUB_STEP_SUMMARY" 2>&1
+          else
+            echo "Coverage report script not found, skipping." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      # --- AI-powered documentation quality review ---
+      - name: AI documentation quality review
+        id: ai-doc-review
+        if: |
+          github.event_name == 'schedule' ||
+          (github.event_name == 'workflow_dispatch' && github.event.inputs.regenerate == 'true')
+        continue-on-error: true
+        uses: actions/ai-inference@v1
+        with:
+          model: gpt-4o-mini
+          max-tokens: 1500
+          prompt: |
+            You are a documentation quality reviewer for a .NET market data collection project.
+            Review the following generated documentation file list and provide:
+            1) A brief quality assessment (completeness, consistency)
+            2) Any gaps in documentation coverage
+            3) Suggestions for improvement (max 3)
+
+            Keep the response under 200 words in markdown format.
+
+            Generated documentation files:
+            - docs/generated/repository-structure.md
+            - docs/generated/provider-registry.md
+            - docs/generated/workflows-overview.md
+            - docs/generated/project-context.md
+            - docs/generated/adr-index.md
+            - docs/generated/configuration-schema.md
+            - docs/generated/documentation-coverage.md
+
+            AI instruction files synced:
+            - CLAUDE.md
+            - docs/ai/copilot/instructions.md
+            - .github/agents/documentation-agent.md
+
+      # --- Check for changes ---
+      - name: Check for generated changes
+        id: changes
+        run: |
+          set -euo pipefail
+          watched=(
+            "docs/"
+            "CLAUDE.md"
+            "docs/ai/copilot/instructions.md"
+            ".github/agents/documentation-agent.md"
+          )
+
+          changed_files=$(git status --porcelain "${watched[@]}" | awk '{print $2}' | paste -sd ',' -)
+
+          if [ -n "$(git status --porcelain "${watched[@]}")" ]; then
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "changed_files=$changed_files" >> $GITHUB_OUTPUT
+            {
+              echo "### Generated files changed"
+              git status --short -- "${watched[@]}"
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "changed_files=" >> $GITHUB_OUTPUT
+            echo "No generated documentation changes detected." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Append AI review to summary
+        if: always() && steps.ai-doc-review.outputs.response != ''
+        run: |
+          {
+            echo ""
+            echo "### AI Documentation Quality Review"
+            echo ""
+            echo "${{ steps.ai-doc-review.outputs.response }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload generated documentation snapshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: docs-generated-snapshot
+          path: |
+            docs/generated/*.md
+            docs/status/health-dashboard.md
+            docs-health.json
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Show dry-run diff
+        if: |
+          steps.changes.outputs.has_changes == 'true' &&
+          github.event_name == 'workflow_dispatch' &&
+          github.event.inputs.dry_run == 'true'
+        run: |
+          set -euo pipefail
+          git --no-pager diff -- docs/ CLAUDE.md docs/ai/copilot/instructions.md .github/agents/documentation-agent.md
+
+      - name: Upload dry-run patch artifact
+        if: |
+          steps.changes.outputs.has_changes == 'true' &&
+          github.event_name == 'workflow_dispatch' &&
+          github.event.inputs.dry_run == 'true'
+        run: |
+          set -euo pipefail
+          git --no-pager diff --binary -- docs/ CLAUDE.md docs/ai/copilot/instructions.md .github/agents/documentation-agent.md > docs-automation.patch
+
+      - name: Publish dry-run patch artifact
+        if: |
+          steps.changes.outputs.has_changes == 'true' &&
+          github.event_name == 'workflow_dispatch' &&
+          github.event.inputs.dry_run == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: docs-automation-diff
+          path: docs-automation.patch
+          if-no-files-found: error
+
+      - name: Commit direct updates
+        if: |
+          steps.changes.outputs.has_changes == 'true' &&
+          (github.event_name == 'push' || github.event_name == 'schedule') &&
+          github.actor != 'github-actions[bot]'
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add docs/ \
+                  CLAUDE.md docs/ai/copilot/instructions.md \
+                  .github/agents/documentation-agent.md
+          git commit -m "docs: consolidated documentation automation updates
+
+          - Regenerated docs/generated artifacts
+          - Synced AI instruction files
+          - Updated provider registry, ADR index, config schema
+
+          [skip ci]"
+
+          # Pull and rebase to handle concurrent updates before pushing
+          git pull --rebase origin ${{ github.ref_name }}
+          git push
+
+      - name: Create pull request for manual updates
+        id: create-pr
+        if: |
+          steps.changes.outputs.has_changes == 'true' &&
+          github.event_name == 'workflow_dispatch' &&
+          github.event.inputs.create_pr == 'true' &&
+          github.event.inputs.dry_run != 'true'
+        continue-on-error: true
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: automation/docs-comprehensive-sync
+          delete-branch: true
+          commit-message: "docs: consolidated documentation automation updates"
+          title: "docs: consolidated documentation automation updates"
+          body: |
+            ## Summary
+            - Regenerated `docs/generated/*` artifacts.
+            - Updated `docs/generated/adr-index.md` from ADR source files.
+            - Updated `docs/generated/configuration-schema.md` from sample configuration.
+            - Synced repository-structure sections in AI instruction files.
+            - Updated provider registry, ADR index, configuration schema.
+            - Consolidated all documentation automation outputs into one run.
+          labels: |
+            documentation
+            automation
+
+      - name: Fallback - Commit directly if PR creation failed
+        if: |
+          steps.changes.outputs.has_changes == 'true' &&
+          github.event_name == 'workflow_dispatch' &&
+          github.event.inputs.create_pr == 'true' &&
+          github.event.inputs.dry_run != 'true' &&
+          steps.create-pr.outcome == 'failure'
+        run: |
+          echo "::warning::PR creation failed. Checking if direct commit is needed."
+          echo "::notice::To enable PR creation, go to Settings > Actions > General and enable 'Allow GitHub Actions to create and approve pull requests'"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add docs/ \
+                  CLAUDE.md docs/ai/copilot/instructions.md \
+                  .github/agents/documentation-agent.md
+
+          # Only commit if there are staged changes
+          if git diff --staged --quiet; then
+            echo "::notice::No changes to commit on main branch. Changes may have been pushed to a branch already."
+            exit 0
+          fi
+
+          git commit -m "docs: consolidated documentation automation updates
+
+          Note: Committed directly because PR creation is disabled in repository settings.
+
+          [skip ci]"
+
+          # Pull and rebase to handle concurrent updates before pushing
+          git pull --rebase origin ${{ github.ref_name }}
+          git push
+
+  # ─── TODO Scanning and Documentation ─────────────────────────────────
+  # Runs in PARALLEL with validate-docs and regenerate-docs
+  scan-todos:
+    name: Scan and Document TODOs
+    needs: [detect-changes]
+    if: |
+      needs.detect-changes.outputs.any_changed == 'true' &&
+      github.event_name != 'issues' && (
+        needs.detect-changes.outputs.src_changed == 'true' ||
+        needs.detect-changes.outputs.structure_changed == 'true' ||
+        github.event_name == 'schedule' ||
+        (github.event_name == 'workflow_dispatch' && github.event.inputs.scan_todos != 'false')
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      total_count: ${{ steps.scan.outputs.total_count }}
+      new_todos: ${{ steps.scan.outputs.new_todos }}
+      has_changes: ${{ steps.check-changes.outputs.has_changes }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Pull latest changes
+        run: |
+          git pull origin ${{ github.ref_name }} --rebase || true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Scan codebase for TODOs
+        id: scan
+        run: |
+          python3 build/scripts/docs/scan-todos.py \
+            --output docs/status/TODO.md \
+            --format markdown \
+            --include-notes ${{ github.event.inputs.include_notes || 'true' }} \
+            --json-output todo-scan-results.json
+
+          # Extract metrics for workflow outputs
+          if [ -f todo-scan-results.json ]; then
+            python3 << 'PYEOF'
+          import json
+          import os
+          
+          with open('todo-scan-results.json', 'r') as f:
+              data = json.load(f)
+          
+          total_count = data.get('total_count', 0)
+          untracked = [t for t in data.get('todos', []) if not t.get('has_issue', False)]
+          new_todos = len(untracked)
+          scan_json = json.dumps(data, separators=(',', ':'))
+          
+          # Write to GITHUB_OUTPUT
+          output_file = os.environ.get('GITHUB_OUTPUT', '/dev/null')
+          with open(output_file, 'a') as f:
+              f.write(f'total_count={total_count}\n')
+              f.write(f'new_todos={new_todos}\n')
+              f.write(f'scan_json={scan_json}\n')
+          PYEOF
+          else
+            echo "total_count=0" >> $GITHUB_OUTPUT
+            echo "new_todos=0" >> $GITHUB_OUTPUT
+            echo 'scan_json={"total_count":0,"todos":[]}' >> $GITHUB_OUTPUT
+          fi
+
+      - name: Generate Copilot triage recommendations
+        id: copilot
+        if: github.event.inputs.use_copilot != 'false'
+        continue-on-error: true
+        uses: actions/ai-inference@v1
+        with:
+          model: gpt-4o-mini
+          max-tokens: 1800
+          prompt: |
+            You are an engineering assistant helping triage TODO comments in a repository.
+            Produce a concise markdown report with these sections:
+            1) Highest-priority TODOs
+            2) Recommended issue labels
+            3) Immediate risk items
+            4) Suggested batching plan
+
+            Keep the output under 300 words.
+            Use this scan JSON:
+            ${{ steps.scan.outputs.scan_json }}
+
+      - name: Build fallback triage report
+        if: always()
+        run: |
+          set -euo pipefail
+
+          python3 << 'EOF'
+          import json
+          from pathlib import Path
+
+          scan_path = Path('todo-scan-results.json')
+          report_path = Path('todo-triage.md')
+
+          if not scan_path.exists():
+              report_path.write_text('# TODO Triage\n\nNo scan results were found.\n', encoding='utf-8')
+              raise SystemExit(0)
+
+          data = json.loads(scan_path.read_text(encoding='utf-8'))
+          todos = data.get('todos', [])
+          untracked = [t for t in todos if not t.get('has_issue', False)]
+
+          lines = [
+              '# TODO Triage Recommendations',
+              '',
+              '_Generated by Documentation Automation workflow (TODO scan). Copilot output is appended when available; otherwise this deterministic fallback is produced._',
+              '',
+              f"- Total TODOs: **{data.get('total_count', 0)}**",
+              f"- Untracked TODOs: **{len(untracked)}**",
+              '',
+              '## Highest-priority TODOs (fallback)',
+              ''
+          ]
+
+          for i, todo in enumerate(untracked, 1):
+              todo_type = todo.get('type', 'TODO')
+              text = todo.get('text', 'No description')
+              file_path = todo.get('file', 'unknown')
+              line = todo.get('line', 0)
+              lines.append(f"{i}. **[{todo_type}]** `{file_path}:{line}` — {text}")
+
+          if not untracked:
+              lines.append('- No untracked TODO items found.')
+
+          lines.extend([
+              '',
+              '## Suggested labels',
+              '',
+              '- `todo-automation` for all imported TODO items',
+              '- `bug` for FIXME items',
+              '- `tech-debt` for HACK items',
+              '',
+              '## Suggested batching plan',
+              '',
+              '1. Resolve untracked FIXME items first.',
+              '2. Group TODO/HACK items by directory owner.',
+              '3. Convert remaining high-value TODOs into tracked issues.'
+          ])
+
+          report_path.write_text('\n'.join(lines) + '\n', encoding='utf-8')
+          EOF
+
+      - name: Append Copilot triage output to report
+        if: always() && steps.copilot.outputs.response != ''
+        run: |
+          {
+            echo ""
+            echo "## Copilot Recommendations"
+            echo ""
+            echo "${{ steps.copilot.outputs.response }}"
+          } >> todo-triage.md
+
+      - name: Check for changes
+        id: check-changes
+        run: |
+          git add docs/status/TODO.md
+          if git diff --staged --quiet; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "No changes to TODO documentation"
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "Changes detected in TODO documentation"
+          fi
+
+      - name: Generate summary
+        run: |
+          echo "## TODO Scan Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ -f todo-scan-results.json ]; then
+            python3 << 'EOF'
+          import json
+          import os
+
+          with open('todo-scan-results.json', 'r') as f:
+              data = json.load(f)
+
+          summary = []
+          summary.append(f"**Total TODOs:** {data.get('total_count', 0)}")
+          summary.append(f"**Linked to Issues:** {len([t for t in data.get('todos', []) if t.get('has_issue', False)])}")
+          summary.append(f"**Untracked:** {len([t for t in data.get('todos', []) if not t.get('has_issue', False)])}")
+          summary.append("")
+
+          # By type
+          by_type = {}
+          for todo in data.get('todos', []):
+              t = todo.get('type', 'TODO')
+              by_type[t] = by_type.get(t, 0) + 1
+
+          if by_type:
+              summary.append("### By Type")
+              summary.append("| Type | Count |")
+              summary.append("|------|-------|")
+              for t, count in sorted(by_type.items()):
+                  summary.append(f"| {t} | {count} |")
+              summary.append("")
+
+          # By directory
+          by_dir = {}
+          for todo in data.get('todos', []):
+              path = todo.get('file', '')
+              parts = path.split('/')
+              if len(parts) > 1:
+                  dir_name = parts[0] if parts[0] != '.' else parts[1] if len(parts) > 1 else 'root'
+              else:
+                  dir_name = 'root'
+              by_dir[dir_name] = by_dir.get(dir_name, 0) + 1
+
+          if by_dir:
+              summary.append("### By Directory")
+              summary.append("| Directory | Count |")
+              summary.append("|-----------|-------|")
+              for d, count in sorted(by_dir.items(), key=lambda x: -x[1]):
+                  summary.append(f"| `{d}/` | {count} |")
+
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as f:
+              f.write('\n'.join(summary))
+          EOF
+          else
+            echo "No TODO scan results found." >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ -f todo-triage.md ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Triage Recommendations" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            cat todo-triage.md >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Upload scan results
+        uses: actions/upload-artifact@v4
+        with:
+          name: todo-scan-results
+          path: |
+            todo-scan-results.json
+            docs/status/TODO.md
+            todo-triage.md
+          retention-days: 30
+
+      - name: Commit changes
+        if: |
+          steps.check-changes.outputs.has_changes == 'true' &&
+          github.event.inputs.dry_run != 'true' &&
+          (github.event_name == 'push' || github.event_name == 'schedule' ||
+           (github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run != 'true'))
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add docs/status/TODO.md
+          git commit -m "docs: update TODO documentation [skip ci]
+
+          Auto-generated TODO tracking documentation.
+
+          - Total TODOs: ${{ steps.scan.outputs.total_count }}
+          - Untracked: ${{ steps.scan.outputs.new_todos }}
+
+          Generated by Documentation Automation workflow."
+
+          # Pull and rebase to handle concurrent updates before pushing
+          git pull --rebase origin ${{ github.ref_name }}
+          git push
+
+  # ─── Create Issues for Untracked TODOs ───────────────────────────────
+  create-todo-issues:
+    name: Create Issues for Untracked TODOs
+    needs: scan-todos
+    if: |
+      github.event_name == 'workflow_dispatch' &&
+      github.event.inputs.create_issues == 'true' &&
+      needs.scan-todos.outputs.new_todos > 0
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download scan results
+        uses: actions/download-artifact@v8
+        with:
+          name: todo-scan-results
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Create issues for untracked TODOs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          python3 build/scripts/docs/create-todo-issues.py \
+            --scan-json todo-scan-results.json \
+            --output-json todo-issue-creation-summary.json \
+            --max-issues 20
+
+          if [ -f todo-issue-creation-summary.json ]; then
+            python3 -c "
+          import json, os
+          with open('todo-issue-creation-summary.json') as f:
+              data = json.load(f)
+          created = data.get('created_count', 0)
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as f:
+              f.write(f'\n\n## Issues Created\n\nCreated **{created}** new issues for untracked TODOs.\n')
+          "
+          fi
+
+  # ─── Expansion: Link Repair ─────────────────────────────────────────
+  link-repair:
+    name: Link Repair & Validation
+    needs: [detect-changes, regenerate-docs]
+    if: |
+      always() &&
+      needs.detect-changes.result == 'success' &&
+      needs.detect-changes.outputs.docs_changed == 'true' &&
+      github.event_name != 'issues' && (
+        github.event_name == 'schedule' ||
+        (github.event_name == 'workflow_dispatch' && github.event.inputs.run_expansion != 'false')
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Pull latest changes
+        run: git pull origin ${{ github.ref_name }} --rebase || true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Run link repair
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          if [ -f "build/scripts/docs/repair-links.py" ]; then
+            python3 build/scripts/docs/repair-links.py \
+              --output docs/status/link-repair-report.md \
+              --auto-fix \
+              --summary >> "$GITHUB_STEP_SUMMARY" 2>&1
+          else
+            echo "Link repair script not found, skipping." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  # ─── Expansion: Validate Code Examples ──────────────────────────────
+  validate-examples:
+    name: Validate Code Examples
+    needs: [detect-changes]
+    if: |
+      needs.detect-changes.outputs.any_changed == 'true' &&
+      github.event_name != 'issues' && (
+        github.event_name == 'schedule' ||
+        (github.event_name == 'workflow_dispatch' && github.event.inputs.run_expansion != 'false')
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Validate code examples in docs
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          if [ -f "build/scripts/docs/validate-examples.py" ]; then
+            python3 build/scripts/docs/validate-examples.py \
+              --output docs/status/example-validation.md \
+              --summary >> "$GITHUB_STEP_SUMMARY" 2>&1
+          else
+            echo "Example validation script not found, skipping." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  # ─── Expansion: Coverage Report ─────────────────────────────────────
+  coverage-report:
+    name: Documentation Coverage Report
+    needs: [detect-changes, regenerate-docs]
+    if: |
+      always() &&
+      needs.detect-changes.result == 'success' &&
+      needs.detect-changes.outputs.any_changed == 'true' &&
+      github.event_name != 'issues' && (
+        github.event_name == 'schedule' ||
+        (github.event_name == 'workflow_dispatch' && github.event.inputs.run_expansion != 'false')
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Generate documentation coverage report
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          if [ -f "build/scripts/docs/generate-coverage.py" ]; then
+            mkdir -p docs/status
+            python3 build/scripts/docs/generate-coverage.py \
+              --output docs/status/coverage-report.md \
+              --summary >> "$GITHUB_STEP_SUMMARY" 2>&1
+          else
+            echo "Coverage report script not found, skipping." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  # ─── Expansion: Changelog Auto-Generation ───────────────────────────
+  generate-changelog:
+    name: Generate Changelog
+    needs: [detect-changes]
+    if: |
+      needs.detect-changes.outputs.any_changed == 'true' &&
+      github.event_name != 'issues' && (
+        github.event_name == 'schedule' ||
+        (github.event_name == 'workflow_dispatch' && github.event.inputs.run_expansion != 'false')
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Generate changelog from commits
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          if [ -f "build/scripts/docs/generate-changelog.py" ]; then
+            python3 build/scripts/docs/generate-changelog.py \
+              --output docs/status/CHANGELOG.md \
+              --recent 50 \
+              --summary >> "$GITHUB_STEP_SUMMARY" 2>&1
+          else
+            echo "Changelog generation script not found, skipping." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  # ─── Expansion: Validate API Documentation ────────────────────────
+  validate-api-docs:
+    name: Validate API Documentation
+    needs: [detect-changes, regenerate-docs]
+    if: |
+      always() &&
+      needs.detect-changes.result == 'success' &&
+      needs.detect-changes.outputs.any_changed == 'true' &&
+      github.event_name != 'issues' && (
+        needs.detect-changes.outputs.src_changed == 'true' ||
+        needs.detect-changes.outputs.docs_changed == 'true' ||
+        github.event_name == 'schedule' ||
+        (github.event_name == 'workflow_dispatch' && github.event.inputs.run_expansion != 'false')
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Validate API documentation coverage
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          if [ -f "build/scripts/docs/validate-api-docs.py" ]; then
+            mkdir -p docs/status
+            python3 build/scripts/docs/validate-api-docs.py \
+              --output docs/status/api-docs-report.md \
+              --min-coverage 70 \
+              --summary >> "$GITHUB_STEP_SUMMARY" 2>&1
+          else
+            echo "API docs validation script not found, skipping." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  # ─── Expansion: Generate Dependency Graph ────────────────────────
+  generate-dependency-graph:
+    name: Generate Dependency Graph
+    needs: [detect-changes]
+    if: |
+      needs.detect-changes.outputs.any_changed == 'true' &&
+      github.event_name != 'issues' && (
+        needs.detect-changes.outputs.structure_changed == 'true' ||
+        github.event_name == 'schedule' ||
+        (github.event_name == 'workflow_dispatch' && github.event.inputs.run_expansion != 'false')
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Generate project dependency graph
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          if [ -f "build/scripts/docs/generate-dependency-graph.py" ]; then
+            mkdir -p docs/generated
+            python3 build/scripts/docs/generate-dependency-graph.py \
+              --output docs/generated/project-dependencies.md \
+              --format markdown \
+              --summary >> "$GITHUB_STEP_SUMMARY" 2>&1
+          else
+            echo "Dependency graph script not found, skipping." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  # ─── Expansion: Sync README Badges ──────────────────────────────
+  sync-readme-badges:
+    name: Sync README Badges
+    needs: [detect-changes, regenerate-docs]
+    if: |
+      always() &&
+      needs.detect-changes.result == 'success' &&
+      needs.detect-changes.outputs.any_changed == 'true' &&
+      github.event_name != 'issues' && (
+        github.event_name == 'schedule' ||
+        (github.event_name == 'workflow_dispatch' && github.event.inputs.run_expansion != 'false')
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Sync README badges with project metrics
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          if [ -f "build/scripts/docs/sync-readme-badges.py" ]; then
+            mkdir -p docs/status
+            python3 build/scripts/docs/sync-readme-badges.py \
+              --output docs/status/badge-sync-report.md \
+              --summary >> "$GITHUB_STEP_SUMMARY" 2>&1
+          else
+            echo "Badge sync script not found, skipping." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  # ─── Expansion: Metrics Dashboard ───────────────────────────────
+  generate-metrics-dashboard:
+    name: Generate Metrics Dashboard
+    needs: [detect-changes]
+    if: |
+      needs.detect-changes.outputs.any_changed == 'true' &&
+      github.event_name != 'issues' && (
+        github.event_name == 'schedule' ||
+        (github.event_name == 'workflow_dispatch' && github.event.inputs.run_expansion != 'false')
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Generate metrics dashboard
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          if [ -f "build/scripts/docs/generate-metrics-dashboard.py" ]; then
+            mkdir -p docs/status
+            python3 build/scripts/docs/generate-metrics-dashboard.py \
+              --output docs/status/metrics-dashboard.md \
+              --json-output docs-metrics.json \
+              --summary >> "$GITHUB_STEP_SUMMARY" 2>&1
+          else
+            echo "Metrics dashboard script not found, skipping." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  # ─── Build DocFX Documentation Site ─────────────────────────────────
+  build-docfx:
+    name: Build DocFX Documentation Site
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: detect-changes
+    if: |
+      github.event_name != 'issues' &&
+      needs.detect-changes.outputs.any_changed == 'true'
+    outputs:
+      pages_configured: ${{ steps.configure-pages.outcome == 'success' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET with Cache
+        uses: ./.github/actions/setup-dotnet-cache
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Install DocFX
+        run: dotnet tool update -g docfx
+
+      - name: Build project for XML documentation
+        run: |
+          set -euo pipefail
+          dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
+          dotnet build Meridian.sln -c Release --no-restore \
+            /p:EnableWindowsTargeting=true \
+            /p:GenerateDocumentationFile=true
+        continue-on-error: true
+
+      - name: Build DocFX site
+        run: docfx docs/docfx/docfx.json
+
+      - name: Configure GitHub Pages
+        id: configure-pages
+        uses: actions/configure-pages@v5
+        continue-on-error: true
+
+      - name: Upload Pages artifact
+        if: steps.configure-pages.outcome == 'success'
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+        continue-on-error: true
+
+  # ─── Deploy to GitHub Pages ──────────────────────────────────────────
+  deploy-pages:
+    name: Deploy Documentation to GitHub Pages
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: build-docfx
+    if: |
+      needs.build-docfx.result == 'success' &&
+      needs.build-docfx.outputs.pages_configured == 'true' &&
+      (
+        (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+        github.event_name == 'schedule' ||
+        github.event_name == 'workflow_dispatch'
+      )
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  # ─── Report ──────────────────────────────────────────────────────────
+  # ─── AI Documentation Maintenance ──────────────────────────────────
+  ai-docs-maintenance:
+    name: AI Documentation Health Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [detect-changes]
+    if: |
+      github.event_name != 'issues' &&
+      (
+        github.event_name == 'schedule' ||
+        github.event_name == 'workflow_dispatch' ||
+        needs.detect-changes.outputs.ai_files_changed == 'true' ||
+        needs.detect-changes.outputs.src_changed == 'true' ||
+        needs.detect-changes.outputs.docs_changed == 'true'
+      )
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Run AI docs freshness check
+        id: freshness
+        run: |
+          python3 build/scripts/docs/ai-docs-maintenance.py freshness \
+            --json-output /tmp/ai-docs-freshness.json --summary
+          STALE=$(python3 -c "import json; d=json.load(open('/tmp/ai-docs-freshness.json')); print(d.get('summary',{}).get('stale_docs',0))")
+          echo "stale_count=$STALE" >> "$GITHUB_OUTPUT"
+
+      - name: Run AI docs drift check
+        id: drift
+        run: |
+          python3 build/scripts/docs/ai-docs-maintenance.py drift \
+            --json-output /tmp/ai-docs-drift.json --summary
+          DRIFT=$(python3 -c "import json; d=json.load(open('/tmp/ai-docs-drift.json')); print(d.get('summary',{}).get('drift_items',0))")
+          echo "drift_count=$DRIFT" >> "$GITHUB_OUTPUT"
+
+      - name: Run cross-reference validation
+        run: |
+          python3 build/scripts/docs/ai-docs-maintenance.py validate-refs \
+            --json-output /tmp/ai-docs-refs.json --summary
+
+      - name: Generate sync report
+        run: |
+          mkdir -p docs/generated
+          python3 build/scripts/docs/ai-docs-maintenance.py sync-report \
+            --output docs/generated/ai-docs-sync-report.md
+
+      - name: Publish AI docs health summary
+        run: |
+          echo "## AI Documentation Health" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Stale docs | ${{ steps.freshness.outputs.stale_count }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Drift items | ${{ steps.drift.outputs.drift_count }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -f docs/generated/ai-docs-sync-report.md ]; then
+            echo "<details><summary>Full Sync Report</summary>" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            cat docs/generated/ai-docs-sync-report.md >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "</details>" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Upload sync report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-docs-sync-report
+          path: docs/generated/ai-docs-sync-report.md
+          retention-days: 30
+
+  report:
+    name: Documentation Automation Report
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [detect-changes, validate-docs, regenerate-docs, scan-todos, create-todo-issues, link-repair, validate-examples, coverage-report, generate-changelog, validate-api-docs, generate-dependency-graph, sync-readme-badges, generate-metrics-dashboard, build-docfx, deploy-pages, ai-docs-maintenance]
+    if: github.event_name != 'issues' && always()
+    steps:
+      - name: Publish summary
+        run: |
+          echo "# Documentation Automation Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Change Detection" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Area | Changed |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|---------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Any changed | ${{ needs.detect-changes.outputs.any_changed }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Docs | ${{ needs.detect-changes.outputs.docs_changed }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Workflows | ${{ needs.detect-changes.outputs.workflow_changed }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Structure | ${{ needs.detect-changes.outputs.structure_changed }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Providers | ${{ needs.detect-changes.outputs.providers_changed }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Interfaces | ${{ needs.detect-changes.outputs.interfaces_changed }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| ADRs | ${{ needs.detect-changes.outputs.adrs_changed }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Configuration | ${{ needs.detect-changes.outputs.config_changed }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Microservices | ${{ needs.detect-changes.outputs.microservices_changed }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| AI files | ${{ needs.detect-changes.outputs.ai_files_changed }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Source code | ${{ needs.detect-changes.outputs.src_changed }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Job Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Result |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Validate docs | ${{ needs.validate-docs.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Regenerate docs | ${{ needs.regenerate-docs.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Scan TODOs | ${{ needs.scan-todos.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Create TODO issues | ${{ needs.create-todo-issues.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Link repair | ${{ needs.link-repair.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Validate examples | ${{ needs.validate-examples.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Coverage report | ${{ needs.coverage-report.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Generate changelog | ${{ needs.generate-changelog.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Validate API docs | ${{ needs.validate-api-docs.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Dependency graph | ${{ needs.generate-dependency-graph.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Sync README badges | ${{ needs.sync-readme-badges.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Metrics dashboard | ${{ needs.generate-metrics-dashboard.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Build DocFX site | ${{ needs.build-docfx.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Deploy to Pages | ${{ needs.deploy-pages.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| AI docs maintenance | ${{ needs.ai-docs-maintenance.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Generated Changes | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------------------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| has_changes | ${{ needs.regenerate-docs.outputs.has_changes || 'false' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| changed_files | ${{ needs.regenerate-docs.outputs.changed_files || 'none' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## TODO Scan" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Total TODOs | ${{ needs.scan-todos.outputs.total_count || 'N/A' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Untracked TODOs | ${{ needs.scan-todos.outputs.new_todos || 'N/A' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| TODO doc updated | ${{ needs.scan-todos.outputs.has_changes || 'N/A' }} |" >> $GITHUB_STEP_SUMMARY
+
+      - name: Post PR automation summary comment
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v8
+        env:
+          ANY_CHANGED: ${{ needs.detect-changes.outputs.any_changed }}
+          HAS_GENERATED_CHANGES: ${{ needs.regenerate-docs.outputs.has_changes || 'false' }}
+          CHANGED_FILES: ${{ needs.regenerate-docs.outputs.changed_files || 'none' }}
+          TODO_TOTAL: ${{ needs.scan-todos.outputs.total_count || 'N/A' }}
+          TODO_UNTRACKED: ${{ needs.scan-todos.outputs.new_todos || 'N/A' }}
+          BUILD_DOCFX_RESULT: ${{ needs.build-docfx.result }}
+          DEPLOY_PAGES_RESULT: ${{ needs.deploy-pages.result }}
+        with:
+          script: |
+            const marker = '<!-- docs-automation-report -->';
+            const body = `${marker}
+            ## 📚 Documentation Automation Summary
+
+            | Metric | Value |
+            |--------|-------|
+            | Any changes detected | ${process.env.ANY_CHANGED} |
+            | Generated docs changed | ${process.env.HAS_GENERATED_CHANGES} |
+            | Changed files | ${process.env.CHANGED_FILES} |
+            | Total TODOs | ${process.env.TODO_TOTAL} |
+            | Untracked TODOs | ${process.env.TODO_UNTRACKED} |
+            | DocFX build | ${process.env.BUILD_DOCFX_RESULT} |
+            | Pages deploy | ${process.env.DEPLOY_PAGES_RESULT} |
+
+            _This comment is updated automatically by the Documentation Automation workflow._`;
+
+            const issue_number = context.issue.number;
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number,
+            });
+
+            const existing = comments.find(comment =>
+              comment.user?.type === 'Bot' && comment.body?.includes(marker)
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number,
+                body,
+              });
+            }

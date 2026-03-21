@@ -1,0 +1,175 @@
+name: Benchmark Performance
+
+on:
+  pull_request:
+    paths:
+      - 'src/Meridian.Application/Pipeline/**'
+      - 'src/Meridian.Storage/**'
+      - 'src/Meridian.Domain/Collectors/**'
+      - 'src/Meridian.Core/Serialization/**'
+      - 'benchmarks/**'
+      - 'scripts/compare_benchmarks.py'
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'src/Meridian.Application/Pipeline/**'
+      - 'src/Meridian.Storage/**'
+      - 'src/Meridian.Domain/Collectors/**'
+      - 'src/Meridian.Core/Serialization/**'
+      - 'benchmarks/**'
+      - 'scripts/compare_benchmarks.py'
+  workflow_dispatch:
+    inputs:
+      filter:
+        description: 'Benchmark filter pattern (e.g., *Parser*, *Collector*)'
+        required: false
+        default: '*'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  BENCHMARK_WARN_THRESHOLD: '10'
+  BENCHMARK_FAIL_THRESHOLD: '25'
+
+jobs:
+  benchmark:
+    name: Run Benchmarks
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET with Cache
+        uses: ./.github/actions/setup-dotnet-cache
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore benchmarks/Meridian.Benchmarks/Meridian.Benchmarks.csproj /p:EnableWindowsTargeting=true
+
+      - name: Build benchmarks
+        run: |
+          dotnet build benchmarks/Meridian.Benchmarks/Meridian.Benchmarks.csproj -c Release --no-restore /p:EnableWindowsTargeting=true
+
+      - name: Run benchmarks (current branch)
+        run: |
+          filter="${{ github.event.inputs.filter || '*' }}"
+          dotnet run --project benchmarks/Meridian.Benchmarks/Meridian.Benchmarks.csproj \
+            -c Release \
+            --no-build \
+            -- \
+            --filter "$filter" \
+            --exporters json markdown \
+            --memory \
+            --artifacts ./BenchmarkDotNet.Artifacts/current \
+            --job short
+
+      - name: Checkout baseline (main branch)
+        if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+        run: |
+          git stash --include-untracked 2>/dev/null || true
+          git checkout origin/${{ github.base_ref || 'main' }} -- benchmarks/ src/ Directory.Packages.props Meridian.sln scripts/compare_benchmarks.py 2>/dev/null || true
+
+      - name: Build baseline benchmarks
+        if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+        continue-on-error: true
+        run: |
+          dotnet build benchmarks/Meridian.Benchmarks/Meridian.Benchmarks.csproj -c Release --no-restore /p:EnableWindowsTargeting=true
+
+      - name: Run benchmarks (baseline)
+        if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+        continue-on-error: true
+        run: |
+          filter="${{ github.event.inputs.filter || '*' }}"
+          dotnet run --project benchmarks/Meridian.Benchmarks/Meridian.Benchmarks.csproj \
+            -c Release \
+            --no-build \
+            -- \
+            --filter "$filter" \
+            --exporters json \
+            --memory \
+            --artifacts ./BenchmarkDotNet.Artifacts/baseline \
+            --job short
+
+      - name: Restore branch contents
+        if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+        run: |
+          git checkout - 2>/dev/null || true
+          git stash pop 2>/dev/null || true
+
+      - name: Compare benchmark results
+        id: compare
+        if: always()
+        continue-on-error: true
+        run: |
+          set +e
+          BASELINE_ARGS=""
+          if [ -d "./BenchmarkDotNet.Artifacts/baseline/results" ]; then
+            BASELINE_ARGS="--baseline ./BenchmarkDotNet.Artifacts/baseline/results"
+          fi
+
+          python3 scripts/compare_benchmarks.py \
+            --current ./BenchmarkDotNet.Artifacts/current/results \
+            $BASELINE_ARGS \
+            --warn-threshold ${{ env.BENCHMARK_WARN_THRESHOLD }} \
+            --fail-threshold ${{ env.BENCHMARK_FAIL_THRESHOLD }} \
+            --summary-out benchmark-summary.md
+          EXIT_CODE=$?
+          echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
+          cat benchmark-summary.md >> $GITHUB_STEP_SUMMARY
+          exit 0
+
+      - name: Generate benchmark summary
+        run: |
+          echo "## Benchmark Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Run Date:** $(date -u +'%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ -f "./BenchmarkDotNet.Artifacts/current/results/Meridian.Benchmarks-report-github.md" ]; then
+            cat "./BenchmarkDotNet.Artifacts/current/results/Meridian.Benchmarks-report-github.md" >> $GITHUB_STEP_SUMMARY
+          else
+            REPORT=$(find ./BenchmarkDotNet.Artifacts/current -name "*.md" -type f | head -1)
+            if [ -n "$REPORT" ]; then
+              cat "$REPORT" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "No benchmark report found" >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results-${{ github.sha }}
+          path: |
+            BenchmarkDotNet.Artifacts/
+            benchmark-summary.md
+          retention-days: 30
+
+      - name: Save baseline (main branch only)
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-baseline
+          path: BenchmarkDotNet.Artifacts/current/results/
+          retention-days: 90
+
+      - name: Fail on benchmark regression
+        if: steps.compare.outputs.exit_code == '1'
+        run: |
+          echo "Benchmark regression exceeded the ${{ env.BENCHMARK_FAIL_THRESHOLD }}% failure threshold."
+          exit 1

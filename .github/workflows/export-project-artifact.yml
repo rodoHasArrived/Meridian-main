@@ -1,0 +1,64 @@
+name: Export Project Artifact
+
+on:
+  workflow_dispatch:
+    inputs:
+      archive_format:
+        description: Archive format to generate
+        required: true
+        default: tar.gz
+        type: choice
+        options:
+          - tar.gz
+          - zip
+      retention_days:
+        description: Artifact retention period (days)
+        required: false
+        default: '14'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  export-project:
+    name: Package repository snapshot
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Prepare archive metadata
+        id: metadata
+        shell: bash
+        run: |
+          short_sha="${GITHUB_SHA::7}"
+          base_name="meridian-${short_sha}"
+          echo "base_name=${base_name}" >> "$GITHUB_OUTPUT"
+
+      - name: Create tar.gz archive
+        if: inputs.archive_format == 'tar.gz'
+        shell: bash
+        run: |
+          tar --exclude='.git' -czf "${{ steps.metadata.outputs.base_name }}.tar.gz" .
+
+      - name: Create zip archive
+        if: inputs.archive_format == 'zip'
+        shell: bash
+        run: |
+          zip -r "${{ steps.metadata.outputs.base_name }}.zip" . -x '.git/*'
+
+      - name: Upload exported project artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: project-export-${{ github.run_number }}-${{ github.sha }}
+          path: |
+            ${{ steps.metadata.outputs.base_name }}.tar.gz
+            ${{ steps.metadata.outputs.base_name }}.zip
+          if-no-files-found: error
+          retention-days: ${{ fromJSON(inputs.retention_days) }}

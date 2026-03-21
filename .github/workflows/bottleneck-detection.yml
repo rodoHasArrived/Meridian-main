@@ -1,0 +1,380 @@
+# Bottleneck Detection Workflow
+# Automatically runs performance benchmarks on PRs that touch hot-path code.
+# Compares results against baseline and flags regressions.
+#
+# Triggers:
+#   - PRs modifying pipeline, storage, collector, or serialization code
+#   - Manual dispatch with optional filter and threshold
+#
+# Key benchmarks run:
+#   - EndToEndPipeline (channel → drain → serialize → write)
+#   - Collector hot paths (trade, depth)
+#   - JSON serialization (reflection vs source-generated)
+#   - Event buffer drain strategies
+#
+# Results are posted to the PR as a step summary with regression flags.
+
+name: Bottleneck Detection
+
+on:
+  pull_request:
+    branches: [ "main", "develop" ]
+    paths:
+      - 'src/Meridian.Application/Pipeline/**'
+      - 'src/Meridian.Application/Monitoring/**'
+      - 'src/Meridian.Storage/**'
+      - 'src/Meridian.Domain/Collectors/**'
+      - 'src/Meridian.Domain/Events/**'
+      - 'src/Meridian.Core/Serialization/**'
+      - 'src/Meridian.Core/Performance/**'
+      - 'src/Meridian.Infrastructure/Adapters/Core/**'
+      - 'benchmarks/**'
+      - '.github/workflows/bottleneck-detection.yml'
+  workflow_dispatch:
+    inputs:
+      filter:
+        description: 'Benchmark filter (e.g., *EndToEnd*, *Collector*)'
+        required: false
+        default: '*'
+      regression-threshold:
+        description: 'Regression threshold percentage (flag if slower by this %)'
+        required: false
+        default: '15'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: bottleneck-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_GENERATE_ASPNET_CERTIFICATE: false
+  REGRESSION_THRESHOLD: ${{ github.event.inputs.regression-threshold || '15' }}
+
+jobs:
+  detect-bottlenecks:
+    name: Performance Bottleneck Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET with Cache
+        uses: ./.github/actions/setup-dotnet-cache
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore benchmarks/Meridian.Benchmarks/Meridian.Benchmarks.csproj /p:EnableWindowsTargeting=true --verbosity minimal
+
+      - name: Build benchmarks
+        run: |
+          dotnet build benchmarks/Meridian.Benchmarks/Meridian.Benchmarks.csproj \
+            -c Release --no-restore /p:EnableWindowsTargeting=true --verbosity minimal
+
+      - name: Determine which benchmarks to run
+        id: select
+        run: |
+          MANUAL_FILTER="${{ github.event.inputs.filter || '' }}"
+          if [ -n "$MANUAL_FILTER" ] && [ "$MANUAL_FILTER" != "*" ]; then
+            echo "filter=$MANUAL_FILTER" >> $GITHUB_OUTPUT
+            echo "description=Manual filter: $MANUAL_FILTER" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Auto-detect which benchmarks to run based on changed files
+          CHANGED=$(git diff --name-only origin/${{ github.base_ref || 'main' }}...HEAD 2>/dev/null || echo "")
+          FILTERS=""
+
+          if echo "$CHANGED" | grep -qE 'Pipeline/|Events/'; then
+            FILTERS="${FILTERS}|*Pipeline*|*Dedup*"
+          fi
+          if echo "$CHANGED" | grep -qE 'Collectors/'; then
+            FILTERS="${FILTERS}|*Collector*"
+          fi
+          if echo "$CHANGED" | grep -qE 'Serialization/|JsonSeriali'; then
+            FILTERS="${FILTERS}|*Json*|*Serialization*"
+          fi
+          if echo "$CHANGED" | grep -qE 'Storage/|Sinks/|Archival/'; then
+            FILTERS="${FILTERS}|*Buffer*|*Storage*|*EndToEnd*"
+          fi
+          if echo "$CHANGED" | grep -qE 'Performance/'; then
+            FILTERS="${FILTERS}|*Pipeline*|*EndToEnd*"
+          fi
+          if echo "$CHANGED" | grep -qE 'benchmarks/'; then
+            FILTERS="*"
+          fi
+
+          # Remove leading pipe, default to core benchmarks
+          FILTERS=$(echo "$FILTERS" | sed 's/^|//')
+          if [ -z "$FILTERS" ]; then
+            FILTERS="*EndToEnd*|*Pipeline*"
+          fi
+
+          echo "filter=$FILTERS" >> $GITHUB_OUTPUT
+          echo "description=Auto-detected: $FILTERS" >> $GITHUB_OUTPUT
+
+      - name: Run benchmarks (PR branch)
+        id: bench-pr
+        run: |
+          FILTER="${{ steps.select.outputs.filter }}"
+          echo "Running benchmarks with filter: $FILTER"
+          echo "(${{ steps.select.outputs.description }})"
+
+          dotnet run --project benchmarks/Meridian.Benchmarks/Meridian.Benchmarks.csproj \
+            -c Release \
+            --no-build \
+            -- \
+            --filter "$FILTER" \
+            --exporters json markdown \
+            --memory \
+            --artifacts ./BenchmarkDotNet.Artifacts/pr \
+            --job short
+
+      - name: Checkout baseline (main branch)
+        run: |
+          git stash --include-untracked 2>/dev/null || true
+          git checkout origin/${{ github.base_ref || 'main' }} -- benchmarks/ src/ 2>/dev/null || true
+
+      - name: Build baseline benchmarks
+        id: build-baseline
+        continue-on-error: true
+        run: |
+          dotnet build benchmarks/Meridian.Benchmarks/Meridian.Benchmarks.csproj \
+            -c Release /p:EnableWindowsTargeting=true --verbosity minimal 2>/dev/null
+
+      - name: Run benchmarks (baseline)
+        id: bench-base
+        continue-on-error: true
+        if: steps.build-baseline.outcome == 'success'
+        run: |
+          FILTER="${{ steps.select.outputs.filter }}"
+
+          dotnet run --project benchmarks/Meridian.Benchmarks/Meridian.Benchmarks.csproj \
+            -c Release \
+            --no-build \
+            -- \
+            --filter "$FILTER" \
+            --exporters json \
+            --memory \
+            --artifacts ./BenchmarkDotNet.Artifacts/baseline \
+            --job short
+
+      - name: Restore PR branch
+        run: |
+          git checkout - 2>/dev/null || true
+          git stash pop 2>/dev/null || true
+
+      - name: Compare results and detect regressions
+        id: compare
+        if: always()
+        run: |
+          THRESHOLD=${{ env.REGRESSION_THRESHOLD }}
+
+          # Parse PR results
+          PR_DIR="./BenchmarkDotNet.Artifacts/pr/results"
+          BASE_DIR="./BenchmarkDotNet.Artifacts/baseline/results"
+
+          {
+            echo "## Performance Bottleneck Report"
+            echo ""
+            echo "**PR:** #${{ github.event.pull_request.number || 'manual' }}"
+            echo "**Commit:** \`${{ github.sha }}\`"
+            echo "**Benchmark filter:** ${{ steps.select.outputs.description }}"
+            echo "**Regression threshold:** ${THRESHOLD}%"
+            echo ""
+          } > benchmark-summary.md
+
+          HAS_REGRESSION=false
+
+          if [ -d "$PR_DIR" ]; then
+            PR_JSON=$(find "$PR_DIR" -name "*.json" -type f | head -1)
+
+            if [ -n "$PR_JSON" ] && [ -f "$PR_JSON" ]; then
+              echo "### PR Branch Results" >> benchmark-summary.md
+              echo "" >> benchmark-summary.md
+              echo "| Benchmark | Mean (ns) | Allocated (B) |" >> benchmark-summary.md
+              echo "|-----------|-----------|---------------|" >> benchmark-summary.md
+
+              # Extract benchmark results from BenchmarkDotNet JSON
+              python3 -c "
+          import json, sys
+
+          try:
+              with open('$PR_JSON') as f:
+                  data = json.load(f)
+
+              benchmarks = data.get('Benchmarks', [])
+              for b in benchmarks:
+                  name = b.get('MethodTitle', b.get('Method', 'unknown'))
+                  params = b.get('Parameters', '')
+                  if params:
+                      name = f'{name} ({params})'
+
+                  stats = b.get('Statistics', {})
+                  mean_ns = stats.get('Mean', 0)
+                  mem = b.get('Memory', {})
+                  alloc = mem.get('BytesAllocatedPerOperation', 0)
+
+                  if mean_ns > 0:
+                      if mean_ns > 1_000_000_000:
+                          mean_display = f'{mean_ns/1_000_000_000:.2f} s'
+                      elif mean_ns > 1_000_000:
+                          mean_display = f'{mean_ns/1_000_000:.2f} ms'
+                      elif mean_ns > 1_000:
+                          mean_display = f'{mean_ns/1_000:.2f} us'
+                      else:
+                          mean_display = f'{mean_ns:.1f} ns'
+
+                      alloc_display = f'{alloc:,.0f}' if alloc else '-'
+                      print(f'| {name} | {mean_display} | {alloc_display} |')
+          except Exception as e:
+              print(f'| _Error parsing results_ | {e} | |', file=sys.stderr)
+              sys.exit(0)
+          " >> benchmark-summary.md 2>&1
+
+              echo "" >> benchmark-summary.md
+            fi
+
+            # Compare with baseline if available
+            if [ -d "$BASE_DIR" ]; then
+              BASE_JSON=$(find "$BASE_DIR" -name "*.json" -type f | head -1)
+
+              if [ -n "$BASE_JSON" ] && [ -f "$BASE_JSON" ] && [ -n "$PR_JSON" ]; then
+                echo "### Regression Analysis (vs main)" >> benchmark-summary.md
+                echo "" >> benchmark-summary.md
+
+                REGRESSION_OUTPUT=$(python3 -c "
+          import json, sys
+
+          threshold = float('$THRESHOLD')
+
+          with open('$BASE_JSON') as f:
+              base = json.load(f)
+          with open('$PR_JSON') as f:
+              pr = json.load(f)
+
+          base_map = {}
+          for b in base.get('Benchmarks', []):
+              key = b.get('FullName', b.get('Method', ''))
+              stats = b.get('Statistics', {})
+              mem = b.get('Memory', {})
+              base_map[key] = {
+                  'mean': stats.get('Mean', 0),
+                  'alloc': mem.get('BytesAllocatedPerOperation', 0)
+              }
+
+          regressions = []
+          improvements = []
+          unchanged = []
+
+          for b in pr.get('Benchmarks', []):
+              key = b.get('FullName', b.get('Method', ''))
+              name = b.get('MethodTitle', b.get('Method', 'unknown'))
+              params = b.get('Parameters', '')
+              if params:
+                  name = f'{name} ({params})'
+
+              stats = b.get('Statistics', {})
+              mem = b.get('Memory', {})
+              pr_mean = stats.get('Mean', 0)
+              pr_alloc = mem.get('BytesAllocatedPerOperation', 0)
+
+              if key in base_map and base_map[key]['mean'] > 0:
+                  base_mean = base_map[key]['mean']
+                  base_alloc = base_map[key]['alloc']
+                  pct_change = ((pr_mean - base_mean) / base_mean) * 100
+
+                  if pct_change > threshold:
+                      regressions.append((name, pct_change, pr_mean, base_mean, pr_alloc, base_alloc))
+                  elif pct_change < -threshold:
+                      improvements.append((name, pct_change, pr_mean, base_mean, pr_alloc, base_alloc))
+                  else:
+                      unchanged.append((name, pct_change))
+
+          if regressions:
+              print('has_regression=true')
+              print('TABLE_START')
+              print(f'**{len(regressions)} regression(s) detected (>{threshold}% slower):**')
+              print('')
+              print('| Benchmark | Change | PR Mean | Base Mean | PR Alloc | Base Alloc |')
+              print('|-----------|--------|---------|-----------|----------|------------|')
+              for name, pct, pr_m, base_m, pr_a, base_a in sorted(regressions, key=lambda x: -x[1]):
+                  print(f'| {name} | +{pct:.1f}% | {pr_m/1000:.1f} us | {base_m/1000:.1f} us | {pr_a:,.0f} B | {base_a:,.0f} B |')
+              print('TABLE_END')
+          else:
+              print('has_regression=false')
+
+          if improvements:
+              print('IMP_START')
+              print(f'**{len(improvements)} improvement(s) detected (>{threshold}% faster):**')
+              print('')
+              print('| Benchmark | Change |')
+              print('|-----------|--------|')
+              for name, pct, *_ in sorted(improvements, key=lambda x: x[1]):
+                  print(f'| {name} | {pct:.1f}% |')
+              print('IMP_END')
+
+          print(f'SUMMARY: {len(regressions)} regressions, {len(improvements)} improvements, {len(unchanged)} unchanged')
+          " 2>&1)
+
+                # Extract regression flag
+                if echo "$REGRESSION_OUTPUT" | grep -q "has_regression=true"; then
+                  HAS_REGRESSION=true
+                fi
+
+                # Extract tables
+                echo "$REGRESSION_OUTPUT" | sed -n '/TABLE_START/,/TABLE_END/p' | grep -v '_START\|_END' >> benchmark-summary.md
+                echo "" >> benchmark-summary.md
+                echo "$REGRESSION_OUTPUT" | sed -n '/IMP_START/,/IMP_END/p' | grep -v '_START\|_END' >> benchmark-summary.md
+                echo "" >> benchmark-summary.md
+
+                # Summary line
+                SUMMARY_LINE=$(echo "$REGRESSION_OUTPUT" | grep "^SUMMARY:" | sed 's/SUMMARY: //')
+                if [ -n "$SUMMARY_LINE" ]; then
+                  echo "**Summary:** $SUMMARY_LINE" >> benchmark-summary.md
+                fi
+              fi
+            else
+              echo "_Baseline comparison not available (main branch benchmarks could not be built)._" >> benchmark-summary.md
+            fi
+          else
+            echo "_No benchmark results found._" >> benchmark-summary.md
+          fi
+
+          echo "has_regression=$HAS_REGRESSION" >> $GITHUB_OUTPUT
+
+          # Post to step summary
+          cat benchmark-summary.md >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload benchmark artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bottleneck-results-${{ github.sha }}
+          path: |
+            BenchmarkDotNet.Artifacts/
+            benchmark-summary.md
+          retention-days: 7
+
+      - name: Flag regression
+        if: steps.compare.outputs.has_regression == 'true'
+        run: |
+          echo "::warning::Performance regression detected! See benchmark summary for details."
+          echo ""
+          echo "One or more benchmarks regressed by more than ${{ env.REGRESSION_THRESHOLD }}%."
+          echo "Review the 'Performance Bottleneck Report' in the workflow summary."
+          echo ""
+          echo "If this regression is expected, add a comment explaining why."
+          # Non-blocking: warn but don't fail the PR
+          # To make this blocking, uncomment: exit 1

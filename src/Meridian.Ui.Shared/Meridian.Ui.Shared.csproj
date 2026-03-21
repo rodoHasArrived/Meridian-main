@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+
+    <!-- Assembly Information -->
+    <AssemblyName>Meridian.Ui.Shared</AssemblyName>
+    <RootNamespace>Meridian.Ui.Shared</RootNamespace>
+    <Version>1.0.0</Version>
+    <Authors>Meridian Team</Authors>
+    <Description>Shared UI endpoint handlers, services, and templates for Meridian web and desktop hosts</Description>
+    <Product>Meridian UI Shared</Product>
+    <Copyright>Copyright 2024 Meridian Team</Copyright>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+  <!-- Web/ASP.NET Core dependencies for endpoint mapping -->
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <!-- Package dependencies -->
+  <ItemGroup>
+    <PackageReference Include="Serilog" />
+    <PackageReference Include="Swashbuckle.AspNetCore" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+  </ItemGroup>
+
+  <!-- Project references -->
+  <ItemGroup>
+    <ProjectReference Include="..\Meridian.Contracts\Meridian.Contracts.csproj" />
+    <ProjectReference Include="..\Meridian.Application\Meridian.Application.csproj" />
+    <ProjectReference Include="..\Meridian.Storage\Meridian.Storage.csproj" />
+  </ItemGroup>
+</Project>

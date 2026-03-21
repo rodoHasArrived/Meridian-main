@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.collector">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="Moq" />
+    <PackageReference Include="NSubstitute" />
+    <PackageReference Include="System.Reactive" />
+    <PackageReference Include="TngTech.ArchUnitNET" />
+    <PackageReference Include="TngTech.ArchUnitNET.xUnit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Meridian\Meridian.csproj" />
+    <ProjectReference Include="..\..\src\Meridian.Application\Meridian.Application.csproj" />
+    <ProjectReference Include="..\..\src\Meridian.Execution\Meridian.Execution.csproj" />
+    <ProjectReference Include="..\..\src\Meridian.Execution.Sdk\Meridian.Execution.Sdk.csproj" />
+    <ProjectReference Include="..\..\src\Meridian.Infrastructure\Meridian.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Meridian.Storage\Meridian.Storage.csproj" />
+    <ProjectReference Include="..\..\src\Meridian.Core\Meridian.Core.csproj" />
+    <ProjectReference Include="..\..\src\Meridian.Domain\Meridian.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Meridian.Ui.Shared\Meridian.Ui.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

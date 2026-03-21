@@ -1,0 +1,97 @@
+# Build Observability System
+
+This repository includes a build observability toolkit that turns local and CI builds into structured, diagnosable workflows.
+
+## Quick Start
+
+```bash
+# Build with structured events + metrics
+make build
+
+# Run environment doctor
+make doctor
+
+# Generate dependency graph
+make build-graph
+
+# Generate build fingerprint
+make fingerprint
+
+# Collect a debug bundle
+make collect-debug
+```
+
+## CI Workflow
+
+Use the GitHub Actions workflow to run the same observability toolkit in CI and upload artifacts for debugging:
+
+```bash
+.github/workflows/build-observability.yml
+```
+
+The workflow executes:
+
+- `make doctor`
+- `make build`
+- `make build-graph`
+- `make fingerprint`
+- `make metrics`
+- `make collect-debug-minimal`
+
+Artifacts are uploaded from `.build-system/` for each run.
+
+## Output Artifacts
+
+Artifacts are written to `.build-system/`:
+
+- `build-events.jsonl` – machine-readable event stream
+- `build-events.log` – human-readable event log
+- `build-fingerprint.json` – deterministic fingerprint
+- `dependency-graph.json` / `dependency-graph.dot` – dependency graph
+- `metrics.json` / `metrics.prom` – build metrics
+- `history.db` – build history database
+- `logs/` – raw build logs
+
+## CLI Commands
+
+All commands are available via `make` or `python3 build-system/cli/buildctl.py`.
+
+```bash
+make doctor                  # Environment validation
+make build                   # Build with observability
+make build-profile           # Profile the last build
+make build-graph             # Dependency graph
+make collect-debug           # Debug bundle
+make env-capture NAME=local  # Snapshot environment
+make env-diff ENV1=local ENV2=ci  # Compare environments
+make impact FILE=path/to/file.cs  # Impact analysis
+make bisect GOOD=x BAD=y     # Automated build bisect
+make metrics                 # Build metrics
+make history                 # Build history summary
+```
+
+## Event Schema
+
+Each event follows the schema below, stored in `build-events.jsonl`:
+
+```json
+{
+  "event_id": "uuid",
+  "timestamp": "2026-01-08T12:34:56.789Z",
+  "phase": "restore|build|test|custom",
+  "project": "src/Meridian/Meridian.csproj",
+  "event_type": "started|completed|failed|warning|skipped",
+  "duration_ms": 1234,
+  "context": {"key": "value"},
+  "error_code": "exit-1",
+  "error_message": "Build phase failed",
+  "tags": ["restore"]
+}
+```
+
+## Extending the System
+
+- Add error definitions in `build-system/knowledge/errors/*.json`.
+- Add new diagnostics in `build-system/diagnostics/`.
+- Extend adapters in `build-system/adapters/`.
+- Keep outputs inside `.build-system/` for easy cleanup.

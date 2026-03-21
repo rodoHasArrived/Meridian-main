@@ -1,0 +1,72 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Meridian.Infrastructure</RootNamespace>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- StockSharp integration is optional -->
+    <EnableStockSharp Condition="'$(EnableStockSharp)' == ''">false</EnableStockSharp>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(EnableStockSharp)' == 'true'">
+    <DefineConstants>$(DefineConstants);STOCKSHARP;STOCKSHARP_RITHMIC;STOCKSHARP_IQFEED;STOCKSHARP_CQG;STOCKSHARP_INTERACTIVEBROKERS</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Resilience and Retry -->
+    <PackageReference Include="Polly" />
+    <PackageReference Include="Polly.Extensions" />
+
+    <!-- HttpClientFactory -->
+    <PackageReference Include="Microsoft.Extensions.Http" />
+    <PackageReference Include="Microsoft.Extensions.Http.Polly" />
+
+    <!-- WebSocket -->
+    <PackageReference Include="System.Net.WebSockets.Client" />
+    <PackageReference Include="Websocket.Client" />
+
+    <!-- Reactive Extensions -->
+    <PackageReference Include="System.Reactive" />
+
+    <!-- HTTP -->
+    <PackageReference Include="System.Net.Http.Json" />
+
+    <!-- DI -->
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+
+    <!-- Logging -->
+    <PackageReference Include="Serilog" />
+
+    <!-- Validation -->
+    <PackageReference Include="FluentValidation" />
+
+    <!-- Performance -->
+    <PackageReference Include="Microsoft.Extensions.ObjectPool" />
+    <PackageReference Include="System.Text.Json" />
+    <PackageReference Include="System.Threading.Channels" />
+
+    <!-- StockSharp (optional) -->
+    <PackageReference Include="StockSharp.Algo" Condition="'$(EnableStockSharp)' == 'true'" />
+    <PackageReference Include="StockSharp.Messages" Condition="'$(EnableStockSharp)' == 'true'" />
+    <PackageReference Include="StockSharp.BusinessEntities" Condition="'$(EnableStockSharp)' == 'true'" />
+    <PackageReference Include="StockSharp.Rithmic" Condition="'$(EnableStockSharp)' == 'true'" />
+    <PackageReference Include="StockSharp.IQFeed" Condition="'$(EnableStockSharp)' == 'true'" />
+    <PackageReference Include="StockSharp.Cqg.Com" Condition="'$(EnableStockSharp)' == 'true'" />
+    <PackageReference Include="StockSharp.InteractiveBrokers" Condition="'$(EnableStockSharp)' == 'true'" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Meridian.Core\Meridian.Core.csproj" />
+    <ProjectReference Include="..\Meridian.Domain\Meridian.Domain.csproj" />
+    <ProjectReference Include="..\Meridian.Contracts\Meridian.Contracts.csproj" />
+    <ProjectReference Include="..\Meridian.ProviderSdk\Meridian.ProviderSdk.csproj" />
+  </ItemGroup>
+
+  <!-- Provider implementation templates live under docs/examples/provider-template/ and are no longer part of this project. -->
+</Project>

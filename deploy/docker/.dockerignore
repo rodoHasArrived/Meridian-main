@@ -1,0 +1,81 @@
+# =============================================================================
+# Docker Build Ignore File
+# =============================================================================
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Build outputs
+**/bin/
+**/obj/
+**/out/
+**/publish/
+
+# IDE files
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.sln.docstates
+
+# Test results
+**/TestResults/
+**/coverage/
+
+# Documentation (not needed in container)
+*.md
+!README.md
+docs/
+
+# Development files
+*.log
+*.tmp
+*.bak
+*.swp
+
+# Local configuration
+appsettings.json
+appsettings.*.json
+!appsettings.sample.json
+
+# Data directory
+data/
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Secrets
+*.pem
+*.key
+*.pfx
+credentials.json
+secrets.json
+
+# Scripts (not needed in container)
+*.sh
+*.ps1
+!publish.sh
+
+# Desktop projects (Windows only, not for containers)
+src/Meridian.Wpf/
+tests/Meridian.Wpf.Tests/
+
+# Benchmarks (not needed in production)
+benchmarks/
+
+# Build tooling (not needed in container)
+build/node/
+build/python/
+build/scripts/
+
+# Deploy configs (not needed inside the image)
+deploy/
+
+# Claude / AI configuration
+.claude/
+CLAUDE.md

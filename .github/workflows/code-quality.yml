@@ -1,0 +1,279 @@
+# Code Quality Workflow
+# Runs code formatting checks, static analysis, and documentation validation
+# Consolidated into single job to reduce restore/build cycles
+#
+# Performance optimizations:
+# - Single restore + build pass with analysis enabled
+# - Minimal verbosity on restore
+# - Diagnostics uploaded only on failure
+# - Reduced timeouts
+
+name: Code Quality
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'benchmarks/**'
+      - '*.props'
+      - '*.targets'
+      - '**/*.csproj'
+      - '**/*.fsproj'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'benchmarks/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  models: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_GENERATE_ASPNET_CERTIFICATE: false
+
+jobs:
+  quality-checks:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET with Cache
+        uses: ./.github/actions/setup-dotnet-cache
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore Meridian.sln /p:EnableWindowsTargeting=true --verbosity minimal
+
+      # Format check — on PRs this is already covered by pr-checks.yml lint job,
+      # but we still run it here on pushes to main for the quality report.
+      - name: Check code formatting
+        id: format-check
+        run: dotnet format Meridian.sln --verify-no-changes --verbosity normal
+        continue-on-error: true
+
+      # Single build with all analysis enabled
+      - name: Build with analysis and documentation
+        id: build
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          dotnet build Meridian.sln \
+            -c Release \
+            --no-restore \
+            /p:EnableWindowsTargeting=true \
+            /p:TreatWarningsAsErrors=false \
+            /p:AnalysisLevel=latest \
+            /p:EnforceCodeStyleInBuild=true \
+            /p:RunAnalyzersDuringBuild=true \
+            /p:GenerateDocumentationFile=true \
+            2>&1 | tee build-output.log
+
+      # Analyze build output for issues
+      - name: Analyze build results
+        id: analyze
+        if: always()
+        run: |
+          FORMAT_ISSUES=0
+          BUILD_ISSUES=0
+          WARNING_COUNT=0
+          ERROR_COUNT=0
+
+          if [ "${{ steps.format-check.outcome }}" != "success" ]; then
+            FORMAT_ISSUES=1
+          fi
+
+          if [ -f build-output.log ]; then
+            WARNING_COUNT=$(grep -cE "warning (CA|CS|IDE|SCS)" build-output.log || true)
+            ERROR_COUNT=$(grep -cE " error (CA|CS|IDE|SCS)" build-output.log || true)
+          fi
+
+          if [ "${{ steps.build.outcome }}" != "success" ] || [ "$WARNING_COUNT" -gt 0 ] || [ "$ERROR_COUNT" -gt 0 ]; then
+            BUILD_ISSUES=1
+          fi
+
+          HAS_ISSUES=0
+          if [ "$FORMAT_ISSUES" -eq 1 ] || [ "$BUILD_ISSUES" -eq 1 ]; then
+            HAS_ISSUES=1
+          fi
+
+          {
+            echo "format_issues=$FORMAT_ISSUES"
+            echo "build_issues=$BUILD_ISSUES"
+            echo "warning_count=$WARNING_COUNT"
+            echo "error_count=$ERROR_COUNT"
+            echo "has_issues=$HAS_ISSUES"
+          } >> "$GITHUB_OUTPUT"
+
+          # Summary
+          {
+            echo "## Code Quality Report"
+            echo ""
+            echo "### Code Formatting"
+            if [ "${{ steps.format-check.outcome }}" = "success" ]; then
+              echo "- Status: Passed"
+            else
+              echo "- Status: Issues detected — run \`dotnet format\` locally to fix"
+            fi
+            echo ""
+            echo "### Static Analysis"
+            echo "- Analyzer warnings: $WARNING_COUNT"
+            if [ -f build-output.log ]; then
+              SECURITY_WARNINGS=$(grep -cE "warning SCS" build-output.log || true)
+              if [ "$SECURITY_WARNINGS" -gt 0 ]; then
+                echo "- Security warnings: $SECURITY_WARNINGS"
+              fi
+              NULLABLE_WARNINGS=$(grep -cE "warning CS86" build-output.log || true)
+              if [ "$NULLABLE_WARNINGS" -gt 0 ]; then
+                echo "- Nullable reference warnings: $NULLABLE_WARNINGS"
+              fi
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload build log
+        if: always() && steps.analyze.outputs.has_issues == '1'
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: build-output.log
+          retention-days: 5
+
+      # ─── AI Code Quality Analysis ──────────────────────────────────
+      - name: Extract top warnings for AI
+        id: warnings
+        if: always() && steps.analyze.outputs.has_issues == '1'
+        run: |
+          TOP_WARNINGS=""
+          if [ -f build-output.log ]; then
+            TOP_WARNINGS=$(grep -E "warning (CA|CS|IDE|SCS)" build-output.log | sort | uniq -c | sort -rn | head -15)
+          fi
+          echo "top_warnings<<WARNEOF" >> $GITHUB_OUTPUT
+          echo "$TOP_WARNINGS" >> $GITHUB_OUTPUT
+          echo "WARNEOF" >> $GITHUB_OUTPUT
+
+      - name: AI code quality suggestions
+        id: ai-quality
+        if: always() && steps.analyze.outputs.has_issues == '1'
+        continue-on-error: true
+        uses: actions/ai-inference@v1
+        with:
+          model: gpt-4o-mini
+          max-tokens: 1500
+          prompt: |
+            You are a .NET code quality expert reviewing analyzer output for a market data collection application (.NET 9.0, C# 11).
+
+            Format check: ${{ steps.format-check.outcome }}
+            Build outcome: ${{ steps.build.outcome }}
+            Warning count: ${{ steps.analyze.outputs.warning_count }}
+            Error count: ${{ steps.analyze.outputs.error_count }}
+
+            Top warnings by frequency:
+            ${{ steps.warnings.outputs.top_warnings }}
+
+            Provide actionable suggestions in markdown:
+            1) **Priority Fixes** - which warnings to address first and why
+            2) **Quick Wins** - warnings that can be fixed with simple refactoring or dotnet format
+            3) **Suppression Candidates** - warnings that may be false positives or acceptable for this codebase
+            4) If format check failed, suggest a pre-commit hook setup
+
+            Keep response under 250 words.
+
+      - name: Post AI quality analysis to summary
+        if: always() && steps.ai-quality.outcome == 'success'
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### AI Code Quality Suggestions" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Save AI response to file to avoid shell injection issues
+          cat > "$RUNNER_TEMP/ai-response.txt" << 'HEREDOC_EOF'
+          ${{ steps.ai-quality.outputs.response }}
+          HEREDOC_EOF
+
+          if [ -f "$RUNNER_TEMP/ai-response.txt" ] && [ -s "$RUNNER_TEMP/ai-response.txt" ]; then
+            cat "$RUNNER_TEMP/ai-response.txt" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "_AI analysis was not available or returned empty._" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Create Copilot PR request for quality issues
+        if: >-
+          always() &&
+          steps.analyze.outputs.has_issues == '1' &&
+          github.event_name != 'pull_request'
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const workflowName = context.workflow;
+            const runId = context.runId;
+            const sha = context.sha;
+            const shortSha = sha.substring(0, 7);
+
+            // Close all existing open code-quality PR requests to avoid accumulation
+            const existingIssues = await github.paginate(github.rest.issues.listForRepo, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'copilot,code-quality',
+              state: 'open',
+              per_page: 100
+            });
+            for (const issue of existingIssues) {
+              if (issue.title.startsWith('[Copilot PR Request] Resolve code quality issues')) {
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  state: 'closed',
+                  state_reason: 'not_planned'
+                });
+              }
+            }
+
+            const title = `[Copilot PR Request] Resolve code quality issues (${shortSha})`;
+            const body = [
+              '## Copilot pull request request',
+              '',
+              '@copilot please investigate and resolve the code quality issues reported by the workflow run below, then open a pull request with the fixes.',
+              '',
+              `- Workflow: ${workflowName}`,
+              `- Run: https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${runId}`,
+              `- Commit: ${sha}`,
+              `- Format issues: ${{ steps.analyze.outputs.format_issues }}`,
+              `- Build issues: ${{ steps.analyze.outputs.build_issues }}`,
+              `- Warnings: ${{ steps.analyze.outputs.warning_count }}`,
+              `- Errors: ${{ steps.analyze.outputs.error_count }}`,
+              '',
+              'Please create a pull request with the required fixes and reference this issue in the PR description.'
+            ].join('\n');
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ['copilot', 'code-quality']
+            });
+
+      - name: Fail workflow when quality issues exist
+        if: steps.analyze.outputs.has_issues == '1'
+        run: |
+          echo "Code quality issues detected."
+          exit 1

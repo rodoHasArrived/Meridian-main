@@ -1,0 +1,19 @@
+{
+  "symbol": "AAPL",
+  "sequence": 1,
+  "source": "ALPACA",
+  "payload": {
+    "kind": "bbo",
+    "timestamp": "2026-03-19T14:30:00+00:00",
+    "symbol": "AAPL",
+    "bidPrice": 185.50,
+    "bidSize": 500,
+    "askPrice": 185.55,
+    "askSize": 300,
+    "midPrice": 185.525,
+    "spread": 0.05,
+    "sequenceNumber": 1,
+    "streamId": "ALPACA",
+    "venue": "ALPACA"
+  }
+}

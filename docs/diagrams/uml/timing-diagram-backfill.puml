@@ -1,0 +1,108 @@
+@startuml Timing Diagram - Backfill Operation Timeline
+!theme plain
+skinparam backgroundColor white
+
+title Meridian - Backfill Operation Timing Diagram
+
+' ==================== PARTICIPANTS ====================
+clock "Wall Clock" as Clock
+concise "Backfill Service" as Backfill
+concise "Rate Limiter" as RateLimiter
+concise "Provider (Stooq)" as Stooq
+concise "Provider (Yahoo)" as Yahoo
+concise "Event Pipeline" as Pipeline
+concise "Storage" as Storage
+
+' ==================== TIMELINE ====================
+' Time scale: seconds for backfill operations
+
+@0
+Backfill is "Initializing"
+RateLimiter is "Ready"
+Stooq is Idle
+Yahoo is Idle
+Pipeline is Ready
+Storage is Idle
+
+@1
+Backfill is "Symbol: SPY"
+note top of Backfill : Start first symbol
+
+@2
+RateLimiter is "Checking"
+note top of RateLimiter : Check quota available
+
+@2.1
+RateLimiter is "Ready"
+Stooq is "HTTP Request"
+note top of Stooq
+  GET /q/d/l/?s=spy.us
+  ~500ms network latency
+end note
+
+@2.6
+Stooq is "Parsing"
+note top of Stooq : Parse CSV response
+
+@2.8
+Stooq is Idle
+Backfill is "Publishing SPY"
+Pipeline is "Queuing"
+
+@3.5
+Backfill is "Symbol: AAPL"
+Pipeline is Ready
+
+@4
+RateLimiter is "Checking"
+
+@4.1
+RateLimiter is "Rate Limited"
+note top of RateLimiter
+  Quota exceeded!
+  Wait 5 seconds
+end note
+
+@9
+RateLimiter is "Ready"
+Stooq is "HTTP Request"
+
+@9.5
+Stooq is "Error"
+note top of Stooq
+  500 Server Error
+  Triggering fallback
+end note
+
+@10
+Yahoo is "HTTP Request"
+note top of Yahoo : Fallback to Yahoo Finance
+
+@10.8
+Yahoo is "Parsing"
+
+@11
+Yahoo is Idle
+Backfill is "Publishing AAPL"
+Pipeline is "Queuing"
+
+@12
+Backfill is "Flushing"
+Pipeline is "Flushing"
+Storage is "Writing"
+
+@12.5
+Storage is "Flushing"
+
+@13
+Backfill is "Complete"
+Pipeline is Ready
+Storage is Idle
+
+' ==================== HIGHLIGHTS ====================
+highlight 1 to 3.5 #LightBlue : SPY Processing (~2.5s)
+highlight 4.1 to 9 #LightCoral : Rate Limit Wait (~5s)
+highlight 9 to 11 #LightYellow : AAPL with Fallback (~2s)
+highlight 12 to 13 #LightGreen : Final Flush (~1s)
+
+@enduml

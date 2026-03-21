@@ -1,0 +1,57 @@
+[Unit]
+Description=Meridian (Microstructure Recorder)
+Documentation=https://github.com/rodoHasArrived/Meridian
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/meridian
+User=meridian
+Group=meridian
+
+# Preflight: ensure data dir writable + provider reachable if USE_IBAPI=true
+ExecStartPre=/bin/bash -lc 'mkdir -p /opt/meridian/data /opt/meridian/logs /opt/meridian/run'
+ExecStartPre=/bin/bash -lc 'test -w /opt/meridian/data'
+ExecStartPre=/bin/bash -lc 'if [ "$USE_IBAPI" = "true" ]; then for p in ${IB_PORT:-7497 4002 7496 4001}; do if timeout 1 bash -c ">/dev/tcp/${IB_HOST}/${p}" 2>/dev/null; then export IB_PORT=$p; echo "IB_PORT=$p"; exit 0; fi; done; echo "IB not reachable"; exit 1; else exit 0; fi'
+
+# Environment file for credentials (create from template)
+EnvironmentFile=-/opt/meridian/.env
+
+# Environment overrides (optional):
+Environment=DOTNET_ENVIRONMENT=Production
+Environment=USE_IBAPI=false
+Environment=IB_HOST=127.0.0.1
+Environment=IB_PORT=7497
+Environment=IB_CLIENT_ID=17
+
+# Run collector (hot reload + HTTP monitoring)
+ExecStart=/usr/bin/dotnet run --project /opt/meridian/src/Meridian/Meridian.csproj --configuration Release -- --watch-config --http-port 8080
+
+# Graceful stop
+KillSignal=SIGTERM
+TimeoutStopSec=30
+Restart=on-failure
+RestartSec=5
+RestartForceExitStatus=SIGKILL
+
+# Resource limits
+LimitNOFILE=65536
+MemoryMax=2G
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/meridian/data /opt/meridian/logs /opt/meridian/run
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+
+# Logs to journalctl by default
+SyslogIdentifier=meridian
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

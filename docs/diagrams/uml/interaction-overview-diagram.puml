@@ -1,0 +1,260 @@
+@startuml Interaction Overview Diagram - System Workflow
+!theme plain
+
+title Meridian - Interaction Overview Diagram
+
+start
+
+' ==================== INITIALIZATION ====================
+group Initialization
+    :ref: **Initialization Sequence**
+    ====
+    Load configuration
+    Initialize collectors
+    Create pipeline
+    Setup storage
+    ====;
+
+    if (Config Valid?) then (yes)
+    else (no)
+        :Log Errors;
+        stop
+    endif
+end group
+
+' ==================== MODE SELECTION ====================
+switch (Operation Mode?)
+
+case (Real-Time)
+    ' ==================== REAL-TIME MODE ====================
+    group Real-Time Data Collection
+
+        :ref: **Connection Sequence**
+        ====
+        Create provider client
+        Subscribe to symbols
+        Connect to provider
+        ====;
+
+        fork
+            ' Event Processing
+            group Event Processing Loop
+                repeat
+                    :ref: **Event Processing**
+                    ====
+                    Receive event from provider
+                    Route to appropriate collector
+                    Validate sequence integrity
+                    Publish to pipeline
+                    ====;
+                repeat while (Running?)
+            end group
+
+        fork again
+            ' Pipeline Consumer
+            group Pipeline Consumer Loop
+                repeat
+                    :ref: **Storage Sequence**
+                    ====
+                    Read batch from channel
+                    Write to JSONL sink
+                    Optionally publish to MassTransit
+                    ====;
+                repeat while (Running?)
+            end group
+
+        fork again
+            ' Periodic Tasks
+            group Periodic Tasks
+                repeat
+                    :ref: **Maintenance**
+                    ====
+                    Flush writers (5s)
+                    Check health (10s)
+                    Monitor config (1s)
+                    ====;
+                repeat while (Running?)
+            end group
+
+        fork again
+            ' Data Quality Monitoring
+            group Data Quality Monitoring
+                repeat
+                    :ref: **Quality Analysis**
+                    ====
+                    Detect anomalies
+                    Check price continuity
+                    Validate sequence integrity
+                    Monitor data freshness SLA
+                    Generate quality metrics
+                    ====;
+                repeat while (Running?)
+            end group
+
+        end fork
+
+    end group
+
+case (Backfill)
+    ' ==================== BACKFILL MODE ====================
+    group Historical Backfill
+
+        :ref: **Backfill Initialization**
+        ====
+        Parse backfill request (CLI or Scheduled)
+        Initialize providers (9 available)
+        ====;
+
+        while (More Symbols?) is (yes)
+
+            :ref: **Symbol Resolution (Optional)**
+            ====
+            Resolve via OpenFIGI/Alpaca/Finnhub/Polygon
+            Map to provider identifier
+            ====;
+
+            :ref: **Fetch Historical Data**
+            ====
+            Select provider
+            Apply rate limiting
+            Download OHLCV bars
+            Handle fallback on error
+            ====;
+
+            if (Success?) then (yes)
+                :ref: **Publish Bars**
+                ====
+                Create HistoricalBar events
+                Publish to pipeline
+                Update progress
+                ====;
+            else (no)
+                :Log Symbol Failed;
+            endif
+
+        endwhile (no)
+
+        :ref: **Finalization**
+        ====
+        Flush pipeline
+        Build result summary
+        Write status file
+        Log to BackfillExecutionLog
+        ====;
+
+    end group
+
+case (Scheduled Backfill)
+    ' ==================== SCHEDULED BACKFILL MODE ====================
+    group Scheduled Backfill Service
+
+        :ref: **Schedule Initialization**
+        ====
+        Load cron schedules
+        Initialize job manager
+        ====;
+
+        repeat
+            :ref: **Schedule Evaluation**
+            ====
+            Evaluate cron expressions
+            Check for due jobs
+            ====;
+
+            if (Job Due?) then (yes)
+                :ref: **Execute Scheduled Backfill**
+                ====
+                Load symbols from watchlist
+                Auto-select provider
+                Run backfill process
+                Log execution result
+                ====;
+            endif
+
+            :Wait for next check interval;
+
+        repeat while (Running?)
+
+    end group
+
+case (Microservices)
+    ' ==================== MICROSERVICES MODE ====================
+    group Microservices Ingestion
+
+        fork
+            ' Gateway
+            group Gateway Service
+                repeat
+                    :ref: **API Ingestion**
+                    ====
+                    Receive HTTP request
+                    Validate input
+                    Route to service
+                    Return 202 Accepted
+                    ====;
+                repeat while (Running?)
+            end group
+
+        fork again
+            ' Trade Ingestion
+            group Trade Ingestion Service
+                repeat
+                    :ref: **Trade Processing**
+                    ====
+                    Consume from bus
+                    Validate trade
+                    Store to JSONL
+                    Handle dead letters
+                    ====;
+                repeat while (Running?)
+            end group
+
+        fork again
+            ' Quote Ingestion
+            group Quote Ingestion Service
+                repeat
+                    :ref: **Quote Processing**
+                    ====
+                    Consume from bus
+                    Update quote state
+                    Store to JSONL
+                    ====;
+                repeat while (Running?)
+            end group
+
+        fork again
+            ' Validation Service
+            group Data Validation Service
+                repeat
+                    :ref: **Validation Processing**
+                    ====
+                    Consume validation request
+                    Check sequence gaps
+                    Detect anomalies
+                    Compute quality metrics
+                    Publish results
+                    ====;
+                repeat while (Running?)
+            end group
+
+        end fork
+
+    end group
+
+endswitch
+
+' ==================== SHUTDOWN ====================
+group Graceful Shutdown
+    :ref: **Shutdown Sequence**
+    ====
+    Signal cancellation
+    Disconnect providers
+    Flush all buffers
+    Close storage writers
+    Dispose resources
+    ====;
+end group
+
+stop
+
+@enduml

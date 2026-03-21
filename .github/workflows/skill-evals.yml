@@ -1,0 +1,213 @@
+name: Skill Eval Regression Check
+
+on:
+  pull_request:
+    paths:
+      - '.claude/skills/**'
+      - '.claude/skills/_shared/**'
+  workflow_dispatch:
+    inputs:
+      skill:
+        description: 'Skill to evaluate (meridian-code-review, meridian-brainstorm, or all)'
+        required: false
+        default: 'all'
+      eval_ids:
+        description: 'Comma-separated eval IDs to run (leave blank for all)'
+        required: false
+        default: ''
+
+# Only one eval run at a time per branch to prevent API overload
+concurrency:
+  group: skill-evals-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  detect-changed-skills:
+    name: Detect changed skills
+    runs-on: ubuntu-latest
+    outputs:
+      mdc_code_review_changed: ${{ steps.changes.outputs.mdc_code_review }}
+      mdc_brainstorm_changed: ${{ steps.changes.outputs.mdc_brainstorm }}
+      shared_changed: ${{ steps.changes.outputs.shared }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Detect changed skill directories
+        id: changes
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            skill="${{ github.event.inputs.skill }}"
+            if [ "$skill" = "all" ] || [ "$skill" = "meridian-code-review" ]; then
+              echo "mdc_code_review=true" >> $GITHUB_OUTPUT
+            else
+              echo "mdc_code_review=false" >> $GITHUB_OUTPUT
+            fi
+            if [ "$skill" = "all" ] || [ "$skill" = "meridian-brainstorm" ]; then
+              echo "mdc_brainstorm=true" >> $GITHUB_OUTPUT
+            else
+              echo "mdc_brainstorm=false" >> $GITHUB_OUTPUT
+            fi
+            echo "shared=true" >> $GITHUB_OUTPUT
+          else
+            # PR mode — check which files changed
+            git fetch origin ${{ github.base_ref }} --depth=1
+            CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+
+            if echo "$CHANGED" | grep -q '.claude/skills/meridian-code-review\|.claude/skills/_shared'; then
+              echo "mdc_code_review=true" >> $GITHUB_OUTPUT
+            else
+              echo "mdc_code_review=false" >> $GITHUB_OUTPUT
+            fi
+
+            if echo "$CHANGED" | grep -q '.claude/skills/meridian-brainstorm\|.claude/skills/_shared'; then
+              echo "mdc_brainstorm=true" >> $GITHUB_OUTPUT
+            else
+              echo "mdc_brainstorm=false" >> $GITHUB_OUTPUT
+            fi
+
+            if echo "$CHANGED" | grep -q '.claude/skills/_shared'; then
+              echo "shared=true" >> $GITHUB_OUTPUT
+            else
+              echo "shared=false" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+  validate-skill-structure:
+    name: Validate skill structure
+    runs-on: ubuntu-latest
+    needs: detect-changed-skills
+    if: needs.detect-changed-skills.outputs.mdc_code_review_changed == 'true' || needs.detect-changed-skills.outputs.mdc_brainstorm_changed == 'true'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Validate meridian-code-review structure
+        if: needs.detect-changed-skills.outputs.mdc_code_review_changed == 'true'
+        run: |
+          cd .claude/skills/meridian-code-review
+          python -c "
+          import json, sys
+          from pathlib import Path
+
+          errors = []
+
+          # Check required files exist
+          required = ['SKILL.md', 'agents/grader.md', 'evals/evals.json',
+                      'evals/benchmark_baseline.json', 'references/architecture.md',
+                      'references/schemas.md', 'CHANGELOG.md']
+          for f in required:
+              if not Path(f).exists():
+                  errors.append(f'Missing required file: {f}')
+
+          # Validate evals.json structure
+          with open('evals/evals.json') as fp:
+              evals = json.load(fp)
+          for ev in evals.get('evals', []):
+              if 'id' not in ev:
+                  errors.append(f'Eval missing id field')
+              if 'prompt' not in ev:
+                  errors.append(f'Eval {ev.get(\"id\", \"?\")} missing prompt')
+              if 'assertions' not in ev or not ev['assertions']:
+                  errors.append(f'Eval {ev.get(\"id\", \"?\")} has no assertions')
+
+          # Validate benchmark_baseline.json
+          with open('evals/benchmark_baseline.json') as fp:
+              baseline = json.load(fp)
+          eval_ids = {e['id'] for e in evals.get('evals', [])}
+          baseline_ids = {b['eval_id'] for b in baseline.get('baselines', [])}
+          missing_baselines = eval_ids - baseline_ids
+          if missing_baselines:
+              errors.append(f'Evals missing baseline entries: {missing_baselines}')
+
+          if errors:
+              for e in errors:
+                  print(f'ERROR: {e}')
+              sys.exit(1)
+          else:
+              print(f'meridian-code-review: structure valid ({len(eval_ids)} evals, {len(baseline_ids)} baselines)')
+          "
+
+      - name: Validate meridian-brainstorm structure
+        if: needs.detect-changed-skills.outputs.mdc_brainstorm_changed == 'true'
+        run: |
+          cd .claude/skills/meridian-brainstorm
+          python -c "
+          from pathlib import Path
+          import sys
+
+          errors = []
+          required = ['SKILL.md', 'references/idea-dimensions.md',
+                      'references/competitive-landscape.md', 'CHANGELOG.md']
+          for f in required:
+              if not Path(f).exists():
+                  errors.append(f'Missing required file: {f}')
+
+          if errors:
+              for e in errors:
+                  print(f'ERROR: {e}')
+              sys.exit(1)
+          else:
+              print('meridian-brainstorm: structure valid')
+          "
+
+      - name: Validate shared context exists
+        run: |
+          if [ ! -f ".claude/skills/_shared/project-context.md" ]; then
+            echo "ERROR: Missing .claude/skills/_shared/project-context.md"
+            exit 1
+          fi
+          echo "Shared context: present"
+
+  run-evals:
+    name: Run skill evals
+    runs-on: ubuntu-latest
+    needs: [detect-changed-skills, validate-skill-structure]
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install eval dependencies
+        run: pip install anthropic
+
+      - name: Run meridian-code-review evals
+        if: needs.detect-changed-skills.outputs.mdc_code_review_changed == 'true'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          WORKSPACE=$(mktemp -d)
+          EVAL_IDS="${{ github.event.inputs.eval_ids }}"
+
+          if [ -n "$EVAL_IDS" ]; then
+            EVAL_ARGS="--eval-ids $EVAL_IDS"
+          else
+            EVAL_ARGS=""
+          fi
+
+          python .claude/skills/meridian-code-review/scripts/run_eval.py \
+            --skill-path .claude/skills/meridian-code-review \
+            --workspace "$WORKSPACE" \
+            $EVAL_ARGS
+
+          python .claude/skills/meridian-code-review/scripts/aggregate_benchmark.py \
+            "$WORKSPACE" \
+            --skill-name meridian-code-review \
+            --skill-path .claude/skills/meridian-code-review \
+            --baseline .claude/skills/meridian-code-review/evals/benchmark_baseline.json
+
+      - name: Upload eval results
+        if: always() && needs.detect-changed-skills.outputs.mdc_code_review_changed == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: skill-eval-results-${{ github.run_id }}
+          path: /tmp/skill-eval-workspace/
+          retention-days: 14

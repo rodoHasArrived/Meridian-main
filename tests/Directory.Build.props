@@ -1,0 +1,17 @@
+<!--
+  Shared MSBuild properties for all test projects.
+  Explicitly imports the root Directory.Build.props to ensure NoWarn and other
+  shared settings are inherited (MSBuild stops at the first Directory.Build.props
+  it finds when walking up the tree, so the parent must be imported explicitly).
+-->
+<Project>
+  <!-- Chain to the root Directory.Build.props for shared settings (e.g. NoWarn) -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <ItemGroup>
+    <!-- Copy xunit.runner.json to each test project's output directory -->
+    <Content Include="$(MSBuildThisFileDirectory)xunit.runner.json"
+             Link="xunit.runner.json"
+             CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

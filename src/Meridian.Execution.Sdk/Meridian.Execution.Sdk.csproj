@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <LangVersion>13</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Meridian.Execution.Sdk</RootNamespace>
+    <AssemblyName>Meridian.Execution.Sdk</AssemblyName>
+    <Description>Execution contracts and interfaces for the Meridian trading platform</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Meridian.Contracts\Meridian.Contracts.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,13 @@
+# Domain layer MUST NOT reference Application, Infrastructure, or Storage assemblies.
+# This file documents the architectural constraint enforced by project references.
+#
+# Allowed references:
+#   - Meridian.Contracts
+#   - Meridian.ProviderSdk
+#   - System / BCL packages
+#
+# Forbidden:
+#   - Meridian.Application
+#   - Meridian.Infrastructure
+#   - Meridian.Storage
+#   - Meridian.Core (Domain has no cross-cutting dependency)

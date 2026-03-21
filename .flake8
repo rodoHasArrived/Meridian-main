@@ -1,0 +1,42 @@
+[flake8]
+max-line-length = 127
+max-complexity = 10
+exclude =
+    .git,
+    __pycache__,
+    *.egg-info,
+    .tox,
+    .env,
+    venv,
+    env,
+    benchmarks/*/bin,
+    benchmarks/*/obj,
+    src/*/bin,
+    src/*/obj,
+    tests/*/bin,
+    tests/*/obj,
+    node_modules,
+    .claude/skills/meridian-code-review/eval-viewer,
+    .claude/skills/skills_provider.py
+per-file-ignores =
+    build/python/cli/buildctl.py:E402
+    src/Meridian.Backtesting.Sdk/Examples/*.py:F403,F405,E402
+    src/*/AlgorithmImports.py:F403,F405,E402
+extend-ignore =
+    C901,
+    E127,
+    E128,
+    E203,
+    E261,
+    E272,
+    E302,
+    E303,
+    E305,
+    E402,
+    E501,
+    E741,
+    F401,
+    F541,
+    F841,
+    W292,
+    W293

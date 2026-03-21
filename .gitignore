@@ -1,0 +1,206 @@
+# ============================================
+# Build and Intermediate Outputs
+# ============================================
+# Why: .NET build system generates these directories on every build.
+# Committing them would bloat the repository and cause merge conflicts.
+# They should be regenerated from source via `dotnet build`.
+
+bin/
+obj/
+out/
+
+# Configuration-specific build outputs
+# Why: Platform/configuration-specific artifacts (Debug/Release, x64/x86)
+# are machine-generated and should be rebuilt from source.
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Bb]uild/
+bld/
+
+# Publish output
+# Why: Published binaries are deployment artifacts, not source code.
+# They should be regenerated via `dotnet publish` for each deployment.
+publish/
+
+# Roslyn compiler cache
+# Why: IDE/compiler cache files that speed up compilation but are
+# machine-specific and regenerated automatically.
+*.ide/
+
+# ============================================
+# IDE and Editor Configuration
+# ============================================
+# Why: These files contain user-specific preferences (window positions,
+# breakpoints, personal settings) that vary by developer and machine.
+# Shared IDE settings should be in .editorconfig or similar.
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio
+.vs/
+*.sln.DotSettings.user
+
+# JetBrains Rider
+.idea/
+*.sln.iml
+
+# ============================================
+# NuGet and Package Management
+# ============================================
+# Why: NuGet packages are binary dependencies that should be restored
+# from package sources (nuget.org, etc.) via `dotnet restore`.
+# Central Package Management (Directory.Packages.props) specifies versions.
+# Committing packages would waste repository space and bandwidth.
+
+*.nupkg
+packages/
+!.nuget/packages
+
+# ============================================
+# Test Results and Coverage
+# ============================================
+# Why: Test results and coverage reports are build-time artifacts that
+# should be regenerated on each test run. They're often machine-specific
+# and contain absolute paths. CI/CD generates fresh reports for each build.
+
+[Tt]est[Rr]esult*/
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+coverage/
+
+# NCrunch test framework cache
+# Why: NCrunch (if used) generates local cache files for test execution.
+# Note: Kept for backward compatibility; remove if NCrunch is not in use.
+_NCrunch_*
+*.ncrunch*
+nCrunchTemp_*
+
+# BenchmarkDotNet results
+# Why: Benchmark results are environment-specific and should be regenerated
+# for each performance test run. Sample benchmarks are kept in source.
+BenchmarkDotNet.Artifacts/
+
+# ============================================
+# Credentials and Secrets (NEVER COMMIT)
+# ============================================
+# Why: SECURITY CRITICAL - These files contain API keys, connection strings,
+# certificates, and other secrets. Committing them would expose credentials
+# to version control history. Use environment variables or secret management
+# systems instead. appsettings.sample.json provides a template.
+
+appsettings.json
+appsettings.*.json
+!appsettings.sample.json
+!config/appsettings.schema.json
+credentials.json
+*.pfx
+*.key
+*.pem
+*.env
+.env.*
+
+# ============================================
+# Data Directories and Logs
+# ============================================
+# Why: These directories contain runtime data (market data, time-series files)
+# and logs that are generated during application execution. They can be large
+# and are specific to each deployment environment. They should not be in VCS.
+
+data/
+logs/
+_logs/
+diagnostic-logs/
+.build-system/
+
+# Build output logs
+# Why: Local build logs are regenerated on each build and contain
+# machine-specific paths. They cause noise in version control.
+*.log
+build_output.txt
+build-output*.txt
+build-output.log
+build-final*.txt
+*_stderr.txt
+*_stdout.txt
+
+# ============================================
+# OS-Specific Files
+# ============================================
+# Why: Operating systems generate metadata files for indexing, thumbnails,
+# and resource forks. These are platform-specific and should not be shared
+# across different development environments.
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+ehthumbs.db
+Thumbs.db
+nul
+
+# ============================================
+# Temporary Files and Scratch Work
+# ============================================
+# Why: Editors and developers create temporary files during work sessions.
+# These are never meant to be committed and are often cleaned up automatically.
+# Scratch files are used for quick experiments and should not pollute VCS.
+
+*.tmp
+*.temp
+*.swp
+*~
+...
+*-scratch.*
+scratch-*
+test-*.ps1
+
+# Malformed path artifacts (Windows path corruption)
+# Why: Occasionally Windows path handling errors create odd directories.
+C:*/
+
+# ============================================
+# Workflow Artifacts
+# ============================================
+# Why: CI/CD pipelines generate these files during automated builds.
+# They're specific to each workflow run and should not be committed.
+
+msbuild.binlog
+vulnerable-packages.txt
+todo-scan-results.json
+.ai/
+
+# ============================================
+# Node.js Dependencies (for Build Tools)
+# ============================================
+# Why: This repository uses Node.js scripts for diagram generation
+# (see package.json). node_modules/ contains downloaded dependencies
+# that should be restored via `npm install`, not committed.
+
+node_modules/
+
+# ============================================
+# Python Dependencies (for Build System)
+# ============================================
+# Why: Python scripts in build/python/ are used for build automation
+# and diagnostics. These cache files and compiled modules are generated
+# automatically and should not be in version control.
+
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/

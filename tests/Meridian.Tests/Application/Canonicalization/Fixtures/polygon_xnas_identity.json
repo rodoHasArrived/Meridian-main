@@ -1,0 +1,20 @@
+{
+  "description": "Same AAPL trade on NASDAQ reported by Polygon (venue '4'). Counterpart to alpaca_xnas_identity — both resolve to XNAS.",
+  "raw": {
+    "symbol": "AAPL",
+    "source": "POLYGON",
+    "venue": "4",
+    "conditions": ["0"],
+    "price": 183.45,
+    "size": 100,
+    "sequenceNumber": 5002
+  },
+  "expected": {
+    "canonicalSymbol": "AAPL",
+    "canonicalVenue": "XNAS",
+    "tier": "Enriched",
+    "canonicalizationVersion": 1,
+    "rawSymbolUnchanged": true,
+    "canonicalConditions": ["Regular"]
+  }
+}

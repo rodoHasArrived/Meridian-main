@@ -1,0 +1,122 @@
+name: Release Management
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., v1.2.0)'
+        required: true
+        type: string
+      prerelease:
+        description: 'Mark as pre-release'
+        required: false
+        type: boolean
+        default: false
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Validate version format
+      run: |
+        if [[ ! "${{ github.event.inputs.version }}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$ ]]; then
+          echo "Error: Version must follow semantic versioning (e.g., v1.2.0 or v1.2.0-beta.1)"
+          exit 1
+        fi
+
+    - name: Check if tag exists
+      run: |
+        if git rev-parse "${{ github.event.inputs.version }}" >/dev/null 2>&1; then
+          echo "Error: Tag ${{ github.event.inputs.version }} already exists"
+          exit 1
+        fi
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v5.2.0
+      with:
+        dotnet-version: '9.0.x'
+
+    - name: Generate SBOM (CycloneDX)
+      run: |
+        dotnet tool install --global CycloneDX
+        dotnet CycloneDX Meridian.sln \
+          --json \
+          --out ./sbom \
+          --filename "sbom-${{ github.event.inputs.version }}.json"
+
+    - name: Upload SBOM artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: sbom-${{ github.event.inputs.version }}
+        path: ./sbom/sbom-${{ github.event.inputs.version }}.json
+        retention-days: 365
+
+    - name: Generate changelog
+      id: changelog
+      uses: actions/github-script@v8
+      with:
+        result-encoding: string
+        script: |
+          const { data: commits } = await github.rest.repos.listCommits({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            per_page: 100,
+          });
+          
+          const changelog = commits
+            .filter(commit => commit.commit.message.split('\n')[0].length > 0)
+            .slice(0, 50) // Last 50 commits
+            .map(commit => {
+              const message = commit.commit.message.split('\n')[0];
+              const sha = commit.sha.substring(0, 7);
+              return `- ${message} (${sha})`;
+            })
+            .join('\n');
+          
+          return `## Changes\n\n${changelog}`;
+
+    - name: Create and push tag
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git tag -a "${{ github.event.inputs.version }}" -m "Release ${{ github.event.inputs.version }}"
+        git push origin "${{ github.event.inputs.version }}"
+
+    - name: Create GitHub Release
+      uses: actions/github-script@v8
+      with:
+        script: |
+          await github.rest.repos.createRelease({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            tag_name: '${{ github.event.inputs.version }}',
+            name: '${{ github.event.inputs.version }}',
+            body: `${{ steps.changelog.outputs.result }}`,
+            draft: false,
+            prerelease: ${{ github.event.inputs.prerelease }},
+          });
+
+    - name: Trigger build workflow
+      uses: actions/github-script@v8
+      with:
+        script: |
+          await github.rest.actions.createWorkflowDispatch({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            workflow_id: 'dotnet-desktop.yml',
+            ref: '${{ github.event.inputs.version }}',
+          });

@@ -1,0 +1,63 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Detect Windows platform -->
+    <IsWindows Condition="'$(OS)' == 'Windows_NT' OR $([MSBuild]::IsOSPlatform('Windows'))">true</IsWindows>
+  </PropertyGroup>
+
+  <!-- Non-Windows: Create a minimal stub that compiles but produces nothing -->
+  <PropertyGroup Condition="'$(IsWindows)' != 'true'">
+    <TargetFramework>net9.0</TargetFramework>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Meridian.Ui.Services</RootNamespace>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Exclude all source files on non-Windows -->
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <!-- Windows: Full shared services library -->
+  <PropertyGroup Condition="'$(IsWindows)' == 'true'">
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Meridian.Ui.Services</RootNamespace>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+
+    <!-- Assembly Information -->
+    <AssemblyName>Meridian.Ui.Services</AssemblyName>
+    <Version>1.0.0</Version>
+    <Authors>Meridian Team</Authors>
+    <Description>Shared desktop UI services for Meridian WPF application</Description>
+    <Product>Meridian UI Services</Product>
+    <Copyright>Copyright 2024-2026 Meridian Team</Copyright>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <!-- Windows-only package references -->
+  <ItemGroup Condition="'$(IsWindows)' == 'true'">
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="System.Text.Json" />
+    <PackageReference Include="ZstdSharp.Port" />
+    <PackageReference Include="Microsoft.Extensions.Http" />
+    <PackageReference Include="Microsoft.Extensions.Http.Polly" />
+  </ItemGroup>
+
+  <!-- Expose internals to test projects -->
+  <ItemGroup Condition="'$(IsWindows)' == 'true'">
+    <InternalsVisibleTo Include="Meridian.Wpf.Tests" />
+    <InternalsVisibleTo Include="Meridian.Ui.Tests" />
+  </ItemGroup>
+
+  <!--
+    Reference the Contracts assembly directly so that types from
+    Meridian.Contracts live in exactly one assembly.
+    Using <Compile Include> to source-link those files caused CS0433
+    "type exists in both assemblies" errors when the WPF project also
+    referenced Backtesting, which brings in Contracts.dll transitively.
+  -->
+  <ItemGroup Condition="'$(IsWindows)' == 'true'">
+    <ProjectReference Include="..\Meridian.Contracts\Meridian.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>

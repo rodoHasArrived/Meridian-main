@@ -1,0 +1,413 @@
+# Security Scanning Workflow (Consolidated)
+#
+# Now also includes functionality from dependency-review.yml:
+#   - GitHub dependency review action on PRs
+#   - License compliance checking
+#
+# On PRs: Runs quick dependency scan, secret detection, and dependency review
+# On schedule: Runs full security suite including CodeQL and SAST
+# AI integration: Generates AI-powered vulnerability analysis summaries
+
+name: Security
+
+on:
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - '**/*.csproj'
+      - '**/*.fsproj'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'Directory.Build.props'
+      - 'Directory.Packages.props'
+      - 'docs/security/**'
+  schedule:
+    # Run full security scans weekly on Monday at 5:00 UTC
+    - cron: '0 5 * * 1'
+  workflow_dispatch:
+    inputs:
+      full_scan:
+        description: 'Run full security scan (including CodeQL)'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  pull-requests: write
+  models: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  # ─── Quick checks that run on every PR ─────────────────────────────────
+
+  dependency-vulnerability-scan:
+    name: Dependency Vulnerability Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET with Cache
+        uses: ./.github/actions/setup-dotnet-cache
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
+
+      - name: Scan for vulnerable packages
+        id: vuln-scan
+        run: |
+          echo "## Dependency Vulnerability Scan" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Scan Date:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          dotnet list Meridian.sln package --vulnerable --include-transitive 2>&1 | tee vuln-scan.txt
+
+          # Save scan output for AI analysis
+          echo "scan_output<<SCANEOF" >> $GITHUB_OUTPUT
+          head -50 vuln-scan.txt >> $GITHUB_OUTPUT
+          echo "SCANEOF" >> $GITHUB_OUTPUT
+
+          # Filter out known accepted vulnerabilities (documented in docs/security/)
+          # DotNetZip 1.16.0 - GHSA-xhg6-9j5j-w4vf: Transitive dep from QuantConnect.Lean (no fix available, deprecated library)
+          # Risk: Path traversal in zip extraction - mitigated as we don't extract user-provided zip files
+          grep -viE "DotNetZip.*1\.16\.0.*GHSA-xhg6-9j5j-w4vf" vuln-scan.txt > vuln-scan-filtered.txt || true
+
+          if grep -qiE "(critical|high)" vuln-scan-filtered.txt; then
+            echo "::error::Critical/High vulnerabilities detected!"
+            echo "has_vulns=true" >> $GITHUB_OUTPUT
+            echo "### ❌ Vulnerable Packages Found" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            cat vuln-scan.txt >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            exit 1
+          else
+            echo "has_vulns=false" >> $GITHUB_OUTPUT
+            echo "### ✅ No Critical/High Vulnerabilities" >> $GITHUB_STEP_SUMMARY
+            
+            # Show any known accepted vulnerabilities
+            if grep -qiE "DotNetZip.*1\.16\.0" vuln-scan.txt; then
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "### ⚠️ Known Accepted Vulnerabilities" >> $GITHUB_STEP_SUMMARY
+              echo "- **DotNetZip 1.16.0** (GHSA-xhg6-9j5j-w4vf): Transitive dependency from QuantConnect.Lean" >> $GITHUB_STEP_SUMMARY
+              echo "  - Risk: Path traversal in zip extraction" >> $GITHUB_STEP_SUMMARY
+              echo "  - Mitigation: Application does not extract user-provided zip files" >> $GITHUB_STEP_SUMMARY
+              echo "  - Status: No fix available (deprecated library, upstream dependency)" >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
+
+  npm-vulnerability-scan:
+    name: npm Vulnerability Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Scan npm dependencies
+        run: |
+          echo "## npm Vulnerability Scan" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Scan Date:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          npm audit --audit-level=high --json > npm-audit.json || AUDIT_EXIT=$?
+          AUDIT_EXIT=${AUDIT_EXIT:-0}
+
+          node <<'EOF'
+          const fs = require('fs');
+          const audit = JSON.parse(fs.readFileSync('npm-audit.json', 'utf8'));
+          const metadata = audit.metadata?.vulnerabilities ?? {};
+          const total = Object.values(metadata).reduce((sum, count) => sum + (Number(count) || 0), 0);
+          const lines = [
+            `- Total vulnerabilities: ${total}`,
+            `- Critical: ${metadata.critical ?? 0}`,
+            `- High: ${metadata.high ?? 0}`,
+            `- Moderate: ${metadata.moderate ?? 0}`,
+            `- Low: ${metadata.low ?? 0}`,
+            `- Info: ${metadata.info ?? 0}`
+          ];
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `### npm audit summary\n${lines.join('\n')}\n`);
+          EOF
+
+          if [ "$AUDIT_EXIT" -ne 0 ]; then
+            echo "::error::High/Critical npm vulnerabilities detected!"
+            exit "$AUDIT_EXIT"
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### ✅ No High/Critical npm vulnerabilities" >> $GITHUB_STEP_SUMMARY
+
+  # ─── Dependency Review (absorbed from dependency-review.yml) ───────────
+
+  dependency-review:
+    name: Dependency Review (License & Security)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Log PR context
+        run: |
+          echo "=== Pull Request Context ==="
+          echo "PR Number: ${{ github.event.pull_request.number }}"
+          echo "Base SHA: ${{ github.event.pull_request.base.sha }}"
+          echo "Head SHA: ${{ github.event.pull_request.head.sha }}"
+          echo "Base Ref: ${{ github.base_ref }}"
+          echo "Head Ref: ${{ github.head_ref }}"
+          echo ""
+          echo "=== Changed Files ==="
+          git diff --name-only ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }} || echo "Could not get diff"
+          echo ""
+          echo "=== Dependency Files Changed ==="
+          git diff --name-only ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }} | grep -E '\.(csproj|fsproj|props|targets|json|lock)$' || echo "No dependency files changed"
+
+      - name: Dependency Review
+        id: dependency-review
+        uses: actions/dependency-review-action@v4.9.0
+        with:
+          fail-on-severity: high
+          warn-on-severity: moderate
+          deny-licenses: GPL-2.0, GPL-3.0
+          comment-summary-in-pr: always
+          base-ref: ${{ github.event.pull_request.base.sha }}
+          head-ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Log review outcome
+        if: always()
+        run: |
+          echo "=== Dependency Review Complete ==="
+          echo "Job Status: ${{ job.status }}"
+          echo "Review Step Outcome: ${{ steps.dependency-review.outcome }}"
+          echo "Review Step Conclusion: ${{ steps.dependency-review.conclusion }}"
+          if [ "${{ steps.dependency-review.outcome }}" == "failure" ]; then
+            echo ""
+            echo "Review failed. Common causes:"
+            echo "  - Dependencies with high severity vulnerabilities"
+            echo "  - Dependencies with denied licenses (GPL-2.0, GPL-3.0)"
+            echo "  - Unable to resolve dependency graph"
+            echo ""
+            echo "Check the PR comment for detailed vulnerability information."
+          fi
+
+  secret-detection:
+    name: Secret Detection
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Gitleaks Secret Scan
+        uses: gitleaks/gitleaks-action@v2.3.9
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ─── Deep scans (scheduled/manual only) ────────────────────────────────
+
+  sast-scanning:
+    name: SAST Scanning
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET with Cache
+        uses: ./.github/actions/setup-dotnet-cache
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
+
+      - name: Run security analysis
+        id: sast
+        run: |
+          dotnet build Meridian.sln -c Release /p:EnableWindowsTargeting=true /p:RunAnalyzersDuringBuild=true 2>&1 | tee sast-output.txt || true
+
+          echo "## SAST Analysis Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if grep -qE "SCS[0-9]{4}" sast-output.txt; then
+            echo "### Security warnings detected:" >> $GITHUB_STEP_SUMMARY
+            grep -E "SCS[0-9]{4}" sast-output.txt | head -20 >> $GITHUB_STEP_SUMMARY
+            echo "::warning::Security analyzer warnings detected - review SAST output"
+
+            # Save for AI analysis
+            SAST_FINDINGS=$(grep -E "SCS[0-9]{4}" sast-output.txt | head -20)
+            echo "sast_findings<<SASTEOF" >> $GITHUB_OUTPUT
+            echo "$SAST_FINDINGS" >> $GITHUB_OUTPUT
+            echo "SASTEOF" >> $GITHUB_OUTPUT
+          else
+            echo "No SAST issues detected" >> $GITHUB_STEP_SUMMARY
+            echo "sast_findings=none" >> $GITHUB_OUTPUT
+          fi
+
+  codeql-analysis:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # CodeQL only runs on schedule or full_scan dispatch (expensive operation)
+    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.full_scan)
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: csharp
+          queries: security-and-quality
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5.2.0
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
+
+      - name: Build for CodeQL
+        run: |
+          dotnet build Meridian.sln -c Release --no-restore /p:EnableWindowsTargeting=true
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v4
+        with:
+          category: "/language:csharp"
+
+  # ─── AI Security Analysis ──────────────────────────────────────────────
+
+  ai-security-analysis:
+    name: AI Security Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [dependency-vulnerability-scan, secret-detection, sast-scanning]
+    if: |
+      always() &&
+      (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+
+    steps:
+      - name: AI vulnerability assessment
+        id: ai-assessment
+        continue-on-error: true
+        uses: actions/ai-inference@v1
+        with:
+          model: gpt-4o-mini
+          max-tokens: 1500
+          prompt: |
+            You are a security engineer reviewing scan results for a .NET 9.0 market data collection application.
+
+            Dependency scan result: ${{ needs.dependency-vulnerability-scan.result }}
+            Secret detection result: ${{ needs.secret-detection.result }}
+            SAST scanning result: ${{ needs.sast-scanning.result }}
+
+            The application handles:
+            - WebSocket connections to market data providers (Alpaca, Polygon, Interactive Brokers)
+            - API credentials stored in environment variables
+            - Historical market data storage in JSONL/Parquet formats
+            - REST API endpoints for data management
+
+            Based on the scan results and application profile, provide:
+            1) Risk assessment summary (Critical/High/Medium/Low)
+            2) Top 3 security recommendations specific to this application type
+            3) Suggested remediation priorities
+
+            Keep response under 250 words in markdown format.
+
+      - name: Post AI analysis to summary
+        if: always()
+        run: |
+          echo "## AI Security Assessment" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -n "${{ steps.ai-assessment.outputs.response }}" ]; then
+            echo "${{ steps.ai-assessment.outputs.response }}" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "_AI assessment was not available for this run._" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # ─── Security Summary ──────────────────────────────────────────────────
+
+  security-summary:
+    name: Security Summary
+    runs-on: ubuntu-latest
+    needs: [dependency-vulnerability-scan, npm-vulnerability-scan, dependency-review, secret-detection, sast-scanning, codeql-analysis, ai-security-analysis]
+    if: always()
+    timeout-minutes: 5
+
+    steps:
+      - name: Generate security summary
+        run: |
+          echo "# Security Scan Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Scan Completed:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "**Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "## Quick Checks (Always Run)" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Dependency Vulnerability Scan | ${{ needs.dependency-vulnerability-scan.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| npm Vulnerability Scan | ${{ needs.npm-vulnerability-scan.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Dependency Review (License) | ${{ needs.dependency-review.result == 'success' && '✅ Passed' || (needs.dependency-review.result == 'skipped' && '⏭️ Skipped' || '❌ Failed') }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Secret Detection | ${{ needs.secret-detection.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "## Deep Scans (Scheduled/Manual)" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| SAST Scanning | ${{ needs.sast-scanning.result == 'success' && '✅ Passed' || (needs.sast-scanning.result == 'skipped' && '⏭️ Skipped' || '❌ Failed') }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| CodeQL Analysis | ${{ needs.codeql-analysis.result == 'success' && '✅ Passed' || (needs.codeql-analysis.result == 'skipped' && '⏭️ Skipped' || '❌ Failed') }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| AI Security Analysis | ${{ needs.ai-security-analysis.result == 'success' && '✅ Completed' || (needs.ai-security-analysis.result == 'skipped' && '⏭️ Skipped' || '⚠️ Unavailable') }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Fail if critical checks failed
+          if [[ "${{ needs.dependency-vulnerability-scan.result }}" == "failure" ]] || \
+             [[ "${{ needs.npm-vulnerability-scan.result }}" == "failure" ]] || \
+             [[ "${{ needs.secret-detection.result }}" == "failure" ]]; then
+            echo "### ❌ Critical security checks failed!" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          else
+            echo "### ✅ All security checks passed!" >> $GITHUB_STEP_SUMMARY
+          fi

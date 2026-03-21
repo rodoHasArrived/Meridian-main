@@ -1,0 +1,20 @@
+{
+  "description": "Alpaca regular-session trade on NASDAQ (venue code 'V') with condition '@' (Regular).",
+  "raw": {
+    "symbol": "AAPL",
+    "source": "ALPACA",
+    "venue": "V",
+    "conditions": ["@"],
+    "price": 183.45,
+    "size": 100,
+    "sequenceNumber": 1001
+  },
+  "expected": {
+    "canonicalSymbol": "AAPL",
+    "canonicalVenue": "XNAS",
+    "tier": "Enriched",
+    "canonicalizationVersion": 1,
+    "rawSymbolUnchanged": true,
+    "canonicalConditions": ["Regular"]
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "description": "IB limit sell order for TSLA, fill-or-kill.",
+  "orderId": 1004,
+  "symbol": "TSLA",
+  "orderType": "LMT",
+  "side": "SELL",
+  "quantity": 25,
+  "tif": "FOK",
+  "price": 250.75
+}

@@ -1,0 +1,20 @@
+{
+  "description": "Polygon odd-lot trade on NYSE ARCA (venue code '3') with condition '15' (OddLot).",
+  "raw": {
+    "symbol": "MSFT",
+    "source": "POLYGON",
+    "venue": "3",
+    "conditions": ["15"],
+    "price": 415.60,
+    "size": 5,
+    "sequenceNumber": 4002
+  },
+  "expected": {
+    "canonicalSymbol": "MSFT",
+    "canonicalVenue": "ARCX",
+    "tier": "Enriched",
+    "canonicalizationVersion": 1,
+    "rawSymbolUnchanged": true,
+    "canonicalConditions": ["OddLot"]
+  }
+}

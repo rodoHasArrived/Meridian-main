@@ -1,0 +1,60 @@
+{
+  "name": "Meridian",
+  "image": "mcr.microsoft.com/devcontainers/dotnet:9.0",
+
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "20"
+    },
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.12"
+    }
+  },
+
+  "containerEnv": {
+    "DOTNET_SKIP_FIRST_TIME_EXPERIENCE": "1",
+    "DOTNET_NOLOGO": "true",
+    "DOTNET_CLI_TELEMETRY_OPTOUT": "1",
+    "DOTNET_GENERATE_ASPNET_CERTIFICATE": "false"
+  },
+
+  "onCreateCommand": "dotnet restore Meridian.sln /p:EnableWindowsTargeting=true --verbosity minimal && npm ci --silent",
+
+  "updateContentCommand": "cp -n config/appsettings.sample.json config/appsettings.json 2>/dev/null || true && mkdir -p data logs && dotnet build Meridian.sln -c Debug --no-restore /p:EnableWindowsTargeting=true --verbosity quiet",
+
+  "postCreateCommand": "./build/scripts/hooks/install-hooks.sh",
+
+  "forwardPorts": [8080],
+  "portsAttributes": {
+    "8080": {
+      "label": "Web Dashboard",
+      "onAutoForward": "notify"
+    }
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-dotnettools.csdevkit",
+        "ms-dotnettools.csharp",
+        "ionide.ionide-fsharp",
+        "ms-python.python",
+        "editorconfig.editorconfig",
+        "DavidAnson.vscode-markdownlint",
+        "eamodio.gitlens",
+        "GitHub.copilot"
+      ],
+      "settings": {
+        "dotnet.defaultSolution": "Meridian.sln",
+        "omnisharp.enableRoslynAnalyzers": true,
+        "editor.formatOnSave": true,
+        "files.trimTrailingWhitespace": true,
+        "editor.bracketPairColorization.enabled": true,
+        "editor.guides.bracketPairs": "active",
+        "editor.stickyScroll.enabled": true,
+        "dotnet.server.useOmnisharp": false,
+        "testing.automaticallyOpenPeekView": "never"
+      }
+    }
+  }
+}

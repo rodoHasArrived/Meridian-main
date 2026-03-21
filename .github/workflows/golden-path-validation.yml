@@ -1,0 +1,42 @@
+name: Golden Path Validation
+
+on:
+  pull_request:
+    branches: ["main", "develop"]
+    paths:
+      - "README.md"
+      - "docs/**/*.md"
+      - "Makefile"
+      - "build/scripts/install/**"
+      - "build/scripts/docs/validate-golden-path.sh"
+      - ".github/workflows/golden-path-validation.yml"
+  push:
+    branches: ["main"]
+    paths:
+      - "README.md"
+      - "docs/**/*.md"
+      - "Makefile"
+      - "build/scripts/install/**"
+      - "build/scripts/docs/validate-golden-path.sh"
+      - ".github/workflows/golden-path-validation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: golden-path-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate installer references
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate Golden Path installer references
+        run: ./build/scripts/docs/validate-golden-path.sh

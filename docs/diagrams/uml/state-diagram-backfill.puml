@@ -1,0 +1,102 @@
+@startuml State Diagram - Backfill Request States
+!theme plain
+
+title Meridian - Backfill Request State Machine
+
+state "Backfill Request Lifecycle" as BackfillLC {
+
+    [*] --> Pending
+
+    state Pending {
+        Pending : Request queued
+        Pending : Waiting for resources
+    }
+
+    state Validating {
+        Validating : entry/ Validate parameters
+        Validating : Check symbol format
+        Validating : Verify date range
+        Validating : Test provider connectivity
+    }
+
+    state InProgress {
+        InProgress : entry/ Start progress tracking
+        InProgress : Fetching historical data
+
+        state FetchingSymbol {
+            FetchingSymbol : Processing one symbol
+            FetchingSymbol : HTTP request to provider
+
+            state RateLimited {
+                RateLimited : entry/ Start wait timer
+                RateLimited : Quota exceeded
+                RateLimited : Waiting for reset
+            }
+
+            state Downloading {
+                Downloading : Receiving data
+                Downloading : Parsing response
+            }
+
+            state ProviderError {
+                ProviderError : entry/ Log error
+                ProviderError : entry/ Try fallback
+                ProviderError : Request failed
+            }
+
+            [*] --> Downloading
+            Downloading --> RateLimited : [429 Response]
+            RateLimited --> Downloading : [Quota Reset]
+            Downloading --> ProviderError : [Error Response]
+            ProviderError --> Downloading : [Fallback Available]
+            ProviderError --> [*] : [No Fallback]
+            Downloading --> [*] : [Complete]
+        }
+
+        state WritingData {
+            WritingData : Publishing events to pipeline
+            WritingData : Incrementing counters
+        }
+
+        FetchingSymbol --> WritingData : [Data Retrieved]
+        WritingData --> FetchingSymbol : [More Symbols]
+    }
+
+    state Completed {
+        Completed : entry/ Calculate summary
+        Completed : entry/ Write status file
+        Completed : All symbols processed
+    }
+
+    state PartiallyCompleted {
+        PartiallyCompleted : Some symbols failed
+        PartiallyCompleted : Partial data available
+    }
+
+    state Failed {
+        Failed : entry/ Log failure
+        Failed : Critical error occurred
+        Failed : No data collected
+    }
+
+    state Cancelled {
+        Cancelled : entry/ Flush partial data
+        Cancelled : User requested cancellation
+    }
+
+    Pending --> Validating : Start()
+    Validating --> InProgress : [Valid]
+    Validating --> Failed : [Invalid]
+
+    InProgress --> Completed : [All Success]
+    InProgress --> PartiallyCompleted : [Some Failed]
+    InProgress --> Failed : [All Failed]
+    InProgress --> Cancelled : CancellationToken
+
+    Completed --> [*]
+    PartiallyCompleted --> [*]
+    Failed --> [*]
+    Cancelled --> [*]
+}
+
+@enduml

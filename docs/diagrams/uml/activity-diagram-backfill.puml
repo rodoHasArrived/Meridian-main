@@ -1,0 +1,154 @@
+@startuml Activity Diagram - Historical Backfill Process
+!theme plain
+
+title Meridian - Historical Backfill Process Flow
+
+start
+
+switch (Backfill Mode?)
+case (CLI Request)
+    :Parse Backfill Request;
+    note right
+      --backfill-provider alpaca
+      --backfill-symbols SPY,AAPL
+      --backfill-from 2024-01-01
+      --backfill-to 2024-12-31
+    end note
+case (Scheduled Backfill)
+    :Load Schedule from Config;
+    note right
+      Cron: "0 0 * * *" (daily)
+      Symbols: from watchlist
+      Provider: auto-select
+    end note
+    :Evaluate Cron Expression;
+    if (Time to Run?) then (yes)
+    else (no)
+        :Wait for Next Trigger;
+        stop
+    endif
+case (Gap Repair)
+    :Analyze Data Gaps;
+    :Build Repair Request;
+endswitch
+
+:Validate Request Parameters;
+
+if (Parameters Valid?) then (yes)
+else (no)
+    :Display Usage Help;
+    stop
+endif
+
+:Initialize Backfill Providers;
+
+if (Fallback Enabled?) then (yes)
+    :Create CompositeProvider;
+    note right
+      Priority order:
+      1. Alpaca (if configured)
+      2. Polygon (if configured)
+      3. Interactive Brokers
+      4. Stooq (free)
+      5. Yahoo Finance (free)
+      6. Tiingo
+      7. Alpha Vantage
+      8. Finnhub
+      9. Nasdaq Data Link
+    end note
+else (no)
+    :Create Single Provider;
+endif
+
+:Initialize EventPipeline;
+:Initialize Storage;
+
+partition "Symbol Processing" {
+
+    while (More Symbols?) is (yes)
+        :Get Next Symbol;
+
+        if (Symbol Resolution Enabled?) then (yes)
+            :Call Symbol Search API;
+            note right
+              Providers:
+              - OpenFIGI
+              - Alpaca
+              - Finnhub
+              - Polygon
+            end note
+
+            if (Resolution Success?) then (yes)
+                :Use Resolved Identifier;
+            else (no)
+                :Use Original Symbol;
+            endif
+        endif
+
+        partition "Fetch Historical Data" #LightBlue {
+            :Select Primary Provider;
+
+            repeat
+                :Check Rate Limit;
+
+                if (Rate Limited?) then (yes)
+                    :Wait for Quota Reset;
+                endif
+
+                :Request Historical Bars;
+
+                if (Success?) then (yes)
+                    break
+                else (no)
+                    :Log Provider Error;
+
+                    if (Fallback Available?) then (yes)
+                        :Switch to Next Provider;
+                    else (no)
+                        :Mark Symbol Failed;
+                        break
+                    endif
+                endif
+            repeat while (Retry)
+        }
+
+        if (Bars Retrieved?) then (yes)
+            partition "Process Bars" #LightGreen {
+                while (More Bars?) is (yes)
+                    :Create HistoricalBar Event;
+                    :Publish to Pipeline;
+                    :Increment Counter;
+                endwhile (no)
+            }
+
+            :Update Progress;
+            :Log Symbol Complete;
+        else (no)
+            :Log Symbol Skipped;
+        endif
+
+    endwhile (no)
+}
+
+:Flush Pipeline;
+:Build Backfill Result;
+
+if (All Symbols Succeeded?) then (yes)
+    :Write Success Status;
+else (no)
+    :Write Partial Status;
+    :List Failed Symbols;
+endif
+
+:Display Summary;
+note right
+  Backfill Complete:
+  - Symbols: 2
+  - Bars: 504
+  - Duration: 12.5s
+  - Failures: 0
+end note
+
+stop
+
+@enduml

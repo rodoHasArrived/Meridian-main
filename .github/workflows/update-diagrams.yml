@@ -1,0 +1,127 @@
+# Consolidated diagram artifact workflow
+# Replaces and combines:
+#   - update-diagrams.yml (Graphviz/DOT → SVG)
+#   - update-uml-diagrams.yml (PlantUML → PNG)
+
+name: Update Diagram Artifacts
+# Replaces and combines:
+#   - update-uml-diagrams.yml (Regenerate PNG diagrams from PlantUML sources)
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/diagrams/*.dot'
+      - 'docs/diagrams/uml/*.puml'
+      - 'src/Meridian.Wpf/App.xaml.cs'
+      - 'src/Meridian.Wpf/MainWindow.xaml.cs'
+      - 'src/Meridian.Wpf/Services/NavigationService.cs'
+      - 'src/Meridian.Wpf/Views/MainPage.xaml'
+      - 'src/Meridian.Wpf/Views/MainPage.xaml.cs'
+      - 'src/Meridian.Wpf/Views/Pages.cs'
+      - 'scripts/generate-diagrams.mjs'
+      - 'scripts/lib/ui-diagram-generator.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-diagrams-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  regenerate-diagrams:
+    name: Regenerate SVG diagrams
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install diagram tooling
+        run: npm ci
+
+      - name: Generate auto-updated UI diagram sources
+        run: npm run generate-diagrams
+
+      - name: Install Graphviz
+        run: sudo apt-get update && sudo apt-get install -y graphviz
+
+      - name: Regenerate all diagram artifacts
+        run: |
+          set -euo pipefail
+
+          shopt -s nullglob
+          dot_files=(docs/diagrams/*.dot)
+
+          if [ ${#dot_files[@]} -eq 0 ]; then
+            echo "No DOT files found in docs/diagrams"
+            exit 0
+          fi
+
+          for file in "${dot_files[@]}"; do
+            base="${file%.dot}"
+            dot -Tsvg "$file" -o "${base}.svg"
+            echo "Generated ${base}.svg"
+          done
+
+      - name: Commit regenerated diagrams
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'docs(diagrams): regenerate SVG from DOT sources'
+          file_pattern: docs/diagrams/*.dot docs/diagrams/*.svg
+
+  regenerate-uml-diagrams:
+    name: Regenerate PNG diagrams from PlantUML sources
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install PlantUML
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y default-jre-headless wget
+          PLANTUML_VERSION="1.2024.8"
+          wget -q "https://github.com/plantuml/plantuml/releases/download/v${PLANTUML_VERSION}/plantuml-${PLANTUML_VERSION}.jar" \
+            -O /usr/local/share/plantuml.jar
+          printf '#!/bin/sh\nexec java -jar /usr/local/share/plantuml.jar "$@"\n' \
+            | sudo tee /usr/local/bin/plantuml > /dev/null
+          sudo chmod +x /usr/local/bin/plantuml
+          plantuml -version
+
+      - name: Regenerate UML PNG artifacts
+        run: |
+          set -euo pipefail
+
+          shopt -s nullglob
+          puml_files=(docs/diagrams/uml/*.puml)
+
+          if [ ${#puml_files[@]} -eq 0 ]; then
+            echo "No PlantUML files found in docs/diagrams/uml"
+            exit 0
+          fi
+
+          for file in "${puml_files[@]}"; do
+            echo "Rendering ${file}"
+            plantuml -tpng "$file"
+          done
+
+      - name: Commit regenerated UML diagrams
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'docs(uml): regenerate PNG diagrams from PlantUML sources'
+          file_pattern: docs/diagrams/uml/*.png

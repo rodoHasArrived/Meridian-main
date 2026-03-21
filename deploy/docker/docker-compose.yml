@@ -1,0 +1,136 @@
+# =============================================================================
+# Meridian - Docker Compose Configuration
+# =============================================================================
+#
+# Quick Start:
+#   1. Copy config/appsettings.sample.json to config/appsettings.json and configure
+#   2. Run: docker compose -f deploy/docker/docker-compose.yml up -d
+#   3. Access dashboard at http://localhost:8080
+#
+# Or use: make docker (from repo root)
+#
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # Meridian - Main Application
+  # ---------------------------------------------------------------------------
+  meridian:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile
+    image: meridian:latest
+    container_name: meridian
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      # Persist market data
+      - ../../data:/app/data
+      # Configuration (read-only for security)
+      - ../../config/appsettings.json:/app/appsettings.json:ro
+      # Logs directory
+      - ../../logs:/app/logs
+    environment:
+      - TZ=UTC
+      - DOTNET_RUNNING_IN_CONTAINER=true
+      # Alpaca credentials (set these or use appsettings.json)
+      # - ALPACA__KEYID=your-key-id
+      # - ALPACA__SECRETKEY=your-secret-key
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - meridian-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ---------------------------------------------------------------------------
+  # Prometheus - Metrics Collection (Optional)
+  # ---------------------------------------------------------------------------
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: meridian-prometheus
+    profiles:
+      - monitoring
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ../monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ../monitoring/alert-rules.yml:/etc/prometheus/alert-rules.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--storage.tsdb.retention.time=15d'
+    networks:
+      - meridian-network
+    depends_on:
+      - meridian
+
+  # ---------------------------------------------------------------------------
+  # Grafana - Metrics Visualization (Optional)
+  # ---------------------------------------------------------------------------
+  grafana:
+    image: grafana/grafana:latest
+    container_name: meridian-grafana
+    profiles:
+      - monitoring
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ../monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    networks:
+      - meridian-network
+    depends_on:
+      - prometheus
+
+networks:
+  meridian-network:
+    driver: bridge
+
+volumes:
+  prometheus-data:
+  grafana-data:
+
+# =============================================================================
+# Usage:
+# =============================================================================
+#
+# Start main application only:
+#   docker compose -f deploy/docker/docker-compose.yml up -d
+#   # Or: make docker (from repo root)
+#
+# Start with monitoring stack:
+#   docker compose -f deploy/docker/docker-compose.yml --profile monitoring up -d
+#   # Or: make docker-monitoring
+#
+# View logs:
+#   docker compose -f deploy/docker/docker-compose.yml logs -f meridian
+#
+# Stop all services:
+#   docker compose -f deploy/docker/docker-compose.yml down
+#
+# Stop and remove volumes:
+#   docker compose -f deploy/docker/docker-compose.yml down -v
+#
+# Rebuild after code changes:
+#   docker compose -f deploy/docker/docker-compose.yml build --no-cache
+#   docker compose -f deploy/docker/docker-compose.yml up -d
+#
+# =============================================================================

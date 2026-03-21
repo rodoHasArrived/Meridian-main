@@ -1,0 +1,73 @@
+name: Mark Stale Issues and PRs
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Run daily at midnight UTC
+  workflow_dispatch:
+    inputs:
+      debug_only:
+        description: 'Run in debug mode (no modifications)'
+        required: false
+        default: false
+        type: boolean
+      days_before_stale:
+        description: 'Override days before marking stale (issues)'
+        required: false
+        type: number
+
+permissions:
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  stale:
+    name: Mark and Close Stale Issues and PRs
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Mark stale issues and pull requests
+        uses: actions/stale@v10.2.0
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          debug-only: ${{ github.event.inputs.debug_only || false }}
+
+          # Issue settings
+          stale-issue-message: |
+            This issue has been automatically marked as stale because it has not had recent activity.
+            It will be closed if no further activity occurs within 7 days.
+            If this is still relevant, please comment to keep it open.
+          close-issue-message: |
+            This issue was automatically closed because it has been stale for 7 days with no activity.
+            Feel free to reopen if this is still relevant.
+          days-before-issue-stale: ${{ github.event.inputs.days_before_stale || 60 }}
+          days-before-issue-close: 7
+          stale-issue-label: 'stale'
+          exempt-issue-labels: 'pinned,security,bug,enhancement,blocked,in-progress,help-wanted,good-first-issue'
+
+          # Pull request settings
+          stale-pr-message: |
+            This pull request has been automatically marked as stale because it has not had recent activity.
+            It will be closed if no further activity occurs within 14 days.
+            Please update the PR or comment to keep it open.
+          close-pr-message: |
+            This pull request was automatically closed because it has been stale for 14 days with no activity.
+            Feel free to reopen and update if you'd like to continue working on this.
+          days-before-pr-stale: 30
+          days-before-pr-close: 14
+          stale-pr-label: 'stale'
+          exempt-pr-labels: 'pinned,security,work-in-progress,wip,blocked,in-progress,do-not-merge'
+          exempt-draft-pr: true
+
+          # General settings
+          operations-per-run: 100
+          remove-stale-when-updated: true
+          ascending: true
+          delete-branch: false
+
+          # Exempt issues/PRs with milestones
+          exempt-all-milestones: true

@@ -1,0 +1,181 @@
+@startuml Sequence Diagram - Real-Time Data Collection Flow
+!theme plain
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+
+title Meridian - Real-Time Data Collection Sequence
+
+' ==================== PARTICIPANTS ====================
+participant "User/CLI" as User
+participant "Program.cs\n(Entry Point)" as Program
+participant "SubscriptionManager" as SubMgr
+participant "IMarketDataClient\n(Alpaca, IB, NYSE,\nPolygon, StockSharp)" as Provider
+box "Collectors" #LightBlue
+    participant "QuoteCollector" as QuoteColl
+    participant "TradeDataCollector" as TradeColl
+    participant "MarketDepthCollector" as DepthColl
+end box
+participant "EventPipeline\n(IMarketEventPublisher)" as Pipeline
+participant "IStorageSink\n(Jsonl, Parquet)" as Storage
+
+' ==================== INITIALIZATION ====================
+== Initialization Phase ==
+
+User -> Program: dotnet run --ui
+activate Program
+
+Program -> Program: LoadConfiguration()
+Program -> QuoteColl: new QuoteCollector()
+activate QuoteColl
+Program -> TradeColl: new TradeDataCollector(quoteColl)
+activate TradeColl
+Program -> DepthColl: new MarketDepthCollector()
+activate DepthColl
+Program -> Pipeline: new EventPipeline(capacity: 50000)
+activate Pipeline
+Program -> Storage: new JsonlStorageSink(policy)
+activate Storage
+Program -> Provider: new AlpacaMarketDataClient(config)
+activate Provider
+Program -> SubMgr: new SubscriptionManager(collectors, provider)
+activate SubMgr
+
+' ==================== SUBSCRIPTION ====================
+== Subscription Phase ==
+
+Program -> SubMgr: Apply(config.Symbols)
+SubMgr -> DepthColl: RegisterSubscription("SPY")
+DepthColl --> SubMgr: OK
+SubMgr -> Provider: SubscribeAsync(SPY, trades=true, depth=true)
+Provider --> SubMgr: subscriptionId=123
+SubMgr --> Program: Subscriptions applied
+
+' ==================== CONNECTION ====================
+== Connection Phase ==
+
+Program -> Provider: ConnectAsync()
+Provider -> Provider: WebSocket.ConnectAsync(\nwss://stream.data.alpaca.markets)
+Provider -> Provider: SendAuthMessage(keyId, secret)
+Provider --> Program: Connected
+
+Provider -> Provider: StartReceiveLoop()
+note right of Provider
+  Background task reads
+  WebSocket messages
+end note
+
+' ==================== DATA FLOW ====================
+== Real-Time Data Flow ==
+
+loop For Each Market Event
+
+    ' --- Trade Event ---
+    Provider -> Provider: ReceiveMessage()\n{type:"t", symbol:"SPY", price:450.25, size:100}
+    Provider -> TradeColl: OnTrade(MarketTradeUpdate)
+    activate TradeColl #DarkBlue
+
+    TradeColl -> TradeColl: ValidateSequence(seq)
+    alt Sequence Gap Detected
+        TradeColl -> Pipeline: TryPublish(IntegrityEvent)
+        Pipeline --> TradeColl: true
+    end
+
+    TradeColl -> QuoteColl: GetLatestQuote("SPY")
+    QuoteColl --> TradeColl: BboQuote{bid:450.20, ask:450.30}
+    TradeColl -> TradeColl: InferAggressor(price vs BBO)
+    note right: Price >= Ask → Buy\nPrice <= Bid → Sell
+
+    TradeColl -> TradeColl: RegisterTrade(trade)
+    note right: Update VWAP, volume,\nimbalance stats
+
+    TradeColl -> Pipeline: TryPublish(MarketEvent.Trade)
+    Pipeline -> Pipeline: channel.TryWrite(event)
+    Pipeline --> TradeColl: true (fire-and-forget)
+
+    TradeColl -> TradeColl: BuildOrderFlowStats()
+    TradeColl -> Pipeline: TryPublish(MarketEvent.OrderFlow)
+    Pipeline --> TradeColl: true
+    deactivate TradeColl
+
+    ' --- Quote Event ---
+    Provider -> QuoteColl: OnQuote(MarketQuoteUpdate)
+    activate QuoteColl #DarkGreen
+    QuoteColl -> QuoteColl: UpdateBboState(symbol, quote)
+    QuoteColl -> Pipeline: TryPublish(MarketEvent.BboQuote)
+    Pipeline --> QuoteColl: true
+    deactivate QuoteColl
+
+    ' --- Depth Event ---
+    Provider -> DepthColl: OnDepth(MarketDepthUpdate)
+    activate DepthColl #DarkOrange
+    DepthColl -> DepthColl: GetOrCreateOrderBook("SPY")
+    DepthColl -> DepthColl: ApplyDelta(Insert/Update/Delete)
+
+    alt Integrity Error (InvalidPosition)
+        DepthColl -> Pipeline: TryPublish(DepthIntegrityEvent)
+        DepthColl -> DepthColl: MarkStale()
+        DepthColl -> DepthColl: CheckAutoReset()\n[3+ errors in 15s]
+    end
+
+    DepthColl -> DepthColl: BuildSnapshot()
+    DepthColl -> Pipeline: TryPublish(MarketEvent.L2Snapshot)
+    Pipeline --> DepthColl: true
+    deactivate DepthColl
+
+end
+
+' ==================== PIPELINE PROCESSING ====================
+== Pipeline Consumer (Background) ==
+
+Pipeline -> Pipeline: ConsumeAsync()
+loop Batch Processing
+    Pipeline -> Pipeline: ReadFromChannel(batch)
+
+    loop For Each Event in Batch
+        Pipeline -> Storage: AppendAsync(event)
+        Storage -> Storage: GetPath() → data/SPY/trade/2026-01-09.jsonl
+        Storage -> Storage: GetOrCreateWriter(path)
+        Storage -> Storage: Serialize(event) → JSON
+        Storage -> Storage: WriteLineAsync(json)
+        Storage --> Pipeline: OK
+    end
+
+    Pipeline -> Pipeline: UpdateMetrics()
+end
+
+' ==================== PERIODIC FLUSH ====================
+== Periodic Flush (Every 5 seconds) ==
+
+Pipeline -> Pipeline: PeriodicFlushAsync()
+Pipeline -> Storage: FlushAsync()
+Storage -> Storage: FlushAllWriters()
+note right: Force write to disk\nfor durability
+Storage --> Pipeline: OK
+
+' ==================== SHUTDOWN ====================
+== Graceful Shutdown ==
+
+User -> Program: Ctrl+C
+Program -> Provider: DisconnectAsync()
+Provider -> Provider: WebSocket.CloseAsync()
+Provider --> Program: Disconnected
+
+Program -> Pipeline: FlushAsync()
+Pipeline -> Storage: FlushAsync()
+Storage --> Pipeline: OK
+
+Program -> Storage: DisposeAsync()
+deactivate Storage
+Program -> Pipeline: DisposeAsync()
+deactivate Pipeline
+Program -> TradeColl: Dispose()
+deactivate TradeColl
+Program -> QuoteColl: Dispose()
+deactivate QuoteColl
+Program -> DepthColl: Dispose()
+deactivate DepthColl
+
+Program --> User: Exit(0)
+deactivate Program
+
+@enduml

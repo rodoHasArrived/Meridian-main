@@ -1,0 +1,20 @@
+{
+  "description": "Polygon extended-hours trade on NYSE (venue code '1') with condition '12' (FormT_ExtendedHours).",
+  "raw": {
+    "symbol": "MSFT",
+    "source": "POLYGON",
+    "venue": "1",
+    "conditions": ["12"],
+    "price": 415.80,
+    "size": 25,
+    "sequenceNumber": 4001
+  },
+  "expected": {
+    "canonicalSymbol": "MSFT",
+    "canonicalVenue": "XNYS",
+    "tier": "Enriched",
+    "canonicalizationVersion": 1,
+    "rawSymbolUnchanged": true,
+    "canonicalConditions": ["FormT_ExtendedHours"]
+  }
+}

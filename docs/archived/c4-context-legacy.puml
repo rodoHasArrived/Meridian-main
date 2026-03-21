@@ -1,0 +1,24 @@
+@startuml
+' C4-PlantUML (source). To render, install PlantUML + Graphviz.
+' This is optional. Mermaid diagrams in c4-diagrams.md are the primary docs.
+
+!define C4Puml https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master
+!includeurl C4Puml/C4_Context.puml
+!includeurl C4Puml/C4_Container.puml
+
+LAYOUT_WITH_LEGEND()
+
+Person(op, "Operator", "Runs the collector, monitors health, adds symbols.")
+System_Ext(ib, "IB TWS/Gateway", "Interactive Brokers market data source.")
+System_Boundary(s1, "IB Data Collector") {
+  System(col, "Collector Service", "Captures depth + trades, emits MarketEvents.")
+  System(ui, "UI Dashboard", "Edits config, shows status and subscriptions.")
+}
+System_Ext(fs, "Filesystem", "JSONL storage + status files.")
+
+Rel(op, ui, "Uses")
+Rel(ui, fs, "Reads/Writes", "JSON")
+Rel(ib, col, "Streams callbacks")
+Rel(col, fs, "Appends", "JSONL")
+
+@enduml

@@ -1,0 +1,89 @@
+<Page x:Class="Meridian.Wpf.Views.ExportPresetsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Background="{DynamicResource ConsoleBackgroundDarkBrush}"
+      Loaded="OnPageLoaded"
+      AutomationProperties.Name="Export Presets">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24">
+        <StackPanel MaxWidth="1200">
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                <TextBlock Text="&#xE898;" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                           FontSize="28" Foreground="{StaticResource InfoColorBrush}" VerticalAlignment="Center" />
+                <TextBlock Text="Export Presets" Style="{StaticResource PageTitleStyle}" Margin="12,0,0,0" VerticalAlignment="Center" />
+            </StackPanel>
+            <TextBlock Text="Manage reusable export configurations for consistent delivery."
+                       Style="{StaticResource PageSubtitleStyle}" Margin="0,0,0,20" />
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="360" />
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="Preset Library" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12" />
+                        <DataGrid ItemsSource="{Binding Presets}"
+                                  AutoGenerateColumns="False"
+                                  CanUserAddRows="False"
+                                  SelectedItem="{Binding SelectedPreset}">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*" />
+                                <DataGridTextColumn Header="Format" Binding="{Binding Format}" Width="120" />
+                                <DataGridTextColumn Header="Updated" Binding="{Binding UpdatedAt}" Width="160" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="1" Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="Preset Details" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12" />
+
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="Name" Style="{StaticResource FormLabelStyle}" />
+                            <TextBox Style="{StaticResource FormTextBoxStyle}"
+                                     Text="{Binding DraftName, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}" />
+                        </StackPanel>
+
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="Format" Style="{StaticResource FormLabelStyle}" />
+                            <ComboBox Style="{StaticResource FormComboBoxStyle}"
+                                      ItemsSource="{Binding Formats}"
+                                      SelectedItem="{Binding DraftFormat}" />
+                        </StackPanel>
+
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="Notes" Style="{StaticResource FormLabelStyle}" />
+                            <TextBox Style="{StaticResource FormTextBoxStyle}"
+                                     Text="{Binding DraftNotes, UpdateSourceTrigger=PropertyChanged}"
+                                     Height="80"
+                                     TextWrapping="Wrap"
+                                     AcceptsReturn="True" />
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="Save"
+                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    Click="SavePreset_Click"
+                                    Margin="0,0,8,0" />
+                            <Button Content="Delete"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Click="DeletePreset_Click"
+                                    IsEnabled="{Binding CanDelete}" />
+                        </StackPanel>
+
+                        <TextBlock Text="{Binding StatusMessage}"
+                                   Foreground="{StaticResource InfoColorBrush}"
+                                   Margin="0,12,0,0" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <TextBlock Text="{Binding ValidationSummary}"
+                       Foreground="{StaticResource ErrorColorBrush}"
+                       Margin="0,12,0,0"
+                       Visibility="{Binding ValidationSummary, Converter={StaticResource StringToVisibilityConverter}}" />
+        </StackPanel>
+    </ScrollViewer>
+</Page>

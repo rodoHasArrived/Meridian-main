@@ -1,0 +1,406 @@
+<Page x:Class="Meridian.Wpf.Views.AdminMaintenancePage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Background="{DynamicResource ConsoleBackgroundDarkBrush}"
+      AutomationProperties.Name="Admin Maintenance">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24">
+        <StackPanel MaxWidth="1400">
+            <!-- Header -->
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,24">
+                <TextBlock Text="&#xE912;" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                           FontSize="28" Foreground="{StaticResource InfoColorBrush}" VerticalAlignment="Center" />
+                <TextBlock Text="Admin &amp; Maintenance" Style="{StaticResource PageTitleStyle}" Margin="12,0,0,0" VerticalAlignment="Center" />
+            </StackPanel>
+
+            <!-- Quick Actions Bar -->
+            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel>
+                        <TextBlock Text="Quick Actions" Style="{StaticResource CardHeaderStyle}" />
+                        <TextBlock Text="Run maintenance tasks or check system status"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,4,0,0" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                        <Button x:Name="QuickCheckButton" Click="QuickCheck_Click" Margin="0,0,8,0"
+                                Style="{StaticResource ConsoleButtonStyle}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE73E;" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                           FontSize="14" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                <TextBlock Text="Quick Check" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                        <Button x:Name="RunMaintenanceButton" Click="RunMaintenance_Click"
+                                Style="{StaticResource AccentButtonStyle}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE895;" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                           FontSize="14" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                <TextBlock Text="Run Maintenance Now" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Quick Check Results -->
+            <Border x:Name="QuickCheckResultsCard" Style="{StaticResource CardStyle}" Margin="0,0,0,16" Visibility="Collapsed">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                        <TextBlock x:Name="QuickCheckIcon" Text="&#xE73E;" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="24" VerticalAlignment="Center" />
+                        <StackPanel Margin="12,0,0,0">
+                            <TextBlock x:Name="QuickCheckStatusText" Text="System Status" Style="{StaticResource CardHeaderStyle}" />
+                            <TextBlock x:Name="QuickCheckOverallText" Text="" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <ListView x:Name="QuickCheckList" MaxHeight="200" Background="Transparent"
+                              BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem">
+                                <Setter Property="Padding" Value="8,4" />
+                                <Setter Property="Background" Value="Transparent" />
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                            </Style>
+                        </ListView.ItemContainerStyle>
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding StatusIcon}" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                               FontSize="14" Foreground="{Binding StatusColor}" Margin="0,0,12,0" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1" Text="{Binding Name}" Foreground="{StaticResource ConsoleTextBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="2" Text="{Binding Details}" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" />
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </StackPanel>
+            </Border>
+
+            <!-- Status InfoBar -->
+            <Border x:Name="StatusInfoBar" Style="{StaticResource CardStyle}" Margin="0,0,0,16" Visibility="Collapsed">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock x:Name="StatusInfoIcon" Text="&#xE73E;" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                               FontSize="20" VerticalAlignment="Center" Margin="0,0,12,0" />
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock x:Name="StatusInfoTitle" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextBrush}" />
+                        <TextBlock x:Name="StatusInfoMessage" Foreground="{StaticResource ConsoleTextMutedBrush}" TextWrapping="Wrap" />
+                    </StackPanel>
+                    <Button Grid.Column="2" Content="&#xE711;" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                            Click="CloseInfoBar_Click" Background="Transparent" BorderThickness="0"
+                            Foreground="{StaticResource ConsoleTextMutedBrush}" Padding="8" />
+                </Grid>
+            </Border>
+
+            <!-- Two Column Layout -->
+            <Grid Margin="0,0,0,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="16" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Maintenance Schedule -->
+                <Border Grid.Column="0" Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                            <TextBlock Text="&#xE823;" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                       Foreground="{StaticResource InfoColorBrush}" FontSize="20" VerticalAlignment="Center" />
+                            <TextBlock Text="Maintenance Schedule" Style="{StaticResource CardHeaderStyle}" Margin="8,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+
+                        <StackPanel Margin="0,0,0,16">
+                            <TextBlock Text="Enable Scheduled Maintenance" Foreground="{StaticResource ConsoleTextBrush}" Margin="0,0,0,4" />
+                            <CheckBox x:Name="EnableScheduleToggle" Checked="EnableSchedule_Toggled" Unchecked="EnableSchedule_Toggled"
+                                      Foreground="{StaticResource ConsoleTextBrush}" />
+                        </StackPanel>
+
+                        <StackPanel Margin="0,0,0,16">
+                            <TextBlock Text="Frequency" Foreground="{StaticResource ConsoleTextBrush}" Margin="0,0,0,4" />
+                            <ComboBox x:Name="ScheduleFrequencyCombo" SelectionChanged="ScheduleFrequency_Changed"
+                                      Background="{StaticResource ConsoleBackgroundBrush}"
+                                      Foreground="{StaticResource ConsoleTextBrush}" Width="250">
+                                <ComboBoxItem Content="Daily at 2 AM" Tag="0 2 * * *" />
+                                <ComboBoxItem Content="Daily at 4 AM" Tag="0 4 * * *" />
+                                <ComboBoxItem Content="Weekly (Sunday 3 AM)" Tag="0 3 * * 0" />
+                                <ComboBoxItem Content="Weekly (Saturday 3 AM)" Tag="0 3 * * 6" />
+                                <ComboBoxItem Content="Monthly (1st at 3 AM)" Tag="0 3 1 * *" />
+                            </ComboBox>
+                        </StackPanel>
+
+                        <StackPanel Margin="0,0,0,16">
+                            <TextBlock Text="Operations to Run" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextBrush}" Margin="0,0,0,8" />
+                            <CheckBox x:Name="RunCompressionCheck" Content="Compress older files" IsChecked="True"
+                                      Foreground="{StaticResource ConsoleTextBrush}" Margin="0,0,0,4" />
+                            <CheckBox x:Name="RunCleanupCheck" Content="Clean up temp files" IsChecked="True"
+                                      Foreground="{StaticResource ConsoleTextBrush}" Margin="0,0,0,4" />
+                            <CheckBox x:Name="RunIntegrityCheck" Content="Verify data integrity" IsChecked="True"
+                                      Foreground="{StaticResource ConsoleTextBrush}" Margin="0,0,0,4" />
+                            <CheckBox x:Name="RunTierMigrationCheck" Content="Migrate to archive tier" IsChecked="False"
+                                      Foreground="{StaticResource ConsoleTextBrush}" />
+                        </StackPanel>
+
+                        <Border Background="{StaticResource ConsoleBackgroundBrush}" CornerRadius="4" Padding="12" Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="Next Run" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
+                                <TextBlock x:Name="NextRunText" Text="Not scheduled" Foreground="{StaticResource ConsoleTextBrush}" Margin="0,2,0,8" />
+                                <TextBlock Text="Last Run" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
+                                <TextBlock x:Name="LastRunText" Text="Never" Foreground="{StaticResource ConsoleTextBrush}" Margin="0,2,0,0" />
+                            </StackPanel>
+                        </Border>
+
+                        <Button Content="Save Schedule" Click="SaveSchedule_Click" Style="{StaticResource AccentButtonStyle}" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Storage Tiers -->
+                <Border Grid.Column="2" Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                            <TextBlock Text="&#xE8B7;" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                       Foreground="{StaticResource InfoColorBrush}" FontSize="20" VerticalAlignment="Center" />
+                            <TextBlock Text="Storage Tiers" Style="{StaticResource CardHeaderStyle}" Margin="8,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+
+                        <ListView x:Name="TiersList" MaxHeight="250" Background="Transparent"
+                                  BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                            <ListView.ItemContainerStyle>
+                                <Style TargetType="ListViewItem">
+                                    <Setter Property="Padding" Value="0" />
+                                    <Setter Property="Margin" Value="0,0,0,8" />
+                                    <Setter Property="Background" Value="Transparent" />
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                </Style>
+                            </ListView.ItemContainerStyle>
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="{StaticResource ConsoleBackgroundBrush}" CornerRadius="4" Padding="12">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+
+                                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextBrush}" />
+                                            <TextBlock Grid.Column="1" Text="{Binding SizeText}" Foreground="{StaticResource InfoColorBrush}" />
+
+                                            <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding Path}"
+                                                       Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11"
+                                                       TextTrimming="CharacterEllipsis" Margin="0,4,0,0" />
+
+                                            <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal" Margin="0,4,0,0">
+                                                <TextBlock Text="{Binding FileCountText}" Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" Margin="0,0,12,0" />
+                                                <TextBlock Text="{Binding RetentionText}" Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+
+                        <StackPanel Margin="0,16,0,16">
+                            <TextBlock Text="Enable Auto-Migration" Foreground="{StaticResource ConsoleTextBrush}" Margin="0,0,0,4" />
+                            <CheckBox x:Name="AutoMigrationToggle" Foreground="{StaticResource ConsoleTextBrush}" />
+                        </StackPanel>
+
+                        <Button Content="Migrate Now" Click="MigrateNow_Click" Style="{StaticResource ConsoleButtonStyle}" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- Retention Policies -->
+            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
+                <StackPanel>
+                    <Grid Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE74D;" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                       Foreground="{StaticResource InfoColorBrush}" FontSize="20" VerticalAlignment="Center" />
+                            <TextBlock Text="Retention Policies" Style="{StaticResource CardHeaderStyle}" Margin="8,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+
+                        <Button Grid.Column="1" Content="Add Policy" Click="AddPolicy_Click" Style="{StaticResource ConsoleButtonStyle}" />
+                    </Grid>
+
+                    <ListView x:Name="PoliciesList" MaxHeight="300" Background="Transparent"
+                              BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem">
+                                <Setter Property="Padding" Value="0" />
+                                <Setter Property="Margin" Value="0,0,0,8" />
+                                <Setter Property="Background" Value="Transparent" />
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                            </Style>
+                        </ListView.ItemContainerStyle>
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="{StaticResource ConsoleBackgroundBrush}" CornerRadius="4" Padding="12">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextBrush}" />
+                                            <TextBlock Text="{Binding Description}" Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
+                                        </StackPanel>
+
+                                        <TextBlock Grid.Column="1" Text="{Binding RetentionText}" VerticalAlignment="Center"
+                                                   Foreground="{StaticResource ConsoleTextBrush}" Margin="12,0" />
+
+                                        <CheckBox Grid.Column="2" IsChecked="{Binding Enabled}" VerticalAlignment="Center" Margin="12,0" />
+
+                                        <StackPanel Grid.Column="3" Orientation="Horizontal">
+                                            <Button Content="Edit" Click="EditPolicy_Click" Tag="{Binding Id}"
+                                                    Style="{StaticResource ConsoleButtonStyle}" Padding="8,4" Margin="0,0,4,0" />
+                                            <Button Content="Delete" Click="DeletePolicy_Click" Tag="{Binding Id}"
+                                                    Style="{StaticResource ConsoleButtonStyle}" Padding="8,4" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
+                        <Button Content="Apply Retention Policies" Click="ApplyRetention_Click"
+                                Style="{StaticResource AccentButtonStyle}" Margin="0,0,8,0" />
+                        <Button Content="Preview Cleanup" Click="PreviewCleanup_Click" Style="{StaticResource ConsoleButtonStyle}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Cleanup Preview / Results -->
+            <Border x:Name="CleanupResultsCard" Style="{StaticResource CardStyle}" Margin="0,0,0,16" Visibility="Collapsed">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                        <TextBlock Text="&#xE74D;" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   Foreground="{StaticResource InfoColorBrush}" FontSize="20" VerticalAlignment="Center" />
+                        <TextBlock Text="Cleanup Preview" Style="{StaticResource CardHeaderStyle}" Margin="8,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <Grid Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Margin="0,0,24,0">
+                            <TextBlock x:Name="CleanupFilesText" Text="0" FontSize="24" FontWeight="Bold"
+                                       Foreground="{StaticResource InfoColorBrush}" />
+                            <TextBlock Text="Files to delete" Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1">
+                            <TextBlock x:Name="CleanupSizeText" Text="0 MB" FontSize="24" FontWeight="Bold"
+                                       Foreground="{StaticResource InfoColorBrush}" />
+                            <TextBlock Text="Space to free" Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
+                        </StackPanel>
+
+                        <Button Grid.Column="3" Content="Execute Cleanup" Click="ExecuteCleanup_Click"
+                                Style="{StaticResource AccentButtonStyle}" VerticalAlignment="Center" />
+                    </Grid>
+
+                    <ListView x:Name="CleanupFilesList" MaxHeight="200" Background="Transparent"
+                              BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem">
+                                <Setter Property="Padding" Value="8,4" />
+                                <Setter Property="Background" Value="Transparent" />
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                            </Style>
+                        </ListView.ItemContainerStyle>
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding Path}" TextTrimming="CharacterEllipsis"
+                                               Foreground="{StaticResource ConsoleTextBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1" Text="{Binding SizeText}" Margin="12,0"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="2" Text="{Binding Reason}" FontSize="11"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" />
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </StackPanel>
+            </Border>
+
+            <!-- Maintenance History -->
+            <Border Style="{StaticResource CardStyle}">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                        <TextBlock Text="&#xE81C;" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   Foreground="{StaticResource InfoColorBrush}" FontSize="20" VerticalAlignment="Center" />
+                        <TextBlock Text="Maintenance History" Style="{StaticResource CardHeaderStyle}" Margin="8,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <ListView x:Name="HistoryList" MaxHeight="200" Background="Transparent"
+                              BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem">
+                                <Setter Property="Padding" Value="8,4" />
+                                <Setter Property="Background" Value="Transparent" />
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                            </Style>
+                        </ListView.ItemContainerStyle>
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding StatusIcon}" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                               FontSize="14" Foreground="{Binding StatusColor}" Margin="0,0,12,0" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1" Text="{Binding TimeText}"
+                                               Foreground="{StaticResource ConsoleTextBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="2" Text="{Binding OperationsText}" Margin="12,0"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="3" Text="{Binding DurationText}"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" />
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

@@ -1,0 +1,164 @@
+@startuml Timing Diagram - Event Processing Timeline
+!theme plain
+skinparam backgroundColor white
+
+title Meridian - Event Processing Timing Diagram
+
+' ==================== PARTICIPANTS ====================
+clock "System Clock" as Clock
+robust "Provider Connection" as Provider
+robust "Trade Collector" as TradeColl
+robust "Quote Collector" as QuoteColl
+robust "Event Pipeline" as Pipeline
+robust "Storage Sink" as Storage
+robust "Health Monitor" as Health
+
+' ==================== TIMELINE ====================
+' Time scale: milliseconds for high-frequency events
+
+@0
+Provider is Connected
+TradeColl is Idle
+QuoteColl is Idle
+Pipeline is Waiting
+Storage is Idle
+Health is Healthy
+
+@10
+Provider is "Receiving\nTrade"
+note top of Provider : WebSocket message arrives
+
+@11
+Provider is Connected
+TradeColl is "Processing\nTrade"
+note top of TradeColl
+  ~100μs processing:
+  - Sequence validation
+  - Aggressor inference
+  - VWAP update
+end note
+
+@12
+TradeColl is Idle
+Pipeline is "Queuing\nEvent"
+note top of Pipeline : Channel.TryWrite() <1ms
+
+@13
+Pipeline is Waiting
+
+@20
+Provider is "Receiving\nQuote"
+
+@21
+Provider is Connected
+QuoteColl is "Processing\nQuote"
+note top of QuoteColl : ~50μs: BBO state update
+
+@22
+QuoteColl is Idle
+Pipeline is "Queuing\nEvent"
+
+@23
+Pipeline is Waiting
+
+@50
+Pipeline is "Consuming\nBatch"
+note top of Pipeline
+  Batch read from channel
+  (up to 100 events)
+end note
+
+@55
+Pipeline is Waiting
+Storage is "Writing\nJSONL"
+note top of Storage
+  ~5ms batch write
+  Buffered I/O
+end note
+
+@60
+Storage is Idle
+
+' ==================== PERIODIC EVENTS ====================
+@100
+Provider is Connected
+TradeColl is Idle
+QuoteColl is Idle
+Pipeline is Waiting
+Storage is Idle
+Health is Healthy
+
+@5000
+Pipeline is "Flushing"
+note top of Pipeline : 5-second flush interval
+Storage is "Flushing\nBuffers"
+note top of Storage
+  Force write to OS buffer
+  ~10ms per file
+end note
+
+@5015
+Pipeline is Waiting
+Storage is Idle
+
+@10000
+Health is "Checking\nHealth"
+note top of Health
+  10-second health check
+  - Verify heartbeat
+  - Check latency
+end note
+
+@10050
+Health is Healthy
+
+' ==================== CONNECTION LOSS SCENARIO ====================
+@15000
+Provider is "Connection\nLost"
+note top of Provider : Network failure detected
+
+@15001
+Health is "Degraded"
+note top of Health : HeartbeatMissed event
+
+@15010
+Provider is Reconnecting
+note top of Provider
+  Exponential backoff:
+  2s → 4s → 8s
+end note
+
+@17000
+Provider is Connected
+Health is Healthy
+note top of Provider : Reconnection successful
+
+' ==================== INTEGRITY EVENT ====================
+@20000
+Provider is "Receiving\nTrade"
+
+@20001
+TradeColl is "Gap\nDetected"
+note top of TradeColl
+  Sequence gap:
+  Expected: 1001
+  Received: 1005
+end note
+
+@20002
+TradeColl is "Emitting\nIntegrity"
+Pipeline is "Queuing\nIntegrity"
+
+@20003
+TradeColl is Idle
+Pipeline is Waiting
+
+' ==================== HIGHLIGHTS ====================
+highlight 10 to 13 #LightBlue : Trade Processing (~3ms)
+highlight 20 to 23 #LightGreen : Quote Processing (~3ms)
+highlight 50 to 60 #LightYellow : Batch Storage (~10ms)
+highlight 5000 to 5015 #LightPink : Periodic Flush (~15ms)
+highlight 15000 to 17000 #LightCoral : Reconnection (~2s)
+highlight 20000 to 20003 #LightOrange : Integrity Detection (~3ms)
+
+@enduml

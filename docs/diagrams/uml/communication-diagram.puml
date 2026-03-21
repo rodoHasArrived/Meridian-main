@@ -1,0 +1,165 @@
+@startuml Communication Diagram - Component Message Exchange
+!theme plain
+skinparam linetype ortho
+
+title Meridian - Communication Diagram
+
+' ==================== COMPONENTS ====================
+
+rectangle "External Systems" {
+    component [Data Providers\n(IB, Alpaca, NYSE,\nPolygon, StockSharp)] as Providers
+    component [Historical Providers\n(Yahoo, Stooq, Tiingo,\nAlphaVantage, Finnhub,\nNasdaq Data Link)] as HistProviders
+    component [Symbol Search\n(OpenFIGI, Alpaca,\nFinnhub, Polygon)] as SymbolSearch
+    component [Message Broker\n(RabbitMQ)] as MsgBroker
+    component [External API Clients] as ExtClients
+}
+
+rectangle "Application Layer" {
+    component [SubscriptionManager] as SubMgr
+    component [ConfigWatcher] as ConfigWatch
+    component [HealthMonitor] as HealthMon
+    component [DataQualityMonitoringService] as DataQuality
+    component [ScheduledBackfillService] as ScheduledBackfill
+}
+
+rectangle "Domain Layer" {
+    component [QuoteCollector] as QuoteColl
+    component [TradeDataCollector] as TradeColl
+    component [MarketDepthCollector] as DepthColl
+}
+
+rectangle "Infrastructure Layer" {
+    component [AlpacaMarketDataClient] as AlpacaClient
+    component [IBMarketDataClient] as IBClient
+    component [NYSEDataSource] as NYSEClient
+    component [PolygonMarketDataClient] as PolygonClient
+    component [CompositeHistoricalDataProvider] as HistProvider
+}
+
+rectangle "Pipeline Layer" {
+    component [EventPipeline] as Pipeline
+    component [MassTransitPublisher] as MTPublisher
+}
+
+rectangle "Storage Layer" {
+    component [JsonlStorageSink] as JsonlSink
+    component [ParquetStorageSink] as ParquetSink
+    component [RetentionManager] as Retention
+    component [AnalysisExportService] as ExportSvc
+    component [PortableDataPackager] as Packager
+    component [WriteAheadLog] as WAL
+}
+
+rectangle "Microservices" {
+    component [Gateway\n(5000)] as Gateway
+    component [TradeIngestion\n(5001)] as TradeSvc
+    component [QuoteIngestion\n(5002)] as QuoteSvc
+    component [DataValidation\n(5005)] as ValidationSvc
+}
+
+' ==================== MESSAGES ====================
+
+' Provider to Client
+Providers -[#blue]-> AlpacaClient : 1: WebSocket Events\n(Trade, Quote, Depth JSON)
+Providers -[#blue]-> IBClient : 1: TWS Callbacks\n(tickPrice, tickSize, updateMktDepth)
+Providers -[#blue]-> NYSEClient : 1: NYSE Feed\n(Trade, Quote, Depth)
+Providers -[#blue]-> PolygonClient : 1: WebSocket Events\n(Trade, Quote, AggregateBar)
+
+' Client to Collectors
+AlpacaClient -[#green]-> TradeColl : 2: OnTrade(MarketTradeUpdate)
+AlpacaClient -[#green]-> QuoteColl : 3: OnQuote(MarketQuoteUpdate)
+AlpacaClient -[#green]-> DepthColl : 4: OnDepth(MarketDepthUpdate)
+
+IBClient -[#green]-> TradeColl : 2: OnTrade(MarketTradeUpdate)
+IBClient -[#green]-> QuoteColl : 3: OnQuote(MarketQuoteUpdate)
+IBClient -[#green]-> DepthColl : 4: OnDepth(MarketDepthUpdate)
+
+NYSEClient -[#green]-> TradeColl : 2: OnTrade(MarketTradeUpdate)
+NYSEClient -[#green]-> QuoteColl : 3: OnQuote(MarketQuoteUpdate)
+NYSEClient -[#green]-> DepthColl : 4: OnDepth(MarketDepthUpdate)
+
+PolygonClient -[#green]-> TradeColl : 2: OnTrade(MarketTradeUpdate)
+PolygonClient -[#green]-> QuoteColl : 3: OnQuote(MarketQuoteUpdate)
+
+' Collector to Collector
+TradeColl -[#orange]-> QuoteColl : 5: GetLatestQuote(symbol)\nfor aggressor inference
+
+' Collectors to Pipeline
+TradeColl -[#red]-> Pipeline : 6: TryPublish(Trade, OrderFlow, Integrity)
+QuoteColl -[#red]-> Pipeline : 7: TryPublish(BboQuote)
+DepthColl -[#red]-> Pipeline : 8: TryPublish(L2Snapshot, DepthIntegrity)
+
+' Pipeline to Storage
+Pipeline -[#purple]-> JsonlSink : 9: AppendAsync(MarketEvent)
+Pipeline -[#purple]-> ParquetSink : 9: AppendAsync(MarketEvent)
+Pipeline -[#purple]-> MTPublisher : 10: PublishAsync(event)
+
+' Storage Management
+JsonlSink -[#gray]-> Retention : 11: MaybeCleanup()
+
+' MassTransit to Broker
+MTPublisher -[#brown]-> MsgBroker : 12: Publish(IMarketEventMessage)
+
+' Subscription Management
+SubMgr -[#cyan]-> AlpacaClient : A: SubscribeAsync(symbol)
+SubMgr -[#cyan]-> IBClient : A: SubscribeAsync(symbol)
+SubMgr -[#cyan]-> NYSEClient : A: SubscribeAsync(symbol)
+SubMgr -[#cyan]-> PolygonClient : A: SubscribeAsync(symbol)
+SubMgr -[#cyan]-> DepthColl : B: RegisterSubscription(symbol)
+
+' Config Hot-Reload
+ConfigWatch -[#magenta]-> SubMgr : C: Apply(newConfig)
+
+' Health Monitoring
+HealthMon -[#olive]-> AlpacaClient : D: CheckHealth()
+HealthMon -[#olive]-> IBClient : D: CheckHealth()
+HealthMon -[#olive]-> NYSEClient : D: CheckHealth()
+HealthMon -[#olive]-> PolygonClient : D: CheckHealth()
+
+' Data Quality Monitoring
+DataQuality -[#darkgreen]-> Pipeline : I: MonitorEvents()
+DataQuality -[#darkgreen]-> JsonlSink : J: AnalyzeQuality()
+
+' Scheduled Backfill
+ScheduledBackfill -[#darkorange]-> HistProvider : K: ExecuteScheduledBackfill()
+
+' Microservices Communication
+ExtClients -[#navy]-> Gateway : E: POST /api/v1/ingest/*
+Gateway -[#navy]-> MsgBroker : F: Route(IRouteIngestionData)
+MsgBroker -[#navy]-> TradeSvc : G: Consume(IRawTradeIngested)
+MsgBroker -[#navy]-> QuoteSvc : G: Consume(IQuoteMessage)
+MsgBroker -[#navy]-> ValidationSvc : G: Consume(IValidationRequest)
+
+' Historical Backfill
+HistProvider -[#teal]-> HistProviders : H: HTTP GET historical bars
+HistProvider -[#teal]-> SymbolSearch : H2: ResolveSymbol()
+
+' Export & Packaging
+ExportSvc -[#purple]-> JsonlSink : L: ReadData()
+ExportSvc -[#purple]-> ParquetSink : L: ReadData()
+Packager -[#purple]-> ExportSvc : M: CreatePackage()
+
+' Write-Ahead Log
+JsonlSink -[#gray]-> WAL : N: WriteAhead()
+ParquetSink -[#gray]-> WAL : N: WriteAhead()
+
+' ==================== LEGEND ====================
+legend bottom
+    | Color | Message Type |
+    | Blue | Provider Streaming Data |
+    | Green | Collector Updates |
+    | Orange | Cross-Collector Queries |
+    | Red | Event Publication |
+    | Purple | Storage & Export Operations |
+    | Brown | Message Broker |
+    | Cyan | Subscription Management |
+    | Magenta | Configuration |
+    | Olive | Health Monitoring |
+    | Navy | Microservices API |
+    | Teal | Historical Data & Symbol Search |
+    | DarkGreen | Data Quality Monitoring |
+    | DarkOrange | Scheduled Backfill |
+    | Gray | Write-Ahead Log / Retention |
+endlegend
+
+@enduml

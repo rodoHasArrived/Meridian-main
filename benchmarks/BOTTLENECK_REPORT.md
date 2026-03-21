@@ -1,0 +1,354 @@
+# Bottleneck Analysis Report
+
+**Date:** 2026-03-04
+**Scope:** Event pipeline hot paths — publish → canonicalize → deduplicate → WAL → storage
+
+---
+
+## Executive Summary
+
+Static analysis of all per-event code paths identified **12 high-priority bottlenecks** across 7 files.
+The top 3 issues account for the majority of unnecessary allocations and contention:
+
+1. **PersistentDedupLedger** — 5-6 heap allocations per event for SHA256 key computation
+2. **WriteAheadLog** — 5-6 allocations per record (string interpolation + SHA256 + byte duplication)
+3. **MarketDepthCollector** — `ToArray()` on bids/asks inside a write lock on every depth update
+
+Combined, the pipeline allocates **~15-20 objects per event** in the dedup+WAL path alone,
+plus JSON serialization strings in the storage sink. Under sustained load (10K events/sec),
+this creates ~150-200K short-lived objects/sec of GC pressure.
+
+---
+
+## Bottleneck Rankings
+
+### Severity: CRITICAL (per-event, high allocation or contention)
+
+#### #1 — PersistentDedupLedger: SHA256 key computation (5-6 allocs/event)
+
+**File:** `src/Meridian.Application/Pipeline/PersistentDedupLedger.cs`
+**Lines:** 160-191
+
+```csharp
+// Line 162: string interpolation for prefix
+var prefix = $"{evt.Source}:{evt.EffectiveSymbol}:{evt.Type}:";
+
+// Line 165-169: string interpolation for identity + HashIdentity
+prefix + HashIdentity($"{trade.Timestamp.Ticks}|{trade.Price}|{trade.Size}|...")
+```
+
+**Allocations per event:**
+| # | Allocation | Source |
+|---|-----------|--------|
+| 1 | `prefix` string | `$"{evt.Source}:{evt.EffectiveSymbol}:{evt.Type}:"` |
+| 2 | `identity` string | `$"{trade.Timestamp.Ticks}\|{trade.Price}\|..."` |
+| 3 | `byte[]` | `Encoding.UTF8.GetBytes(input)` |
+| 4 | `byte[]` (32 bytes) | `SHA256.HashData(bytes)` result |
+| 5 | hex string | `Convert.ToHexString(bytes, 0, 16)` |
+| 6 | final key string | `prefix + hashHex` concatenation |
+
+**Fix:** Use `SHA256.TryHashData` with stack-allocated `Span<byte>`, `string.Create` for zero-copy key building, and cache keys per (source, symbol, type) prefix.
+
+---
+
+#### #2 — WriteAheadLog: record serialization + checksum (5-6 allocs/record)
+
+**File:** `src/Meridian.Storage/Archival/WriteAheadLog.cs`
+**Lines:** 400, 532-538
+
+```csharp
+// Line 400: WAL line construction
+var line = $"{record.Sequence}|{record.Timestamp:O}|{record.RecordType}|{record.Checksum}|{record.Payload}";
+
+// Lines 532-538: checksum computation
+var data = $"{sequence}|{timestamp:O}|{recordType}|{payload}";
+var bytes = Encoding.UTF8.GetBytes(data);     // duplicates entire payload
+var hash = SHA256.HashData(bytes);
+return Convert.ToHexString(hash).ToLowerInvariant();  // two string allocs
+```
+
+**Impact:** For a 1KB JSON payload, `ComputeChecksum` allocates ~1KB for the interpolated `data` string, ~1KB for the `bytes` array, 32 bytes for the hash, and two 64-char strings. Payload data is effectively tripled in memory.
+
+**Fix:** Use `IncrementalHash` with `Span<byte>` to hash fields individually without concatenation. Cache `File.GetCreationTimeUtc` (line 386) instead of calling per-append. Make `WalRecord` a `readonly record struct`.
+
+---
+
+#### #3 — MarketDepthCollector: ToArray() under write lock on every update
+
+**File:** `src/Meridian.Domain/Collectors/MarketDepthCollector.cs`
+**Lines:** 235-338 (Apply), 355-356 (BuildSnapshot)
+
+```csharp
+// Inside write lock — lines 355-356
+var bidsCopy = _bids.ToArray();   // allocates OrderBookLevel[50]
+var asksCopy = _asks.ToArray();   // allocates OrderBookLevel[50]
+```
+
+**Impact:** Two array allocations per depth update, inside the write lock. With a 50-level book at 500 updates/sec, this is 1000 array allocations/sec holding the lock. The write lock blocks all concurrent readers during this time.
+
+**Fix:** Copy only the raw data (price/size arrays) under the lock, build the `LOBSnapshot` record outside the lock. Consider `ArrayPool<OrderBookLevel>.Shared.Rent()`.
+
+---
+
+#### #4 — TradeDataCollector: double lock + string interpolation per trade
+
+**File:** `src/Meridian.Domain/Collectors/TradeDataCollector.cs`
+**Lines:** 122-123, 187, 196, 247
+
+```csharp
+// Line 247: allocates a new string per trade
+var continuityKey = $"{symbol}|{streamId ?? "-"}|{venue ?? "-"}";
+
+// Lines 187 + 196: two separate lock acquisitions on same _sync object
+state.RegisterTrade(trade);           // lock(_sync) { ... }
+var stats = state.BuildOrderFlowStats(...); // lock(_sync) { ... } (trims again!)
+```
+
+**Impact:** 3 allocations per trade (key string + 2 closure allocations from `GetOrAdd` lambdas). Two lock acquisitions per trade on the same object, with `TrimRollingWindows` running inside both.
+
+**Fix:** Combine `RegisterTrade` + `BuildOrderFlowStats` into a single lock acquisition. Cache continuity keys per (symbol, streamId, venue). Use `TryGetValue` before `GetOrAdd`.
+
+---
+
+#### #5 — EventPipeline: `evt.Type.ToString()` per WAL-enabled event
+
+**File:** `src/Meridian.Application/Pipeline/EventPipeline.cs`
+**Line:** 524
+
+```csharp
+var walRecord = await _wal.AppendAsync(evt, evt.Type.ToString(), _cts.Token);
+```
+
+**Impact:** `Enum.ToString()` allocates a new string per call. For `MarketEventType` with ~10 values, these should be cached.
+
+**Fix:** Static `string[]` lookup: `private static readonly string[] TypeNames = Enum.GetValues<MarketEventType>().Select(v => v.ToString()).ToArray();`
+
+---
+
+### Severity: HIGH (per-event, moderate allocation or contention)
+
+#### #6 — JsonlStorageSink: string allocation per serialized event
+
+**File:** `src/Meridian.Storage/Sinks/JsonlStorageSink.cs`
+**Lines:** 191, 205-217
+
+Every event is serialized to a `string` via `JsonSerializer.Serialize()`, then written. The string is immediately discarded. Writing directly to a `Utf8JsonWriter` backed by a pooled buffer would eliminate this.
+
+Also: `ConcurrentDictionary.GetOrAdd` lambda closures (lines 177, 201) allocate a delegate on every call, even on cache hits.
+
+---
+
+#### #7 — WriteAheadLog: SemaphoreSlim serializes JSON + checksum + I/O
+
+**File:** `src/Meridian.Storage/Archival/WriteAheadLog.cs`
+**Lines:** 116-159
+
+The critical section includes: JSON serialization → checksum computation → file write → rotation check. JSON serialization and SHA256 hashing are CPU-bound work that should happen outside the lock.
+
+---
+
+#### #8 — CanonicalizingPublisher: 4 Interlocked operations per event
+
+**File:** `src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs`
+**Lines:** 79-112
+
+In dual-write mode, each event triggers up to 4 `Interlocked` operations (increment counters + add duration ticks). Each causes a full memory barrier and cache-line flush. Under high throughput, this creates cross-core cache-line bouncing.
+
+---
+
+#### #9 — MarketDepthCollector: ReindexFrom creates N records per insert/delete
+
+**File:** `src/Meridian.Domain/Collectors/MarketDepthCollector.cs`
+**Lines:** 341-344
+
+```csharp
+for (int i = startIndex; i < levels.Count; i++)
+    levels[i] = levels[i] with { Side = side, Level = i };
+```
+
+An Insert at position 0 in a 50-level book creates 49 new `OrderBookLevel` records via `with` expressions.
+
+---
+
+### Severity: MEDIUM (conditional or lower frequency)
+
+#### #10 — PersistentDedupLedger: EvictExpired iterates 500K entries on hot path
+
+**File:** `src/Meridian.Application/Pipeline/PersistentDedupLedger.cs`
+**Lines:** 198-215
+
+When cache exceeds 500K entries, eviction scans the entire dictionary on the calling thread. Should be moved to a background timer.
+
+---
+
+#### #11 — EventPipeline: Reader.Count called on every publish
+
+**File:** `src/Meridian.Application/Pipeline/EventPipeline.cs`
+**Lines:** 335-342
+
+`_channel.Reader.Count` is not free on `BoundedChannel` — it inspects internal state. Called unconditionally on every successful publish for peak tracking and utilization calculation. Should be sampled (e.g., every 100th event).
+
+---
+
+#### #12 — WriteAheadLog: File.GetCreationTimeUtc syscall per append
+
+**File:** `src/Meridian.Storage/Archival/WriteAheadLog.cs`
+**Lines:** 386-391
+
+Filesystem metadata syscall on every WAL append to check rotation. Should cache the creation time when the file is opened.
+
+---
+
+## Allocation Budget (estimated per event, full pipeline)
+
+| Stage | Per-Event Allocations | Dominant Source |
+|-------|----------------------|-----------------|
+| Publish (TryPublish) | 0 | Lock-free channel write |
+| Canonicalization | 1 | `with` expression record copy |
+| Dedup check (cache hit) | 5-6 | SHA256 key computation (even on hit!) |
+| Dedup check (cache miss) | +2 | JSONL string + SemaphoreSlim |
+| WAL append | 5-6 | Checksum + string interpolation |
+| Event serialization | 1-2 | JSON string + batch array |
+| **Total (WAL+dedup enabled)** | **~13-17** | |
+| **Total (WAL+dedup disabled)** | **~3-4** | |
+
+---
+
+## How to Run the Benchmarks
+
+```bash
+# Full benchmark suite (takes ~30-60 min)
+./benchmarks/run-bottleneck-benchmarks.sh
+
+# Quick mode (~10 min, less precise)
+./benchmarks/run-bottleneck-benchmarks.sh --quick
+
+# Specific benchmark class
+./benchmarks/run-bottleneck-benchmarks.sh --filter EndToEnd
+./benchmarks/run-bottleneck-benchmarks.sh --filter TradeCollector
+./benchmarks/run-bottleneck-benchmarks.sh --filter BatchSerialization
+
+# Via Makefile (runs all)
+make benchmark
+
+# Direct BenchmarkDotNet (most control)
+dotnet run --project benchmarks/Meridian.Benchmarks -c Release -- \
+    --filter "*EndToEnd*" --memory --join
+```
+
+### Interpreting Results
+
+1. **EndToEndPipelineBenchmarks** — Compare Stage1 vs Stage1_2 vs Stage1_2_3 vs Stage1_2_3_4.
+   The delta between each stage shows the cost of that layer. If Stage1_2_3 is 5x slower than
+   Stage1_2, serialization is the bottleneck.
+
+2. **BatchSerializationBenchmarks** — If `Parallel_SourceGenerated` is faster than
+   `Sequential_SourceGenerated` at `BatchSize=5000`, the current 5000-event threshold in
+   `JsonlBatchOptions.ParallelSerializationThreshold` is validated. If parallel is slower
+   at that size, raise the threshold.
+
+3. **TradeCollectorBenchmarks** — If `SingleSymbol` is significantly slower than `MultiSymbol`,
+   per-symbol lock contention is confirmed. The fix is to combine `RegisterTrade` +
+   `BuildOrderFlowStats` into one lock acquisition.
+
+4. **EventBufferBenchmarks** — `DrainAll` should be near-zero (pointer swap). `DrainBySymbol`
+   shows O(n) linear scan cost. `Drain_Partial_Half` shows O(remaining) shift cost.
+
+5. **DedupKeyBenchmarks** — Shows the SHA256 overhead. If `ComputeTradeKey` takes >500ns,
+   the hashing is a significant fraction of per-event cost.
+
+---
+
+## Threading & I/O Bottlenecks
+
+### CRITICAL: Synchronous fsync inside async WAL path
+
+**File:** `src/Meridian.Storage/Archival/WriteAheadLog.cs:229`
+
+```csharp
+_currentWalFile.Flush(flushToDisk: true);  // synchronous fsync!
+```
+
+`FileStream.Flush(flushToDisk: true)` invokes the kernel's `fsync()` which blocks the thread
+for milliseconds to hundreds of milliseconds. Called while holding `_writeLock`, so all
+concurrent WAL writers are blocked. In `EveryWrite` sync mode, this fires on every event.
+
+**Fix:** Use `await _currentWalFile.FlushAsync(ct)` or batch fsync more aggressively.
+
+---
+
+### HIGH: WriterState.GetOrAdd can leak file handles
+
+**File:** `src/Meridian.Storage/Sinks/JsonlStorageSink.cs:190`
+
+```csharp
+var writer = _writers.GetOrAdd(path, p => WriterState.Create(p, _options.Compress));
+```
+
+`ConcurrentDictionary.GetOrAdd` can invoke the factory multiple times concurrently for the
+same key. `WriterState.Create` opens a `FileStream` — the losing instance is never disposed,
+leaking the file handle.
+
+**Fix:** Use `_writers.TryGetValue` first, then `GetOrAdd` with `Lazy<WriterState>` or lock.
+
+---
+
+### HIGH: CompositeSink sequential fan-out doubles latency
+
+**File:** `src/Meridian.Storage/Sinks/CompositeSink.cs:133-203`
+
+```csharp
+for (var i = 0; i < _sinks.Count; i++)
+    await _sinks[i].AppendAsync(evt, ct);  // sequential!
+```
+
+With JSONL + Parquet sinks, total append latency = `sink1 + sink2`. These are independent
+and could be parallelized.
+
+**Fix:** Use `Task.WhenAll` for independent sinks.
+
+---
+
+### MEDIUM: Dual flush timers cause periodic latency spikes
+
+`JsonlStorageSink._flushTimer` (5s) and `EventPipeline.PeriodicFlushAsync` (5s) fire
+concurrently and contend on the same semaphore hierarchy. When both trigger simultaneously,
+the pipeline consumer stalls waiting for lock acquisition.
+
+**Fix:** Coordinate flush timers or offset their intervals.
+
+---
+
+### MEDIUM: Double flush in WriteBatchAsync
+
+**File:** `src/Meridian.Storage/Sinks/JsonlStorageSink.cs:414-415`
+
+```csharp
+await _writer.FlushAsync();        // pushes to FileStream buffer
+await _stream.FlushAsync(ct);      // extra syscall, no durability benefit
+```
+
+The `StreamWriter.FlushAsync()` already pushes data to the underlying stream. The second
+flush adds an unnecessary kernel syscall.
+
+---
+
+## Recommended Fix Priority
+
+| Priority | Fix | Est. Effort | Impact |
+|----------|-----|-------------|--------|
+| P0 | Cache dedup key prefix; use `Span<byte>` SHA256 | Medium | -5 allocs/event |
+| P0 | WAL: `IncrementalHash` + cache file creation time | Medium | -5 allocs/event + remove syscall |
+| P0 | WAL: Replace sync `fsync` with async flush | Low | Eliminates ms-level blocks |
+| P0 | Fix `GetOrAdd` file handle leak in JsonlStorageSink | Low | Prevents resource leak |
+| P1 | Combine TradeDataCollector lock acquisitions | Low | -1 lock/trade |
+| P1 | Move depth snapshot ToArray outside write lock | Low | Reduces lock hold time ~50% |
+| P1 | Cache `Enum.ToString()` for MarketEventType | Trivial | -1 alloc/event |
+| P1 | Parallelize CompositeSink fan-out | Low | -50% append latency |
+| P2 | Use `TryGetValue` before `GetOrAdd` in hot paths | Low | -2-3 closure allocs/event |
+| P2 | Serialize JSON to pooled buffer, not string | Medium | -1 alloc/event |
+| P2 | Sample Reader.Count instead of per-publish | Trivial | Reduces per-publish overhead |
+| P2 | Remove redundant stream flush in WriteBatchAsync | Trivial | -1 syscall/batch |
+| P2 | Offset dual flush timer intervals | Trivial | Eliminates periodic stalls |
+| P3 | Move dedup EvictExpired to background timer | Low | Prevents latency spikes |
+| P3 | Batch CanonicalizingPublisher metrics | Low | Reduces cache-line bouncing |

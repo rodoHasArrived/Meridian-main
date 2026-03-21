@@ -1,0 +1,67 @@
+@startuml State Diagram - Provider Connection States
+!theme plain
+
+title Meridian - Provider Connection State Machine
+
+state "Provider Connection Lifecycle" as ProviderLC {
+
+    [*] --> Disconnected
+
+    state Disconnected {
+        Disconnected : entry/ Log("Disconnected")
+        Disconnected : entry/ Reset retry count
+    }
+
+    state Connecting {
+        Connecting : entry/ Start connection attempt
+        Connecting : entry/ Start timeout timer
+        Connecting : do/ Establish socket
+        Connecting : do/ Send auth message
+    }
+
+    state Connected {
+        Connected : entry/ Log("Connected")
+        Connected : entry/ Start heartbeat monitor
+        Connected : entry/ Emit ConnectionStatusChanged
+        Connected : do/ Process incoming events
+    }
+
+    state Reconnecting {
+        Reconnecting : entry/ Increment retry count
+        Reconnecting : entry/ Calculate backoff delay
+        Reconnecting : do/ Wait for backoff
+        Reconnecting : exit/ Attempt reconnection
+    }
+
+    state Failed {
+        Failed : entry/ Log error
+        Failed : entry/ Emit ConnectionFailed event
+        Failed : entry/ Stop heartbeat monitor
+    }
+
+    state Disposed {
+        Disposed : entry/ Release resources
+        Disposed : entry/ Close socket
+    }
+
+    Disconnected --> Connecting : ConnectAsync()
+    Connecting --> Connected : [Auth Success]
+    Connecting --> Failed : [Auth Failed / Timeout]
+
+    Connected --> Reconnecting : [Connection Lost]
+    Connected --> Disconnected : DisconnectAsync()
+
+    Reconnecting --> Connecting : [Backoff Complete]
+    Reconnecting --> Failed : [Max Retries Exceeded]
+
+    Failed --> Connecting : [Auto-Retry Enabled]
+    Failed --> Disconnected : [Manual Reset]
+
+    Disconnected --> Disposed : DisposeAsync()
+    Failed --> Disposed : DisposeAsync()
+    Connected --> Disposed : DisposeAsync()
+
+    Disposed --> [*]
+}
+
+@enduml

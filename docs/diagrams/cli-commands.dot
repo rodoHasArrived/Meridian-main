@@ -1,0 +1,232 @@
+// CLI Commands Reference Diagram
+// Meridian v1.6.1
+// Last Updated: 2026-02-21
+//
+// This diagram shows all available CLI commands and flags,
+// organized by category with usage examples.
+//
+// Generate: dot -Tpng cli-commands.dot -o cli-commands.png
+//           dot -Tsvg cli-commands.dot -o cli-commands.svg
+
+digraph CLICommands {
+  rankdir=TB;
+  graph [fontname="Helvetica", fontsize=12, bgcolor="white", compound=true, pad=0.5];
+  node  [fontname="Helvetica", fontsize=9, shape=box, style="rounded,filled"];
+  edge  [fontname="Helvetica", fontsize=8, color="#4a5568"];
+
+  // Title
+  labelloc="t";
+  label="Meridian - CLI Commands Reference\nAll Available Flags and Options | v1.6.1";
+
+  // Entry Point
+  Meridian [shape=box, fillcolor="#438dd5", fontcolor="white", width=3,
+       label="dotnet run --project src/Meridian\n\nMeridian CLI\n.NET 9.0 | Cross-Platform"];
+
+  // Setup Commands
+  subgraph cluster_setup {
+    label="Setup Commands (First-Time Configuration)";
+    color="#805ad5";
+    style="rounded";
+    bgcolor="#ede9fe";
+
+    WIZARD [fillcolor="#c4b5fd",
+            label="--wizard\n\nInteractive 8-step configuration wizard\nGuides through all settings\nGenerates appsettings.json"];
+
+    AUTO_CONFIG [fillcolor="#c4b5fd",
+                 label="--auto-config\n\nQuick auto-configuration\nDetects providers from env vars\nGenerates minimal config"];
+
+    GEN_CONFIG [fillcolor="#c4b5fd",
+                label="--generate-config <type>\n\nGenerate config templates\nTypes: minimal, full, alpaca,\nbackfill, production, docker"];
+
+    DETECT [fillcolor="#c4b5fd",
+            label="--detect-providers\n\nScan environment variables\nShow available providers\nDisplay capabilities"];
+  }
+
+  // Diagnostic Commands
+  subgraph cluster_diagnostic {
+    label="Diagnostic Commands (Health & Validation)";
+    color="#2b6cb0";
+    style="rounded";
+    bgcolor="#dbeafe";
+
+    VAL_CREDS [fillcolor="#93c5fd",
+               label="--validate-credentials\n\nTest API credentials\nValidate all providers\nShow account info"];
+
+    TEST_CONN [fillcolor="#93c5fd",
+               label="--test-connectivity\n\nTest network connectivity\nCheck DNS resolution\nMeasure response times"];
+
+    QUICK_CHECK [fillcolor="#93c5fd",
+                 label="--quick-check\n\nFast health diagnostics\nCheck: disk, symbols,\ncredentials, compression"];
+
+    VAL_CONFIG [fillcolor="#93c5fd",
+                label="--validate-config\n\nValidate configuration\nCheck required fields\nNo startup"];
+
+    DRY_RUN [fillcolor="#93c5fd",
+             label="--dry-run\n\nTest initialization\nValidate everything\nNo data collection"];
+
+    SELFTEST [fillcolor="#93c5fd",
+              label="--selftest\n\nRun self-tests\nValidate components"];
+  }
+
+  // Operation Commands
+  subgraph cluster_operation {
+    label="Operation Commands (Runtime Modes)";
+    color="#38a169";
+    style="rounded";
+    bgcolor="#f0fff4";
+
+    UI_MODE [fillcolor="#68d391",
+             label="--ui\n\nEnable web dashboard\nHTTP endpoints active\nReal-time monitoring"];
+
+    HTTP_PORT [fillcolor="#9ae6b4",
+               label="--http-port <port>\n\nCustom HTTP port\nDefault: 8080\nUsed with --ui"];
+
+    BACKFILL [fillcolor="#68d391",
+              label="--backfill\n\nRun historical backfill\nRequires provider config\nNo streaming"];
+
+    BACKFILL_OPTS [fillcolor="#9ae6b4",
+                   label="--backfill-provider <name>\n--backfill-symbols <list>\n--backfill-from <date>\n--backfill-to <date>\n\nBackfill options"];
+  }
+
+  // Documentation Commands
+  subgraph cluster_docs {
+    label="Documentation Commands (Help & Info)";
+    color="#ed8936";
+    style="rounded";
+    bgcolor="#fffaf0";
+
+    SHOW_CONFIG [fillcolor="#fbd38d",
+                 label="--show-config\n\nDisplay current config\nMask sensitive values\nShow effective settings"];
+
+    ERROR_CODES [fillcolor="#fbd38d",
+                 label="--error-codes\n\nList all error codes\nMERIDIAN-XXX-NNN format\nTroubleshooting tips"];
+
+    HELP [fillcolor="#fbd38d",
+          label="--help\n\nShow all commands\nUsage examples\nVersion info"];
+
+    VERSION [fillcolor="#fbd38d",
+             label="--version\n\nShow version: 1.6.1\n.NET runtime info"];
+  }
+
+  // Symbol Management Commands
+  subgraph cluster_symbols {
+    label="Symbol Management Commands";
+    color="#2c7a7b";
+    style="rounded";
+    bgcolor="#d1fae5";
+
+    SYM_LIST [fillcolor="#6ee7b7",
+              label="--symbols\n\nList all symbols\nActive + archived"];
+
+    SYM_ADD [fillcolor="#6ee7b7",
+             label="--symbols-add <list>\n\nAdd new symbols\nOptions: --no-trades,\n--no-depth, --depth-levels"];
+
+    SYM_REMOVE [fillcolor="#a7f3d0",
+                label="--symbols-remove <list>\n\nRemove symbols"];
+
+    SYM_STATUS [fillcolor="#a7f3d0",
+                label="--symbol-status <symbol>\n\nCheck symbol status"];
+  }
+
+  // Package Commands
+  subgraph cluster_packages {
+    label="Package Commands (Data Packaging)";
+    color="#805ad5";
+    style="rounded";
+    bgcolor="#faf5ff";
+
+    PKG_CREATE [fillcolor="#c4b5fd",
+                label="--package\n\nCreate data package\nPortable archive"];
+
+    PKG_IMPORT [fillcolor="#c4b5fd",
+                label="--import-package <path>\n\nImport data package"];
+
+    PKG_LIST [fillcolor="#ddd6fe",
+              label="--list-package <path>\n\nList package contents"];
+
+    PKG_VALIDATE [fillcolor="#ddd6fe",
+                  label="--validate-package <path>\n\nValidate package integrity"];
+  }
+
+  // Common Workflows
+  subgraph cluster_workflows {
+    label="Common Workflows";
+    color="#718096";
+    style="rounded";
+    bgcolor="#f7fafc";
+
+    WF_NEW [shape=note, fillcolor="#edf2f7",
+            label="New Installation:\n\n1. dotnet run -- --wizard\n2. dotnet run -- --validate-credentials\n3. dotnet run -- --dry-run\n4. dotnet run -- --ui"];
+
+    WF_CI [shape=note, fillcolor="#edf2f7",
+           label="CI/CD Setup:\n\n1. Set environment variables\n2. dotnet run -- --auto-config\n3. dotnet run -- --validate-config\n4. dotnet run"];
+
+    WF_DEBUG [shape=note, fillcolor="#edf2f7",
+              label="Troubleshooting:\n\n1. dotnet run -- --show-config\n2. dotnet run -- --test-connectivity\n3. dotnet run -- --quick-check\n4. dotnet run -- --error-codes"];
+
+    WF_BACKFILL [shape=note, fillcolor="#edf2f7",
+                 label="Historical Backfill:\n\n1. dotnet run -- --detect-providers\n2. dotnet run -- --backfill \\\n   --backfill-provider alpaca \\\n   --backfill-symbols SPY,QQQ \\\n   --backfill-from 2024-01-01"];
+  }
+
+  // Exit Codes
+  subgraph cluster_exit {
+    label="Exit Codes";
+    color="#e53e3e";
+    style="rounded";
+    bgcolor="#fee2e2";
+
+    EXIT_CODES [fillcolor="#fecaca",
+                label="Exit Codes:\n\n0 - Success\n1 - General error\n2 - Configuration error\n3 - Connection error\n4 - Authentication error\n5 - Validation failed"];
+  }
+
+  // Connections
+  Meridian -> WIZARD [color="#805ad5"];
+  Meridian -> AUTO_CONFIG [color="#805ad5"];
+  Meridian -> GEN_CONFIG [color="#805ad5"];
+  Meridian -> DETECT [color="#805ad5"];
+
+  Meridian -> VAL_CREDS [color="#2b6cb0"];
+  Meridian -> TEST_CONN [color="#2b6cb0"];
+  Meridian -> QUICK_CHECK [color="#2b6cb0"];
+  Meridian -> VAL_CONFIG [color="#2b6cb0"];
+  Meridian -> DRY_RUN [color="#2b6cb0"];
+  Meridian -> SELFTEST [color="#2b6cb0"];
+
+  Meridian -> UI_MODE [color="#38a169"];
+  Meridian -> BACKFILL [color="#38a169"];
+  UI_MODE -> HTTP_PORT [style=dashed];
+  BACKFILL -> BACKFILL_OPTS [style=dashed];
+
+  Meridian -> SHOW_CONFIG [color="#ed8936"];
+  Meridian -> ERROR_CODES [color="#ed8936"];
+  Meridian -> HELP [color="#ed8936"];
+  Meridian -> VERSION [color="#ed8936"];
+
+  Meridian -> SYM_LIST [color="#2c7a7b"];
+  Meridian -> SYM_ADD [color="#2c7a7b"];
+  SYM_ADD -> SYM_REMOVE [style=dashed];
+  SYM_ADD -> SYM_STATUS [style=dashed];
+
+  Meridian -> PKG_CREATE [color="#805ad5"];
+  Meridian -> PKG_IMPORT [color="#805ad5"];
+  PKG_CREATE -> PKG_LIST [style=dashed];
+  PKG_CREATE -> PKG_VALIDATE [style=dashed];
+
+  // Legend
+  subgraph cluster_legend {
+    label="Legend";
+    style="rounded";
+    color="#666666";
+    bgcolor="#fafafa";
+
+    L1 [shape=box, fillcolor="#c4b5fd", label="Setup"];
+    L2 [shape=box, fillcolor="#93c5fd", label="Diagnostic"];
+    L3 [shape=box, fillcolor="#68d391", label="Operation"];
+    L4 [shape=box, fillcolor="#fbd38d", label="Documentation"];
+    L5 [shape=box, fillcolor="#6ee7b7", label="Symbol Mgmt"];
+    L6 [shape=box, fillcolor="#c4b5fd", label="Package"];
+
+    ENV_NOTE [shape=plaintext,
+              label="Environment Variables:\n\nALPACA__KEYID, ALPACA__SECRETKEY\nPOLYGON__APIKEY, TIINGO__TOKEN\nNYSE__APIKEY, etc.\n\n(Use double underscore for nested config)"];
+  }
+}

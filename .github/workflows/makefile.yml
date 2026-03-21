@@ -1,0 +1,91 @@
+name: Makefile CI
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'Makefile'
+      - 'Meridian.sln'
+      - 'Directory.Build.props'
+      - 'Directory.Packages.props'
+      - 'global.json'
+      - 'build/**'
+      - '.github/actions/setup-dotnet-cache/**'
+      - '.github/workflows/makefile.yml'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'Makefile'
+      - 'Meridian.sln'
+      - 'Directory.Build.props'
+      - 'Directory.Packages.props'
+      - 'global.json'
+      - 'build/**'
+      - '.github/actions/setup-dotnet-cache/**'
+      - '.github/workflows/makefile.yml'
+  workflow_dispatch:
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_GENERATE_ASPNET_CERTIFICATE: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET with Cache
+        uses: ./.github/actions/setup-dotnet-cache
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          cache-suffix: makefile-ci
+
+      - name: Restore dependencies
+        run: dotnet restore Meridian.sln /p:EnableWindowsTargeting=true --verbosity minimal
+
+      - name: Build
+        run: dotnet build Meridian.sln -c Release --no-restore /p:EnableWindowsTargeting=true --verbosity minimal
+
+      - name: Run C# unit tests
+        run: >-
+          dotnet test tests/Meridian.Tests/Meridian.Tests.csproj
+          -c Release
+          --no-build
+          --verbosity minimal
+          --logger "trx;LogFileName=test-results-csharp.trx"
+          --results-directory ./artifacts/test-results
+          --filter "Category!=Integration"
+          --blame-hang-timeout 60s
+
+      - name: Run F# unit tests
+        run: >-
+          dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj
+          -c Release
+          --no-build
+          --verbosity minimal
+          --logger "trx;LogFileName=test-results-fsharp.trx"
+          --results-directory ./artifacts/test-results
+          /p:EnableWindowsTargeting=true
+          --blame-hang-timeout 60s
+
+      - name: Upload test results on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: makefile-ci-test-results
+          path: ./artifacts/test-results/
+          retention-days: 3

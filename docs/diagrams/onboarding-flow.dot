@@ -1,0 +1,216 @@
+// Onboarding & Diagnostics Flow Diagram
+// Meridian v1.6.1
+// Last Updated: 2026-02-21
+//
+// This diagram shows the user journey from first-run through setup to operational,
+// including all diagnostic and configuration options.
+//
+// Generate: dot -Tpng onboarding-flow.dot -o onboarding-flow.png
+//           dot -Tsvg onboarding-flow.dot -o onboarding-flow.svg
+
+digraph OnboardingFlow {
+  rankdir=TB;
+  graph [fontname="Helvetica", fontsize=12, bgcolor="white", compound=true, pad=0.5, splines=ortho];
+  node  [fontname="Helvetica", fontsize=10, shape=box, style="rounded,filled"];
+  edge  [fontname="Helvetica", fontsize=9, color="#4a5568"];
+
+  // Title
+  labelloc="t";
+  label="Meridian - Onboarding & Diagnostics Flow\nUser Journey from Installation to Operation | v1.6.1";
+
+  // Entry Point
+  START [shape=oval, fillcolor="#38a169", fontcolor="white",
+         label="User Runs\nMeridian"];
+
+  // First-Run Detection
+  subgraph cluster_firstrun {
+    label="First-Run Detection";
+    color="#ed8936";
+    style="rounded";
+    bgcolor="#fffaf0";
+
+    FIRST_RUN [fillcolor="#fbd38d",
+               label="FirstRunDetector\n\nCheck for .meridian-initialized\nCheck for appsettings.json"];
+
+    WELCOME [fillcolor="#fbd38d",
+             label="Welcome Message\n\nDisplay ASCII banner\nShow getting started options"];
+
+    FIRST_RUN_CHOICE [shape=diamond, fillcolor="#fed7aa",
+                      label="First Run?"];
+  }
+
+  // Setup Options
+  subgraph cluster_setup {
+    label="Setup Options (Choose One)";
+    color="#805ad5";
+    style="rounded";
+    bgcolor="#ede9fe";
+
+    WIZARD_OPT [fillcolor="#c4b5fd",
+                label="--wizard\n[Interactive Setup]\n\n8-step guided wizard\nBest for new users"];
+
+    AUTO_OPT [fillcolor="#c4b5fd",
+              label="--auto-config\n[Quick Setup]\n\nAuto-detect from env vars\nBest for CI/CD"];
+
+    GENERATE_OPT [fillcolor="#c4b5fd",
+                  label="--generate-config <type>\n[Template Generation]\n\nminimal, full, alpaca\nbackfill, production, docker"];
+
+    DETECT_OPT [fillcolor="#c4b5fd",
+                label="--detect-providers\n[Discovery]\n\nScan environment\nShow available providers"];
+  }
+
+  // Configuration Wizard Steps
+  subgraph cluster_wizard {
+    label="Configuration Wizard (8 Steps)";
+    color="#2c7a7b";
+    style="rounded";
+    bgcolor="#d1fae5";
+
+    W1 [fillcolor="#6ee7b7", label="1. Detect Providers\n\nScan env vars\nIdentify available APIs"];
+    W2 [fillcolor="#6ee7b7", label="2. Select Use Case\n\nDevelopment\nResearch\nTrading\nBackfill\nProduction"];
+    W3 [fillcolor="#6ee7b7", label="3. Configure Data Source\n\nPrimary provider\nConnection settings"];
+    W4 [fillcolor="#6ee7b7", label="4. Configure Symbols\n\nPresets: US Indices,\nTech Giants, S&P 500"];
+    W5 [fillcolor="#6ee7b7", label="5. Configure Storage\n\nPath, format\nRetention policy"];
+    W6 [fillcolor="#6ee7b7", label="6. Configure Backfill\n\nHistorical providers\nPriority chain"];
+    W7 [fillcolor="#6ee7b7", label="7. Review Settings\n\nSummary display\nConfirmation"];
+    W8 [fillcolor="#6ee7b7", label="8. Save Configuration\n\nWrite appsettings.json\nCreate marker file"];
+  }
+
+  // Validation & Diagnostics
+  subgraph cluster_validation {
+    label="Validation & Diagnostics";
+    color="#2b6cb0";
+    style="rounded";
+    bgcolor="#dbeafe";
+
+    VAL_CREDS [fillcolor="#93c5fd",
+               label="--validate-credentials\n\nTest all API keys\nShow account info\nReport issues"];
+
+    TEST_CONN [fillcolor="#93c5fd",
+               label="--test-connectivity\n\nTest internet, DNS\nTest each provider\nMeasure response times"];
+
+    QUICK_CHECK [fillcolor="#93c5fd",
+                 label="--quick-check\n\nDisk space check\nSymbol configuration\nCredentials present\nCompression available"];
+
+    VAL_CONFIG [fillcolor="#93c5fd",
+                label="--validate-config\n\nParse configuration\nCheck required fields\nValidate values"];
+
+    DRY_RUN [fillcolor="#93c5fd",
+             label="--dry-run\n\nFull initialization\nNo data collection\nTest everything"];
+  }
+
+  // Documentation & Help
+  subgraph cluster_docs {
+    label="Documentation & Help";
+    color="#38a169";
+    style="rounded";
+    bgcolor="#f0fff4";
+
+    SHOW_CONFIG [fillcolor="#9ae6b4",
+                 label="--show-config\n\nDisplay current config\nMasked credentials"];
+
+    ERROR_CODES [fillcolor="#9ae6b4",
+                 label="--error-codes\n\n24 error codes\nMERIDIAN-XXX-NNN format\nTroubleshooting tips"];
+
+    HELP [fillcolor="#9ae6b4",
+          label="--help\n\nAll available flags\nUsage examples"];
+  }
+
+  // Configuration Generated
+  CONFIG [shape=cylinder, fillcolor="#fef3c7",
+          label="appsettings.json\n[Configuration File]\n\nGenerated or updated\nAll settings stored"];
+
+  // Ready to Run
+  subgraph cluster_ready {
+    label="Ready to Operate";
+    color="#38a169";
+    style="rounded";
+    bgcolor="#c6f6d5";
+
+    STARTUP_SUM [fillcolor="#68d391",
+                 label="StartupSummary\n\nConfiguration review\nProvider status\nHealth checks"];
+
+    RUN_NORMAL [fillcolor="#38a169", fontcolor="white",
+                label="Normal Operation\n\n--ui (with dashboard)\n--backfill (historical)\ndefault (streaming)"];
+  }
+
+  // Error Handling
+  subgraph cluster_errors {
+    label="Error Handling";
+    color="#e53e3e";
+    style="rounded";
+    bgcolor="#fee2e2";
+
+    ERROR_FMT [fillcolor="#fc8181", fontcolor="white",
+               label="FriendlyErrorFormatter\n\nParse exception\nAssign error code\nGenerate suggestions"];
+
+    ERROR_DISPLAY [fillcolor="#fecaca",
+                   label="User-Friendly Error\n\n[Meridian-CFG-001]\nMissing configuration\n\nSuggestions:\n1. Run --wizard\n2. Check env vars"];
+  }
+
+  // Flow edges
+  START -> FIRST_RUN [color="#38a169"];
+  FIRST_RUN -> FIRST_RUN_CHOICE;
+  FIRST_RUN_CHOICE -> WELCOME [label="Yes"];
+  FIRST_RUN_CHOICE -> STARTUP_SUM [label="No", color="#38a169"];
+
+  WELCOME -> WIZARD_OPT [style=dashed];
+  WELCOME -> AUTO_OPT [style=dashed];
+  WELCOME -> DETECT_OPT [style=dashed];
+
+  // Setup options flow
+  WIZARD_OPT -> W1 [color="#805ad5"];
+  AUTO_OPT -> CONFIG [color="#805ad5", label="generates"];
+  GENERATE_OPT -> CONFIG [color="#805ad5", label="creates template"];
+  DETECT_OPT -> WIZARD_OPT [style=dashed, label="informs"];
+
+  // Wizard flow
+  W1 -> W2 [color="#2c7a7b"];
+  W2 -> W3 [color="#2c7a7b"];
+  W3 -> W4 [color="#2c7a7b"];
+  W4 -> W5 [color="#2c7a7b"];
+  W5 -> W6 [color="#2c7a7b"];
+  W6 -> W7 [color="#2c7a7b"];
+  W7 -> W8 [color="#2c7a7b"];
+  W8 -> CONFIG [color="#2c7a7b"];
+
+  // Validation flow
+  CONFIG -> VAL_CREDS [style=dashed, label="optional"];
+  CONFIG -> TEST_CONN [style=dashed, label="optional"];
+  CONFIG -> QUICK_CHECK [style=dashed, label="optional"];
+  CONFIG -> VAL_CONFIG [style=dashed, label="optional"];
+  VAL_CONFIG -> DRY_RUN [style=dashed];
+
+  VAL_CREDS -> STARTUP_SUM [color="#38a169", style=dashed];
+  TEST_CONN -> STARTUP_SUM [color="#38a169", style=dashed];
+  QUICK_CHECK -> STARTUP_SUM [color="#38a169", style=dashed];
+  DRY_RUN -> STARTUP_SUM [color="#38a169", style=dashed];
+
+  // Ready to run
+  CONFIG -> STARTUP_SUM [color="#38a169"];
+  STARTUP_SUM -> RUN_NORMAL [color="#38a169"];
+
+  // Error handling
+  ERROR_FMT -> ERROR_DISPLAY [color="#e53e3e"];
+
+  // Documentation access (from anywhere)
+  SHOW_CONFIG -> CONFIG [style=dashed, label="reads"];
+  ERROR_CODES -> ERROR_FMT [style=dashed, label="reference"];
+
+  // Legend
+  subgraph cluster_legend {
+    label="Legend";
+    style="rounded";
+    color="#666666";
+    bgcolor="#fafafa";
+
+    L1 [shape=box, fillcolor="#fbd38d", label="First-Run Services"];
+    L2 [shape=box, fillcolor="#c4b5fd", label="Setup Options"];
+    L3 [shape=box, fillcolor="#6ee7b7", label="Wizard Steps"];
+    L4 [shape=box, fillcolor="#93c5fd", label="Validation/Diagnostics"];
+    L5 [shape=box, fillcolor="#9ae6b4", label="Documentation"];
+    L6 [shape=box, fillcolor="#fc8181", fontcolor="white", label="Error Handling"];
+
+    LEG_FLOW [shape=plaintext, label="━━ Primary flow\n─ ─ Optional/alternative flow"];
+  }
+}

@@ -1,0 +1,66 @@
+@startuml State Diagram - Trade Sequence Validation States
+!theme plain
+
+title Meridian - Trade Sequence Validation State Machine
+
+state "Trade Sequence State (Per Symbol)" as TradeSeq {
+
+    [*] --> Uninitialized
+
+    state Uninitialized {
+        Uninitialized : No trades received yet
+        Uninitialized : lastSequenceNumber = -1
+    }
+
+    state Tracking {
+        Tracking : Monitoring sequence numbers
+        Tracking : Computing order flow stats
+
+        state Normal {
+            Normal : entry/ Clear stale flag
+            Normal : Sequences monotonically increasing
+            Normal : seq == lastSeq + 1
+        }
+
+        state GapDetected {
+            GapDetected : entry/ Emit IntegrityEvent(Gap)
+            GapDetected : entry/ Set stale flag
+            GapDetected : Missing sequence numbers
+            GapDetected : seq > lastSeq + 1
+        }
+
+        state OutOfOrder {
+            OutOfOrder : entry/ Emit IntegrityEvent(OutOfOrder)
+            OutOfOrder : Stale/duplicate trade
+            OutOfOrder : seq <= lastSeq
+        }
+
+        Normal --> GapDetected : [seq > lastSeq + 1]
+        Normal --> OutOfOrder : [seq <= lastSeq]
+
+        GapDetected --> Normal : [Next trade in sequence]
+        OutOfOrder --> Normal : [seq > lastSeq]
+
+        note right of Normal
+            Order Flow Stats Updated:
+            - Buy/Sell Volume
+            - VWAP
+            - Trade Count
+            - Imbalance
+        end note
+    }
+
+    Uninitialized --> Tracking : [First trade received]
+    note on link: Initialize lastSeq = trade.Sequence
+}
+
+' Legend
+legend right
+    | State | Description |
+    | Uninitialized | Waiting for first trade |
+    | Normal | Sequences arriving in order |
+    | GapDetected | Missing sequence numbers |
+    | OutOfOrder | Stale or duplicate trade |
+endlegend
+
+@enduml

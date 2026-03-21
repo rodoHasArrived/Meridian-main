@@ -1,0 +1,75 @@
+name: Maintenance Self-Test
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/ai/**'
+      - 'build/scripts/ai-repo-updater.py'
+      - 'build/scripts/install/install.sh'
+      - 'Makefile'
+      - '.github/workflows/maintenance-self-test.yml'
+      - '.github/workflows/repo-health.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: maintenance-self-test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-maintenance-layer:
+    name: Validate Maintenance Layer
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Setup .NET with Cache
+        uses: ./.github/actions/setup-dotnet-cache
+        with:
+          dotnet-version: '9.0.x'
+          cache-suffix: maintenance-self-test
+
+      - name: Check shell syntax
+        run: |
+          bash -n scripts/ai/maintenance.sh
+          bash -n build/scripts/install/install.sh
+
+      - name: Run light maintenance lane
+        run: |
+          bash scripts/ai/maintenance.sh \
+            --light \
+            --status-file ./artifacts/maintenance-status.json \
+            --summary-file ./artifacts/MAINTENANCE_STATUS.md
+
+      - name: Assert maintenance artifacts exist
+        run: |
+          test -f ./artifacts/maintenance-status.json
+          test -f ./artifacts/MAINTENANCE_STATUS.md
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          data = json.loads(Path("./artifacts/maintenance-status.json").read_text())
+          assert data["lane"] == "light"
+          assert "environment" in data
+          assert "code_health" in data
+          assert "docs_health" in data
+          print("maintenance status schema OK")
+          PY
+
+      - name: Upload self-test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maintenance-self-test
+          path: ./artifacts/
+          retention-days: 7

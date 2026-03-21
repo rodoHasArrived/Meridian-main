@@ -1,0 +1,17 @@
+# =============================================================================
+# Grafana Dashboard Provisioning for Meridian
+# =============================================================================
+
+apiVersion: 1
+
+providers:
+  - name: 'Meridian'
+    orgId: 1
+    folder: 'Meridian'
+    type: file
+    disableDeletion: false
+    editable: true
+    updateIntervalSeconds: 30
+    options:
+      path: /etc/grafana/provisioning/dashboards/json
+      foldersFromFilesStructure: false

@@ -1,0 +1,10 @@
+{
+  "description": "IB limit buy order for AAPL, day session.",
+  "orderId": 1001,
+  "symbol": "AAPL",
+  "orderType": "LMT",
+  "side": "BUY",
+  "quantity": 100,
+  "tif": "DAY",
+  "price": 185.50
+}

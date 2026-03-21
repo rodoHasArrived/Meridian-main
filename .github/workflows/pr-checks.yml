@@ -1,0 +1,198 @@
+name: Pull Request Checks
+
+on:
+  pull_request:
+    branches: [ "main", "develop" ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.github/prompts/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+  models: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_GENERATE_ASPNET_CERTIFICATE: false
+
+jobs:
+  # Lint and build-and-test run in parallel (no dependency between them)
+  lint:
+    name: Code Formatting Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup .NET with Cache
+      uses: ./.github/actions/setup-dotnet-cache
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Restore dependencies
+      run: dotnet restore Meridian.sln /p:EnableWindowsTargeting=true --verbosity minimal
+
+    - name: Check formatting
+      run: dotnet format Meridian.sln --verify-no-changes --verbosity normal
+
+    - name: Formatting fix hint
+      if: failure()
+      run: |
+        echo "::error::Code formatting issues detected. Run 'make format' locally to fix."
+        echo "## Formatting Fix" >> $GITHUB_STEP_SUMMARY
+        echo "Run \`make format\` locally, then commit the changes." >> $GITHUB_STEP_SUMMARY
+
+  build-and-test:
+    name: Build & Test
+    uses: ./.github/workflows/reusable-dotnet-build.yml
+    with:
+      fetch-depth: 1
+      collect-coverage: true
+    secrets: inherit
+
+  # ─── Golden Fixture Canonicalization Tests ────────────────────────────
+  golden-fixtures:
+    name: Golden Fixture Tests
+    runs-on: ubuntu-latest
+    needs: [build-and-test]
+    if: always() && needs.build-and-test.result == 'success'
+    timeout-minutes: 5
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup .NET with Cache
+      uses: ./.github/actions/setup-dotnet-cache
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Restore dependencies
+      run: dotnet restore Meridian.sln /p:EnableWindowsTargeting=true --verbosity minimal
+
+    - name: Run golden fixture tests
+      run: |
+        dotnet test tests/Meridian.Tests \
+          --filter "FullyQualifiedName~CanonicalizationGoldenFixture" \
+          -c Release \
+          /p:EnableWindowsTargeting=true \
+          --logger "trx;LogFileName=golden-fixtures.trx" \
+          --verbosity normal
+
+    - name: Upload golden fixture results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: golden-fixture-results
+        path: tests/Meridian.Tests/TestResults/golden-fixtures.trx
+        retention-days: 7
+
+    - name: Golden fixture failure hint
+      if: failure()
+      run: |
+        echo "::error::Golden fixture canonicalization tests failed — this indicates a regression in symbol/venue canonicalization."
+        echo "## Golden Fixture Regression" >> $GITHUB_STEP_SUMMARY
+        echo "Canonicalization golden fixtures detected a regression. Check test output for details." >> $GITHUB_STEP_SUMMARY
+
+  # ─── AI PR Review ──────────────────────────────────────────────────────
+
+  ai-pr-review:
+    name: AI PR Review
+    runs-on: ubuntu-latest
+    needs: [lint, build-and-test]
+    if: always() && github.event_name == 'pull_request'
+    timeout-minutes: 5
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Get PR diff summary
+      id: diff
+      run: |
+        DIFF_STATS=$(git diff --stat origin/${{ github.base_ref }}...HEAD | tail -1)
+        CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | head -30)
+        echo "stats=$DIFF_STATS" >> $GITHUB_OUTPUT
+        echo "files<<FILESEOF" >> $GITHUB_OUTPUT
+        echo "$CHANGED_FILES" >> $GITHUB_OUTPUT
+        echo "FILESEOF" >> $GITHUB_OUTPUT
+
+    - name: AI review summary
+      id: ai-review
+      continue-on-error: true
+      uses: actions/ai-inference@v1
+      with:
+        model: gpt-4o-mini
+        max-tokens: 1500
+        prompt: |
+          You are a senior .NET engineer reviewing a pull request for a market data collection application (.NET 9.0, C# 11, F# 8).
+
+          Lint result: ${{ needs.lint.result }}
+          Build & test result: ${{ needs.build-and-test.result }}
+
+          Changed files:
+          ${{ steps.diff.outputs.files }}
+
+          Diff stats: ${{ steps.diff.outputs.stats }}
+
+          Provide a brief PR review summary in markdown:
+          1) **Risk Assessment** (Low/Medium/High) based on the files changed
+          2) **Review Focus Areas** - what a human reviewer should pay attention to
+          3) **Potential Issues** - any concerns based on the file types and build results
+          4) If any checks failed, suggest likely causes
+
+          Keep response under 200 words.
+
+    - name: Post AI review to summary
+      if: always()
+      run: |
+        echo "## AI PR Review" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        if [ -n "${{ steps.ai-review.outputs.response }}" ]; then
+          echo "${{ steps.ai-review.outputs.response }}" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "_AI review was not available for this run._" >> $GITHUB_STEP_SUMMARY
+        fi
+
+  # ─── PR Summary ──────────────────────────────────────────────────────
+
+  pr-summary:
+    name: PR Summary
+    runs-on: ubuntu-latest
+    needs: [lint, build-and-test, golden-fixtures, ai-pr-review]
+    if: always()
+    timeout-minutes: 2
+
+    steps:
+    - name: Generate PR summary
+      run: |
+        echo "## Pull Request Checks Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+        echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+        echo "| Code Formatting | ${{ needs.lint.result == 'success' && '✅ Passed' || (needs.lint.result == 'skipped' && '⏭️ Skipped' || '❌ Failed') }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Build & Test | ${{ needs.build-and-test.result == 'success' && '✅ Passed' || (needs.build-and-test.result == 'skipped' && '⏭️ Skipped' || '❌ Failed') }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Golden Fixtures | ${{ needs.golden-fixtures.result == 'success' && '✅ Passed' || (needs.golden-fixtures.result == 'skipped' && '⏭️ Skipped' || '❌ Failed') }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| AI PR Review | ${{ needs.ai-pr-review.result == 'success' && '✅ Completed' || (needs.ai-pr-review.result == 'skipped' && '⏭️ Skipped' || '⚠️ Unavailable') }} |" >> $GITHUB_STEP_SUMMARY
+
+        if [[ "${{ needs.lint.result }}" == "failure" ]] || \
+           [[ "${{ needs.build-and-test.result }}" == "failure" ]] || \
+           [[ "${{ needs.golden-fixtures.result }}" == "failure" ]]; then
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### ❌ Some checks failed" >> $GITHUB_STEP_SUMMARY
+          exit 1
+        fi

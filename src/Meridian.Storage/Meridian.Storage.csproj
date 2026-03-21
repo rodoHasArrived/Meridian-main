@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Meridian.Storage</RootNamespace>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+    <!-- Allow unsafe code for Linux directory fsync operations in AtomicFileWriter.cs -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Storage -->
+    <PackageReference Include="Apache.Arrow" />
+    <PackageReference Include="Parquet.Net" />
+
+    <!-- Logging -->
+    <PackageReference Include="Serilog" />
+
+    <!-- Serialization -->
+    <PackageReference Include="System.Text.Json" />
+
+    <!-- DI -->
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+
+    <!-- Compression -->
+    <PackageReference Include="K4os.Compression.LZ4.Streams" />
+    <PackageReference Include="System.IO.Compression" />
+    <PackageReference Include="ZstdSharp.Port" />
+
+    <!-- Monitoring -->
+    <PackageReference Include="prometheus-net" />
+
+    <!-- Threading -->
+    <PackageReference Include="System.Threading.Channels" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Meridian.Core\Meridian.Core.csproj" />
+    <ProjectReference Include="..\Meridian.Domain\Meridian.Domain.csproj" />
+    <ProjectReference Include="..\Meridian.Contracts\Meridian.Contracts.csproj" />
+    <ProjectReference Include="..\Meridian.ProviderSdk\Meridian.ProviderSdk.csproj" />
+  </ItemGroup>
+</Project>

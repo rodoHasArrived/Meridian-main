@@ -1,0 +1,59 @@
+name: Build Observability
+
+on:
+  # push trigger disabled
+  # push:
+  #   branches: [ "main" ]
+  # pull_request trigger disabled
+  # pull_request:
+  #   branches: [ "main" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  observability:
+    name: Build Observability Bundle
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET with Cache
+        uses: ./.github/actions/setup-dotnet-cache
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Run environment doctor
+        run: make doctor-ci
+
+      - name: Build with observability
+        run: make build
+
+      - name: Generate dependency graph
+        run: make build-graph
+
+      - name: Generate build fingerprint
+        run: make fingerprint
+
+      - name: Collect build metrics
+        run: make metrics
+
+      - name: Collect debug bundle
+        run: make collect-debug-minimal
+
+      - name: Upload observability artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-observability
+          path: .build-system/
+          if-no-files-found: warn
+          retention-days: 14

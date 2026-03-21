@@ -1,0 +1,219 @@
+@startuml Use Case Diagram - Meridian
+!theme plain
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+
+title Meridian - Use Case Diagram
+
+' ==================== ACTORS ====================
+actor "CLI User" as CliUser
+actor "Web Dashboard User" as WebUser
+actor "API Client" as ApiClient
+actor "System Operator" as Operator
+actor "Desktop App User" as DesktopUser
+
+actor "Interactive Brokers" as IB <<provider>>
+actor "Alpaca" as Alpaca <<provider>>
+actor "NYSE Direct" as NYSE <<provider>>
+actor "Polygon" as Polygon <<provider>>
+actor "Historical Provider\n(Yahoo, Stooq, Tiingo,\nAlpha Vantage, Finnhub,\nNasdaq Data Link)" as HistProvider <<provider>>
+actor "Symbol Search\n(OpenFIGI, Alpaca,\nFinnhub, Polygon)" as SymbolSearch <<provider>>
+actor "Message Broker\n(RabbitMQ)" as MessageBroker <<system>>
+actor "Kubernetes" as K8s <<system>>
+
+' ==================== SYSTEM BOUNDARY ====================
+rectangle "Meridian System" {
+
+    ' --- Core Use Cases ---
+    package "Real-Time Data Collection" {
+        usecase "Subscribe to Symbols" as UC_Subscribe
+        usecase "Receive Trade Data" as UC_ReceiveTrades
+        usecase "Receive Quote Data" as UC_ReceiveQuotes
+        usecase "Receive Order Book Data" as UC_ReceiveDepth
+        usecase "Validate Sequence Integrity" as UC_ValidateSeq
+        usecase "Infer Trade Aggressor" as UC_InferAggressor
+    }
+
+    ' --- Historical Data ---
+    package "Historical Data Backfill" {
+        usecase "Request Historical Bars" as UC_RequestBars
+        usecase "Select Backfill Provider" as UC_SelectProvider
+        usecase "Download OHLCV Data" as UC_DownloadBars
+        usecase "Resolve Symbol (OpenFIGI)" as UC_ResolveSymbol
+        usecase "Schedule Backfill (Cron)" as UC_ScheduleBackfill
+        usecase "Analyze Data Gaps" as UC_AnalyzeGaps
+        usecase "Repair Data Gaps" as UC_RepairGaps
+    }
+
+    ' --- Storage ---
+    package "Data Persistence" {
+        usecase "Write Events to JSONL" as UC_WriteJsonl
+        usecase "Compress to Parquet" as UC_WriteParquet
+        usecase "Apply Retention Policy" as UC_Retention
+        usecase "Migrate Data Tiers" as UC_TierMigrate
+    }
+
+    ' --- Configuration ---
+    package "Configuration Management" {
+        usecase "Configure API Credentials" as UC_ConfigCreds
+        usecase "Set Symbols List" as UC_SetSymbols
+        usecase "Hot-Reload Configuration" as UC_HotReload
+        usecase "Validate Configuration" as UC_ValidateConfig
+    }
+
+    ' --- Monitoring ---
+    package "Monitoring & Operations" {
+        usecase "View Dashboard" as UC_ViewDashboard
+        usecase "Check System Health" as UC_Health
+        usecase "Export Prometheus Metrics" as UC_Metrics
+        usecase "View Connection Status" as UC_ConnStatus
+        usecase "Browse Collected Data" as UC_BrowseData
+    }
+
+    ' --- Data Quality ---
+    package "Data Quality Monitoring" {
+        usecase "Detect Anomalies" as UC_DetectAnomalies
+        usecase "Check Price Continuity" as UC_PriceContinuity
+        usecase "Calculate Completeness Score" as UC_CompletenessScore
+        usecase "Generate Quality Report" as UC_QualityReport
+        usecase "Monitor Data Freshness SLA" as UC_FreshnessSLA
+        usecase "Cross-Provider Comparison" as UC_CrossProviderCompare
+    }
+
+    ' --- Export & Packaging ---
+    package "Export & Packaging" {
+        usecase "Export to CSV/Parquet" as UC_ExportData
+        usecase "Create Data Package" as UC_CreatePackage
+        usecase "Apply Export Profile" as UC_ApplyExportProfile
+        usecase "Generate DuckDB Import" as UC_DuckDBImport
+    }
+
+    ' --- Microservices ---
+    package "Microservices API" {
+        usecase "Ingest Trade via API" as UC_IngestTrade
+        usecase "Ingest Quote via API" as UC_IngestQuote
+        usecase "Ingest Order Book via API" as UC_IngestOB
+        usecase "Request Data Validation" as UC_RequestValidation
+        usecase "Route to Service" as UC_Route
+    }
+
+    ' --- Recovery ---
+    package "Error Handling & Recovery" {
+        usecase "Detect Sequence Gaps" as UC_DetectGaps
+        usecase "Auto-Reconnect Provider" as UC_Reconnect
+        usecase "Reset Stale Order Book" as UC_ResetBook
+        usecase "Send to Dead Letter Queue" as UC_DeadLetter
+    }
+}
+
+' ==================== RELATIONSHIPS ====================
+
+' CLI User interactions
+CliUser --> UC_Subscribe
+CliUser --> UC_RequestBars
+CliUser --> UC_ConfigCreds
+CliUser --> UC_SetSymbols
+CliUser --> UC_ValidateConfig
+
+' Web User interactions
+WebUser --> UC_ViewDashboard
+WebUser --> UC_Subscribe
+WebUser --> UC_RequestBars
+WebUser --> UC_BrowseData
+WebUser --> UC_SetSymbols
+
+' API Client interactions
+ApiClient --> UC_IngestTrade
+ApiClient --> UC_IngestQuote
+ApiClient --> UC_IngestOB
+ApiClient --> UC_RequestValidation
+
+' Operator interactions
+Operator --> UC_Health
+Operator --> UC_Metrics
+Operator --> UC_ConnStatus
+Operator --> UC_Retention
+Operator --> UC_TierMigrate
+Operator --> UC_QualityReport
+Operator --> UC_ScheduleBackfill
+Operator --> UC_AnalyzeGaps
+Operator --> UC_ExportData
+Operator --> UC_CreatePackage
+
+' Desktop User interactions
+DesktopUser --> UC_ViewDashboard
+DesktopUser --> UC_Subscribe
+DesktopUser --> UC_SetSymbols
+
+' External provider interactions
+IB --> UC_ReceiveTrades
+IB --> UC_ReceiveQuotes
+IB --> UC_ReceiveDepth
+Alpaca --> UC_ReceiveTrades
+Alpaca --> UC_ReceiveQuotes
+NYSE --> UC_ReceiveTrades
+NYSE --> UC_ReceiveQuotes
+NYSE --> UC_ReceiveDepth
+Polygon --> UC_ReceiveTrades
+Polygon --> UC_ReceiveQuotes
+HistProvider --> UC_DownloadBars
+SymbolSearch --> UC_ResolveSymbol
+
+' System interactions
+K8s --> UC_Health
+MessageBroker <-- UC_Route
+
+' ==================== INCLUDE/EXTEND ====================
+
+' Real-time collection includes
+UC_Subscribe ..> UC_ReceiveTrades : <<include>>
+UC_Subscribe ..> UC_ReceiveQuotes : <<include>>
+UC_ReceiveTrades ..> UC_ValidateSeq : <<include>>
+UC_ReceiveTrades ..> UC_InferAggressor : <<include>>
+UC_ReceiveDepth ..> UC_ValidateSeq : <<include>>
+
+' Data flow
+UC_ReceiveTrades ..> UC_WriteJsonl : <<include>>
+UC_ReceiveQuotes ..> UC_WriteJsonl : <<include>>
+UC_ReceiveDepth ..> UC_WriteJsonl : <<include>>
+UC_DownloadBars ..> UC_WriteJsonl : <<include>>
+
+' Backfill relationships
+UC_RequestBars ..> UC_SelectProvider : <<include>>
+UC_SelectProvider ..> UC_DownloadBars : <<include>>
+UC_DownloadBars ..> UC_ResolveSymbol : <<extend>>
+UC_ScheduleBackfill ..> UC_RequestBars : <<include>>
+UC_AnalyzeGaps ..> UC_RepairGaps : <<extend>>
+UC_RepairGaps ..> UC_RequestBars : <<include>>
+
+' Data quality relationships
+UC_ReceiveTrades ..> UC_DetectAnomalies : <<extend>>
+UC_DetectAnomalies ..> UC_PriceContinuity : <<include>>
+UC_QualityReport ..> UC_CompletenessScore : <<include>>
+UC_QualityReport ..> UC_FreshnessSLA : <<include>>
+
+' Export relationships
+UC_ExportData ..> UC_ApplyExportProfile : <<extend>>
+UC_CreatePackage ..> UC_ExportData : <<include>>
+UC_DuckDBImport ..> UC_ExportData : <<include>>
+
+' Configuration relationships
+UC_SetSymbols ..> UC_HotReload : <<extend>>
+UC_ConfigCreds ..> UC_ValidateConfig : <<include>>
+
+' Error handling
+UC_ValidateSeq ..> UC_DetectGaps : <<extend>>
+UC_DetectGaps ..> UC_ResetBook : <<extend>>
+UC_ReceiveTrades ..> UC_Reconnect : <<extend>>
+
+' Microservices routing
+UC_IngestTrade ..> UC_Route : <<include>>
+UC_IngestQuote ..> UC_Route : <<include>>
+UC_IngestOB ..> UC_Route : <<include>>
+UC_Route ..> UC_DeadLetter : <<extend>>
+
+' Storage includes
+UC_WriteJsonl ..> UC_Retention : <<extend>>
+UC_WriteJsonl ..> UC_WriteParquet : <<extend>>
+
+@enduml

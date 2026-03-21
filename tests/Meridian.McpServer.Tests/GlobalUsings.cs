@@ -1,0 +1,12 @@
+global using System.Text.Json;
+global using FluentAssertions;
+global using Meridian.Application.Backfill;
+global using Meridian.Application.Config;
+global using Meridian.Application.UI;
+global using Meridian.Contracts.Catalog;
+global using Meridian.McpServer.Tools;
+global using Meridian.Storage.Interfaces;
+global using Microsoft.Extensions.Logging;
+global using Microsoft.Extensions.Logging.Abstractions;
+global using Moq;
+global using Xunit;

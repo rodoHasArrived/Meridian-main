@@ -1,0 +1,44 @@
+{
+  "hooks": {
+    "postEditFile": [
+      {
+        "pattern": "src/**/*.cs",
+        "command": "dotnet format --verify-no-changes --include \"${CLAUDE_FILE_PATH}\" 2>&1 | head -20",
+        "continueOnError": true,
+        "description": "Verify C# file formatting"
+      },
+      {
+        "pattern": "src/**/*.fs",
+        "command": "dotnet fantomas --check \"${CLAUDE_FILE_PATH}\" 2>&1 | head -20",
+        "continueOnError": true,
+        "description": "Verify F# file formatting"
+      }
+    ],
+    "postCreateFile": [
+      {
+        "pattern": "**/*.cs",
+        "command": "dotnet format --verify-no-changes --include \"${CLAUDE_FILE_PATH}\" 2>&1 | head -20",
+        "continueOnError": true,
+        "description": "Format newly created C# files"
+      }
+    ],
+    "beforeCommit": [
+      {
+        "command": "dotnet build src/Meridian/Meridian.csproj -c Release --no-restore 2>&1 | tail -10",
+        "continueOnError": false,
+        "description": "Verify build succeeds before commit"
+      }
+    ]
+  },
+  "model": "opus",
+  "fastMode": false,
+  "permissions": {
+    "global": [
+      "read",
+      "edit",
+      "write",
+      "bash",
+      "agent"
+    ]
+  }
+}

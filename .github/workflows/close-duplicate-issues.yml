@@ -1,0 +1,66 @@
+name: Close Duplicate and Stale Auto-Generated Issues
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Run daily at 3 AM UTC to keep the issue tracker clean
+    - cron: '0 3 * * *'
+
+permissions:
+  issues: write
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  close-duplicate-quality-issues:
+    name: Close duplicate code quality issues
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Close all but the most recent code quality issue
+        uses: actions/github-script@v8
+        with:
+          script: |
+            // Fetch all open issues with copilot+code-quality labels
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'copilot,code-quality',
+              state: 'open',
+              per_page: 100
+            });
+
+            const qualityIssues = issues
+              .filter(i => i.title.startsWith('[Copilot Task] Resolve code quality issues'))
+              .sort((a, b) => b.number - a.number); // newest first
+
+            if (qualityIssues.length === 0) {
+              console.log('No open code quality issues found.');
+              return;
+            }
+
+            console.log(`Found ${qualityIssues.length} open code quality issue(s). Keeping #${qualityIssues[0].number}, closing the rest.`);
+
+            const toClose = qualityIssues.slice(1); // all except the newest
+            let closed = 0;
+            for (const issue of toClose) {
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                state: 'closed',
+                state_reason: 'not_planned'
+              });
+              closed++;
+              // Avoid hitting secondary rate limits
+              if (closed % 20 === 0) {
+                await new Promise(r => setTimeout(r, 1000));
+              }
+            }
+
+            console.log(`Closed ${closed} duplicate issue(s).`);
+            core.summary.addRaw(`Closed **${closed}** duplicate code quality issue(s). Kept [#${qualityIssues[0].number}](${qualityIssues[0].html_url}).`);
+            await core.summary.write();
