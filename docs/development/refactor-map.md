@@ -272,7 +272,7 @@ Use these placement rules when adding or moving tests so cross-platform coverage
 ## Related Documentation
 
 - **Architecture and Planning:**
-  - [Repository Cleanup Action Plan](../archived/repository-cleanup-action-plan.md) - Prioritized technical debt reduction (completed)
+  - [Repository Cleanup Action Plan](../../archive/docs/plans/repository-cleanup-action-plan.md) - Prioritized technical debt reduction (completed)
   - [Repository Organization Guide](./repository-organization-guide.md) - Code structure conventions
   - [ADR Index](../adr/README.md) - Architectural decision records
 

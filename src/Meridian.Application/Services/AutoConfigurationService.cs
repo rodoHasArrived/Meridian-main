@@ -343,6 +343,19 @@ public sealed class AutoConfigurationService
                     priorityOrder.Add("alphavantage");
                     break;
 
+                case "FRED":
+                    var fredKey = GetEnvVar("FRED_API_KEY", "FRED__APIKEY", "MDC_FRED_API_KEY");
+                    providers = providers with
+                    {
+                        Fred = new FredConfig(
+                            Enabled: true,
+                            ApiKey: fredKey,
+                            Priority: provider.SuggestedPriority
+                        )
+                    };
+                    priorityOrder.Add("fred");
+                    break;
+
                 case "Yahoo":
                     providers = providers with
                     {

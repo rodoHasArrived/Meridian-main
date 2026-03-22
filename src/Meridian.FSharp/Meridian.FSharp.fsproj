@@ -18,6 +18,16 @@
     <Compile Include="Domain/Sides.fs" />
     <Compile Include="Domain/Integrity.fs" />
     <Compile Include="Domain/MarketEvents.fs" />
+    <!-- Security master stack: identifiers -> classification -> modular terms -> legacy/record types -> events -> command logic -->
+    <Compile Include="Domain/SecurityIdentifiers.fs" />
+    <Compile Include="Domain/SecurityClassification.fs" />
+    <Compile Include="Domain/SecurityTermModules.fs" />
+    <Compile Include="Domain/SecurityMaster.fs" />
+    <Compile Include="Domain/SecurityEconomicDefinition.fs" />
+    <Compile Include="Domain/SecurityMasterLegacyUpgrade.fs" />
+    <Compile Include="Domain/SecurityMasterEvents.fs" />
+    <Compile Include="Domain/SecurityMasterCommands.fs" />
+    <Compile Include="Domain/FundStructure.fs" />
 
     <!-- Validation layer: depends on Domain -->
     <Compile Include="Validation/ValidationTypes.fs" />
@@ -33,15 +43,26 @@
     <!-- Canonicalization layer: rule-heavy mapping logic -->
     <Compile Include="Canonicalization/MappingRules.fs" />
 
+    <!-- Risk and promotion policy -->
+    <Compile Include="Risk/RiskTypes.fs" />
+    <Compile Include="Risk/RiskRules.fs" />
+    <Compile Include="Risk/RiskEvaluation.fs" />
+    <Compile Include="Promotion/PromotionTypes.fs" />
+    <Compile Include="Promotion/PromotionPolicy.fs" />
+
     <!-- Pipeline layer: depends on all above -->
     <Compile Include="Pipeline/Transforms.fs" />
 
     <!-- C# interop helpers -->
+    <Compile Include="Interop.SecurityMaster.fs" />
     <Compile Include="Interop.fs" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="FSharp.Core" />
     <ProjectReference Include="..\Meridian.Contracts\Meridian.Contracts.csproj" />
+    <ProjectReference Include="..\Meridian.Execution.Sdk\Meridian.Execution.Sdk.csproj" />
+    <ProjectReference Include="..\Meridian.Backtesting.Sdk\Meridian.Backtesting.Sdk.csproj" />
   </ItemGroup>
 
   <Target Name="GenerateCSharpInterop" BeforeTargets="BeforeCompile">

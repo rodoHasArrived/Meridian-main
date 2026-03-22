@@ -216,9 +216,9 @@ public sealed record MarketEvent(
 
 ## References
 
-- [Domain Events Documentation](../architecture/domains.md#domain-events)
+- [Domain Events Documentation](../architecture/domains.md)
 - [F# Integration Guide](../integrations/fsharp-integration.md)
-- [Event Pipeline Architecture](../architecture/storage-design.md#event-pipeline)
+- [Event Pipeline Architecture](../architecture/storage-design.md)
 - [ADR-004: Async Streaming Patterns](004-async-streaming-patterns.md) (complementary)
 - [ADR-009: F# Type-Safe Domain](009-fsharp-interop.md) (complementary)
 

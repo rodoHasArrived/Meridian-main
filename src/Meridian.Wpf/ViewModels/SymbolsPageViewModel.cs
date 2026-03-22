@@ -92,7 +92,7 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable
 
     private void OnWatchlistsChanged(object? sender, WpfServices.WatchlistsChangedEventArgs e)
     {
-        _ = System.Windows.Application.Current?.Dispatcher.InvokeAsync(LoadWatchlistsAsync);
+        _ = System.Windows.Application.Current?.Dispatcher.InvokeAsync(async () => await LoadWatchlistsAsync());
     }
 
     // ── Data loading ────────────────────────────────────────────────────────
@@ -488,7 +488,7 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable
         }
         catch (Exception ex)
         {
-            _loggingService.LogError("Backend sync failed for add symbol", ex, ("symbol", symbol));
+            _loggingService.LogError($"Backend sync failed for add symbol: {symbol}", ex);
         }
     }
 
@@ -500,7 +500,7 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable
         }
         catch (Exception ex)
         {
-            _loggingService.LogError("Backend sync failed for remove symbol", ex, ("symbol", symbol));
+            _loggingService.LogError($"Backend sync failed for remove symbol: {symbol}", ex);
         }
     }
 

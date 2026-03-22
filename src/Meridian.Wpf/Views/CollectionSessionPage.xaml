@@ -1,17 +1,27 @@
 <Page x:Class="Meridian.Wpf.Views.CollectionSessionPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      Background="{DynamicResource ConsoleBackgroundDarkBrush}"
+      Background="{DynamicResource ShellWindowBackgroundBrush}"
       Loaded="OnPageLoaded"
       AutomationProperties.Name="Collection Session">
-    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
         <StackPanel MaxWidth="1200">
             <!-- Page Header -->
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,24">
-                <TextBlock Text="&#xE768;" FontFamily="{StaticResource SymbolThemeFontFamily}"
-                           FontSize="28" Foreground="{StaticResource InfoColorBrush}" VerticalAlignment="Center" />
-                <TextBlock Text="Collection Sessions" Style="{StaticResource PageTitleStyle}" Margin="12,0,0,0" VerticalAlignment="Center" />
-            </StackPanel>
+            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24">
+                <StackPanel Orientation="Horizontal">
+                    <Border Width="44" Height="44" CornerRadius="14"
+                            Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                            BorderBrush="{StaticResource InfoColorBrush}" BorderThickness="1">
+                        <TextBlock Text="&#xE768;" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="24" Foreground="{StaticResource InfoColorBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                    </Border>
+                    <StackPanel Margin="12,0,0,0">
+                        <TextBlock Text="Collection Sessions" Style="{StaticResource PageTitleStyle}" />
+                        <TextBlock Text="Monitor active capture sessions, rate posture, and completed collection history."
+                                   Style="{StaticResource CardDescriptionStyle}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
 
             <!-- Active Session -->
             <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
@@ -19,7 +29,7 @@
                     <TextBlock Text="Active Session" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12" />
                     <Border x:Name="ActiveSessionPanel" Visibility="Collapsed"
                             BorderBrush="{StaticResource SuccessColorBrush}" BorderThickness="1"
-                            CornerRadius="4" Padding="12" Margin="0,0,0,8">
+                            Background="{StaticResource PremiumPanelBrush}" CornerRadius="12" Padding="12" Margin="0,0,0,8">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
@@ -64,7 +74,7 @@
                     <StackPanel Orientation="Horizontal">
                         <Button Content="Create Daily Session" Style="{StaticResource PrimaryButtonStyle}"
                                 Click="CreateDailySession_Click" Padding="16,8" Margin="0,0,8,0" />
-                        <Button Content="Refresh" Style="{StaticResource PrimaryButtonStyle}"
+                        <Button Content="Refresh" Style="{StaticResource SecondaryButtonStyle}"
                                 Click="RefreshSessions_Click" Padding="16,8" />
                     </StackPanel>
                 </StackPanel>

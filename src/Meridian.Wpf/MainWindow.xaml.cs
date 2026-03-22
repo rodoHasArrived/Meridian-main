@@ -643,9 +643,9 @@ public partial class MainWindow : Window
                 if (!string.IsNullOrEmpty(session.ActivePageTag) && session.ActivePageTag != "Dashboard")
                 {
                     // Defer navigation until MainPage is fully loaded
-                    Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded, () =>
+                    _ = Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded, () =>
                     {
-                        _navigationService.NavigateTo(session.ActivePageTag);
+                        _ = _navigationService.NavigateTo(session.ActivePageTag);
                     });
                 }
             }

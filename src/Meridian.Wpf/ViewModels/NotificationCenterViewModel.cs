@@ -172,7 +172,7 @@ public sealed class NotificationCenterViewModel : BindableBase, IDisposable
         NotificationType type,
         DateTime timestamp)
     {
-        var resources = Application.Current?.Resources;
+        var resources = System.Windows.Application.Current?.Resources;
 
         string GetIcon(string key) =>
             resources?[key] as string ?? "•";
@@ -224,7 +224,7 @@ public sealed class NotificationCenterViewModel : BindableBase, IDisposable
 
     private void OnNotificationReceived(object? sender, NotificationEventArgs e)
     {
-        _ = Application.Current?.Dispatcher.InvokeAsync(() =>
+        _ = System.Windows.Application.Current?.Dispatcher.InvokeAsync(() =>
         {
             var item = CreateNotificationItem(e.Title, e.Message, e.Type, DateTime.Now);
             AllNotifications.Insert(0, item);
@@ -235,7 +235,7 @@ public sealed class NotificationCenterViewModel : BindableBase, IDisposable
 
     private void OnAlertChanged(object? sender, AlertEventArgs e)
     {
-        _ = Application.Current?.Dispatcher.InvokeAsync(() =>
+        _ = System.Windows.Application.Current?.Dispatcher.InvokeAsync(() =>
         {
             AlertsRefreshRequested?.Invoke(this, EventArgs.Empty);
         });

@@ -8,6 +8,7 @@ using Meridian.Domain.Events;
 using Meridian.Infrastructure;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.DataSources;
+using Meridian.Infrastructure.Shared;
 
 namespace Meridian.Infrastructure.Adapters.Synthetic;
 
@@ -62,10 +63,13 @@ public sealed class SyntheticMarketDataClient : IMarketDataClient, ISymbolSearch
 
     public int SubscribeMarketDepth(SymbolConfig cfg)
     {
+        ArgumentNullException.ThrowIfNull(cfg);
+
         var id = Interlocked.Increment(ref _nextSubscriptionId);
         var cts = new CancellationTokenSource();
         _depthSubscriptions[id] = cts;
-        _ = Task.Run(() => PublishDepthAsync(cfg, cts.Token), cts.Token);
+        PublishDepthAsync(cfg, cts.Token)
+            .ObserveException(operation: $"Synthetic publish depth for {cfg.Symbol}");
         return id;
     }
 
@@ -77,10 +81,13 @@ public sealed class SyntheticMarketDataClient : IMarketDataClient, ISymbolSearch
 
     public int SubscribeTrades(SymbolConfig cfg)
     {
+        ArgumentNullException.ThrowIfNull(cfg);
+
         var id = Interlocked.Increment(ref _nextSubscriptionId);
         var cts = new CancellationTokenSource();
         _tradeSubscriptions[id] = cts;
-        _ = Task.Run(() => PublishTradesAsync(cfg, cts.Token), cts.Token);
+        PublishTradesAsync(cfg, cts.Token)
+            .ObserveException(operation: $"Synthetic publish trades for {cfg.Symbol}");
         return id;
     }
 

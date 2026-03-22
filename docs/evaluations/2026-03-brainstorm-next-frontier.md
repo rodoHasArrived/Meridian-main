@@ -315,7 +315,7 @@ This extends the existing `EventPipelinePolicy` presets — add a `BurstTolerant
 
 ### 7.1 WebSocket Provider Base Class Consolidation — 📝 Future
 
-**Problem (C3):** Polygon, NYSE, and StockSharp each maintain independent WebSocket connection-management code (reconnect logic, heartbeat handling, subscription state tracking). This is approximately 200–300 LOC of structural duplication that makes changes to reconnection semantics error-prone — fixing a bug in one provider doesn't fix it in the others.
+**Problem (C3, historical framing):** This brainstorm originally grouped Polygon, NYSE, and StockSharp together as if they were all raw WebSocket lifecycle candidates. The current repository state has since narrowed that problem: Polygon and NYSE were the real shared-lifecycle targets, while StockSharp is now treated as a connector-runtime exception rather than a direct `WebSocketProviderBase` migration candidate.
 
 **Proposal:** Extract a `WebSocketProviderBase` abstract class that handles:
 - Reconnect loop with exponential backoff
@@ -323,7 +323,7 @@ This extends the existing `EventPipelinePolicy` presets — add a `BurstTolerant
 - Subscription restoration on reconnect
 - Structured log events for connection lifecycle (connected, reconnecting, disconnected)
 
-Polygon, NYSE, and StockSharp inherit from this base; only their message parsing remains provider-specific.
+Polygon and NYSE inherit from this base; StockSharp instead keeps its connector-runtime path and any future consolidation there should be connector-oriented rather than a forced raw-WebSocket inheritance model.
 
 **Key deliverables:**
 - `WebSocketProviderBase` in `Infrastructure/Adapters/Core/`
@@ -486,7 +486,7 @@ Ranked by impact-to-effort ratio considering current project state:
 | 1 | 7.2 End-to-End Trace Propagation | High | M | Framework ready; pure wiring; unblocks latency diagnosis |
 | 2 | 2.1 Drift-Canary CI Job (J8) | High | S | Last piece of canonicalization hardening; purely CI |
 | 3 | 5.1 Notification Rule Engine | High | M | AlertDispatcher already deployed; adds major user value |
-| 4 | 7.1 WebSocket Base Class (C3) | Medium | M | Eliminates maintenance risk across 3 providers |
+| 4 | 7.1 WebSocket Base Class (C3) | Medium | M | Eliminates maintenance risk across the active WebSocket-style providers; StockSharp now sits outside this direct migration path |
 | 5 | 8.2 Reference Data Integration | High | M | High researcher value; safe additive change |
 
 ### Biggest game-changers (higher effort, transformative)

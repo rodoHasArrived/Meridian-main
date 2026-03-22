@@ -12,6 +12,7 @@ using Meridian.Storage.Archival;
 using Meridian.Storage.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using System.Collections.Generic;
 
 namespace Meridian.Application.Pipeline;
 
@@ -31,7 +32,7 @@ namespace Meridian.Application.Pipeline;
 /// </remarks>
 public sealed class EventPipeline : IMarketEventPublisher, IBackpressureSignal, IAsyncDisposable, IFlushable
 {
-    private readonly Channel<MarketEvent> _channel;
+    private readonly Channel<TracedMarketEvent> _channel;
     private readonly IStorageSink _sink;
     private readonly WriteAheadLog? _wal;
     private readonly ILogger<EventPipeline> _logger;
@@ -213,7 +214,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IBackpressureSignal, 
         _enablePeriodicFlush = enablePeriodicFlush;
         _consumerCount = DetermineConsumerCount(consumerCount, _wal, _validator, _deadLetterSink, _dedupLedger, _logger);
 
-        _channel = policy.CreateChannel<MarketEvent>(singleReader: _consumerCount == 1, singleWriter: false);
+        _channel = policy.CreateChannel<TracedMarketEvent>(singleReader: _consumerCount == 1, singleWriter: false);
 
         // Start one or more long-running consumers. Multi-consumer mode is enabled only
         // when WAL / dedup / validation side effects are disabled so ordering-sensitive
@@ -452,6 +453,8 @@ public sealed class EventPipeline : IMarketEventPublisher, IBackpressureSignal, 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool TryPublish(in MarketEvent evt)
     {
+        var tracedEvent = CaptureTraceContext(evt);
+
         // For DropWrite mode, TryWrite returns true even when the new item is
         // silently discarded. Pre-check capacity to detect these silent drops.
         // (DropOldest/DropNewest evict old items, so the new item IS accepted.)
@@ -460,12 +463,12 @@ public sealed class EventPipeline : IMarketEventPublisher, IBackpressureSignal, 
             // Channel is at capacity — the item will be silently discarded by the
             // bounded channel. Still call TryWrite so the channel can apply its
             // policy, but track the event as dropped.
-            _channel.Writer.TryWrite(evt);
+            _channel.Writer.TryWrite(tracedEvent);
             RecordDrop(in evt);
             return false;
         }
 
-        var written = _channel.Writer.TryWrite(evt);
+        var written = _channel.Writer.TryWrite(tracedEvent);
 
         if (written)
         {
@@ -570,7 +573,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IBackpressureSignal, 
     /// </summary>
     public async ValueTask PublishAsync(MarketEvent evt, CancellationToken ct = default)
     {
-        await _channel.Writer.WriteAsync(evt, ct).ConfigureAwait(false);
+        await _channel.Writer.WriteAsync(CaptureTraceContext(evt), ct).ConfigureAwait(false);
         Interlocked.Increment(ref _publishedCount);
         if (_metricsEnabled)
         {
@@ -679,7 +682,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IBackpressureSignal, 
 
         try
         {
-            var batchBuffer = new List<MarketEvent>(_maxAdaptiveBatchSize);
+            var batchBuffer = new List<TracedMarketEvent>(_maxAdaptiveBatchSize);
 
             while (await _channel.Reader.WaitToReadAsync(_cts.Token).ConfigureAwait(false))
             {
@@ -706,7 +709,16 @@ public sealed class EventPipeline : IMarketEventPublisher, IBackpressureSignal, 
                     // Write each event: dedup → validate → WAL (if enabled) → sink
                     for (var i = 0; i < batchBuffer.Count; i++)
                     {
-                        var evt = batchBuffer[i];
+                        var tracedEvent = batchBuffer[i];
+                        var evt = tracedEvent.Event;
+                        using var processActivity = MarketDataTracing.StartProcessActivity(
+                            evt.Type.ToString(),
+                            evt.EffectiveSymbol,
+                            tracedEvent.TraceContext.ParentContext);
+                        processActivity?.SetTag("event.source", evt.Source);
+                        processActivity?.SetTag("event.sequence", evt.Sequence);
+
+                        using var logScope = _logger.BeginScope(CreateLogScope(evt, tracedEvent.TraceContext, processActivity));
 
                         // Deduplication check (when a dedup ledger is configured)
                         if (_dedupLedger != null)
@@ -738,6 +750,13 @@ public sealed class EventPipeline : IMarketEventPublisher, IBackpressureSignal, 
                             var walRecord = await _wal.AppendAsync(evt, GetEventTypeName(evt.Type), _cts.Token).ConfigureAwait(false);
                             maxWalSequence = Math.Max(maxWalSequence, walRecord.Sequence);
                         }
+
+                        using var storageActivity = MarketDataTracing.StartStorageActivity(
+                            _sink.GetType().Name,
+                            evt.EffectiveSymbol,
+                            processActivity?.Context ?? tracedEvent.TraceContext.ParentContext);
+                        storageActivity?.SetTag("event.type", evt.Type.ToString());
+                        storageActivity?.SetTag("event.source", evt.Source);
 
                         await _sink.AppendAsync(evt, _cts.Token).ConfigureAwait(false);
                     }
@@ -976,6 +995,30 @@ public sealed class EventPipeline : IMarketEventPublisher, IBackpressureSignal, 
     /// Gets the injected event metrics instance.
     /// </summary>
     public IEventMetrics EventMetrics => _metrics;
+
+    private static TracedMarketEvent CaptureTraceContext(in MarketEvent evt)
+        => new(evt, EventTraceContext.CaptureCurrent());
+
+    private static Dictionary<string, object?> CreateLogScope(
+        MarketEvent evt,
+        EventTraceContext traceContext,
+        Activity? activity)
+    {
+        return new Dictionary<string, object?>(StringComparer.Ordinal)
+        {
+            ["CorrelationId"] = traceContext.CorrelationId ?? activity?.TraceId.ToString(),
+            ["TraceId"] = activity?.TraceId.ToString() ?? (traceContext.HasParent ? traceContext.ParentContext.TraceId.ToString() : null),
+            ["SpanId"] = activity?.SpanId.ToString(),
+            ["EventType"] = evt.Type.ToString(),
+            ["EventSource"] = evt.Source,
+            ["Symbol"] = evt.EffectiveSymbol,
+            ["Sequence"] = evt.Sequence
+        };
+    }
+
+    private readonly record struct TracedMarketEvent(
+        MarketEvent Event,
+        EventTraceContext TraceContext);
 }
 
 /// <summary>

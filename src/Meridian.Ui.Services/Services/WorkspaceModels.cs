@@ -11,14 +11,20 @@ public sealed class WorkspaceTemplate
     public string Id { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
+    public string PreferredPageTag { get; set; } = string.Empty;
     public WorkspaceCategory Category { get; set; }
     public bool IsBuiltIn { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
+    public DateTime? LastActivatedAt { get; set; }
+    public string? LastActivePageTag { get; set; }
     public List<WorkspacePage> Pages { get; set; } = new();
+    public List<string> RecentPageTags { get; set; } = new();
     public Dictionary<string, WidgetPosition> WidgetLayout { get; set; } = new();
     public Dictionary<string, string> Filters { get; set; } = new();
+    public Dictionary<string, string> Context { get; set; } = new();
     public WindowBounds? WindowBounds { get; set; }
+    public SessionState? SessionSnapshot { get; set; }
 }
 
 /// <summary>
@@ -26,11 +32,26 @@ public sealed class WorkspaceTemplate
 /// </summary>
 public enum WorkspaceCategory : byte
 {
-    Monitoring,
-    Backfill,
-    Storage,
-    Analysis,
+    Research,
+    Trading,
+    DataOperations,
+    Governance,
     Custom
+}
+
+public static class WorkspaceCategoryExtensions
+{
+    public static string ToDisplayName(this WorkspaceCategory category)
+    {
+        return category switch
+        {
+            WorkspaceCategory.Research => "Research",
+            WorkspaceCategory.Trading => "Trading",
+            WorkspaceCategory.DataOperations => "Data Operations",
+            WorkspaceCategory.Governance => "Governance",
+            _ => "Custom"
+        };
+    }
 }
 
 /// <summary>
@@ -78,8 +99,10 @@ public sealed class SessionState
 {
     public string ActivePageTag { get; set; } = "Dashboard";
     public List<WorkspacePage> OpenPages { get; set; } = new();
+    public List<string> RecentPages { get; set; } = new();
     public Dictionary<string, WidgetPosition> WidgetLayout { get; set; } = new();
     public Dictionary<string, string> ActiveFilters { get; set; } = new();
+    public Dictionary<string, string> WorkspaceContext { get; set; } = new();
     public WindowBounds? WindowBounds { get; set; }
     public DateTime SavedAt { get; set; }
     public string? ActiveWorkspaceId { get; set; }

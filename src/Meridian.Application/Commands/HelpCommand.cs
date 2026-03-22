@@ -461,7 +461,7 @@ IMPORT OPTIONS:
 
 DATA QUERY & EXPORT TOOLS:
     --query <command>               Quick data query (last, count, summary, symbols, range)
-    --generate-loader <tool>        Generate standalone loader scripts (python, r, pyarrow, postgresql)
+    --generate-loader <tool>        Generate standalone loader scripts (python, r, pyarrow, postgresql, runmat)
     --output <path>                 Output directory for generated scripts
     --symbols <list>                Symbols filter (comma-separated)
 
@@ -562,9 +562,10 @@ EXAMPLES:
     Meridian --query ""last SPY""
     Meridian --query ""count AAPL"" --from 2026-01-01
 
-    # Generate loader scripts for Python or R
+    # Generate loader scripts for Python, R, or RunMat
     Meridian --generate-loader python --output ./loaders
     Meridian --generate-loader r --symbols AAPL,MSFT
+    Meridian --generate-loader runmat --symbols SPY,QQQ
 
 CONFIGURATION:
     Configuration is loaded from appsettings.json by default, but can be customized:

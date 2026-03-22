@@ -6,7 +6,7 @@
       xmlns:converters="clr-namespace:Meridian.Wpf.Converters"
       mc:Ignorable="d"
       d:DesignHeight="900" d:DesignWidth="1400"
-      Background="{DynamicResource ConsoleBackgroundDarkBrush}"
+      Background="{DynamicResource ShellWindowBackgroundBrush}"
       Loaded="OnPageLoaded"
       Unloaded="OnPageUnloaded"
       AutomationProperties.Name="Backfill">
@@ -21,25 +21,33 @@
             <ColumnDefinition Width="380" />
         </Grid.ColumnDefinitions>
 
-        <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" Padding="24,24,12,24">
+        <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" Padding="28,20,16,32">
             <StackPanel MaxWidth="900">
                 <!-- Header -->
-                <Grid Margin="0,0,0,16">
+                <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24">
+                <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{StaticResource IconDownload}"
-                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                   FontSize="28"
-                                   Foreground="{StaticResource InfoColorBrush}"
-                                   VerticalAlignment="Center" />
-                        <TextBlock Text="Historical Data Backfill"
-                                   Style="{StaticResource PageTitleStyle}"
-                                   Margin="12,0,0,0"
-                                   VerticalAlignment="Center" />
+                        <Border Width="44" Height="44" CornerRadius="14"
+                                Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                                BorderBrush="{StaticResource InfoColorBrush}" BorderThickness="1">
+                            <TextBlock Text="{StaticResource IconDownload}"
+                                       FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                       FontSize="24"
+                                       Foreground="{StaticResource InfoColorBrush}"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center" />
+                        </Border>
+                        <StackPanel Margin="12,0,0,0">
+                            <TextBlock Text="Historical Data Backfill"
+                                       Style="{StaticResource PageTitleStyle}" />
+                            <TextBlock Text="Provider fallback, gap repair, and archive catch-up workflows for historical datasets."
+                                       Style="{StaticResource CardDescriptionStyle}" />
+                        </StackPanel>
                     </StackPanel>
 
                     <StackPanel Grid.Column="1" Orientation="Horizontal">
@@ -66,10 +74,7 @@
                         </Button>
                     </StackPanel>
                 </Grid>
-
-                <TextBlock Text="Download free end-of-day historical data from multiple providers with automatic failover."
-                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                           Margin="0,0,0,24" />
+                </Border>
 
                 <!-- Quick Actions Panel -->
                 <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
@@ -144,7 +149,7 @@
                                 Grid.Column="1"
                                 Background="{StaticResource WarningColorBrush}"
                                 Opacity="0.15"
-                                CornerRadius="4"
+                                CornerRadius="999"
                                 Padding="12,8"
                                 Margin="16,0,0,0"
                                 VerticalAlignment="Center"

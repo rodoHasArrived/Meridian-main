@@ -405,7 +405,6 @@ Meridian/
 │   │   ├── desktop-improvements-executive-summary.md
 │   │   ├── desktop-platform-improvements-implementation-guide.md
 │   │   ├── high-impact-improvement-brainstorm-2026-03.md
-│   │   ├── high-impact-improvements-brainstorm.md
 │   │   ├── high-value-low-cost-improvements-brainstorm.md
 │   │   ├── historical-data-providers-evaluation.md
 │   │   ├── ingestion-orchestration-evaluation.md

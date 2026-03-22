@@ -40,6 +40,12 @@ public interface IBacktestContext
     /// </summary>
     Guid PlaceOrder(OrderRequest request);
 
+    /// <summary>
+    /// Submit an entry order that automatically creates contingent exit orders after the
+    /// entry fills. Exits are linked OCO-style when both a take-profit and stop-loss are set.
+    /// </summary>
+    Guid PlaceBracketOrder(BracketOrderRequest request);
+
     /// <summary>Submit a market order. Returns the assigned order ID.</summary>
     Guid PlaceMarketOrder(string symbol, long quantity);
 
@@ -66,6 +72,12 @@ public interface IBacktestContext
 
     /// <summary>Cancel a pending order.</summary>
     void CancelOrder(Guid orderId);
+
+    /// <summary>
+    /// Cancel any working contingent exit orders generated from the specified parent order.
+    /// Useful when a strategy wants to replace or remove an attached bracket after entry.
+    /// </summary>
+    void CancelContingentOrders(Guid parentOrderId);
 
     /// <summary>
     /// The double-entry accounting ledger for this backtest run.

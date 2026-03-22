@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using Meridian.Ui.Services;
+using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
 using WpfServices = Meridian.Wpf.Services;
 
@@ -14,6 +15,7 @@ namespace Meridian.Wpf.Views;
 public partial class LiveDataViewerPage : Page
 {
     private readonly LiveDataViewerViewModel _vm;
+    private readonly Meridian.Wpf.Services.NavigationService _navigationService;
 
     public LiveDataViewerPage(
         WpfServices.StatusService statusService,
@@ -22,6 +24,7 @@ public partial class LiveDataViewerPage : Page
         WpfServices.NotificationService notificationService)
     {
         InitializeComponent();
+        _navigationService = Meridian.Wpf.Services.NavigationService.Instance;
 
         _vm = new LiveDataViewerViewModel(statusService, connectionService, loggingService, notificationService);
         DataContext = _vm;
@@ -68,6 +71,9 @@ public partial class LiveDataViewerPage : Page
 
     private void Clear_Click(object sender, RoutedEventArgs e) =>
         _vm.Clear();
+
+    private void OpenStrategyRuns_Click(object sender, RoutedEventArgs e) =>
+        _navigationService.NavigateTo("StrategyRuns");
 }
 
 /// <summary>Dialog for adding a new symbol to watch.</summary>

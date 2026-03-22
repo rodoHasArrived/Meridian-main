@@ -207,7 +207,7 @@ public partial class OptionsPage : Page
         }
         catch (Exception ex)
         {
-            _loggingService.LogError("Failed to load chain", ex, ("Symbol", symbol), ("Expiration", expiration));
+            _loggingService.LogError($"Failed to load chain for {symbol} {expiration}", ex);
             ShowStatus($"Failed to load chain: {ex.Message}", false);
         }
     }

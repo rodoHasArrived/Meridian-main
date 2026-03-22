@@ -1,13 +1,19 @@
 # Meridian - Project Roadmap
 
 **Version:** 1.7.0
-**Last Updated:** 2026-03-20
-**Status:** Development / Pilot Ready (hardening, scale-up, and trading workstation migration planning in progress)
-**Repository Snapshot:** `src/` files: **832** | `tests/` files: **273** | HTTP route constants: **309** | Remaining stub routes: **0** | Test methods: **~4,093**
+**Last Updated:** 2026-03-21
+**Status:** Development / Pilot Ready (hardening and workstation delivery in progress; scale-out remains optional)
+**Repository Snapshot:** Solution projects: **32** | `src/` projects: **26** | test projects: **7** | workflow files: **37** | source files (`*.cs`, `*.fs`, `*.xaml` under `src/`): **1,421** | test source files (`*.cs`, `*.fs` under `tests/`): **347** | test methods: **~4,369**
 
 This roadmap is refreshed to match the current repository state and focuses on the remaining work required to move from "production-ready" to a more fully hardened v2.0 release posture.
 
-For a complete per-feature status breakdown see [`FEATURE_INVENTORY.md`](FEATURE_INVENTORY.md). For the workflow-centric UX and shared run-model migration plan, see [`../plans/trading-workstation-migration-blueprint.md`](../plans/trading-workstation-migration-blueprint.md). For the consolidated non-assembly backlog across roadmap + plan documents, see [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md).
+For a complete per-feature status breakdown see [`FEATURE_INVENTORY.md`](FEATURE_INVENTORY.md). For the formal target-state product definition and phased capability view, see [`../plans/fund-management-product-vision-and-capability-matrix.md`](../plans/fund-management-product-vision-and-capability-matrix.md). For the module-by-module implementation backlog mapped to projects and file anchors, see [`../plans/fund-management-module-implementation-backlog.md`](../plans/fund-management-module-implementation-backlog.md). For the PR-sequenced execution plan with concurrency lanes, see [`../plans/fund-management-pr-sequenced-roadmap.md`](../plans/fund-management-pr-sequenced-roadmap.md). For the workflow-centric UX and shared run-model migration plan, see [`../plans/trading-workstation-migration-blueprint.md`](../plans/trading-workstation-migration-blueprint.md). For the consolidated non-assembly backlog across roadmap + plan documents, see [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md).
+
+The active planning set is intentionally normalized around three source-of-truth status documents:
+
+- `ROADMAP.md` for delivery waves and phase ordering
+- `FEATURE_INVENTORY.md` for current-vs-target capability status
+- `FULL_IMPLEMENTATION_TODO_2026_03_20.md` for the consolidated non-assembly execution backlog
 
 ---
 
@@ -23,25 +29,24 @@ For a complete per-feature status breakdown see [`FEATURE_INVENTORY.md`](FEATURE
 - **Provider unit tests** expanded for Polygon subscription/reconnect and StockSharp lifecycle scenarios.
 - **OpenAPI typed annotations** added to all endpoint families (status, health, backfill, config, providers).
 - **Negative-path and schema validation integration tests** added for health/status/config/backfill/provider endpoints.
-- **Polygon `WebSocketProviderBase` adoption** — `PolygonMarketDataClient` now extends `WebSocketProviderBase`, completing C3 for the Polygon provider. NYSE and StockSharp remain.
+- **Provider lifecycle consolidation** now covers the active WebSocket-style paths: Polygon uses `WebSocketProviderBase`, NYSE is bridged through a shared-lifecycle client, and StockSharp is explicitly treated as a connector-runtime exception rather than a forced WebSocket-base migration target.
 
 ### What remains
 
 Remaining work is tracked in `docs/status/IMPROVEMENTS.md` and the new [`FEATURE_INVENTORY.md`](FEATURE_INVENTORY.md):
 
-- **35 tracked improvement items total** (core themes A–G)
-  - ✅ Completed: 33
-  - 🔄 Partial: 2 (C3 — WebSocket lifecycle consolidation, G2 — OpenTelemetry trace context propagation)
-  - 📝 Open: 0
-- **8 new theme items** (themes H–I)
-  - ✅ Completed: 6 (H1, H3, H4, I1, I2, I4)
-  - 🔄 Partial: 1 (I3 — Configuration Schema Validation)
-  - 📝 Open: 1 (H2 — Multi-Instance Coordination)
+- **35 tracked improvement items total** (core themes A-G)
+  - Completed: 35
+  - Partial: 0
+  - Open: 0
+- **8 new theme items** (themes H-I)
+  - Completed: 7 (H1, H3, H4, I1, I2, I3, I4)
+  - Partial: 0
+  - Open: 1 (H2 - Multi-Instance Coordination)
 - **8 canonicalization items** (theme J)
-  - ✅ Completed: 7 (J1–J7 — design, MarketEvent fields, canonicalizer, condition codes, venue normalization, provider wiring, metrics)
-  - 🔄 Partial: 1 (J8 — curated fixtures + golden tests + baseline CI job are present; richer drift reporting / fixture refresh workflow still pending)
-- Architecture debt largely resolved; C1/C2 unified provider registry and DI composition path are complete. C3 is now explicitly partial: Polygon uses `WebSocketProviderBase`, NYSE remains pending, and StockSharp is tracked under the separate provider-capability/readability workstream rather than as a straight WebSocket-base migration.
-- **Trading workstation migration**: Core functionality exists, but the UX remains page-centric. The command palette already uses `Research`, `Trading`, `Data Ops`, and `Governance` labels, while the persisted workspace model still reflects legacy categories; the next major delivery wave needs to complete that migration in product structure, not only terminology.
+  - Completed: 8 (J1-J8 - design, MarketEvent fields, canonicalizer, condition codes, venue normalization, provider wiring, metrics, fixtures/drift canary)
+- Architecture debt largely resolved; C1/C2/C3 unified provider registration and lifecycle hardening are complete. StockSharp remains tracked under provider-capability/readability work rather than as a WebSocket-base migration target.
+- **Fund-management productization**: Core functionality exists, but the UX remains partly page-centric. The desktop command palette, workspace shells, and persisted workspace/session model now align on `Research`, `Trading`, `Data Operations`, and `Governance`, and the first shared run browser/detail/portfolio/ledger workstation flow is now live in WPF. The next major delivery wave needs to extend that baseline beyond backtest-first data into paper/live workflows, account and entity operations, trade-management flows, investor reporting, and richer cockpit shells.
 - **Provider completeness**: Polygon and StockSharp functional with credentials; IB and NYSE require external setup steps.
 
 ---
@@ -54,17 +59,17 @@ Remaining work is tracked in `docs/status/IMPROVEMENTS.md` and the new [`FEATURE
 | Phase 1: Core Stability & Testing Foundation | ✅ Completed (baseline) | Foundation shipped; deeper coverage remains in active backlog (Theme B). |
 | Phase 2: Architecture & Structural Improvements | ✅ Completed (baseline) | Follow-on architectural debt tracked in Theme C open items. |
 | Phase 3: API Completeness & Documentation | ✅ Completed | Route implementation gap closed; continuing API polish and schema depth in D4/D7. |
-| Phase 4: Desktop App Maturity | ✅ Completed | WPF workflow parity achieved; UWP now legacy/deprecated. |
+| Phase 4: Desktop App Maturity | ✅ Completed | WPF workflow parity achieved; UWP has been removed and WPF is the sole desktop client. |
 | Phase 5: Operational Readiness | ✅ Completed | Monitoring/auth/deployment foundations in place. |
 | Phase 6: Duplicate & Unused Code Cleanup | ✅ Completed | Cleanup phase closed; residual cleanup now folded into normal maintenance. |
 | Phase 7: Extended Capabilities | ⏸️ Optional / rolling | Scheduled as capacity permits. |
 | Phase 8: Repository Organization & Optimization | 🔄 In progress (rolling) | Continued doc and code organization improvements. |
-| Phase 9: Final Production Release | 🔄 Active target | 94.3% of core improvements complete; C3 lifecycle consolidation partial (Polygon done; NYSE pending, StockSharp re-scoped), G2 trace propagation pending. |
+| Phase 9: Final Production Release | In progress | Core improvement themes A-G are complete; remaining work is now focused on provider completeness, scale-out, and workstation/product-surface delivery. |
 | Phase 10: Scalability & Multi-Instance | 📝 Planned | New phase for horizontal scaling and multi-instance coordination. |
 | Phase 11: Trading Workstation Structure | 🔄 Planned / partially represented | Navigation language exists in the command palette, but true workspace-first UX remains to be implemented. |
-| Phase 12: Shared Run / Portfolio / Ledger Model | 📝 Planned | Standardize run browser, portfolio summaries, and ledger-first read models. |
+| Phase 12: Shared Run / Portfolio / Ledger Model | 🔄 In progress | Shared workstation DTOs, read services, and the first WPF browser/detail/portfolio/ledger surfaces are now in code; broader engine and paper/live wiring remain. |
 | Phase 13: Backtest + Paper Trading Unification | 📝 Planned | Unify native + Lean backtesting and harden paper-trading operator workflows. |
-| Phase 14: Configuration Schema & Drift Canary | 🔄 Partially started | I3 and J8 have baseline infrastructure, but schema generation and richer drift reporting remain. |
+| Phase 14: Configuration Schema & Drift Canary | Complete | Checked-in config schema generation is authoritative and CI-validated; canonicalization drift reporting and fixture-maintenance workflow are in place. |
 | Phase 15: Scalability (Optional) | 📝 Planned | Multi-instance coordination remains optional for single-node deployments. |
 | Phase 16: Assembly-Level Performance | 📝 Planned | Byte-level SIMD, algorithmic, and allocation improvements from `docs/evaluations/assembly-performance-opportunities.md`. |
 
@@ -74,30 +79,31 @@ Remaining work is tracked in `docs/status/IMPROVEMENTS.md` and the new [`FEATURE
 
 This section replaces the old sprint-by-sprint narrative with the current backlog ordering implied by the repository state.
 
-### Wave 1 — Close the remaining partial items
+### Wave 1 - Close the remaining current-functionality gaps
 
-- **C3 remainder**: complete NYSE lifecycle consolidation and formally document the StockSharp connector-oriented path.
-- **G2 remainder**: propagate trace context provider -> pipeline -> storage and add correlation IDs to logs.
-- **I3 remainder**: generate `config/appsettings.schema.json`, link it from sample config, and validate it in CI.
-- **J8 remainder**: keep the existing golden-fixture CI slice, then extend it with richer unmapped-code / venue drift reporting and a fixture-refresh workflow.
+- **Provider completeness**: initial Polygon recorded-session replay validation is now committed. The remaining work is broader fixture coverage across feeds and edge cases.
+- **Observability polish**: OTLP collector / Jaeger operator setup is now documented. The remaining work is broader host auto-wiring and deeper replay/backfill trace examples.
+- **Scale-out planning**: design H2 multi-instance coordination before calling the collector horizontally scalable.
 
 ### Wave 2 — Finish provider completeness / current-functionality hardening
 
-- **Polygon**: validate WebSocket parsing against recorded production-style sessions.
-- **StockSharp**: document connector types and ship validated configuration examples.
-- **IB**: add scripted `IBAPI` setup/build instructions and a smoke-test path.
+- **Polygon**: expand recorded-session validation beyond the initial stock-feed replay fixture.
+- **StockSharp**: expand connector validation coverage beyond the newly added connector guide/examples.
+- **StockSharp**: keep connector validation coverage and runtime guidance aligned as more named/custom adapters are validated.
+- **IB**: keep the new scripted `IBAPI` setup/build instructions and smoke-build path aligned with official vendor releases.
 - **Testing**: raise coverage for under-tested providers and backtesting modules.
 
 ### Wave 3 — Deliver the workflow-centric workstation baseline
 
 - **Phase 11**: convert navigation from page-first to true `Research` / `Trading` / `Data Operations` / `Governance` workspaces.
-- **Phase 12**: introduce shared `StrategyRun`, portfolio, and ledger read models plus a comparison-friendly run browser.
+- **Phase 12**: shared `StrategyRun`, portfolio, and ledger read models plus comparison-oriented run-service APIs are now in code, and WPF now exposes a first workstation browser/detail/portfolio/ledger flow; next work is broadening those surfaces to paper/live sources and richer cockpit UX.
+- **Security Master**: elevate the existing contracts, services, storage, and domain models into an explicit platform track so research, governance, portfolio, and ledger workflows share one authoritative instrument-definition layer.
 - **UX debt cleanup**: eliminate orphan pages and placeholder-only surfaces as part of the workstation migration.
 
 ### Wave 4 — Unify research, backtest, and paper-trading workflows
 
 - **Phase 13**: deliver Backtest Studio, a paper-trading cockpit, feed-aware execution realism, and promotion workflow guardrails.
-- **Portfolio + ledger UX**: make journal/trial-balance/account-summary views first-class product surfaces.
+- **Portfolio + ledger UX**: make cash-flow, journal, trial-balance, account-summary, and multi-ledger views first-class product surfaces.
 
 ### Wave 5 — Build the major planned capabilities that are still blueprint-only
 
@@ -108,6 +114,53 @@ This section replaces the old sprint-by-sprint narrative with the current backlo
 
 - **H2 / Phase 15**: add multi-instance coordination for shared symbol universes and scheduled work ownership.
 - **Readability / cleanup roadmap**: finish the remaining structural refactors, CI consolidation, placeholder labeling, and documentation freshness work.
+
+## Highest-Value Opportunities
+
+These are the best near-term opportunities implied by the current repository state and planning documents.
+
+### 1. Turn the workstation taxonomy into real operator shells
+
+- **Gap:** Meridian now speaks in `Research`, `Trading`, `Data Operations`, and `Governance`, but too much of the experience still falls back to page-centric flows.
+- **Value:** This is the point where the product starts to feel like one connected fund-management system instead of a large toolkit.
+- **Unlocks:** Cleaner run-browser adoption, cockpit UX, portfolio and ledger productization, and more coherent web parity.
+- **Track:** Critical path.
+
+### 2. Extend the shared run / portfolio / ledger model to paper and live history
+
+- **Gap:** Shared workstation DTOs and first WPF drill-ins exist, but they are still backtest-first.
+- **Value:** Operators get one mental model for strategy runs, performance, positions, and audit trails across research and trading.
+- **Unlocks:** Promotion workflow, cockpit views, portfolio/ledger-first governance workflows, and better cross-engine comparisons.
+- **Track:** Critical path.
+
+### 3. Finish provider-confidence hardening where operator trust still depends on docs and replay evidence
+
+- **Gap:** Polygon replay coverage, StockSharp connector validation breadth, and IB/NYSE setup confidence still need ongoing hardening.
+- **Value:** Research and paper/live workflows become more trustworthy, supportable, and easier to demo or operate.
+- **Unlocks:** Execution-realism work, broader provider claims, and lower-risk workstation rollout.
+- **Track:** Critical path.
+
+### 4. Productize portfolio and ledger as first-class governance surfaces
+
+- **Gap:** Shared read models exist, but governance workflows still lag behind research-facing progress.
+- **Value:** Meridian becomes stronger as an auditable operator platform, not just a data and backtesting tool.
+- **Unlocks:** Reconciliation flows, promotion safety, account-summary UX, and clearer product differentiation.
+- **Track:** Later wave, but strategically important.
+
+### 5. Land one flagship capability on top of the stabilized workstation shell
+
+- **Gap:** QuantScript and L3 simulation are still blueprint-only.
+- **Value:** Either capability would deepen the Research workspace and make Meridian feel materially more differentiated.
+- **Unlocks:** Script-backed experimentation, richer execution analysis, and a stronger end-to-end strategy lifecycle story.
+- **Track:** After the workstation baseline is stable.
+
+## Target End Product
+
+The intended end product is a comprehensive self-hosted fund management platform for an operator who moves through one connected lifecycle: discover data, run research, manage accounts and entities, compare strategy runs, implement portfolio decisions, manage trades, inspect portfolio and ledger impact, model cash movement, analyze trial-balance and multi-ledger state, reconcile internal and external records, generate investor and stakeholder reports, promote safely into paper trading, and eventually operate live workflows with explicit guardrails.
+
+In that finished state, `Research`, `Trading`, `Data Operations`, and `Governance` are real product surfaces rather than navigation labels. Backtests, paper sessions, and live-facing history share one recognizable run model; account, strategy, portfolio, trade, and ledger views are first-class destinations; Security Master provides the authoritative instrument-definition layer; and provider, replay, storage, diagnostics, observability, reconciliation, and reporting systems support those fund-management workflows instead of feeling like separate tools.
+
+Optional capabilities such as multi-instance scale-out and assembly-level performance work can deepen the platform, but they are not required for Meridian to feel complete as a coherent fund-management system.
 
 ## New Improvement Themes
 
@@ -126,7 +179,7 @@ This section replaces the old sprint-by-sprint narrative with the current backlo
 |----|-------|--------|-------------|
 | I1 | Integration Test Harness with Fixture Providers | ✅ Complete | `FixtureMarketDataClient` and `InMemoryStorageSink` enable full pipeline integration testing without live API connections. See `tests/.../Integration/FixtureProviderTests.cs`. |
 | I2 | CLI Progress Reporting | ✅ Complete | `ProgressDisplayService` provides progress bars with ETA/throughput, Unicode spinners, multi-step checklists, and formatted tables. Supports interactive and CI/CD (non-interactive) modes. |
-| I3 | Configuration Schema Validation at Startup | 🔄 Partial | `SchemaValidationService` validates stored data formats against schema versions at startup (`--validate-schemas`, `--strict-schemas`). Missing: JSON Schema generation from C# models for config file validation. |
+| I3 | Configuration Schema Validation at Startup | Complete | `SchemaValidationService` validates stored data formats at startup and the checked-in `config/appsettings.schema.json` is generated from config models, linked from the sample config, and validated in CI. |
 | I4 | Provider SDK Documentation Generator | ✅ Complete | `generate-structure-docs.py` `extract_providers()` now reads from the correct `src/Meridian.Infrastructure/Providers` path, handles both positional and named `[DataSource]` attribute params, and emits a richer table with Class/Type/Category columns. Historical providers fall back to a curated static list. Run via `make gen-providers`. |
 
 ### Theme J: Data Canonicalization (New)
@@ -140,7 +193,7 @@ This section replaces the old sprint-by-sprint narrative with the current backlo
 | J5 | Venue Normalization to ISO 10383 MIC | ✅ Complete | `VenueMicMapper` with `config/venue-mapping.json` — 29 Alpaca, 17 Polygon, 17 IB venue mappings to ISO 10383 MIC codes. |
 | J6 | Provider Adapter Wiring | ✅ Complete | `CanonicalizingPublisher` decorator wraps `IMarketEventPublisher` with DI registration in `ServiceCompositionRoot`. Pilot symbol filtering, dual-write mode, lock-free metrics. |
 | J7 | Canonicalization Metrics & Monitoring | ✅ Complete | `CanonicalizationMetrics` with per-provider parity stats. API endpoints for status, parity, and config. Thread-safe counters for success/fail/unresolved. |
-| J8 | Golden Fixture Test Suite | 🔄 Partial | 8 curated fixture `.json` files added (Alpaca + Polygon: regular, extended-hours, odd-lot, cross-provider XNAS identity). `CanonicalizationGoldenFixtureTests` drives them via `[Theory][MemberData]` using production `condition-codes.json` and `venue-mapping.json`. A baseline CI job already runs the slice; remaining work is richer drift reporting plus fixture refresh/maintenance workflow. |
+| J8 | Golden Fixture Test Suite | Complete | 8 curated fixture `.json` files are CI-backed, the PR workflow emits an actionable canonicalization drift report for unmapped condition codes/venues, and a manual fixture-maintenance workflow preserves the suite. |
 
 ---
 
@@ -148,7 +201,7 @@ This section replaces the old sprint-by-sprint narrative with the current backlo
 
 ### Objective 1: Test Confidence ✅ Achieved
 
-- ✅ Expanded integration and provider tests — 12 provider test files, 219 test files total, ~3,444 test methods.
+- ✅ Expanded integration and provider tests — 12 provider test files, 273 test files total, ~4,093 test methods.
 - ✅ Risk-based coverage with negative-path and schema validation tests.
 - ✅ Integration test harness with `FixtureMarketDataClient` and `InMemoryStorageSink`.
 
@@ -157,7 +210,7 @@ This section replaces the old sprint-by-sprint narrative with the current backlo
 - ✅ C1/C2 complete — unified `ProviderRegistry` and single DI composition path.
 - ✅ Static singletons replaced with injectable `IEventMetrics`.
 - ✅ Consolidated configuration validation pipeline.
-- 🔄 C3 (provider lifecycle consolidation) remains open — Polygon is migrated, NYSE still needs the shared lifecycle path, and StockSharp now needs a clearly documented connector-runtime strategy rather than ambiguous roadmap wording.
+- C3 (provider lifecycle consolidation) is closed for the current platform baseline: Polygon uses the shared WebSocket base, NYSE is bridged onto the shared lifecycle path, and StockSharp is explicitly documented as a connector-runtime exception.
 
 ### Objective 3: API Productization ✅ Achieved
 
@@ -169,7 +222,7 @@ This section replaces the old sprint-by-sprint narrative with the current backlo
 
 - ✅ Prometheus metrics, API auth/rate limiting, category-accurate exit codes.
 - ✅ OpenTelemetry pipeline instrumentation with activity spans.
-- 🔄 End-to-end trace context propagation pending (G2 remainder).
+- End-to-end trace context propagation is in place across collector ingress, pipeline queueing/consumption, and storage append paths, with correlation IDs added to structured logs.
 
 ### Objective 5: Scalability 🔄 Partially Achieved
 
@@ -181,7 +234,7 @@ This section replaces the old sprint-by-sprint narrative with the current backlo
 
 - ✅ Design document complete with provider field audit and 3-phase rollout plan.
 - ✅ J2–J7 fully implemented: canonical fields on `MarketEvent`, `EventCanonicalizer`, `ConditionCodeMapper`, `VenueMicMapper`, `CanonicalizingPublisher` decorator with DI wiring, `CanonicalizationMetrics` with API endpoints.
-- 🔄 J8 partial: golden fixtures and a baseline CI test job exist; remaining work is richer unmapped-code / venue reporting and fixture refresh automation.
+- J8 is complete: golden fixtures are CI-backed, unmapped canonicalization drift is reported in PR-visible artifacts/summary output, and fixture-maintenance automation is available.
 - Target: >= 99.5% canonical identity match rate across providers for US liquid equities.
 
 ---
@@ -191,19 +244,19 @@ This section replaces the old sprint-by-sprint narrative with the current backlo
 | Metric | Current Baseline | 2026 Target |
 |---|---:|---:|
 | Stub endpoints remaining | 0 | 0 |
-| Core improvement items completed | 33 / 35 | 35 / 35 |
-| Core improvement items still open | 1 / 35 (C3 — partial, Polygon done) | 0 / 35 |
-| New theme items (H/I) completed | 6 / 8 | 7+ / 8 |
-| Source files | 779 | — |
-| Test files | 266 | 300+ |
-| Test methods | ~4,135 | 4,500+ |
+| Core improvement items completed | 35 / 35 | 35 / 35 |
+| Core improvement items still open | 0 / 35 | 0 / 35 |
+| New theme items (H/I) completed | 7 / 8 | 8 / 8 |
+| Source files | 832 | — |
+| Test files | 273 | 300+ |
+| Test methods | ~4,093 | 4,500+ |
 | Route constants | 309 | 309 |
-| Architecture debt (Theme C completed) | 6 / 7 (C3 partial: Polygon ✅, NYSE/StockSharp pending) | 7 / 7 |
+| Architecture debt (Theme C completed) | 7 / 7 | 7 / 7 |
 | Provider test coverage | All 5 streaming providers + failover + backfill | Comprehensive |
-| OpenTelemetry instrumentation | Pipeline metrics + activity spans | Full trace propagation |
+| OpenTelemetry instrumentation | Trace context propagated across collector ingress, pipeline, and storage with correlation-log scopes | Full trace propagation |
 | OpenAPI typed annotations | All endpoint families | Complete with error response types |
 | Canonicalization design | Complete | Implementation complete |
-| Canonicalization implementation (J2–J8) | 6 / 7 | 7 / 7 |
+| Canonicalization implementation (J2-J8) | 7 / 7 | 7 / 7 |
 | Cross-provider canonical identity match | N/A | >= 99.5% |
 | WPF pages with live data | ~45 / 51 | 51 / 51 |
 
@@ -230,16 +283,42 @@ These phases convert Meridian from a broad feature suite into a workflow-centric
 
 ### Phase 12: Shared Run / Portfolio / Ledger Model
 
+Current baseline now in code:
+
+- Shared workstation DTOs exist for `StrategyRun`, portfolio summaries, ledger summaries, trial-balance rows, journal rows, and run comparison views.
+- `StrategyRunReadService`, `PortfolioReadService`, and `LedgerReadService` derive comparison-friendly read models from recorded strategy/backtest results.
+- `StrategyRunStore` now exposes all-run enumeration so a run browser can be built on one shared query path.
+- WPF now ships `StrategyRuns`, `RunDetail`, `RunPortfolio`, and `RunLedger` surfaces, with backtest completion feeding the shared workstation browser and drill-ins from research/trading entry points.
+
 **Goal:** Standardize Meridian around a shared strategy-run lifecycle and elevate portfolio + ledger state to first-class product objects.
 
 | Item | Area | Work |
 |------|------|------|
-| P12-1 | **Run model** | Introduce shared `StrategyRun` contracts covering backtest, paper, and live modes with common identifiers, timestamps, parameters, metrics, and status |
-| P12-2 | **Portfolio model** | Add shared read models for cash, exposure, positions, realized/unrealized P&L, commissions, financing, and equity history |
-| P12-3 | **Ledger model** | Add journal, trial-balance, account-summary, and per-symbol ledger read services so accounting is directly visible in product surfaces |
-| P12-4 | **Run browser** | Build a comparison-friendly run browser and detail flow reusable by native backtest, Lean backtest, and paper-trading history |
+| P12-1 | **Run model** | Shared DTOs and normalized run summary/detail services are implemented; extend them beyond the current backtest-first baseline into paper/live history inputs |
+| P12-2 | **Portfolio model** | Shared portfolio summary/position read models are implemented from recorded run results; add equity-history, cash-flow views, and broader engine/live sources |
+| P12-3 | **Ledger model** | Shared ledger summary, journal, and trial-balance read models are implemented; add richer account-summary, cash-flow modeling, multi-ledger tracking, and reconciliation-oriented views |
+| P12-4 | **Run browser** | Comparison-friendly run query services plus first-pass WPF browser/detail/portfolio/ledger UI flows are implemented; extend them into paper/live run history and richer workstation interactions |
 
 **Exit criteria:** Backtest, paper, and live-facing experiences share a recognizable run model, and users can inspect portfolio and ledger state from product UI surfaces.
+
+---
+
+### Phase 12A: Security Master Productization
+
+Current baseline now in code:
+
+- Security Master contracts, query/service abstractions, storage mappings, migrations, and projection services exist in the repository.
+- F# domain modules now cover security identifiers, classification, economic definitions, commands, events, and legacy upgrade logic.
+
+**Goal:** Make Security Master an explicit platform capability that feeds research, governance, portfolio, ledger, and future cash-flow modeling workflows.
+
+| Item | Area | Work |
+|------|------|------|
+| P12A-1 | **Authoritative identifiers** | Promote Security Master queries and resolver flows into the shared operator model so portfolio, ledger, and governance surfaces use one authoritative instrument identity layer |
+| P12A-2 | **Economic definitions** | Surface economic-definition metadata needed for instrument classification, attribution, and future cash-flow projections |
+| P12A-3 | **Workflow integration** | Wire Security Master into workstation-facing research, governance, and portfolio/ledger paths instead of leaving it as backend-only infrastructure |
+
+**Exit criteria:** Security Master is explicitly represented in the roadmap and actively used as the authoritative metadata layer for shared run, portfolio, ledger, and governance workflows.
 
 ---
 
@@ -260,12 +339,12 @@ These phases convert Meridian from a broad feature suite into a workflow-centric
 
 ### Phase 14: Configuration Schema & Test Completeness
 
-**Goal:** Close the remaining I3 and J8 items.
+**Goal:** Capture the now-completed I3 and J8 closure so the workflow remains visible in the roadmap history.
 
 | Item | Area | Work |
 |------|------|------|
-| P14-1 | **I3 Config JSON Schema** | Add a build step (or `dotnet run` tool) that generates `config/appsettings.schema.json` from `AppConfig` using `NJsonSchema` or `System.Text.Json.Schema`; add `$schema` pointer to `appsettings.sample.json`; enables IDE auto-complete and validation |
-| P14-2 | **J8 Drift-canary CI** | Extend the existing golden-fixture CI slice so it reports newly unmapped condition codes or venue identifiers in a directly actionable PR-visible summary/comment and supports fixture refresh/maintenance |
+| P14-1 | **I3 Config JSON Schema** | Completed: `--generate-config-schema` produces the checked-in `config/appsettings.schema.json`, the sample config references it, and CI fails on drift |
+| P14-2 | **J8 Drift-canary CI** | Completed: PR checks generate a canonicalization drift report artifact/summary and a manual maintenance workflow supports fixture upkeep |
 
 **Exit criteria:** `appsettings.schema.json` present and linked; IDE shows validation on `appsettings.json`. CI fails on unrecognized condition codes or venues and reports the detected drift clearly enough for operators/developers to act on it.
 
@@ -343,6 +422,166 @@ per operation do not regress relative to the pre-optimization baseline.
 
 ---
 
+## Governance and Fund Operations Expansion
+
+This section turns the Meridian governance/fund-ops discussion into a concrete roadmap slice. It is intended to deliver a Meridian-native capability set that supports FundStudio-style workflows without abandoning Meridian's local-first workstation model.
+
+### Product intent
+
+Target Meridian outcome:
+
+- Security Master acts as the authoritative instrument-definition layer.
+- Governance exposes cash-flow modeling, trial-balance analysis, and multi-ledger tracking as first-class surfaces.
+- Governance includes a dedicated reconciliation engine and report generation toolchain.
+- Portfolio, ledger, compliance, reconciliation, and reporting workflows share one operator-facing model instead of fragmented utilities.
+
+### Suggested implementation split
+
+- **Prefer F# for core domain kernels:** Security Master domain logic, cash-flow projection rules, fund-accounting transforms, multi-ledger consolidation rules, trial-balance math, and policy/state-machine logic.
+- **Prefer C# for orchestration and product surfaces:** query services, workflow coordination, DI wiring, storage integration, HTTP endpoints, WPF view models, and export/report generation.
+
+### Phase F1: Security Master as a Product Platform
+
+**Goal:** Move Security Master from backend capability to explicit platform infrastructure used by Research, Governance, portfolio, and ledger flows.
+
+| Epic | User outcome | Suggested anchors |
+|---|---|---|
+| F1-1 Authoritative identifier workflow | Operators can resolve, inspect, and trust canonical instrument identity across portfolio, ledger, and governance views | `src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs`, `src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs`, `src/Meridian.Application/SecurityMaster/SecurityResolver.cs`, `src/Meridian.FSharp/Domain/SecurityIdentifiers.fs`, `src/Meridian.FSharp/Domain/SecurityMaster.fs` |
+| F1-2 Economic-definition enrichment | Governance and research surfaces can classify instruments by economic definition, not only symbol strings | `src/Meridian.Application/SecurityMaster/SecurityEconomicDefinitionAdapter.cs`, `src/Meridian.FSharp/Domain/SecurityEconomicDefinition.fs`, `src/Meridian.FSharp/Domain/SecurityClassification.fs`, `src/Meridian.FSharp/Domain/SecurityTermModules.fs` |
+| F1-3 Security Master workstation integration | Users can open Security Master-backed details from portfolio, run, and governance surfaces | `src/Meridian.Contracts/Workstation/`, `src/Meridian.Strategies/Services/PortfolioReadService.cs`, `src/Meridian.Strategies/Services/LedgerReadService.cs`, `src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs`, `src/Meridian.Wpf/Services/StrategyRunWorkspaceService.cs` |
+
+**Exit criteria:** Security Master metadata is visible in workstation-facing flows and is the default authority for instrument identity, classification, and economic-definition lookups.
+
+### Phase F2: Multi-Ledger Governance Foundation
+
+**Goal:** Turn the existing ledger capability into a governance-grade multi-ledger model suitable for funds, sleeves, vehicles, and entity-level reporting.
+
+| Epic | User outcome | Suggested anchors |
+|---|---|---|
+| F2-1 Ledger grouping and entity model | Users can track separate ledgers for funds, sleeves, strategies, or legal entities | `src/Meridian.Ledger/LedgerBookKey.cs`, `src/Meridian.Ledger/ProjectLedgerBook.cs`, `src/Meridian.Ledger/LedgerQuery.cs`, `src/Meridian.Strategies/Services/LedgerReadService.cs` |
+| F2-2 Consolidated trial balance | Users can inspect per-ledger and consolidated trial-balance views | `src/Meridian.Ledger/LedgerSnapshot.cs`, `src/Meridian.Ledger/LedgerBalancePoint.cs`, `src/Meridian.Ledger/LedgerAccountSummary.cs`, `src/Meridian.Wpf/ViewModels/StrategyRunLedgerViewModel.cs`, `src/Meridian.Wpf/Views/RunLedgerPage.xaml` |
+| F2-3 Cross-ledger reconciliation | Governance can trace transfers, eliminations, and reconciliation breaks across ledgers | `src/Meridian.Ledger/JournalEntry.cs`, `src/Meridian.Ledger/LedgerEntry.cs`, `src/Meridian.Ledger/Ledger.cs`, `src/Meridian.Strategies/Services/LedgerReadService.cs` |
+| F2-4 Reconciliation engine baseline | Operations can run rule-based reconciliations between portfolio, ledger, cash, positions, and external statements with explicit break queues | `src/Meridian.Strategies/Services/LedgerReadService.cs`, `src/Meridian.Strategies/Services/PortfolioReadService.cs`, new `src/Meridian.Application/Services/ReconciliationEngineService.cs`, new `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs`, new `src/Meridian.FSharp.Ledger/ReconciliationRules.fs` |
+
+**Exit criteria:** Meridian supports trial balance, rule-based reconciliation, and multi-ledger drill-ins in Governance.
+
+### Phase F3: Cash-Flow Modeling and Projection
+
+**Goal:** Add forward-looking cash intelligence on top of portfolio, ledger, and Security Master state.
+
+| Epic | User outcome | Suggested anchors |
+|---|---|---|
+| F3-1 Projected cash ladder | Users can see expected inflows/outflows by day, source, and vehicle | `src/Meridian.Strategies/Services/PortfolioReadService.cs`, `src/Meridian.Strategies/Services/LedgerReadService.cs`, `src/Meridian.FSharp.Ledger/`, `src/Meridian.FSharp/Promotion/`, new `src/Meridian.FSharp/Domain/CashFlowProjection.fs` |
+| F3-2 Instrument-aware cash events | Coupons, financing, fees, distributions, and instrument-specific cash events use Security Master economic definitions | `src/Meridian.Application/SecurityMaster/SecurityEconomicDefinitionAdapter.cs`, `src/Meridian.FSharp/Domain/SecurityEconomicDefinition.fs`, new `src/Meridian.FSharp/Domain/CashFlowRules.fs` |
+| F3-3 Governance cash views | Governance surfaces expose sources/uses, projected liquidity gaps, and realized-vs-projected cash | `src/Meridian.Contracts/Workstation/`, `src/Meridian.Wpf/ViewModels/StrategyRunPortfolioViewModel.cs`, `src/Meridian.Wpf/ViewModels/StrategyRunLedgerViewModel.cs`, `src/Meridian.Wpf/Views/RunPortfolioPage.xaml`, `src/Meridian.Wpf/Views/RunLedgerPage.xaml` |
+
+**Exit criteria:** Governance can present projected cash movement and reconcile it against realized ledger activity.
+
+### Phase F4: Fund Operations Workstation
+
+**Goal:** Give operations, PM, and governance users one coherent workflow for fund-style operations.
+
+| Epic | User outcome | Suggested anchors |
+|---|---|---|
+| F4-1 Governance dashboard | Users can open one workspace for ledger health, cash status, valuation exceptions, and reconciliation breaks | `src/Meridian.Wpf/Services/WorkspaceService.cs`, `src/Meridian.Wpf/ViewModels/RunMatViewModel.cs`, `src/Meridian.Wpf/Views/RunMatPage.xaml`, `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` |
+| F4-2 NAV and attribution baseline | Users can inspect fund-level valuation and contribution drivers | `src/Meridian.Strategies/Services/PortfolioReadService.cs`, `src/Meridian.Strategies/Services/StrategyRunReadService.cs`, `src/Meridian.Ledger/LedgerAccountSummary.cs`, new `src/Meridian.Application/Services/NavAttributionService.cs` |
+| F4-3 Reporting/export pack | Governance can export auditable cash-flow, trial-balance, portfolio, and ledger packs | `src/Meridian.Storage/Export/AnalysisExportService.cs`, `src/Meridian.Storage/Export/ExportProfile.cs`, `src/Meridian.Ui.Shared/Endpoints/ExportEndpoints.cs`, `src/Meridian.Wpf/ViewModels/StrategyRunLedgerViewModel.cs` |
+| F4-4 Report generation tools | Users can generate board, investor, ops, and compliance report packs from one governed reporting workflow | `src/Meridian.Storage/Export/AnalysisExportService.cs`, `src/Meridian.Storage/Export/AnalysisExportService.Formats.Xlsx.cs`, `src/Meridian.Storage/Export/ExportProfile.cs`, `src/Meridian.Ui.Shared/Endpoints/ExportEndpoints.cs`, new `src/Meridian.Application/Services/ReportGenerationService.cs`, new `src/Meridian.Contracts/Workstation/ReportPackDtos.cs` |
+
+**Exit criteria:** Meridian exposes a Governance workflow that feels like a fund-operations cockpit rather than a collection of separate pages.
+
+### Phase F5: Compliance and Policy Overlay
+
+**Goal:** Use Security Master, portfolio, ledger, and risk abstractions to support fund-style mandate monitoring.
+
+| Epic | User outcome | Suggested anchors |
+|---|---|---|
+| F5-1 Classification-aware mandate rules | Users can monitor issuer, sector, geography, leverage, and liquidity constraints | `src/Meridian.Risk/IRiskRule.cs`, `src/Meridian.Risk/CompositeRiskValidator.cs`, `src/Meridian.FSharp/Risk/`, `src/Meridian.FSharp/Domain/SecurityClassification.fs` |
+| F5-2 Governance exception queue | Compliance and ops can review breaches, near-breaches, and approved overrides | `src/Meridian.Contracts/Workstation/`, `src/Meridian.Wpf/ViewModels/NotificationCenterViewModel.cs`, `src/Meridian.Ui.Shared/Endpoints/DiagnosticsEndpoints.cs`, new `src/Meridian.Application/Services/GovernanceExceptionService.cs` |
+| F5-3 Promotion-aware governance gates | Promotion from Backtest to Paper to Live checks governance and accounting readiness | `src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs`, `src/Meridian.FSharp/Promotion/PromotionPolicy.fs`, `src/Meridian.Strategies/Services/StrategyLifecycleManager.cs` |
+
+**Exit criteria:** Governance and promotion workflows include explicit policy checks informed by Security Master and fund-accounting state.
+
+### Sequencing guidance
+
+Recommended order:
+
+1. F1 Security Master as a Product Platform
+2. F2 Multi-Ledger Governance Foundation
+3. F3 Cash-Flow Modeling and Projection
+4. F4 Fund Operations Workstation
+5. F5 Compliance and Policy Overlay
+
+### Delivery notes
+
+- Treat F1 and F2 as enabling phases for almost everything else.
+- Treat the reconciliation engine as part of the governance foundation, not a later reporting add-on.
+- Keep new F# kernels small and pure; expose them through narrow C# service boundaries.
+- Reuse existing workstation surfaces before inventing a separate “fund admin” shell.
+- Prefer extending `PortfolioReadService`, `LedgerReadService`, and Security Master query services before creating parallel read paths.
+
+---
+
+## Cross-Cutting Dependency Map
+
+The remaining roadmap items are no longer independent feature buckets. The critical-path dependencies are:
+
+| Depends On | Unlocks | Why it matters |
+|---|---|---|
+| Phase 11 workspace navigation | Phase 12 browser/detail flows, Phase 13 cockpit UX | The workstation surfaces need stable operator entry points before deeper run/portfolio/ledger UX lands cleanly. |
+| Phase 12 shared run / portfolio / ledger read models | Phase 13 promotion workflow, portfolio/ledger productization, web run browser work | Without shared read contracts, Meridian keeps duplicating engine-specific result handling. |
+| Provider hardening and replay coverage | Phase 13 execution realism, L3 simulation validation, operator trust | Paper/live workflow credibility depends on accurate provider behavior and replayable evidence. |
+| H2 multi-instance coordination | Optional horizontal scale-out, shared scheduler ownership, collector topology docs | Scale-out remains optional, but once introduced it becomes foundational infrastructure rather than a side feature. |
+| Readability refactor slices (`Program`, composition root, WPF MVVM) | Faster delivery of workstation, QuantScript, and simulation surfaces | Several planned features are blocked less by missing ideas than by host/UI concentration that slows safe iteration. |
+| QuantScript shared data/query plumbing | Research workspace depth, script-backed experiment workflows | QuantScript belongs inside the workstation model, not as an isolated page with parallel data semantics. |
+| L3 simulation contracts + replay timeline | Phase 13 realism work, execution audit views, strategy validation workflows | The simulator is both a flagship feature and an execution-quality dependency for later trading surfaces. |
+
+### Critical-path takeaway
+
+If the goal is "full non-assembly implementation" rather than isolated wins, the next efficient order is:
+
+1. close provider/runtime hardening and H2 design;
+2. finish Phase 11/12 shared workstation structure;
+3. deepen Phase 13 operator flows on top of those shared models;
+4. then land QuantScript and L3 simulation on the stabilized product shell.
+
+---
+
+## Non-Assembly Release Gates
+
+These gates define when Meridian can reasonably claim the non-assembly roadmap is complete.
+
+### Gate A: Current Functionality Fully Hardened
+
+- Provider/runtime guidance is current for Polygon, StockSharp, Interactive Brokers, and NYSE.
+- Replay-backed tests exist for the remaining provider edge cases called out in `FEATURE_INVENTORY.md`.
+- Operational tracing/docs/runbooks cover the now-shipped trace propagation path and any added scale-out topology.
+
+### Gate B: Trading Workstation Baseline Complete
+
+- The desktop shell behaves as four durable workspaces, not just renamed navigation buckets.
+- Shared run browser/detail/portfolio/ledger flows cover backtest, paper, and at least the first live-facing history path.
+- Portfolio and ledger surfaces are first-class navigation targets rather than side pages.
+
+### Gate C: Unified Research-to-Trading Lifecycle Complete
+
+- Backtest Studio unifies native and Lean backtests behind one operator-facing flow.
+- Paper trading exposes cockpit-grade controls, risk state, fills, positions, and promotion checkpoints.
+- Promotion from Backtest to Paper to Live is explicit, auditable, and safety-gated.
+
+### Gate D: Planned Flagship Capabilities Landed
+
+- QuantScript exists as a real project, test suite, and WPF feature with sample scripts and docs.
+- L3 inference / execution simulation exists as a real contract/engine/CLI/doc surface with confidence labeling and exported artifacts.
+
+### Gate E: Structural and Documentation Closure
+
+- Readability and cleanup roadmap items are either completed or retired by explicit decision.
+- Status documents agree on current state, remaining work, and what is optional versus mandatory.
+- No non-assembly flagship capability remains blueprint-only unless explicitly deferred by a documented ADR or roadmap decision.
+
+---
+
 ## Reference Documents
 
 - `docs/status/FEATURE_INVENTORY.md` — **new** comprehensive feature inventory with per-area status.
@@ -355,8 +594,11 @@ per operation do not regress relative to the pre-optimization baseline.
 - `docs/evaluations/` — detailed evaluation source documents (summarized in EVALUATIONS_AND_AUDITS.md).
 - `docs/audits/` — detailed audit source documents (summarized in EVALUATIONS_AND_AUDITS.md).
 - `docs/architecture/deterministic-canonicalization.md` — cross-provider canonicalization design.
+- `docs/plans/governance-fund-ops-blueprint.md` — implementation blueprint for Security Master, multi-ledger governance, cash-flow modeling, reconciliation, and reporting workflows.
 - `docs/plans/assembly-performance-roadmap.md` — detailed Phase 16 viability assessments and per-item implementation checklists.
 
 ---
 
-*Last Updated: 2026-03-20*
+*Last Updated: 2026-03-21*
+
+

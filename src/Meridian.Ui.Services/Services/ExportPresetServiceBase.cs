@@ -383,6 +383,25 @@ public class ExportPresetServiceBase
             },
             new ExportPreset
             {
+                Id = "runmat",
+                Name = "RunMat",
+                Description = "Numeric CSV export with a MATLAB-style loader script for RunMat.",
+                Format = ExportPresetFormat.Csv,
+                Compression = ExportPresetCompression.None,
+                Destination = Path.Combine("{year}", "{month}"),
+                FilenamePattern = "{symbol}_{type}_{date}.csv",
+                Filters = new ExportPresetFilters
+                {
+                    EventTypes = new[] { "Trade", "BboQuote" },
+                    DateRangeType = DateRangeType.LastWeek
+                },
+                IncludeLoaderScript = true,
+                IncludeDataDictionary = true,
+                IsBuiltIn = true,
+                CreatedAt = DateTime.UtcNow
+            },
+            new ExportPreset
+            {
                 Id = "quantconnect-lean",
                 Name = "QuantConnect Lean",
                 Description = "Native Lean data format with zip packaging for backtesting.",

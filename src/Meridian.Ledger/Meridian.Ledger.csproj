@@ -6,4 +6,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Meridian.FSharp.Ledger\Meridian.FSharp.Ledger.fsproj" />
+  </ItemGroup>
+
 </Project>

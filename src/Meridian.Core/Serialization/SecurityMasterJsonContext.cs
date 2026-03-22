@@ -1,0 +1,47 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using Meridian.Contracts.SecurityMaster;
+
+namespace Meridian.Core.Serialization;
+
+[JsonSourceGenerationOptions(
+    WriteIndented = false,
+    PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
+    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+    PropertyNameCaseInsensitive = true,
+    GenerationMode = JsonSourceGenerationMode.Default)]
+[JsonSerializable(typeof(SecurityAliasDto))]
+[JsonSerializable(typeof(SecurityAliasDto[]))]
+[JsonSerializable(typeof(List<SecurityAliasDto>))]
+[JsonSerializable(typeof(SecurityDetailDto))]
+[JsonSerializable(typeof(SecurityEconomicDefinitionRecord))]
+[JsonSerializable(typeof(SecurityIdentifierDto))]
+[JsonSerializable(typeof(SecurityIdentifierDto[]))]
+[JsonSerializable(typeof(List<SecurityIdentifierDto>))]
+[JsonSerializable(typeof(SecurityMasterEventEnvelope))]
+[JsonSerializable(typeof(SecurityMasterEventEnvelope[]))]
+[JsonSerializable(typeof(List<SecurityMasterEventEnvelope>))]
+[JsonSerializable(typeof(SecurityProjectionRecord))]
+[JsonSerializable(typeof(SecuritySearchRequest))]
+[JsonSerializable(typeof(SecuritySnapshotRecord))]
+[JsonSerializable(typeof(SecuritySummaryDto))]
+[JsonSerializable(typeof(SecuritySummaryDto[]))]
+[JsonSerializable(typeof(List<SecuritySummaryDto>))]
+[JsonSerializable(typeof(CreateSecurityRequest))]
+[JsonSerializable(typeof(AmendSecurityTermsRequest))]
+[JsonSerializable(typeof(DeactivateSecurityRequest))]
+[JsonSerializable(typeof(ResolveSecurityRequest))]
+[JsonSerializable(typeof(UpsertSecurityAliasRequest))]
+[JsonSerializable(typeof(Dictionary<string, object>))]
+[JsonSerializable(typeof(Dictionary<string, JsonElement>))]
+public partial class SecurityMasterJsonContext : JsonSerializerContext
+{
+    public static readonly JsonSerializerOptions HighPerformanceOptions = new()
+    {
+        TypeInfoResolver = Default,
+        WriteIndented = false,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        PropertyNameCaseInsensitive = true
+    };
+}

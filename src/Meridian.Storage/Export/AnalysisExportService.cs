@@ -148,14 +148,9 @@ public sealed partial class AnalysisExportService
         string[]? symbols = null,
         CancellationToken ct = default)
     {
-        var profile = targetTool.ToLowerInvariant() switch
-        {
-            "python" or "pandas" => ExportProfile.PythonPandas,
-            "r" or "rstats" => ExportProfile.RStats,
-            "pyarrow" or "arrow" => ExportProfile.ArrowFeather,
-            "postgresql" or "postgres" => ExportProfile.PostgreSql,
-            _ => ExportProfile.PythonPandas
-        };
+        var profile = ResolveProfileForTargetTool(targetTool);
+        if (profile is null)
+            return string.Empty;
 
         // Build mock file list from what's in storage
         var sourceFiles = FindSourceFiles(new ExportRequest
@@ -187,6 +182,17 @@ public sealed partial class AnalysisExportService
 
         return scriptPath;
     }
+
+    private static ExportProfile? ResolveProfileForTargetTool(string targetTool) =>
+        targetTool.ToLowerInvariant() switch
+        {
+            "python" or "pandas" => ExportProfile.PythonPandas,
+            "r" or "rstats" => ExportProfile.RStats,
+            "pyarrow" or "arrow" => ExportProfile.ArrowFeather,
+            "postgresql" or "postgres" => ExportProfile.PostgreSql,
+            "runmat" or "matlab" => ExportProfile.RunMat,
+            _ => null
+        };
 
     /// <summary>
     /// Export data according to the request.

@@ -1,5 +1,7 @@
 # Meridian — Architecture Reference
 
+**Last Updated:** 2026-03-21
+
 > **Last verified:** 2026-03-16 | **Refresh:** `python3 build/scripts/ai-repo-updater.py audit`
 >
 > Read this file when you need deep context on project structure, dependency rules, or specific subsystem design to give accurate review feedback. For current statistics, provider list, and key abstraction file paths, see [`../_shared/project-context.md`](../_shared/project-context.md) which is the single authoritative source.

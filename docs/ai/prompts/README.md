@@ -97,7 +97,7 @@ Trigger manually: **Actions → Prompt Generation → Run workflow**
 |----------|---------|
 | [`.github/prompts/README.md`](../../../.github/prompts/README.md) | Full prompt usage guide |
 | [`docs/ai/agents/README.md`](../agents/README.md) | Full agent definitions |
-| [`docs/ai/README.md`](../README.md) | Master AI resource index |
+| [`docs/ai/README.md`](../../archive/docs/README.md) | Master AI resource index |
 
 ---
 

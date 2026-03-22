@@ -331,6 +331,8 @@ public sealed class ConfigurationPipeline : IAsyncDisposable
                 credentialFields.Add(("Backfill.Providers.Finnhub.ApiKey", providers.Finnhub.ApiKey, "FINNHUB__TOKEN"));
             if (providers.AlphaVantage != null)
                 credentialFields.Add(("Backfill.Providers.AlphaVantage.ApiKey", providers.AlphaVantage.ApiKey, "ALPHAVANTAGE__APIKEY"));
+            if (providers.Fred != null)
+                credentialFields.Add(("Backfill.Providers.Fred.ApiKey", providers.Fred.ApiKey, "FRED__APIKEY"));
             if (providers.Polygon != null)
                 credentialFields.Add(("Backfill.Providers.Polygon.ApiKey", providers.Polygon.ApiKey, "POLYGON__APIKEY"));
             if (providers.Nasdaq != null)
@@ -476,6 +478,16 @@ public sealed class ConfigurationPipeline : IAsyncDisposable
                 if (!string.IsNullOrEmpty(key))
                 {
                     providers = providers with { Nasdaq = providers.Nasdaq with { ApiKey = key } };
+                    updated = true;
+                }
+            }
+
+            if (providers.Fred != null)
+            {
+                var key = _credentialResolver.ResolveFred(providers.Fred.ApiKey);
+                if (!string.IsNullOrEmpty(key))
+                {
+                    providers = providers with { Fred = providers.Fred with { ApiKey = key } };
                     updated = true;
                 }
             }

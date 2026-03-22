@@ -3,6 +3,8 @@ applyTo: "src/Meridian.Wpf/**"
 ---
 # WPF / MVVM Instructions
 
+**Last Updated:** 2026-03-21
+
 When editing WPF views (`*.xaml`) or code-behind files (`*.xaml.cs`) in this repository:
 
 1. Keep code-behind thin: only `InitializeComponent()`, constructor DI wiring, and minimal event-handler delegation. No business logic.

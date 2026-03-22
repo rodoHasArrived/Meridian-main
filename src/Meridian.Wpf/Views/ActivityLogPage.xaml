@@ -4,7 +4,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       mc:Ignorable="d"
-      Background="{DynamicResource ConsoleBackgroundDarkBrush}"
+      Background="{DynamicResource ShellWindowBackgroundBrush}"
       Loaded="OnPageLoaded"
       AutomationProperties.Name="Activity Log">
     <Page.Resources>
@@ -19,18 +19,25 @@
         </Grid.RowDefinitions>
 
         <!-- Header -->
-        <Grid Grid.Row="0" Margin="24,24,24,16">
+        <Border Grid.Row="0" Style="{StaticResource SectionCardStyle}" Margin="24,24,24,16">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
             <StackPanel Grid.Column="0" Orientation="Horizontal">
-                <TextBlock Text="&#xE7BC;" FontFamily="{StaticResource SymbolThemeFontFamily}"
-                           FontSize="28" Foreground="{StaticResource InfoColorBrush}"
-                           VerticalAlignment="Center" />
-                <TextBlock Text="Activity Log" Style="{StaticResource PageTitleStyle}"
-                           Margin="12,0,0,0" VerticalAlignment="Center" />
+                <Border Width="44" Height="44" CornerRadius="14"
+                        Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                        BorderBrush="{StaticResource InfoColorBrush}" BorderThickness="1">
+                    <TextBlock Text="&#xE7BC;" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                               FontSize="24" Foreground="{StaticResource InfoColorBrush}"
+                               VerticalAlignment="Center" HorizontalAlignment="Center" />
+                </Border>
+                <StackPanel Margin="12,0,0,0">
+                    <TextBlock Text="Activity Log" Style="{StaticResource PageTitleStyle}" />
+                    <TextBlock Text="Operational events, exportable traces, and filtered runtime messages for support workflows."
+                               Style="{StaticResource CardDescriptionStyle}" />
+                </StackPanel>
             </StackPanel>
 
             <StackPanel Grid.Column="1" Orientation="Horizontal">
@@ -39,19 +46,17 @@
                           Foreground="{StaticResource ConsoleTextMutedBrush}"
                           VerticalAlignment="Center" Margin="0,0,16,0"/>
                 <Button Content="Export" Click="Export_Click" Margin="0,0,8,0"
-                        Background="{DynamicResource ConsoleBackgroundMediumBrush}"
-                        Foreground="{DynamicResource ConsoleTextBrush}"
-                        BorderThickness="0" Padding="16,8"/>
+                        Style="{StaticResource SecondaryButtonStyle}"/>
                 <Button Content="Clear" Click="Clear_Click"
-                        Background="{DynamicResource ConsoleBackgroundMediumBrush}"
-                        Foreground="{DynamicResource ConsoleTextBrush}"
-                        BorderThickness="0" Padding="16,8"/>
+                        Style="{StaticResource GhostButtonStyle}"/>
             </StackPanel>
-        </Grid>
+        </Border>
 
         <!-- Filters -->
-        <Border Grid.Row="1" Background="{StaticResource ConsoleBackgroundMediumBrush}"
-                Margin="24,0,24,16" Padding="16,12" CornerRadius="8">
+        <Border Grid.Row="1" Background="{StaticResource PremiumPanelBrush}"
+                BorderBrush="{StaticResource ConsoleBorderBrush}"
+                BorderThickness="1"
+                Margin="24,0,24,16" Padding="18,14" CornerRadius="12">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -143,7 +148,7 @@
                                            FontSize="11" FontFamily="Consolas"
                                            VerticalAlignment="Top"/>
 
-                                <Border Grid.Column="1" CornerRadius="3" Padding="6,2"
+                                <Border Grid.Column="1" CornerRadius="999" Padding="8,3"
                                         Background="{Binding LevelBackground}"
                                         HorizontalAlignment="Left" VerticalAlignment="Top">
                                     <TextBlock Text="{Binding Level}" FontSize="10" FontWeight="SemiBold"

@@ -169,7 +169,7 @@ The validator checks for:
 
 | Resource | Purpose |
 | -------- | ------- |
-| [`docs/ai/README.md`](../README.md) | Master AI resource index |
+| [`docs/ai/README.md`](../../archive/docs/README.md) | Master AI resource index |
 | [`docs/ai/agents/README.md`](../agents/README.md) | GitHub/Copilot agent equivalents |
 | [`CLAUDE.md`](../../../CLAUDE.md) | Root project context and repo conventions |
 | [`.claude/skills/skills_provider.py`](../../../.claude/skills/skills_provider.py) | Local skills provider implementation |

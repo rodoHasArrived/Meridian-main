@@ -71,4 +71,25 @@ public sealed class StrategyRunStore : IStrategyRepository
 
         return Task.FromResult(latest);
     }
+
+    /// <inheritdoc/>
+#pragma warning disable CS1998
+    public async IAsyncEnumerable<StrategyRunEntry> GetAllRunsAsync(
+        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+    {
+        List<StrategyRunEntry> snapshot;
+        lock (_lock)
+        {
+            snapshot = _runs
+                .OrderByDescending(r => r.StartedAt)
+                .ToList();
+        }
+
+        foreach (var entry in snapshot)
+        {
+            ct.ThrowIfCancellationRequested();
+            yield return entry;
+        }
+    }
+#pragma warning restore CS1998
 }

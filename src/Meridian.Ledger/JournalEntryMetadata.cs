@@ -8,8 +8,13 @@ namespace Meridian.Ledger;
 public sealed record JournalEntryMetadata(
     string? ActivityType = null,
     string? Symbol = null,
+    Guid? SecurityId = null,
     Guid? OrderId = null,
     Guid? FillId = null,
+    string? ProjectId = null,
+    string? LedgerBook = null,
+    LedgerViewKind? LedgerView = null,
+    string? ScenarioId = null,
     string? StrategyId = null,
     string? FinancialAccountId = null,
     string? CounterpartyAccountId = null,
@@ -36,6 +41,9 @@ public sealed record JournalEntryMetadata(
         {
             ActivityType = string.IsNullOrWhiteSpace(ActivityType) ? null : ActivityType.Trim(),
             Symbol = string.IsNullOrWhiteSpace(Symbol) ? null : Symbol.Trim().ToUpperInvariant(),
+            ProjectId = string.IsNullOrWhiteSpace(ProjectId) ? null : ProjectId.Trim(),
+            LedgerBook = string.IsNullOrWhiteSpace(LedgerBook) ? null : LedgerBook.Trim(),
+            ScenarioId = string.IsNullOrWhiteSpace(ScenarioId) ? null : ScenarioId.Trim(),
             StrategyId = string.IsNullOrWhiteSpace(StrategyId) ? null : StrategyId.Trim(),
             FinancialAccountId = string.IsNullOrWhiteSpace(FinancialAccountId) ? null : FinancialAccountId.Trim(),
             CounterpartyAccountId = string.IsNullOrWhiteSpace(CounterpartyAccountId) ? null : CounterpartyAccountId.Trim(),

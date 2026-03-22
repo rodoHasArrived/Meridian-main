@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
+using Meridian.Application.Coordination;
 using Meridian.Application.Logging;
 using Meridian.Contracts.Pipeline;
 using Serilog;
@@ -20,6 +21,7 @@ public sealed class IngestionJobService : IDisposable
     private readonly ConcurrentDictionary<string, IngestionJob> _jobs = new();
     private readonly ILogger _log = LoggingSetup.ForContext<IngestionJobService>();
     private readonly string _persistenceDir;
+    private readonly IScheduledWorkOwnershipService? _ownershipService;
     private readonly SemaphoreSlim _persistLock = new(1, 1);
     private readonly JsonSerializerOptions _jsonOptions = new()
     {
@@ -39,13 +41,16 @@ public sealed class IngestionJobService : IDisposable
     /// </summary>
     public event Action<IngestionJob, IngestionCheckpointToken>? CheckpointUpdated;
 
-    public IngestionJobService(string? persistenceDir = null)
+    public IngestionJobService(
+        string? persistenceDir = null,
+        IScheduledWorkOwnershipService? ownershipService = null)
     {
         _persistenceDir = persistenceDir
             ?? Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "Meridian",
                 "ingestion-jobs");
+        _ownershipService = ownershipService;
 
         if (!Directory.Exists(_persistenceDir))
         {
@@ -139,6 +144,21 @@ public sealed class IngestionJobService : IDisposable
         }
 
         var previousState = job.State;
+
+        if (newState == IngestionJobState.Running && _ownershipService is not null)
+        {
+            var acquired = await _ownershipService.TryAcquireJobAsync(jobId, ct).ConfigureAwait(false);
+            if (!acquired.Acquired)
+            {
+                _log.Warning(
+                    "Job {JobId} cannot transition to Running because lease is owned by {Owner} until {Expiry}",
+                    jobId,
+                    acquired.CurrentOwner,
+                    acquired.CurrentExpiryUtc);
+                return false;
+            }
+        }
+
         if (!job.TryTransition(newState))
         {
             _log.Warning(
@@ -150,6 +170,13 @@ public sealed class IngestionJobService : IDisposable
         if (errorMessage != null)
         {
             job.ErrorMessage = errorMessage;
+        }
+
+        if (previousState == IngestionJobState.Running &&
+            newState is IngestionJobState.Completed or IngestionJobState.Failed or IngestionJobState.Cancelled or IngestionJobState.Paused &&
+            _ownershipService is not null)
+        {
+            await _ownershipService.ReleaseJobAsync(jobId, ct).ConfigureAwait(false);
         }
 
         // Handle retry: increment attempt count and schedule next retry

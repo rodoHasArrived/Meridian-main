@@ -295,8 +295,12 @@ public sealed class BacktestEngine(
             foreach (var fill in result.Fills)
             {
                 portfolio.ProcessFill(fill);
+                ContingentOrderManager.ReconcileOcoSiblings(pendingOrders, order, fill);
                 allFills.Add(fill);
                 strategy.OnOrderFill(fill, ctx);
+
+                foreach (var contingentOrder in ContingentOrderManager.CreateContingentOrders(order, fill))
+                    pendingOrders.Add(contingentOrder);
             }
 
             if (result.RemoveOrder)
@@ -308,7 +312,10 @@ public sealed class BacktestEngine(
             pendingOrders[i] = result.UpdatedOrder;
         }
 
-        pendingOrders.RemoveAll(o => filled.Contains(o.OrderId));
+        pendingOrders.RemoveAll(o =>
+            filled.Contains(o.OrderId) ||
+            o.Status is OrderStatus.Cancelled or OrderStatus.Expired or OrderStatus.Rejected ||
+            (o.Status == OrderStatus.Filled && o.IsComplete));
     }
 
     private static async Task ProcessDayEndAsync(

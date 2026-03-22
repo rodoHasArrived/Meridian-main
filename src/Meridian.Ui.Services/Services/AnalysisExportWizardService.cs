@@ -68,6 +68,19 @@ public sealed class AnalysisExportWizardService
             },
             new()
             {
+                Id = "runmat",
+                Name = "RunMat",
+                Description = "Numeric CSV plus a MATLAB-style loader script for RunMat research workflows",
+                Icon = "\uE943",
+                OutputFormat = "CSV",
+                Compression = "none",
+                IncludeLoaderCode = true,
+                LoaderLanguage = "runmat",
+                FileExtension = ".csv",
+                Features = new[] { "Numeric-only CSV", "Unix millisecond timestamps", "Ready-to-run .m loader script" }
+            },
+            new()
+            {
                 Id = "quantconnect-lean",
                 Name = "QuantConnect Lean",
                 Description = "Native Lean data format for backtesting",
@@ -304,6 +317,7 @@ public sealed class AnalysisExportWizardService
             "python" => GeneratePythonLoader(profile, exportPath, symbols),
             "r" => GenerateRLoader(profile, exportPath, symbols),
             "sql" => GenerateSqlLoader(profile, exportPath),
+            "runmat" => GenerateRunMatLoader(profile, exportPath, symbols),
             _ => string.Empty
         };
     }
@@ -443,6 +457,39 @@ public sealed class AnalysisExportWizardService
             sb.AppendLine("-- Load data");
             sb.AppendLine($"-- INSERT INTO market_data FROM INFILE '{exportPath}/data.csv' FORMAT CSV;");
         }
+
+        return sb.ToString();
+    }
+
+    private string GenerateRunMatLoader(ExportProfile profile, string exportPath, string[] symbols)
+    {
+        var exampleSymbol = symbols.FirstOrDefault() ?? "SPY";
+        var sb = new StringBuilder();
+        sb.AppendLine("% Auto-generated RunMat loader for Meridian export");
+        sb.AppendLine($"% Generated: {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC");
+        sb.AppendLine($"% Profile: {profile.Name}");
+        sb.AppendLine("% Column order: Timestamp, Price, Size, BidPrice, BidSize, AskPrice, AskSize, Open, High, Low, Close, Volume");
+        sb.AppendLine();
+        sb.AppendLine($"DATA_PATH = '{exportPath.Replace("\\", "/")}';");
+        sb.AppendLine();
+        sb.AppendLine("function data = load_data(symbol)");
+        sb.AppendLine("  if nargin < 1");
+        sb.AppendLine("    symbol = '';");
+        sb.AppendLine("  end");
+        sb.AppendLine("  pattern = '*.csv';");
+        sb.AppendLine("  if ~isempty(symbol)");
+        sb.AppendLine("    pattern = strcat(symbol, '_*.csv');");
+        sb.AppendLine("  end");
+        sb.AppendLine("  files = dir(fullfile(DATA_PATH, pattern));");
+        sb.AppendLine("  data = [];");
+        sb.AppendLine("  for i = 1:numel(files)");
+        sb.AppendLine("    data = [data; readmatrix(fullfile(DATA_PATH, files(i).name))];");
+        sb.AppendLine("  end");
+        sb.AppendLine("end");
+        sb.AppendLine();
+        sb.AppendLine("% Example usage:");
+        sb.AppendLine($"% data = load_data('{exampleSymbol}');");
+        sb.AppendLine("% plot(data(:,1), data(:,2));");
 
         return sb.ToString();
     }
@@ -1155,6 +1202,7 @@ public sealed class AnalysisExportWizardService
             "python" => ".py",
             "r" => ".R",
             "sql" => ".sql",
+            "runmat" => ".m",
             "csharp" => ".cs",
             _ => ".txt"
         };

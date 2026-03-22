@@ -2,6 +2,8 @@
 
 This repository includes a build observability toolkit that turns local and CI builds into structured, diagnosable workflows.
 
+For runtime OTLP collector setup and trace visualization, see [otlp-trace-visualization.md](otlp-trace-visualization.md).
+
 ## Quick Start
 
 ```bash

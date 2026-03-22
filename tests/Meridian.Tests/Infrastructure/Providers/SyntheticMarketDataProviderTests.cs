@@ -69,6 +69,30 @@ public sealed class SyntheticMarketDataProviderTests
         publisher.Events.OfType<MarketEvent>().Where(e => e.Payload is LOBSnapshot).Should().OnlyContain(e => ((LOBSnapshot)e.Payload).Bids.Count == 5);
     }
 
+    [Fact]
+    public void SubscribeTrades_NullConfig_ThrowsArgumentNullException()
+    {
+        var publisher = new RecordingPublisher();
+        var client = new SyntheticMarketDataClient(publisher, new SyntheticMarketDataConfig(Enabled: true));
+
+        var act = () => client.SubscribeTrades(null!);
+
+        act.Should().Throw<ArgumentNullException>()
+            .WithParameterName("cfg");
+    }
+
+    [Fact]
+    public void SubscribeMarketDepth_NullConfig_ThrowsArgumentNullException()
+    {
+        var publisher = new RecordingPublisher();
+        var client = new SyntheticMarketDataClient(publisher, new SyntheticMarketDataConfig(Enabled: true));
+
+        var act = () => client.SubscribeMarketDepth(null!);
+
+        act.Should().Throw<ArgumentNullException>()
+            .WithParameterName("cfg");
+    }
+
     private sealed class RecordingPublisher : IMarketEventPublisher
     {
         public ConcurrentBag<MarketEvent> Events { get; } = new();

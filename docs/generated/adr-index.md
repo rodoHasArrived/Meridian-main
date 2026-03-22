@@ -1,6 +1,6 @@
 # Architecture Decision Records
 
-> Auto-generated on 2026-03-20 18:36:19 UTC
+> Auto-generated on 2026-03-22 03:02:07 UTC
 
 | ADR | Title | Status |
 |-----|-------|--------|
@@ -22,7 +22,8 @@
 | [016-platform-architecture-migration.md](../adr/016-platform-architecture-migration.md) | ADR-016: Platform Architecture Migration Mandate | Accepted |
 | [ADR-015-platform-restructuring.md](../adr/ADR-015-platform-restructuring.md) | ADR-015: Platform Restructuring — Meridian → Meridian | Accepted |
 | [README.md](../adr/README.md) | Architectural Decision Records (ADRs) | Accepted |
-| [_template.md](../adr/_template.md) | ADR-XXX: [Title] | Superseded |
+| [_template.md](../adr/_template.md) | ADR-XXX: [Title] | Accepted |
 
 ---
 *This file is auto-generated. Do not edit manually.*
+

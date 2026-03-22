@@ -124,6 +124,17 @@ public static class ProviderRegistry
                 FreeTierDescription: "Free: 25 requests/day, daily historical data"
             ),
             new(
+                Name: "FRED",
+                DisplayName: "FRED Economic Data",
+                RequiredEnvVars: new[] { "FRED_API_KEY" },
+                AlternativeEnvVars: new[] { "FRED__APIKEY", "MDC_FRED_API_KEY" },
+                Capabilities: new[] { "Historical", "Daily", "EconomicSeries" },
+                Priority: 28,
+                SignupUrl: "https://fredaccount.stlouisfed.org/apikeys",
+                DocsUrl: "https://fred.stlouisfed.org/docs/api/fred/",
+                FreeTierDescription: "Free: economic time series via FRED API"
+            ),
+            new(
                 Name: "NasdaqDataLink",
                 DisplayName: "Nasdaq Data Link (Quandl)",
                 RequiredEnvVars: new[] { "NASDAQ_API_KEY" },

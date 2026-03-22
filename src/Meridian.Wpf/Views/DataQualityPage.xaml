@@ -6,26 +6,35 @@
       xmlns:converters="clr-namespace:Meridian.Wpf.Converters"
       mc:Ignorable="d"
       d:DesignHeight="800" d:DesignWidth="1200"
-      Background="{DynamicResource ConsoleBackgroundDarkBrush}"
+      Background="{DynamicResource ShellWindowBackgroundBrush}"
       AutomationProperties.Name="Data Quality">
 
     <Page.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </Page.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
         <StackPanel MaxWidth="1400">
             <!-- Header -->
-            <Grid Margin="0,0,0,24">
+            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24">
+            <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Column="0">
-                    <TextBlock Text="Data Quality Monitor" Style="{StaticResource PageTitleStyle}" />
-                    <TextBlock Text="Monitor data quality scores, alerts, and trends across all collected data"
-                               Style="{StaticResource PageSubtitleStyle}" />
+                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <Border Width="44" Height="44" CornerRadius="14"
+                            Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                            BorderBrush="{StaticResource InfoColorBrush}" BorderThickness="1">
+                        <TextBlock Text="&#xE9D5;" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="24" Foreground="{StaticResource InfoColorBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                    </Border>
+                    <StackPanel Margin="12,0,0,0">
+                        <TextBlock Text="Data Quality Monitor" Style="{StaticResource PageTitleStyle}" />
+                        <TextBlock Text="Monitor scores, alerts, and trend posture across collected datasets and validation runs."
+                                   Style="{StaticResource CardDescriptionStyle}" />
+                    </StackPanel>
                 </StackPanel>
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
@@ -45,6 +54,7 @@
                     </Button>
                 </StackPanel>
             </Grid>
+            </Border>
 
             <!-- Overall Quality Cards -->
             <Grid Margin="0,0,0,24">
@@ -73,7 +83,7 @@
                             </StackPanel>
                         </Grid>
                         <Border x:Name="StatusBadge" Background="{Binding ScoreBrush}"
-                                CornerRadius="12" Padding="12,4" HorizontalAlignment="Center">
+                                CornerRadius="999" Padding="12,4" HorizontalAlignment="Center">
                             <TextBlock x:Name="StatusText" Text="{Binding StatusText}" FontSize="12" Foreground="White" FontWeight="SemiBold" />
                         </Border>
                     </StackPanel>
@@ -107,7 +117,7 @@
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                             <TextBlock Text="Active Alerts" Style="{StaticResource CardHeaderStyle}" />
                             <Border x:Name="AlertCountBadge" Background="{StaticResource ErrorColorBrush}"
-                                    CornerRadius="10" Padding="8,2" Margin="8,0,0,0" Visibility="{Binding IsAlertCountBadgeVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    CornerRadius="999" Padding="8,3" Margin="8,0,0,0" Visibility="{Binding IsAlertCountBadgeVisible, Converter={StaticResource BoolToVisibilityConverter}}">
                                 <TextBlock x:Name="AlertCountText" Text="{Binding AlertCountBadgeText}" FontSize="11" Foreground="White" FontWeight="SemiBold" />
                             </Border>
                         </StackPanel>

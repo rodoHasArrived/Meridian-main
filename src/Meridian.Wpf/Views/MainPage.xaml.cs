@@ -25,7 +25,11 @@ public partial class MainPage : Page
     private readonly ConnectionService _connectionService;
     private readonly SearchService _searchService;
     private readonly MessagingService _messagingService;
+    private readonly WorkspaceService _workspaceService;
     private bool _commandPaletteOpen;
+    private string _currentPageTag = "Dashboard";
+    private string _currentWorkspaceId = "research";
+    private bool _suppressNavSelection;
 
     /// <summary>
     /// All navigation ListBoxes, used to clear selection across sections.
@@ -47,18 +51,20 @@ public partial class MainPage : Page
         _connectionService = connectionService;
         _searchService = searchService;
         _messagingService = messagingService;
+        _workspaceService = WorkspaceService.Instance;
 
         // Subscribe to connection state changes
         _connectionService.ConnectionStateChanged += OnConnectionStateChanged;
 
         // Subscribe to messaging for page updates
         _messagingService.MessageReceived += OnMessageReceived;
+        _navigationService.Navigated += OnNavigationServiceNavigated;
 
         // Register Ctrl+K for command palette via PreviewKeyDown
         PreviewKeyDown += OnPreviewKeyDown;
     }
 
-    private void OnPageLoaded(object sender, RoutedEventArgs e)
+    private async void OnPageLoaded(object sender, RoutedEventArgs e)
     {
         // Initialize navigation service with the content frame
         _navigationService.Initialize(ContentFrame);
@@ -70,10 +76,7 @@ public partial class MainPage : Page
         }
         else
         {
-            // Set selected index first (before navigation to avoid triggering SelectionChanged)
-            ResearchNavList.SelectedIndex = 0;
-            // Default to Dashboard
-            _navigationService.NavigateTo("Dashboard");
+            await RestoreWorkspaceShellAsync();
         }
 
         // Update connection status display
@@ -84,43 +87,64 @@ public partial class MainPage : Page
 
         // Initialize fixture/offline mode banner (P0: Hard visual distinction)
         InitializeFixtureModeBanner();
+        UpdateAutomationState();
     }
 
     #region Section Navigation Handlers
 
-    private void OnResearchNavSelectionChanged(object sender, SelectionChangedEventArgs e)
+    private async void OnResearchNavSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        if (_suppressNavSelection)
+        {
+            return;
+        }
+
         if (ResearchNavList.SelectedItem is ListBoxItem item && item.Tag is string pageTag)
         {
             ClearOtherSelections(ResearchNavList);
-            NavigateToPage(pageTag);
+            await NavigateToWorkspacePageAsync("research", pageTag);
         }
     }
 
-    private void OnTradingNavSelectionChanged(object sender, SelectionChangedEventArgs e)
+    private async void OnTradingNavSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        if (_suppressNavSelection)
+        {
+            return;
+        }
+
         if (TradingNavList.SelectedItem is ListBoxItem item && item.Tag is string pageTag)
         {
             ClearOtherSelections(TradingNavList);
-            NavigateToPage(pageTag);
+            await NavigateToWorkspacePageAsync("trading", pageTag);
         }
     }
 
-    private void OnDataOpsNavSelectionChanged(object sender, SelectionChangedEventArgs e)
+    private async void OnDataOpsNavSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        if (_suppressNavSelection)
+        {
+            return;
+        }
+
         if (DataOpsNavList.SelectedItem is ListBoxItem item && item.Tag is string pageTag)
         {
             ClearOtherSelections(DataOpsNavList);
-            NavigateToPage(pageTag);
+            await NavigateToWorkspacePageAsync("data-operations", pageTag);
         }
     }
 
-    private void OnGovernanceNavSelectionChanged(object sender, SelectionChangedEventArgs e)
+    private async void OnGovernanceNavSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        if (_suppressNavSelection)
+        {
+            return;
+        }
+
         if (GovernanceNavList.SelectedItem is ListBoxItem item && item.Tag is string pageTag)
         {
             ClearOtherSelections(GovernanceNavList);
-            NavigateToPage(pageTag);
+            await NavigateToWorkspacePageAsync("governance", pageTag);
         }
     }
 
@@ -173,6 +197,7 @@ public partial class MainPage : Page
         CommandPaletteTextBox.Text = string.Empty;
         CommandPaletteTextBox.Focus();
         UpdateCommandPaletteResults(string.Empty);
+        UpdateAutomationState();
     }
 
     private void CloseCommandPalette()
@@ -181,6 +206,7 @@ public partial class MainPage : Page
         CommandPaletteOverlay.Visibility = Visibility.Collapsed;
         CommandPaletteTextBox.Text = string.Empty;
         CommandPaletteResults.Items.Clear();
+        UpdateAutomationState();
     }
 
     private void CommandPaletteOverlay_MouseDown(object sender, MouseButtonEventArgs e)
@@ -279,9 +305,7 @@ public partial class MainPage : Page
         if (item.NavigationTarget.StartsWith("page:"))
         {
             var pageTag = item.NavigationTarget.Substring(5);
-            _navigationService.NavigateTo(pageTag);
-            UpdatePageTitle(pageTag);
-            UpdateBackButtonVisibility();
+            _ = NavigateToWorkspacePageAsync(ResolveWorkspaceIdForPage(pageTag), pageTag);
         }
         else if (item.NavigationTarget.StartsWith("action:"))
         {
@@ -298,12 +322,15 @@ public partial class MainPage : Page
             new("Dashboard", "Research", "page:Dashboard", new[] { "home", "overview", "status" }),
             new("Live Data", "Research", "page:LiveData", new[] { "realtime", "streaming", "trades" }),
             new("Charts", "Research", "page:Charts", new[] { "candlestick", "technical", "indicators" }),
+            new("RunMat Lab", "Research", "page:RunMat", new[] { "runmat", "matlab", "script", "research", "gpu" }),
+            new("Strategy Runs", "Research", "page:StrategyRuns", new[] { "strategy", "runs", "history", "portfolio", "ledger", "workstation" }),
             new("Order Book", "Research", "page:OrderBook", new[] { "depth", "l2", "heatmap" }),
             new("Watchlist", "Research", "page:Watchlist", new[] { "favorites", "tracked" }),
             new("Notifications", "Research", "page:NotificationCenter", new[] { "alerts", "incidents" }),
 
             // Trading section
             new("Backtest", "Trading", "page:Backtest", new[] { "backtest", "strategy", "simulation", "run", "test", "historical", "lean" }),
+            new("Strategy Runs", "Trading", "page:StrategyRuns", new[] { "portfolio", "ledger", "run", "browser", "workstation" }),
             new("Lean Engine", "Trading", "page:LeanIntegration", new[] { "quantconnect", "lean", "backtest", "algorithm", "strategy" }),
             new("Portfolio Import", "Trading", "page:PortfolioImport", new[] { "portfolio", "import", "csv", "bulk", "ledger", "positions" }),
             new("Trading Hours", "Trading", "page:TradingHours", new[] { "trading", "hours", "market", "calendar", "session", "backtest" }),
@@ -360,58 +387,21 @@ public partial class MainPage : Page
 
     #endregion
 
-    private void NavigateToPage(string pageTag)
-    {
-        _navigationService.NavigateTo(pageTag);
-        UpdatePageTitle(pageTag);
-        UpdateBackButtonVisibility();
-    }
-
     private void UpdatePageTitle(string pageTag)
     {
-        // Convert page tag to display title
-        var title = pageTag switch
-        {
-            "Dashboard" => "Dashboard",
-            "LiveData" => "Live Data",
-            "Charts" => "Charts",
-            "OrderBook" => "Order Book",
-            "Watchlist" => "Watchlist",
-            "NotificationCenter" => "Notifications",
-            "Backtest" => "Strategy Backtest",
-            "LeanIntegration" => "Lean Engine Integration",
-            "PortfolioImport" => "Portfolio Import",
-            "TradingHours" => "Trading Hours",
-            "Provider" => "Data Provider",
-            "DataSources" => "Multi-Source Config",
-            "Symbols" => "Symbols",
-            "Backfill" => "Historical Data Backfill",
-            "Options" => "Options Chain",
-            "Schedules" => "Schedules",
-            "CollectionSessions" => "Collection Sessions",
-            "DataBrowser" => "Data Browser",
-            "Storage" => "Storage",
-            "DataExport" => "Data Export",
-            "PackageManager" => "Package Manager",
-            "DataCalendar" => "Data Calendar",
-            "EventReplay" => "Event Replay",
-            "DataQuality" => "Data Quality",
-            "AdvancedAnalytics" => "Analytics",
-            "ArchiveHealth" => "Archive Health",
-            "ProviderHealth" => "Provider Health",
-            "SystemHealth" => "System Health",
-            "Diagnostics" => "Diagnostics",
-            "Settings" => "Settings",
-            "AdminMaintenance" => "Admin & Maintenance",
-            "RetentionAssurance" => "Retention Assurance",
-            "StorageOptimization" => "Storage Optimization",
-            "LeanIntegration" => "Lean Integration",
-            "SetupWizard" => "Setup Wizard",
-            "Help" => "Help & Support",
-            _ => pageTag
-        };
+        PageTitleText.Text = GetPageTitle(pageTag);
+        UpdateAutomationState();
+    }
 
-        PageTitleText.Text = title;
+    private void UpdateAutomationState()
+    {
+        if (ShellAutomationStateText is null)
+        {
+            return;
+        }
+
+        ShellAutomationStateText.Text =
+            $"PageTag={_currentPageTag};PageTitle={PageTitleText?.Text ?? string.Empty};CommandPalette={(_commandPaletteOpen ? "Open" : "Closed")}";
     }
 
     private void UpdateBackButtonVisibility()
@@ -430,8 +420,7 @@ public partial class MainPage : Page
     private void OnHelpButtonClick(object sender, RoutedEventArgs e)
     {
         foreach (var list in AllNavLists) list.SelectedItem = null;
-        _navigationService.NavigateTo("Help");
-        UpdatePageTitle("Help");
+        _ = NavigateToWorkspacePageAsync(_currentWorkspaceId, "Help", updateSelection: false);
     }
 
     private void OnRefreshButtonClick(object sender, RoutedEventArgs e)
@@ -442,8 +431,7 @@ public partial class MainPage : Page
     private void OnNotificationsButtonClick(object sender, RoutedEventArgs e)
     {
         foreach (var list in AllNavLists) list.SelectedItem = null;
-        _navigationService.NavigateTo("NotificationCenter");
-        UpdatePageTitle("Notifications");
+        _ = NavigateToWorkspacePageAsync(_currentWorkspaceId, "NotificationCenter", updateSelection: false);
     }
 
     private void OnContentFrameNavigated(object sender, SysNavigation.NavigationEventArgs e)
@@ -586,6 +574,213 @@ public partial class MainPage : Page
                 GovernanceNavList.SelectedIndex = 4;
                 break;
         }
+    }
+
+    private async Task RestoreWorkspaceShellAsync()
+    {
+        var initialWorkspaceId = _workspaceService.ActiveWorkspace?.Id
+            ?? _workspaceService.LastSession?.ActiveWorkspaceId
+            ?? "research";
+
+        await NavigateToWorkspacePageAsync(initialWorkspaceId, requestedPageTag: null);
+    }
+
+    private async Task NavigateToWorkspacePageAsync(string workspaceId, string? requestedPageTag, bool updateSelection = true)
+    {
+        await _workspaceService.ActivateWorkspaceAsync(workspaceId);
+
+        _currentWorkspaceId = workspaceId;
+        var workspace = _workspaceService.ActiveWorkspace;
+        var session = _workspaceService.GetLastSessionState();
+        var targetPageTag = requestedPageTag
+            ?? session?.ActivePageTag
+            ?? workspace?.LastActivePageTag
+            ?? workspace?.PreferredPageTag
+            ?? "Dashboard";
+
+        if (updateSelection)
+        {
+            UpdateNavigationSelectionForPage(targetPageTag);
+        }
+
+        if (!_navigationService.NavigateTo(targetPageTag))
+        {
+            var fallbackPageTag = workspace?.PreferredPageTag ?? "Dashboard";
+            if (!string.Equals(targetPageTag, fallbackPageTag, StringComparison.OrdinalIgnoreCase))
+            {
+                UpdateNavigationSelectionForPage(fallbackPageTag);
+                _navigationService.NavigateTo(fallbackPageTag);
+            }
+        }
+    }
+
+    private void OnNavigationServiceNavigated(object? sender, Meridian.Ui.Services.Contracts.NavigationEventArgs e)
+    {
+        _currentPageTag = e.PageTag;
+        _currentWorkspaceId = ResolveWorkspaceIdForPage(e.PageTag);
+        UpdateNavigationSelectionForPage(e.PageTag);
+        UpdatePageTitle(e.PageTag);
+        UpdateBackButtonVisibility();
+        UpdateAutomationState();
+        _ = PersistWorkspaceShellStateAsync(e.PageTag);
+    }
+
+    private async Task PersistWorkspaceShellStateAsync(string pageTag)
+    {
+        var currentSession = _workspaceService.GetLastSessionState();
+        var recentPages = BuildRecentPageList(pageTag, currentSession?.RecentPages);
+        var title = GetPageTitle(pageTag);
+
+        var openPages = currentSession?.OpenPages
+            .Where(page => !string.Equals(page.PageTag, pageTag, StringComparison.OrdinalIgnoreCase))
+            .Select(CloneWorkspacePage)
+            .ToList() ?? new List<WorkspacePage>();
+        openPages.Insert(0, new WorkspacePage
+        {
+            PageTag = pageTag,
+            Title = title,
+            IsDefault = false
+        });
+
+        var nextSession = new SessionState
+        {
+            ActiveWorkspaceId = _currentWorkspaceId,
+            ActivePageTag = pageTag,
+            OpenPages = openPages.Take(8).ToList(),
+            RecentPages = recentPages,
+            WidgetLayout = currentSession?.WidgetLayout ?? new Dictionary<string, WidgetPosition>(),
+            ActiveFilters = currentSession?.ActiveFilters ?? new Dictionary<string, string>(),
+            WorkspaceContext = currentSession?.WorkspaceContext ?? new Dictionary<string, string>(),
+            WindowBounds = currentSession?.WindowBounds
+        };
+
+        await _workspaceService.SaveSessionStateAsync(nextSession);
+    }
+
+    private List<string> BuildRecentPageList(string pageTag, IReadOnlyCollection<string>? existing)
+    {
+        var recentPages = new List<string> { pageTag };
+        if (existing is not null)
+        {
+            foreach (var page in existing)
+            {
+                if (!recentPages.Contains(page, StringComparer.OrdinalIgnoreCase))
+                {
+                    recentPages.Add(page);
+                }
+            }
+        }
+
+        return recentPages.Take(8).ToList();
+    }
+
+    private void UpdateNavigationSelectionForPage(string pageTag)
+    {
+        _suppressNavSelection = true;
+        try
+        {
+            foreach (var list in AllNavLists)
+            {
+                var matchedItem = FindNavigationItem(list, pageTag);
+                list.SelectedItem = matchedItem;
+            }
+        }
+        finally
+        {
+            _suppressNavSelection = false;
+        }
+    }
+
+    private static ListBoxItem? FindNavigationItem(ListBox list, string pageTag)
+    {
+        return list.Items
+            .OfType<ListBoxItem>()
+            .FirstOrDefault(item => string.Equals(item.Tag as string, pageTag, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private string ResolveWorkspaceIdForPage(string pageTag)
+    {
+        if (FindNavigationItem(ResearchNavList, pageTag) is not null)
+        {
+            return "research";
+        }
+
+        if (FindNavigationItem(TradingNavList, pageTag) is not null)
+        {
+            return "trading";
+        }
+
+        if (FindNavigationItem(DataOpsNavList, pageTag) is not null)
+        {
+            return "data-operations";
+        }
+
+        if (FindNavigationItem(GovernanceNavList, pageTag) is not null)
+        {
+            return "governance";
+        }
+
+        return _currentWorkspaceId;
+    }
+
+    private static WorkspacePage CloneWorkspacePage(WorkspacePage page)
+    {
+        return new WorkspacePage
+        {
+            PageTag = page.PageTag,
+            Title = page.Title,
+            IsDefault = page.IsDefault,
+            ScrollPosition = page.ScrollPosition,
+            PageState = new Dictionary<string, object>(page.PageState)
+        };
+    }
+
+    private string GetPageTitle(string pageTag)
+    {
+        return pageTag switch
+        {
+            "Dashboard" => "Dashboard",
+            "LiveData" => "Live Data",
+            "Charts" => "Charts",
+            "RunMat" => "RunMat Lab",
+            "StrategyRuns" => "Strategy Runs",
+            "RunDetail" => "Run Detail",
+            "RunPortfolio" => "Run Portfolio",
+            "RunLedger" => "Run Ledger",
+            "OrderBook" => "Order Book",
+            "Watchlist" => "Watchlist",
+            "NotificationCenter" => "Notifications",
+            "Backtest" => "Strategy Backtest",
+            "LeanIntegration" => "Lean Engine Integration",
+            "PortfolioImport" => "Portfolio Import",
+            "TradingHours" => "Trading Hours",
+            "Provider" => "Data Provider",
+            "DataSources" => "Multi-Source Config",
+            "Symbols" => "Symbols",
+            "Backfill" => "Historical Data Backfill",
+            "Options" => "Options Chain",
+            "Schedules" => "Schedules",
+            "CollectionSessions" => "Collection Sessions",
+            "DataBrowser" => "Data Browser",
+            "Storage" => "Storage",
+            "DataExport" => "Data Export",
+            "PackageManager" => "Package Manager",
+            "DataCalendar" => "Data Calendar",
+            "EventReplay" => "Event Replay",
+            "DataQuality" => "Data Quality",
+            "AdvancedAnalytics" => "Analytics",
+            "ArchiveHealth" => "Archive Health",
+            "ProviderHealth" => "Provider Health",
+            "SystemHealth" => "System Health",
+            "Diagnostics" => "Diagnostics",
+            "Settings" => "Settings",
+            "AdminMaintenance" => "Admin & Maintenance",
+            "RetentionAssurance" => "Retention Assurance",
+            "StorageOptimization" => "Storage Optimization",
+            "SetupWizard" => "Setup Wizard",
+            "Help" => "Help & Support",
+            _ => pageTag
+        };
     }
 }
 

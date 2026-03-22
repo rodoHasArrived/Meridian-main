@@ -5,30 +5,39 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       mc:Ignorable="d"
       d:DesignHeight="900" d:DesignWidth="1200"
-      Background="{DynamicResource ConsoleBackgroundDarkBrush}"
+      Background="{DynamicResource ShellWindowBackgroundBrush}"
       Loaded="OnPageLoaded"
       AutomationProperties.Name="Settings">
 
-    <Grid>
+    <Grid Background="{DynamicResource ShellWindowBackgroundBrush}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="350" />
         </Grid.ColumnDefinitions>
 
-        <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" Padding="24,24,12,24">
+        <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" Padding="28,20,12,32">
             <StackPanel MaxWidth="800">
                 <!-- Header -->
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,24">
-                    <TextBlock Text="{StaticResource IconSettings}"
-                               FontFamily="{StaticResource SymbolThemeFontFamily}"
-                               FontSize="28"
-                               Foreground="{StaticResource InfoColorBrush}"
-                               VerticalAlignment="Center" />
-                    <TextBlock Text="Settings"
-                               Style="{StaticResource PageTitleStyle}"
-                               Margin="12,0,0,0"
-                               VerticalAlignment="Center" />
-                </StackPanel>
+                <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24">
+                    <StackPanel Orientation="Horizontal">
+                        <Border Width="44" Height="44" CornerRadius="14"
+                                Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                                BorderBrush="{StaticResource InfoColorBrush}" BorderThickness="1">
+                            <TextBlock Text="{StaticResource IconSettings}"
+                                       FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                       FontSize="24"
+                                       Foreground="{StaticResource InfoColorBrush}"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center" />
+                        </Border>
+                        <StackPanel Margin="12,0,0,0">
+                            <TextBlock Text="Settings"
+                                       Style="{StaticResource PageTitleStyle}" />
+                            <TextBlock Text="Credential posture, storage defaults, profiles, and platform appearance."
+                                       Style="{StaticResource CardDescriptionStyle}" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
 
                 <!-- Quick Actions -->
                 <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
@@ -49,7 +58,7 @@
                                    Margin="0,0,0,12" />
 
                         <WrapPanel>
-                            <Button Style="{StaticResource SecondaryButtonStyle}"
+                            <Button Style="{StaticResource GhostButtonStyle}"
                                     Click="AddProvider_Click"
                                     Margin="0,0,8,8"
                                     Padding="16,10">
@@ -60,7 +69,7 @@
                                     <TextBlock Text="Add Provider" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
-                            <Button Style="{StaticResource SecondaryButtonStyle}"
+                            <Button Style="{StaticResource GhostButtonStyle}"
                                     Click="ConfigureStorage_Click"
                                     Margin="0,0,8,8"
                                     Padding="16,10">
@@ -71,7 +80,7 @@
                                     <TextBlock Text="Configure Storage" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
-                            <Button Style="{StaticResource SecondaryButtonStyle}"
+                            <Button Style="{StaticResource GhostButtonStyle}"
                                     Click="ManageCredentials_Click"
                                     Margin="0,0,8,8"
                                     Padding="16,10">
@@ -82,7 +91,7 @@
                                     <TextBlock Text="Credential Vault" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
-                            <Button Style="{StaticResource SecondaryButtonStyle}"
+                            <Button Style="{StaticResource GhostButtonStyle}"
                                     Click="RunSetupWizard_Click"
                                     Margin="0,0,8,8"
                                     Padding="16,10">
@@ -123,7 +132,7 @@
                             <ListView.ItemTemplate>
                                 <DataTemplate>
                                     <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
-                                            CornerRadius="8"
+                                            CornerRadius="12"
                                             Padding="12"
                                             Margin="0,3">
                                         <Grid>
@@ -208,7 +217,7 @@
                         <TextBlock Text="File structure preview:" Style="{StaticResource FormLabelStyle}" Margin="0,0,0,4" />
 
                         <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
-                                CornerRadius="6"
+                                CornerRadius="12"
                                 Padding="12">
                             <TextBlock x:Name="StoragePreviewText"
                                        FontFamily="Cascadia Code, Consolas, monospace"

@@ -1,4 +1,5 @@
 using Meridian.Backtesting.Sdk;
+using Interop = Meridian.FSharp.Interop;
 using Meridian.Strategies.Models;
 
 namespace Meridian.Strategies.Promotions;
@@ -18,22 +19,12 @@ public sealed class BacktestToLivePromoter
         ArgumentNullException.ThrowIfNull(result);
         ArgumentNullException.ThrowIfNull(criteria);
 
-        if (result.Metrics.SharpeRatio < criteria.MinSharpeRatio)
-        {
-            return false;
-        }
-
-        if (result.Metrics.MaxDrawdownPercent > criteria.MaxAllowedDrawdownPercent)
-        {
-            return false;
-        }
-
-        if (result.Metrics.TotalReturn < criteria.MinTotalReturn)
-        {
-            return false;
-        }
-
-        return true;
+        var decision = Interop.PromotionInterop.EvaluateBacktestPromotion(
+            result,
+            criteria.MinSharpeRatio,
+            criteria.MaxAllowedDrawdownPercent,
+            criteria.MinTotalReturn);
+        return decision.Eligible;
     }
 
     /// <summary>

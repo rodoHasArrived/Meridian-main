@@ -166,6 +166,7 @@ public partial class App : System.Windows.Application
         services.AddSingleton(_ => WpfServices.WatchlistService.Instance);
         services.AddSingleton(_ => WpfServices.ArchiveHealthService.Instance);
         services.AddSingleton(_ => WpfServices.SchemaService.Instance);
+        services.AddSingleton(_ => WpfServices.RunMatService.Instance);
         services.AddSingleton<AdminMaintenanceServiceBase>(_ => AdminMaintenanceServiceBase.Instance);
         services.AddSingleton<AdvancedAnalyticsServiceBase>(_ => new AdvancedAnalyticsServiceBase());
         services.AddSingleton(_ => SearchService.Instance);
@@ -234,6 +235,11 @@ public partial class App : System.Windows.Application
         services.AddTransient<ActivityLogPage>();
         services.AddTransient<DataBrowserPage>();
         services.AddTransient<BacktestPage>();
+        services.AddTransient<RunMatPage>();
+        services.AddTransient<StrategyRunsPage>();
+        services.AddTransient<RunDetailPage>();
+        services.AddTransient<RunPortfolioPage>();
+        services.AddTransient<RunLedgerPage>();
 
         // ── Backtesting service ──────────────────────────────────────────────
         services.AddSingleton(_ => WpfServices.BacktestService.Instance);
@@ -245,6 +251,11 @@ public partial class App : System.Windows.Application
         // ── ViewModels (transient — new instance per page navigation) ────────
         services.AddTransient<Meridian.Wpf.ViewModels.BackfillViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.DataQualityViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.RunMatViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.StrategyRunBrowserViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.StrategyRunDetailViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.StrategyRunPortfolioViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.StrategyRunLedgerViewModel>();
     }
 
     /// <summary>

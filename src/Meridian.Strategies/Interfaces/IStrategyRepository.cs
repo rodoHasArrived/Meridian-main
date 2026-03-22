@@ -16,4 +16,12 @@ public interface IStrategyRepository
 
     /// <summary>Returns the most recent run entry for <paramref name="strategyId"/>, or <c>null</c>.</summary>
     Task<StrategyRunEntry?> GetLatestRunAsync(string strategyId, CancellationToken ct = default);
+
+    /// <summary>Returns all recorded strategy runs across all strategies.</summary>
+    async IAsyncEnumerable<StrategyRunEntry> GetAllRunsAsync(
+        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+    {
+        await Task.CompletedTask;
+        yield break;
+    }
 }

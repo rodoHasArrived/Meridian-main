@@ -116,5 +116,5 @@ If you believe a job is skipping unexpectedly:
 
 For more information, see:
 - [GitHub Actions Documentation - Using Conditions](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idif)
-- [Workflow README](./README.md)
+- [Workflow README](../../archive/docs/README.md)
 - [Documentation Workflow](./documentation.yml)

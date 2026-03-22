@@ -1,0 +1,69 @@
+{
+  "description": "Recorded-style Polygon stock feed session for AAPL covering status, trade, quote, second aggregate, minute aggregate, and ignored frames.",
+  "subscriptions": {
+    "trades": ["AAPL"],
+    "quotes": ["AAPL"],
+    "aggregates": ["AAPL"]
+  },
+  "expected": {
+    "trade": {
+      "symbol": "AAPL",
+      "price": 213.45,
+      "size": 100,
+      "timestampMs": 1742481000123,
+      "streamId": "71620539",
+      "venue": "NASDAQ",
+      "aggressor": "Unknown",
+      "rawConditions": ["12", "37"]
+    },
+    "quote": {
+      "symbol": "AAPL",
+      "bidPrice": 213.44,
+      "bidSize": 300,
+      "askPrice": 213.46,
+      "askSize": 200,
+      "timestampMs": 1742481000456,
+      "venue": "NASDAQ"
+    },
+    "aggregates": [
+      {
+        "timeframe": "Second",
+        "symbol": "AAPL",
+        "open": 213.40,
+        "high": 213.47,
+        "low": 213.39,
+        "close": 213.45,
+        "volume": 1200,
+        "vwap": 213.43,
+        "tradeCount": 25,
+        "startTimeMs": 1742481000000,
+        "endTimeMs": 1742481001000
+      },
+      {
+        "timeframe": "Minute",
+        "symbol": "AAPL",
+        "open": 213.10,
+        "high": 213.50,
+        "low": 213.00,
+        "close": 213.45,
+        "volume": 58000,
+        "vwap": 213.28,
+        "tradeCount": 900,
+        "startTimeMs": 1742480940000,
+        "endTimeMs": 1742481000000
+      }
+    ],
+    "expectedIntegrityEvents": 0
+  },
+  "messages": [
+    "[{\"ev\":\"status\",\"status\":\"connected\",\"message\":\"Connected Successfully\"}]",
+    "[{\"ev\":\"status\",\"status\":\"auth_success\",\"message\":\"authenticated\"}]",
+    "[{\"ev\":\"status\",\"status\":\"success\",\"message\":\"subscribed to: T.AAPL,Q.AAPL,A.AAPL,AM.AAPL\"}]",
+    "[{\"ev\":\"T\",\"sym\":\"AAPL\",\"p\":213.45,\"s\":100,\"t\":1742481000123,\"i\":\"71620539\",\"x\":4,\"c\":[12,37]}]",
+    "[{\"ev\":\"Q\",\"sym\":\"AAPL\",\"bp\":213.44,\"bs\":300,\"ap\":213.46,\"as\":200,\"t\":1742481000456,\"x\":4}]",
+    "[{\"ev\":\"A\",\"sym\":\"AAPL\",\"o\":213.40,\"h\":213.47,\"l\":213.39,\"c\":213.45,\"v\":1200,\"vw\":213.43,\"s\":1742481000000,\"e\":1742481001000,\"n\":25}]",
+    "[{\"ev\":\"AM\",\"sym\":\"AAPL\",\"o\":213.10,\"h\":213.50,\"l\":213.00,\"c\":213.45,\"v\":58000,\"vw\":213.28,\"s\":1742480940000,\"e\":1742481000000,\"n\":900}]",
+    "[{\"ev\":\"Q\",\"sym\":\"MSFT\",\"bp\":400.10,\"bs\":10,\"ap\":400.20,\"as\":12,\"t\":1742481000500,\"x\":4}]",
+    "[{\"ev\":\"A\",\"sym\":\"AAPL\",\"o\":0,\"h\":213.50,\"l\":213.00,\"c\":213.40,\"v\":10,\"vw\":213.20,\"s\":1742481001000,\"e\":1742481002000,\"n\":2}]"
+  ]
+}

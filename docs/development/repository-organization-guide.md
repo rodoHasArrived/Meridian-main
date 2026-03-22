@@ -317,9 +317,9 @@ docs/
 │   ├── overview.md
 │   ├── layer-boundaries.md
 │   └── *.puml (diagrams)
-├── archived/               # Historical/superseded docs
-│   ├── INDEX.md           # Index of archived docs (to be created)
-│   └── [old docs]
++-- archive/                # Project-level historical material root
+�   +-- docs/               # Historical and superseded docs
+�   +-- code/               # Reserved for retired code snapshots
 ├── audits/                 # Code audits and analyses
 │   ├── CLEANUP_SUMMARY.md
 │   └── DUPLICATE_CODE_ANALYSIS.md
@@ -730,7 +730,7 @@ This guide should evolve as the repository grows. To suggest improvements:
 ## Related Documentation
 
 - **Planning and Cleanup:**
-  - [Repository Cleanup Action Plan](../archived/repository-cleanup-action-plan.md) - Technical debt reduction plan (completed)
+  - [Repository Cleanup Action Plan](../../archive/docs/plans/repository-cleanup-action-plan.md) - Technical debt reduction plan (completed)
   - [Refactor Map](./refactor-map.md) - Safe refactoring procedures
   - [Project Roadmap](../status/ROADMAP.md) - Project timeline and phases
 

@@ -1,5 +1,7 @@
 # Copilot Repository Instructions
 
+**Last Updated:** 2026-03-21
+
 Use these instructions for every task in this repository to improve quality, reliability, and review speed.
 
 > **See also:** [CLAUDE.md](../CLAUDE.md) for full project context | [docs/ai/README.md](../docs/ai/README.md) for the master AI resource index

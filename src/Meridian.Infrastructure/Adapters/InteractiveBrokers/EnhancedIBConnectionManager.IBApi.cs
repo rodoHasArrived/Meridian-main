@@ -6,12 +6,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using IBApi;
 using Meridian.Application.Config;
-using Meridian.Infrastructure.Performance;
+using Meridian.Application.Logging;
+using Meridian.Core.Performance;
+using Serilog;
 
 namespace Meridian.Infrastructure.Adapters.InteractiveBrokers;
 
 public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
 {
+    private static readonly ILogger _log = LoggingSetup.ForContext<EnhancedIBConnectionManager>();
     private readonly IBCallbackRouter _router;
 
     private readonly EReaderSignal _signal;
@@ -50,7 +53,7 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
 
     // Latency tracking
     private long _currentTimeRequestTimestamp;
-    private volatile double _lastRoundTripLatencyUs;
+    private double _lastRoundTripLatencyUs;
 
     public EnhancedIBConnectionManager(
         IBCallbackRouter router,

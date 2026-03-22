@@ -33,8 +33,8 @@ public sealed partial class EnhancedIBConnectionManager
     /// Centralizes the platform guard used by the non-IBAPI build so each stub entry point stays concise.
     /// </summary>
     private static Exception ThrowPlatformNotSupported() => new NotSupportedException(
-        "Build with IBAPI defined and reference the official IBApi package/dll. " +
-        "The IBAPI build includes exponential backoff retry, heartbeat monitoring, and automatic reconnection.");
+        IBBuildGuidance.BuildRealProviderMessage("EnhancedIBConnectionManager")
+        + " The IBAPI build includes exponential backoff retry, heartbeat monitoring, and automatic reconnection.");
 
     public Task ConnectAsync() => Task.FromException(ThrowPlatformNotSupported());
 

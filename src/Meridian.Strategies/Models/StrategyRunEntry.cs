@@ -13,7 +13,14 @@ public sealed record StrategyRunEntry(
     RunType RunType,
     DateTimeOffset StartedAt,
     DateTimeOffset? EndedAt,
-    BacktestResult? Metrics)
+    BacktestResult? Metrics,
+    string? DatasetReference = null,
+    string? FeedReference = null,
+    string? PortfolioId = null,
+    string? LedgerReference = null,
+    string? AuditReference = null,
+    string? Engine = null,
+    IReadOnlyDictionary<string, string>? ParameterSet = null)
 {
     /// <summary>Creates a new run entry with a generated run ID and current timestamp.</summary>
     public static StrategyRunEntry Start(string strategyId, string strategyName, RunType runType) =>
@@ -24,7 +31,16 @@ public sealed record StrategyRunEntry(
             RunType: runType,
             StartedAt: DateTimeOffset.UtcNow,
             EndedAt: null,
-            Metrics: null);
+            Metrics: null,
+            PortfolioId: $"{strategyId}-{runType.ToString().ToLowerInvariant()}-portfolio",
+            LedgerReference: $"{strategyId}-{runType.ToString().ToLowerInvariant()}-ledger",
+            Engine: runType switch
+            {
+                RunType.Backtest => "MeridianNative",
+                RunType.Paper => "BrokerPaper",
+                RunType.Live => "BrokerLive",
+                _ => "Unknown"
+            });
 
     /// <summary>Returns a copy of this entry marked as ended with the provided metrics.</summary>
     public StrategyRunEntry Complete(BacktestResult? metrics) =>

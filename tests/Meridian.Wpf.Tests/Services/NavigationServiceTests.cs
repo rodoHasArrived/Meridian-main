@@ -74,6 +74,19 @@ public sealed class NavigationServiceTests
     }
 
     [Fact]
+    public void IsPageRegistered_WithUnknownPage_ShouldReturnFalse()
+    {
+        // Arrange
+        var service = NavigationService.Instance;
+
+        // Act
+        var isRegistered = service.IsPageRegistered("NonExistentPage12345");
+
+        // Assert
+        isRegistered.Should().BeFalse("non-existent page should not be registered");
+    }
+
+    [Fact]
     public void CanGoBack_BeforeInitialization_ShouldReturnFalse()
     {
         // Arrange
@@ -139,6 +152,10 @@ public sealed class NavigationServiceTests
 
     [Theory]
     [InlineData("Backtest")]
+    [InlineData("StrategyRuns")]
+    [InlineData("RunDetail")]
+    [InlineData("RunPortfolio")]
+    [InlineData("RunLedger")]
     [InlineData("LeanIntegration")]
     [InlineData("PortfolioImport")]
     [InlineData("TradingHours")]
@@ -158,6 +175,8 @@ public sealed class NavigationServiceTests
     [InlineData("Dashboard")]
     [InlineData("LiveData")]
     [InlineData("Charts")]
+    [InlineData("RunMat")]
+    [InlineData("StrategyRuns")]
     [InlineData("OrderBook")]
     [InlineData("Watchlist")]
     public void IsPageRegistered_ResearchSectionPages_ShouldReturnTrue(string pageTag)
@@ -208,17 +227,6 @@ public sealed class NavigationServiceTests
 
         // Assert
         isRegistered.Should().BeTrue($"governance section page '{pageTag}' must be registered and reachable");
-    }
-
-    {
-        // Arrange
-        var service = NavigationService.Instance;
-
-        // Act
-        var isRegistered = service.IsPageRegistered("NonExistentPage12345");
-
-        // Assert
-        isRegistered.Should().BeFalse("non-existent page should not be registered");
     }
 
     [Fact]

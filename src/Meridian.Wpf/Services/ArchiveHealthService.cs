@@ -401,8 +401,7 @@ public sealed class ArchiveHealthService
             {
                 await using var gzipStream = new System.IO.Compression.GZipStream(stream,
                     System.IO.Compression.CompressionMode.Decompress);
-                var buffer = new byte[1024];
-                await gzipStream.ReadAsync(buffer);
+                await sha256.ComputeHashAsync(gzipStream);
             }
             else
             {

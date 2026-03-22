@@ -1,6 +1,7 @@
 using System.IO.Compression;
 using System.Text;
 using System.Text.Json;
+using System.Globalization;
 
 namespace Meridian.Storage.Export;
 
@@ -39,19 +40,25 @@ public sealed partial class AnalysisExportService
                 }
 
                 allRecords = EnrichWithFeatures(allRecords, request.Features!);
+                var transformedRecords = allRecords
+                    .Select(record => TransformRecordForProfile(record, profile))
+                    .ToList();
+                var columns = GetCsvColumns(transformedRecords, profile);
 
-                await using var writer = new StreamWriter(outputPath, false, Encoding.UTF8);
-                if (allRecords.Count > 0)
+                await using (var writer = new StreamWriter(outputPath, false, Encoding.UTF8))
                 {
-                    await writer.WriteLineAsync(string.Join(",", allRecords[0].Keys));
-                    foreach (var record in allRecords)
+                    if (transformedRecords.Count > 0)
                     {
-                        var values = record.Values.Select(v => EscapeCsvValue(v?.ToString() ?? ""));
-                        await writer.WriteLineAsync(string.Join(",", values));
+                        await writer.WriteLineAsync(string.Join(",", columns));
+                        foreach (var record in transformedRecords)
+                        {
+                            var values = columns.Select(column => EscapeCsvValue(GetCsvValue(record, column)));
+                            await writer.WriteLineAsync(string.Join(",", values));
+                        }
                     }
                 }
 
-                _log.Information("Enriched {Count} records with features for {Symbol}", allRecords.Count, symbol);
+                _log.Information("Enriched {Count} records with features for {Symbol}", transformedRecords.Count, symbol);
 
                 var enrichedInfo = new FileInfo(outputPath);
                 exportedFiles.Add(new ExportedFile
@@ -61,7 +68,7 @@ public sealed partial class AnalysisExportService
                     Symbol = symbol,
                     Format = "csv",
                     SizeBytes = enrichedInfo.Length,
-                    RecordCount = allRecords.Count,
+                    RecordCount = transformedRecords.Count,
                     ChecksumSha256 = await ComputeChecksumAsync(outputPath, ct)
                 });
             }
@@ -69,23 +76,26 @@ public sealed partial class AnalysisExportService
             {
                 // Streaming export without features (no memory buffering needed)
                 var recordCount = 0L;
-                var isFirst = true;
+                string[]? columns = null;
 
-                await using var writer = new StreamWriter(outputPath, false, Encoding.UTF8);
-
-                foreach (var sourceFile in group)
+                await using (var writer = new StreamWriter(outputPath, false, Encoding.UTF8))
                 {
-                    await foreach (var record in ReadJsonlRecordsAsync(sourceFile.Path, ct))
+                    foreach (var sourceFile in group)
                     {
-                        if (isFirst)
+                        await foreach (var record in ReadJsonlRecordsAsync(sourceFile.Path, ct))
                         {
-                            await writer.WriteLineAsync(string.Join(",", record.Keys));
-                            isFirst = false;
-                        }
+                            var transformedRecord = TransformRecordForProfile(record, profile);
 
-                        var values = record.Values.Select(v => EscapeCsvValue(v?.ToString() ?? ""));
-                        await writer.WriteLineAsync(string.Join(",", values));
-                        recordCount++;
+                            if (columns is null)
+                            {
+                                columns = GetCsvColumns(new[] { transformedRecord }, profile);
+                                await writer.WriteLineAsync(string.Join(",", columns));
+                            }
+
+                            var values = columns.Select(column => EscapeCsvValue(GetCsvValue(transformedRecord, column)));
+                            await writer.WriteLineAsync(string.Join(",", values));
+                            recordCount++;
+                        }
                     }
                 }
 
@@ -104,6 +114,111 @@ public sealed partial class AnalysisExportService
         }
 
         return exportedFiles;
+    }
+
+    private static Dictionary<string, object?> TransformRecordForProfile(
+        Dictionary<string, object?> record,
+        ExportProfile profile)
+    {
+        var exclude = profile.ExcludeFields is { Length: > 0 }
+            ? new HashSet<string>(profile.ExcludeFields, StringComparer.OrdinalIgnoreCase)
+            : null;
+        var transformed = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+
+        if (profile.IncludeFields is { Length: > 0 })
+        {
+            foreach (var field in profile.IncludeFields)
+            {
+                if (exclude?.Contains(field) == true)
+                    continue;
+
+                if (record.TryGetValue(field, out var value))
+                    transformed[field] = TransformFieldValue(field, value, profile);
+            }
+
+            return transformed;
+        }
+
+        foreach (var (key, value) in record)
+        {
+            if (exclude?.Contains(key) == true)
+                continue;
+
+            transformed[key] = TransformFieldValue(key, value, profile);
+        }
+
+        return transformed;
+    }
+
+    private static string[] GetCsvColumns(
+        IEnumerable<Dictionary<string, object?>> records,
+        ExportProfile profile)
+    {
+        if (profile.IncludeFields is { Length: > 0 })
+        {
+            return profile.IncludeFields
+                .Where(field => profile.ExcludeFields?.Contains(field, StringComparer.OrdinalIgnoreCase) != true)
+                .ToArray();
+        }
+
+        return records.FirstOrDefault()?.Keys.ToArray() ?? Array.Empty<string>();
+    }
+
+    private static object? TransformFieldValue(string key, object? value, ExportProfile profile)
+    {
+        if (!key.Equals("Timestamp", StringComparison.OrdinalIgnoreCase) || value is null)
+            return value;
+
+        if (!TryParseTimestamp(value, out var timestamp))
+            return value;
+
+        return profile.TimestampSettings.Format switch
+        {
+            TimestampFormat.Iso8601 => timestamp.UtcDateTime.ToString("o", CultureInfo.InvariantCulture),
+            TimestampFormat.UnixSeconds => timestamp.ToUnixTimeSeconds(),
+            TimestampFormat.UnixMilliseconds => timestamp.ToUnixTimeMilliseconds(),
+            TimestampFormat.UnixNanoseconds => ToUnixNanoseconds(timestamp),
+            TimestampFormat.ExcelSerial => timestamp.UtcDateTime.ToOADate(),
+            _ => value
+        };
+    }
+
+    private static bool TryParseTimestamp(object value, out DateTimeOffset timestamp)
+    {
+        switch (value)
+        {
+            case DateTimeOffset dto:
+                timestamp = dto;
+                return true;
+            case DateTime dt:
+                timestamp = new DateTimeOffset(dt, dt.Kind == DateTimeKind.Unspecified ? TimeSpan.Zero : default).ToUniversalTime();
+                return true;
+            case string s when DateTimeOffset.TryParse(s, CultureInfo.InvariantCulture,
+                DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var parsed):
+                timestamp = parsed;
+                return true;
+            default:
+                timestamp = default;
+                return false;
+        }
+    }
+
+    private static long ToUnixNanoseconds(DateTimeOffset timestamp)
+    {
+        var delta = timestamp.UtcDateTime - DateTime.UnixEpoch;
+        return checked(delta.Ticks * 100L);
+    }
+
+    private static string GetCsvValue(Dictionary<string, object?> record, string column)
+    {
+        if (!record.TryGetValue(column, out var value) || value is null)
+            return string.Empty;
+
+        return value switch
+        {
+            IFormattable formattable => formattable.ToString(null, CultureInfo.InvariantCulture),
+            _ => value.ToString() ?? string.Empty
+        };
     }
 
     private static bool HasAnyFeature(FeatureSettings f) =>

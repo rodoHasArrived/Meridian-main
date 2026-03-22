@@ -13,6 +13,9 @@
     <Compile Include="CalculationTests.fs" />
     <Compile Include="CanonicalizationTests.fs" />
     <Compile Include="PipelineTests.fs" />
+    <Compile Include="RiskPolicyTests.fs" />
+    <Compile Include="TradingTransitionTests.fs" />
+    <Compile Include="LedgerKernelTests.fs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -27,6 +30,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Meridian.Backtesting.Sdk\Meridian.Backtesting.Sdk.csproj" />
+    <ProjectReference Include="..\..\src\Meridian.Execution.Sdk\Meridian.Execution.Sdk.csproj" />
     <ProjectReference Include="..\..\src\Meridian.FSharp\Meridian.FSharp.fsproj" />
+    <ProjectReference Include="..\..\src\Meridian.FSharp.Trading\Meridian.FSharp.Trading.fsproj" />
+    <ProjectReference Include="..\..\src\Meridian.FSharp.Ledger\Meridian.FSharp.Ledger.fsproj" />
+    <ProjectReference Include="..\..\src\Meridian.Ledger\Meridian.Ledger.csproj" />
   </ItemGroup>
 </Project>

@@ -1,7 +1,7 @@
 # Meridian - Improvement Tracking
 
 **Version:** 1.7.0
-**Last Updated:** 2026-03-20
+**Last Updated:** 2026-03-21
 **Status:** Active tracking document
 
 This document consolidates **functional improvements** (features, reliability, UX) and **structural improvements** (architecture, modularity, code quality) into a single source of truth for tracking. For phased execution timeline, see [`ROADMAP.md`](ROADMAP.md).
@@ -34,8 +34,8 @@ This document consolidates **functional improvements** (features, reliability, U
 
 | Status | Count | Items |
 |--------|-------|-------|
-| ✅ **Completed** | 33 | A1, A2, A3, A4, A5, A6, A7, B1, B2, B3, B4, B5, C1, C2, C4, C5, C6, C7, D1, D2, D3, D4, D5, D6, D7, E1, E2, E3, F1, F2, F3, G1, G3 |
-| 🔄 **Partially Complete** | 2 | C3, G2 |
+| ✅ **Completed** | 35 | A1, A2, A3, A4, A5, A6, A7, B1, B2, B3, B4, B5, C1, C2, C3, C4, C5, C6, C7, D1, D2, D3, D4, D5, D6, D7, E1, E2, E3, F1, F2, F3, G1, G2, G3 |
+| 🔄 **Partially Complete** | 0 | None |
 | 📝 **Open** | 0 | None |
 | **Total** | 35 | All improvement items (core) |
 
@@ -45,19 +45,33 @@ This document consolidates **functional improvements** (features, reliability, U
 |-------|-----------|---------|------|-------|
 | A: Reliability & Resilience | 7 | 0 | 0 | 7 |
 | B: Testing & Quality | 5 | 0 | 0 | 5 |
-| C: Architecture & Modularity | 6 | 1 | 0 | 7 |
+| C: Architecture & Modularity | 7 | 0 | 0 | 7 |
 | D: API & Integration | 7 | 0 | 0 | 7 |
 | E: Performance & Scalability | 3 | 0 | 0 | 3 |
 | F: User Experience | 3 | 0 | 0 | 3 |
-| G: Operations & Monitoring | 2 | 1 | 0 | 3 |
-| J: Data Canonicalization | 7 | 1 | 0 | 8 |
+| G: Operations & Monitoring | 3 | 0 | 0 | 3 |
+| J: Data Canonicalization | 8 | 0 | 0 | 8 |
 
 ### Portfolio Health Snapshot
 
-- **Completion ratio:** 94.3% complete (33/35), 5.7% partial (2/35), 0% open (0/35).
-- **Remaining partial items:** C3 (WebSocket provider lifecycle consolidation) and G2 (OpenTelemetry trace context propagation).
-- **C3 scope update:** Polygon now extends `WebSocketProviderBase`; the remaining structural work is the NYSE streaming migration, while StockSharp is now treated as a separate connector-based pattern rather than a direct WebSocket-base candidate.
-- **Recommended focus:** finish NYSE-side C3 consolidation, complete G2 trace propagation, then continue Theme J fixture drift detection and Theme K workstation migration planning.
+- **Completion ratio:** 100% complete (35/35), 0% partial (0/35), 0% open (0/35).
+- **Core improvement themes A-G are closed** for the current platform baseline.
+- **Theme J canonicalization is closed** through J8, including drift reporting and fixture-maintenance workflow support.
+- **Recommended focus:** provider-confidence hardening, H2 multi-instance coordination design, Security Master productization, account/entity and trade-management productization, reconciliation/reporting productization, and Theme K workstation delivery on top of the now-shared run / portfolio / ledger baseline.
+
+### Backlog Inputs
+
+The active improvement tracker now absorbs the current-value outputs from the brainstorm/proposal set instead of treating every evaluation as an equal live backlog source.
+
+- Active backlog inputs:
+  - `docs/evaluations/high-impact-improvement-brainstorm-2026-03.md`
+  - `docs/evaluations/high-value-low-cost-improvements-brainstorm.md`
+  - `docs/evaluations/nautilus-inspired-restructuring-proposal.md`
+  - `docs/evaluations/2026-03-brainstorm-next-frontier.md`
+- Historical backlog input:
+  - `archive/docs/assessments/high-impact-improvements-brainstorm.md`
+
+Use this document and `FULL_IMPLEMENTATION_TODO_2026_03_20.md` as the active normalized backlog, and treat brainstorm documents as supporting analysis unless they are explicitly promoted here.
 
 ### Next Sprint Backlog (Recommended)
 
@@ -69,8 +83,8 @@ This document consolidates **functional improvements** (features, reliability, U
 | 4 | B3 tranche 1, G2 partial, D7 partial | Provider tests for Polygon + StockSharp; OTel pipeline metrics; typed OpenAPI annotations | ✅ Done |
 | 5 | B2 tranche 1, D7 remainder | Negative-path + schema validation tests; typed annotations across all endpoint families | ✅ Done |
 | 6 | C1/C2, H1, H4, I1 | Provider registration unified under DI; per-provider backfill rate limiting; degradation scoring; test harness | ✅ Done |
-| 7 | C3 remainder, B3 tranche 2 | NYSE WebSocket lifecycle consolidation; IB + Alpaca provider tests | 🔄 Partial (Polygon done; NYSE pending; B3 tranche 2 done) |
-| 8 | G2 remainder, J8 canary | Full trace propagation and canonicalization drift detection | 🔄 Partial (G2 trace propagation pending; J8 CI canary pending) |
+| 7 | C3 remainder, B3 tranche 2 | NYSE shared-lifecycle bridge lands; IB + Alpaca provider tests expand | ✅ Done |
+| 8 | G2 remainder, J8 canary | Full trace propagation and canonicalization drift detection/reporting land | ✅ Done |
 
 ---
 
@@ -1143,21 +1157,19 @@ No clear contract for what each validates or when it runs.
 
 ---
 
-### J8. 🔄 Golden Fixture Test Suite (PARTIAL)
+### J8. ✅ Golden Fixture Test Suite (COMPLETED)
 
-**Impact:** Medium | **Effort:** Medium | **Priority:** P2 | **Status:** 🔄 PARTIAL
+**Impact:** Medium | **Effort:** Medium | **Priority:** P2 | **Status:** ✅ DONE
 
 **Problem:** No test fixtures for verifying canonicalization correctness across providers.
 
-**What exists:**
+**Solution Implemented:**
 - Unit tests for `EventCanonicalizer`, `ConditionCodeMapper`, `VenueMicMapper`, and `CanonicalizingPublisher` cover core correctness, idempotency, and edge cases
 - Property tests for idempotency (canonicalize twice = same result), raw symbol preservation, and tier progression are covered in `EventCanonicalizerTests`
 - **8 curated fixture JSON files** in `tests/Meridian.Tests/Application/Canonicalization/Fixtures/` covering Alpaca and Polygon regular, extended-hours, and odd-lot trade scenarios plus cross-provider XNAS identity checks
 - **`CanonicalizationGoldenFixtureTests`** loads all `.json` fixture files at runtime using `[Theory][MemberData]`, constructs `MarketEvent` from fixture inputs, applies production symbol and venue canonicalization (via `venue-mapping.json`), and asserts canonical symbol, venue, tier, and version fields match expected values
-
-**Remaining:**
-- Backward compatibility tests replaying archived JSONL files through canonicalizer
-- Drift canary CI job for detecting new unmapped codes
+- PR checks now emit an actionable canonicalization drift report artifact/summary for unmapped condition codes and venues
+- A manual fixture-maintenance workflow supports curated suite upkeep
 
 **Files:**
 - `tests/Meridian.Tests/Application/Canonicalization/Fixtures/*.json` (8 fixture files)
@@ -1175,7 +1187,7 @@ No clear contract for what each validates or when it runs.
 |----------|-------|-------------|
 | **P0** | A1-A4 | Critical reliability fixes - ALL DONE ✅ |
 | **P1** | A3, A5, B1-B2, C1-C2, C4-C6, D4, G1 | High impact, low-medium effort - A3, B2 DONE ✅ |
-| **P2** | A6-A7, B3-B5, C3, D5-D6, E1, F2-F3, G2-G3, J8 | Medium impact or higher effort - most complete; C3/G2/J8 remain active 🔄 |
+| **P2** | A6-A7, B3-B5, D5-D6, E1, F2-F3, G3 | Medium impact or higher effort - core work complete; remaining focus shifts to roadmap execution |
 | **P3** | D7, E3 | Lower priority or high effort - C7, F1 DONE ✅ |
 
 ### Recommended Execution Order
@@ -1199,7 +1211,7 @@ No clear contract for what each validates or when it runs.
 12. B5 — Provider SDK tests
 
 **Phase 4 — Larger Refactors (12-16 weeks):**
-13. C3 — NYSE-side WebSocket lifecycle consolidation
+13. ~~C3 — NYSE-side WebSocket lifecycle consolidation~~ ✅ Done
 14. ~~C7 — WPF/UWP service deduplication~~ ✅ Done (UWP removed)
 15. E3 — GC pressure reduction (Polygon optimization)
 16. ~~F1 — UWP navigation consolidation~~ ✅ Done (UWP removed)
@@ -1223,13 +1235,13 @@ No clear contract for what each validates or when it runs.
 
 4. **Performance Track** — Optimization (lower priority)
    - E3: Polygon zero-alloc parsing
-   - G2: OpenTelemetry tracing
+   - Theme K: trading workstation delivery
 
 ### Success Metrics
 
 | Metric | Current | Target | Phase |
 |--------|---------|--------|-------|
-| Completed Improvements | 33/35 | 35/35 | All |
+| Completed Improvements | 35/35 | 35/35 | All |
 | Test Files | 219 | 250+ | Phase 1-3 |
 | Test Methods | ~3,444 | 4,000+ | Phase 1-3 |
 | Route Constants | 283 | 283 | Phase 3 |
@@ -1237,7 +1249,7 @@ No clear contract for what each validates or when it runs.
 
 ### Risk Mitigation
 
-- **Break Large Refactors** — C3, C7 should be split into smaller PRs
+- **Break Large Refactors** — Theme K workstation slices and large readability refactors should be split into smaller PRs
 - **Test First** — B2-B5 should precede major refactoring
 - **Incremental Rollout** — F1 (UWP consolidation) can be phased
 - **Benchmark Performance** — E3 must include before/after metrics
@@ -1260,7 +1272,7 @@ No clear contract for what each validates or when it runs.
 
 - **Small PR (preferred):** 1 improvement item or one coherent subset (<500 LOC net change).
 - **Medium PR:** 1 item with migration shims + tests (<1,200 LOC net).
-- **Large PR (exception):** C3/C7-level refactors; require design note and staged rollout plan.
+- **Large PR (exception):** Theme K or readability-level refactors; require design note and staged rollout plan.
 
 ### Quality Gates per Improvement Item
 
@@ -1289,7 +1301,7 @@ Each item should not be marked complete until all gates are met:
 2. ~~C6, A7~~ ✅ Done
 3. ~~B2 → B3 (provider confidence)~~ ✅ Done
 4. ~~C1/C2 (composition + provider extensibility)~~ ✅ Done
-5. C3 remainder (NYSE lifecycle consolidation) → G2 remainder (trace propagation)
+5. provider/runtime hardening → Theme K workstation delivery → flagship capability implementation
 
 ---
 
@@ -1338,20 +1350,20 @@ Improvements Tracker Update
 
 These documents are superseded by this consolidated tracker:
 
-- `docs/archived/IMPROVEMENTS_2026-02.md` — Original functional improvements (10 completed)
-- `docs/archived/STRUCTURAL_IMPROVEMENTS_2026-02.md` — Original structural improvements (15 items)
-- `docs/archived/REDESIGN_IMPROVEMENTS.md` — UI redesign quality summary
-- `docs/archived/2026-02_UI_IMPROVEMENTS_SUMMARY.md` — Visual UI improvements summary
-- `docs/archived/CHANGES_SUMMARY.md` — Historical changes (v1.5.0 and earlier)
-- `docs/archived/ROADMAP_UPDATE_SUMMARY.md` — Roadmap expansion summary (archived)
+- `../../archive/docs/summaries/IMPROVEMENTS_2026-02.md` — Original functional improvements (10 completed)
+- `../../archive/docs/summaries/STRUCTURAL_IMPROVEMENTS_2026-02.md` — Original structural improvements (15 items)
+- `../../archive/docs/summaries/REDESIGN_IMPROVEMENTS.md` — UI redesign quality summary
+- `../../archive/docs/summaries/2026-02_UI_IMPROVEMENTS_SUMMARY.md` — Visual UI improvements summary
+- `../../archive/docs/summaries/CHANGES_SUMMARY.md` — Historical changes (v1.5.0 and earlier)
+- `../../archive/docs/summaries/ROADMAP_UPDATE_SUMMARY.md` — Roadmap expansion summary (archived)
 
-See [`archived/INDEX.md`](../archived/INDEX.md) for context on archived documents.
+See [`../../archive/docs/INDEX.md`](../../archive/docs/INDEX.md) for context on archived documents.
 
 ---
 
-**Last Updated:** 2026-03-20
+**Last Updated:** 2026-03-21
 **Maintainer:** Project Team
-**Status:** ✅ Active tracking document — 94.3% complete (33/35 core items), 2 partial core items remaining, Theme J canonicalization at 7/8, Theme K planning active
+**Status:** ✅ Active tracking document — 100% of core improvements complete (35/35), Theme J canonicalization complete (8/8), Theme K delivery active
 **Next Review:** Weekly engineering sync (or immediately after any status change)
 
 
@@ -1361,9 +1373,9 @@ See [`archived/INDEX.md`](../archived/INDEX.md) for context on archived document
 
 ### K1. 📝 Workflow-Centric Workspace Migration
 
-**Impact:** High | **Effort:** High | **Priority:** P1 | **Status:** 📝 PLANNED
+**Impact:** High | **Effort:** High | **Priority:** P1 | **Status:** 🔄 IN PROGRESS
 
-**Problem:** Meridian functionality is broad but still exposed through many page-centric entry points. Users can backtest, inspect live data, configure Lean, and manage storage, but the product does not yet present a unified research → trading → governance workflow.
+**Problem:** Meridian functionality is broad but still exposed through too many page-centric entry points. The vocabulary and workspace/session model now align on `Research`, `Trading`, `Data Operations`, and `Governance`, but the product still needs deeper workspace-native shells and quick-action flows.
 
 **Planned Solution:**
 - Consolidate top-level UX into `Research`, `Trading`, `Data Operations`, and `Governance` workspaces
@@ -1376,16 +1388,45 @@ See [`archived/INDEX.md`](../archived/INDEX.md) for context on archived document
 
 ### K2. 📝 Shared Run / Portfolio / Ledger Read Models
 
-**Impact:** High | **Effort:** High | **Priority:** P1 | **Status:** 📝 PLANNED
+**Impact:** High | **Effort:** High | **Priority:** P1 | **Status:** 🔄 IN PROGRESS
 
-**Problem:** Backtests, paper-trading sessions, and future live runs do not yet share one operator-facing run model. The ledger exists internally but is not first-class in the product.
+**Problem:** Meridian now has the beginnings of one operator-facing run model, but it is still backtest-first and not yet expanded across paper/live history or richer governance workflows.
 
 **Planned Solution:**
 - Introduce shared `StrategyRun` contracts
 - Add shared portfolio summaries and ledger read services
 - Make run history, portfolio state, and ledger drill-down reusable across engines and modes
 
+**Current baseline:**
+- shared workstation DTOs exist for run summaries/details, portfolio summaries/positions, ledger summaries, journal rows, trial balance rows, and run comparison views
+- `StrategyRunReadService`, `PortfolioReadService`, and `LedgerReadService` are in code
+- WPF now exposes a first `StrategyRuns` browser plus `RunDetail`, `RunPortfolio`, and `RunLedger` drill-ins
+
+**Next expansion:**
+- add cash-flow modeling and projection views to governance-grade portfolio/ledger workflows
+- expose trial-balance and multi-ledger tracking explicitly, not only as supporting read models
+- integrate Security Master metadata so portfolio, ledger, and governance surfaces use one authoritative instrument layer
+- add a reconciliation engine with break queues and governed exception handling
+- add report generation tools for fund-ops, investor, compliance, and board-style reporting packs
+- connect the shared run/portfolio/ledger model to account, entity, and trade-management workflows so Meridian can function as a full fund-management platform
+
 **ROADMAP:** Phase 12
+
+---
+
+### K2A. 📝 Security Master Productization
+
+**Impact:** High | **Effort:** High | **Priority:** P1 | **Status:** 🔄 IN PROGRESS
+
+**Problem:** Security Master implementation now exists in contracts, services, storage, migrations, and F# domain models, but it is still underrepresented in the active product roadmap and not yet treated as a first-class platform capability for workstation workflows.
+
+**Planned Solution:**
+- elevate Security Master into an explicit product/platform track
+- use Security Master as the authoritative instrument-definition layer for research, portfolio, ledger, and governance experiences
+- connect security identifiers, classifications, and economic definitions to downstream cash-flow and multi-ledger workflows
+- use Security Master metadata to improve reconciliation matching quality and reporting classification
+
+**ROADMAP:** Phase 12A
 
 ---
 
@@ -1393,7 +1434,7 @@ See [`archived/INDEX.md`](../archived/INDEX.md) for context on archived document
 
 **Impact:** High | **Effort:** High | **Priority:** P1 | **Status:** 📝 PLANNED
 
-**Problem:** Native backtesting, Lean integration, and paper-trading infrastructure exist, but the user experience is split across separate surfaces and does not yet feel like one strategy lifecycle.
+**Problem:** Native backtesting, Lean integration, and paper-trading infrastructure exist, but the user experience is still split across separate surfaces and does not yet feel like one strategy lifecycle on top of the new shared run model.
 
 **Planned Solution:**
 - Build a unified Backtest Studio with engine selection and run comparison

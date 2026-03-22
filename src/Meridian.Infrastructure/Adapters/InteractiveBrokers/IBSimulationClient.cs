@@ -67,7 +67,8 @@ public sealed class IBSimulationClient : IMarketDataClient
 
     public string ProviderId => "ib-sim";
     public string ProviderDisplayName => "Interactive Brokers (Simulation)";
-    public string ProviderDescription => "Simulated IB data for development. Build with IBAPI defined for real TWS/Gateway connectivity.";
+    public string ProviderDescription => "Simulated IB data for development. "
+        + IBBuildGuidance.BuildSimulationModeMessage();
     public int ProviderPriority => 99; // Low priority — real providers should take precedence
 
     public ProviderCapabilities ProviderCapabilities { get; } = ProviderCapabilities.Streaming(
@@ -88,7 +89,7 @@ public sealed class IBSimulationClient : IMarketDataClient
     {
         "Simulation mode — no TWS/Gateway required.",
         "Generates synthetic market data for testing.",
-        "Build with -p:DefineConstants=IBAPI for real IB connectivity."
+        IBBuildGuidance.BuildSimulationModeMessage()
     };
 
     public string[] ProviderWarnings => new[]

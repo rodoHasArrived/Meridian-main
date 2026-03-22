@@ -226,6 +226,11 @@ public static class UiApiRoutes
     public const string DiagnosticsValidateCredentials = "/api/diagnostics/validate-credentials";
     public const string DiagnosticsTestConnectivity = "/api/diagnostics/test-connectivity";
     public const string DiagnosticsValidateConfig = "/api/diagnostics/validate-config";
+    public const string DiagnosticsCoordination = "/api/diagnostics/coordination";
+    public const string CppTraderStatus = "/api/cpptrader/status";
+    public const string CppTraderSessions = "/api/cpptrader/sessions";
+    public const string CppTraderSymbols = "/api/cpptrader/symbols";
+    public const string CppTraderExecutionSnapshot = "/api/cpptrader/execution/{symbol}/snapshot";
 
     // Admin/Maintenance endpoints
     public const string AdminMaintenanceSchedule = "/api/admin/maintenance/schedule";

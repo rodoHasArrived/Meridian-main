@@ -3,6 +3,8 @@ applyTo: "src/**/*.cs"
 ---
 # C# Source File Instructions
 
+**Last Updated:** 2026-03-21
+
 When editing C# source files in this repository:
 
 1. Mark classes `sealed` unless explicitly designed for inheritance.

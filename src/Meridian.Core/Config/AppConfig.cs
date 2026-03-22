@@ -27,6 +27,7 @@ namespace Meridian.Application.Config;
 /// <param name="DataSources">Multiple data source configurations for real-time and historical data.</param>
 /// <param name="Derivatives">Derivatives (options) data collection configuration.</param>
 /// <param name="ProviderRegistry">Unified provider registry configuration controlling attribute-based discovery.</param>
+/// <param name="Coordination">Multi-instance coordination configuration.</param>
 /// <param name="Canonicalization">Canonicalization configuration for condition codes and venue MICs.</param>
 /// <param name="Validation">Configuration for the F# validation pipeline stage.</param>
 public sealed record AppConfig(
@@ -45,6 +46,7 @@ public sealed record AppConfig(
     DataSourcesConfig? DataSources = null,
     DerivativesConfig? Derivatives = null,
     ProviderRegistryConfig? ProviderRegistry = null,
+    CoordinationConfig? Coordination = null,
     CanonicalizationConfig? Canonicalization = null,
     ValidationPipelineConfig? Validation = null
 );

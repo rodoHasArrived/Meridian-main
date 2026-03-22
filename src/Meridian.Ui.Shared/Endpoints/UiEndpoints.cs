@@ -7,10 +7,14 @@ using Meridian.Application.Pipeline;
 using Meridian.Application.UI;
 using Meridian.Ui.Shared;
 using Meridian.Ui.Shared.Services;
+using Meridian.Strategies.Interfaces;
+using Meridian.Strategies.Services;
+using Meridian.Strategies.Storage;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 
 namespace Meridian.Ui.Shared.Endpoints;
@@ -51,6 +55,7 @@ public static class UiEndpoints
         // Wire Polly circuit breaker callbacks to CircuitBreakerStatusService
         ServiceCompositionRoot.InitializeCircuitBreakerCallbackRouter(app.Services);
 
+        app.UseStaticFiles();
         app.UseApiKeyAuthentication();
         app.UseLoginSessionAuthentication();
         app.UseRateLimiter();
@@ -82,6 +87,7 @@ public static class UiEndpoints
         // Wire Polly circuit breaker callbacks to CircuitBreakerStatusService
         ServiceCompositionRoot.InitializeCircuitBreakerCallbackRouter(app.Services);
 
+        app.UseStaticFiles();
         app.UseApiKeyAuthentication();
         app.UseLoginSessionAuthentication();
         app.UseRateLimiter();
@@ -116,6 +122,8 @@ public static class UiEndpoints
             return new Meridian.Ui.Shared.Services.BackfillCoordinator(configStore);
         });
 
+        RegisterStrategyWorkstationServices(services);
+
         services.AddMutationRateLimiter();
 
         // Register LeanAutoExportService as a background hosted service
@@ -148,6 +156,8 @@ public static class UiEndpoints
             return new Meridian.Ui.Shared.Services.BackfillCoordinator(configStore);
         });
 
+        RegisterStrategyWorkstationServices(services);
+
         services.AddSingleton(statusHandlers);
         services.AddMutationRateLimiter();
 
@@ -156,6 +166,18 @@ public static class UiEndpoints
         services.AddHostedService(sp => sp.GetRequiredService<LeanAutoExportService>());
 
         return services;
+    }
+
+    /// <summary>
+    /// Registers the strategy read-model services used by workstation bootstrap endpoints.
+    /// These are registered with TryAdd so richer implementations can override them later.
+    /// </summary>
+    private static void RegisterStrategyWorkstationServices(IServiceCollection services)
+    {
+        services.TryAddSingleton<IStrategyRepository, StrategyRunStore>();
+        services.TryAddSingleton<PortfolioReadService>();
+        services.TryAddSingleton<LedgerReadService>();
+        services.TryAddSingleton<StrategyRunReadService>();
     }
 
     #endregion
@@ -217,6 +239,7 @@ public static class UiEndpoints
         app.MapLeanEndpoints(jsonOptions);
         app.MapMessagingEndpoints(jsonOptions);
         app.MapProviderExtendedEndpoints(jsonOptions);
+        app.MapCppTraderEndpoints();
         app.MapIndexEndpoints(jsonOptions);
 
         // Canonicalization parity dashboard (Phase 2) endpoints are mapped elsewhere to avoid duplicate registrations.
@@ -256,6 +279,9 @@ public static class UiEndpoints
 
         // Authentication endpoints (login page, login API, logout API)
         app.MapAuthEndpoints();
+
+        // React workstation shell and bootstrap data
+        app.MapWorkstationEndpoints(jsonOptions);
 
         return app;
     }
@@ -345,6 +371,9 @@ public static class UiEndpoints
 
         // Authentication endpoints (login page, login API, logout API)
         app.MapAuthEndpoints();
+
+        // React workstation shell and bootstrap data
+        app.MapWorkstationEndpoints(jsonOptions);
 
         return app;
     }

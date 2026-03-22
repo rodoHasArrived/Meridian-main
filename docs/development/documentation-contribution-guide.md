@@ -46,7 +46,7 @@ Documentation debt is real. When making code changes:
 - Update related documentation in the same PR
 - Mark deprecated information clearly
 - Archive outdated documents rather than deleting them
-- Use `docs/archived/` as the single home for historical records (do not create parallel `docs/archive/` locations)
+- Use `archive/docs/` as the single home for historical records (do not create parallel `docs/archive/` locations)
 
 ### 4. Make It Findable
 
@@ -89,12 +89,10 @@ docs/
 │  ── META / TOOLING ─────────────────────────────────────────────────
 ├── ai/                        # AI assistant instructions
 ├── generated/                 # Auto-generated documentation (do not edit)
-├── archived/                  # Historical documents (see INDEX.md)
++-- archive/                   # Project-level archive root (see ../archive/docs/)
 ├── docfx/                     # DocFX API docs config
 └── README.md                  # Master documentation index (START HERE)
-```
-
-### Document Categories
+```\r\n\r\nHistorical and superseded material lives at the project root:\r\n\r\n```\r\narchive/\r\n- docs/                      # Historical and superseded documentation\r\n  - assessments/            # Archived audits, analyses, and evaluations\r\n  - plans/                  # Completed or superseded plans\r\n  - summaries/              # Historical summaries and reports\r\n  - migrations/             # Legacy migration notes\r\n  - assets/                 # Archived diagrams and supporting assets\r\n- code/                     # Reserved for retired code snapshots\r\n```\r\n\r\n### Document Categories
 
 | Category | Purpose | Examples |
 |----------|---------|----------|
@@ -138,7 +136,7 @@ Is it a step-by-step guide for end users or operators?
                             Is it a targeted code-quality or hygiene audit?
                             ├── Yes → docs/audits/
                             └── No →
-                                Is it superseded or historical? → docs/archived/
+                                Is it superseded or historical? → archive/docs/
 ```
 
 ### Quick Lookup
@@ -159,7 +157,7 @@ Is it a step-by-step guide for end users or operators?
 | Security vulnerabilities, known issues | `security/` |
 | AI assistant guides and known errors | `ai/` |
 | Auto-generated output (do not edit) | `generated/` |
-| Outdated / superseded content | `archived/` (single canonical archive location) |
+| Outdated / superseded content | `archive/docs/` (single canonical archive location) |
 | Diagrams (DOT/Graphviz) | `diagrams/` |
 | UML diagrams (PlantUML) | `diagrams/uml/` |
 
@@ -357,7 +355,7 @@ Add provider by implementing interface.
 ### Special Cases
 
 - **ADRs**: Use format `NNN-short-title.md` (e.g., `001-provider-abstraction.md`)
-- **Archived**: Preserve original names but add entry to `archived/INDEX.md`
+- **Archived**: Preserve original names but add entry to `../../archive/docs/INDEX.md`
 - **Generated**: Prefix with `generated-` or use `generated/` directory
 
 ---
@@ -562,8 +560,8 @@ When documentation becomes outdated:
    > Archived on 2026-02-12.
    ```
 
-2. **Move to archived/** when no longer relevant
-3. **Add entry to [archived/INDEX.md](../archived/INDEX.md)** explaining why archived
+2. **Move to `archive/docs/`** when no longer relevant
+3. **Add entry to [../../archive/docs/INDEX.md](../../archive/docs/INDEX.md)** explaining why archived
 
 ---
 

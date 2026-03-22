@@ -232,7 +232,7 @@ public sealed class CompositeSink : IStorageSink
 - [Tiered Storage Architecture](002-tiered-storage-architecture.md) (uses CompositeSink)
 - [WAL Durability](007-write-ahead-log-durability.md) (replay with CompositeSink)
 - [Storage Design Documentation](../architecture/storage-design.md)
-- [Storage Services Documentation](../architecture/storage-design.md#storage-services)
+- [Storage Services Documentation](../architecture/storage-design.md)
 
 ---
 

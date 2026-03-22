@@ -2156,7 +2156,7 @@ docker-compose up -d
 
 | Document | Description |
 |----------|-------------|
-| [README.md](../README.md) | Project overview and quick start |
+| [README.md](../archive/docs/README.md) | Project overview and quick start |
 | [HELP.md](HELP.md) | This comprehensive user guide |
 | [getting-started/README.md](getting-started/README.md) | Step-by-step setup guide |
 | [Configuration](#configuration) | Configuration reference |

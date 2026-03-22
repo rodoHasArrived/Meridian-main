@@ -1,4 +1,6 @@
 using Meridian.Application.Config;
+using Meridian.Application.SecurityMaster;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Application.UI;
 using Meridian.Contracts.Store;
 using Meridian.Storage;
@@ -6,6 +8,7 @@ using Meridian.Storage.Export;
 using Meridian.Storage.Interfaces;
 using Meridian.Storage.Maintenance;
 using Meridian.Storage.Policies;
+using Meridian.Storage.SecurityMaster;
 using Meridian.Storage.Services;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -18,6 +21,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
 {
     public IServiceCollection Register(IServiceCollection services, CompositionOptions options)
     {
+        SecurityMasterStartup.EnsureEnvironmentDefaults();
+
         // StorageOptions - configured from AppConfig or defaults
         services.AddSingleton<StorageOptions>(sp =>
         {
@@ -60,6 +65,34 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             return new AnalysisExportService(storageOptions.RootPath);
         });
 
+        services.AddSingleton(sp => new SecurityMasterOptions
+        {
+            ConnectionString = Environment.GetEnvironmentVariable("MERIDIAN_SECURITY_MASTER_CONNECTION_STRING") ?? string.Empty,
+            Schema = Environment.GetEnvironmentVariable("MERIDIAN_SECURITY_MASTER_SCHEMA") ?? "security_master",
+            SnapshotIntervalVersions = ParseInt("MERIDIAN_SECURITY_MASTER_SNAPSHOT_INTERVAL", 50),
+            ProjectionReplayBatchSize = ParseInt("MERIDIAN_SECURITY_MASTER_REPLAY_BATCH_SIZE", 500),
+            PreloadProjectionCache = ParseBool("MERIDIAN_SECURITY_MASTER_PRELOAD_CACHE", true),
+            ResolveInactiveByDefault = ParseBool("MERIDIAN_SECURITY_MASTER_RESOLVE_INACTIVE", true)
+        });
+
+        services.AddSingleton<ISecurityMasterEventStore, PostgresSecurityMasterEventStore>();
+        services.AddSingleton<ISecurityMasterSnapshotStore, PostgresSecurityMasterSnapshotStore>();
+        services.AddSingleton<ISecurityMasterStore, PostgresSecurityMasterStore>();
+        services.AddSingleton<SecurityMasterMigrationRunner>();
+        services.AddSingleton<SecurityMasterAggregateRebuilder>();
+        services.AddSingleton<SecurityMasterProjectionCache>();
+        services.AddSingleton<SecurityMasterProjectionService>();
+        services.AddSingleton<SecurityMasterRebuildOrchestrator>();
+        services.AddSingleton<ISecurityMasterService, SecurityMasterService>();
+        services.AddSingleton<ISecurityMasterQueryService, SecurityMasterQueryService>();
+        services.AddSingleton<ISecurityResolver, SecurityResolver>();
+
         return services;
     }
+
+    private static int ParseInt(string name, int defaultValue)
+        => int.TryParse(Environment.GetEnvironmentVariable(name), out var value) ? value : defaultValue;
+
+    private static bool ParseBool(string name, bool defaultValue)
+        => bool.TryParse(Environment.GetEnvironmentVariable(name), out var value) ? value : defaultValue;
 }

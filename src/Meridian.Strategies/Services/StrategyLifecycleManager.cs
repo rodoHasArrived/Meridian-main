@@ -1,4 +1,5 @@
 using Meridian.Strategies.Models;
+using Meridian.FSharp.Trading;
 
 namespace Meridian.Strategies.Services;
 
@@ -53,6 +54,10 @@ public sealed class StrategyLifecycleManager : IAsyncDisposable
             strategy = entry.Strategy;
         }
 
+        var startTransition = StrategyLifecycleInterop.EvaluateStart(strategy.Status.ToString());
+        if (!startTransition.IsValid)
+            throw new InvalidOperationException(startTransition.Reason);
+
         var run = StrategyRunEntry.Start(strategyId, strategy.Name, runType);
         await _repository.RecordRunAsync(run, ct).ConfigureAwait(false);
 
@@ -71,6 +76,10 @@ public sealed class StrategyLifecycleManager : IAsyncDisposable
     public async Task PauseAsync(string strategyId, CancellationToken ct = default)
     {
         ILiveStrategy strategy = GetRegistered(strategyId);
+        var pauseTransition = StrategyLifecycleInterop.EvaluatePause(strategy.Status.ToString());
+        if (!pauseTransition.IsValid)
+            throw new InvalidOperationException(pauseTransition.Reason);
+
         _logger.LogInformation("Pausing strategy {StrategyId}", strategyId);
         await strategy.PauseAsync(ct).ConfigureAwait(false);
     }
@@ -93,6 +102,10 @@ public sealed class StrategyLifecycleManager : IAsyncDisposable
             strategy = entry.Strategy;
             currentRun = entry.CurrentRun;
         }
+
+        var stopTransition = StrategyLifecycleInterop.EvaluateStop(strategy.Status.ToString());
+        if (!stopTransition.IsValid)
+            throw new InvalidOperationException(stopTransition.Reason);
 
         _logger.LogInformation("Stopping strategy {StrategyId}", strategyId);
         await strategy.StopAsync(ct).ConfigureAwait(false);

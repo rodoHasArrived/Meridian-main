@@ -138,13 +138,11 @@ public sealed class IBHistoricalDataProvider : IHistoricalDataProvider, IRateLim
         try
         {
             // Quick health check with a known symbol
-            var cfg = new SymbolConfig
-            {
-                Symbol = "SPY",
-                SecurityType = "STK",
-                Exchange = "SMART",
-                Currency = "USD"
-            };
+            var cfg = new SymbolConfig(
+                Symbol: "SPY",
+                SecurityType: "STK",
+                Exchange: "SMART",
+                Currency: "USD");
 
             // Request just 1 day of data as a health check
             var bars = await RequestHistoricalBarsWithPacingAsync(
@@ -433,14 +431,12 @@ public sealed class IBHistoricalDataProvider : IHistoricalDataProvider, IRateLim
 
     private static SymbolConfig CreateSymbolConfig(string symbol)
     {
-        return new SymbolConfig
-        {
-            Symbol = symbol.ToUpperInvariant(),
-            SecurityType = "STK",
-            Exchange = "SMART",
-            Currency = "USD",
-            PrimaryExchange = "NASDAQ" // Default, will be overridden by SMART routing
-        };
+        return new SymbolConfig(
+            Symbol: symbol.ToUpperInvariant(),
+            SecurityType: "STK",
+            Exchange: "SMART",
+            Currency: "USD",
+            PrimaryExchange: "NASDAQ");
     }
 
     private static DateOnly ParseBarDate(string ibDate)
@@ -556,7 +552,8 @@ public sealed class IBHistoricalDataProvider : IHistoricalDataProvider
     public string Name => "ibkr";
     public string DisplayName => "Interactive Brokers (requires IBAPI build)";
     public string Description =>
-        "Historical OHLCV data via TWS API. Build with -p:DefineConstants=IBAPI and reference IBApi to enable.";
+        "Historical OHLCV data via TWS API. "
+        + IBBuildGuidance.BuildRealProviderMessage("IB historical data");
 
     public int Priority => 80;
     public TimeSpan RateLimitDelay => TimeSpan.FromSeconds(15);
@@ -589,13 +586,13 @@ public sealed class IBHistoricalDataProvider : IHistoricalDataProvider
     public string[] ProviderNotes => new[]
     {
         "Requires IBAPI build flag to enable full functionality.",
-        "Build with: dotnet build -p:DefineConstants=IBAPI"
+        IBBuildGuidance.BuildRealProviderMessage("IB historical data")
     };
 
     public string[] ProviderWarnings => new[]
     {
         "IBAPI not compiled — historical data operations will return empty results.",
-        "Reference the official IBApi package and rebuild to enable."
+        $"Reference the official IBApi surface and rebuild to enable. See {IBBuildGuidance.SetupGuidePath}."
     };
 
     public Task<bool> IsAvailableAsync(CancellationToken ct = default)

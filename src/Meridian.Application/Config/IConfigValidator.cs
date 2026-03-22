@@ -179,6 +179,7 @@ public sealed class CredentialSecurityStage : IConfigValidationStage
             CheckCredential(results, "Backfill.Providers.Tiingo.ApiToken", providers.Tiingo?.ApiToken, "TIINGO__TOKEN");
             CheckCredential(results, "Backfill.Providers.Finnhub.ApiKey", providers.Finnhub?.ApiKey, "FINNHUB__APIKEY");
             CheckCredential(results, "Backfill.Providers.AlphaVantage.ApiKey", providers.AlphaVantage?.ApiKey, "ALPHAVANTAGE__APIKEY");
+            CheckCredential(results, "Backfill.Providers.Fred.ApiKey", providers.Fred?.ApiKey, "FRED__APIKEY");
             CheckCredential(results, "Backfill.Providers.Nasdaq.ApiKey", providers.Nasdaq?.ApiKey, "NASDAQ__APIKEY");
         }
 

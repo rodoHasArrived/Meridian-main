@@ -570,7 +570,7 @@ public sealed class BackfillViewModel : BindableBase, IDisposable
             }
             catch (Exception ex)
             {
-                _loggingService.LogError("Gap scan failed for symbol", ex, ("symbol", sym));
+                _loggingService.LogError($"Gap scan failed for symbol: {sym}", ex);
             }
         }
 

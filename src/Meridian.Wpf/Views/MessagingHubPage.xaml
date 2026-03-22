@@ -1,25 +1,30 @@
 <Page x:Class="Meridian.Wpf.Views.MessagingHubPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      Background="{DynamicResource ConsoleBackgroundDarkBrush}"
+      Background="{DynamicResource ShellWindowBackgroundBrush}"
       Loaded="OnPageLoaded"
       Unloaded="OnPageUnloaded"
       AutomationProperties.Name="Messaging Hub">
-    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
         <StackPanel MaxWidth="1200">
 
             <!-- Header -->
-            <Grid Margin="0,0,0,24">
+            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24">
+            <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0">
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-                        <TextBlock Text="&#xE715;" FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                   FontSize="28" Foreground="{StaticResource InfoColorBrush}" VerticalAlignment="Center" />
+                        <Border Width="44" Height="44" CornerRadius="14"
+                                Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                                BorderBrush="{StaticResource InfoColorBrush}" BorderThickness="1">
+                            <TextBlock Text="&#xE715;" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                       FontSize="24" Foreground="{StaticResource InfoColorBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                        </Border>
                         <TextBlock Text="Messaging Hub" Style="{StaticResource PageTitleStyle}" Margin="12,0,0,0" VerticalAlignment="Center" />
-                        <Border x:Name="ConnectionBadge" CornerRadius="4" Padding="8,2" Margin="12,0,0,0"
+                        <Border x:Name="ConnectionBadge" CornerRadius="999" Padding="8,3" Margin="12,0,0,0"
                                 Background="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center">
                             <TextBlock x:Name="ConnectionStatusText" Text="Checking..." FontSize="11"
                                        Foreground="White" FontWeight="SemiBold" />
@@ -36,6 +41,7 @@
                     </StackPanel>
                 </Button>
             </Grid>
+            </Border>
 
             <!-- Message Statistics -->
             <Grid Margin="0,0,0,24">
@@ -95,8 +101,8 @@
                         </ListView.ItemContainerStyle>
                         <ListView.ItemTemplate>
                             <DataTemplate>
-                                <Border Background="{StaticResource ConsoleBackgroundLightBrush}"
-                                        CornerRadius="6" Padding="12,8"
+                                <Border Background="{StaticResource PremiumPanelBrush}"
+                                        CornerRadius="12" Padding="12,8"
                                         BorderBrush="{StaticResource ConsoleBorderBrush}" BorderThickness="1">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
@@ -106,7 +112,7 @@
                                         <TextBlock Grid.Column="0" Text="{Binding TypeName}" FontSize="13"
                                                    Foreground="{StaticResource ConsoleTextPrimaryBrush}" VerticalAlignment="Center" />
                                         <Border Grid.Column="1" Background="{StaticResource ConsoleAccentBlueAlpha10Brush}"
-                                                CornerRadius="4" Padding="8,2">
+                                                CornerRadius="999" Padding="8,3">
                                             <TextBlock Text="{Binding CountText}" FontSize="11" FontWeight="SemiBold"
                                                        Foreground="{StaticResource InfoColorBrush}" />
                                         </Border>

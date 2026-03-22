@@ -30,6 +30,9 @@ public sealed class ConfigurationServiceCredentialAdapter : ICredentialResolver
     public string? ResolveAlphaVantageCredentials(string? configApiKey)
         => _configService.ResolveAlphaVantageCredentials(configApiKey);
 
+    public string? ResolveFredCredentials(string? configApiKey)
+        => _configService.ResolveFredCredentials(configApiKey);
+
     public string? ResolveNasdaqCredentials(string? configApiKey)
         => _configService.ResolveNasdaqCredentials(configApiKey);
 }

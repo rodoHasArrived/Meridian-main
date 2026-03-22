@@ -78,7 +78,8 @@ internal sealed class OrderBookFillModel(ICommissionModel commissionModel) : IFi
                 signedQuantity,
                 level.Price,
                 commission,
-                evt.Timestamp));
+                evt.Timestamp,
+                order.AccountId));
 
             remainingAbsolute -= fillQuantity;
         }

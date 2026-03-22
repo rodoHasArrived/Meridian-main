@@ -200,6 +200,39 @@ public sealed class ExportProfile
     };
 
     /// <summary>
+    /// Pre-built profile for RunMat.
+    /// </summary>
+    public static ExportProfile RunMat => new()
+    {
+        Id = "runmat",
+        Name = "RunMat",
+        Description = "Numeric CSV with Unix millisecond timestamps and a MATLAB-style .m loader script for RunMat",
+        TargetTool = "RunMat",
+        Format = ExportFormat.Csv,
+        Compression = new() { Type = CompressionType.None },
+        TimestampSettings = new() { Format = TimestampFormat.UnixMilliseconds, Timezone = "UTC" },
+        IncludeFields = new[]
+        {
+            "Timestamp",
+            "Price",
+            "Size",
+            "BidPrice",
+            "BidSize",
+            "AskPrice",
+            "AskSize",
+            "Open",
+            "High",
+            "Low",
+            "Close",
+            "Volume"
+        },
+        ExcludeFields = new[] { "Symbol", "Exchange", "Side", "TradeId", "Conditions" },
+        IncludeLoaderScript = true,
+        IncludeDataDictionary = true,
+        FileNamePattern = "{symbol}_{type}_{date}.csv"
+    };
+
+    /// <summary>
     /// Creates a copy of this profile with only the format overridden.
     /// All other settings (compression, timestamps, loader script, data dictionary, file naming, etc.) are preserved.
     /// </summary>
@@ -232,7 +265,8 @@ public sealed class ExportProfile
         QuantConnectLean,
         Excel,
         PostgreSql,
-        ArrowFeather
+        ArrowFeather,
+        RunMat
     };
 }
 

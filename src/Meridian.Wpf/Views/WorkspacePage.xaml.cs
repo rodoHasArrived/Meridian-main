@@ -47,7 +47,7 @@ public partial class WorkspacePage : Page
                 Id = workspace.Id,
                 Name = workspace.Name,
                 Description = workspace.Description,
-                BadgeText = workspace.IsBuiltIn ? "BUILT-IN" : workspace.Category.ToString().ToUpperInvariant(),
+                BadgeText = workspace.IsBuiltIn ? "BUILT-IN" : workspace.Category.ToDisplayName().ToUpperInvariant(),
                 PagesText = $"{workspace.Pages.Count} pages",
                 DeleteVisibility = workspace.IsBuiltIn ? Visibility.Collapsed : Visibility.Visible
             });
@@ -66,7 +66,7 @@ public partial class WorkspacePage : Page
             ActiveWorkspacePages.Text = active.Pages.Count > 0
                 ? $"Pages: {string.Join(", ", active.Pages.Select(p => p.Title))}"
                 : "";
-            ActiveCategoryText.Text = active.Category.ToString();
+            ActiveCategoryText.Text = active.Category.ToDisplayName();
         }
         else
         {
@@ -108,10 +108,10 @@ public partial class WorkspacePage : Page
         var categoryIndex = NewCategoryCombo.SelectedIndex;
         var category = categoryIndex switch
         {
-            0 => UiServices.WorkspaceCategory.Monitoring,
-            1 => UiServices.WorkspaceCategory.Backfill,
-            2 => UiServices.WorkspaceCategory.Storage,
-            3 => UiServices.WorkspaceCategory.Analysis,
+            0 => UiServices.WorkspaceCategory.Research,
+            1 => UiServices.WorkspaceCategory.Trading,
+            2 => UiServices.WorkspaceCategory.DataOperations,
+            3 => UiServices.WorkspaceCategory.Governance,
             _ => UiServices.WorkspaceCategory.Custom
         };
 

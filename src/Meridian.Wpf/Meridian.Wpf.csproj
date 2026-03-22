@@ -101,6 +101,7 @@
   <ItemGroup Condition="'$(IsWindows)' == 'true'">
     <ProjectReference Include="..\Meridian.Ui.Services\Meridian.Ui.Services.csproj" />
     <ProjectReference Include="..\Meridian.Backtesting\Meridian.Backtesting.csproj" />
+    <ProjectReference Include="..\Meridian.Strategies\Meridian.Strategies.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(IsWindows)' == 'true' AND Exists('Assets')">

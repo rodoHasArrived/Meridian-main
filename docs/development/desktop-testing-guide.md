@@ -256,7 +256,7 @@ dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release -r win-x64
 **Fix**:
 1. Check XAML syntax in the Views/ directory
 2. Ensure all referenced resources exist
-3. See [Desktop App XAML Compiler Errors](../archived/desktop-app-xaml-compiler-errors.md) for historical diagnostics
+3. See [Desktop App XAML Compiler Errors](../../archive/docs/migrations/desktop-app-xaml-compiler-errors.md) for historical diagnostics
 
 ### Tests Not Running on Non-Windows
 

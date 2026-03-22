@@ -128,11 +128,13 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
 
         registry.RegisterStreamingFactory(DataSourceKind.NYSE, () =>
         {
-            var publisher = sp.GetRequiredService<IMarketEventPublisher>();
             var tradeCollector = sp.GetRequiredService<TradeDataCollector>();
             var depthCollector = sp.GetRequiredService<MarketDepthCollector>();
-            return new Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient(
-                publisher, tradeCollector, depthCollector);
+            var quoteCollector = sp.GetRequiredService<QuoteCollector>();
+            return new Infrastructure.Adapters.NYSE.NyseMarketDataClient(
+                tradeCollector,
+                depthCollector,
+                quoteCollector);
         });
 
         registry.RegisterStreamingFactory(DataSourceKind.Synthetic, () =>

@@ -2,7 +2,7 @@
 
 **Last Updated:** 2026-03-16
 
-> **Note:** For comprehensive project context, see [CLAUDE.md](../../../CLAUDE.md) in the repository root. For the master AI resource index, see [docs/ai/README.md](../README.md).
+> **Note:** For comprehensive project context, see [CLAUDE.md](../../../CLAUDE.md) in the repository root. For the master AI resource index, see [docs/ai/README.md](../../archive/docs/README.md).
 
 ## Coding Agent Optimization (GitHub Best Practices)
 
@@ -202,7 +202,7 @@ For the full conventions reference, see [`CLAUDE.md`](../../../CLAUDE.md) § Cri
 
 ## Related Resources
 
-- **Master AI index:** [`docs/ai/README.md`](../README.md)
+- **Master AI index:** [`docs/ai/README.md`](../../archive/docs/README.md)
 - **Root context:** [`CLAUDE.md`](../../../CLAUDE.md)
 - **Error prevention:** [`docs/ai/ai-known-errors.md`](../ai-known-errors.md)
 - **Code review:** [`.github/agents/code-review-agent.md`](../../../.github/agents/code-review-agent.md)

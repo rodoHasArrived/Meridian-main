@@ -28,6 +28,7 @@ public static class HttpClientNames
     public const string FinnhubHistorical = "finnhub-historical";
     public const string AlphaVantageHistorical = "alpha-vantage-historical";
     public const string NasdaqDataLinkHistorical = "nasdaq-data-link-historical";
+    public const string FredHistorical = "fred-historical";
     public const string TwelveDataHistorical = "twelvedata-historical";
 
     // Symbol search providers
@@ -215,6 +216,17 @@ public static class HttpClientConfiguration
                 client.BaseAddress = new Uri("https://data.nasdaq.com/api/v3/");
                 client.Timeout = SharedResiliencePolicies.DefaultTimeout;
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            })
+            .AddSharedResiliencePolicy();
+
+        // FRED Historical client
+        services.AddHttpClient(HttpClientNames.FredHistorical)
+            .ConfigureHttpClient(client =>
+            {
+                client.BaseAddress = new Uri("https://api.stlouisfed.org/fred/");
+                client.Timeout = SharedResiliencePolicies.DefaultTimeout;
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                client.DefaultRequestHeaders.Add("User-Agent", "Meridian/1.0");
             })
             .AddSharedResiliencePolicy();
 
@@ -484,6 +496,17 @@ public static class HttpClientConfiguration
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             })
             .AddSharedResiliencePolicyTracked(HttpClientNames.NasdaqDataLinkHistorical, onStateChanged);
+
+        // FRED Historical client
+        services.AddHttpClient(HttpClientNames.FredHistorical)
+            .ConfigureHttpClient(client =>
+            {
+                client.BaseAddress = new Uri("https://api.stlouisfed.org/fred/");
+                client.Timeout = SharedResiliencePolicies.DefaultTimeout;
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                client.DefaultRequestHeaders.Add("User-Agent", "Meridian/1.0");
+            })
+            .AddSharedResiliencePolicyTracked(HttpClientNames.FredHistorical, onStateChanged);
 
         // Twelve Data Historical client
         services.AddHttpClient(HttpClientNames.TwelveDataHistorical)

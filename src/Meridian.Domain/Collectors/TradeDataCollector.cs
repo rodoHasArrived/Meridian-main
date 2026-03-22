@@ -4,6 +4,7 @@ using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Events;
 using Meridian.Domain.Models;
+using Meridian.Domain.Telemetry;
 
 namespace Meridian.Domain.Collectors;
 
@@ -106,6 +107,7 @@ public sealed class TradeDataCollector
             return;
 
         var symbol = update.Symbol;
+        using var publishActivity = MarketEventIngressTracing.StartCollectorActivity("trade-collector", "trade", symbol);
 
         // -------- Symbol format validation --------
         if (!IsValidSymbolFormat(symbol, out var symbolValidationReason))

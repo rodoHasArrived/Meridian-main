@@ -62,6 +62,67 @@ jobs:
       collect-coverage: true
     secrets: inherit
 
+  config-schema:
+    name: Config Schema Check
+    runs-on: ubuntu-latest
+    needs: [build-and-test]
+    if: always() && needs.build-and-test.result == 'success'
+    timeout-minutes: 5
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup .NET with Cache
+      uses: ./.github/actions/setup-dotnet-cache
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Restore dependencies
+      run: dotnet restore Meridian.sln /p:EnableWindowsTargeting=true --verbosity minimal
+
+    - name: Regenerate checked-in config schema
+      run: dotnet run --project src/Meridian -- --generate-config-schema --output config/appsettings.schema.json
+
+    - name: Fail if schema changed
+      run: git diff --exit-code -- config/appsettings.schema.json
+
+    - name: Config schema failure hint
+      if: failure()
+      run: |
+        echo "::error::config/appsettings.schema.json is out of date. Regenerate it with --generate-config-schema and commit the result."
+        echo "## Config Schema Drift" >> $GITHUB_STEP_SUMMARY
+        echo "The checked-in appsettings schema no longer matches the current configuration models." >> $GITHUB_STEP_SUMMARY
+
+  ibapi-smoke:
+    name: IBAPI Smoke Build
+    runs-on: ubuntu-latest
+    needs: [build-and-test]
+    if: always() && needs.build-and-test.result == 'success'
+    timeout-minutes: 8
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup .NET with Cache
+      uses: ./.github/actions/setup-dotnet-cache
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Restore dependencies
+      run: dotnet restore Meridian.sln /p:EnableWindowsTargeting=true --verbosity minimal
+
+    - name: Build infrastructure with IBAPI smoke package
+      run: dotnet build src/Meridian.Infrastructure/Meridian.Infrastructure.csproj -c Release --no-restore /p:EnableWindowsTargeting=true /p:EnableIbApiSmoke=true -maxcpucount:1
+
+    - name: IBAPI smoke failure hint
+      if: failure()
+      run: |
+        echo "::error::The optional IBAPI smoke-build path failed. Check the community TWS-API package compatibility or the IBAPI-gated code path."
+        echo "## IBAPI Smoke Build" >> $GITHUB_STEP_SUMMARY
+        echo "The optional Interactive Brokers compile path did not build successfully." >> $GITHUB_STEP_SUMMARY
+
   # ─── Golden Fixture Canonicalization Tests ────────────────────────────
   golden-fixtures:
     name: Golden Fixture Tests
@@ -97,6 +158,22 @@ jobs:
       with:
         name: golden-fixture-results
         path: tests/Meridian.Tests/TestResults/golden-fixtures.trx
+        retention-days: 7
+
+    - name: Generate canonicalization drift report
+      if: always()
+      run: |
+        python3 scripts/report_canonicalization_drift.py \
+          --repo-root . \
+          --output canonicalization-drift-report.md || true
+        cat canonicalization-drift-report.md >> $GITHUB_STEP_SUMMARY
+
+    - name: Upload canonicalization drift report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: canonicalization-drift-report
+        path: canonicalization-drift-report.md
         retention-days: 7
 
     - name: Golden fixture failure hint
@@ -173,7 +250,7 @@ jobs:
   pr-summary:
     name: PR Summary
     runs-on: ubuntu-latest
-    needs: [lint, build-and-test, golden-fixtures, ai-pr-review]
+    needs: [lint, build-and-test, config-schema, ibapi-smoke, golden-fixtures, ai-pr-review]
     if: always()
     timeout-minutes: 2
 
@@ -184,13 +261,18 @@ jobs:
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
         echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
-        echo "| Code Formatting | ${{ needs.lint.result == 'success' && '✅ Passed' || (needs.lint.result == 'skipped' && '⏭️ Skipped' || '❌ Failed') }} |" >> $GITHUB_STEP_SUMMARY
-        echo "| Build & Test | ${{ needs.build-and-test.result == 'success' && '✅ Passed' || (needs.build-and-test.result == 'skipped' && '⏭️ Skipped' || '❌ Failed') }} |" >> $GITHUB_STEP_SUMMARY
-        echo "| Golden Fixtures | ${{ needs.golden-fixtures.result == 'success' && '✅ Passed' || (needs.golden-fixtures.result == 'skipped' && '⏭️ Skipped' || '❌ Failed') }} |" >> $GITHUB_STEP_SUMMARY
-        echo "| AI PR Review | ${{ needs.ai-pr-review.result == 'success' && '✅ Completed' || (needs.ai-pr-review.result == 'skipped' && '⏭️ Skipped' || '⚠️ Unavailable') }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Code Formatting | ${{ needs.lint.result == 'success' && 'Passed' || (needs.lint.result == 'skipped' && 'Skipped' || 'Failed') }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Build & Test | ${{ needs.build-and-test.result == 'success' && 'Passed' || (needs.build-and-test.result == 'skipped' && 'Skipped' || 'Failed') }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Config Schema | ${{ needs.config-schema.result == 'success' && 'Passed' || (needs.config-schema.result == 'skipped' && 'Skipped' || 'Failed') }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| IBAPI Smoke Build | ${{ needs.ibapi-smoke.result == 'success' && 'Passed' || (needs.ibapi-smoke.result == 'skipped' && 'Skipped' || 'Failed') }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Golden Fixtures | ${{ needs.golden-fixtures.result == 'success' && 'Passed' || (needs.golden-fixtures.result == 'skipped' && 'Skipped' || 'Failed') }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| AI PR Review | ${{ needs.ai-pr-review.result == 'success' && 'Completed' || (needs.ai-pr-review.result == 'skipped' && 'Skipped' || 'Unavailable') }} |" >> $GITHUB_STEP_SUMMARY
+
 
         if [[ "${{ needs.lint.result }}" == "failure" ]] || \
            [[ "${{ needs.build-and-test.result }}" == "failure" ]] || \
+           [[ "${{ needs.config-schema.result }}" == "failure" ]] || \
+           [[ "${{ needs.ibapi-smoke.result }}" == "failure" ]] || \
            [[ "${{ needs.golden-fixtures.result }}" == "failure" ]]; then
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### ❌ Some checks failed" >> $GITHUB_STEP_SUMMARY

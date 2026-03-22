@@ -4,6 +4,7 @@ using Meridian.Application.Pipeline;
 using Meridian.Domain.Events;
 using Meridian.Infrastructure.Contracts;
 using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
 
 namespace Meridian.Application.Composition;
 
@@ -29,6 +30,7 @@ public static class ServiceCompositionRoot
     private static readonly IServiceFeatureRegistration[] FeatureModules =
     [
         new ConfigurationFeatureRegistration(),
+        new CoordinationFeatureRegistration(),
         new StorageFeatureRegistration(),
         new CredentialFeatureRegistration(),
         new ProviderFeatureRegistration(),
@@ -69,6 +71,7 @@ public static class ServiceCompositionRoot
 
         // Core configuration and storage — always required
         services.RegisterFeature<ConfigurationFeatureRegistration>(options);
+        services.RegisterFeature<CoordinationFeatureRegistration>(options);
         services.RegisterFeature<StorageFeatureRegistration>(options);
 
         // Credential services — must come before provider services
@@ -107,6 +110,8 @@ public static class ServiceCompositionRoot
         if (options.EnableHttpClientFactory)
             services.RegisterFeature<HttpClientFeatureRegistration>(options);
 
+        TryRegisterCppTraderIntegration(services, options.ConfigPath);
+
         return services;
     }
 
@@ -139,6 +144,29 @@ public static class ServiceCompositionRoot
 
         // Fallback: create a new instance (should not happen with the static array)
         return Activator.CreateInstance<T>().Register(services, options);
+    }
+
+    private static void TryRegisterCppTraderIntegration(IServiceCollection services, string? configPath)
+    {
+        try
+        {
+            var extensionType = Type.GetType(
+                "Meridian.Infrastructure.CppTrader.CppTraderServiceCollectionExtensions, Meridian.Infrastructure.CppTrader",
+                throwOnError: false);
+            var method = extensionType?.GetMethod(
+                "AddCppTraderIntegration",
+                BindingFlags.Public | BindingFlags.Static,
+                binder: null,
+                types: [typeof(IServiceCollection), typeof(string)],
+                modifiers: null);
+
+            method?.Invoke(null, [services, configPath]);
+        }
+        catch
+        {
+            // Optional integration: ignore when the extension assembly is not present
+            // or when the CppTrader feature is not included in the current host.
+        }
     }
 }
 

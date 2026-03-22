@@ -28,35 +28,61 @@ public sealed class WorkspaceServiceTests
     {
         var svc = CreateService();
         svc.Workspaces.Should().NotBeEmpty();
-        svc.Workspaces.Count.Should().BeGreaterOrEqualTo(4);
+        svc.Workspaces.Count.Should().BeGreaterThanOrEqualTo(4);
     }
 
     [Fact]
-    public void DefaultWorkspaces_ShouldContainMonitoring()
+    public void DefaultWorkspaces_ShouldContainResearch()
     {
         var svc = CreateService();
-        svc.Workspaces.Should().Contain(w => w.Name == "Monitoring");
+        svc.Workspaces.Should().Contain(w => w.Name == "Research");
     }
 
     [Fact]
-    public void DefaultWorkspaces_ShouldContainBackfillOperations()
+    public void DefaultWorkspaces_ShouldContainTrading()
     {
         var svc = CreateService();
-        svc.Workspaces.Should().Contain(w => w.Name == "Backfill Operations");
+        svc.Workspaces.Should().Contain(w => w.Name == "Trading");
     }
 
     [Fact]
-    public void DefaultWorkspaces_ShouldContainStorageAdmin()
+    public void DefaultWorkspaces_ShouldContainDataOperations()
     {
         var svc = CreateService();
-        svc.Workspaces.Should().Contain(w => w.Name == "Storage Admin");
+        svc.Workspaces.Should().Contain(w => w.Name == "Data Operations");
     }
 
     [Fact]
-    public void DefaultWorkspaces_ShouldContainAnalysisExport()
+    public void DefaultWorkspaces_ShouldContainGovernance()
     {
         var svc = CreateService();
-        svc.Workspaces.Should().Contain(w => w.Name == "Analysis & Export");
+        svc.Workspaces.Should().Contain(w => w.Name == "Governance");
+    }
+
+    [Fact]
+    public void ResearchWorkspace_ShouldContainRunMatPage()
+    {
+        var svc = CreateService();
+        var workspace = svc.Workspaces.First(w => w.Name == "Research");
+        workspace.Pages.Should().Contain(page => page.PageTag == "RunMat");
+    }
+
+    [Fact]
+    public void ResearchWorkspace_ShouldContainStrategyRunsPage()
+    {
+        var svc = CreateService();
+        var workspace = svc.Workspaces.First(w => w.Name == "Research");
+        workspace.Pages.Should().Contain(page => page.PageTag == "StrategyRuns");
+    }
+
+    [Fact]
+    public void TradingWorkspace_ShouldContainPortfolioAndLedgerDrillIns()
+    {
+        var svc = CreateService();
+        var workspace = svc.Workspaces.First(w => w.Name == "Trading");
+        workspace.Pages.Should().Contain(page => page.PageTag == "StrategyRuns");
+        workspace.Pages.Should().Contain(page => page.PageTag == "RunPortfolio");
+        workspace.Pages.Should().Contain(page => page.PageTag == "RunLedger");
     }
 
     [Fact]
@@ -64,7 +90,7 @@ public sealed class WorkspaceServiceTests
     {
         var svc = CreateService();
         var builtIn = svc.Workspaces.Where(w => w.IsBuiltIn).ToList();
-        builtIn.Should().HaveCountGreaterOrEqualTo(4);
+        builtIn.Count.Should().BeGreaterThanOrEqualTo(4);
     }
 
     [Fact]
@@ -187,6 +213,19 @@ public sealed class WorkspaceServiceTests
     }
 
     [Fact]
+    public async Task ActivateWorkspaceAsync_ShouldRestoreWorkspaceSpecificPreferredPage()
+    {
+        var svc = CreateService();
+        var trading = svc.Workspaces.First(w => w.Id == "trading");
+
+        await svc.ActivateWorkspaceAsync(trading.Id);
+
+        svc.GetLastSessionState().Should().NotBeNull();
+        svc.GetLastSessionState()!.ActiveWorkspaceId.Should().Be(trading.Id);
+        svc.GetLastSessionState()!.ActivePageTag.Should().Be(trading.PreferredPageTag);
+    }
+
+    [Fact]
     public async Task ActivateWorkspaceAsync_ShouldRaiseEvent()
     {
         var svc = CreateService();
@@ -197,7 +236,8 @@ public sealed class WorkspaceServiceTests
         await svc.ActivateWorkspaceAsync(workspace.Id);
 
         receivedArgs.Should().NotBeNull();
-        receivedArgs!.Workspace.Id.Should().Be(workspace.Id);
+        receivedArgs!.Workspace.Should().NotBeNull();
+        receivedArgs.Workspace!.Id.Should().Be(workspace.Id);
     }
 
     // ── UpdateWorkspaceAsync ─────────────────────────────────────────
@@ -243,13 +283,18 @@ public sealed class WorkspaceServiceTests
     public async Task SaveSessionStateAsync_ShouldPersistState()
     {
         var svc = CreateService();
+        await svc.ActivateWorkspaceAsync("research");
         var state = new SessionState
         {
+            ActiveWorkspaceId = "research",
+            ActivePageTag = "StrategyRuns",
             OpenPages = new List<WorkspacePage>
             {
                 new() { PageTag = "Dashboard", Title = "Dashboard" }
             },
-            ActiveFilters = new Dictionary<string, string> { ["symbol"] = "SPY" }
+            ActiveFilters = new Dictionary<string, string> { ["symbol"] = "SPY" },
+            WorkspaceContext = new Dictionary<string, string> { ["focus"] = "review" },
+            RecentPages = new List<string> { "StrategyRuns", "Dashboard" }
         };
 
         await svc.SaveSessionStateAsync(state);
@@ -257,7 +302,14 @@ public sealed class WorkspaceServiceTests
         var retrieved = svc.GetLastSessionState();
         retrieved.Should().NotBeNull();
         retrieved!.OpenPages.Should().NotBeEmpty();
+        retrieved.ActiveWorkspaceId.Should().Be("research");
+        retrieved.ActivePageTag.Should().Be("StrategyRuns");
         retrieved.SavedAt.Should().BeOnOrAfter(DateTime.UtcNow.AddSeconds(-5));
+
+        var research = svc.Workspaces.First(w => w.Id == "research");
+        research.SessionSnapshot.Should().NotBeNull();
+        research.LastActivePageTag.Should().Be("StrategyRuns");
+        research.Context.Should().ContainKey("focus");
     }
 
     [Fact]
@@ -345,6 +397,7 @@ public sealed class WorkspaceServiceTests
     public async Task CaptureCurrentStateAsync_ShouldCreateWorkspace()
     {
         var svc = CreateService();
+        await svc.ActivateWorkspaceAsync("governance");
         var name = "CapturedState-" + Guid.NewGuid().ToString("N")[..8];
 
         var workspace = await svc.CaptureCurrentStateAsync(name, "Captured");
@@ -352,9 +405,45 @@ public sealed class WorkspaceServiceTests
         workspace.Should().NotBeNull();
         workspace.Name.Should().Be(name);
         workspace.Category.Should().Be(WorkspaceCategory.Custom);
+        workspace.PreferredPageTag.Should().NotBeNullOrWhiteSpace();
 
         // Clean up
         await svc.DeleteWorkspaceAsync(workspace.Id);
+    }
+
+    [Fact]
+    public async Task ActivateWorkspaceAsync_ShouldRestoreWorkspaceSpecificSnapshot()
+    {
+        var svc = CreateService();
+
+        await svc.ActivateWorkspaceAsync("research");
+        await svc.SaveSessionStateAsync(new SessionState
+        {
+            ActiveWorkspaceId = "research",
+            ActivePageTag = "StrategyRuns",
+            OpenPages = new List<WorkspacePage> { new() { PageTag = "StrategyRuns", Title = "Strategy Runs" } },
+            ActiveFilters = new Dictionary<string, string> { ["research.filter"] = "momentum" },
+            RecentPages = new List<string> { "StrategyRuns", "Dashboard" }
+        });
+
+        await svc.ActivateWorkspaceAsync("governance");
+        await svc.SaveSessionStateAsync(new SessionState
+        {
+            ActiveWorkspaceId = "governance",
+            ActivePageTag = "Diagnostics",
+            OpenPages = new List<WorkspacePage> { new() { PageTag = "Diagnostics", Title = "Diagnostics" } },
+            ActiveFilters = new Dictionary<string, string> { ["governance.filter"] = "open-breaks" },
+            RecentPages = new List<string> { "Diagnostics", "DataQuality" }
+        });
+
+        await svc.ActivateWorkspaceAsync("research");
+
+        var restored = svc.GetLastSessionState();
+        restored.Should().NotBeNull();
+        restored!.ActiveWorkspaceId.Should().Be("research");
+        restored.ActivePageTag.Should().Be("StrategyRuns");
+        restored.ActiveFilters.Should().ContainKey("research.filter");
+        restored.ActiveFilters.Should().NotContainKey("governance.filter");
     }
 
     // ── Export/Import ────────────────────────────────────────────────
@@ -363,12 +452,16 @@ public sealed class WorkspaceServiceTests
     public async Task ExportWorkspaceAsync_ExistingWorkspace_ShouldReturnJson()
     {
         var svc = CreateService();
-        var workspace = svc.Workspaces.First();
+        var workspace = await svc.CreateWorkspaceAsync(
+            "ExportTest-" + Guid.NewGuid().ToString("N")[..8],
+            "Export test workspace",
+            WorkspaceCategory.Custom);
 
         var json = await svc.ExportWorkspaceAsync(workspace.Id);
 
         json.Should().NotBeNullOrEmpty();
         json.Should().Contain(workspace.Name);
+        await svc.DeleteWorkspaceAsync(workspace.Id);
     }
 
     [Fact]
@@ -426,7 +519,11 @@ public sealed class WorkspaceServiceTests
         template.Id.Should().BeEmpty();
         template.Name.Should().BeEmpty();
         template.Description.Should().BeEmpty();
+        template.PreferredPageTag.Should().BeEmpty();
         template.IsBuiltIn.Should().BeFalse();
+        template.RecentPageTags.Should().BeEmpty();
+        template.Context.Should().BeEmpty();
+        template.SessionSnapshot.Should().BeNull();
     }
 
     // ── Data Model: WorkspacePage ────────────────────────────────────
@@ -443,10 +540,10 @@ public sealed class WorkspaceServiceTests
     // ── Data Model: WorkspaceCategory Enum ───────────────────────────
 
     [Theory]
-    [InlineData(WorkspaceCategory.Monitoring)]
-    [InlineData(WorkspaceCategory.Backfill)]
-    [InlineData(WorkspaceCategory.Storage)]
-    [InlineData(WorkspaceCategory.Analysis)]
+    [InlineData(WorkspaceCategory.Research)]
+    [InlineData(WorkspaceCategory.Trading)]
+    [InlineData(WorkspaceCategory.DataOperations)]
+    [InlineData(WorkspaceCategory.Governance)]
     [InlineData(WorkspaceCategory.Custom)]
     public void WorkspaceCategory_AllValues_ShouldBeDefined(WorkspaceCategory category)
     {

@@ -1,7 +1,7 @@
 # Meridian - Consolidated Evaluations & Audits
 
 **Version:** 1.7.0
-**Last Updated:** 2026-03-20
+**Last Updated:** 2026-03-21
 **Status:** Consolidated reference document (aligned with current roadmap/status docs)
 
 This document consolidates all architecture evaluations, code audits, desktop assessments, improvement brainstorms, and architecture proposals into a single navigable reference. It replaces the need to read 20+ individual files across `docs/evaluations/`, `docs/audits/`, and `docs/development/` for a complete project health picture.
@@ -71,11 +71,12 @@ This document consolidates all architecture evaluations, code audits, desktop as
 
 ## Refresh Highlights
 
-**This 2026-03-20 refresh aligns the consolidated document with the current planning set:**
+**This 2026-03-21 refresh aligns the consolidated document with the current planning set:**
 
 - C1/C2 provider registration and DI composition are now reflected as **completed**, matching `IMPROVEMENTS.md` and `ROADMAP.md`.
 - Operational readiness now reflects the shipped SLO registry, alert-to-runbook linkage, and current remaining work (release gates, rollback drills).
 - Desktop coverage now includes the implementation guide and executive summary alongside the historical UX assessment and configurability review.
+- Interactive Brokers and StockSharp references now distinguish between real runtime enablement, compile-only smoke verification, and connector/package-driven setup paths instead of treating them as simple build-flag toggles.
 - Cross-cutting findings now distinguish between **completed foundations** and **still-open follow-through work**, instead of pointing at superseded statuses.
 - Repository cleanup notes now call out that generated documentation has been refreshed since the original cleanup audit, leaving HtmlTemplateGenerator asset extraction as the main residual cleanup idea.
 
@@ -180,7 +181,7 @@ This document consolidates all architecture evaluations, code audits, desktop as
 |------|----------|----------|-----------|
 | Primary | Alpaca | US equities, intraday bars | Yes (with account) |
 | Primary | Polygon | Professional tick data, aggregates | Limited |
-| Secondary | Interactive Brokers | Comprehensive coverage, all types | Yes (with account) |
+| Secondary | Interactive Brokers | Comprehensive coverage, all types | Yes (with account and official `IBApi` runtime path) |
 | Fallback | Tiingo | Cost-effective daily bars | Yes |
 | Fallback | Stooq | International coverage, daily bars | Yes |
 | Fallback | Yahoo Finance | Free daily bars (unofficial API) | Yes |
@@ -196,7 +197,7 @@ This document consolidates all architecture evaluations, code audits, desktop as
 | Priority | Opportunity | Status |
 |----------|-------------|--------|
 | P1 | Validate Polygon rate-limit assumptions against current docs | Open |
-| P2 | Add tick-level historical data from IB for verification | Requires IBAPI build flag |
+| P2 | Add tick-level historical data from IB for verification | Requires the official `IBApi` runtime path; `EnableIbApiSmoke=true` is compile-only |
 | P3 | Provider SDK auto-documentation from attributes | Open (I4 in ROADMAP) |
 
 ---
@@ -269,7 +270,7 @@ This document consolidates all architecture evaluations, code audits, desktop as
 
 ### Desktop UX Assessment
 
-> Source: `docs/archived/desktop-end-user-improvements.md`
+> Source: `../../archive/docs/assessments/desktop-end-user-improvements.md`
 > Date: 2026-03-20 | Status: Archived historical assessment
 
 **Scope:** 49 XAML pages, 104 services (72 shared + 32 WPF-specific), 1,266 tests
@@ -343,14 +344,14 @@ This document consolidates all architecture evaluations, code audits, desktop as
 
 ### Repository Hygiene (H1-H3)
 
-> Source: `docs/archived/CLEANUP_SUMMARY.md`
+> Source: `../../archive/docs/assessments/CLEANUP_SUMMARY.md`
 > Date: 2026-02-10 | Status: Complete
 
 | Item | Issue | Resolution |
 |------|-------|------------|
 | H1 | Accidental artifact file tracked in repo | Removed; `.gitignore` patterns added |
 | H2 | `build-output.log` (93,549 bytes) in version control | Removed; `*.log` pattern prevents recurrence |
-| H3 | Root-level narrative docs diluting discoverability | Moved to `docs/archived/` with date prefixes |
+| H3 | Root-level narrative docs diluting discoverability | Moved to `../../archive/docs/` with date prefixes |
 
 **Outcome:** Repository root is clean. All hygiene items resolved.
 
@@ -358,7 +359,7 @@ This document consolidates all architecture evaluations, code audits, desktop as
 
 ### Debug Code Analysis (H3)
 
-> Source: `docs/archived/H3_DEBUG_CODE_ANALYSIS.md`
+> Source: `../../archive/docs/assessments/H3_DEBUG_CODE_ANALYSIS.md`
 > Date: 2026-02-10 | Status: Complete
 
 | Category | Instances | Verdict |
@@ -373,7 +374,7 @@ This document consolidates all architecture evaluations, code audits, desktop as
 
 ### Platform Cleanup (UWP Removal)
 
-> Source: `docs/archived/CLEANUP_OPPORTUNITIES.md`
+> Source: `../../archive/docs/assessments/CLEANUP_OPPORTUNITIES.md`
 > Date: 2026-02-10 (updated 2026-02-20) | Status: Complete
 
 **Summary of Completed Work:**
@@ -429,7 +430,7 @@ This document consolidates all architecture evaluations, code audits, desktop as
 
 ### Cleanup Action Plan Status
 
-> Source: `docs/archived/repository-cleanup-action-plan.md`
+> Source: `../../archive/docs/plans/repository-cleanup-action-plan.md`
 > Version: 1.2 | Date: 2026-02-16 | Status: Phases 1-6 Complete
 
 | Metric | Before | After | Improvement |
@@ -452,7 +453,7 @@ This document consolidates all architecture evaluations, code audits, desktop as
 
 ### Config Consolidation
 
-> Source: `CONFIG_CONSOLIDATION_REPORT.md` (root)
+> Source: `../../archive/docs/assessments/CONFIG_CONSOLIDATION_REPORT.md`
 > Date: 2026-02-10 | Status: Complete
 
 **Findings:**
@@ -509,7 +510,7 @@ This document consolidates all architecture evaluations, code audits, desktop as
 | # | Improvement | Status |
 |---|-------------|--------|
 | 3.1 | End-to-end trace context propagation via `System.Diagnostics.Activity` | Open |
-| 3.2 | WebSocket provider base class (Polygon, NYSE, StockSharp share ~200-300 LOC lifecycle code) | Open |
+| 3.2 | WebSocket provider base class (historically grouped Polygon, NYSE, StockSharp lifecycle duplication) | Re-scoped: Polygon and NYSE addressed; StockSharp is now treated as a connector-runtime exception |
 | 3.3 | Decide F# strategy: deepen validation/calculation coverage or remove interop overhead | Open |
 | 3.4 | Idempotent storage writes (bloom filter / hash-set dedup at sink layer) | Open |
 | 3.5 | Config fail-fast vs. self-healing separation with severity levels | Open |
@@ -546,10 +547,10 @@ This document consolidates all architecture evaluations, code audits, desktop as
 
 ---
 
-### High-Impact Improvements Brainstorm (Feb/Mar 2026)
+### High-Impact Improvements Brainstorm (Feb/Mar 2026, Archived)
 
-> Source: `docs/evaluations/high-impact-improvements-brainstorm.md`
-> Date: 2026-03-02 | Status: Active — Improvements Identified
+> Source: `../../archive/docs/assessments/high-impact-improvements-brainstorm.md`
+> Date: 2026-03-02 | Status: Archived historical brainstorm
 
 **Top themes from deep codebase analysis:**
 
@@ -562,7 +563,7 @@ This document consolidates all architecture evaluations, code audits, desktop as
 | WPF ViewModel extraction | All pages except Dashboard perform business logic in code-behind; untestable without UI thread |
 | Test doubles | Mock sinks, fake providers, and stub calendars are not shared; each test reinvents infrastructure |
 
-> For the full item-by-item analysis see `docs/evaluations/high-impact-improvements-brainstorm.md`.
+> For the archived full item-by-item analysis see `../../archive/docs/assessments/high-impact-improvements-brainstorm.md`.
 
 ---
 
@@ -728,7 +729,7 @@ These themes recur across multiple evaluations and are now aligned to the curren
 
 Multiple evaluations (streaming, historical, desktop configurability) identified fragmented provider registration as a friction point. That foundation work is now substantially complete.
 
-**Current state:** C1 (Unified Provider Registry) and C2 (Single DI Composition Path) are completed; remaining provider-architecture follow-through is concentrated in C3 (`WebSocketProviderBase` adoption for NYSE and StockSharp) and adjacent provider-local cleanup.
+**Current state:** C1 (Unified Provider Registry) and C2 (Single DI Composition Path) are completed. C3 is effectively closed for the active WebSocket-style providers: Polygon uses the shared base, NYSE is bridged through the shared lifecycle path, and StockSharp is now treated as a connector-runtime exception rather than a remaining WebSocket-base migration target.
 
 ### 2. Operational SLO Standardization
 
@@ -762,20 +763,20 @@ These evaluations are superseded or no longer applicable:
 
 | Document | Location | Reason Archived |
 |----------|----------|----------------|
-| `desktop-end-user-improvements-shortlist.md` | `docs/archived/` | All P0 items resolved; superseded by current desktop assessment |
-| `desktop-ui-alternatives-evaluation.md` | `docs/archived/` | Decision made: WPF is sole desktop platform |
-| `UWP_COMPREHENSIVE_AUDIT.md` | `docs/archived/` | UWP fully removed from codebase |
-| `uwp-development-roadmap.md` | `docs/archived/` | UWP deprecated; WPF is sole client |
-| `DUPLICATE_CODE_ANALYSIS.md` | `docs/archived/` | Analysis complete; most items resolved |
-| `IMPROVEMENTS_2026-02.md` | `docs/archived/` | Consolidated into `IMPROVEMENTS.md` |
-| `STRUCTURAL_IMPROVEMENTS_2026-02.md` | `docs/archived/` | Consolidated into `IMPROVEMENTS.md` |
-| `REDESIGN_IMPROVEMENTS.md` | `docs/archived/` | Content merged into current docs |
-| `CLEANUP_SUMMARY.md` | `docs/archived/` | All hygiene phases complete; historical reference only |
-| `H3_DEBUG_CODE_ANALYSIS.md` | `docs/archived/` | Complete — no action required; historical reference only |
-| `CLEANUP_OPPORTUNITIES.md` | `docs/archived/` | All platform cleanup items fully completed; historical reference only |
-| `repository-cleanup-action-plan.md` | `docs/archived/` | All phases (1–6) complete; historical record of completed cleanup work |
+| `desktop-end-user-improvements-shortlist.md` | `../../archive/docs/` | All P0 items resolved; superseded by current desktop assessment |
+| `desktop-ui-alternatives-evaluation.md` | `../../archive/docs/` | Decision made: WPF is sole desktop platform |
+| `UWP_COMPREHENSIVE_AUDIT.md` | `../../archive/docs/` | UWP fully removed from codebase |
+| `uwp-development-roadmap.md` | `../../archive/docs/` | UWP deprecated; WPF is sole client |
+| `DUPLICATE_CODE_ANALYSIS.md` | `../../archive/docs/` | Analysis complete; most items resolved |
+| `IMPROVEMENTS_2026-02.md` | `../../archive/docs/` | Consolidated into `IMPROVEMENTS.md` |
+| `STRUCTURAL_IMPROVEMENTS_2026-02.md` | `../../archive/docs/` | Consolidated into `IMPROVEMENTS.md` |
+| `REDESIGN_IMPROVEMENTS.md` | `../../archive/docs/` | Content merged into current docs |
+| `CLEANUP_SUMMARY.md` | `../../archive/docs/` | All hygiene phases complete; historical reference only |
+| `H3_DEBUG_CODE_ANALYSIS.md` | `../../archive/docs/` | Complete — no action required; historical reference only |
+| `CLEANUP_OPPORTUNITIES.md` | `../../archive/docs/` | All platform cleanup items fully completed; historical reference only |
+| `repository-cleanup-action-plan.md` | `../../archive/docs/` | All phases (1–6) complete; historical record of completed cleanup work |
 
-See [`docs/archived/INDEX.md`](../archived/INDEX.md) for the full archive index.
+See [`../../archive/docs/INDEX.md`](../../archive/docs/INDEX.md) for the full archive index.
 
 ---
 
@@ -791,25 +792,25 @@ All source documents that feed into this consolidation:
 | Historical Data Providers Evaluation | `docs/evaluations/historical-data-providers-evaluation.md` | Evaluation | Current |
 | Ingestion Orchestration Evaluation | `docs/evaluations/ingestion-orchestration-evaluation.md` | Evaluation | Current |
 | Operational Readiness Evaluation | `docs/evaluations/operational-readiness-evaluation.md` | Evaluation | Current |
-| Desktop End-User Improvements | `docs/archived/desktop-end-user-improvements.md` | Assessment | Archived |
+| Desktop End-User Improvements | `../../archive/docs/assessments/desktop-end-user-improvements.md` | Assessment | Archived |
 | Desktop Provider Configurability | `docs/evaluations/windows-desktop-provider-configurability-assessment.md` | Assessment | Current |
 | High-Impact Improvement Brainstorm (Mar 2026) | `docs/evaluations/high-impact-improvement-brainstorm-2026-03.md` | Brainstorm | Active |
-| High-Impact Improvements Brainstorm | `docs/evaluations/high-impact-improvements-brainstorm.md` | Brainstorm | Active |
+| High-Impact Improvements Brainstorm | `../../archive/docs/assessments/high-impact-improvements-brainstorm.md` | Brainstorm | Archived |
 | High-Value Low-Cost Improvements | `docs/evaluations/high-value-low-cost-improvements-brainstorm.md` | Brainstorm | Active |
 | Nautilus-Inspired Restructuring Proposal | `docs/evaluations/nautilus-inspired-restructuring-proposal.md` | Proposal | Partially Implemented |
 | Assembly-Level Performance Opportunities | `docs/evaluations/assembly-performance-opportunities.md` | Proposal | Proposal |
 | Next Frontier Brainstorm (Mar 2026) | `docs/evaluations/2026-03-brainstorm-next-frontier.md` | Brainstorm | Living Document |
-| Cleanup Summary | `docs/archived/CLEANUP_SUMMARY.md` | Audit | Archived |
-| Cleanup Opportunities | `docs/archived/CLEANUP_OPPORTUNITIES.md` | Audit | Archived |
-| Debug Code Analysis | `docs/archived/H3_DEBUG_CODE_ANALYSIS.md` | Audit | Archived |
+| Cleanup Summary | `../../archive/docs/assessments/CLEANUP_SUMMARY.md` | Audit | Archived |
+| Cleanup Opportunities | `../../archive/docs/assessments/CLEANUP_OPPORTUNITIES.md` | Audit | Archived |
+| Debug Code Analysis | `../../archive/docs/assessments/H3_DEBUG_CODE_ANALYSIS.md` | Audit | Archived |
 | Further Simplification | `docs/audits/FURTHER_SIMPLIFICATION_OPPORTUNITIES.md` | Audit | Documented |
-| UWP Comprehensive Audit | `docs/archived/UWP_COMPREHENSIVE_AUDIT.md` | Audit | Archived |
-| Repository Cleanup Plan | `docs/archived/repository-cleanup-action-plan.md` | Plan | Archived |
-| Config Consolidation Report | `CONFIG_CONSOLIDATION_REPORT.md` | Report | Complete |
+| UWP Comprehensive Audit | `../../archive/docs/assessments/UWP_COMPREHENSIVE_AUDIT.md` | Audit | Archived |
+| Repository Cleanup Plan | `../../archive/docs/plans/repository-cleanup-action-plan.md` | Plan | Archived |
+| Config Consolidation Report | `../../archive/docs/assessments/CONFIG_CONSOLIDATION_REPORT.md` | Report | Archived |
 | Desktop Improvements Exec Summary | `docs/evaluations/desktop-improvements-executive-summary.md` | Summary | Current |
 | Desktop Platform Improvements Guide | `docs/evaluations/desktop-platform-improvements-implementation-guide.md` | Guide | Current |
-| Desktop Improvement Shortlist | `docs/archived/desktop-end-user-improvements-shortlist.md` | Assessment | Archived |
+| Desktop Improvement Shortlist | `../../archive/docs/assessments/desktop-end-user-improvements-shortlist.md` | Assessment | Archived |
 
 ---
 
-*Last Updated: 2026-03-20*
+*Last Updated: 2026-03-21*

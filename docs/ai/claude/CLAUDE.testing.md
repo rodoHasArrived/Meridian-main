@@ -821,7 +821,7 @@ public void PerformanceTest() { }
 
 ## Related Resources
 
-- **Master AI index:** [`docs/ai/README.md`](../README.md)
+- **Master AI index:** [`docs/ai/README.md`](../../archive/docs/README.md)
 - **Root context:** [`CLAUDE.md`](../../../CLAUDE.md)
 - **Code review (Lens 4 - Test Quality):** [`.github/agents/code-review-agent.md`](../../../.github/agents/code-review-agent.md)
 - **Test instructions:** [`.github/instructions/dotnet-tests.instructions.md`](../../../.github/instructions/dotnet-tests.instructions.md)

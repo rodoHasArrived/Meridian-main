@@ -1,4 +1,5 @@
 using Meridian.Application.Config;
+using Meridian.Application.Coordination;
 using Meridian.Application.Logging;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
@@ -59,6 +60,7 @@ public sealed class HostStartup : IAsyncDisposable
 
         var serviceProvider = services.BuildServiceProvider();
         InitializeHttpClientFactory(serviceProvider, log);
+        SecurityMasterStartup.EnsureDatabaseReady(serviceProvider);
 
         return new HostStartup(serviceProvider, options, log);
     }
@@ -158,19 +160,23 @@ public sealed class HostStartup : IAsyncDisposable
     /// Creates a subscription manager for managing symbol subscriptions.
     /// </summary>
     /// <param name="dataClient">The market data client.</param>
+    /// <param name="providerId">Provider identifier used for cross-instance coordination ownership.</param>
     /// <returns>Configured subscription manager.</returns>
-    public SubscriptionOrchestrator CreateSubscriptionOrchestrator(IMarketDataClient dataClient)
+    public SubscriptionOrchestrator CreateSubscriptionOrchestrator(IMarketDataClient dataClient, string providerId)
     {
         var depthCollector = GetRequiredService<MarketDepthCollector>();
         var tradeCollector = GetRequiredService<TradeDataCollector>();
         var log = LoggingSetup.ForContext<SubscriptionOrchestrator>();
 
         var optionCollector = GetService<OptionDataCollector>();
+        var ownershipService = GetService<ISubscriptionOwnershipService>();
 
         return new SubscriptionOrchestrator(
             depthCollector,
             tradeCollector,
             dataClient,
+            providerId,
+            ownershipService,
             log,
             optionCollector);
     }

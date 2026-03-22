@@ -1,7 +1,7 @@
 <Page x:Class="Meridian.Wpf.Views.AnalysisExportWizardPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      Background="{DynamicResource ConsoleBackgroundDarkBrush}"
+      Background="{DynamicResource ShellWindowBackgroundBrush}"
       Loaded="OnPageLoaded"
       AutomationProperties.Name="Analysis Export Wizard">
     <Page.Resources>
@@ -28,15 +28,23 @@
             </Style.Triggers>
         </Style>
     </Page.Resources>
-    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
         <StackPanel MaxWidth="1200">
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                <TextBlock Text="&#xF2F1;" FontFamily="{StaticResource SymbolThemeFontFamily}"
-                           FontSize="28" Foreground="{StaticResource InfoColorBrush}" VerticalAlignment="Center" />
-                <TextBlock Text="Analysis Export Wizard" Style="{StaticResource PageTitleStyle}" Margin="12,0,0,0" VerticalAlignment="Center" />
-            </StackPanel>
-            <TextBlock Text="Step-by-step export builder for analysis deliverables."
-                       Style="{StaticResource PageSubtitleStyle}" Margin="0,0,0,20" />
+            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24">
+                <StackPanel Orientation="Horizontal">
+                    <Border Width="44" Height="44" CornerRadius="14"
+                            Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                            BorderBrush="{StaticResource InfoColorBrush}" BorderThickness="1">
+                        <TextBlock Text="&#xF2F1;" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="24" Foreground="{StaticResource InfoColorBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                    </Border>
+                    <StackPanel Margin="12,0,0,0">
+                        <TextBlock Text="Analysis Export Wizard" Style="{StaticResource PageTitleStyle}" />
+                        <TextBlock Text="Build export packages step by step for downstream analysis and review."
+                                   Style="{StaticResource CardDescriptionStyle}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
 
             <Border Style="{StaticResource CardStyle}">
                 <StackPanel>
@@ -119,7 +127,7 @@
 
                         <!-- Pre-Export Validation Report -->
                         <Border Background="{StaticResource ConsoleBackgroundLightBrush}"
-                                CornerRadius="8"
+                                CornerRadius="12"
                                 Padding="16"
                                 Margin="0,16,0,0">
                             <StackPanel>
@@ -151,7 +159,7 @@
 
                     <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
                         <Button Content="Back"
-                                Style="{StaticResource SecondaryButtonStyle}"
+                                Style="{StaticResource GhostButtonStyle}"
                                 Click="Back_Click"
                                 IsEnabled="{Binding CanGoBack}"
                                 Margin="0,0,8,0" />

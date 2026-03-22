@@ -5,7 +5,7 @@ using Serilog;
 namespace Meridian.Application.Commands;
 
 /// <summary>
-/// Handles --generate-loader CLI command for generating standalone Python/R loader scripts
+/// Handles --generate-loader CLI command for generating standalone analysis loader scripts
 /// without requiring a full export. Useful for sharing data directories with researchers.
 /// </summary>
 internal sealed class GenerateLoaderCommand : ICliCommand
@@ -47,7 +47,7 @@ internal sealed class GenerateLoaderCommand : ICliCommand
             if (string.IsNullOrEmpty(scriptPath))
             {
                 Console.Error.WriteLine($"  No loader generator available for tool: {targetTool}");
-                Console.Error.WriteLine("  Supported tools: python, r, pyarrow, postgresql");
+                Console.Error.WriteLine("  Supported tools: python, r, pyarrow, postgresql, runmat");
                 return CliResult.Fail(ErrorCode.ValidationFailed);
             }
 

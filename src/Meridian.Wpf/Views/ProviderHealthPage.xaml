@@ -4,7 +4,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       mc:Ignorable="d"
-      Background="{DynamicResource ConsoleBackgroundDarkBrush}"
+      Background="{DynamicResource ShellWindowBackgroundBrush}"
       Loaded="OnPageLoaded"
       AutomationProperties.Name="Provider Health">
 
@@ -12,43 +12,49 @@
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </Page.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
         <StackPanel MaxWidth="1200">
             <!-- Header -->
-            <Grid Margin="0,0,0,24">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Column="0" Orientation="Horizontal">
-                    <TextBlock Text="&#xE968;" FontFamily="{StaticResource SymbolThemeFontFamily}"
-                               FontSize="28" Foreground="{StaticResource InfoColorBrush}"
-                               VerticalAlignment="Center" />
-                    <TextBlock Text="Provider Health" Style="{StaticResource PageTitleStyle}"
-                               Margin="12,0,0,0" VerticalAlignment="Center" />
-                </StackPanel>
+                    <StackPanel Grid.Column="0" Orientation="Horizontal">
+                        <Border Width="44" Height="44" CornerRadius="14"
+                                Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                                BorderBrush="{StaticResource InfoColorBrush}" BorderThickness="1">
+                            <TextBlock Text="&#xE968;" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                       FontSize="24" Foreground="{StaticResource InfoColorBrush}"
+                                       VerticalAlignment="Center" HorizontalAlignment="Center" />
+                        </Border>
+                        <StackPanel Margin="12,0,0,0">
+                            <TextBlock Text="Provider Health" Style="{StaticResource PageTitleStyle}" />
+                            <TextBlock Text="Connection posture, latency, and recent provider events across streaming and backfill surfaces."
+                                       Style="{StaticResource CardDescriptionStyle}" />
+                        </StackPanel>
+                    </StackPanel>
 
-                <StackPanel Grid.Column="1" Orientation="Horizontal">
-                    <TextBlock Text="{Binding LastUpdateText}"
-                               VerticalAlignment="Center" Margin="0,0,16,0">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="Foreground" Value="{StaticResource ConsoleTextMutedBrush}"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsLastUpdateStale}" Value="True">
-                                        <Setter Property="Foreground" Value="{StaticResource WarningColorBrush}"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
-                    <Button Content="Refresh" Click="Refresh_Click"
-                            Background="{DynamicResource ConsoleBackgroundMediumBrush}"
-                            Foreground="{DynamicResource ConsoleTextBrush}"
-                            BorderThickness="0" Padding="16,8"/>
-                </StackPanel>
-            </Grid>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding LastUpdateText}"
+                                   VerticalAlignment="Center" Margin="0,0,16,0">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="{StaticResource ConsoleTextMutedBrush}"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsLastUpdateStale}" Value="True">
+                                            <Setter Property="Foreground" Value="{StaticResource WarningColorBrush}"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                        <Button Content="Refresh" Click="Refresh_Click" Style="{StaticResource PrimaryButtonStyle}"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
 
             <!-- Summary Stats -->
             <Grid Margin="0,0,0,24">

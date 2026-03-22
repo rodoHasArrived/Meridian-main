@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using Meridian.Application.Config;
 using Meridian.Storage.Archival;
 
@@ -12,6 +13,7 @@ public sealed class BackfillStatusStore
     private readonly string _path;
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
+        TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
         WriteIndented = true,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };

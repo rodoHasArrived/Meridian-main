@@ -153,7 +153,7 @@ public sealed record CompressionProfile(
 
 - [Storage Design](../architecture/storage-design.md)
 - [Compression Guide](../HELP.md#configuration)
-- [Data Lifecycle](../operations/operator-runbook.md#storage-management)
+- [Data Lifecycle](../operations/operator-runbook.md)
 - [ADR-007: Write-Ahead Log](007-write-ahead-log-durability.md) - WAL provides crash-safe durability for hot-tier writes
 - [ADR-008: Multi-Format Composite Storage](008-multi-format-composite-storage.md) - CompositeSink fans out to JSONL and Parquet tiers simultaneously
 

@@ -10,6 +10,7 @@ description: >
   Meridian namespaces, BindableBase, EventPipeline, IMarketDataClient, IStorageSink,
   WriteAheadLog, AtomicFileWriter, or ProviderSdk types.
 license: See repository LICENSE
+last_updated: 2026-03-21
 compatibility: >
   Portable Agent Skill package for Agent Skills-compatible hosts. Reads repository files, optional
   reference bundles, and Python helper scripts for evals, packaging, and deterministic validation.
@@ -19,6 +20,8 @@ metadata:
   spec: open-agent-skills-v1
 ---
 # Meridian Code Review
+
+**Last Updated:** 2026-03-21
 
 > **GitHub Copilot / Actions equivalent:** [`.github/agents/code-review-agent.md`](../../../.github/agents/code-review-agent.md) — same lens framework as a GitHub agent definition.
 > **Navigation index:** [`docs/ai/skills/README.md`](../../../docs/ai/skills/README.md)

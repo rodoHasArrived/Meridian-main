@@ -748,7 +748,7 @@ public async Task<HealthCheckResult> CheckStorageHealthAsync()
 
 ## Related Resources
 
-- **Master AI index:** [`docs/ai/README.md`](../README.md)
+- **Master AI index:** [`docs/ai/README.md`](../../archive/docs/README.md)
 - **Root context:** [`CLAUDE.md`](../../../CLAUDE.md) § Storage Architecture
 - **Architecture docs:** [`docs/architecture/storage-design.md`](../../architecture/storage-design.md)
 

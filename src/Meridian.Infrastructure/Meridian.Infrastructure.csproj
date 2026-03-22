@@ -11,10 +11,15 @@
   <PropertyGroup>
     <!-- StockSharp integration is optional -->
     <EnableStockSharp Condition="'$(EnableStockSharp)' == ''">false</EnableStockSharp>
+    <EnableIbApiSmoke Condition="'$(EnableIbApiSmoke)' == ''">false</EnableIbApiSmoke>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(EnableStockSharp)' == 'true'">
     <DefineConstants>$(DefineConstants);STOCKSHARP;STOCKSHARP_RITHMIC;STOCKSHARP_IQFEED;STOCKSHARP_CQG;STOCKSHARP_INTERACTIVEBROKERS</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(EnableIbApiSmoke)' == 'true'">
+    <DefineConstants>$(DefineConstants);IBAPI</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -59,6 +64,7 @@
     <PackageReference Include="StockSharp.IQFeed" Condition="'$(EnableStockSharp)' == 'true'" />
     <PackageReference Include="StockSharp.Cqg.Com" Condition="'$(EnableStockSharp)' == 'true'" />
     <PackageReference Include="StockSharp.InteractiveBrokers" Condition="'$(EnableStockSharp)' == 'true'" />
+
   </ItemGroup>
 
   <ItemGroup>
@@ -66,6 +72,7 @@
     <ProjectReference Include="..\Meridian.Domain\Meridian.Domain.csproj" />
     <ProjectReference Include="..\Meridian.Contracts\Meridian.Contracts.csproj" />
     <ProjectReference Include="..\Meridian.ProviderSdk\Meridian.ProviderSdk.csproj" />
+    <ProjectReference Include="..\Meridian.IbApi.SmokeStub\Meridian.IbApi.SmokeStub.csproj" Condition="'$(EnableIbApiSmoke)' == 'true'" />
   </ItemGroup>
 
   <!-- Provider implementation templates live under docs/examples/provider-template/ and are no longer part of this project. -->

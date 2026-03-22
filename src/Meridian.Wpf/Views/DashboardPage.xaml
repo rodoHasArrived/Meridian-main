@@ -15,10 +15,11 @@
     </Page.Resources>
 
     <ScrollViewer VerticalScrollBarVisibility="Auto"
-                  Padding="24">
+                  Padding="28,20,28,32">
         <StackPanel MaxWidth="1400">
             <!-- Header with Quick Actions -->
-            <Grid Margin="0,0,0,24">
+            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24">
+                <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
@@ -79,7 +80,7 @@
                                 </StackPanel>
                             </Border>
                         </StackPanel>
-                        <TextBlock Text="Real-time market data monitoring and collection status"
+                        <TextBlock Text="Real-time market data monitoring, operator status, and risk-aware control handoff."
                                    Style="{StaticResource CardDescriptionStyle}"
                                    Margin="0" />
                     </StackPanel>
@@ -116,7 +117,8 @@
                                    FontSize="16" />
                     </Button>
                 </StackPanel>
-            </Grid>
+                </Grid>
+            </Border>
 
             <!-- Console-Inspired Metrics Grid -->
             <Grid Margin="0,0,0,24">

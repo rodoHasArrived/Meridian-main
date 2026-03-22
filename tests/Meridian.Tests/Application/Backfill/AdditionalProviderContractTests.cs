@@ -5,6 +5,7 @@ using Meridian.Contracts.Domain.Models;
 using Meridian.Infrastructure.Adapters.AlphaVantage;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.Finnhub;
+using Meridian.Infrastructure.Adapters.Fred;
 using Meridian.Infrastructure.Adapters.Tiingo;
 using Moq;
 using Moq.Protected;
@@ -381,6 +382,76 @@ public sealed class AdditionalProviderContractTests
 
     #endregion
 
+    #region FRED Contract Tests
+
+    [Fact]
+    public async Task Fred_ParsesValidResponse_ReturnsSyntheticBars()
+    {
+        var httpClient = CreateMockHttpClient(FredResponses.ValidObservationsResponse);
+        using var provider = new FredHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient);
+
+        var bars = await provider.GetDailyBarsAsync("UNRATE", null, null);
+
+        bars.Should().HaveCount(3);
+        bars.Should().AllSatisfy(bar =>
+        {
+            bar.Symbol.Should().Be("UNRATE");
+            bar.Open.Should().Be(bar.High);
+            bar.High.Should().Be(bar.Low);
+            bar.Low.Should().Be(bar.Close);
+            bar.Volume.Should().Be(0);
+            bar.Source.Should().Be("fred");
+        });
+    }
+
+    [Fact]
+    public async Task Fred_SkipsMissingObservations()
+    {
+        var httpClient = CreateMockHttpClient(FredResponses.ResponseWithMissingValue);
+        using var provider = new FredHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient);
+
+        var bars = await provider.GetDailyBarsAsync("GDP", null, null);
+
+        bars.Should().HaveCount(1);
+        bars[0].Close.Should().Be(23123.45m);
+    }
+
+    [Fact]
+    public async Task Fred_WithNoApiKey_ThrowsInvalidOperationException()
+    {
+        var httpClient = CreateMockHttpClient(FredResponses.ValidObservationsResponse);
+        using var provider = new FredHistoricalDataProvider(apiKey: null, httpClient: httpClient);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => provider.GetDailyBarsAsync("UNRATE", null, null));
+    }
+
+    [Fact]
+    public async Task Fred_RespectsDateRange_FiltersCorrectly()
+    {
+        var httpClient = CreateMockHttpClient(FredResponses.ValidObservationsResponse);
+        using var provider = new FredHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient);
+        var from = new DateOnly(2024, 2, 1);
+        var to = new DateOnly(2024, 3, 1);
+
+        var bars = await provider.GetDailyBarsAsync("UNRATE", from, to);
+
+        bars.Should().OnlyContain(bar => bar.SessionDate >= from && bar.SessionDate <= to);
+    }
+
+    [Fact]
+    public void Fred_HasCorrectMetadata()
+    {
+        using var provider = new FredHistoricalDataProvider(apiKey: "test-key");
+
+        provider.Name.Should().Be("fred");
+        provider.DisplayName.Should().Contain("FRED");
+        provider.Priority.Should().Be(28);
+        provider.Capabilities.SupportedMarkets.Should().Contain("US");
+    }
+
+    #endregion
+
     #region Helper Methods
 
     private static HttpClient CreateMockHttpClient(string responseContent, HttpStatusCode statusCode = HttpStatusCode.OK)
@@ -564,6 +635,32 @@ public static class AlphaVantageResponses
     public const string RateLimitResponse = """
     {
         "Note": "Thank you for using Alpha Vantage! Our standard API call frequency is 5 calls per minute and 500 calls per day. Please visit https://www.alphavantage.co/premium/ if you would like to target a higher API call frequency."
+    }
+    """;
+}
+
+#endregion
+
+#region FRED Recorded Responses
+
+public static class FredResponses
+{
+    public const string ValidObservationsResponse = """
+    {
+        "observations": [
+            { "date": "2024-01-01", "value": "3.7" },
+            { "date": "2024-02-01", "value": "3.9" },
+            { "date": "2024-03-01", "value": "3.8" }
+        ]
+    }
+    """;
+
+    public const string ResponseWithMissingValue = """
+    {
+        "observations": [
+            { "date": "2024-01-01", "value": "." },
+            { "date": "2024-04-01", "value": "23123.45" }
+        ]
     }
     """;
 }

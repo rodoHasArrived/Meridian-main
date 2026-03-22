@@ -3,6 +3,8 @@ applyTo: "**/*.md"
 ---
 # Documentation instructions
 
+**Last Updated:** 2026-03-21
+
 When editing Markdown documentation:
 
 1. Favor task-oriented language and concrete commands.

@@ -1,22 +1,28 @@
 <Page x:Class="Meridian.Wpf.Views.IndexSubscriptionPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      Background="{DynamicResource ConsoleBackgroundDarkBrush}"
+      Background="{DynamicResource ShellWindowBackgroundBrush}"
       Loaded="OnPageLoaded"
       AutomationProperties.Name="Index Subscription">
-    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
         <StackPanel MaxWidth="1200">
 
             <!-- Header -->
-            <StackPanel Margin="0,0,0,24">
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-                    <TextBlock Text="&#xE8FD;" FontFamily="{StaticResource SymbolThemeFontFamily}"
-                               FontSize="28" Foreground="{StaticResource InfoColorBrush}" VerticalAlignment="Center" />
-                    <TextBlock Text="Index Subscriptions" Style="{StaticResource PageTitleStyle}" Margin="12,0,0,0" VerticalAlignment="Center" />
+            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24">
+                <StackPanel Orientation="Horizontal">
+                    <Border Width="44" Height="44" CornerRadius="14"
+                            Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                            BorderBrush="{StaticResource InfoColorBrush}" BorderThickness="1">
+                        <TextBlock Text="&#xE8FD;" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="24" Foreground="{StaticResource InfoColorBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                    </Border>
+                    <StackPanel Margin="12,0,0,0">
+                        <TextBlock Text="Index Subscriptions" Style="{StaticResource PageTitleStyle}" />
+                        <TextBlock Text="Subscribe to major index constituents, sector ETFs, and custom benchmarks for bulk symbol management."
+                                   Style="{StaticResource CardDescriptionStyle}" />
+                    </StackPanel>
                 </StackPanel>
-                <TextBlock Text="Subscribe to index constituents (S&amp;P 500, Nasdaq 100, Dow 30, sector ETFs) for bulk symbol management"
-                           Style="{StaticResource CardDescriptionStyle}" />
-            </StackPanel>
+            </Border>
 
             <!-- Major Indices -->
             <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
@@ -30,21 +36,21 @@
                             <ColumnDefinition Width="16" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
-                        <Border Grid.Column="0" Style="{StaticResource CardStyle}" Padding="16">
+                        <Border Grid.Column="0" Background="{StaticResource PremiumPanelBrush}" BorderBrush="{StaticResource ConsoleBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="16">
                             <StackPanel>
                                 <TextBlock Text="S&amp;P 500" FontSize="16" FontWeight="Bold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
                                 <TextBlock Text="~503 constituents" FontSize="12" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,4,0,12" />
                                 <Button Content="Subscribe" Click="SubscribeSP500_Click" Style="{StaticResource PrimaryButtonStyle}" HorizontalAlignment="Left" />
                             </StackPanel>
                         </Border>
-                        <Border Grid.Column="2" Style="{StaticResource CardStyle}" Padding="16">
+                        <Border Grid.Column="2" Background="{StaticResource PremiumPanelBrush}" BorderBrush="{StaticResource ConsoleBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="16">
                             <StackPanel>
                                 <TextBlock Text="Nasdaq 100" FontSize="16" FontWeight="Bold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
                                 <TextBlock Text="~101 constituents" FontSize="12" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,4,0,12" />
                                 <Button Content="Subscribe" Click="SubscribeNasdaq100_Click" Style="{StaticResource PrimaryButtonStyle}" HorizontalAlignment="Left" />
                             </StackPanel>
                         </Border>
-                        <Border Grid.Column="4" Style="{StaticResource CardStyle}" Padding="16">
+                        <Border Grid.Column="4" Background="{StaticResource PremiumPanelBrush}" BorderBrush="{StaticResource ConsoleBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="16">
                             <StackPanel>
                                 <TextBlock Text="Dow Jones 30" FontSize="16" FontWeight="Bold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
                                 <TextBlock Text="30 constituents" FontSize="12" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,4,0,12" />
@@ -71,8 +77,8 @@
                         </ListView.ItemContainerStyle>
                         <ListView.ItemTemplate>
                             <DataTemplate>
-                                <Border Background="{StaticResource ConsoleBackgroundLightBrush}"
-                                        CornerRadius="6" Padding="12,8"
+                                <Border Background="{StaticResource PremiumPanelBrush}"
+                                        CornerRadius="12" Padding="12,8"
                                         BorderBrush="{StaticResource ConsoleBorderBrush}" BorderThickness="1">
                                     <Grid>
                                         <Grid.ColumnDefinitions>

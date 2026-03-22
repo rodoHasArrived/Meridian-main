@@ -1,20 +1,21 @@
 <Page x:Class="Meridian.Wpf.Views.AddProviderWizardPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      Background="{DynamicResource ConsoleBackgroundDarkBrush}"
+      Background="{DynamicResource ShellWindowBackgroundBrush}"
       Loaded="OnPageLoaded"
       AutomationProperties.Name="Add Provider Wizard">
 
-    <Grid>
+    <Grid Background="{DynamicResource ShellWindowBackgroundBrush}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="350" />
         </Grid.ColumnDefinitions>
 
-        <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" Padding="24,24,12,24">
+        <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" Padding="28,20,12,32">
             <StackPanel MaxWidth="800">
                 <!-- Header -->
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24">
+                    <StackPanel Orientation="Horizontal">
                     <Button Style="{StaticResource GhostButtonStyle}"
                             Click="BackButton_Click"
                             VerticalAlignment="Center"
@@ -24,19 +25,24 @@
                                    FontFamily="{StaticResource SymbolThemeFontFamily}"
                                    FontSize="16" />
                     </Button>
-                    <TextBlock Text="{StaticResource IconPlugin}"
-                               FontFamily="{StaticResource SymbolThemeFontFamily}"
-                               FontSize="28"
-                               Foreground="{StaticResource InfoColorBrush}"
-                               VerticalAlignment="Center" />
-                    <TextBlock Text="Add Data Provider"
-                               Style="{StaticResource PageTitleStyle}"
-                               Margin="12,0,0,0"
-                               VerticalAlignment="Center" />
-                </StackPanel>
-                <TextBlock Text="Connect a new data provider for real-time streaming or historical backfill."
-                           Foreground="{StaticResource ConsoleTextMutedBrush}"
-                           Margin="0,0,0,24" />
+                    <Border Width="44" Height="44" CornerRadius="14"
+                            Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                            BorderBrush="{StaticResource InfoColorBrush}" BorderThickness="1">
+                        <TextBlock Text="{StaticResource IconPlugin}"
+                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="24"
+                                   Foreground="{StaticResource InfoColorBrush}"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center" />
+                    </Border>
+                    <StackPanel Margin="12,0,0,0">
+                        <TextBlock Text="Add Data Provider"
+                                   Style="{StaticResource PageTitleStyle}" />
+                        <TextBlock Text="Connect a new provider for real-time streaming or historical backfill."
+                                   Style="{StaticResource CardDescriptionStyle}" />
+                    </StackPanel>
+                    </StackPanel>
+                </Border>
 
                 <!-- Step 1: Pick Provider -->
                 <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
@@ -243,7 +249,7 @@
         </ScrollViewer>
 
         <!-- Right Panel - Selected Provider Summary -->
-        <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" Padding="12,24,24,24">
+        <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" Padding="12,20,28,32">
             <StackPanel>
                 <!-- Selected Provider Info -->
                 <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">

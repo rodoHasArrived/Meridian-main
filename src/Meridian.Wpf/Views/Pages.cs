@@ -47,6 +47,7 @@ public partial class AdvancedAnalyticsPage : Page { }
 public partial class ChartingPage : Page { }
 public partial class OrderBookPage : Page { }
 public partial class DataCalendarPage : Page { }
+public partial class RunMatPage : Page { }
 
 // Storage & Maintenance pages
 public partial class StorageOptimizationPage : Page { }

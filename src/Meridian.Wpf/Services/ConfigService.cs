@@ -183,7 +183,7 @@ public sealed class ConfigService : ConfigServiceBase
     /// Adds or updates a single backfill provider configuration entry.
     /// Records the change in the audit trail.
     /// </summary>
-    public async Task SetBackfillProviderOptionsAsync(string providerId, BackfillProviderOptionsDto options, CancellationToken ct = default)
+    public new async Task SetBackfillProviderOptionsAsync(string providerId, BackfillProviderOptionsDto options, CancellationToken ct = default)
     {
         var (previousJson, newJson) = await base.SetBackfillProviderOptionsAsync(providerId, options);
 

@@ -4,7 +4,7 @@ This guide covers the CI/CD pipeline for the Meridian, including workflow struct
 
 ## Workflow Inventory
 
-The project uses 34 GitHub Actions workflows in `.github/workflows/`:
+The project uses 35 GitHub Actions workflows in `.github/workflows/`:
 
 | Workflow | File | Trigger | Purpose |
 |----------|------|---------|---------|
@@ -70,7 +70,7 @@ When modifying build logic, change the reusable workflow rather than individual 
 4. Consider whether it should call `reusable-dotnet-build.yml`
 
 ### Updating artifact actions
-The project standardizes on `actions/upload-artifact@v4` and `actions/download-artifact@v4` for compatibility. See `docs/archived/ARTIFACT_ACTIONS_DOWNGRADE.md` for rationale.
+The project standardizes on `actions/upload-artifact@v4` and `actions/download-artifact@v4` for compatibility. See `../../../archive/docs/assessments/ARTIFACT_ACTIONS_DOWNGRADE.md` for rationale.
 
 ### Desktop build targets
 The consolidated `desktop-builds.yml` supports selective builds via workflow dispatch:
@@ -119,7 +119,7 @@ done
 
 ## Related Resources
 
-- **Master AI index:** [`docs/ai/README.md`](../README.md)
+- **Master AI index:** [`docs/ai/README.md`](../../archive/docs/README.md)
 - **Error prevention:** [`docs/ai/ai-known-errors.md`](../ai-known-errors.md)
 - **Root context:** [`CLAUDE.md`](../../../CLAUDE.md) § CI/CD Pipelines
 

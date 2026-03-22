@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using Meridian.Application.Exceptions;
 using Meridian.Application.Logging;
 using Meridian.Contracts.Domain.Models;
@@ -36,6 +37,11 @@ namespace Meridian.Infrastructure.Adapters.Core;
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRateLimitAwareProvider, IDisposable
 {
+    private static readonly JsonSerializerOptions ReflectionJsonOptions = new()
+    {
+        TypeInfoResolver = new DefaultJsonTypeInfoResolver()
+    };
+
     protected readonly HttpClient Http;
     protected readonly RateLimiter RateLimiter;
     protected readonly ILogger Log;
@@ -419,7 +425,7 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
 
         try
         {
-            return JsonSerializer.Deserialize<T>(json);
+            return JsonSerializer.Deserialize<T>(json, ReflectionJsonOptions);
         }
         catch (JsonException ex)
         {

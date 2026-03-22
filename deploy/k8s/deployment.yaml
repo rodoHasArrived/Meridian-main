@@ -8,8 +8,9 @@ metadata:
     app.kubernetes.io/component: collector
 spec:
   replicas: 1
-  # Single replica recommended: multi-instance requires distributed
-  # coordination (see docs/status/ROADMAP.md H2 theme).
+  # Single replica remains the default recommendation.
+  # Scale beyond one replica only when Coordination.Mode=SharedStorage is enabled
+  # and all replicas share the same coordination-capable volume under DataRoot.
   strategy:
     type: Recreate
   selector:

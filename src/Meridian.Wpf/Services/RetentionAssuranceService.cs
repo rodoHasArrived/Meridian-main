@@ -478,11 +478,10 @@ public sealed class RetentionAssuranceService
         try
         {
             // Load manifest checksums if available
-            Dictionary<string, string>? manifestChecksums = null;
             if (File.Exists(archiveManifestPath))
             {
                 var manifestJson = await File.ReadAllTextAsync(archiveManifestPath, ct);
-                var manifest = JsonSerializer.Deserialize<Dictionary<string, object>>(manifestJson);
+                _ = JsonSerializer.Deserialize<Dictionary<string, object>>(manifestJson);
                 // Extract checksums from manifest
             }
 

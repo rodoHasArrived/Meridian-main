@@ -858,7 +858,7 @@ let validate trade =
 
 ## Related Resources
 
-- **Master AI index:** [`docs/ai/README.md`](../README.md)
+- **Master AI index:** [`docs/ai/README.md`](../../archive/docs/README.md)
 - **Root context:** [`CLAUDE.md`](../../../CLAUDE.md)
 - **Code review (Lens 6 - F# interop):** [`.github/agents/code-review-agent.md`](../../../.github/agents/code-review-agent.md)
 - **Integration docs:** [`docs/integrations/fsharp-integration.md`](../../integrations/fsharp-integration.md)

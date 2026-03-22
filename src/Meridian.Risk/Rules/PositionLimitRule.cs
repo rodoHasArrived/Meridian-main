@@ -1,5 +1,6 @@
 using Meridian.Execution;
 using Meridian.Execution.Sdk;
+using Interop = Meridian.FSharp.Interop;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Risk.Rules;
@@ -30,12 +31,20 @@ public sealed class PositionLimitRule : IRiskRule
     public Task<RiskValidationResult> EvaluateAsync(OrderRequest request, CancellationToken ct = default)
     {
         var currentPosition = _positionTracker.GetPosition(request.Symbol);
-        var projectedQty = currentPosition.Quantity + (request.Side == OrderSide.Buy ? request.Quantity : -request.Quantity);
+        var context = Interop.RiskInterop.CreateContext(
+            request,
+            currentPosition.Quantity,
+            _maxPositionSize,
+            portfolioValue: default,
+            initialCapital: default,
+            maxDrawdownPercent: default);
+        var decision = Interop.RiskInterop.EvaluatePositionLimit(context);
 
-        if (Math.Abs(projectedQty) > _maxPositionSize)
+        if (!decision.Approved)
         {
-            return Task.FromResult(RiskValidationResult.Rejected(
-                $"Position limit exceeded: projected {projectedQty} > max {_maxPositionSize} for {request.Symbol}"));
+            var reason = decision.Reasons.FirstOrDefault() ?? "Position limit exceeded.";
+            _logger.LogWarning("Position limit rule rejected order for {Symbol}: {Reason}", request.Symbol, reason);
+            return Task.FromResult(RiskValidationResult.Rejected(reason));
         }
 
         return Task.FromResult(RiskValidationResult.Approved());

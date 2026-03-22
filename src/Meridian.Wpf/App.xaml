@@ -13,6 +13,10 @@
 
                 <!-- Core Styles -->
                 <ResourceDictionary Source="Styles/AppStyles.xaml" />
+                <ResourceDictionary Source="Styles/ThemeTokens.xaml" />
+                <ResourceDictionary Source="Styles/ThemeTypography.xaml" />
+                <ResourceDictionary Source="Styles/ThemeSurfaces.xaml" />
+                <ResourceDictionary Source="Styles/ThemeControls.xaml" />
                 <!-- Icon Resources -->
                 <ResourceDictionary Source="Styles/IconResources.xaml" />
                 <!-- Animation Resources -->

@@ -248,6 +248,7 @@ public sealed class BackgroundTaskSchedulerServiceTests
     public async Task ScheduledTask_ShouldExecuteAction()
     {
         var svc = Svc;
+        await svc.StopAsync();
         await svc.StartAsync();
 
         int executionCount = 0;
@@ -261,8 +262,11 @@ public sealed class BackgroundTaskSchedulerServiceTests
             Interval = TimeSpan.FromMilliseconds(20)
         });
 
-        // Wait for at least one execution
-        await Task.Delay(50);
+        var deadline = DateTime.UtcNow.AddSeconds(2);
+        while (executionCount == 0 && DateTime.UtcNow < deadline)
+        {
+            await Task.Delay(25);
+        }
 
         executionCount.Should().BeGreaterThan(0);
 
@@ -273,6 +277,7 @@ public sealed class BackgroundTaskSchedulerServiceTests
     public async Task ScheduledTask_ExceptionInAction_ShouldNotStopScheduler()
     {
         var svc = Svc;
+        await svc.StopAsync();
         await svc.StartAsync();
 
         int callCount = 0;
@@ -290,7 +295,11 @@ public sealed class BackgroundTaskSchedulerServiceTests
             Interval = TimeSpan.FromMilliseconds(50)
         });
 
-        await Task.Delay(300);
+        var deadline = DateTime.UtcNow.AddSeconds(2);
+        while (callCount <= 1 && DateTime.UtcNow < deadline)
+        {
+            await Task.Delay(50);
+        }
 
         // Should have been called multiple times despite exceptions
         callCount.Should().BeGreaterThan(1);

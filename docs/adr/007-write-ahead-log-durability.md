@@ -215,8 +215,8 @@ public sealed record WalRecord
 ## References
 
 - [Tiered Storage Architecture](002-tiered-storage-architecture.md) (uses WAL)
-- [Event Pipeline Documentation](../architecture/storage-design.md#event-pipeline)
-- [GracefulShutdownService](../architecture/overview.md#graceful-shutdown)
+- [Event Pipeline Documentation](../architecture/storage-design.md)
+- [GracefulShutdownService](../architecture/overview.md)
 - [PostgreSQL WAL Documentation](https://www.postgresql.org/docs/current/wal-intro.html) (inspiration)
 
 ---

@@ -61,7 +61,7 @@ public sealed class ThemeService : ThemeServiceBase
         {
             // Remove existing theme dictionaries
             var toRemove = new System.Collections.Generic.List<ResourceDictionary>();
-            foreach (var dict in Application.Current.Resources.MergedDictionaries)
+            foreach (var dict in System.Windows.Application.Current.Resources.MergedDictionaries)
             {
                 if (dict.Source?.OriginalString.Contains("Theme", StringComparison.OrdinalIgnoreCase) is true)
                 {
@@ -71,7 +71,7 @@ public sealed class ThemeService : ThemeServiceBase
 
             foreach (var dict in toRemove)
             {
-                Application.Current.Resources.MergedDictionaries.Remove(dict);
+                System.Windows.Application.Current.Resources.MergedDictionaries.Remove(dict);
             }
 
             // Add new theme dictionary
@@ -79,7 +79,7 @@ public sealed class ThemeService : ThemeServiceBase
             {
                 Source = new Uri(themeUri, UriKind.Absolute)
             };
-            Application.Current.Resources.MergedDictionaries.Add(newThemeDict);
+            System.Windows.Application.Current.Resources.MergedDictionaries.Add(newThemeDict);
 
             // Update system colors for window chrome
             UpdateWindowChrome(theme);
@@ -107,15 +107,15 @@ public sealed class ThemeService : ThemeServiceBase
 
         var isDark = theme == AppTheme.Dark;
 
-        Application.Current.Resources["WindowBackgroundBrush"] = isDark
+        System.Windows.Application.Current.Resources["WindowBackgroundBrush"] = isDark
             ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(30, 30, 30))
             : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.White);
 
-        Application.Current.Resources["TextBrush"] = isDark
+        System.Windows.Application.Current.Resources["TextBrush"] = isDark
             ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.White)
             : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Black);
 
-        Application.Current.Resources["AccentBrush"] = isDark
+        System.Windows.Application.Current.Resources["AccentBrush"] = isDark
             ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0, 120, 215))
             : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0, 99, 177));
     }

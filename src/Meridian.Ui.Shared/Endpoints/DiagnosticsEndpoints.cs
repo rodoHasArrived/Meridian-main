@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Application.Config;
+using Meridian.Application.Coordination;
 using Meridian.Application.Services;
 using Meridian.Contracts.Api;
 using Meridian.Infrastructure.Adapters.Core;
@@ -120,6 +121,13 @@ public static class DiagnosticsEndpoints
                 hasAlpacaConfig = config.Alpaca is not null,
                 hasStorageConfig = config.Storage is not null,
                 hasBackfillConfig = config.Backfill is not null,
+                coordination = config.Coordination != null ? new
+                {
+                    enabled = config.Coordination.Enabled,
+                    mode = config.Coordination.Mode.ToString(),
+                    instanceId = config.Coordination.InstanceId,
+                    rootPath = config.Coordination.RootPath
+                } : null,
                 compress = config.Compress,
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
@@ -358,5 +366,37 @@ public static class DiagnosticsEndpoints
         .WithName("ValidateDiagnosticsConfig")
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
+        group.MapGet(UiApiRoutes.DiagnosticsCoordination, async ([FromServices] ILeaseManager? leaseManager, CancellationToken ct) =>
+        {
+            if (leaseManager is null)
+                return Results.Json(new { error = "Coordination services not available" }, jsonOptions, statusCode: 503);
+
+            var snapshot = await leaseManager.GetSnapshotAsync(ct);
+            return Results.Json(new
+            {
+                enabled = snapshot.Enabled,
+                mode = snapshot.Mode,
+                instanceId = snapshot.InstanceId,
+                rootPath = snapshot.RootPath,
+                heldLeaseCount = snapshot.HeldLeaseCount,
+                symbolLeaseCount = snapshot.SymbolLeaseCount,
+                scheduleLeaseCount = snapshot.ScheduleLeaseCount,
+                jobLeaseCount = snapshot.JobLeaseCount,
+                leaderLeaseCount = snapshot.LeaderLeaseCount,
+                conflictCount = snapshot.ConflictCount,
+                takeoverCount = snapshot.TakeoverCount,
+                renewalFailureCount = snapshot.RenewalFailureCount,
+                orphanedLeaseCount = snapshot.OrphanedLeaseCount,
+                corruptedLeaseCount = snapshot.CorruptedLeaseCount,
+                heldLeases = snapshot.HeldLeases,
+                orphanedResources = snapshot.OrphanedResources,
+                corruptedLeaseFiles = snapshot.CorruptedLeaseFiles,
+                timestamp = snapshot.CapturedAtUtc
+            }, jsonOptions);
+        })
+        .WithName("GetDiagnosticsCoordination")
+        .Produces(200)
+        .Produces(503);
     }
 }

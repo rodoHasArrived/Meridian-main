@@ -161,7 +161,7 @@ public sealed class PendingOperationsQueueServiceTests
 
         // Assert
         all.Should().NotBeNull();
-        all.Should().HaveCountGreaterOrEqualTo(2);
+        all.Count.Should().BeGreaterThanOrEqualTo(2);
 
         // Cleanup
         while (service.Dequeue() != null) { }

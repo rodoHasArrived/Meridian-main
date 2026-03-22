@@ -4,7 +4,7 @@
 
 # GitHub Workflows Overview
 
-> Auto-generated on 2026-03-20 18:36:19 UTC
+> Auto-generated on 2026-03-22 03:02:07 UTC
 
 This document provides an overview of all GitHub Actions workflows in the repository.
 
@@ -15,6 +15,7 @@ This document provides an overview of all GitHub Actions workflows in the reposi
 | Benchmark Performance | `benchmark.yml` | push, PR, manual |
 | Bottleneck Detection | `bottleneck-detection.yml` | PR, manual |
 | Build Observability | `build-observability.yml` | push, PR, manual |
+| Canonicalization Fixture Maintenance | `canonicalization-fixture-maintenance.yml` | manual |
 | Close Duplicate and Stale Auto-Generated Issues | `close-duplicate-issues.yml` | manual, scheduled |
 | Code Quality | `code-quality.yml` | push, PR, manual |
 | Copilot Pull Request Reviewer | `copilot-pull-request-reviewer.yml` | PR, manual |
@@ -35,6 +36,7 @@ This document provides an overview of all GitHub Actions workflows in the reposi
 | Prompt Generation | `prompt-generation.yml` | manual |
 | Pull Request Checks | `pr-checks.yml` | PR, manual |
 | Python Package using Conda | `python-package-conda.yml` | unknown |
+| README Tree Sync | `readme-tree.yml` | push, manual |
 | Release Management | `release.yml` | manual |
 | Repo Health | `repo-health.yml` | PR, manual, scheduled |
 | Reusable .NET Build | `reusable-dotnet-build.yml` | unknown |
@@ -67,7 +69,7 @@ This document provides an overview of all GitHub Actions workflows in the reposi
 
 ## Workflow Count
 
-- **Total workflows:** 33
+- **Total workflows:** 35
 
 ---
 

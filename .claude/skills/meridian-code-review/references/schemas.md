@@ -1,5 +1,7 @@
 # JSON Schemas
 
+**Last Updated:** 2026-03-21
+
 This document defines the JSON schemas used by skill-creator.
 
 ---

@@ -191,7 +191,7 @@ make ai-report           # Generate improvement report
 
 ## Related Resources
 
-- **Master AI index:** [`docs/ai/README.md`](../README.md)
+- **Master AI index:** [`docs/ai/README.md`](../../archive/docs/README.md)
 - **Root context:** [`CLAUDE.md`](../../../CLAUDE.md) § AI Repository Updater
 - **Error prevention:** [`docs/ai/ai-known-errors.md`](../ai-known-errors.md)
 

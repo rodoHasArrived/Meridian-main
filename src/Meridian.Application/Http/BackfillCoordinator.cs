@@ -9,6 +9,7 @@ using Meridian.Infrastructure.Adapters.Core.SymbolResolution;
 using Meridian.Infrastructure.Adapters.NasdaqDataLink;
 using Meridian.Infrastructure.Adapters.OpenFigi;
 using Meridian.Infrastructure.Adapters.Stooq;
+using Meridian.Infrastructure.Adapters.Fred;
 using Meridian.Infrastructure.Adapters.YahooFinance;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Storage;
@@ -259,6 +260,16 @@ public sealed class BackfillCoordinator : IDisposable
             providers.Add(new NasdaqDataLinkHistoricalDataProvider(
                 apiKey: nasdaqCfg?.ApiKey,
                 database: nasdaqCfg?.Database ?? "WIKI",
+                log: _log
+            ));
+        }
+
+        // FRED economic data
+        var fredCfg = providersCfg?.Fred;
+        if (fredCfg?.Enabled ?? false && !string.IsNullOrWhiteSpace(fredCfg.ApiKey))
+        {
+            providers.Add(new FredHistoricalDataProvider(
+                apiKey: fredCfg.ApiKey,
                 log: _log
             ));
         }

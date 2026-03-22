@@ -28,7 +28,7 @@ public sealed class KeyboardShortcutServiceTests
     {
         var svc = CreateService();
         svc.Shortcuts.Should().NotBeEmpty();
-        svc.Shortcuts.Count.Should().BeGreaterOrEqualTo(20);
+        svc.Shortcuts.Count.Should().BeGreaterThanOrEqualTo(20);
     }
 
     [Theory]

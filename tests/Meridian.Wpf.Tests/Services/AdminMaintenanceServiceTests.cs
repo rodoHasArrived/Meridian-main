@@ -1,187 +1,70 @@
 using FluentAssertions;
 using Meridian.Ui.Services;
-using Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.Tests.Services;
 
 /// <summary>
-/// Tests for <see cref="AdminMaintenanceService"/> — singleton lifecycle,
-/// interface compliance, model defaults, and cancellation support.
+/// Tests for <see cref="AdminMaintenanceServiceBase"/> and the related admin-maintenance DTOs.
 /// </summary>
 public sealed class AdminMaintenanceServiceTests
 {
-    // ── Singleton ────────────────────────────────────────────────────
-
     [Fact]
-    public void Instance_ShouldReturnNonNull()
+    public void Instance_ShouldReturnSingleton()
     {
-        AdminMaintenanceService.Instance.Should().NotBeNull();
-    }
+        var a = AdminMaintenanceServiceBase.Instance;
+        var b = AdminMaintenanceServiceBase.Instance;
 
-    [Fact]
-    public void Instance_ShouldReturnSameSingleton()
-    {
-        var a = AdminMaintenanceService.Instance;
-        var b = AdminMaintenanceService.Instance;
+        a.Should().NotBeNull();
         a.Should().BeSameAs(b);
+        a.Should().BeAssignableTo<IAdminMaintenanceService>();
     }
 
     [Fact]
-    public void Instance_ThreadSafety_ShouldReturnSameInstance()
+    public async Task Instance_ThreadSafety_ShouldReturnSameInstance()
     {
-        AdminMaintenanceService? i1 = null, i2 = null;
-        var t1 = Task.Run(() => i1 = AdminMaintenanceService.Instance);
-        var t2 = Task.Run(() => i2 = AdminMaintenanceService.Instance);
-        Task.WaitAll(t1, t2);
+        AdminMaintenanceServiceBase? i1 = null;
+        AdminMaintenanceServiceBase? i2 = null;
+
+        var t1 = Task.Run(() => i1 = AdminMaintenanceServiceBase.Instance);
+        var t2 = Task.Run(() => i2 = AdminMaintenanceServiceBase.Instance);
+
+        await Task.WhenAll(t1, t2);
 
         i1.Should().NotBeNull();
         i1.Should().BeSameAs(i2);
     }
 
-    // ── Interface compliance ─────────────────────────────────────────
-
     [Fact]
-    public void AdminMaintenanceService_ShouldImplementIAdminMaintenanceService()
+    public async Task AdminMaintenanceApis_WithCancelledToken_ShouldThrowOrReturnFailure()
     {
-        AdminMaintenanceService.Instance.Should().BeAssignableTo<IAdminMaintenanceService>();
-    }
-
-    [Fact]
-    public void AdminMaintenanceService_ShouldInheritFromBase()
-    {
-        AdminMaintenanceService.Instance.Should().BeAssignableTo<AdminMaintenanceServiceBase>();
-    }
-
-    // ── API methods with cancellation ────────────────────────────────
-
-    [Fact]
-    public async Task GetMaintenanceScheduleAsync_WithCancellation_ShouldThrowOrReturnFailure()
-    {
-        var svc = AdminMaintenanceService.Instance;
+        var svc = AdminMaintenanceServiceBase.Instance;
         using var cts = new CancellationTokenSource();
         cts.Cancel();
 
-        try
+        var actions = new Func<CancellationToken, Task<bool>>[]
         {
-            var result = await svc.GetMaintenanceScheduleAsync(cts.Token);
-            // No backend running — should fail gracefully
-            result.Success.Should().BeFalse();
-        }
-        catch (Exception ex)
+            async ct => (await svc.GetMaintenanceScheduleAsync(ct)).Success,
+            async ct => (await svc.GetMaintenanceHistoryAsync(ct: ct)).Success,
+            async ct => (await svc.GetTierConfigurationAsync(ct)).Success,
+            async ct => (await svc.GetTierUsageAsync(ct)).Success,
+            async ct => (await svc.GetRetentionPoliciesAsync(ct)).Success,
+            async ct => (await svc.ValidatePermissionsAsync(ct)).Success,
+            async ct => (await svc.RunQuickCheckAsync(ct)).Success,
+        };
+
+        foreach (var action in actions)
         {
-            ex.Should().BeAssignableTo<Exception>();
+            try
+            {
+                var success = await action(cts.Token);
+                success.Should().BeFalse();
+            }
+            catch (Exception ex)
+            {
+                ex.Should().BeAssignableTo<Exception>();
+            }
         }
     }
-
-    [Fact]
-    public async Task GetMaintenanceHistoryAsync_WithCancellation_ShouldThrowOrReturnFailure()
-    {
-        var svc = AdminMaintenanceService.Instance;
-        using var cts = new CancellationTokenSource();
-        cts.Cancel();
-
-        try
-        {
-            var result = await svc.GetMaintenanceHistoryAsync(ct: cts.Token);
-            result.Success.Should().BeFalse();
-        }
-        catch (Exception ex)
-        {
-            ex.Should().BeAssignableTo<Exception>();
-        }
-    }
-
-    [Fact]
-    public async Task GetTierConfigurationAsync_WithCancellation_ShouldThrowOrReturnFailure()
-    {
-        var svc = AdminMaintenanceService.Instance;
-        using var cts = new CancellationTokenSource();
-        cts.Cancel();
-
-        try
-        {
-            var result = await svc.GetTierConfigurationAsync(cts.Token);
-            result.Success.Should().BeFalse();
-        }
-        catch (Exception ex)
-        {
-            ex.Should().BeAssignableTo<Exception>();
-        }
-    }
-
-    [Fact]
-    public async Task GetTierUsageAsync_WithCancellation_ShouldThrowOrReturnFailure()
-    {
-        var svc = AdminMaintenanceService.Instance;
-        using var cts = new CancellationTokenSource();
-        cts.Cancel();
-
-        try
-        {
-            var result = await svc.GetTierUsageAsync(cts.Token);
-            result.Success.Should().BeFalse();
-        }
-        catch (Exception ex)
-        {
-            ex.Should().BeAssignableTo<Exception>();
-        }
-    }
-
-    [Fact]
-    public async Task GetRetentionPoliciesAsync_WithCancellation_ShouldThrowOrReturnFailure()
-    {
-        var svc = AdminMaintenanceService.Instance;
-        using var cts = new CancellationTokenSource();
-        cts.Cancel();
-
-        try
-        {
-            var result = await svc.GetRetentionPoliciesAsync(cts.Token);
-            result.Success.Should().BeFalse();
-        }
-        catch (Exception ex)
-        {
-            ex.Should().BeAssignableTo<Exception>();
-        }
-    }
-
-    [Fact]
-    public async Task ValidatePermissionsAsync_WithCancellation_ShouldThrowOrReturnFailure()
-    {
-        var svc = AdminMaintenanceService.Instance;
-        using var cts = new CancellationTokenSource();
-        cts.Cancel();
-
-        try
-        {
-            var result = await svc.ValidatePermissionsAsync(cts.Token);
-            result.Success.Should().BeFalse();
-        }
-        catch (Exception ex)
-        {
-            ex.Should().BeAssignableTo<Exception>();
-        }
-    }
-
-    [Fact]
-    public async Task RunQuickCheckAsync_WithCancellation_ShouldThrowOrReturnFailure()
-    {
-        var svc = AdminMaintenanceService.Instance;
-        using var cts = new CancellationTokenSource();
-        cts.Cancel();
-
-        try
-        {
-            var result = await svc.RunQuickCheckAsync(cts.Token);
-            result.Success.Should().BeFalse();
-        }
-        catch (Exception ex)
-        {
-            ex.Should().BeAssignableTo<Exception>();
-        }
-    }
-
-    // ── Model tests: MaintenanceScheduleResult ───────────────────────
 
     [Fact]
     public void MaintenanceScheduleResult_ShouldHaveDefaultValues()
@@ -191,8 +74,6 @@ public sealed class AdminMaintenanceServiceTests
         result.Error.Should().BeNull();
         result.Schedule.Should().BeNull();
     }
-
-    // ── Model tests: MaintenanceScheduleConfig ───────────────────────
 
     [Fact]
     public void MaintenanceScheduleConfig_ShouldHaveDefaultValues()
@@ -206,8 +87,6 @@ public sealed class AdminMaintenanceServiceTests
         config.RunTierMigration.Should().BeFalse();
     }
 
-    // ── Model tests: MaintenanceRunOptions ───────────────────────────
-
     [Fact]
     public void MaintenanceRunOptions_ShouldHaveSensibleDefaults()
     {
@@ -219,8 +98,6 @@ public sealed class AdminMaintenanceServiceTests
         options.DryRun.Should().BeFalse();
     }
 
-    // ── Model tests: MaintenanceRunResult ────────────────────────────
-
     [Fact]
     public void MaintenanceRunResult_ShouldHaveDefaultValues()
     {
@@ -230,8 +107,6 @@ public sealed class AdminMaintenanceServiceTests
         result.RunId.Should().BeNull();
         result.Operations.Should().NotBeNull().And.BeEmpty();
     }
-
-    // ── Model tests: MaintenanceOperation ────────────────────────────
 
     [Fact]
     public void MaintenanceOperation_ShouldHaveDefaultValues()
@@ -244,8 +119,6 @@ public sealed class AdminMaintenanceServiceTests
         op.Error.Should().BeNull();
     }
 
-    // ── Model tests: TierConfigResult ────────────────────────────────
-
     [Fact]
     public void TierConfigResult_ShouldHaveDefaultValues()
     {
@@ -254,8 +127,6 @@ public sealed class AdminMaintenanceServiceTests
         result.AutoMigrationEnabled.Should().BeFalse();
         result.MigrationSchedule.Should().BeNull();
     }
-
-    // ── Model tests: StorageTierConfig ───────────────────────────────
 
     [Fact]
     public void StorageTierConfig_ShouldHaveDefaultValues()
@@ -266,8 +137,6 @@ public sealed class AdminMaintenanceServiceTests
         tier.CompressionLevel.Should().Be("Standard");
         tier.Enabled.Should().BeFalse();
     }
-
-    // ── Model tests: CleanupOptions ──────────────────────────────────
 
     [Fact]
     public void CleanupOptions_ShouldHaveSensibleDefaults()
@@ -280,8 +149,6 @@ public sealed class AdminMaintenanceServiceTests
         options.OlderThanDays.Should().Be(0);
     }
 
-    // ── Model tests: StorageRetentionPolicy ──────────────────────────
-
     [Fact]
     public void StorageRetentionPolicy_ShouldHaveDefaultValues()
     {
@@ -293,8 +160,6 @@ public sealed class AdminMaintenanceServiceTests
         policy.IsDefault.Should().BeFalse();
     }
 
-    // ── Model tests: PermissionValidationResult ──────────────────────
-
     [Fact]
     public void PermissionValidationResult_ShouldHaveDefaultValues()
     {
@@ -304,8 +169,6 @@ public sealed class AdminMaintenanceServiceTests
         result.CanDelete.Should().BeFalse();
         result.Issues.Should().NotBeNull().And.BeEmpty();
     }
-
-    // ── Model tests: TierUsage ───────────────────────────────────────
 
     [Fact]
     public void TierUsage_ShouldHaveDefaultValues()

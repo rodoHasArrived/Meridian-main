@@ -119,6 +119,7 @@ public sealed record BackfillProvidersConfig(
     PolygonConfig? Polygon = null,
     AlphaVantageConfig? AlphaVantage = null,
     FinnhubConfig? Finnhub = null,
+    FredConfig? Fred = null,
     SyntheticMarketDataConfig? Synthetic = null
 );
 
@@ -256,4 +257,19 @@ public sealed record FinnhubConfig(
     string? ApiKey = null,
     int Priority = 18,
     int RateLimitPerMinute = 60
+);
+
+/// <summary>
+/// FRED (Federal Reserve Economic Data) provider configuration.
+/// Maps economic time-series observations into synthetic daily bars for Meridian backfill workflows.
+/// </summary>
+/// <param name="Enabled">Enable this provider.</param>
+/// <param name="ApiKey">API key (falls back to FRED_API_KEY env var).</param>
+/// <param name="Priority">Priority in fallback chain (lower = tried first).</param>
+/// <param name="RateLimitPerMinute">Maximum requests per minute.</param>
+public sealed record FredConfig(
+    bool Enabled = true,
+    string? ApiKey = null,
+    int Priority = 28,
+    int RateLimitPerMinute = 120
 );

@@ -5,16 +5,16 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       mc:Ignorable="d"
       d:DesignHeight="900" d:DesignWidth="1200"
-      Background="{DynamicResource ConsoleBackgroundDarkBrush}"
+      Background="{DynamicResource ShellWindowBackgroundBrush}"
       AutomationProperties.Name="Keyboard Shortcuts">
 
     <Page.Resources>
         <Style x:Key="KeyboardShortcutStyle" TargetType="Border">
-            <Setter Property="Background" Value="{StaticResource ConsoleBackgroundLightBrush}" />
+            <Setter Property="Background" Value="{StaticResource PremiumPanelBrush}" />
             <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderHoverBrush}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="4" />
-            <Setter Property="Padding" Value="8,4" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="10,5" />
             <Setter Property="MinWidth" Value="24" />
             <Setter Property="HorizontalAlignment" Value="Left" />
             <Setter Property="Margin" Value="0,4" />
@@ -43,18 +43,24 @@
         </Style>
     </Page.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
         <StackPanel MaxWidth="1200">
             <!-- Header -->
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                <TextBlock Text="&#xE765;" FontFamily="{StaticResource SymbolThemeFontFamily}"
-                           FontSize="28" Foreground="{StaticResource InfoColorBrush}" VerticalAlignment="Center" />
-                <TextBlock Text="Keyboard Shortcuts" Style="{StaticResource PageTitleStyle}" Margin="12,0,0,0" VerticalAlignment="Center" />
-            </StackPanel>
-
-            <TextBlock Text="Quick reference for all keyboard shortcuts available in Meridian. Shortcuts are loaded dynamically from the shortcut registry."
-                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                       Margin="0,0,0,24" />
+            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24">
+                <StackPanel Orientation="Horizontal">
+                    <Border Width="44" Height="44" CornerRadius="14"
+                            Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                            BorderBrush="{StaticResource InfoColorBrush}" BorderThickness="1">
+                        <TextBlock Text="&#xE765;" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="24" Foreground="{StaticResource InfoColorBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                    </Border>
+                    <StackPanel Margin="12,0,0,0">
+                        <TextBlock Text="Keyboard Shortcuts" Style="{StaticResource PageTitleStyle}" />
+                        <TextBlock Text="Operator keymaps, dynamic command bindings, and quick-reference guidance for fast navigation."
+                                   Style="{StaticResource CardDescriptionStyle}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
 
             <!-- Dynamically populated shortcuts panel -->
             <StackPanel x:Name="DynamicShortcutsPanel" />

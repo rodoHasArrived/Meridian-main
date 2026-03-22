@@ -1,4 +1,5 @@
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Application.Coordination;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Application.Scheduling;
@@ -16,6 +17,7 @@ public sealed class ScheduledBackfillService : IAsyncDisposable
     private readonly DataGapAnalyzer _gapAnalyzer;
     private readonly ScheduledBackfillOptions _options;
     private readonly List<string> _defaultSymbols;
+    private readonly IScheduledWorkOwnershipService? _ownershipService;
 
     private CancellationTokenSource? _cts;
     private Task? _schedulerTask;
@@ -40,6 +42,7 @@ public sealed class ScheduledBackfillService : IAsyncDisposable
         BackfillJobManager jobManager,
         BackfillWorkerService workerService,
         DataGapAnalyzer gapAnalyzer,
+        IScheduledWorkOwnershipService? ownershipService = null,
         ScheduledBackfillOptions? options = null,
         IEnumerable<string>? defaultSymbols = null)
     {
@@ -48,6 +51,7 @@ public sealed class ScheduledBackfillService : IAsyncDisposable
         _jobManager = jobManager;
         _workerService = workerService;
         _gapAnalyzer = gapAnalyzer;
+        _ownershipService = ownershipService;
         _options = options ?? new ScheduledBackfillOptions();
         _defaultSymbols = defaultSymbols?.ToList() ?? new List<string>();
     }
@@ -144,7 +148,7 @@ public sealed class ScheduledBackfillService : IAsyncDisposable
     /// <summary>
     /// Manually trigger a schedule execution.
     /// </summary>
-    public Task<BackfillExecutionLog> TriggerManualExecutionAsync(
+    public async Task<BackfillExecutionLog> TriggerManualExecutionAsync(
         string scheduleId,
         CancellationToken ct = default)
     {
@@ -153,13 +157,28 @@ public sealed class ScheduledBackfillService : IAsyncDisposable
 
         var execution = _scheduleManager.CreateManualExecution(schedule);
 
+        if (_ownershipService is not null)
+        {
+            var acquired = await _ownershipService.TryAcquireScheduleAsync(scheduleId, ct).ConfigureAwait(false);
+            if (!acquired.Acquired)
+            {
+                execution.Status = ExecutionStatus.Skipped;
+                execution.ErrorMessage = $"Schedule lease is owned by {acquired.CurrentOwner}";
+                _logger.LogInformation(
+                    "Skipping manual schedule {ScheduleId} because lease is owned by {Owner}",
+                    scheduleId,
+                    acquired.CurrentOwner);
+                return execution;
+            }
+        }
+
         _logger.LogInformation(
             "Manually triggering schedule {ScheduleId}: {Name}",
             scheduleId, schedule.Name);
 
         EnqueueExecution(schedule, execution, BackfillPriority.High);
 
-        return Task.FromResult(execution);
+        return execution;
     }
 
     /// <summary>
@@ -209,10 +228,27 @@ public sealed class ScheduledBackfillService : IAsyncDisposable
             try
             {
                 // Check for due schedules
+                if (_ownershipService is not null)
+                {
+                    var leaderLease = await _ownershipService.TryAcquireDispatcherLeadershipAsync(ct).ConfigureAwait(false);
+                    if (!leaderLease.Acquired)
+                    {
+                        await Task.Delay(_options.ScheduleCheckInterval, ct);
+                        continue;
+                    }
+                }
+
                 var dueSchedules = _scheduleManager.GetDueSchedules();
 
                 foreach (var schedule in dueSchedules)
                 {
+                    if (_ownershipService is not null)
+                    {
+                        var acquired = await _ownershipService.TryAcquireScheduleAsync(schedule.ScheduleId, ct).ConfigureAwait(false);
+                        if (!acquired.Acquired)
+                            continue;
+                    }
+
                     var execution = new BackfillExecutionLog
                     {
                         ScheduleId = schedule.ScheduleId,
@@ -310,6 +346,7 @@ public sealed class ScheduledBackfillService : IAsyncDisposable
         CancellationToken ct)
     {
         await _executionLock.WaitAsync(ct);
+        var jobLeaseHeld = false;
 
         try
         {
@@ -375,6 +412,26 @@ public sealed class ScheduledBackfillService : IAsyncDisposable
                 ct);
 
             execution.JobId = job.JobId;
+
+            if (_ownershipService is not null)
+            {
+                var jobLease = await _ownershipService.TryAcquireJobAsync(job.JobId, ct).ConfigureAwait(false);
+                if (!jobLease.Acquired)
+                {
+                    execution.Status = ExecutionStatus.Skipped;
+                    execution.ErrorMessage = $"Job lease is owned by {jobLease.CurrentOwner}";
+                    execution.CompletedAt = DateTimeOffset.UtcNow;
+                    _logger.LogInformation(
+                        "Skipping job {JobId} because lease is owned by {Owner}",
+                        job.JobId,
+                        jobLease.CurrentOwner);
+                    await _scheduleManager.RecordExecutionAsync(schedule, execution, ct);
+                    ExecutionCompleted?.Invoke(this, execution);
+                    return;
+                }
+
+                jobLeaseHeld = true;
+            }
 
             await _jobManager.StartJobAsync(job.JobId, ct);
 
@@ -451,6 +508,14 @@ public sealed class ScheduledBackfillService : IAsyncDisposable
         }
         finally
         {
+            if (_ownershipService is not null)
+            {
+                if (jobLeaseHeld && !string.IsNullOrWhiteSpace(execution.JobId))
+                    await _ownershipService.ReleaseJobAsync(execution.JobId, ct).ConfigureAwait(false);
+
+                await _ownershipService.ReleaseScheduleAsync(schedule.ScheduleId, ct).ConfigureAwait(false);
+            }
+
             _executionLock.Release();
         }
     }

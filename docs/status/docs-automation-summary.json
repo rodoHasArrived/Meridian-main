@@ -1,0 +1,196 @@
+{
+  "dry_run": false,
+  "profile": "full",
+  "selected_scripts": [
+    "scan-todos",
+    "generate-structure-docs",
+    "generate-health-dashboard",
+    "repair-links",
+    "validate-examples",
+    "generate-coverage",
+    "generate-changelog",
+    "rules-engine",
+    "validate-api-docs",
+    "generate-dependency-graph",
+    "sync-readme-badges",
+    "generate-metrics-dashboard"
+  ],
+  "results": [
+    {
+      "name": "scan-todos",
+      "command": [
+        "python3",
+        "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\build\\scripts\\docs\\scan-todos.py",
+        "--output",
+        "docs/status/TODO.md",
+        "--json-output",
+        "docs/status/todo-scan-results.json"
+      ],
+      "return_code": 0,
+      "duration_seconds": 175.615,
+      "status": "success",
+      "output_file": "docs/status/TODO.md",
+      "error": null
+    },
+    {
+      "name": "generate-structure-docs",
+      "command": [
+        "python3",
+        "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\build\\scripts\\docs\\generate-structure-docs.py",
+        "--output",
+        "docs/generated/repository-structure.md"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.921,
+      "status": "success",
+      "output_file": "docs/generated/repository-structure.md",
+      "error": null
+    },
+    {
+      "name": "generate-health-dashboard",
+      "command": [
+        "python3",
+        "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\build\\scripts\\docs\\generate-health-dashboard.py",
+        "--output",
+        "docs/status/health-dashboard.md"
+      ],
+      "return_code": 1,
+      "duration_seconds": 23.77,
+      "status": "failed",
+      "output_file": "docs/status/health-dashboard.md",
+      "error": "Error during analysis: [WinError 123] The filename, directory name, or volume label syntax is incorrect: 'C:\\\\Users\\\\Andrew James Rowden\\\\OneDrive\\\\Documents\\\\OneDrive\\\\Documents\\\\Desktop\\\\Meridian-main\\\\.github\\\\agents\\\\.*\\\\.md'"
+    },
+    {
+      "name": "repair-links",
+      "command": [
+        "python3",
+        "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\build\\scripts\\docs\\repair-links.py",
+        "--output",
+        "docs/status/link-repair-report.md"
+      ],
+      "return_code": 1,
+      "duration_seconds": 1.349,
+      "status": "failed",
+      "output_file": "docs/status/link-repair-report.md",
+      "error": "Scanning markdown files under C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\docs ...\nReport written to docs\\status\\link-repair-report.md\nLink check complete: 740 links checked, 30 broken, 0 auto-fixed (155 files scanned)."
+    },
+    {
+      "name": "validate-examples",
+      "command": [
+        "python3",
+        "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\build\\scripts\\docs\\validate-examples.py",
+        "--output",
+        "docs/status/example-validation.md"
+      ],
+      "return_code": 1,
+      "duration_seconds": 0.735,
+      "status": "failed",
+      "output_file": "docs/status/example-validation.md",
+      "error": "Report written to docs\\status\\example-validation.md\nValidation complete: 156 files, 1045 blocks (759 valid, 13 invalid, 273 skipped)\n\nInvalid examples:\n  docs\\architecture\\crystallized-storage-format.md:233 [json] JSON error - Extra data (line 2, col 1)\n  docs\\architecture\\crystallized-storage-format.md:534 [json] JSON error - Extra data (line 1, col 10)\n  docs\\evaluations\\high-value-low-cost-improvements-brainstorm.md:223 [json] JSON error - Expecting property name enclosed in double quotes (line 3, col 3)\n  docs\\operations\\operator-runbook.md:292 [json] JSON error - Extra data (line 1, col 9)\n  docs\\plans\\l3-inference-implementation-plan.md:140 [json] JSON error - Expecting value (line 1, col 1)\n  docs\\plans\\l3-inference-implementation-plan.md:498 [jsonc] JSON error - Expecting value (line 1, col 1)\n  docs\\plans\\l3-inference-implementation-plan.md:586 [jsonc] JSON error - Expecting property name enclosed in double quotes (line 9, col 40)\n  docs\\plans\\l3-inference-implementation-plan.md:604 [jsonc] JSON error - Expecting property name enclosed in double quotes (line 14, col 43)\n  docs\\plans\\l3-inference-implementation-plan.md:658 [jsonc] JSON error - Expecting property name enclosed in double quotes (line 3, col 41)\n  docs\\plans\\l3-inference-implementation-plan.md:703 [jsonc] JSON error - Expecting value (line 6, col 15)\n  docs\\plans\\quant-script-environment-blueprint.md:625 [json] JSON error - Expecting value (line 1, col 1)\n  docs\\reference\\api-reference.md:178 [bash] Bash issues - line 4: unmatched single quote; line 9: unmatched single quote\n  docs\\reference\\data-dictionary.md:63 [json] JSON error - Expecting property name enclosed in double quotes (line 9, col 16)"
+    },
+    {
+      "name": "generate-coverage",
+      "command": [
+        "python3",
+        "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\build\\scripts\\docs\\generate-coverage.py",
+        "--output",
+        "docs/status/coverage-report.md"
+      ],
+      "return_code": 0,
+      "duration_seconds": 6.746,
+      "status": "success",
+      "output_file": "docs/status/coverage-report.md",
+      "error": null
+    },
+    {
+      "name": "generate-changelog",
+      "command": [
+        "python3",
+        "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\build\\scripts\\docs\\generate-changelog.py",
+        "--output",
+        "docs/status/CHANGELOG.md",
+        "--recent",
+        "50"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.553,
+      "status": "success",
+      "output_file": "docs/status/CHANGELOG.md",
+      "error": null
+    },
+    {
+      "name": "rules-engine",
+      "command": [
+        "python3",
+        "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\build\\scripts\\docs\\rules-engine.py",
+        "--rules",
+        "build/rules/doc-rules.yaml",
+        "--output",
+        "docs/status/rules-report.md"
+      ],
+      "return_code": 1,
+      "duration_seconds": 2.047,
+      "status": "failed",
+      "output_file": "docs/status/rules-report.md",
+      "error": "Report written to C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\docs\\status\\rules-report.md"
+    },
+    {
+      "name": "validate-api-docs",
+      "command": [
+        "python3",
+        "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\build\\scripts\\docs\\validate-api-docs.py",
+        "--output",
+        "docs/status/api-docs-report.md"
+      ],
+      "return_code": 0,
+      "duration_seconds": 2.42,
+      "status": "success",
+      "output_file": "docs/status/api-docs-report.md",
+      "error": null
+    },
+    {
+      "name": "generate-dependency-graph",
+      "command": [
+        "python3",
+        "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\build\\scripts\\docs\\generate-dependency-graph.py",
+        "--output",
+        "docs/generated/project-dependencies.md",
+        "--format",
+        "markdown"
+      ],
+      "return_code": 0,
+      "duration_seconds": 1.952,
+      "status": "success",
+      "output_file": "docs/generated/project-dependencies.md",
+      "error": null
+    },
+    {
+      "name": "sync-readme-badges",
+      "command": [
+        "python3",
+        "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\build\\scripts\\docs\\sync-readme-badges.py",
+        "--output",
+        "docs/status/badge-sync-report.md"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.775,
+      "status": "success",
+      "output_file": "docs/status/badge-sync-report.md",
+      "error": null
+    },
+    {
+      "name": "generate-metrics-dashboard",
+      "command": [
+        "python3",
+        "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\build\\scripts\\docs\\generate-metrics-dashboard.py",
+        "--output",
+        "docs/status/metrics-dashboard.md"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.484,
+      "status": "success",
+      "output_file": "docs/status/metrics-dashboard.md",
+      "error": null
+    }
+  ]
+}

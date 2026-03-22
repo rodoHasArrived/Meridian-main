@@ -128,7 +128,10 @@ public sealed class StockSharpSubscriptionTests : IAsyncLifetime
 
         var act = () => client.SubscribeTrades(config);
 
-        act.Should().Throw<NotSupportedException>();
+        act.Should().Throw<NotSupportedException>()
+            .WithMessage("*EnableStockSharp=true*")
+            .WithMessage("*StockSharp.Algo*")
+            .WithMessage("*docs/providers/stocksharp-connectors.md*");
     }
 
     [Fact]
@@ -142,7 +145,9 @@ public sealed class StockSharpSubscriptionTests : IAsyncLifetime
 
         var act = () => client.SubscribeMarketDepth(config);
 
-        act.Should().Throw<NotSupportedException>();
+        act.Should().Throw<NotSupportedException>()
+            .WithMessage("*EnableStockSharp=true*")
+            .WithMessage("*docs/providers/stocksharp-connectors.md*");
     }
 
     [Fact]
@@ -177,7 +182,25 @@ public sealed class StockSharpSubscriptionTests : IAsyncLifetime
 
         var act = () => client.ConnectAsync();
 
-        await act.Should().ThrowAsync<NotSupportedException>();
+        await act.Should().ThrowAsync<NotSupportedException>()
+            .WithMessage("*Rithmic*")
+            .WithMessage("*EnableStockSharp=true*")
+            .WithMessage("*docs/providers/stocksharp-connectors.md*");
+    }
+
+    [Fact]
+    public void ConnectAsync_WithoutStockSharpPackage_IncludesConfiguredConnectorTypeInMessage()
+    {
+        if (IsStockSharpAvailable)
+            return;
+
+        var client = CreateClient(new StockSharpConfig(Enabled: true, ConnectorType: "Kraken"));
+
+        var act = () => client.ConnectAsync().GetAwaiter().GetResult();
+
+        act.Should().Throw<NotSupportedException>()
+            .WithMessage("*Kraken*")
+            .WithMessage("*connector-specific StockSharp package*");
     }
 
     [Fact]

@@ -158,12 +158,12 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable
         _ = System.Windows.Application.Current?.Dispatcher.InvokeAsync(() =>
         {
             AddConnectionEvent(
-                e.NewState == WpfServices.ConnectionState.Connected ? "Connected" :
-                e.NewState == WpfServices.ConnectionState.Disconnected ? "Disconnected" :
-                e.NewState == WpfServices.ConnectionState.Reconnecting ? "Reconnecting" : "Unknown",
+                e.NewState == ConnectionState.Connected ? "Connected" :
+                e.NewState == ConnectionState.Disconnected ? "Disconnected" :
+                e.NewState == ConnectionState.Reconnecting ? "Reconnecting" : "Unknown",
                 e.Provider,
-                e.NewState == WpfServices.ConnectionState.Connected ? EventType.Success :
-                e.NewState == WpfServices.ConnectionState.Disconnected ? EventType.Error : EventType.Warning);
+                e.NewState == ConnectionState.Connected ? EventType.Success :
+                e.NewState == ConnectionState.Disconnected ? EventType.Error : EventType.Warning);
         });
     }
 
@@ -220,8 +220,8 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable
         foreach (var provider in streaming)
         {
             var isActive = provider.ProviderId.Equals(currentProvider, StringComparison.OrdinalIgnoreCase);
-            var isConnected = isActive && connectionState == WpfServices.ConnectionState.Connected;
-            var isReconnecting = isActive && connectionState == WpfServices.ConnectionState.Reconnecting;
+            var isConnected = isActive && connectionState == ConnectionState.Connected;
+            var isReconnecting = isActive && connectionState == ConnectionState.Reconnecting;
 
             StreamingProviders.Add(new ProviderStatusModel
             {
@@ -350,7 +350,7 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable
         ConnectedCount = connected.ToString();
         DisconnectedCount = disconnected.ToString();
         TotalProviders = (StreamingProviders.Count + BackfillProviders.Count).ToString();
-        AvgLatency = _connectionService.State == WpfServices.ConnectionState.Connected
+        AvgLatency = _connectionService.State == ConnectionState.Connected
             ? $"{_connectionService.LastLatencyMs:F0}"
             : "--";
     }

@@ -1,0 +1,71 @@
+{
+  "description": "Recorded-style Polygon stock feed session for MSFT covering valid replay frames plus malformed and ignored edge cases.",
+  "subscriptions": {
+    "trades": ["MSFT"],
+    "quotes": ["MSFT"],
+    "aggregates": ["MSFT"]
+  },
+  "expected": {
+    "trade": {
+      "symbol": "MSFT",
+      "price": 401.125,
+      "size": 250,
+      "timestampMs": 1742484600123,
+      "streamId": "88442211",
+      "venue": "MEMX",
+      "aggressor": "Sell",
+      "rawConditions": ["29"]
+    },
+    "quote": {
+      "symbol": "MSFT",
+      "bidPrice": 401.10,
+      "bidSize": 180,
+      "askPrice": 401.15,
+      "askSize": 220,
+      "timestampMs": 1742484600456,
+      "venue": "MEMX"
+    },
+    "aggregates": [
+      {
+        "timeframe": "Second",
+        "symbol": "MSFT",
+        "open": 401.00,
+        "high": 401.18,
+        "low": 400.98,
+        "close": 401.12,
+        "volume": 2100,
+        "vwap": 401.08,
+        "tradeCount": 31,
+        "startTimeMs": 1742484600000,
+        "endTimeMs": 1742484601000
+      },
+      {
+        "timeframe": "Minute",
+        "symbol": "MSFT",
+        "open": 400.70,
+        "high": 401.20,
+        "low": 400.65,
+        "close": 401.12,
+        "volume": 64200,
+        "vwap": 400.94,
+        "tradeCount": 1040,
+        "startTimeMs": 1742484540000,
+        "endTimeMs": 1742484600000
+      }
+    ],
+    "expectedIntegrityEvents": 0
+  },
+  "messages": [
+    "[{\"ev\":\"status\",\"status\":\"connected\",\"message\":\"Connected Successfully\"}]",
+    "[{\"ev\":\"status\",\"status\":\"auth_success\",\"message\":\"authenticated\"}]",
+    "[{\"ev\":\"status\",\"status\":\"success\",\"message\":\"subscribed to: T.MSFT,Q.MSFT,A.MSFT,AM.MSFT\"}]",
+    "[{\"ev\":\"T\",\"sym\":\"MSFT\",\"p\":401.125,\"s\":250,\"t\":1742484600123,\"i\":\"88442211\",\"x\":16,\"c\":[29]}]",
+    "[{\"ev\":\"Q\",\"sym\":\"MSFT\",\"bp\":401.10,\"bs\":180,\"ap\":401.15,\"as\":220,\"t\":1742484600456,\"x\":16}]",
+    "[{\"ev\":\"A\",\"sym\":\"MSFT\",\"o\":401.00,\"h\":401.18,\"l\":400.98,\"c\":401.12,\"v\":2100,\"vw\":401.08,\"s\":1742484600000,\"e\":1742484601000,\"n\":31}]",
+    "[{\"ev\":\"AM\",\"sym\":\"MSFT\",\"o\":400.70,\"h\":401.20,\"l\":400.65,\"c\":401.12,\"v\":64200,\"vw\":400.94,\"s\":1742484540000,\"e\":1742484600000,\"n\":1040}]",
+    "[{\"ev\":\"T\",\"sym\":\"AAPL\",\"p\":213.45,\"s\":100,\"t\":1742484600555,\"i\":\"ignored-aapl\",\"x\":4,\"c\":[12]}]",
+    "[{\"ev\":\"Q\",\"sym\":\"MSFT\",\"bp\":401.20,\"bs\":100,\"ap\":401.10,\"as\":100,\"t\":1742484600600,\"x\":16}]",
+    "[{\"ev\":\"A\",\"sym\":\"MSFT\",\"o\":0,\"h\":401.30,\"l\":400.90,\"c\":401.00,\"v\":25,\"vw\":401.02,\"s\":1742484601000,\"e\":1742484602000,\"n\":3}]",
+    "[{\"sym\":\"MSFT\",\"p\":401.25,\"s\":10}]"
+  ]
+}

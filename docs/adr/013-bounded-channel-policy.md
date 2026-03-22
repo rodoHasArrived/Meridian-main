@@ -238,9 +238,9 @@ public sealed record EventPipelinePolicy(
 
 ## References
 
-- [Event Pipeline Documentation](../architecture/storage-design.md#event-pipeline)
+- [Event Pipeline Documentation](../architecture/storage-design.md)
 - [Monitoring Architecture](012-monitoring-and-alerting-pipeline.md)
-- [BackpressureAlertService](../architecture/overview.md#backpressure-monitoring)
+- [BackpressureAlertService](../architecture/overview.md)
 - [System.Threading.Channels Documentation](https://learn.microsoft.com/en-us/dotnet/api/system.threading.channels)
 
 ---

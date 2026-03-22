@@ -42,14 +42,15 @@ public enum OrderStatus
 }
 
 /// <summary>
-/// Provider-independent order request accepted by the backtest context.
-/// The simulator interprets the common fields directly and preserves any
-/// provider-specific extensions in <see cref="ProviderParameters"/>.
+/// Convenience request for entry orders that should automatically attach
+/// take-profit and/or stop-loss exits after the entry fills.
 /// </summary>
-public sealed record OrderRequest(
+public sealed record BracketOrderRequest(
     string Symbol,
     long Quantity,
-    OrderType Type,
+    OrderType EntryType,
+    decimal? TakeProfitPrice = null,
+    decimal? StopLossPrice = null,
     decimal? LimitPrice = null,
     decimal? StopPrice = null,
     TimeInForce TimeInForce = TimeInForce.Day,
@@ -58,7 +59,32 @@ public sealed record OrderRequest(
     IReadOnlyDictionary<string, string>? ProviderParameters = null,
     string? AccountId = null);
 
-/// <summary>Immutable order record submitted to the backtest context.</summary>
+/// <summary>
+/// Provider-independent order request accepted by the backtest context.
+/// The simulator interprets the common fields directly and preserves any
+/// provider-specific extensions in <see cref="ProviderParameters"/>. Setting
+/// <see cref="TakeProfitPrice"/> and/or <see cref="StopLossPrice"/> creates
+/// contingent exit orders after the entry order fills.
+/// </summary>
+public sealed record OrderRequest(
+    string Symbol,
+    long Quantity,
+    OrderType Type,
+    decimal? LimitPrice = null,
+    decimal? StopPrice = null,
+    decimal? TakeProfitPrice = null,
+    decimal? StopLossPrice = null,
+    TimeInForce TimeInForce = TimeInForce.Day,
+    ExecutionModel ExecutionModel = ExecutionModel.Auto,
+    bool AllowPartialFills = true,
+    IReadOnlyDictionary<string, string>? ProviderParameters = null,
+    string? AccountId = null);
+
+/// <summary>
+/// Immutable order record submitted to the backtest context. Parent entry orders can
+/// carry contingent exit prices, while generated child orders link back through
+/// <see cref="ParentOrderId"/> and <see cref="OcoGroupId"/>.
+/// </summary>
 public sealed record Order(
     Guid OrderId,
     string Symbol,
@@ -74,7 +100,11 @@ public sealed record Order(
     string? AccountId = null,
     OrderStatus Status = OrderStatus.Pending,
     long FilledQuantity = 0,
-    bool IsTriggered = false)
+    bool IsTriggered = false,
+    decimal? TakeProfitPrice = null,
+    decimal? StopLossPrice = null,
+    Guid? ParentOrderId = null,
+    Guid? OcoGroupId = null)
 {
     /// <summary>Absolute quantity that still needs to be executed.</summary>
     public long RemainingQuantity => Math.Max(0L, Math.Abs(Quantity) - Math.Abs(FilledQuantity));

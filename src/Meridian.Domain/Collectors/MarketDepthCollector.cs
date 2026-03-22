@@ -5,6 +5,7 @@ using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Events;
 using Meridian.Domain.Models;
+using Meridian.Domain.Telemetry;
 
 namespace Meridian.Domain.Collectors;
 
@@ -77,6 +78,7 @@ public sealed class MarketDepthCollector : SymbolSubscriptionTracker
             return;
 
         var symbol = update.Symbol.Trim();
+        using var publishActivity = MarketEventIngressTracing.StartCollectorActivity("depth-collector", "depth", symbol);
 
         if (!ShouldProcessUpdate(symbol))
             return;

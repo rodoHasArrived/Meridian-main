@@ -1,5 +1,6 @@
 using Meridian.Execution;
 using Meridian.Execution.Sdk;
+using Interop = Meridian.FSharp.Interop;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Risk.Rules;
@@ -33,15 +34,20 @@ public sealed class DrawdownCircuitBreaker : IRiskRule
     public Task<RiskValidationResult> EvaluateAsync(OrderRequest request, CancellationToken ct = default)
     {
         var portfolioValue = _positionTracker.GetPortfolioValue();
-        var drawdownPercent = (_initialCapital - portfolioValue) / _initialCapital * 100m;
+        var context = Interop.RiskInterop.CreateContext(
+            request,
+            currentPositionQuantity: 0m,
+            maxPositionSize: default,
+            portfolioValue,
+            _initialCapital,
+            _maxDrawdownPercent);
+        var decision = Interop.RiskInterop.EvaluateDrawdownCircuitBreaker(context);
 
-        if (drawdownPercent >= _maxDrawdownPercent)
+        if (!decision.Approved)
         {
-            _logger.LogWarning("Circuit breaker triggered: drawdown {Drawdown:F2}% >= threshold {Threshold:F2}%",
-                drawdownPercent, _maxDrawdownPercent);
-
-            return Task.FromResult(RiskValidationResult.Rejected(
-                $"Drawdown circuit breaker: {drawdownPercent:F2}% drawdown exceeds {_maxDrawdownPercent:F2}% threshold"));
+            var reason = decision.Reasons.FirstOrDefault() ?? "Drawdown circuit breaker triggered.";
+            _logger.LogWarning("Circuit breaker triggered for {Symbol}: {Reason}", request.Symbol, reason);
+            return Task.FromResult(RiskValidationResult.Rejected(reason));
         }
 
         return Task.FromResult(RiskValidationResult.Approved());

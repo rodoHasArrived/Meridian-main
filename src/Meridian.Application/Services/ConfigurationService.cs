@@ -206,6 +206,12 @@ public sealed class ConfigurationService : IAsyncDisposable
         => _credentialResolver.ResolveAlphaVantage(configApiKey);
 
     /// <summary>
+    /// Resolves FRED API key from environment or config.
+    /// </summary>
+    public string? ResolveFredCredentials(string? configApiKey = null)
+        => _credentialResolver.ResolveFred(configApiKey);
+
+    /// <summary>
     /// Resolves Nasdaq Data Link API key from environment or config.
     /// </summary>
     public string? ResolveNasdaqCredentials(string? configApiKey = null)
@@ -298,6 +304,16 @@ public sealed class ConfigurationService : IAsyncDisposable
                 if (!string.IsNullOrEmpty(key))
                 {
                     providers = providers with { Nasdaq = providers.Nasdaq with { ApiKey = key } };
+                    updated = true;
+                }
+            }
+
+            if (providers.Fred != null)
+            {
+                var key = ResolveFredCredentials(providers.Fred.ApiKey);
+                if (!string.IsNullOrEmpty(key))
+                {
+                    providers = providers with { Fred = providers.Fred with { ApiKey = key } };
                     updated = true;
                 }
             }
@@ -824,4 +840,3 @@ public sealed class ConfigurationService : IAsyncDisposable
         await _pipeline.DisposeAsync();
     }
 }
-

@@ -1,3 +1,5 @@
+using Meridian.FSharp.Ledger;
+
 namespace Meridian.Ledger;
 
 /// <summary>
@@ -165,6 +167,21 @@ public sealed class Ledger : IReadOnlyLedger
         if (query.FillId is not null)
             filtered = filtered.Where(entry => entry.Metadata.FillId == query.FillId);
 
+        if (query.SecurityId is not null)
+            filtered = filtered.Where(entry => entry.Metadata.SecurityId == query.SecurityId);
+
+        if (!string.IsNullOrWhiteSpace(query.ProjectId))
+            filtered = filtered.Where(entry => string.Equals(entry.Metadata.ProjectId, query.ProjectId, StringComparison.OrdinalIgnoreCase));
+
+        if (!string.IsNullOrWhiteSpace(query.LedgerBook))
+            filtered = filtered.Where(entry => string.Equals(entry.Metadata.LedgerBook, query.LedgerBook, StringComparison.OrdinalIgnoreCase));
+
+        if (query.LedgerView is not null)
+            filtered = filtered.Where(entry => entry.Metadata.LedgerView == query.LedgerView);
+
+        if (!string.IsNullOrWhiteSpace(query.ScenarioId))
+            filtered = filtered.Where(entry => string.Equals(entry.Metadata.ScenarioId, query.ScenarioId, StringComparison.OrdinalIgnoreCase));
+
         if (!string.IsNullOrWhiteSpace(query.StrategyId))
             filtered = filtered.Where(entry => string.Equals(entry.Metadata.StrategyId, query.StrategyId, StringComparison.OrdinalIgnoreCase));
 
@@ -270,9 +287,7 @@ public sealed class Ledger : IReadOnlyLedger
                     continue;
 
                 result.TryGetValue(line.Account, out var currentBalance);
-                var delta = line.Account.AccountType is LedgerAccountType.Asset or LedgerAccountType.Expense
-                    ? line.Debit - line.Credit
-                    : line.Credit - line.Debit;
+                var delta = CalculateNetBalance(line.Account, line.Debit, line.Credit);
                 result[line.Account] = currentBalance + delta;
             }
         }
@@ -391,47 +406,16 @@ public sealed class Ledger : IReadOnlyLedger
 
     private void ValidateJournalEntry(JournalEntry entry)
     {
-        if (string.IsNullOrWhiteSpace(entry.Description))
-            throw new LedgerValidationException("Journal entry description must not be null or whitespace.");
+        var validation = LedgerInterop.ValidateJournalEntry(
+            entry.JournalEntryId,
+            entry.Timestamp,
+            entry.Description,
+            entry.Lines.Select(ToLedgerLineInput),
+            _journalEntryIds,
+            _ledgerEntryIds);
 
-        if (entry.Lines is null || entry.Lines.Count == 0)
-            throw new LedgerValidationException("Journal entry must have at least one line.");
-
-        if (_journalEntryIds.Contains(entry.JournalEntryId))
-            throw new LedgerValidationException($"Journal entry '{entry.JournalEntryId}' has already been posted.");
-
-        if (!entry.IsBalanced)
-        {
-            var totalDebit = entry.Lines.Sum(l => l.Debit);
-            var totalCredit = entry.Lines.Sum(l => l.Credit);
-            throw new LedgerValidationException(
-                $"Journal entry '{entry.JournalEntryId}' is not balanced " +
-                $"(debits={totalDebit:F4}, credits={totalCredit:F4}).");
-        }
-
-        foreach (var line in entry.Lines)
-        {
-            if (line.JournalEntryId != entry.JournalEntryId)
-            {
-                throw new LedgerValidationException(
-                    $"Ledger entry '{line.EntryId}' references journal entry '{line.JournalEntryId}' but was posted under '{entry.JournalEntryId}'.");
-            }
-
-            if (line.Timestamp != entry.Timestamp)
-            {
-                throw new LedgerValidationException(
-                    $"Ledger entry '{line.EntryId}' timestamp '{line.Timestamp:O}' does not match journal timestamp '{entry.Timestamp:O}'.");
-            }
-
-            if (!string.Equals(line.Description, entry.Description, StringComparison.Ordinal))
-            {
-                throw new LedgerValidationException(
-                    $"Ledger entry '{line.EntryId}' description must match journal entry description.");
-            }
-
-            if (_ledgerEntryIds.Contains(line.EntryId))
-                throw new LedgerValidationException($"Ledger entry '{line.EntryId}' has already been posted.");
-        }
+        if (!validation.IsValid)
+            throw new LedgerValidationException(validation.Errors[0]);
     }
 
     private static bool MatchesFinancialAccount(LedgerAccount account, string? financialAccountId)
@@ -439,9 +423,22 @@ public sealed class Ledger : IReadOnlyLedger
             || string.Equals(account.FinancialAccountId, financialAccountId.Trim(), StringComparison.OrdinalIgnoreCase);
 
     private static decimal CalculateNetBalance(LedgerAccount account, decimal debits, decimal credits)
-        => account.AccountType is LedgerAccountType.Asset or LedgerAccountType.Expense
-            ? debits - credits
-            : credits - debits;
+        => LedgerInterop.CalculateNetBalance((int)account.AccountType, debits, credits);
+
+    private static LedgerLineInput ToLedgerLineInput(LedgerEntry line) =>
+        new()
+        {
+            EntryId = line.EntryId,
+            JournalEntryId = line.JournalEntryId,
+            Timestamp = line.Timestamp,
+            AccountName = line.Account.Name,
+            AccountType = (int)line.Account.AccountType,
+            Symbol = line.Account.Symbol ?? string.Empty,
+            FinancialAccountId = line.Account.FinancialAccountId ?? string.Empty,
+            Debit = line.Debit,
+            Credit = line.Credit,
+            Description = line.Description,
+        };
 
     private static bool IsWithinRange(DateTimeOffset timestamp, DateTimeOffset? from, DateTimeOffset? to)
         => (!from.HasValue || timestamp >= from.Value) && (!to.HasValue || timestamp <= to.Value);

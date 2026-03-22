@@ -15,6 +15,7 @@ public sealed class BoundedObservableCollection<T> : INotifyCollectionChanged, I
 {
     private readonly List<T> _items;
     private readonly int _maxCapacity;
+    private readonly object _syncRoot = new();
 
     /// <summary>
     /// Occurs when the collection changes.
@@ -40,7 +41,16 @@ public sealed class BoundedObservableCollection<T> : INotifyCollectionChanged, I
     /// <summary>
     /// Gets the number of elements in the collection.
     /// </summary>
-    public int Count => _items.Count;
+    public int Count
+    {
+        get
+        {
+            lock (_syncRoot)
+            {
+                return _items.Count;
+            }
+        }
+    }
 
     /// <summary>
     /// Gets the maximum capacity of the collection.
@@ -57,11 +67,21 @@ public sealed class BoundedObservableCollection<T> : INotifyCollectionChanged, I
     /// </summary>
     public T this[int index]
     {
-        get => _items[index];
+        get
+        {
+            lock (_syncRoot)
+            {
+                return _items[index];
+            }
+        }
         set
         {
-            var oldItem = _items[index];
-            _items[index] = value;
+            T oldItem;
+            lock (_syncRoot)
+            {
+                oldItem = _items[index];
+                _items[index] = value;
+            }
             OnCollectionChanged(new NotifyCollectionChangedEventArgs(
                 NotifyCollectionChangedAction.Replace, value, oldItem, index));
         }
@@ -81,14 +101,17 @@ public sealed class BoundedObservableCollection<T> : INotifyCollectionChanged, I
         bool removedItem = false;
         T? removedValue = default;
 
-        if (_items.Count >= _maxCapacity)
+        lock (_syncRoot)
         {
-            removedValue = _items[^1];
-            _items.RemoveAt(_items.Count - 1);
-            removedItem = true;
-        }
+            if (_items.Count >= _maxCapacity)
+            {
+                removedValue = _items[^1];
+                _items.RemoveAt(_items.Count - 1);
+                removedItem = true;
+            }
 
-        _items.Insert(0, item);
+            _items.Insert(0, item);
+        }
 
         // Notify about the insertion
         OnCollectionChanged(new NotifyCollectionChangedEventArgs(
@@ -117,13 +140,16 @@ public sealed class BoundedObservableCollection<T> : INotifyCollectionChanged, I
         // Reverse to maintain insertion order (first item ends up at index 0)
         itemList.Reverse();
 
-        foreach (var item in itemList)
+        lock (_syncRoot)
         {
-            if (_items.Count >= _maxCapacity)
+            foreach (var item in itemList)
             {
-                _items.RemoveAt(_items.Count - 1);
+                if (_items.Count >= _maxCapacity)
+                {
+                    _items.RemoveAt(_items.Count - 1);
+                }
+                _items.Insert(0, item);
             }
-            _items.Insert(0, item);
         }
 
         // Use Reset for bulk operations to avoid notification spam
@@ -137,17 +163,31 @@ public sealed class BoundedObservableCollection<T> : INotifyCollectionChanged, I
     /// </summary>
     public void Add(T item)
     {
-        if (_items.Count >= _maxCapacity)
+        int addIndex;
+        bool removedAny = false;
+        T? removedItem = default;
+
+        lock (_syncRoot)
         {
-            var removedItem = _items[0];
-            _items.RemoveAt(0);
+            if (_items.Count >= _maxCapacity)
+            {
+                removedItem = _items[0];
+                _items.RemoveAt(0);
+                removedAny = true;
+            }
+
+            _items.Add(item);
+            addIndex = _items.Count - 1;
+        }
+
+        if (removedAny)
+        {
             OnCollectionChanged(new NotifyCollectionChangedEventArgs(
                 NotifyCollectionChangedAction.Remove, removedItem, 0));
         }
 
-        _items.Add(item);
         OnCollectionChanged(new NotifyCollectionChangedEventArgs(
-            NotifyCollectionChangedAction.Add, item, _items.Count - 1));
+            NotifyCollectionChangedAction.Add, item, addIndex));
         OnPropertyChanged(nameof(Count));
     }
 
@@ -156,9 +196,12 @@ public sealed class BoundedObservableCollection<T> : INotifyCollectionChanged, I
     /// </summary>
     public void Clear()
     {
-        if (_items.Count == 0) return;
+        lock (_syncRoot)
+        {
+            if (_items.Count == 0) return;
 
-        _items.Clear();
+            _items.Clear();
+        }
         OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         OnPropertyChanged(nameof(Count));
     }
@@ -166,34 +209,64 @@ public sealed class BoundedObservableCollection<T> : INotifyCollectionChanged, I
     /// <summary>
     /// Determines whether the collection contains a specific item.
     /// </summary>
-    public bool Contains(T item) => _items.Contains(item);
+    public bool Contains(T item)
+    {
+        lock (_syncRoot)
+        {
+            return _items.Contains(item);
+        }
+    }
 
     /// <summary>
     /// Copies the elements of the collection to an array.
     /// </summary>
-    public void CopyTo(T[] array, int arrayIndex) => _items.CopyTo(array, arrayIndex);
+    public void CopyTo(T[] array, int arrayIndex)
+    {
+        lock (_syncRoot)
+        {
+            _items.CopyTo(array, arrayIndex);
+        }
+    }
 
     /// <summary>
     /// Returns an enumerator that iterates through the collection.
     /// </summary>
-    public IEnumerator<T> GetEnumerator() => _items.GetEnumerator();
+    public IEnumerator<T> GetEnumerator()
+    {
+        List<T> snapshot;
+        lock (_syncRoot)
+        {
+            snapshot = new List<T>(_items);
+        }
+
+        return snapshot.GetEnumerator();
+    }
 
     /// <summary>
     /// Searches for the specified item and returns its index.
     /// </summary>
-    public int IndexOf(T item) => _items.IndexOf(item);
+    public int IndexOf(T item)
+    {
+        lock (_syncRoot)
+        {
+            return _items.IndexOf(item);
+        }
+    }
 
     /// <summary>
     /// Inserts an item at the specified index.
     /// </summary>
     public void Insert(int index, T item)
     {
-        if (_items.Count >= _maxCapacity)
+        lock (_syncRoot)
         {
-            _items.RemoveAt(_items.Count - 1);
-        }
+            if (_items.Count >= _maxCapacity)
+            {
+                _items.RemoveAt(_items.Count - 1);
+            }
 
-        _items.Insert(index, item);
+            _items.Insert(index, item);
+        }
         OnCollectionChanged(new NotifyCollectionChangedEventArgs(
             NotifyCollectionChangedAction.Add, item, index));
         OnPropertyChanged(nameof(Count));
@@ -216,8 +289,12 @@ public sealed class BoundedObservableCollection<T> : INotifyCollectionChanged, I
     /// </summary>
     public void RemoveAt(int index)
     {
-        var item = _items[index];
-        _items.RemoveAt(index);
+        T item;
+        lock (_syncRoot)
+        {
+            item = _items[index];
+            _items.RemoveAt(index);
+        }
         OnCollectionChanged(new NotifyCollectionChangedEventArgs(
             NotifyCollectionChangedAction.Remove, item, index));
         OnPropertyChanged(nameof(Count));
@@ -234,10 +311,13 @@ public sealed class BoundedObservableCollection<T> : INotifyCollectionChanged, I
     /// <param name="items">The items to replace with.</param>
     public void ReplaceAll(IEnumerable<T> items)
     {
-        _items.Clear();
-        foreach (var item in items.Take(_maxCapacity))
+        lock (_syncRoot)
         {
-            _items.Add(item);
+            _items.Clear();
+            foreach (var item in items.Take(_maxCapacity))
+            {
+                _items.Add(item);
+            }
         }
         OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         OnPropertyChanged(nameof(Count));
@@ -246,7 +326,13 @@ public sealed class BoundedObservableCollection<T> : INotifyCollectionChanged, I
     /// <summary>
     /// Creates a snapshot of the current items as a list.
     /// </summary>
-    public List<T> ToList() => new(_items);
+    public List<T> ToList()
+    {
+        lock (_syncRoot)
+        {
+            return new List<T>(_items);
+        }
+    }
 
     private void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
     {

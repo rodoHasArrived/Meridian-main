@@ -83,7 +83,7 @@ When editing UML docs:
 
 - [Architecture Overview](../../architecture/overview.md)
 - [Domain Contracts](../../architecture/domains.md)
-- [Diagrams Index](../README.md) — Graphviz DOT diagrams (C4, data flow, etc.)
+- [Diagrams Index](../../archive/docs/README.md) — Graphviz DOT diagrams (C4, data flow, etc.)
 
 ---
 

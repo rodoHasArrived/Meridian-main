@@ -61,6 +61,7 @@ public sealed class CommandPaletteServiceTests
         commands.Should().Contain(c => c.Id == "nav-dashboard");
         commands.Should().Contain(c => c.Id == "nav-settings");
         commands.Should().Contain(c => c.Id == "nav-symbols");
+        commands.Should().Contain(c => c.Id == "nav-strategy-runs");
     }
 
     [Fact]
@@ -193,11 +194,31 @@ public sealed class CommandPaletteServiceTests
         var service = CommandPaletteService.Instance;
 
         // Act
-        var results = service.Search("Navigate to Dashboard");
+        var results = service.Search("Open Research: Dashboard");
 
         // Assert
         results.Should().NotBeEmpty();
         results.Should().Contain(c => c.Id == "nav-dashboard");
+    }
+
+    [Fact]
+    public void Search_WorkspaceTerm_ShouldReturnWorkstationAlignedCommands()
+    {
+        var service = CommandPaletteService.Instance;
+
+        var results = service.Search("governance");
+
+        results.Should().Contain(c => c.Id == "nav-data-quality");
+    }
+
+    [Fact]
+    public void Search_StrategyRuns_ShouldReturnRunBrowserCommand()
+    {
+        var service = CommandPaletteService.Instance;
+
+        var results = service.Search("strategy runs");
+
+        results.Should().Contain(c => c.Id == "nav-strategy-runs");
     }
 
     [Fact]
@@ -462,5 +483,25 @@ public sealed class CommandPaletteServiceTests
         // Assert
         command.Should().NotBeNull();
         command!.ActionId.Should().Be(expectedActionId);
+    }
+
+    [Fact]
+    public void GetAllCommands_WorkstationAlignedNavigation_ShouldExposeWorkspaceDescription()
+    {
+        var service = CommandPaletteService.Instance;
+
+        var command = service.GetAllCommands().First(c => c.Id == "nav-backfill");
+
+        command.Description.Should().Contain("Data Operations workspace");
+    }
+
+    [Fact]
+    public void GetAllCommands_RunPortfolio_ShouldExposeTradingWorkspaceDescription()
+    {
+        var service = CommandPaletteService.Instance;
+
+        var command = service.GetAllCommands().First(c => c.Id == "nav-run-portfolio");
+
+        command.Description.Should().Contain("Trading workspace");
     }
 }

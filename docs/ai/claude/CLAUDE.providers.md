@@ -827,7 +827,7 @@ See the [provider field audit](../../architecture/deterministic-canonicalization
 
 ## Related Resources
 
-- **Master AI index:** [`docs/ai/README.md`](../README.md)
+- **Master AI index:** [`docs/ai/README.md`](../../archive/docs/README.md)
 - **Root context:** [`CLAUDE.md`](../../../CLAUDE.md) § Data Providers
 - **Code review (Lens 5 - Provider Compliance):** [`.github/agents/code-review-agent.md`](../../../.github/agents/code-review-agent.md)
 - **Development guide:** [`docs/development/provider-implementation.md`](../../development/provider-implementation.md)

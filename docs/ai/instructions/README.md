@@ -91,7 +91,7 @@ explicitly**.
 1. Create a new `.instructions.md` file in `.github/instructions/`
 2. Add the `applyTo:` frontmatter glob pattern
 3. Add an entry to this README
-4. Update [`docs/ai/README.md`](../README.md) Tier 4 table
+4. Update [`docs/ai/README.md`](../../archive/docs/README.md) Tier 4 table
 
 ---
 
@@ -102,7 +102,7 @@ explicitly**.
 | [`.github/copilot-instructions.md`](../../../.github/copilot-instructions.md) | Repository-wide Copilot instructions |
 | [`docs/ai/copilot/instructions.md`](../copilot/instructions.md) | Extended Copilot guidance |
 | [`docs/ai/agents/README.md`](../agents/README.md) | Agent definitions (Copilot + Claude) |
-| [`docs/ai/README.md`](../README.md) | Master AI resource index |
+| [`docs/ai/README.md`](../../archive/docs/README.md) | Master AI resource index |
 
 ---
 

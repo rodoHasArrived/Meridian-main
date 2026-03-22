@@ -1,5 +1,7 @@
 using Meridian.Application.Backfill;
 using Meridian.Application.Config;
+using Meridian.Application.Coordination;
+using Meridian.Application.Pipeline;
 using Meridian.Application.Scheduling;
 using Meridian.Application.Subscriptions.Services;
 using Meridian.Application.UI;
@@ -38,6 +40,14 @@ internal sealed class BackfillFeatureRegistration : IServiceFeatureRegistration
 
         // Backfill execution history and schedule manager
         services.AddSingleton<BackfillExecutionHistory>();
+        services.AddSingleton<IngestionJobService>(sp =>
+        {
+            var configStore = sp.GetRequiredService<ConfigStore>();
+            var config = configStore.Load();
+            var persistenceDir = Path.Combine(config.DataRoot, "_ingestion_jobs");
+            var ownershipService = sp.GetService<IScheduledWorkOwnershipService>();
+            return new IngestionJobService(persistenceDir, ownershipService);
+        });
         services.AddSingleton<BackfillScheduleManager>(sp =>
         {
             var loggerFactory = sp.GetRequiredService<ILoggerFactory>();

@@ -1,0 +1,17 @@
+global using System.Buffers.Binary;
+global using System.Collections.Concurrent;
+global using System.Diagnostics;
+global using System.Runtime.CompilerServices;
+global using System.Text;
+global using System.Text.Json;
+global using System.Text.Json.Serialization.Metadata;
+global using System.Threading.Channels;
+global using Meridian.Contracts.Domain.Enums;
+global using Meridian.Contracts.Domain.Models;
+global using Meridian.Infrastructure;
+global using Meridian.Infrastructure.CppTrader.Protocol;
+global using Meridian.Execution.Interfaces;
+global using Meridian.Execution.Models;
+global using Meridian.Execution.Sdk;
+global using Microsoft.Extensions.Logging;
+global using Microsoft.Extensions.Options;

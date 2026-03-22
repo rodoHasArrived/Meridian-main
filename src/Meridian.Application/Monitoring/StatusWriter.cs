@@ -1,8 +1,8 @@
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using Meridian.Application.Config;
 using Meridian.Application.Logging;
-using Meridian.Application.Serialization;
 
 namespace Meridian.Application.Monitoring;
 
@@ -16,6 +16,12 @@ public sealed class StatusWriter : IAsyncDisposable
     private readonly IEventMetrics _metrics;
     private readonly CancellationTokenSource _cts = new();
     private readonly Serilog.ILogger _log = LoggingSetup.ForContext<StatusWriter>();
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
+        WriteIndented = true,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
     private Task? _loop;
 
     public StatusWriter(string path, Func<AppConfig> configProvider, IEventMetrics? metrics = null)
@@ -58,7 +64,7 @@ public sealed class StatusWriter : IAsyncDisposable
             symbols = cfg.Symbols ?? Array.Empty<SymbolConfig>()
         };
 
-        var json = JsonSerializer.Serialize(payload, MarketDataJsonContext.PrettyPrintOptions);
+        var json = JsonSerializer.Serialize(payload, JsonOptions);
 
         await File.WriteAllTextAsync(_path, json, ct);
     }

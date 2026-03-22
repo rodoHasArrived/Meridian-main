@@ -5,6 +5,7 @@ using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Infrastructure.Adapters.AlphaVantage;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.Finnhub;
+using Meridian.Infrastructure.Adapters.Fred;
 using Meridian.Infrastructure.Adapters.NasdaqDataLink;
 using Meridian.Infrastructure.Adapters.OpenFigi;
 using Meridian.Infrastructure.Adapters.Polygon;
@@ -16,6 +17,7 @@ using Meridian.Infrastructure.Contracts;
 using Serilog;
 using AlphaVantageBackfillConfig = Meridian.Application.Config.AlphaVantageConfig;
 using FinnhubBackfillConfig = Meridian.Application.Config.FinnhubConfig;
+using FredBackfillConfig = Meridian.Application.Config.FredConfig;
 using NasdaqBackfillConfig = Meridian.Application.Config.NasdaqDataLinkConfig;
 using PolygonBackfillConfig = Meridian.Application.Config.PolygonConfig;
 using StooqBackfillConfig = Meridian.Application.Config.StooqConfig;
@@ -126,6 +128,9 @@ public sealed class ProviderFactory
 
         // Alpha Vantage
         TryAddBackfillProvider(providers, () => CreateAlphaVantageBackfillProvider(providersCfg?.AlphaVantage));
+
+        // FRED economic data
+        TryAddBackfillProvider(providers, () => CreateFredBackfillProvider(providersCfg?.Fred));
 
         // Nasdaq Data Link
         TryAddBackfillProvider(providers, () => CreateNasdaqBackfillProvider(providersCfg?.Nasdaq));
@@ -242,6 +247,18 @@ public sealed class ProviderFactory
             return null;
 
         return new AlphaVantageHistoricalDataProvider(apiKey: apiKey, log: _log);
+    }
+
+    private IHistoricalDataProvider? CreateFredBackfillProvider(FredBackfillConfig? cfg)
+    {
+        if (!(cfg?.Enabled ?? false))
+            return null;
+
+        var apiKey = _credentialResolver.ResolveFredCredentials(cfg?.ApiKey);
+        if (string.IsNullOrEmpty(apiKey))
+            return null;
+
+        return new FredHistoricalDataProvider(apiKey: apiKey, log: _log);
     }
 
     private IHistoricalDataProvider? CreateNasdaqBackfillProvider(NasdaqBackfillConfig? cfg)
@@ -402,6 +419,7 @@ public interface ICredentialResolver
     string? ResolveTiingoCredentials(string? configToken);
     string? ResolveFinnhubCredentials(string? configApiKey);
     string? ResolveAlphaVantageCredentials(string? configApiKey);
+    string? ResolveFredCredentials(string? configApiKey);
     string? ResolveNasdaqCredentials(string? configApiKey);
 }
 
@@ -435,6 +453,10 @@ public sealed class EnvironmentCredentialResolver : ICredentialResolver
     public string? ResolveAlphaVantageCredentials(string? configApiKey)
         => configApiKey ?? Environment.GetEnvironmentVariable("ALPHAVANTAGE__APIKEY")
                         ?? Environment.GetEnvironmentVariable("ALPHA_VANTAGE_API_KEY");
+
+    public string? ResolveFredCredentials(string? configApiKey)
+        => configApiKey ?? Environment.GetEnvironmentVariable("FRED__APIKEY")
+                        ?? Environment.GetEnvironmentVariable("FRED_API_KEY");
 
     public string? ResolveNasdaqCredentials(string? configApiKey)
         => configApiKey ?? Environment.GetEnvironmentVariable("NASDAQ__APIKEY")

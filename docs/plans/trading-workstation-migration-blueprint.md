@@ -2,7 +2,7 @@
 
 **Owner:** Core Team  
 **Audience:** Product, Architecture, Desktop, API, and Platform contributors  
-**Last Updated:** 2026-03-20  
+**Last Updated:** 2026-03-21  
 **Status:** Active blueprint — documentation-aligned, implementation pending
 
 ---
@@ -12,6 +12,8 @@
 This blueprint defines the migration from Meridian's current feature-rich but page-centric desktop and web UX to a **workflow-centric trading workstation**.
 
 The desired end state is a product where **research, backtesting, paper trading, future live trading, portfolio analysis, and ledger auditability** are experienced as one continuous workflow rather than several adjacent tools.
+
+This workstation blueprint is now paired with [governance-fund-ops-blueprint.md](governance-fund-ops-blueprint.md). Together they define the intended Meridian end state: one connected fund-management workflow that spans research, strategy implementation, trade management, portfolio, ledger, Security Master, reconciliation, cash-flow, and reporting.
 
 This plan does **not** replace Meridian's existing platform pillars. Instead, it reorganizes them around a unified operator model:
 

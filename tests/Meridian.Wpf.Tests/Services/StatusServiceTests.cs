@@ -27,13 +27,24 @@ public sealed class StatusServiceTests
     {
         // Arrange
         var service = StatusService.Instance;
+        var originalBaseUrl = service.BaseUrl;
 
-        // Act
-        var baseUrl = service.BaseUrl;
+        try
+        {
+            // Reset singleton state to the base-class default before asserting it.
+            service.BaseUrl = "http://localhost:8080";
 
-        // Assert
-        baseUrl.Should().NotBeNullOrEmpty("BaseUrl should have a default value");
-        baseUrl.Should().Contain("localhost", "default BaseUrl should point to localhost");
+            // Act
+            var baseUrl = service.BaseUrl;
+
+            // Assert
+            baseUrl.Should().NotBeNullOrEmpty("BaseUrl should have a default value");
+            baseUrl.Should().Contain("localhost", "default BaseUrl should point to localhost");
+        }
+        finally
+        {
+            service.BaseUrl = originalBaseUrl;
+        }
     }
 
     [Fact]
@@ -42,12 +53,20 @@ public sealed class StatusServiceTests
         // Arrange
         var service = StatusService.Instance;
         var newBaseUrl = "http://test.example.com:9000";
+        var originalBaseUrl = service.BaseUrl;
 
-        // Act
-        service.BaseUrl = newBaseUrl;
+        try
+        {
+            // Act
+            service.BaseUrl = newBaseUrl;
 
-        // Assert
-        service.BaseUrl.Should().Be(newBaseUrl, "BaseUrl should be updated");
+            // Assert
+            service.BaseUrl.Should().Be(newBaseUrl, "BaseUrl should be updated");
+        }
+        finally
+        {
+            service.BaseUrl = originalBaseUrl;
+        }
     }
 
     [Fact]
@@ -105,14 +124,23 @@ public sealed class StatusServiceTests
     {
         // Arrange
         var service = StatusService.Instance;
-        // Set to an unreachable endpoint
-        service.BaseUrl = "http://localhost:99999";
+        var originalBaseUrl = service.BaseUrl;
 
-        // Act
-        var result = await service.GetStatusAsync();
+        try
+        {
+            // Set to an unreachable endpoint
+            service.BaseUrl = "http://localhost:99999";
 
-        // Assert
-        result.Should().BeNull("unreachable endpoint should return null");
+            // Act
+            var result = await service.GetStatusAsync();
+
+            // Assert
+            result.Should().BeNull("unreachable endpoint should return null");
+        }
+        finally
+        {
+            service.BaseUrl = originalBaseUrl;
+        }
     }
 
     [Fact]
@@ -120,15 +148,24 @@ public sealed class StatusServiceTests
     {
         // Arrange
         var service = StatusService.Instance;
-        service.BaseUrl = "http://localhost:99999"; // Unreachable endpoint
+        var originalBaseUrl = service.BaseUrl;
         using var cts = new CancellationTokenSource();
         cts.CancelAfter(TimeSpan.FromMilliseconds(100));
 
-        // Act
-        Func<Task> act = async () => await service.GetStatusAsync(cts.Token);
+        try
+        {
+            service.BaseUrl = "http://localhost:99999"; // Unreachable endpoint
 
-        // Assert - Should either return null or throw OperationCanceledException
-        await act.Should().NotThrowAsync<Exception>("cancellation should be handled gracefully");
+            // Act
+            Func<Task> act = async () => await service.GetStatusAsync(cts.Token);
+
+            // Assert - Should either return null or throw OperationCanceledException
+            await act.Should().NotThrowAsync<Exception>("cancellation should be handled gracefully");
+        }
+        finally
+        {
+            service.BaseUrl = originalBaseUrl;
+        }
     }
 
     [Fact]
@@ -136,13 +173,22 @@ public sealed class StatusServiceTests
     {
         // Arrange
         var service = StatusService.Instance;
-        service.BaseUrl = "http://localhost:99999";
+        var originalBaseUrl = service.BaseUrl;
 
-        // Act
-        var result = await service.GetProviderStatusAsync();
+        try
+        {
+            service.BaseUrl = "http://localhost:99999";
 
-        // Assert
-        result.Should().BeNull("unreachable endpoint should return null");
+            // Act
+            var result = await service.GetProviderStatusAsync();
+
+            // Assert
+            result.Should().BeNull("unreachable endpoint should return null");
+        }
+        finally
+        {
+            service.BaseUrl = originalBaseUrl;
+        }
     }
 
     [Fact]

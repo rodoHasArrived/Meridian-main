@@ -5,7 +5,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       mc:Ignorable="d"
       d:DesignHeight="900" d:DesignWidth="1400"
-      Background="{DynamicResource ConsoleBackgroundDarkBrush}"
+      Background="{DynamicResource ShellWindowBackgroundBrush}"
       Loaded="OnPageLoaded"
       AutomationProperties.Name="Symbols">
 
@@ -18,24 +18,31 @@
         </Grid.RowDefinitions>
 
         <!-- Header -->
-        <Grid Grid.Row="0" Margin="0,0,0,16">
+        <Border Grid.Row="0" Style="{StaticResource SectionCardStyle}" Margin="0,0,0,16">
+        <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
             <StackPanel Orientation="Horizontal">
-                <TextBlock Text="{StaticResource IconList}"
-                           FontFamily="{StaticResource SymbolThemeFontFamily}"
-                           FontSize="28"
-                           Foreground="{StaticResource InfoColorBrush}"
-                           VerticalAlignment="Center" />
-                <TextBlock Text="Symbol Subscriptions"
-                           Style="{StaticResource PageTitleStyle}"
-                           Margin="12,0,0,0"
-                           VerticalAlignment="Center" />
+                <Border Width="44" Height="44" CornerRadius="14"
+                        Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                        BorderBrush="{StaticResource InfoColorBrush}" BorderThickness="1">
+                    <TextBlock Text="{StaticResource IconList}"
+                               FontFamily="{StaticResource SymbolThemeFontFamily}"
+                               FontSize="24"
+                               Foreground="{StaticResource InfoColorBrush}"
+                               VerticalAlignment="Center" HorizontalAlignment="Center" />
+                </Border>
+                <StackPanel Margin="12,0,0,0">
+                    <TextBlock Text="Symbol Subscriptions"
+                               Style="{StaticResource PageTitleStyle}" />
+                    <TextBlock Text="Manage monitored symbols, bulk subscription actions, and exchange-level feed coverage."
+                               Style="{StaticResource CardDescriptionStyle}" />
+                </StackPanel>
                 <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
-                        CornerRadius="12"
+                        CornerRadius="999"
                         Padding="8,4"
                         VerticalAlignment="Center"
                         Margin="12,0,0,0">
@@ -69,6 +76,7 @@
                 </Button>
             </StackPanel>
         </Grid>
+        </Border>
 
         <!-- Search and Filters Bar -->
         <Border Grid.Row="1" Style="{StaticResource CardStyle}" Margin="0,0,0,16" Padding="16">
@@ -153,8 +161,9 @@
                     </Grid.RowDefinitions>
 
                     <!-- Bulk Actions Bar -->
-                    <Border Grid.Row="0" Background="{StaticResource ConsoleBackgroundMediumBrush}"
-                            CornerRadius="4" Padding="12" Margin="0,0,0,12">
+                    <Border Grid.Row="0" Background="{StaticResource PremiumPanelBrush}"
+                            BorderBrush="{StaticResource ConsoleBorderBrush}" BorderThickness="1"
+                            CornerRadius="12" Padding="12" Margin="0,0,0,12">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />

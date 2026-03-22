@@ -359,9 +359,11 @@ The following provider-related classes are the current canonical inventory used 
 | `AlpacaMarketDataClient` | Alpaca real-time streaming market data |
 | `IBMarketDataClient` | Interactive Brokers live market data |
 | `IBSimulationClient` | Interactive Brokers simulation/testing client |
+| `NyseMarketDataClient` | NYSE streaming market data via the unified provider registry |
 | `NYSEDataSource` | NYSE direct data source |
 | `PolygonMarketDataClient` | Polygon live market data |
 | `StockSharpMarketDataClient` | StockSharp streaming market data |
+| `SyntheticMarketDataClient` | Deterministic synthetic streaming and symbol-search market data for offline development |
 | `FailoverAwareMarketDataClient` | Streaming failover wrapper |
 
 ### Historical implementations
@@ -370,12 +372,14 @@ The following provider-related classes are the current canonical inventory used 
 | `AlpacaHistoricalDataProvider` | Alpaca historical bars |
 | `AlphaVantageHistoricalDataProvider` | Alpha Vantage historical bars |
 | `CompositeHistoricalDataProvider` | Multi-provider historical failover |
+| `FredHistoricalDataProvider` | FRED economic time series mapped to synthetic daily bars |
 | `FinnhubHistoricalDataProvider` | Finnhub historical bars |
 | `IBHistoricalDataProvider` | Interactive Brokers historical bars |
 | `NasdaqDataLinkHistoricalDataProvider` | Nasdaq Data Link historical bars |
 | `PolygonHistoricalDataProvider` | Polygon historical bars |
 | `StockSharpHistoricalDataProvider` | StockSharp historical bars |
 | `StooqHistoricalDataProvider` | Stooq historical bars |
+| `SyntheticHistoricalDataProvider` | Deterministic synthetic historical bars, quotes, trades, auctions, and corporate actions |
 | `TiingoHistoricalDataProvider` | Tiingo historical bars |
 | `TwelveDataHistoricalDataProvider` | Twelve Data historical bars |
 | `YahooFinanceHistoricalDataProvider` | Yahoo Finance historical bars |

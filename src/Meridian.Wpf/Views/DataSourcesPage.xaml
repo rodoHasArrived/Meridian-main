@@ -4,19 +4,26 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       mc:Ignorable="d"
-      Background="{DynamicResource ConsoleBackgroundDarkBrush}"
+      Background="{DynamicResource ShellWindowBackgroundBrush}"
       Loaded="OnPageLoaded"
       AutomationProperties.Name="Data Sources">
-    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
         <StackPanel MaxWidth="1200">
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
-                <TextBlock Text="&#xE943;" FontFamily="{StaticResource SymbolThemeFontFamily}"
-                           FontSize="28" Foreground="{StaticResource InfoColorBrush}" VerticalAlignment="Center" />
-                <TextBlock Text="Data Sources Configuration" Style="{StaticResource PageTitleStyle}"
-                           Margin="12,0,0,0" VerticalAlignment="Center" />
-            </StackPanel>
-            <TextBlock Text="Configure multiple data sources for real-time streaming and historical data collection."
-                       Style="{StaticResource PageSubtitleStyle}" />
+            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24">
+                <StackPanel Orientation="Horizontal">
+                    <Border Width="44" Height="44" CornerRadius="14"
+                            Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                            BorderBrush="{StaticResource InfoColorBrush}" BorderThickness="1">
+                        <TextBlock Text="&#xE943;" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="24" Foreground="{StaticResource InfoColorBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                    </Border>
+                    <StackPanel Margin="12,0,0,0">
+                        <TextBlock Text="Data Sources Configuration" Style="{StaticResource PageTitleStyle}" />
+                        <TextBlock Text="Prioritize, fail over, and govern real-time and historical feeds with a unified source policy."
+                                   Style="{StaticResource CardDescriptionStyle}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
 
             <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
                 <StackPanel>
@@ -55,7 +62,9 @@
                     </Grid>
 
                     <Border Background="{StaticResource ConsoleAccentBlueAlpha10Brush}"
-                            CornerRadius="8"
+                            BorderBrush="{StaticResource ConsoleBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="12"
                             Padding="12"
                             Margin="0,16,0,0">
                         <TextBlock Text="When enabled, the system automatically switches to the next available data source if the primary source fails."
@@ -142,8 +151,10 @@
                             <DataTemplate>
                                 <Border Margin="0,4"
                                         Padding="12"
-                                        CornerRadius="8"
-                                        Background="{StaticResource ConsoleBackgroundLightBrush}">
+                                        CornerRadius="12"
+                                        BorderBrush="{StaticResource ConsoleBorderBrush}"
+                                        BorderThickness="1"
+                                        Background="{StaticResource PremiumPanelBrush}">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto" />
@@ -164,11 +175,11 @@
                                                 <TextBlock Text="{Binding Name}" FontWeight="SemiBold"
                                                            Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
                                                 <Border Background="{StaticResource ConsoleAccentBlueAlpha20}"
-                                                        CornerRadius="4" Padding="6,2" Margin="8,0,0,0">
+                                                        CornerRadius="999" Padding="8,3" Margin="8,0,0,0">
                                                     <TextBlock Text="{Binding Provider}" FontSize="11" />
                                                 </Border>
                                                 <Border Background="{StaticResource ConsoleBackgroundDarkBrush}"
-                                                        CornerRadius="4" Padding="6,2" Margin="8,0,0,0">
+                                                        CornerRadius="999" Padding="8,3" Margin="8,0,0,0">
                                                     <TextBlock Text="{Binding Type}" FontSize="11"
                                                                Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
                                                 </Border>
@@ -187,12 +198,14 @@
                                         <Button Grid.Column="3" Content="Edit"
                                                 Tag="{Binding Id}"
                                                 Click="EditDataSource_Click"
-                                                Margin="8,0,0,0" />
+                                                Margin="8,0,0,0"
+                                                Style="{StaticResource SecondaryButtonStyle}" />
 
                                         <Button Grid.Column="4" Content="Delete"
                                                 Tag="{Binding Id}"
                                                 Click="DeleteDataSource_Click"
-                                                Margin="8,0,0,0" />
+                                                Margin="8,0,0,0"
+                                                Style="{StaticResource GhostButtonStyle}" />
                                     </Grid>
                                 </Border>
                             </DataTemplate>

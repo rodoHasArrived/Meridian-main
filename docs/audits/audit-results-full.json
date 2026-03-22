@@ -38,7 +38,7 @@
       "category": "broken-doc-link",
       "count": 3,
       "worst_severity": "warning",
-      "example_file": "docs/archived/INDEX.md",
+      "example_file": "../../archive/docs/INDEX.md",
       "example_message": "Broken internal link: ../evaluations/desktop-end-user-improvements.md",
       "fix_hint": "Update the link target or remove the dead link."
     },
@@ -6735,7 +6735,7 @@
     {
       "category": "broken-doc-link",
       "severity": "warning",
-      "file": "docs/archived/INDEX.md",
+      "file": "../../archive/docs/INDEX.md",
       "line": 81,
       "message": "Broken internal link: ../evaluations/desktop-end-user-improvements.md",
       "fix_hint": "Update the link target or remove the dead link."

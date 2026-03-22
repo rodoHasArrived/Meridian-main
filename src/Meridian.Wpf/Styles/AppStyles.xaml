@@ -118,61 +118,6 @@
     <!-- CARD STYLES -->
     <!-- ========================================== -->
 
-    <!-- Card Style - Console Inspired -->
-    <Style x:Key="CardStyle" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource ConsoleBackgroundMediumBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
-        <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="CornerRadius" Value="12" />
-        <Setter Property="Padding" Value="20" />
-    </Style>
-
-    <!-- Terminal Card Style -->
-    <Style x:Key="TerminalCardStyle" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource ConsoleBackgroundDarkBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
-        <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="CornerRadius" Value="8" />
-        <Setter Property="Padding" Value="0" />
-    </Style>
-
-    <!-- Metric Card Styles -->
-    <Style x:Key="MetricCardStyle" TargetType="Border" BasedOn="{StaticResource CardStyle}" />
-
-    <Style x:Key="MetricCardSuccessStyle" TargetType="Border" BasedOn="{StaticResource MetricCardStyle}">
-        <Setter Property="BorderThickness" Value="1,1,1,3" />
-        <Setter Property="BorderBrush" Value="{StaticResource SuccessColorBrush}" />
-    </Style>
-
-    <Style x:Key="MetricCardDangerStyle" TargetType="Border" BasedOn="{StaticResource MetricCardStyle}">
-        <Setter Property="BorderThickness" Value="1,1,1,3" />
-        <Setter Property="BorderBrush" Value="{StaticResource ErrorColorBrush}" />
-    </Style>
-
-    <Style x:Key="MetricCardWarningStyle" TargetType="Border" BasedOn="{StaticResource MetricCardStyle}">
-        <Setter Property="BorderThickness" Value="1,1,1,3" />
-        <Setter Property="BorderBrush" Value="{StaticResource WarningColorBrush}" />
-    </Style>
-
-    <Style x:Key="MetricCardInfoStyle" TargetType="Border" BasedOn="{StaticResource MetricCardStyle}">
-        <Setter Property="BorderThickness" Value="1,1,1,3" />
-        <Setter Property="BorderBrush" Value="{StaticResource InfoColorBrush}" />
-    </Style>
-
-    <!-- Section Card with Header -->
-    <Style x:Key="SectionCardStyle" TargetType="Border" BasedOn="{StaticResource CardStyle}">
-        <Setter Property="Margin" Value="0,0,0,16" />
-    </Style>
-
-    <!-- Compact Card (Less padding) -->
-    <Style x:Key="CompactCardStyle" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource ConsoleBackgroundMediumBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
-        <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="CornerRadius" Value="8" />
-        <Setter Property="Padding" Value="12" />
-    </Style>
-
     <!-- Clickable Card Style (for navigation items) -->
     <Style x:Key="ClickableCardStyle" TargetType="Border" BasedOn="{StaticResource CardStyle}">
         <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
@@ -235,75 +180,6 @@
     <!-- ========================================== -->
     <!-- BUTTON STYLES (WPF Compatible with Templates) -->
     <!-- ========================================== -->
-
-    <!-- Base Button Template for rounded corners -->
-    <ControlTemplate x:Key="RoundedButtonTemplate" TargetType="Button">
-        <Border x:Name="border"
-                Background="{TemplateBinding Background}"
-                BorderBrush="{TemplateBinding BorderBrush}"
-                BorderThickness="{TemplateBinding BorderThickness}"
-                CornerRadius="8"
-                Padding="{TemplateBinding Padding}"
-                SnapsToDevicePixels="True">
-            <ContentPresenter HorizontalAlignment="Center"
-                              VerticalAlignment="Center"
-                              Focusable="False" />
-        </Border>
-        <ControlTemplate.Triggers>
-            <Trigger Property="IsMouseOver" Value="True">
-                <Setter TargetName="border" Property="Background" Value="{StaticResource ConsoleBackgroundHoverBrush}" />
-            </Trigger>
-            <Trigger Property="IsPressed" Value="True">
-                <Setter TargetName="border" Property="Background" Value="{StaticResource ConsoleBackgroundActiveBrush}" />
-            </Trigger>
-            <Trigger Property="IsEnabled" Value="False">
-                <Setter Property="Opacity" Value="0.5" />
-            </Trigger>
-        </ControlTemplate.Triggers>
-    </ControlTemplate>
-
-    <!-- Primary Action Button (Green) -->
-    <Style x:Key="PrimaryButtonStyle" TargetType="Button">
-        <Setter Property="Background" Value="{StaticResource SuccessColorBrush}" />
-        <Setter Property="Foreground" Value="White" />
-        <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="Padding" Value="16,10" />
-        <Setter Property="FontWeight" Value="SemiBold" />
-        <Setter Property="FontSize" Value="14" />
-        <Setter Property="Cursor" Value="Hand" />
-        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="Button">
-                    <Border x:Name="border"
-                            Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="8"
-                            Padding="{TemplateBinding Padding}"
-                            SnapsToDevicePixels="True">
-                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                    </Border>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{StaticResource ConsoleAccentGreenLightBrush}" />
-                        </Trigger>
-                        <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{StaticResource ConsoleAccentGreenDimBrush}" />
-                        </Trigger>
-                        <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Opacity" Value="0.5" />
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-    <!-- Accent Button Style - Green (Alias) -->
-    <Style x:Key="AccentButtonStyle" TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
-        <Setter Property="Padding" Value="20,10" />
-    </Style>
 
     <!-- Secondary Button Style -->
     <Style x:Key="SecondaryButtonStyle" TargetType="Button">
@@ -374,78 +250,6 @@
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Opacity" Value="0.5" />
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-    <!-- Ghost Button (Transparent with border) -->
-    <Style x:Key="GhostButtonStyle" TargetType="Button">
-        <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
-        <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="Padding" Value="12,8" />
-        <Setter Property="FontSize" Value="13" />
-        <Setter Property="Cursor" Value="Hand" />
-        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="Button">
-                    <Border x:Name="border"
-                            Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="6"
-                            Padding="{TemplateBinding Padding}"
-                            SnapsToDevicePixels="True">
-                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                    </Border>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{StaticResource ConsoleBackgroundHoverBrush}" />
-                        </Trigger>
-                        <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{StaticResource ConsoleBackgroundActiveBrush}" />
-                        </Trigger>
-                        <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Opacity" Value="0.5" />
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-    <!-- Icon Button (Compact square button) -->
-    <Style x:Key="IconButtonStyle" TargetType="Button">
-        <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Foreground" Value="{StaticResource ConsoleTextSecondaryBrush}" />
-        <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="Padding" Value="8" />
-        <Setter Property="MinWidth" Value="36" />
-        <Setter Property="MinHeight" Value="36" />
-        <Setter Property="Cursor" Value="Hand" />
-        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="Button">
-                    <Border x:Name="border"
-                            Background="{TemplateBinding Background}"
-                            CornerRadius="6"
-                            Padding="{TemplateBinding Padding}"
-                            SnapsToDevicePixels="True">
-                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                    </Border>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{StaticResource ConsoleBackgroundHoverBrush}" />
-                            <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
-                        </Trigger>
-                        <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{StaticResource ConsoleBackgroundActiveBrush}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -545,12 +349,6 @@
     </Style>
 
     <!-- Status Badges -->
-    <Style x:Key="SuccessBadgeStyle" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource ConsoleAccentGreenAlpha10Brush}" />
-        <Setter Property="CornerRadius" Value="4" />
-        <Setter Property="Padding" Value="8,4" />
-    </Style>
-
     <Style x:Key="WarningBadgeStyle" TargetType="Border">
         <Setter Property="Background" Value="{StaticResource ConsoleAccentOrangeAlpha10Brush}" />
         <Setter Property="CornerRadius" Value="4" />
@@ -565,12 +363,6 @@
 
     <Style x:Key="InfoBadgeStyle" TargetType="Border">
         <Setter Property="Background" Value="{StaticResource ConsoleAccentBlueAlpha10Brush}" />
-        <Setter Property="CornerRadius" Value="4" />
-        <Setter Property="Padding" Value="8,4" />
-    </Style>
-
-    <Style x:Key="NeutralBadgeStyle" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource ConsoleBackgroundLightBrush}" />
         <Setter Property="CornerRadius" Value="4" />
         <Setter Property="Padding" Value="8,4" />
     </Style>
@@ -637,27 +429,11 @@
     <!-- TYPOGRAPHY STYLES -->
     <!-- ========================================== -->
 
-    <!-- Page Title -->
-    <Style x:Key="PageTitleStyle" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="28" />
-        <Setter Property="FontWeight" Value="SemiBold" />
-        <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
-        <Setter Property="Margin" Value="0,0,0,4" />
-    </Style>
-
     <!-- Page Subtitle -->
     <Style x:Key="PageSubtitleStyle" TargetType="TextBlock">
         <Setter Property="FontSize" Value="14" />
         <Setter Property="Foreground" Value="{StaticResource ConsoleTextSecondaryBrush}" />
         <Setter Property="Margin" Value="0,0,0,24" />
-    </Style>
-
-    <!-- Section Header -->
-    <Style x:Key="SectionHeaderStyle" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="18" />
-        <Setter Property="FontWeight" Value="SemiBold" />
-        <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
-        <Setter Property="Margin" Value="0,0,0,16" />
     </Style>
 
     <!-- Card Header -->
@@ -686,51 +462,10 @@
         <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
     </Style>
 
-    <!-- Body Strong -->
-    <Style x:Key="BodyStrongTextBlockStyle" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="13" />
-        <Setter Property="FontWeight" Value="SemiBold" />
-        <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
-    </Style>
-
-    <!-- Card Description -->
-    <Style x:Key="CardDescriptionStyle" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="13" />
-        <Setter Property="Foreground" Value="{StaticResource ConsoleTextSecondaryBrush}" />
-        <Setter Property="TextWrapping" Value="Wrap" />
-        <Setter Property="Margin" Value="0,4,0,0" />
-    </Style>
-
     <!-- Code/Mono Text Style -->
     <Style x:Key="MonoTextStyle" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="Cascadia Code, JetBrains Mono, Consolas, Courier New, monospace" />
         <Setter Property="Foreground" Value="{StaticResource AccentCyanBrush}" />
-    </Style>
-
-    <!-- Metric Value Text Style -->
-    <Style x:Key="MetricValueStyle" TargetType="TextBlock">
-        <Setter Property="FontFamily" Value="Cascadia Code, JetBrains Mono, Consolas, monospace" />
-        <Setter Property="FontSize" Value="32" />
-        <Setter Property="FontWeight" Value="Bold" />
-    </Style>
-
-    <Style x:Key="MetricLabelStyle" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="12" />
-        <Setter Property="Foreground" Value="{StaticResource ConsoleTextMutedBrush}" />
-    </Style>
-
-    <!-- Data Value (Large number) -->
-    <Style x:Key="DataValueStyle" TargetType="TextBlock">
-        <Setter Property="FontFamily" Value="Cascadia Code, JetBrains Mono, Consolas, monospace" />
-        <Setter Property="FontSize" Value="24" />
-        <Setter Property="FontWeight" Value="Bold" />
-        <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
-    </Style>
-
-    <!-- Data Label -->
-    <Style x:Key="DataLabelStyle" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="11" />
-        <Setter Property="Foreground" Value="{StaticResource ConsoleTextMutedBrush}" />
     </Style>
 
     <!-- Stat Value (compact) -->
@@ -797,12 +532,6 @@
     <!-- ========================================== -->
     <!-- DIVIDER STYLES -->
     <!-- ========================================== -->
-
-    <Style x:Key="HorizontalDividerStyle" TargetType="Rectangle">
-        <Setter Property="Height" Value="1" />
-        <Setter Property="Fill" Value="{StaticResource ConsoleBorderBrush}" />
-        <Setter Property="Margin" Value="0,12" />
-    </Style>
 
     <Style x:Key="VerticalDividerStyle" TargetType="Rectangle">
         <Setter Property="Width" Value="1" />

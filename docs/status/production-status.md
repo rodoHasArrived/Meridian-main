@@ -1,288 +1,89 @@
 # Meridian - Production Status
 
 **Version:** 1.7.0
-**Status:** Development / Pilot Ready (trading workstation migration planning active)
+**Last Updated:** 2026-03-21
+**Status:** Development / Pilot Ready (comprehensive fund-management planning active)
 
-This document consolidates the architecture assessment and production readiness information for the Meridian system.
-
----
+This document summarizes the current production-readiness posture and the next product-delivery gaps from the current repository state.
 
 ## Executive Summary
 
-The Meridian is a feature-rich system with working ingestion, backfill, storage, backtesting, and desktop tooling. The next major product effort is to unify those capabilities into a workflow-centric trading workstation with shared run, portfolio, and ledger surfaces. Some providers still require credentials or build-time flags, and certain integrations (notably Polygon streaming) remain partially implemented.
+Meridian already has working ingestion, storage, replay, backtesting, provider orchestration, export tooling, and a WPF desktop shell. The current product gap is not the absence of core building blocks; it is the remaining work required to unify those blocks into a coherent operator-facing fund-management product spanning front, middle, and back office workflows.
+
+The active plan now has two connected delivery tracks:
+
+1. **Front-office workstation delivery** across Research, Trading, Data Operations, and Governance workspaces using shared run, portfolio, and ledger models.
+2. **Middle- and back-office fund-operations delivery** adding Security Master productization, account/entity support, multi-ledger views, trial balance, cash-flow modeling, reconciliation, trade-management support, and investor/report-pack generation.
 
 ### Overall Assessment: **DEVELOPMENT / PILOT READY**
 
 | Category | Status | Notes |
 |----------|--------|-------|
-| Core Event Pipeline | ✅ Implemented | Channel-based processing with backpressure, injectable metrics |
-| Storage Layer | ✅ Implemented | JSONL/Parquet composite sink with WAL support |
-| Backfill Providers | ✅ Implemented | Multiple providers; credentials required for some |
-| Alpaca Provider (Streaming) | ✅ Implemented | Requires Alpaca credentials |
-| NYSE Provider | ⚠️ Needs credentials | NYSE Connect credentials required |
-| Interactive Brokers | ⚠️ Requires build flag | Compile with `IBAPI` and reference IBApi |
-| Polygon Provider | ⚠️ Partial | Stub mode unless configured; WebSocket parsing in progress |
-| StockSharp Provider | ⚠️ Integration scaffold | Requires StockSharp setup |
-| Monitoring | ✅ Implemented | HTTP server + Prometheus metrics + OpenTelemetry |
-| Data Quality | ✅ Implemented | Completeness, gap analysis, anomaly detection, SLA monitoring |
-| WPF Desktop App | 🔄 Workflow migration active | Windows desktop UI (sole desktop client) with broad page coverage; current delivery focus is consolidating the app into Research, Trading, Data Operations, and Governance workspaces backed by shared run / portfolio / ledger models. See [FEATURE_INVENTORY.md](FEATURE_INVENTORY.md) §10 and the migration blueprint. |
-| QuantConnect Lean | ✅ Implemented | Custom data types + IDataProvider |
-| Symbol Search Providers | ✅ Implemented | 5 providers (Alpaca, Finnhub, Polygon, OpenFIGI, StockSharp) |
-| API Surface | ✅ Implemented | 283 route constants, typed OpenAPI annotations across all endpoint families |
-| Architecture | ✅ Monolithic | Single-process runtime, unified DI composition |
-| Improvement Tracking | ✅ Near complete | 33/35 core items completed (94.3%), see [IMPROVEMENTS.md](IMPROVEMENTS.md) and [FEATURE_INVENTORY.md](FEATURE_INVENTORY.md) |
+| Core event pipeline | Implemented | Channel-based processing with backpressure, metrics, validation, and storage fan-out |
+| Storage layer | Implemented | JSONL/Parquet composite sink with WAL, catalog, packaging, and export support |
+| Backfill providers | Implemented | Multiple providers available; some require credentials |
+| WPF desktop shell | Workflow migration active | Broad page coverage exists; workspace-first product UX is still being delivered |
+| Shared run / portfolio / ledger model | In progress | First workstation browser/detail/portfolio/ledger flow is in code; broader paper/live coverage remains |
+| Security Master baseline | Implemented in code, not yet productized | Contracts, application, storage, and F# domain anchors exist |
+| Governance product surfaces | Planned | Trial balance, multi-ledger, cash-flow, reconciliation, investor reporting, and governed reporting are blueprint-backed but not fully implemented |
+| Monitoring and observability | Implemented | Prometheus and OpenTelemetry foundations are in place |
+| Provider confidence | Mixed | Alpaca is solid; Polygon, StockSharp, IB, and NYSE still need setup or hardening work |
+| Improvement tracking | Core baseline complete | 35/35 core items are complete; current focus has moved to workstation and governance expansion |
 
----
+## Current Strengths
 
-## Architecture Strengths
+- mature ingestion, replay, storage, and export foundations
+- shared composition and host startup patterns
+- WPF desktop application as the sole desktop client
+- portfolio and ledger concepts already present in the codebase
+- Security Master foundations already present in contracts, storage, application, and F# domain modules
+- existing export infrastructure that can support future report-pack generation
 
-### 1. Provider Abstraction Layer
+## Current Gaps
 
-The provider system is well-designed with:
-- `IDataProvider` - Core contract for all providers
-- `IStreamingDataProvider` - Real-time streaming extension
-- `IHistoricalDataProvider` - Historical data retrieval
-- `ProviderRegistry` - Dynamic discovery and registration
-- `ProviderCapabilities` - Feature flags for provider selection
+### Workstation productization
 
-### 2. Event Pipeline (High Performance)
+Meridian still exposes too much capability through page-first flows instead of operator workflows. The Research, Trading, Data Operations, and Governance taxonomy is now established, but richer cockpit shells and broader shared-run coverage remain to be implemented.
 
-The `EventPipeline` class is production-grade:
-- System.Threading.Channels for high-throughput
-- Bounded capacity with configurable backpressure (DropOldest)
-- 100,000 event capacity (configurable)
-- Nanosecond precision timing
-- Thread-safe statistics
+### Governance and fund operations
 
-### 3. Monolithic Architecture
+The target governance capability set is now defined, but still mostly pending implementation:
 
-The application runs as a single-process monolith:
-- Direct in-process communication (no external messaging)
-- Simplified deployment and configuration
-- Reduced operational complexity
+- Security Master product surfaces
+- account, entity, and strategy-structure management
+- multi-ledger tracking
+- consolidated and per-ledger trial balance
+- cash-flow modeling
+- reconciliation engine
+- report generation tools and report packs
+- investor reporting and stakeholder-ready outputs
 
-### 4. Storage Layer
+### Provider readiness
 
-Multiple storage strategies:
-- JSONL (append-only, human-readable)
-- Parquet (columnar, compressed)
-- Write-ahead logging (WAL) for durability
-- Configurable naming conventions
+Some providers remain conditionally operator-ready:
 
----
+- **Polygon**: broader replay/live validation still needed
+- **Interactive Brokers**: requires `IBAPI` plus the official vendor surface for real runtime use
+- **StockSharp**: depends on connector-specific setup and validated adapter coverage
+- **NYSE**: requires external credentials and setup
 
-## Component Integration Map
+## Blueprint References
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│              DESKTOP APPLICATION (WPF)                               │
-│  ┌─────────────┐  ┌──────────────┐  ┌──────────────────────────┐   │
-│  │ ConfigService│  │StatusService │  │ BackfillService          │   │
-│  └─────────────┘  └──────────────┘  └──────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────────┘
-                           │ HTTP API
-┌─────────────────────────────────────────────────────────────────────┐
-│                      CORE APPLICATION (Monolithic)                   │
-│  ┌──────────────────┐      ┌─────────────────────────────────────┐  │
-│  │ StatusHttpServer │◄────►│ EventPipeline                       │  │
-│  │ /status /metrics │      │ System.Threading.Channels           │  │
-│  └──────────────────┘      └─────────────────────────────────────┘  │
-│           │                              │                          │
-│  ┌────────┴───────────────────────────────────────────────────────┐ │
-│  │                    DOMAIN COLLECTORS                            │ │
-│  │  TradeDataCollector │ MarketDepthCollector │ QuoteCollector     │ │
-│  └─────────────────────────────────────────────────────────────────┘ │
-│           │                              │                          │
-│  ┌───────────────────┐      ┌──────────────────────────────────┐   │
-│  │ PipelinePublisher │      │ IStorageSink                      │   │
-│  │ (direct in-proc)  │      │ ├─JsonlStorageSink               │   │
-│  │                   │      │ └─ParquetStorageSink             │   │
-│  └───────────────────┘      └──────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────────┘
-```
+The current planning set is synchronized around these documents:
 
----
-
-## Known Issues
-
-### Trading Workstation Migration
-
-**Status:** 🔄 Planned / documentation-aligned
-Meridian already has the major underlying capabilities for research, backtesting, paper-trading infrastructure, and auditability, but the operator experience is still fragmented across many pages. Phases 11–13 of the roadmap now focus on converging those capabilities into a unified trading workstation with shared run, portfolio, and ledger concepts.
-
-### Paper-Trading Operator UX
-
-**Status:** ⚠️ Infrastructure ahead of product UX
-Execution primitives, OMS coordination, and a paper gateway exist, but the user-facing trading cockpit, positions / blotter views, and realistic execution workflow are not yet the primary product surface.
-
-### Polygon Streaming
-
-**Status:** ⚠️ Partial implementation
-The Polygon streaming client operates in stub mode when no API key is provided. The WebSocket parsing path is still being completed.
-
-### Interactive Brokers Build Flag
-
-**Status:** ⚠️ Build-time requirement
-Interactive Brokers connectivity requires the IBAPI compile flag and a referenced IBApi package/dll.
-
----
-
-## Items Requiring Configuration
-
-### 1. Interactive Brokers Integration
-
-The IB provider requires the official IB API and a build-time constant:
-
-```bash
-dotnet build -p:DefineConstants=IBAPI
-```
-
-**Action Required:**
-1. Obtain IB API from Interactive Brokers
-2. Add IBApi reference to project
-3. Build with IBAPI constant defined
-
-### 2. Polygon Provider
-
-**Status:** Partial implementation
-The Polygon provider runs in stub mode without credentials and requires full WebSocket message parsing for complete streaming support.
-
----
-
-## Stub/Partial Implementations
-
-| Component | File | Current Behavior | Production Action |
-|-----------|------|------------------|-------------------|
-| Polygon Provider | `Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs` | Stub or partial streaming | Complete WebSocket message parsing |
-| IB Provider (no IBAPI) | `Infrastructure/Adapters/InteractiveBrokers/EnhancedIBConnectionManager.cs` | Throws NotSupportedException | Build with IBAPI flag |
-
----
-
-## Extension Points
-
-### Data Providers
-
-To add a new market data provider:
-1. Implement `IMarketDataClient` interface
-2. Register in DI container
-3. Add configuration options
-4. Wire up to EventPipeline
-
-### Historical Data Providers
-
-To add a new historical data source:
-1. Implement `IHistoricalDataProvider` interface
-2. Register with `HistoricalBackfillService`
-3. Add to backfill coordinator
-
-### Storage Formats
-
-To add a new storage format:
-1. Implement `IStorageSink` interface
-2. Create corresponding `IStoragePolicy`
-3. Register in storage factory
-
----
-
-## Conditional Compilation
-
-### IBAPI Constant
-
-When `IBAPI` is defined:
-- Full IB EWrapper implementation is available
-- Connection retry with exponential backoff
-- Heartbeat monitoring
-- Market depth subscription
-
-When `IBAPI` is NOT defined:
-- Stub implementation throws `NotSupportedException`
-- Project builds without IB API dependency
-
----
-
-## Deprecated Features
-
-### Legacy Status File (`--serve-status`)
-
-**Status:** ❌ Removed
-
-**Reason:** The file-based status approach has been superseded by the HTTP monitoring server which provides real-time access to status, metrics, and health endpoints.
-
-**Migration:** Use `--ui` to start the web dashboard and access:
-- `/status` for JSON status
-- `/metrics` for Prometheus metrics
-- `/health` for health checks
-
----
+- [ROADMAP.md](ROADMAP.md)
+- [FEATURE_INVENTORY.md](FEATURE_INVENTORY.md)
+- [IMPROVEMENTS.md](IMPROVEMENTS.md)
+- [Trading Workstation Migration Blueprint](../plans/trading-workstation-migration-blueprint.md)
+- [Governance and Fund Operations Blueprint](../plans/governance-fund-ops-blueprint.md)
 
 ## Pre-Production Checklist
 
-### Required Steps
-
-- [ ] **Secrets Management**
-  - [ ] Configure environment variables for API credentials
-  - [ ] Ensure `appsettings.json` with real credentials is in `.gitignore`
-  - [ ] Consider using Azure Key Vault, AWS Secrets Manager, or HashiCorp Vault
-
-- [ ] **Provider Configuration**
-  - [ ] For IB: Build with `-p:DefineConstants=IBAPI` and configure TWS/Gateway
-  - [ ] For Alpaca: Set `ALPACA_KEY_ID` and `ALPACA_SECRET_KEY`
-  - [ ] Verify market data entitlements with chosen provider
-
-- [ ] **Storage Configuration**
-  - [ ] Set appropriate `DataRoot` path
-  - [ ] Configure retention policies (`RetentionDays`, `MaxTotalMegabytes`)
-  - [ ] Verify disk space requirements
-
-- [ ] **Monitoring Setup**
-  - [ ] Enable HTTP monitoring server (`--http-port`)
-  - [ ] Configure Prometheus scraping
-  - [ ] Set up alerting for integrity events
-
-### Recommended Steps
-
-- [ ] **Performance Tuning**
-  - [ ] Review pipeline capacity settings
-  - [ ] Configure appropriate depth levels per symbol
-  - [ ] Enable compression for high-volume scenarios
-
-- [ ] **High Availability**
-  - [ ] Configure systemd service (Linux)
-  - [ ] Set up health check monitoring
-  - [ ] Plan for provider failover
-
-- [ ] **Testing**
-  - [ ] Run `--selftest` mode
-  - [ ] Verify data integrity with sample symbols
-  - [ ] Test hot-reload configuration changes
-
----
-
-## Testing Notes
-
-The project has 219 test files (215 C#, 4 F#) across 4 test projects with ~3,444 test methods:
-
-| Test Project | Focus | Test Methods |
-|--------------|-------|-------|
-| `Meridian.Tests` | Core unit/integration tests (backfill, storage, pipeline, monitoring, providers, credentials, serialization, domain) | ~444 |
-| `Meridian.FSharp.Tests` | F# domain validation, calculations, pipeline transforms | ~99 |
-| `Meridian.Wpf.Tests` | WPF desktop service tests (navigation, config, status, connection) | ~324 |
-| `Meridian.Ui.Tests` | Desktop UI service tests (API client, backfill, fixtures, forms, health, watchlist, collections) | ~927 |
-
-Refer to the `tests/` directory for the current suite and to the CI pipelines for test execution coverage.
-
----
-
-## Related Documentation
-
-- [Feature Inventory](FEATURE_INVENTORY.md) - Complete per-feature status across all functional areas
-- [Roadmap](ROADMAP.md) - Feature backlog and development priorities
-- [Changelog](CHANGELOG.md) - Recent changes and improvements
-- [Configuration](../HELP.md#configuration) - Detailed configuration reference
-- [Troubleshooting](../HELP.md#troubleshooting) - Common issues and solutions
-- [Operator Runbook](../operations/operator-runbook.md) - Operations guide
-- [Architecture](../architecture/overview.md) - System architecture overview
-
----
-
-*Last Updated: 2026-02-22*
+- [ ] Configure real provider credentials and validate operator startup paths
+- [ ] Complete remaining provider-confidence hardening for Polygon, StockSharp, IB, and optional NYSE
+- [ ] Finish workspace-first trading workstation flows beyond the first shared run baseline
+- [ ] Productize Security Master for workstation use
+- [ ] Implement multi-ledger, trial-balance, and cash-flow governance views
+- [ ] Implement reconciliation workflows and break-review UX
+- [ ] Implement report generation and governed export/report-pack flows
+- [ ] Validate end-to-end observability and operator diagnostics against the final product surfaces

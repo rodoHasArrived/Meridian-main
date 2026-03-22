@@ -3,6 +3,8 @@ applyTo: "tests/**/*.cs"
 ---
 # .NET test instructions
 
+**Last Updated:** 2026-03-21
+
 When editing C# test files in this repository:
 
 1. Keep tests deterministic (no time/network/external dependency flakiness).

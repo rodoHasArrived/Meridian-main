@@ -68,6 +68,7 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
 
         // Data Management (9 pages)
         RegisterPage("LiveData", typeof(LiveDataViewerPage));
+        RegisterPage("RunMat", typeof(RunMatPage));
         RegisterPage("DataBrowser", typeof(DataBrowserPage));
         RegisterPage("Symbols", typeof(SymbolsPage));
         RegisterPage("SymbolMapping", typeof(SymbolMappingPage));
@@ -82,6 +83,10 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         // Trading & Backtesting (4 pages)
         RegisterPage("Backtest", typeof(BacktestPage));
         RegisterPage("TradingHours", typeof(TradingHoursPage));
+        RegisterPage("StrategyRuns", typeof(StrategyRunsPage));
+        RegisterPage("RunDetail", typeof(RunDetailPage));
+        RegisterPage("RunPortfolio", typeof(RunPortfolioPage));
+        RegisterPage("RunLedger", typeof(RunLedgerPage));
 
         // Monitoring (6 pages)
         RegisterPage("DataQuality", typeof(DataQualityPage));

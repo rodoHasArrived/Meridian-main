@@ -1,10 +1,10 @@
 # Meridian — Feature Inventory
 
 **Version:** 1.7.0
-**Date:** 2026-03-20
+**Date:** 2026-03-21
 **Purpose:** Comprehensive inventory of every functional area, its current implementation status, and the remaining work required to reach full implementation.
 
-Use this document alongside [`ROADMAP.md`](ROADMAP.md) (sprint schedule) and [`IMPROVEMENTS.md`](IMPROVEMENTS.md) (per-item tracking).
+Use this document alongside [`ROADMAP.md`](ROADMAP.md) (delivery waves and sequencing), [`IMPROVEMENTS.md`](IMPROVEMENTS.md) (normalized improvement/backlog tracking), and [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md) (consolidated non-assembly execution backlog).
 
 ---
 
@@ -44,10 +44,10 @@ Use this document alongside [`ROADMAP.md`](ROADMAP.md) (sprint schedule) and [`I
 | Provider | Status | Remaining Work |
 |----------|--------|----------------|
 | **Alpaca** | ✅ | Credential validation, automatic resubscription on reconnect, quote routing |
-| **Interactive Brokers** | 🔑 | Build with `-p:DefineConstants=IBAPI`; stub throws `NotSupportedException` without flag |
-| **Polygon** | ⚠️ | Real connection when API key present; stub mode (synthetic heartbeat/trades) without key. WebSocket parsing functional but not battle-tested against full production feed |
+| **Interactive Brokers** | 🔑 | Real runtime requires `-p:DefineConstants=IBAPI` plus the official `IBApi` surface; non-`IBAPI` builds expose simulation/setup guidance instead of broker connectivity |
+| **Polygon** | ⚠️ | Real connection when API key present; stub mode (synthetic heartbeat/trades) without key. WebSocket parsing now has committed recorded-session replay coverage, but broader live-feed coverage is still limited |
 | **NYSE** | 🔑 | Requires NYSE Connect credentials; provider implementation complete |
-| **StockSharp** | 🔑 | Requires StockSharp connector-specific credentials + connector type config. `NotSupportedException` on some tick subscription paths when connector type unset |
+| **StockSharp** | 🔑 | Requires StockSharp connector-specific credentials + connector type config. Unsupported connector / missing-package paths now return recovery-oriented guidance pointing to `EnableStockSharp=true`, connector package requirements, and the StockSharp connector guide |
 | **Failover-Aware Client** | ✅ | `FailoverAwareMarketDataClient` with `ProviderDegradationScorer`, per-provider health |
 | **Streaming Failover Service** | ✅ | `StreamingFailoverService` + `StreamingFailoverRegistry`; runtime failover orchestration with configurable rules and health evaluation |
 | **IB Simulation Client** | ✅ | `IBSimulationClient` for testing without live connection |
@@ -56,9 +56,8 @@ Use this document alongside [`ROADMAP.md`](ROADMAP.md) (sprint schedule) and [`I
 ### Remaining work to reach full provider coverage
 
 - **Polygon**: Validate WebSocket message parsing against Polygon v2 feed schema (trades, quotes, aggregates, status messages). Add round-trip integration test with a recorded WebSocket session replay.
-- **StockSharp**: Document the `ConnectorType` configuration options (QuikJSon, Transaq, etc.) and which require external connectors. Add a validated configuration example per connector type.
-- **IB**: Provide scripted build instructions for IBAPI (`download → reference → define constant`). Add smoke-test CI job that builds with IBAPI constant mocked.
-- **C3 (all WebSocket providers)**: Adopt `WebSocketProviderBase` in Polygon, NYSE, StockSharp to eliminate ~800 LOC of duplicated connection-management code.
+- **StockSharp**: Runtime connector guidance and unsupported-path recovery messaging are now aligned; remaining work is expanding connector coverage/examples as more adapters are validated.
+- **IB**: Scripted setup instructions and a compile-only smoke-build path now exist; remaining work is keeping the live vendor-DLL path validated against real IB API releases.
 
 ---
 
@@ -74,8 +73,8 @@ Use this document alongside [`ROADMAP.md`](ROADMAP.md) (sprint schedule) and [`I
 | Finnhub | ✅ | Daily bars; token required |
 | Alpha Vantage | ✅ | Daily bars; API key required |
 | Nasdaq Data Link (Quandl) | ✅ | Various; API key required |
-| Interactive Brokers | 🔑 | Full implementation behind `IBAPI` compile constant |
-| StockSharp | ✅ | Via StockSharp connectors; requires StockSharp setup |
+| Interactive Brokers | 🔑 | Full implementation behind `IBAPI`; smoke builds remain compile-only and are not operator-ready historical access |
+| StockSharp | ✅ | Via StockSharp connectors; runtime/historical coverage depends on connector setup, package surface, and entitlement |
 | **Composite Provider** | ✅ | Priority-based fallback chain, rate-limit tracking, per-provider health |
 | **Gap Backfill Service** | ✅ | `GapBackfillService` triggered on reconnect; uses `WebSocketReconnectionHelper` gap window |
 | **Backfill Rate Limiting** | ✅ | `ProviderRateLimitTracker` per provider; exponential backoff with `Retry-After` parsing |
@@ -116,11 +115,11 @@ Use this document alongside [`ROADMAP.md`](ROADMAP.md) (sprint schedule) and [`I
 | `VenueMicMapper` — IB (17 venues) | ✅ | Routing names → MIC |
 | `CanonicalizingPublisher` decorator | ✅ | Wraps `IMarketEventPublisher`; dual-write mode; lock-free metrics |
 | Canonicalization metrics & API endpoints | ✅ | `/api/canonicalization/status`, `/parity`, `/parity/{provider}`, `/config` |
-| Golden fixture test suite | 🔄 | 8 curated `.json` fixtures + `CanonicalizationGoldenFixtureTests`; **drift-canary CI job pending** |
+| Golden fixture test suite | Complete | 8 curated `.json` fixtures + `CanonicalizationGoldenFixtureTests`; PR checks now emit a canonicalization drift report and a manual maintenance workflow supports fixture upkeep |
 
 ### Remaining work
 
-- **J8 drift canary**: Add a GitHub Actions CI job that runs `CanonicalizationGoldenFixtureTests` and fails when new unmapped condition codes or venues appear in provider feeds. Requires a recorded-fixture refresh mechanism.
+- Continue expanding fixture coverage as new providers or venue/condition edge cases are onboarded.
 
 ---
 
@@ -296,10 +295,17 @@ The current WPF app exposes broad capability coverage, but the next implementati
 
 This migration is tracked in [`../plans/trading-workstation-migration-blueprint.md`](../plans/trading-workstation-migration-blueprint.md) and [`ROADMAP.md`](ROADMAP.md) Phases 11–13.
 
+### Shared run / portfolio / ledger model baseline (🔄 In progress)
+
+- Shared workstation DTOs now exist for run summaries/details, portfolio summaries/positions, ledger summaries, journal rows, trial balance rows, and run comparison views.
+- `StrategyRunReadService`, `PortfolioReadService`, and `LedgerReadService` now derive those models from recorded strategy/backtest results.
+- WPF now includes a first-pass `StrategyRuns` browser plus `RunDetail`, `RunPortfolio`, and `RunLedger` drill-in pages, and completed backtests are mirrored into that shared workstation flow.
+- The remaining gap is broader paper/live data-source adoption, richer portfolio/ledger analytics, explicit cash-flow and multi-ledger views, and more complete cockpit-style workflow integration.
+
 ### Known WPF limitations
 
 - `DiagnosticsPage` reads from local process/environment; not connected to remote backend API.
-- Current functionality is still more **page-centric** than **workflow-centric**; backtesting, paper-trading, portfolio, and ledger concepts are not yet unified into a single operator-facing run model.
+- Current functionality still relies on many existing pages under the hood, but the desktop taxonomy is now aligned around `Research`, `Trading`, `Data Operations`, and `Governance`; the remaining gap is no longer basic run-browser adoption, but deeper paper/live and cockpit-level workflow integration on top of the new shared run / portfolio / ledger model.
 
 ### WPF MVVM progress
 
@@ -339,8 +345,8 @@ This migration is tracked in [`../plans/trading-workstation-migration-blueprint.
 | Prometheus metrics export | ✅ | `/api/metrics`; event throughput, provider health, backpressure, error rates |
 | OpenTelemetry pipeline instrumentation | ✅ | `TracedEventMetrics` decorator; `Meridian.Pipeline` meter |
 | Activity spans (batch consume, backfill, WAL recovery) | ✅ | `MarketDataTracing` extension methods |
-| End-to-end trace context propagation | 🔄 | Framework complete; explicit cross-boundary wiring (provider → pipeline → storage) pending |
-| Correlation IDs in structured logs | 📝 | Not yet implemented |
+| End-to-end trace context propagation | Complete | Collector ingress creates/preserves `Activity` context and `EventPipeline` carries it through queueing, consumption, and storage append |
+| Correlation IDs in structured logs | Complete | `EventPipeline` log scopes now include correlation, trace, span, event type/source, symbol, and sequence |
 | API key authentication | ✅ | `ApiKeyMiddleware`; `MDC_API_KEY` env var; constant-time comparison |
 | API rate limiting | ✅ | 120 req/min sliding window; `Retry-After` header on 429 |
 | Kubernetes health probes | ✅ | `/healthz`, `/readyz`, `/livez` |
@@ -355,8 +361,7 @@ This migration is tracked in [`../plans/trading-workstation-migration-blueprint.
 
 ### Remaining observability work
 
-- **G2 (trace propagation)**: Wire `Activity` context from each provider's receive loop through the `EventPipeline` consumer to the storage write call. Add correlation ID to all `ILogger` structured log entries.
-- **Jaeger/Zipkin export**: Document OTLP collector configuration for visual trace exploration.
+- **OTLP / Jaeger / Zipkin docs**: Initial operator guide now lives in `docs/development/otlp-trace-visualization.md`; extend it as more hosts auto-bind tracing configuration.
 
 ---
 
@@ -420,7 +425,7 @@ This migration is tracked in [`../plans/trading-workstation-migration-blueprint.
 | WAL + event pipeline tests (`WalEventPipelineTests`) | ✅ |
 | Ingestion job tests (`IngestionJobTests`, `IngestionJobServiceTests`) | ✅ |
 | Data quality unit tests (AnomalyDetector, CompletenessScoreCalculator, GapAnalyzer, SequenceErrorTracker) | ✅ |
-| Drift-canary CI job | 📝 |
+| Drift-canary CI job | Complete |
 
 ---
 
@@ -430,7 +435,66 @@ This migration is tracked in [`../plans/trading-workstation-migration-blueprint.
 |---------|--------|-------|
 | `SchemaValidationService` — stored data format validation | ✅ | `--validate-schemas`, `--strict-schemas`, `--check-schemas` |
 | `SchemaVersionManager` | ✅ | Per-event-type schema versioning |
-| JSON Schema generation from C# config models | 📝 | I3 remainder: generate `appsettings.schema.json` from `AppConfig` for IDE auto-complete and config lint |
+| JSON Schema generation from C# config models | Complete | `--generate-config-schema` produces the checked-in `config/appsettings.schema.json`; sample config references it and CI validates drift |
+
+---
+
+## 17. Trading Workstation Product Surfaces
+
+This section inventories the workflow-centric product model that now sits above the older page inventory.
+
+| Surface | Status | Notes |
+|---------|--------|-------|
+| Research workspace taxonomy | ðŸ”„ | Desktop vocabulary now aligns on `Research`; the remaining gap is deeper workspace-native shells and operator flows |
+| Trading workspace taxonomy | ðŸ”„ | Command palette and shell terminology align on `Trading`; cockpit-grade execution UX remains pending |
+| Data Operations workspace taxonomy | ðŸ”„ | Operational pages are grouped consistently; further cross-links and workflow shells remain |
+| Governance workspace taxonomy | ðŸ”„ | Portfolio/ledger/diagnostics/settings surfaces are grouped conceptually; governance-first product flows remain incomplete |
+| Shared `StrategyRun` DTO/read-model baseline | ðŸ”„ | Shared run summary/detail/comparison models exist; paper/live history expansion remains |
+| Shared portfolio read-model baseline | ðŸ”„ | Portfolio summaries/positions derived from recorded runs exist; equity-history and broader source coverage remain |
+| Shared ledger read-model baseline | ðŸ”„ | Ledger summaries, journal rows, and trial balance rows exist; account-summary and reconciliation UX remain |
+| WPF run browser/detail/portfolio/ledger surfaces | ðŸ”„ | First workstation browser and drill-in flow is implemented for backtest-fed results |
+| Backtest Studio unification | ðŸ“ | Native and Lean backtests are still distinct operator experiences |
+| Paper-trading cockpit | ðŸ“ | Execution primitives exist, but a dedicated orders/fills/positions/risk cockpit is still planned |
+| Promotion workflow (`Backtest -> Paper -> Live`) | ðŸ“ | Safety-gated lifecycle workflow remains planned |
+
+### Additional governance and platform tracks
+
+- **Security Master platform baseline:** contracts, services, storage, migrations, and F# domain modules exist; workstation-facing productization and shared metadata integration remain.
+- **Cash-flow modeling surfaces:** governance-oriented cash-movement and projection views are not yet productized.
+- **Multi-ledger tracking:** governance workflows do not yet expose multiple ledgers, ledger groups, or cross-ledger reconciliation explicitly.
+- **Reconciliation engine:** there is no explicit fund-ops reconciliation engine yet for position, cash, NAV, and ledger break management.
+- **Report generation tools:** export infrastructure exists, but governed report-pack generation for investor, board, compliance, and fund-ops workflows is not yet productized.
+
+### Remaining work
+
+- Turn taxonomy alignment into true workspace-first shells with quick actions and cross-workflow entry points.
+- Extend the shared run/portfolio/ledger model to paper/live history, cash-flow views, multi-ledger tracking, and richer reconciliation views.
+- Elevate Security Master from backend capability to explicit platform/product infrastructure for research and governance.
+- Add a reconciliation engine with explicit break queues, match rules, and exception workflows.
+- Add report generation tools that package auditable governance outputs for operators and stakeholders.
+- Replace page-by-page mental models with workstation-native journeys for research, trading, data ops, and governance.
+
+---
+
+## 18. Flagship Planned Capabilities
+
+These areas are part of the documented implementation scope even though they are not yet productized in the current repo state.
+
+| Capability | Status | Notes |
+|------------|--------|-------|
+| QuantScript library/project | ðŸ“ | Blueprint exists; project, compiler/runtime pipeline, and public API are not yet implemented |
+| QuantScript WPF editor/surface | ðŸ“ | Planned AvalonEdit + charting-based desktop experience; not yet present in the shipping UI |
+| QuantScript tests/sample scripts/docs | ðŸ“ | Defined in the blueprint; not yet landed |
+| L3 reconstruction timeline | ðŸ“ | Planned deterministic replay + merged timeline for queue inference |
+| L3 inference model | ðŸ“ | Planned probabilistic queue-ahead inference with confidence scoring |
+| Queue-aware execution simulator | ðŸ“ | Planned market/limit simulation with partial fills, latency, and exported artifacts |
+| Simulation CLI workflow | ðŸ“ | `--simulate-execution` / calibration commands are documented but not yet implemented |
+| Simulation WPF explorer | ðŸ“ | Dedicated simulation page and progress/results UX remain planned |
+
+### Remaining work
+
+- Convert both blueprints into real projects, contracts, tests, docs, and operator-facing entry points.
+- Ensure these capabilities land on top of shared workstation models rather than as isolated feature islands.
 
 ---
 
@@ -440,16 +504,13 @@ This migration is tracked in [`../plans/trading-workstation-migration-blueprint.
 
 | ID | Area | Effort | Description |
 |----|------|--------|-------------|
-| C3 | WebSocket Base | High | Refactor Polygon, NYSE, StockSharp to use `WebSocketProviderBase`; eliminates ~800 LOC duplication |
-| — | Polygon validation | Medium | End-to-end test of WebSocket parsing against recorded production message samples |
+| ✅ | Polygon validation | Medium | Recorded-session replay fixture validates trade, quote, and aggregate parsing without live network access |
 
 ### Medium priority (observability & developer experience)
 
 | ID | Area | Effort | Description |
 |----|------|--------|-------------|
-| G2 | OTel trace propagation | Medium | Wire `Activity` context provider → pipeline → storage; add correlation IDs to logs |
-| J8 | Drift-canary CI | Low | Add CI job that detects new unmapped condition codes / venues from golden fixtures |
-| I3 | Config JSON Schema | Low | Generate `appsettings.schema.json` from `AppConfig` for IDE validation |
+| ✅ | OTLP trace visualization docs | Low | `docs/development/otlp-trace-visualization.md` documents collector/export wiring and local Jaeger flow |
 
 ### Low priority (architecture debt)
 
@@ -458,8 +519,23 @@ This migration is tracked in [`../plans/trading-workstation-migration-blueprint.
 | H2 | Multi-instance coordination | High | Distributed locking for symbol subscriptions across multiple collector instances |
 | — | WPF ViewModel extraction | Medium | Extract remaining page code-behind logic into `BindableBase` ViewModels (ADR-017) |
 | — | DailySummaryWebhook state | Low | Persist `_dailyHistory` to disk using `MetadataTagService` save pattern |
-| — | StockSharp documentation | Low | Document connector types and configuration examples |
-| — | IB build instructions | Low | Scripted IBAPI download, reference, and build process |
+| — | StockSharp connector expansion | Low | Extend connector examples/validation coverage beyond the currently documented baseline |
+| — | IB vendor-DLL validation | Low | Keep the scripted setup and smoke-build path aligned with the official IB API release surface |
+
+---
+
+## Target End Product Snapshot
+
+Meridian’s intended end state is a comprehensive fund management platform rather than a loose collection of pages and utilities.
+
+- `Research`, `Trading`, `Data Operations`, and `Governance` should operate as durable product surfaces, not only naming conventions.
+- Backtests, paper sessions, and live-facing history should share one recognizable run model with first-class portfolio and ledger drill-ins.
+- Account, entity, strategy-implementation, and trade-management workflows should be part of the same connected product surface.
+- Security Master should serve as the authoritative instrument-definition layer across research, governance, portfolio, and ledger workflows.
+- Governance should expose cash-flow modeling, trial-balance analysis, and multi-ledger tracking as first-class capabilities.
+- Governance should include a reconciliation engine comparable to fund-operations tooling, plus report generation tools for audit, investor, and compliance outputs.
+- Provider, replay, storage, diagnostics, and observability capabilities should support that operator workflow end to end.
+- Optional scale-out and assembly-level optimization work can deepen the platform, but they are not required for the non-assembly product baseline to feel complete.
 
 ---
 
@@ -468,9 +544,11 @@ This migration is tracked in [`../plans/trading-workstation-migration-blueprint.
 - **✅ Complete**: No action required; tested and in production code paths.
 - **⚠️ Partial**: Works with caveats; see "Remaining Work" column.
 - **🔑 Credentials/build flag required**: Implementation is complete but requires external setup (credentials, IBAPI download, StockSharp license).
-- **🔄 Framework in place**: Core structure exists; specific sub-feature incomplete (e.g., G2 trace propagation).
+- **🔄 Framework in place**: Core structure exists; specific sub-feature is incomplete (for example, the workstation taxonomy is in place but deeper workspace-native shells and operator flows still remain).
 - **📝 Planned**: Not started; see ROADMAP.md Phase schedule.
 
 ---
 
-*Last Updated: 2026-03-11*
+*Last Updated: 2026-03-21*
+
+

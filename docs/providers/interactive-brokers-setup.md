@@ -92,21 +92,28 @@ The Interactive Brokers API is **not available as a standard NuGet package** and
    </PropertyGroup>
    ```
 
-### Option 3: NuGet Package (Community/Unofficial)
+### Option 3: Compile-Only Smoke Build
 
-**⚠️ Warning**: These are unofficial packages maintained by the community. Use at your own risk.
+**Warning**: This uses Meridian's local compile-only `IBApi` stub and is meant only to keep the IB-gated code path buildable in automation.
 
-1. **TWS-API (Unofficial)**
-   - Package: https://www.nuget.org/packages/TWS-API/
-   - Not officially maintained by Interactive Brokers
-   - May lag behind official releases
+1. **Meridian smoke-build path**
 
-   ```xml
-   <PackageReference Include="TWS-API" Version="10.19.1" />
-   <PropertyGroup>
-     <DefineConstants>$(DefineConstants);IBAPI</DefineConstants>
-   </PropertyGroup>
+   Meridian now supports an opt-in infrastructure-only smoke build using a local compile stub for the `IBApi` surface:
+
+   ```powershell
+   ./scripts/dev/build-ibapi-smoke.ps1
    ```
+
+   Equivalent manual build:
+
+   ```powershell
+   dotnet build src/Meridian.Infrastructure/Meridian.Infrastructure.csproj `
+     -c Release `
+     -p:EnableWindowsTargeting=true `
+     -p:EnableIbApiSmoke=true
+   ```
+
+   This path is intended for compile verification only. It does not prove live connectivity to TWS/Gateway or compatibility with the official vendor DLL.
 
 ### Option 4: Build Without IB API
 
@@ -116,8 +123,8 @@ If you don't need Interactive Brokers support, the project will build successful
 # Build without IBAPI defined
 dotnet build
 
-# The IBMarketDataClient will use NoOpMarketDataClient internally
-# Only Alpaca and Polygon providers will be available
+# The IBMarketDataClient will use IBSimulationClient internally
+# This keeps the IB provider surface buildable and testable without a live IB installation
 ```
 
 ## Enabling IB API Support
@@ -258,7 +265,7 @@ Customize in `appsettings.json`:
 
 ## Testing Without Live Connection
 
-### Using NoOpMarketDataClient
+### Using IBSimulationClient
 
 Build without `IBAPI` defined to use the stub implementation:
 
@@ -266,7 +273,9 @@ Build without `IBAPI` defined to use the stub implementation:
 dotnet run --project src/Meridian/Meridian.csproj
 ```
 
-The `IBMarketDataClient` will automatically delegate to `NoOpMarketDataClient`.
+The `IBMarketDataClient` will automatically delegate to `IBSimulationClient`.
+
+That simulation path is intentional: the provider stays visible and testable in non-`IBAPI` builds, but it is not a substitute for a real TWS/Gateway connection.
 
 ### Self-Test Mode
 
@@ -326,8 +335,8 @@ If IB API setup is too complex, consider:
 
 ---
 
-**Version:** 1.6.1
-**Last Updated:** 2026-01-30
+**Version:** 1.7.0
+**Last Updated:** 2026-03-21
 **TWS API Version:** 10.19+
 **Tested With:** .NET 9.0
 **See Also:** [Getting Started](../getting-started/README.md) | [Configuration](../HELP.md#configuration) | [Operator Runbook](../operations/operator-runbook.md)

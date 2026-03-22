@@ -18,7 +18,7 @@ public sealed class BacktestViewModel : BindableBase, IDisposable
 {
     private readonly BacktestService _backtestService = BacktestService.Instance;
     private readonly NavigationService _navigationService = NavigationService.Instance;
-    private CancellationTokenSource? _cts;
+    private readonly StrategyRunWorkspaceService _strategyRunWorkspaceService = StrategyRunWorkspaceService.Instance;
 
     // ── Configuration properties ─────────────────────────────────────────────
 
@@ -58,8 +58,6 @@ public sealed class BacktestViewModel : BindableBase, IDisposable
     public ObservableCollection<EquityCurvePoint> EquityCurvePoints { get; } = [];
 
     // ── Summary metrics ──────────────────────────────────────────────────────
-
-    private BacktestMetrics? _metrics;
 
     private string _totalReturn = "-";
     public string TotalReturn { get => _totalReturn; set => SetProperty(ref _totalReturn, value); }
@@ -109,6 +107,24 @@ public sealed class BacktestViewModel : BindableBase, IDisposable
     private string _universe = "-";
     public string Universe { get => _universe; set => SetProperty(ref _universe, value); }
 
+    private string? _latestRecordedRunId;
+    public string? LatestRecordedRunId
+    {
+        get => _latestRecordedRunId;
+        private set
+        {
+            if (SetProperty(ref _latestRecordedRunId, value))
+            {
+                RaisePropertyChanged(nameof(HasLatestRecordedRun));
+                OpenRunDetailCommand.NotifyCanExecuteChanged();
+                OpenRunPortfolioCommand.NotifyCanExecuteChanged();
+                OpenRunLedgerCommand.NotifyCanExecuteChanged();
+            }
+        }
+    }
+
+    public bool HasLatestRecordedRun => !string.IsNullOrWhiteSpace(LatestRecordedRunId);
+
     // ── Result detail collections ─────────────────────────────────────────────
 
     public ObservableCollection<FillEventVm> Fills { get; } = [];
@@ -119,11 +135,19 @@ public sealed class BacktestViewModel : BindableBase, IDisposable
 
     public IAsyncRelayCommand RunBacktestCommand { get; }
     public IRelayCommand CancelBacktestCommand { get; }
+    public IRelayCommand OpenRunBrowserCommand { get; }
+    public IRelayCommand OpenRunDetailCommand { get; }
+    public IRelayCommand OpenRunPortfolioCommand { get; }
+    public IRelayCommand OpenRunLedgerCommand { get; }
 
     public BacktestViewModel()
     {
         RunBacktestCommand = new AsyncRelayCommand(RunBacktestAsync, () => CanRun);
         CancelBacktestCommand = new RelayCommand(CancelBacktest, () => IsRunning);
+        OpenRunBrowserCommand = new RelayCommand(() => _navigationService.NavigateTo("StrategyRuns"));
+        OpenRunDetailCommand = new RelayCommand(() => OpenRunSurface("RunDetail"), () => HasLatestRecordedRun);
+        OpenRunPortfolioCommand = new RelayCommand(() => OpenRunSurface("RunPortfolio"), () => HasLatestRecordedRun);
+        OpenRunLedgerCommand = new RelayCommand(() => OpenRunSurface("RunLedger"), () => HasLatestRecordedRun);
 
         _backtestService.BacktestCompleted += OnBacktestCompleted;
         _backtestService.BacktestCancelled += OnBacktestCancelled;
@@ -156,7 +180,11 @@ public sealed class BacktestViewModel : BindableBase, IDisposable
         var strategy = new BuyAndHoldStrategy();
 
         var progress = new Progress<BacktestProgressEvent>(OnProgress);
-        await _backtestService.RunAsync(request, strategy, progress);
+        var result = await _backtestService.RunAsync(request, strategy, progress);
+        if (result is not null)
+        {
+            LatestRecordedRunId = await _strategyRunWorkspaceService.RecordBacktestRunAsync(request, strategy.Name, result);
+        }
     }
 
     private void CancelBacktest()
@@ -169,7 +197,7 @@ public sealed class BacktestViewModel : BindableBase, IDisposable
 
     private void OnProgress(BacktestProgressEvent evt)
     {
-        Application.Current.Dispatcher.InvokeAsync(() =>
+        System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
         {
             ProgressFraction = evt.ProgressFraction;
             StatusText = $"{evt.CurrentDate:yyyy-MM-dd} — {evt.EventsProcessed:N0} events — equity {evt.PortfolioValue:C0}";
@@ -179,7 +207,7 @@ public sealed class BacktestViewModel : BindableBase, IDisposable
 
     private void OnBacktestCompleted(object? sender, BacktestResult result)
     {
-        Application.Current.Dispatcher.InvokeAsync(() =>
+        System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
         {
             IsRunning = false;
             ProgressFraction = 1.0;
@@ -190,7 +218,7 @@ public sealed class BacktestViewModel : BindableBase, IDisposable
 
     private void OnBacktestCancelled(object? sender, EventArgs e)
     {
-        Application.Current.Dispatcher.InvokeAsync(() =>
+        System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
         {
             IsRunning = false;
             StatusText = "Cancelled";
@@ -226,11 +254,18 @@ public sealed class BacktestViewModel : BindableBase, IDisposable
             Attribution.Add(new SymbolAttributionVm(attr));
     }
 
+    private void OpenRunSurface(string pageTag)
+    {
+        if (!string.IsNullOrWhiteSpace(LatestRecordedRunId))
+        {
+            _navigationService.NavigateTo(pageTag, LatestRecordedRunId);
+        }
+    }
+
     public void Dispose()
     {
         _backtestService.BacktestCompleted -= OnBacktestCompleted;
         _backtestService.BacktestCancelled -= OnBacktestCancelled;
-        _cts?.Dispose();
     }
 }
 

@@ -219,6 +219,26 @@ public static class MarketDataTracing
     }
 
     /// <summary>
+    /// Start a trace for processing a market event with an explicit parent context restored
+    /// after an async queue boundary.
+    /// </summary>
+    public static Activity? StartProcessActivity(string eventType, string symbol, ActivityContext parentContext)
+    {
+        var activity = parentContext.TraceId == default
+            ? StartProcessActivity(eventType, symbol)
+            : Source.StartActivity(
+                $"ProcessMarketEvent.{eventType}",
+                ActivityKind.Internal,
+                parentContext);
+
+        activity?.SetTag("event.type", eventType);
+        activity?.SetTag("market.symbol", symbol);
+        activity?.SetTag("operation.type", "process");
+
+        return activity;
+    }
+
+    /// <summary>
     /// Start a trace for storing a market event.
     /// </summary>
     public static Activity? StartStorageActivity(string storageType, string symbol)
@@ -226,6 +246,25 @@ public static class MarketDataTracing
         var activity = Source.StartActivity(
             $"StoreMarketEvent.{storageType}",
             ActivityKind.Producer);
+
+        activity?.SetTag("storage.type", storageType);
+        activity?.SetTag("market.symbol", symbol);
+        activity?.SetTag("operation.type", "store");
+
+        return activity;
+    }
+
+    /// <summary>
+    /// Start a trace for storing a market event with an explicit parent context.
+    /// </summary>
+    public static Activity? StartStorageActivity(string storageType, string symbol, ActivityContext parentContext)
+    {
+        var activity = parentContext.TraceId == default
+            ? StartStorageActivity(storageType, symbol)
+            : Source.StartActivity(
+                $"StoreMarketEvent.{storageType}",
+                ActivityKind.Producer,
+                parentContext);
 
         activity?.SetTag("storage.type", storageType);
         activity?.SetTag("market.symbol", symbol);

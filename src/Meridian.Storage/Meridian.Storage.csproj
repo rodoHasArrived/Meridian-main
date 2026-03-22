@@ -13,6 +13,7 @@
   <ItemGroup>
     <!-- Storage -->
     <PackageReference Include="Apache.Arrow" />
+    <PackageReference Include="Npgsql" />
     <PackageReference Include="Parquet.Net" />
 
     <!-- Logging -->
@@ -42,5 +43,11 @@
     <ProjectReference Include="..\Meridian.Domain\Meridian.Domain.csproj" />
     <ProjectReference Include="..\Meridian.Contracts\Meridian.Contracts.csproj" />
     <ProjectReference Include="..\Meridian.ProviderSdk\Meridian.ProviderSdk.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="SecurityMaster\Migrations\*.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 </Project>

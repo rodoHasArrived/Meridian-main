@@ -1,5 +1,6 @@
 using Meridian.Execution;
 using Meridian.Execution.Sdk;
+using Interop = Meridian.FSharp.Interop;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Risk;
@@ -22,15 +23,25 @@ public sealed class CompositeRiskValidator : IRiskValidator
     /// <inheritdoc />
     public async Task<RiskValidationResult> ValidateOrderAsync(OrderRequest request, CancellationToken ct = default)
     {
+        var decisions = new List<Interop.RiskDecisionDto>(_rules.Count);
+
         foreach (var rule in _rules)
         {
             var result = await rule.EvaluateAsync(request, ct).ConfigureAwait(false);
-            if (!result.IsApproved)
+            decisions.Add(new Interop.RiskDecisionDto
             {
-                _logger.LogWarning("Risk rule {RuleName} rejected order for {Symbol}: {Reason}",
-                    rule.RuleName, request.Symbol, result.RejectReason);
-                return result;
-            }
+                Approved = result.IsApproved,
+                DecisionKind = result.IsApproved ? "approve" : "reject",
+                Reasons = string.IsNullOrWhiteSpace(result.RejectReason) ? [] : [result.RejectReason],
+            });
+        }
+
+        var aggregate = Interop.RiskInterop.Aggregate(decisions);
+        if (!aggregate.Approved)
+        {
+            var reason = aggregate.Reasons.FirstOrDefault() ?? "Rejected by aggregated risk policy.";
+            _logger.LogWarning("Aggregated risk policy rejected order for {Symbol}: {Reason}", request.Symbol, reason);
+            return RiskValidationResult.Rejected(reason);
         }
 
         return RiskValidationResult.Approved();

@@ -5,16 +5,17 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       mc:Ignorable="d"
       d:DesignHeight="900" d:DesignWidth="1400"
-      Background="{DynamicResource ConsoleBackgroundDarkBrush}"
+      Background="{DynamicResource ShellWindowBackgroundBrush}"
       Loaded="OnPageLoaded"
-      AutomationProperties.Name="Main">
+      AutomationProperties.Name="Main"
+      AutomationProperties.AutomationId="MainPage">
 
     <Page.Resources>
         <!-- Navigation Item Style -->
         <Style x:Key="NavItemStyle" TargetType="ListBoxItem">
             <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="Padding" Value="16,10" />
-            <Setter Property="Margin" Value="8,1" />
+            <Setter Property="Padding" Value="16,12" />
+            <Setter Property="Margin" Value="10,3" />
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="Foreground" Value="{StaticResource ConsoleTextSecondaryBrush}" />
             <Setter Property="Template">
@@ -22,17 +23,21 @@
                     <ControlTemplate TargetType="ListBoxItem">
                         <Border x:Name="border"
                                 Background="{TemplateBinding Background}"
-                                CornerRadius="8"
+                                BorderBrush="Transparent"
+                                BorderThickness="1"
+                                CornerRadius="12"
                                 Padding="{TemplateBinding Padding}">
                             <ContentPresenter />
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="border" Property="Background" Value="{StaticResource ConsoleBackgroundHoverBrush}" />
+                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
                                 <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
                             </Trigger>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="{StaticResource ConsoleBackgroundActiveBrush}" />
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource ConsoleAccentBlueAlpha10Brush}" />
+                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource InfoColorBrush}" />
                                 <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -59,9 +64,10 @@
         <!-- Section Header Style -->
         <Style x:Key="SectionHeaderStyle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontFamily" Value="{StaticResource MeridianBodyFontFamily}" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Foreground" Value="{StaticResource ConsoleTextMutedBrush}" />
-            <Setter Property="Margin" Value="20,14,20,6" />
+            <Setter Property="Margin" Value="20,16,20,8" />
         </Style>
     </Page.Resources>
 
@@ -69,11 +75,17 @@
         <KeyBinding Key="K" Modifiers="Control" Command="{x:Null}" />
     </Page.InputBindings>
 
-    <Grid>
+    <Grid Background="{DynamicResource ShellWindowBackgroundBrush}">
+        <TextBlock x:Name="ShellAutomationStateText"
+                   Visibility="Collapsed"
+                   AutomationProperties.AutomationId="ShellAutomationState"
+                   AutomationProperties.Name="Shell Automation State" />
         <!-- Command Palette Overlay -->
         <Grid x:Name="CommandPaletteOverlay" Visibility="Collapsed"
               Panel.ZIndex="100"
               Background="#80000000"
+              AutomationProperties.AutomationId="CommandPaletteOverlay"
+              AutomationProperties.Name="Command Palette Overlay"
               MouseDown="CommandPaletteOverlay_MouseDown">
             <Border HorizontalAlignment="Center" VerticalAlignment="Top"
                     Margin="0,80,0,0" Width="560"
@@ -92,6 +104,8 @@
                              Foreground="{StaticResource ConsoleTextPrimaryBrush}"
                              BorderBrush="{StaticResource ConsoleBorderBrush}"
                              BorderThickness="1"
+                             AutomationProperties.AutomationId="CommandPaletteInput"
+                             AutomationProperties.Name="Command Palette Input"
                              TextChanged="CommandPaletteTextBox_TextChanged"
                              KeyDown="CommandPaletteTextBox_KeyDown" />
                     <ListBox x:Name="CommandPaletteResults"
@@ -100,6 +114,8 @@
                              BorderThickness="0"
                              ItemContainerStyle="{StaticResource NavItemStyle}"
                              SelectionChanged="CommandPaletteResults_SelectionChanged"
+                             AutomationProperties.AutomationId="CommandPaletteResults"
+                             AutomationProperties.Name="Command Palette Results"
                              Margin="4,0,4,4" />
                     <TextBlock Text="Ctrl+K to open  ·  Esc to close  ·  Enter to select"
                                FontSize="11"
@@ -114,45 +130,58 @@
         <DockPanel>
             <!-- Sidebar Navigation -->
             <Border DockPanel.Dock="Left"
-                    Width="260"
-                    Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                    Width="288"
+                    Margin="16"
+                    CornerRadius="20"
+                    Background="{StaticResource ShellRailBackgroundBrush}"
                     BorderBrush="{StaticResource ConsoleBorderBrush}"
-                    BorderThickness="0,0,1,0">
+                    BorderThickness="1">
                 <DockPanel>
                     <!-- Header with Logo/Title -->
                     <Border DockPanel.Dock="Top"
-                            Padding="20,20,20,16"
+                            Padding="22,22,22,18"
                             BorderBrush="{StaticResource ConsoleBorderBrush}"
                             BorderThickness="0,0,0,1">
                         <StackPanel>
                             <!-- App Title -->
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{StaticResource IconChart}"
-                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                           FontSize="24"
-                                           Foreground="{StaticResource SuccessColorBrush}"
-                                           VerticalAlignment="Center" />
-                                <TextBlock Text="Market Data"
-                                           FontSize="20"
-                                           FontWeight="SemiBold"
-                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                           Margin="12,0,0,0"
-                                           VerticalAlignment="Center" />
+                                <Border Width="44"
+                                        Height="44"
+                                        CornerRadius="14"
+                                        Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                                        BorderBrush="{StaticResource InfoColorBrush}"
+                                        BorderThickness="1">
+                                    <TextBlock Text="{StaticResource IconChart}"
+                                               FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                               FontSize="22"
+                                               Foreground="{StaticResource InfoColorBrush}"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center" />
+                                </Border>
+                                <StackPanel Margin="12,0,0,0">
+                                    <TextBlock Text="Meridian"
+                                               FontFamily="{StaticResource MeridianDisplayFontFamily}"
+                                               FontSize="20"
+                                               FontWeight="SemiBold"
+                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                    <TextBlock Text="Operations Workstation"
+                                               FontSize="12"
+                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+                                </StackPanel>
                             </StackPanel>
-                            <TextBlock Text="Collector"
-                                       FontSize="20"
-                                       FontWeight="SemiBold"
-                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                       Margin="36,2,0,0" />
+                            <TextBlock Text="Research, data operations, and governance in one operator shell."
+                                       Margin="0,12,0,0"
+                                       TextWrapping="Wrap"
+                                       Style="{StaticResource CardDescriptionStyle}" />
 
                             <!-- Version Badge -->
                             <Border Margin="0,10,0,0"
                                     HorizontalAlignment="Left"
                                     Style="{StaticResource NeutralBadgeStyle}">
-                                <TextBlock Text="v1.6.1"
+                                <TextBlock Text="Institutional premium shell"
                                            FontSize="11"
                                            Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                           FontFamily="Cascadia Code, Consolas, monospace" />
+                                           FontFamily="{StaticResource MeridianDataFontFamily}" />
                             </Border>
                         </StackPanel>
                     </Border>
@@ -166,6 +195,8 @@
                             <Button Style="{StaticResource GhostButtonStyle}"
                                     HorizontalAlignment="Stretch"
                                     Click="OnCommandPaletteButtonClick"
+                                    AutomationProperties.AutomationId="OpenCommandPaletteButton"
+                                    AutomationProperties.Name="Open Command Palette"
                                     ToolTip="Quick Command (Ctrl+K)">
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                     <TextBlock Text="{StaticResource IconSearch}"
@@ -182,6 +213,8 @@
                             <Button Style="{StaticResource GhostButtonStyle}"
                                     HorizontalAlignment="Stretch"
                                     Click="OnHelpButtonClick"
+                                    AutomationProperties.AutomationId="HelpSupportButton"
+                                    AutomationProperties.Name="Help and Support"
                                     Margin="0,4,0,0">
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                     <TextBlock Text="{StaticResource IconHelp}"
@@ -209,32 +242,60 @@
                                      Background="Transparent"
                                      BorderThickness="0"
                                      ItemContainerStyle="{StaticResource NavItemStyle}"
+                                     AutomationProperties.AutomationId="ResearchNavList"
+                                     AutomationProperties.Name="Research Navigation"
                                      SelectionChanged="OnResearchNavSelectionChanged">
-                                <ListBoxItem Tag="Dashboard">
+                                <ListBoxItem Tag="Dashboard"
+                                             AutomationProperties.AutomationId="ResearchNavDashboard"
+                                             AutomationProperties.Name="Dashboard Navigation">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="{StaticResource IconDashboard}" Style="{StaticResource NavIconStyle}" />
                                         <TextBlock Text="Dashboard" Style="{StaticResource NavLabelStyle}" />
                                     </StackPanel>
                                 </ListBoxItem>
-                                <ListBoxItem Tag="LiveData">
+                                <ListBoxItem Tag="LiveData"
+                                             AutomationProperties.AutomationId="ResearchNavLiveData"
+                                             AutomationProperties.Name="Live Data Navigation">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="{StaticResource IconChart}" Style="{StaticResource NavIconStyle}" />
                                         <TextBlock Text="Live Data" Style="{StaticResource NavLabelStyle}" />
                                     </StackPanel>
                                 </ListBoxItem>
-                                <ListBoxItem Tag="Charts">
+                                <ListBoxItem Tag="Charts"
+                                             AutomationProperties.AutomationId="ResearchNavCharts"
+                                             AutomationProperties.Name="Charts Navigation">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="{StaticResource IconChartLine}" Style="{StaticResource NavIconStyle}" />
                                         <TextBlock Text="Charts" Style="{StaticResource NavLabelStyle}" />
                                     </StackPanel>
                                 </ListBoxItem>
-                                <ListBoxItem Tag="OrderBook">
+                                <ListBoxItem Tag="RunMat"
+                                             AutomationProperties.AutomationId="ResearchNavRunMat"
+                                             AutomationProperties.Name="RunMat Lab Navigation">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{StaticResource IconCode}" Style="{StaticResource NavIconStyle}" />
+                                        <TextBlock Text="RunMat Lab" Style="{StaticResource NavLabelStyle}" />
+                                    </StackPanel>
+                                </ListBoxItem>
+                                <ListBoxItem Tag="StrategyRuns"
+                                             AutomationProperties.AutomationId="ResearchNavStrategyRuns"
+                                             AutomationProperties.Name="Strategy Runs Navigation">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{StaticResource IconList}" Style="{StaticResource NavIconStyle}" />
+                                        <TextBlock Text="Strategy Runs" Style="{StaticResource NavLabelStyle}" />
+                                    </StackPanel>
+                                </ListBoxItem>
+                                <ListBoxItem Tag="OrderBook"
+                                             AutomationProperties.AutomationId="ResearchNavOrderBook"
+                                             AutomationProperties.Name="Order Book Navigation">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="{StaticResource IconTable}" Style="{StaticResource NavIconStyle}" />
                                         <TextBlock Text="Order Book" Style="{StaticResource NavLabelStyle}" />
                                     </StackPanel>
                                 </ListBoxItem>
-                                <ListBoxItem Tag="Watchlist">
+                                <ListBoxItem Tag="Watchlist"
+                                             AutomationProperties.AutomationId="ResearchNavWatchlist"
+                                             AutomationProperties.Name="Watchlist Navigation">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="{StaticResource IconFavorite}" Style="{StaticResource NavIconStyle}" />
                                         <TextBlock Text="Watchlist" Style="{StaticResource NavLabelStyle}" />
@@ -256,6 +317,12 @@
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="{StaticResource IconPlay}" Style="{StaticResource NavIconStyle}" />
                                         <TextBlock Text="Backtest" Style="{StaticResource NavLabelStyle}" />
+                                    </StackPanel>
+                                </ListBoxItem>
+                                <ListBoxItem Tag="StrategyRuns">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{StaticResource IconList}" Style="{StaticResource NavIconStyle}" />
+                                        <TextBlock Text="Strategy Runs" Style="{StaticResource NavLabelStyle}" />
                                     </StackPanel>
                                 </ListBoxItem>
                                 <ListBoxItem Tag="LeanIntegration">
@@ -379,15 +446,20 @@
             </Border>
 
             <!-- Main Content Area -->
-            <Grid>
+            <Grid Margin="0,16,16,16">
                 <!-- Fixture/Offline Mode Banner (P0: Hard visual distinction for sample/offline mode) -->
                 <Border x:Name="FixtureModeBanner"
                         VerticalAlignment="Top"
-                        Height="36"
+                        Height="40"
+                        Margin="0,0,0,8"
+                        CornerRadius="14"
                         Visibility="Collapsed"
                         Panel.ZIndex="10">
                     <Border.Background>
-                        <SolidColorBrush x:Name="FixtureModeBannerBrush" Color="#FFB300" />
+                        <LinearGradientBrush x:Name="FixtureModeBannerBrush" StartPoint="0,0" EndPoint="1,0">
+                            <GradientStop Color="{StaticResource ModeFixtureColor}" Offset="0" />
+                            <GradientStop Color="#C98A2B" Offset="1" />
+                        </LinearGradientBrush>
                     </Border.Background>
                     <Grid>
                         <StackPanel Orientation="Horizontal"
@@ -421,11 +493,12 @@
 
                 <!-- Top Header Bar -->
                 <Border DockPanel.Dock="Top"
-                        Height="56"
+                        Height="74"
                         VerticalAlignment="Top"
-                        Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                        Background="{StaticResource HeaderBandBackgroundBrush}"
                         BorderBrush="{StaticResource ConsoleBorderBrush}"
-                        BorderThickness="0,0,0,1"
+                        BorderThickness="1"
+                        CornerRadius="18"
                         Padding="24,0">
                     <Grid>
                         <!-- Page Title (Breadcrumb) -->
@@ -441,13 +514,20 @@
                                            FontFamily="{StaticResource SymbolThemeFontFamily}"
                                            FontSize="16" />
                             </Button>
-                            <TextBlock x:Name="PageTitleText"
-                                       Text="Dashboard"
-                                       FontSize="18"
-                                       FontWeight="SemiBold"
-                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                       VerticalAlignment="Center"
-                                       Margin="8,0,0,0" />
+                            <StackPanel Margin="8,0,0,0">
+                                <TextBlock x:Name="PageTitleText"
+                                           Text="Dashboard"
+                                           FontFamily="{StaticResource MeridianDisplayFontFamily}"
+                                           FontSize="20"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                           VerticalAlignment="Center"
+                                           AutomationProperties.AutomationId="PageTitleText"
+                                           AutomationProperties.Name="Current Page Title" />
+                                <TextBlock Text="High-trust operator view with live posture, alerts, and action shortcuts."
+                                           FontSize="12"
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+                            </StackPanel>
                         </StackPanel>
 
                         <!-- Connection Status and Actions -->
@@ -495,7 +575,10 @@
                 <!-- Content Frame -->
                 <Frame x:Name="ContentFrame"
                        NavigationUIVisibility="Hidden"
-                       Margin="0,56,0,0"
+                       Background="Transparent"
+                       Margin="0,86,0,0"
+                       AutomationProperties.AutomationId="ContentFrame"
+                       AutomationProperties.Name="Main Content Frame"
                        Navigated="OnContentFrameNavigated" />
             </Grid>
         </DockPanel>

@@ -2,6 +2,7 @@ using System.Text.Json;
 using Meridian.Application.Backfill;
 using Meridian.Application.Commands;
 using Meridian.Application.Config;
+using Meridian.Application.Coordination;
 using Meridian.Application.Logging;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
@@ -569,6 +570,18 @@ public sealed class HostModeOrchestrator
 
         try
         {
+            var leaseManager = hostStartup.GetService<ILeaseManager>();
+            if (leaseManager is not null)
+            {
+                var coordinationSnapshot = await leaseManager.GetSnapshotAsync(ct);
+                _log.Information(
+                    "Coordination initialized: enabled={Enabled}, mode={Mode}, instance={InstanceId}, root={RootPath}",
+                    coordinationSnapshot.Enabled,
+                    coordinationSnapshot.Mode,
+                    coordinationSnapshot.InstanceId,
+                    coordinationSnapshot.RootPath);
+            }
+
             using var connectTimeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
             await dataClient.ConnectAsync(connectTimeoutCts.Token);
         }
@@ -595,9 +608,9 @@ public sealed class HostModeOrchestrator
             return errorCode.ToExitCode();
         }
 
-        var subscriptionManager = hostStartup.CreateSubscriptionOrchestrator(dataClient);
+        var subscriptionManager = hostStartup.CreateSubscriptionOrchestrator(dataClient, cfg.DataSource.ToString());
         var runtimeCfg = SharedStartupHelpers.EnsureDefaultSymbols(cfg);
-        subscriptionManager.Apply(runtimeCfg);
+        await subscriptionManager.ApplyAsync(runtimeCfg, ct);
         var symbols = runtimeCfg.Symbols ?? Array.Empty<SymbolConfig>();
 
         if (deployment.HotReloadEnabled)
@@ -607,7 +620,7 @@ public sealed class HostModeOrchestrator
                 try
                 {
                     var nextCfg = SharedStartupHelpers.EnsureDefaultSymbols(newCfg);
-                    subscriptionManager.Apply(nextCfg);
+                    subscriptionManager.ApplyAsync(nextCfg).GetAwaiter().GetResult();
                     _ = statusWriter.WriteOnceAsync();
                     _log.Information("Applied hot-reloaded configuration: {Count} symbols", nextCfg.Symbols?.Length ?? 0);
                 }
@@ -676,7 +689,13 @@ public sealed class HostModeOrchestrator
         var backfillProviders = backfillHost.CreateBackfillProviders();
 
         IHistoricalDataProvider[] providersArray;
-        if (cfg.Backfill?.EnableFallback ?? true)
+        var requestedProvider = backfillRequest.Provider?.Trim();
+        var useCompositeProvider = (cfg.Backfill?.EnableFallback ?? true)
+            && (string.IsNullOrWhiteSpace(requestedProvider)
+                || string.Equals(requestedProvider, "composite", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(requestedProvider, "auto", StringComparison.OrdinalIgnoreCase));
+
+        if (useCompositeProvider)
         {
             var composite = backfillHost.CreateCompositeBackfillProvider(backfillProviders);
             providersArray = [composite];

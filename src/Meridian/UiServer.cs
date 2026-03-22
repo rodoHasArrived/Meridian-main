@@ -145,11 +145,13 @@ public sealed class UiServer : IAsyncDisposable
 
         _app = builder.Build();
         _logger = _app.Services.GetRequiredService<ILoggerFactory>().CreateLogger<UiServer>();
+        SecurityMasterStartup.EnsureDatabaseReady(_app.Services, _logger);
 
         // Wire Polly circuit breaker callbacks to CircuitBreakerStatusService
         ServiceCompositionRoot.InitializeCircuitBreakerCallbackRouter(_app.Services);
 
         // Enable session-based authentication middleware (optional in Development/Test, required elsewhere by default)
+        _app.UseStaticFiles();
         _app.UseLoginSessionAuthentication();
 
         // Enable Swagger middleware
@@ -218,6 +220,7 @@ public sealed class UiServer : IAsyncDisposable
         // Provider API
         _app.MapProviderEndpoints(s_jsonOptions);
         _app.MapProviderExtendedEndpoints(s_jsonOptions);
+        _app.MapCppTraderEndpoints();
 
         // Data Quality API
         var auditTrail = _app.Services.GetService<DroppedEventAuditTrail>();
@@ -291,6 +294,9 @@ public sealed class UiServer : IAsyncDisposable
 
         // UI API (includes resilience, quality, SLA, and all other endpoint groups)
         _app.MapUiEndpoints(s_jsonOptions);
+
+        // React workstation shell and placeholder API
+        _app.MapWorkstationEndpoints(s_jsonOptions);
     }
 
     public async Task StartAsync(CancellationToken ct = default)

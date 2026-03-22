@@ -21,6 +21,7 @@ namespace Meridian.Application.Config.Credentials;
 /// <item><description>TIINGO_API_TOKEN - Tiingo</description></item>
 /// <item><description>FINNHUB_API_KEY - Finnhub</description></item>
 /// <item><description>ALPHA_VANTAGE_API_KEY - Alpha Vantage</description></item>
+/// <item><description>FRED_API_KEY - FRED Economic Data</description></item>
 /// <item><description>NASDAQ_API_KEY - Nasdaq Data Link</description></item>
 /// <item><description>OPENFIGI_API_KEY - OpenFIGI</description></item>
 /// <item><description>NYSE_API_KEY, NYSE_API_SECRET, NYSE_CLIENT_ID - NYSE</description></item>
@@ -77,6 +78,14 @@ public sealed class ProviderCredentialResolver
     public string? ResolveAlphaVantage(string? configApiKey = null)
     {
         return ResolveCredential("ALPHA_VANTAGE_API_KEY", configApiKey, "Alpha Vantage ApiKey");
+    }
+
+    /// <summary>
+    /// Resolves FRED API key from environment or config.
+    /// </summary>
+    public string? ResolveFred(string? configApiKey = null)
+    {
+        return ResolveCredential("FRED_API_KEY", configApiKey, "FRED ApiKey");
     }
 
     /// <summary>
@@ -223,6 +232,7 @@ public sealed class ProviderCredentialResolver
             ["Tiingo"] = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("TIINGO_API_TOKEN")),
             ["Finnhub"] = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("FINNHUB_API_KEY")),
             ["AlphaVantage"] = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ALPHA_VANTAGE_API_KEY")),
+            ["FRED"] = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("FRED_API_KEY")),
             ["Nasdaq"] = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("NASDAQ_API_KEY")),
             ["OpenFigi"] = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("OPENFIGI_API_KEY")),
             ["NYSE"] = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("NYSE_API_KEY")),

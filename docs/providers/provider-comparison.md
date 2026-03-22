@@ -1,482 +1,272 @@
 # Data Provider Comparison Guide
 
-**Last Updated:** 2026-01-30
-**Version:** 1.6.1
+**Last Updated:** 2026-03-21
+**Version:** 1.7.0
 
-This document provides a comprehensive comparison of all data providers supported by the Meridian.
-
----
-
-## Quick Comparison Matrix
-
-### Streaming Providers (Real-Time)
-
-| Provider | Status | Setup | Free Tier | Data Quality | Best For |
-|----------|--------|-------|-----------|--------------|----------|
-| **Alpaca** | ✅ Implemented | Easy | IEX feed | Good | Development, basic collection |
-| **Interactive Brokers** | ⚠️ IBAPI Required | Complex | Cboe One + IEX | Excellent | Professional trading, L2 depth |
-| **Polygon** | ⚠️ Partial | Medium | 5 calls/min | Excellent | (Future implementation) |
-| **StockSharp** | ⚠️ Requires setup | Medium | Varies | Good | Multi-exchange (8 connectors) |
-| **NYSE** | ⚠️ Requires credentials | Medium | Subscription | Excellent | NYSE-specific feeds |
-
-### Historical Providers (Backfill)
-
-| Provider | Status | Free Tier | Rate Limit | Coverage | Data Quality |
-|----------|--------|-----------|------------|----------|--------------|
-| **Alpaca** | ✅ Implemented | Unlimited | 200/min | US equities | Excellent |
-| **Yahoo Finance** | ✅ Implemented | Unlimited | ~2000/hr | 50K+ global | Good |
-| **Stooq** | ✅ Implemented | Unlimited | Respectful | Global | Good |
-| **Nasdaq Data Link** | ✅ Implemented | Limited | 300/10s | Alternative | Excellent |
-| **Tiingo** | ✅ Implemented | 1K/day | 50/hr | 65K+ securities | Excellent |
-| **Finnhub** | ✅ Implemented | 60/min | 60/min | 60K+ global | Good |
-| **Alpha Vantage** | ✅ Implemented | 25/day | 5/min | US + global | Good |
-| **Polygon** | ✅ Implemented | 5/min | 5/min | US equities | Excellent |
-| **IB Historical** | ⚠️ IBAPI Required | With account | Strict | US + global | Excellent |
+This guide compares the providers currently implemented in Meridian so you can choose the right mix for development, research, and production workflows.
 
 ---
 
-## Detailed Provider Profiles
+## Quick Selection
+
+### Streaming Providers
+
+| Provider | Status | Setup | Free Tier | Best For | Notes |
+|----------|--------|-------|-----------|----------|-------|
+| Alpaca | Implemented | Easy | IEX feed | Development and basic US streaming | Simple setup, no Level 2 depth |
+| Interactive Brokers | Implemented with `IBAPI` | Complex | Cboe One + IEX | Professional trading and L2 depth | Real TWS / Gateway access requires the official `IBApi` surface; non-`IBAPI` builds stay on simulation or explicit runtime guidance |
+| Polygon | Implemented | Medium | 5 calls/min free tier | Aggregated real-time feeds | Strong streaming quality, premium plans scale better |
+| StockSharp | Implemented with `STOCKSHARP` | Medium | Varies by connector | Multi-exchange connectivity | Coverage depends on connector, package surface, and license |
+| NYSE Streaming | Implemented | Medium | Subscription | NYSE-specific feed workflows | Backed by `NYSEDataSource` |
+| Synthetic | Implemented | Very Low | Unlimited | Offline development and demos | Deterministic, not live market data |
+
+### Historical Providers
+
+| Provider | Status | Free Tier | Rate Limit | Coverage | Best For |
+|----------|--------|-----------|------------|----------|----------|
+| Alpaca | Implemented | With account | 200/min | US equities | Recent US history plus vendor continuity |
+| Yahoo Finance | Implemented | Unlimited | ~2000/hour | Global equities, ETFs, indices, forex, crypto | Broad no-auth fallback |
+| Stooq | Implemented | Unlimited | Respectful | Global equities, indices, forex, commodities | Free daily fallback |
+| Nasdaq Data Link | Implemented | Limited | 300/10s | Alternative data and macro datasets | Research datasets and macro series |
+| Tiingo | Implemented | 1000/day, 50/hour | 50/hour | US and international equities | Adjusted history and corporate actions |
+| Finnhub | Implemented | 60/min | 60/min | Global securities | History plus company reference data |
+| Alpha Vantage | Implemented | 25/day | 5/min | Equities, indices, forex, crypto | Narrow intraday lookups |
+| Polygon | Implemented | 5/min | 5/min | US equities, options, forex, crypto | High-quality premium-oriented history |
+| Interactive Brokers | Requires `IBAPI` | With account | Strict pacing | US and global multi-asset | Institutional workflow continuity once the official `IBApi` path is enabled; smoke builds are compile-only |
+| StockSharp | Requires `STOCKSHARP` | Connector-dependent | Connector-dependent | Multi-exchange | Depends on configured connector plus installed StockSharp package surfaces |
+| Twelve Data | Implemented | 800/day, 8/min | 8/min | Equities, ETFs, forex, crypto | Credentialed international fallback |
+| FRED | Implemented | Free API key | 120/min | Economic time series | Macro overlays and research inputs |
+| Synthetic | Implemented | Unlimited | None | Deterministic offline scenarios | Testing, fixtures, demos |
+
+### Symbol Search And Reference
+
+| Provider | Status | Coverage | Best For |
+|----------|--------|----------|----------|
+| Alpaca Symbol Search | Implemented | US equities | Broker-aligned US symbol lookup |
+| Finnhub Symbol Search | Implemented | Global securities | Company and symbol discovery |
+| Polygon Symbol Search | Implemented | US equities | Filterable symbol search |
+| OpenFIGI | Implemented | Global instruments | Identifier normalization |
+| StockSharp Symbol Search | Requires `STOCKSHARP` | Connector-dependent multi-asset | Connector-native security lookup |
+| Synthetic Symbol Search | Implemented | Offline stock and ETF catalog | Fixture-mode and demo workflows |
+
+---
+
+## Provider Profiles
 
 ### Alpaca
 
-**Best For:** Development, hobbyist trading, simple data collection
+**Best For:** Development, simple US market data collection, and an easy first provider.
 
-| Attribute | Details |
-|-----------|---------|
-| **Type** | Streaming + Historical |
-| **Status** | ✅ Implemented |
-| **Setup Complexity** | Low (no SDK required) |
-| **Authentication** | API Key + Secret |
-| **Free Tier** | IEX real-time + unlimited historical |
-| **Paid Tier** | SIP consolidated feed ($9/month) |
-| **Rate Limits** | 200 req/min (generous) |
-| **Data Types** | Trades, Quotes, Bars, Auctions |
+**Strengths**
+- Straightforward credential model
+- Streaming plus historical support in the same provider family
+- Good developer ergonomics for local setup
 
-**Pros:**
-- Easy setup with environment variables
-- No special SDK installation
-- Generous free tier
-- Good documentation
+**Tradeoffs**
+- Free streaming is IEX-only, not a full consolidated feed
+- No Level 2 depth
+- US-focused
 
-**Cons:**
-- IEX feed only captures ~2-5% of market volume
-- No Level 2 market depth
-- US equities only
-
-**Files:**
-- `Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs`
-- `Infrastructure/Adapters/Core/AlpacaHistoricalDataProvider.cs`
-
----
+**Implementation**
+- `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs`
+- `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs`
 
 ### Interactive Brokers
 
-**Best For:** Professional trading, comprehensive market data, L2 depth
+**Best For:** Professional trading workflows, Level 2 depth, and broker-aligned production setups.
 
-| Attribute | Details |
-|-----------|---------|
-| **Type** | Streaming + Historical |
-| **Status** | ⚠️ Requires IBAPI build flag |
-| **Setup Complexity** | High (TWS/Gateway + SDK) |
-| **Authentication** | Account + TWS connection |
-| **Free Tier** | Cboe One + IEX streaming |
-| **Paid Tier** | Various exchange subscriptions |
-| **Rate Limits** | Strict (50 msg/sec, 100 data lines) |
-| **Data Types** | Trades, Quotes, L2 Depth, Scanners |
+**Strengths**
+- High-quality market data
+- Supports streaming, historical, and broader multi-asset workflows
+- Strong fit for real trading operations
 
-**Pros:**
-- High-quality consolidated data
-- Level 2 market depth
-- Market scanners
-- Global markets coverage
+**Tradeoffs**
+- Higher setup complexity
+- Requires TWS or Gateway plus the official `IBApi` surface behind `IBAPI`
+- Strict pacing rules
 
-**Cons:**
-- Complex setup (requires TWS/Gateway)
-- Strict rate limits
-- $500 minimum account balance
-- API learning curve
+**Operator Notes**
+- Meridian's non-`IBAPI` path keeps the provider visible through `IBSimulationClient` and targeted runtime guidance, but it does not provide real broker connectivity.
+- `EnableIbApiSmoke=true` is intended only for compile verification of the gated code path.
+- Use [Interactive Brokers Setup](interactive-brokers-setup.md) for the supported vendor-DLL/project path and smoke-build path.
 
-**Files:**
-- `Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs`
-- `Infrastructure/Adapters/InteractiveBrokers/EnhancedIBConnectionManager.cs`
-- `Infrastructure/Adapters/Core/IBHistoricalDataProvider.cs` (with IBAPI)
+**Implementation**
+- `src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs`
+- `src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs`
 
----
+### Polygon
 
-### Yahoo Finance
+**Best For:** Aggregated real-time streaming plus premium-quality historical market data.
 
-**Best For:** Historical backfill, global coverage, cost-free data
+**Strengths**
+- Streaming support for trades, quotes, and aggregates
+- Historical coverage extends beyond simple daily bars
+- Good fit for data-heavy research and premium production setups
 
-| Attribute | Details |
-|-----------|---------|
-| **Type** | Historical only |
-| **Status** | ✅ Implemented |
-| **Setup Complexity** | Very Low (no auth required) |
-| **Authentication** | None |
-| **Free Tier** | Unlimited |
-| **Rate Limits** | ~2000 req/hr |
-| **Data Types** | Daily/Weekly/Monthly OHLCV |
+**Tradeoffs**
+- Free tier is very limited
+- Better experience typically requires a paid plan
 
-**Pros:**
-- No authentication required
-- 50,000+ global securities
-- 20+ years historical data
-- Dividend and split adjusted prices
-
-**Cons:**
-- Daily frequency only (no intraday)
-- Unofficial API (may change)
-- No real-time streaming
-- Occasional data gaps
-
-**Files:**
-- `Infrastructure/Adapters/Core/YahooFinanceHistoricalDataProvider.cs`
-
----
-
-### Tiingo
-
-**Best For:** Dividend-adjusted data, corporate actions
-
-| Attribute | Details |
-|-----------|---------|
-| **Type** | Historical only |
-| **Status** | ✅ Implemented |
-| **Setup Complexity** | Low (API key required) |
-| **Authentication** | API Token |
-| **Free Tier** | 1,000 req/day, 50/hr |
-| **Data Types** | Daily OHLCV, dividends, splits |
-
-**Pros:**
-- High-quality dividend-adjusted data
-- Full corporate actions history
-- Clean, well-documented API
-- 30+ years history for major equities
-
-**Cons:**
-- Daily data only (no intraday)
-- Limited free tier
-- No real-time streaming
-- US focus primarily
-
-**Files:**
-- `Infrastructure/Adapters/Core/TiingoHistoricalDataProvider.cs`
-
----
-
-### Finnhub
-
-**Best For:** Company fundamentals, earnings calendar
-
-| Attribute | Details |
-|-----------|---------|
-| **Type** | Historical + Reference |
-| **Status** | ✅ Implemented |
-| **Setup Complexity** | Low (API key required) |
-| **Authentication** | API Key |
-| **Free Tier** | 60 calls/min |
-| **Data Types** | OHLCV, Fundamentals, Earnings, News |
-
-**Pros:**
-- Generous free tier (60/min)
-- Company fundamentals included
-- Earnings calendar
-- News sentiment data
-
-**Cons:**
-- Daily OHLCV only
-- Limited historical depth
-- Premium features require subscription
-
-**Files:**
-- `Infrastructure/Adapters/Core/FinnhubHistoricalDataProvider.cs`
-
----
-
-### Stooq
-
-**Best For:** Global indices, forex, commodities
-
-| Attribute | Details |
-|-----------|---------|
-| **Type** | Historical only |
-| **Status** | ✅ Implemented |
-| **Setup Complexity** | Very Low (no auth required) |
-| **Authentication** | None |
-| **Free Tier** | Unlimited |
-| **Data Types** | Daily OHLCV |
-
-**Pros:**
-- No authentication required
-- Global coverage (indices, forex, commodities)
-- 20+ years history
-- Simple CSV API
-
-**Cons:**
-- Daily data only
-- No dividend adjustment
-- No corporate actions data
-- Less reliable than paid sources
-
-**Files:**
-- `Infrastructure/Adapters/Core/StooqHistoricalDataProvider.cs`
-
----
-
-### Nasdaq Data Link (formerly Quandl)
-
-**Best For:** Alternative data, economic indicators
-
-| Attribute | Details |
-|-----------|---------|
-| **Type** | Historical only |
-| **Status** | ✅ Implemented |
-| **Setup Complexity** | Low (API key required) |
-| **Authentication** | API Key |
-| **Free Tier** | Limited datasets |
-| **Data Types** | Time series, tables |
-
-**Pros:**
-- FRED economic data
-- Alternative datasets
-- High data quality
-- Professional API
-
-**Cons:**
-- Limited free datasets
-- Premium data requires subscription
-- Not primarily for equity prices
-
-**Files:**
-- `Infrastructure/Adapters/Core/NasdaqDataLinkHistoricalDataProvider.cs`
-
----
-
-### Alpha Vantage
-
-**Best For:** Intraday historical data
-
-| Attribute | Details |
-|-----------|---------|
-| **Type** | Historical only |
-| **Status** | ✅ Implemented |
-| **Setup Complexity** | Low (API key required) |
-| **Authentication** | API Key |
-| **Free Tier** | 25 req/day |
-| **Data Types** | Intraday + Daily OHLCV |
-
-**Pros:**
-- Intraday data (1/5/15/30/60 min)
-- Global indices and forex
-- Easy API
-
-**Cons:**
-- Severely limited free tier (25/day)
-- Not practical for bulk backfill
-- Slow data updates
-
-**Files:**
-- `Infrastructure/Adapters/Core/AlphaVantageHistoricalDataProvider.cs`
-
----
-
-### Polygon.io
-
-**Best For:** Historical bars, trades, quotes
-
-| Attribute | Details |
-|-----------|---------|
-| **Type** | Historical (streaming stub) |
-| **Status** | ✅ Historical Production, ❌ Streaming Stub |
-| **Setup Complexity** | Low (API key required) |
-| **Authentication** | API Key |
-| **Free Tier** | 5 calls/min |
-| **Data Types** | OHLCV, trades, quotes |
-
-**Pros:**
-- High-quality data
-- Tick-level historical data
-- Options and crypto available
-
-**Cons:**
-- Very limited free tier
-- Streaming not yet implemented
-- Expensive premium tiers
-
-**Files:**
-- `Infrastructure/Adapters/Core/PolygonHistoricalDataProvider.cs`
-- `Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs` (stub)
-
----
+**Implementation**
+- `src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs`
+- `src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs`
+- `src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs`
 
 ### StockSharp
 
-**Best For:** Multi-exchange connectivity, futures, crypto exchanges
+**Best For:** Connector-based access to many venues and asset classes from one integration surface.
 
-| Attribute | Details |
-|-----------|---------|
-| **Type** | Streaming + Historical |
-| **Status** | ⚠️ Requires STOCKSHARP build flag |
-| **Setup Complexity** | Medium (connector packages required) |
-| **Authentication** | Varies by connector |
-| **Connector Types** | 8 implemented (5 public + 3 crypto) |
+**Strengths**
+- Broad connector ecosystem
+- Streaming, historical, and symbol-search paths
+- Good fit when a specific supported connector matches your venue needs
 
-**Supported Connectors:**
+**Tradeoffs**
+- Build and licensing complexity
+- Coverage depends on connector configuration rather than one fixed API
 
-| Connector | Markets | Status | Notes |
-|-----------|---------|--------|-------|
-| Rithmic | CME, NYMEX, COMEX, CBOT futures | Public | Low-latency direct access |
-| IQFeed | US equities, options | Public | Historical lookups |
-| CQG | Futures, options | Public | Excellent historical coverage |
-| InteractiveBrokers | Global multi-asset | Public | Via StockSharp adapter |
-| Custom | Any via AdapterType | Public | Extensible adapter system |
-| Binance | Crypto spot & futures | Licensed | Requires crowdfunding membership |
-| Coinbase | Coinbase Pro markets | Licensed | Requires crowdfunding membership |
-| Kraken | Crypto spot | Licensed | Requires crowdfunding membership |
+**Operator Notes**
+- StockSharp is a connector-runtime integration, so runtime behavior and historical availability vary by adapter, package availability, and venue entitlements.
+- Unsupported connector or missing-package paths should be treated as setup/configuration issues and resolved through [StockSharp Connector Guide](stocksharp-connectors.md).
 
-**Note:** Crypto connectors (Binance, Coinbase, Kraken) require StockSharp crowdfunding membership. See https://stocksharp.com/store/ for licensing.
+**Implementation**
+- `src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpMarketDataClient.cs`
+- `src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpHistoricalDataProvider.cs`
+- `src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpSymbolSearchProvider.cs`
+- `docs/providers/stocksharp-connectors.md`
 
-**Pros:**
-- 90+ data sources via StockSharp ecosystem
-- Professional-grade market data infrastructure
-- Unified API across multiple exchanges
-- Active development and community
+### Yahoo Finance
 
-**Cons:**
-- Requires separate StockSharp packages
-- Crypto connectors require paid license
-- Learning curve for StockSharp API
-- Build flags required for each connector
+**Best For:** Broad, no-auth historical fallback coverage.
 
-**Files:**
-- `Infrastructure/Adapters/StockSharp/StockSharpMarketDataClient.cs`
-- `Infrastructure/Adapters/StockSharp/StockSharpConnectorFactory.cs`
+**Strengths**
+- No credentials required
+- Large global instrument surface
+- Useful as a resilience layer in composite backfill flows
 
----
+**Tradeoffs**
+- Unofficial API
+- No live streaming
+- Daily-history-oriented workflow
 
-## Feature Comparison Matrix
+**Implementation**
+- `src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs`
 
-### Data Types Supported
+### Tiingo
 
-| Provider | Trades | Quotes | Bars | L2 Depth | Fundamentals |
-|----------|--------|--------|------|----------|--------------|
-| Alpaca | ✅ | ✅ | ✅ | ❌ | ❌ |
-| Interactive Brokers | ✅ | ✅ | ✅ | ✅ | ❌ |
-| Yahoo Finance | ❌ | ❌ | ✅ | ❌ | ❌ |
-| Tiingo | ❌ | ❌ | ✅ | ❌ | ❌ |
-| Finnhub | ❌ | ❌ | ✅ | ❌ | ✅ |
-| Stooq | ❌ | ❌ | ✅ | ❌ | ❌ |
-| Polygon | ✅ | ✅ | ✅ | ❌ | ❌ |
+**Best For:** Adjusted historical data and corporate actions.
 
-### Data Quality Features
+**Strengths**
+- Clean adjusted-data workflow
+- Useful dividend and split support
+- Good complement to Yahoo Finance and Alpaca
 
-| Provider | Split Adjusted | Dividend Adjusted | Corporate Actions |
-|----------|---------------|-------------------|-------------------|
-| Alpaca | ✅ | ✅ | ✅ |
-| Interactive Brokers | ✅ | ✅ | ✅ Full |
-| Yahoo Finance | ✅ | ✅ (adj close) | Dividends, Splits |
-| Tiingo | ✅ | ✅ (all OHLCV) | ✅ Full |
-| Finnhub | ✅ | ✅ | Dividends, Splits |
-| Stooq | ✅ | ❌ | ❌ |
-| Polygon | ✅ | ✅ | Dividends, Splits |
+**Tradeoffs**
+- Free tier is rate limited
+- Historical only
 
----
+**Implementation**
+- `src/Meridian.Infrastructure/Adapters/Tiingo/TiingoHistoricalDataProvider.cs`
 
-## Recommended Provider Combinations
+### Twelve Data
 
-### Development/Testing
-```
-Primary Streaming: Alpaca (IEX)
-Historical Backfill: Yahoo Finance + Stooq
-```
+**Best For:** Credentialed international OHLCV coverage.
 
-### Production - Basic
-```
-Primary Streaming: Alpaca (SIP)
-Historical Backfill: Alpaca + Yahoo Finance
-Fundamentals: Finnhub
-```
+**Strengths**
+- Covers equities, ETFs, forex, and crypto
+- Useful fallback when broader international data is needed
 
-### Production - Professional
-```
-Primary Streaming: Interactive Brokers
-L2 Depth: Interactive Brokers
-Historical Backfill: IB + Tiingo + Alpaca
-Fundamentals: Finnhub
-```
+**Tradeoffs**
+- Free tier is rate limited
+- Historical only
 
-### Research/Backtesting
-```
-Historical: CompositeProvider with:
-  - Tiingo (dividend-adjusted)
-  - Yahoo Finance (global coverage)
-  - Alpaca (recent data)
-  - Stooq (indices, forex)
-```
+**Implementation**
+- `src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs`
+
+### FRED
+
+**Best For:** Macro and economic data in research or backtesting workflows.
+
+**Strengths**
+- Strong macro coverage
+- Useful for rates, inflation, GDP, labor, and other economic overlays
+
+**Tradeoffs**
+- Not an equities price feed
+- Series-ID workflow differs from ticker-centric providers
+
+**Implementation**
+- `src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs`
+
+### Synthetic
+
+**Best For:** Offline development, fixture mode, demos, and deterministic testing.
+
+**Strengths**
+- No credentials or external network dependency
+- Supports streaming, historical, and symbol-search workflows
+- Deterministic outputs help repeatable tests and UI demos
+
+**Tradeoffs**
+- Not live market data
+- Not appropriate for production trading decisions
+
+**Implementation**
+- `src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs`
+- `src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs`
 
 ---
 
-## CompositeHistoricalDataProvider
+## Feature Matrix
 
-The `CompositeHistoricalDataProvider` automatically manages multiple providers:
-
-```csharp
-var composite = new CompositeHistoricalDataProvider(new[]
-{
-    tiingoProvider,    // Priority 1: Best for adjusted data
-    yahooProvider,     // Priority 2: Wide coverage
-    alpacaProvider,    // Priority 3: Recent data
-    stooqProvider      // Priority 4: Fallback
-});
-
-// Automatic failover and rate-limit rotation
-var bars = await composite.GetBarsAsync("AAPL", from, to);
-```
-
-**Features:**
-- Automatic failover on errors
-- Rate-limit rotation across providers
-- Priority-based selection
-- Health checking
+| Provider | Trades | Quotes | Bars | L2 Depth | Symbol Search | Corporate Actions |
+|----------|--------|--------|------|----------|---------------|-------------------|
+| Alpaca | Yes | Yes | Yes | No | Yes | Yes |
+| Interactive Brokers | Yes | Yes | Yes | Yes | Connector workflow | Yes |
+| Polygon | Yes | Yes | Yes | No | Yes | Yes |
+| StockSharp | Yes | Yes | Yes | Yes | Yes | Connector-dependent |
+| NYSE Streaming | Yes | Yes | No | Yes | No | No |
+| Yahoo Finance | No | No | Yes | No | No | Adjusted close plus actions |
+| Tiingo | No | No | Yes | No | No | Full dividends and splits |
+| Finnhub | No | No | Yes | No | Yes | Dividends and splits |
+| Stooq | No | No | Yes | No | No | No |
+| Twelve Data | No | No | Yes | No | No | No |
+| FRED | No | No | Yes | No | No | No |
+| Synthetic | Yes | Yes | Yes | Yes | Yes | Yes |
 
 ---
 
-## Cost Analysis
+## Recommended Combinations
 
-### Free Tier Comparison
+### Local Development
 
-| Provider | Monthly Cost | Data Volume | Limitations |
-|----------|--------------|-------------|-------------|
-| Alpaca (IEX) | $0 | Unlimited | IEX only (~2-5% volume) |
-| Yahoo Finance | $0 | Unlimited | Daily data, unofficial API |
-| Stooq | $0 | Unlimited | Daily data, no adjustments |
-| Tiingo | $0 | 1K req/day | Rate limited |
-| Finnhub | $0 | 60 req/min | Limited fundamentals |
-| Alpha Vantage | $0 | 25 req/day | Severely limited |
-| Polygon | $0 | 5 req/min | Very limited |
-| IB | $0* | 100 data lines | Account required |
+- Streaming: `Synthetic` or `Alpaca`
+- Historical: `Yahoo Finance` + `Stooq`
+- Symbol search: `Synthetic`, `Alpaca`, or `Polygon`
 
-*Interactive Brokers requires $500 minimum account balance
+### Research And Backtesting
 
-### Paid Tier Recommendations
+- Historical: `CompositeHistoricalDataProvider`
+- High-quality adjusted data: `Tiingo`
+- Broad fallback coverage: `Yahoo Finance` and `Stooq`
+- Macro overlays: `FRED`
 
-| Use Case | Recommended | Monthly Cost |
-|----------|-------------|--------------|
-| Hobbyist | Free tiers only | $0 |
-| Serious Research | Alpaca SIP | $9 |
-| Day Trading | IB + data subs | $50-100+ |
-| Institutional | Multiple premium | $500+ |
+### Production-Oriented Trading
+
+- Streaming: `Interactive Brokers`, `Polygon`, or `NYSE Streaming`
+- Historical continuity: `Alpaca`, `Polygon`, or `Interactive Brokers` after the official `IBApi` path is enabled
+- Reference search: `OpenFIGI` plus a broker or vendor symbol-search provider
 
 ---
 
 ## Related Documentation
 
-- [Alpaca Setup Guide](alpaca-setup.md)
-- [Interactive Brokers Setup](interactive-brokers-setup.md)
-- [Historical Backfill Guide](backfill-guide.md)
-- [Data Sources Reference](data-sources.md)
-- [Configuration Guide](../HELP.md#configuration)
+- [Data Sources Reference](data-sources.md) - Current provider inventory
+- [Backfill Guide](backfill-guide.md) - Historical data workflows
+- [Alpaca Setup](alpaca-setup.md) - Alpaca credentials and setup
+- [Interactive Brokers Setup](interactive-brokers-setup.md) - IB TWS / Gateway setup
+- [Configuration Guide](../HELP.md#configuration) - User-facing configuration overview
 
 ---
 
-*Last Updated: 2026-02-01*
+*Last Updated: 2026-03-21*

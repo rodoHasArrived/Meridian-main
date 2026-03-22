@@ -114,7 +114,7 @@ public sealed class CommandPaletteService
         }
 
         // Fill with popular/default commands
-        var defaultIds = new[] { "nav-dashboard", "nav-backtest", "nav-lean", "nav-portfolio-import", "nav-backfill", "nav-symbols", "nav-data-quality", "nav-settings" };
+        var defaultIds = new[] { "nav-dashboard", "nav-backtest", "nav-live-data", "nav-backfill", "nav-symbols", "nav-data-quality", "nav-provider", "nav-settings" };
         foreach (var id in defaultIds)
         {
             if (result.All(c => c.Id != id))
@@ -186,14 +186,19 @@ public sealed class CommandPaletteService
     private void RegisterDefaultCommands()
     {
         // Navigation commands
-        RegisterNavigationCommand("nav-dashboard", "Navigate to Dashboard", "Dashboard", "dash home main overview", "\uE80F", "Ctrl+D");
+        RegisterNavigationCommand("nav-dashboard", "Open Research: Dashboard", "Dashboard", "research dash home main overview workstation", "\uE80F", "Ctrl+D");
         RegisterNavigationCommand("nav-watchlist", "Navigate to Watchlist", "Watchlist", "watch list favorites", "\uE728", "Ctrl+W");
         RegisterNavigationCommand("nav-symbols", "Navigate to Symbols", "Symbols", "symbol ticker stock add remove", "\uE71B", "Ctrl+Y");
-        RegisterNavigationCommand("nav-backfill", "Navigate to Backfill", "Backfill", "backfill historical download import", "\uE896", "Ctrl+B");
-        RegisterNavigationCommand("nav-live-data", "Navigate to Live Data", "LiveData", "live data streaming real time", "\uE9F5", "");
-        RegisterNavigationCommand("nav-data-quality", "Navigate to Data Quality", "DataQuality", "quality metrics completeness gaps", "\uE9D5", "Ctrl+Q");
-        RegisterNavigationCommand("nav-storage", "Navigate to Storage", "Storage", "storage disk files size", "\uEDA2", "");
-        RegisterNavigationCommand("nav-provider", "Navigate to Providers", "Provider", "provider data source alpaca polygon ib", "\uE774", "");
+        RegisterNavigationCommand("nav-backfill", "Open Data Operations: Backfill", "Backfill", "data operations backfill historical download import", "\uE896", "Ctrl+B");
+        RegisterNavigationCommand("nav-live-data", "Open Trading: Live Data", "LiveData", "trading live data streaming real time cockpit", "\uE9F5", "");
+        RegisterNavigationCommand("nav-runmat", "Navigate to RunMat Lab", "RunMat", "runmat matlab script research gpu analysis", "\uE943", "");
+        RegisterNavigationCommand("nav-strategy-runs", "Open Research: Strategy Runs", "StrategyRuns", "strategy runs history browser workstation portfolio ledger", "\uE8FD", "");
+        RegisterNavigationCommand("nav-run-detail", "Navigate to Run Detail", "RunDetail", "run detail strategy execution summary", "\uE946", "");
+        RegisterNavigationCommand("nav-run-portfolio", "Open Trading: Run Portfolio", "RunPortfolio", "trading portfolio positions exposure workstation", "\uE8B5", "");
+        RegisterNavigationCommand("nav-run-ledger", "Open Governance: Run Ledger", "RunLedger", "governance ledger journal trial balance audit workstation", "\uE9D5", "");
+        RegisterNavigationCommand("nav-data-quality", "Open Governance: Data Quality", "DataQuality", "governance quality metrics completeness gaps", "\uE9D5", "Ctrl+Q");
+        RegisterNavigationCommand("nav-storage", "Open Data Operations: Storage", "Storage", "data operations storage disk files size", "\uEDA2", "");
+        RegisterNavigationCommand("nav-provider", "Open Data Operations: Providers", "Provider", "data operations provider data source alpaca polygon ib", "\uE774", "");
         RegisterNavigationCommand("nav-provider-health", "Navigate to Provider Health", "ProviderHealth", "provider health status connection", "\uE95E", "");
         RegisterNavigationCommand("nav-data-sources", "Navigate to Data Sources", "DataSources", "data sources configure", "\uE943", "");
         RegisterNavigationCommand("nav-data-browser", "Navigate to Data Browser", "DataBrowser", "data browser explore files", "\uEC50", "");
@@ -213,8 +218,8 @@ public sealed class CommandPaletteService
         RegisterNavigationCommand("nav-event-replay", "Navigate to Event Replay", "EventReplay", "event replay playback simulate", "\uE768", "");
         RegisterNavigationCommand("nav-package-manager", "Navigate to Package Manager", "PackageManager", "package zip import share", "\uE7B8", "");
         RegisterNavigationCommand("nav-schedules", "Navigate to Schedule Manager", "Schedules", "schedule cron job timer", "\uE823", "");
-        RegisterNavigationCommand("nav-backtest", "Navigate to Backtest", "Backtest", "backtest strategy simulation run test historical replay", "\uE9D9", "Ctrl+Shift+B");
-        RegisterNavigationCommand("nav-lean", "Navigate to Lean Integration", "LeanIntegration", "lean quantconnect backtest engine algorithm", "\uE943", "");
+        RegisterNavigationCommand("nav-backtest", "Open Research: Backtest", "Backtest", "research backtest strategy simulation run test historical replay", "\uE9D9", "Ctrl+Shift+B");
+        RegisterNavigationCommand("nav-lean", "Open Research: Lean Integration", "LeanIntegration", "research lean quantconnect backtest engine algorithm", "\uE943", "");
         RegisterNavigationCommand("nav-admin-maintenance", "Navigate to Admin Maintenance", "AdminMaintenance", "admin maintenance cleanup", "\uE90F", "");
         RegisterNavigationCommand("nav-storage-optimization", "Navigate to Storage Optimization", "StorageOptimization", "storage optimize compress tier", "\uEDA2", "");
         RegisterNavigationCommand("nav-keyboard-shortcuts", "Navigate to Keyboard Shortcuts", "KeyboardShortcuts", "keyboard shortcut hotkey bind", "\uE765", "");
@@ -250,13 +255,29 @@ public sealed class CommandPaletteService
         {
             Id = id,
             Title = title,
-            Description = $"Navigate to {pageTag} page",
+            Description = BuildNavigationDescription(pageTag),
             Category = PaletteCommandCategory.Navigation,
             ActionId = pageTag,
             Keywords = keywords,
             Icon = icon,
             Shortcut = shortcut
         });
+    }
+
+    private static string BuildNavigationDescription(string pageTag)
+    {
+        return pageTag switch
+        {
+            "Dashboard" or "Backtest" or "LeanIntegration" or "RunMat" or "Charts" or "Watchlist" or "OrderBook" or "StrategyRuns"
+                => $"Research workspace - {pageTag} page",
+            "LiveData" or "PortfolioImport" or "TradingHours" or "RunPortfolio"
+                => $"Trading workspace - {pageTag} page",
+            "Provider" or "DataSources" or "Symbols" or "Backfill" or "Storage" or "DataExport" or "PackageManager" or "Schedules" or "DataBrowser" or "DataCalendar" or "EventReplay"
+                => $"Data Operations workspace - {pageTag} page",
+            "DataQuality" or "ProviderHealth" or "SystemHealth" or "Diagnostics" or "Settings" or "AdminMaintenance" or "RetentionAssurance" or "NotificationCenter" or "Help" or "RunLedger" or "RunDetail"
+                => $"Governance workspace - {pageTag} page",
+            _ => $"Navigate to {pageTag} page"
+        };
     }
 
     private void RegisterActionCommand(string id, string title, string actionId, string keywords, string icon, string shortcut)

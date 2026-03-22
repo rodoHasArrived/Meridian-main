@@ -17,6 +17,7 @@ namespace Meridian.Backtesting.Sdk;
 /// directly to <c>BacktestEngine.RunAsync</c>.
 /// </param>
 /// <param name="AssetEvents">Optional sequence of asset events (dividends, splits) to apply during the simulation.</param>
+/// <param name="EngineMode">Selects the managed or CppTrader-backed replay engine.</param>
 public sealed record BacktestRequest(
     DateOnly From,
     DateOnly To,
@@ -28,7 +29,8 @@ public sealed record BacktestRequest(
     string DefaultBrokerageAccountId = BacktestDefaults.DefaultBrokerageAccountId,
     string DataRoot = "./data",
     string? StrategyAssemblyPath = null,
-    IReadOnlyList<AssetEvent>? AssetEvents = null)
+    IReadOnlyList<AssetEvent>? AssetEvents = null,
+    BacktestEngineMode EngineMode = BacktestEngineMode.Managed)
 {
     /// <summary>
     /// Returns the normalized account list, falling back to a single default brokerage account for

@@ -20,11 +20,41 @@ namespace Meridian.Infrastructure.Adapters.StockSharp;
 public static class StockSharpConnectorFactory
 {
     private static readonly ILogger Log = LoggingSetup.ForContext("StockSharpConnectorFactory");
+    private const string ConnectorGuidePath = "docs/providers/stocksharp-connectors.md";
 
     /// <summary>
     /// Centralizes platform/package guard messages used by conditional-compilation stubs.
     /// </summary>
     private static Exception ThrowPlatformNotSupported(string message) => new NotSupportedException(message);
+
+    private static string BuildConnectorGuideSuffix()
+        => $"See {ConnectorGuidePath} for supported connector types and configuration examples.";
+
+    private static string BuildSupportedConnectorList()
+        => string.Join(", ", SupportedConnectorTypes);
+
+    private static string BuildMissingPlatformMessage(string connectorType)
+        => $"StockSharp connector '{connectorType}' requires StockSharp.Algo and connector-specific StockSharp packages. "
+         + "Build with EnableStockSharp=true and install the required connector package(s). "
+         + $"Supported named connector types: {BuildSupportedConnectorList()}. "
+         + BuildConnectorGuideSuffix();
+
+    internal static string BuildUnsupportedConnectorMessage(StockSharpConfig config)
+        => $"Connector type '{config.ConnectorType}' is not recognized as a built-in StockSharp connector. "
+         + $"Supported named connector types: {BuildSupportedConnectorList()}. "
+         + "To use a custom adapter, set StockSharp.AdapterType (or ConnectionParams:AdapterType) and optionally "
+         + "StockSharp.AdapterAssembly (or ConnectionParams:AdapterAssembly). "
+         + BuildConnectorGuideSuffix();
+
+    internal static string BuildAdapterLoadFailureMessage(string resolvedTypeName)
+        => $"Unable to load StockSharp adapter '{resolvedTypeName}'. "
+         + "Ensure the connector package is installed, the adapter type name is correct, and AdapterAssembly is set when the type name is not assembly-qualified. "
+         + BuildConnectorGuideSuffix();
+
+    internal static string BuildAdapterContractFailureMessage(string resolvedTypeName)
+        => $"Adapter type '{resolvedTypeName}' does not implement IMessageAdapter. "
+         + "Use a StockSharp message adapter type or choose one of the built-in connector types. "
+         + BuildConnectorGuideSuffix();
 
 #if STOCKSHARP
     /// <summary>
@@ -290,9 +320,7 @@ public static class StockSharpConnectorFactory
 
         if (string.IsNullOrWhiteSpace(adapterTypeName))
         {
-            throw new NotSupportedException(
-                $"Connector type '{config.ConnectorType}' is not supported. " +
-                "Set StockSharp.AdapterType (or ConnectionParams:AdapterType) to use a custom connector.");
+            throw new NotSupportedException(BuildUnsupportedConnectorMessage(config));
         }
 
         var adapterAssembly = config.AdapterAssembly;
@@ -311,9 +339,7 @@ public static class StockSharpConnectorFactory
         var adapterType = Type.GetType(resolvedTypeName, throwOnError: false);
         if (adapterType == null)
         {
-            throw new NotSupportedException(
-                $"Unable to load StockSharp adapter '{resolvedTypeName}'. " +
-                "Ensure the connector package is installed and the type name is correct.");
+            throw new NotSupportedException(BuildAdapterLoadFailureMessage(resolvedTypeName));
         }
 
         object? adapterInstance = null;
@@ -329,8 +355,7 @@ public static class StockSharpConnectorFactory
 
         if (adapterInstance is not IMessageAdapter adapter)
         {
-            throw new NotSupportedException(
-                $"Adapter type '{resolvedTypeName}' does not implement IMessageAdapter.");
+            throw new NotSupportedException(BuildAdapterContractFailureMessage(resolvedTypeName));
         }
 
         ApplyAdapterSettings(adapter, config.ConnectionParams);
@@ -393,7 +418,7 @@ public static class StockSharpConnectorFactory
     /// </summary>
     public static object Create(StockSharpConfig config)
     {
-        throw ThrowPlatformNotSupported("StockSharp integration requires StockSharp.Algo NuGet package. Install with: dotnet add package StockSharp.Algo");
+        throw ThrowPlatformNotSupported(BuildMissingPlatformMessage(config.ConnectorType));
     }
 #endif
 
@@ -406,6 +431,9 @@ public static class StockSharpConnectorFactory
         "IQFeed",       // US Equities, Options
         "CQG",          // Futures, Options
         "InteractiveBrokers", // Global multi-asset
+        "Binance",      // Crypto
+        "Coinbase",     // Crypto
+        "Kraken",       // Crypto
         "Custom"        // Custom adapters via AdapterType
     };
 

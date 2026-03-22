@@ -105,6 +105,11 @@ public sealed class CredentialValidationService : IAsyncDisposable
             {
                 tasks.Add(ValidateAlphaVantageAsync(providers.AlphaVantage, ct));
             }
+
+            if (providers.Fred?.Enabled == true && !string.IsNullOrEmpty(providers.Fred.ApiKey))
+            {
+                tasks.Add(ValidateFredAsync(providers.Fred, ct));
+            }
         }
 
         // Execute all validations in parallel
@@ -512,6 +517,73 @@ public sealed class CredentialValidationService : IAsyncDisposable
         {
             return new ValidationResult(
                 Provider: "Alpha Vantage",
+                IsValid: false,
+                Message: $"Error: {ex.Message}",
+                AccountInfo: null,
+                ResponseTime: sw.Elapsed
+            );
+        }
+    }
+
+    /// <summary>
+    /// Validates FRED credentials.
+    /// </summary>
+    public async Task<ValidationResult> ValidateFredAsync(FredConfig options, CancellationToken ct = default)
+    {
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+
+        try
+        {
+            var url = $"https://api.stlouisfed.org/fred/series/observations?series_id=GDP&api_key={options.ApiKey}&file_type=json&limit=1";
+
+            using var response = await _httpClient.GetAsync(url, ct);
+            sw.Stop();
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync(ct);
+                if (content.Contains("\"error_code\"", StringComparison.OrdinalIgnoreCase))
+                {
+                    return new ValidationResult(
+                        Provider: "FRED",
+                        IsValid: false,
+                        Message: "Invalid API key",
+                        AccountInfo: null,
+                        ResponseTime: sw.Elapsed
+                    );
+                }
+
+                return new ValidationResult(
+                    Provider: "FRED",
+                    IsValid: true,
+                    Message: "API key valid",
+                    AccountInfo: null,
+                    ResponseTime: sw.Elapsed
+                );
+            }
+
+            return new ValidationResult(
+                Provider: "FRED",
+                IsValid: false,
+                Message: $"HTTP {(int)response.StatusCode}",
+                AccountInfo: null,
+                ResponseTime: sw.Elapsed
+            );
+        }
+        catch (TaskCanceledException)
+        {
+            return new ValidationResult(
+                Provider: "FRED",
+                IsValid: false,
+                Message: "Request timeout",
+                AccountInfo: null,
+                ResponseTime: sw.Elapsed
+            );
+        }
+        catch (Exception ex)
+        {
+            return new ValidationResult(
+                Provider: "FRED",
                 IsValid: false,
                 Message: $"Error: {ex.Message}",
                 AccountInfo: null,

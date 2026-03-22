@@ -39,6 +39,12 @@ internal sealed class BacktestContext(
         if ((request.Type is OrderType.StopMarket or OrderType.StopLimit) && (!request.StopPrice.HasValue || request.StopPrice <= 0))
             throw new ArgumentOutOfRangeException(nameof(request.StopPrice), "Stop price must be greater than zero.");
 
+        if (request.TakeProfitPrice.HasValue && request.TakeProfitPrice <= 0)
+            throw new ArgumentOutOfRangeException(nameof(request.TakeProfitPrice), "Take-profit price must be greater than zero.");
+
+        if (request.StopLossPrice.HasValue && request.StopLossPrice <= 0)
+            throw new ArgumentOutOfRangeException(nameof(request.StopLossPrice), "Stop-loss price must be greater than zero.");
+
         var accountId = string.IsNullOrWhiteSpace(request.AccountId)
             ? defaultBrokerageAccountId
             : request.AccountId.Trim();
@@ -55,10 +61,31 @@ internal sealed class BacktestContext(
             request.ExecutionModel,
             request.AllowPartialFills,
             request.ProviderParameters,
-            accountId);
+            accountId,
+            TakeProfitPrice: request.TakeProfitPrice,
+            StopLossPrice: request.StopLossPrice);
 
         _pendingOrders.Add(order);
         return order.OrderId;
+    }
+
+    public Guid PlaceBracketOrder(BracketOrderRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        return PlaceOrder(new OrderRequest(
+            request.Symbol,
+            request.Quantity,
+            request.EntryType,
+            request.LimitPrice,
+            request.StopPrice,
+            request.TakeProfitPrice,
+            request.StopLossPrice,
+            request.TimeInForce,
+            request.ExecutionModel,
+            request.AllowPartialFills,
+            request.ProviderParameters,
+            request.AccountId));
     }
 
     public Guid PlaceMarketOrder(string symbol, long quantity)
@@ -102,6 +129,9 @@ internal sealed class BacktestContext(
 
     public void CancelOrder(Guid orderId) =>
         _pendingOrders.RemoveAll(o => o.OrderId == orderId);
+
+    public void CancelContingentOrders(Guid parentOrderId) =>
+        _pendingOrders.RemoveAll(o => o.ParentOrderId == parentOrderId);
 
     internal IReadOnlyList<Order> DrainPendingOrders()
     {

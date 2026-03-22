@@ -34,18 +34,19 @@ This directory contains in-depth evaluations of architecture components, provide
 | [Desktop Platform Improvements Guide](desktop-platform-improvements-implementation-guide.md) | Implementation guide: test infrastructure, fixture mode, DI modernization |
 | [Desktop Improvements Executive Summary](desktop-improvements-executive-summary.md) | Impact analysis, phase status, quick reference, and success criteria |
 
-**Archived:** [Desktop End-User Improvements](../archived/desktop-end-user-improvements.md) — Comprehensive desktop UX assessment retained for historical reference
+**Archived:** [Desktop End-User Improvements](../../archive/docs/assessments/desktop-end-user-improvements.md) — Comprehensive desktop UX assessment retained for historical reference
 
 ## Improvement Proposals & Brainstorms
 
 | Document | Description |
 |----------|-------------|
 | [High-Impact Improvements (Mar 2026)](high-impact-improvement-brainstorm-2026-03.md) | Critical defects and high-impact improvements: data integrity, stability, architecture (31 items with status) |
-| [High-Impact Improvements Brainstorm](high-impact-improvements-brainstorm.md) | Two-part analysis: Part 1 — code generalization & architecture (2026-03-02); Part 2 — output quality & correctness (2026-03-03) |
 | [High-Value Low-Cost Improvements](high-value-low-cost-improvements-brainstorm.md) | Quick-win improvements across startup, observability, developer experience, and data integrity (47 items) |
 | [Next Frontier Brainstorm](2026-03-brainstorm-next-frontier.md) | Future capabilities: correlation engine, ML anomaly detection, cloud sinks, governance (Mar 2026) |
 | [Nautilus-Inspired Restructuring](nautilus-inspired-restructuring-proposal.md) | Structural improvements inspired by nautilus_trader: co-located configs, parsing layer, FSM lifecycle |
 | [Assembly-Level Performance Opportunities](assembly-performance-opportunities.md) | SIMD/.NET hardware intrinsics optimization candidates for hot paths |
+
+**Archived:** [High-Impact Improvements Brainstorm](../../archive/docs/assessments/high-impact-improvements-brainstorm.md) — Older two-part brainstorm retained for historical reference after promotion of the newer March 2026 high-impact set and status-tracker summaries
 
 ## Related
 

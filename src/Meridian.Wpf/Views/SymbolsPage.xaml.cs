@@ -17,9 +17,11 @@ namespace Meridian.Wpf.Views;
 /// </summary>
 public partial class SymbolsPage : Page
 {
+    private const string PageTag = "Symbols";
+
     private readonly SymbolsPageViewModel _vm;
     private readonly WpfServices.NavigationService _navigationService;
-    private readonly WpfServices.WatchlistService _watchlistService;
+    private readonly WpfServices.WorkspaceService _workspaceService;
     private SymbolViewModel? _selectedSymbol;
     private bool _isEditMode;
 
@@ -33,7 +35,7 @@ public partial class SymbolsPage : Page
         InitializeComponent();
 
         _navigationService = navigationService;
-        _watchlistService = watchlistService;
+        _workspaceService = WpfServices.WorkspaceService.Instance;
         _vm = new SymbolsPageViewModel(configService, watchlistService, loggingService, notificationService);
         DataContext = _vm;
 
@@ -294,40 +296,20 @@ public partial class SymbolsPage : Page
         CallApplyFilters();
     }
 
-    private async Task SyncAddSymbolToBackendAsync(
-        string symbol, bool subscribeTrades, bool subscribeDepth, int depthLevels, string exchange, CancellationToken ct = default)
-    {
-        try
-        {
-            await _symbolManagementService.AddSymbolAsync(
-                symbol, subscribeTrades, subscribeDepth, depthLevels, exchange);
-        }
-        catch (Exception ex)
-        {
-            _loggingService.LogError("Backend sync failed for add", ex, ("Symbol", symbol));
-        }
-    }
-
     private void SavePageFilterState()
     {
-        try
-        {
-            await _symbolManagementService.RemoveSymbolAsync(symbol);
-        }
-        catch (Exception ex)
-        {
-            _loggingService.LogError("Backend sync failed for remove", ex, ("Symbol", symbol));
-        }
+        _workspaceService.UpdatePageFilterState(PageTag, "SearchText", SymbolSearchBox.Text);
+        _workspaceService.UpdatePageFilterState(PageTag, "FilterCombo", GetComboSelectedTag(FilterCombo) ?? "All");
+        _workspaceService.UpdatePageFilterState(PageTag, "ExchangeFilter", GetComboSelectedTag(ExchangeFilterCombo) ?? "All");
     }
 
     private void RestorePageFilterState()
     {
-        var ws = WpfServices.WorkspaceService.Instance;
-        var searchText = ws.GetPageFilterState(PageTag, "SearchText");
+        var searchText = _workspaceService.GetPageFilterState(PageTag, "SearchText");
         if (searchText is not null) SymbolSearchBox.Text = searchText;
-        var filter = ws.GetPageFilterState(PageTag, "FilterCombo");
+        var filter = _workspaceService.GetPageFilterState(PageTag, "FilterCombo");
         if (filter is not null) SelectComboItemByTag(FilterCombo, filter);
-        var exchange = ws.GetPageFilterState(PageTag, "ExchangeFilter");
+        var exchange = _workspaceService.GetPageFilterState(PageTag, "ExchangeFilter");
         if (exchange is not null) SelectComboItemByTag(ExchangeFilterCombo, exchange);
     }
 

@@ -11,6 +11,12 @@ open Meridian.FSharp.Validation.ValidationTypes
 module Spread = Meridian.FSharp.Calculations.Spread
 module Imbalance = Meridian.FSharp.Calculations.Imbalance
 module Aggregations = Meridian.FSharp.Calculations.Aggregations
+module RiskRules = Meridian.FSharp.Risk.RiskRules
+module RiskEvaluation = Meridian.FSharp.Risk.RiskEvaluation
+module PromotionPolicy = Meridian.FSharp.Promotion.PromotionPolicy
+module PromotionTypes = Meridian.FSharp.Promotion.PromotionTypes
+open Meridian.FSharp.Risk.RiskTypes
+open Meridian.Backtesting.Sdk
 
 /// Private helper functions for option conversion (for F# internal use).
 /// These are needed because [<Extension>] methods only work for C# consumers.
@@ -234,3 +240,97 @@ type AggressorInference private () =
 
     static member InferFromQuote(tradePrice: decimal, quote: QuoteEvent) : int =
         (inferAggressor tradePrice (Some quote.BidPrice) (Some quote.AskPrice)).ToInt()
+
+[<CLIMutable>]
+type RiskDecisionDto = {
+    Approved: bool
+    DecisionKind: string
+    Reasons: string array
+}
+
+[<CLIMutable>]
+type PromotionDecisionDto = {
+    Eligible: bool
+    RequiresManualReview: bool
+    Reasons: string array
+}
+
+[<Sealed>]
+type RiskInterop private () =
+
+    static member private ToDto(decision: RiskDecision) =
+        match decision with
+        | Approve ->
+            { Approved = true
+              DecisionKind = "approve"
+              Reasons = [||] }
+        | Reject reason ->
+            { Approved = false
+              DecisionKind = "reject"
+              Reasons = [| reason |] }
+        | Escalate reason ->
+            { Approved = false
+              DecisionKind = "escalate"
+              Reasons = [| reason |] }
+
+    static member CreateContext(
+        request: Meridian.Execution.Sdk.OrderRequest,
+        currentPositionQuantity: decimal,
+        maxPositionSize: Nullable<decimal>,
+        portfolioValue: Nullable<decimal>,
+        initialCapital: Nullable<decimal>,
+        maxDrawdownPercent: Nullable<decimal>) : RiskContext =
+        {
+            Request = request
+            CurrentPositionQuantity = currentPositionQuantity
+            MaxPositionSize = if maxPositionSize.HasValue then Some maxPositionSize.Value else None
+            PortfolioValue = if portfolioValue.HasValue then Some portfolioValue.Value else None
+            InitialCapital = if initialCapital.HasValue then Some initialCapital.Value else None
+            MaxDrawdownPercent = if maxDrawdownPercent.HasValue then Some maxDrawdownPercent.Value else None
+            RecentOrderRate = None
+            PortfolioExposure = None
+        }
+
+    static member EvaluatePositionLimit(ctx: RiskContext) : RiskDecisionDto =
+        RiskRules.positionLimit ctx |> RiskInterop.ToDto
+
+    static member EvaluateDrawdownCircuitBreaker(ctx: RiskContext) : RiskDecisionDto =
+        RiskRules.drawdownCircuitBreaker ctx |> RiskInterop.ToDto
+
+    static member Aggregate(decisions: seq<RiskDecisionDto>) : RiskDecisionDto =
+        let unionDecisions =
+            decisions
+            |> Seq.map (fun decision ->
+                if decision.Approved then Approve
+                elif StringComparer.OrdinalIgnoreCase.Equals(decision.DecisionKind, "escalate") then
+                    Escalate (decision.Reasons |> Array.tryHead |> Option.defaultValue "Escalated for manual review.")
+                else
+                    Reject (decision.Reasons |> Array.tryHead |> Option.defaultValue "Rejected by policy."))
+
+        RiskEvaluation.aggregate unionDecisions |> RiskInterop.ToDto
+
+[<Sealed>]
+type PromotionInterop private () =
+
+    static member private ToDto(decision: PromotionTypes.PromotionDecision) =
+        match decision with
+        | PromotionTypes.Eligible ->
+            { Eligible = true
+              RequiresManualReview = false
+              Reasons = [||] }
+        | PromotionTypes.Ineligible reasons ->
+            { Eligible = false
+              RequiresManualReview = false
+              Reasons = reasons |> List.toArray }
+        | PromotionTypes.ManualReview reasons ->
+            { Eligible = false
+              RequiresManualReview = true
+              Reasons = reasons |> List.toArray }
+
+    static member EvaluateBacktestPromotion(
+        result: BacktestResult,
+        minSharpeRatio: double,
+        maxAllowedDrawdownPercent: decimal,
+        minTotalReturn: decimal) : PromotionDecisionDto =
+        PromotionPolicy.evaluate result minSharpeRatio maxAllowedDrawdownPercent minTotalReturn
+        |> PromotionInterop.ToDto

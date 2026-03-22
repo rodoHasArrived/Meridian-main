@@ -1,18 +1,26 @@
 <Page x:Class="Meridian.Wpf.Views.TimeSeriesAlignmentPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      Background="{DynamicResource ConsoleBackgroundDarkBrush}"
+      Background="{DynamicResource ShellWindowBackgroundBrush}"
       Loaded="OnPageLoaded"
       AutomationProperties.Name="Time Series Alignment">
-    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
         <StackPanel MaxWidth="1200">
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                <TextBlock Text="&#xE9D9;" FontFamily="{StaticResource SymbolThemeFontFamily}"
-                           FontSize="28" Foreground="{StaticResource InfoColorBrush}" VerticalAlignment="Center" />
-                <TextBlock Text="Time Series Alignment" Style="{StaticResource PageTitleStyle}" Margin="12,0,0,0" VerticalAlignment="Center" />
-            </StackPanel>
-            <TextBlock Text="Align multi-symbol time series data for cross-sectional analysis, correlation studies, and paired analysis."
-                       Style="{StaticResource PageSubtitleStyle}" Margin="0,0,0,20" />
+            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24">
+                <StackPanel Orientation="Horizontal">
+                    <Border Width="44" Height="44" CornerRadius="14"
+                            Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                            BorderBrush="{StaticResource InfoColorBrush}" BorderThickness="1">
+                        <TextBlock Text="&#xE9D9;" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="24" Foreground="{StaticResource InfoColorBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                    </Border>
+                    <StackPanel Margin="12,0,0,0">
+                        <TextBlock Text="Time Series Alignment" Style="{StaticResource PageTitleStyle}" />
+                        <TextBlock Text="Align multi-symbol time series for cross-sectional research, correlation studies, and paired analysis."
+                                   Style="{StaticResource CardDescriptionStyle}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
 
             <!-- Alignment Configuration -->
             <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
@@ -88,7 +96,7 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Border Background="{DynamicResource ConsoleBackgroundBrush}" CornerRadius="4" Padding="8,4" Margin="0,0,4,4">
+                                <Border Background="{StaticResource PremiumPanelBrush}" BorderBrush="{StaticResource ConsoleBorderBrush}" BorderThickness="1" CornerRadius="999" Padding="8,4" Margin="0,0,4,4">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="{Binding}" FontFamily="Consolas" Foreground="{DynamicResource ConsoleTextBrush}" />
                                         <Button Content=" x" Click="RemoveSymbol_Click" Tag="{Binding}" FontSize="10"
@@ -154,8 +162,8 @@
             <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                        <Button Content="Run Alignment" Click="RunAlignment_Click" Style="{StaticResource FormButtonStyle}" />
-                        <Button Content="Save Preset" Click="SavePreset_Click" Style="{StaticResource FormButtonStyle}" Margin="8,0,0,0" />
+                        <Button Content="Run Alignment" Click="RunAlignment_Click" Style="{StaticResource PrimaryButtonStyle}" />
+                        <Button Content="Save Preset" Click="SavePreset_Click" Style="{StaticResource SecondaryButtonStyle}" Margin="8,0,0,0" />
                         <TextBlock x:Name="StatusText" VerticalAlignment="Center" Margin="16,0,0,0"
                                    Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="12" />
                     </StackPanel>

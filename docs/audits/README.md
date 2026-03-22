@@ -21,11 +21,14 @@ These generated artifacts were moved out of the repository root to reduce top-le
 | Artifact | Purpose |
 |----------|---------|
 | **[AUDIT_REPORT.md](AUDIT_REPORT.md)** | Consolidated human-readable audit report |
-| **[AUDIT_REPORT_2026_03_20.md](AUDIT_REPORT_2026_03_20.md)** | Date-stamped audit report snapshot |
 | **[audit-results-full.json](audit-results-full.json)** | Full machine-readable audit output |
 | **[audit-code-results.json](audit-code-results.json)** | Code-focused machine-readable audit output |
 | **[audit-architecture-results.txt](audit-architecture-results.txt)** | Architecture audit text output |
 | **[prompt-generation-results.json](prompt-generation-results.json)** | Prompt-generation artifact retained for traceability |
+
+The dated Markdown snapshot from this audit window has been moved to the archive to keep `docs/audits/` focused on the active report surface:
+
+- **[AUDIT_REPORT_2026_03_20.md](../../archive/docs/assessments/AUDIT_REPORT_2026_03_20.md)** - Historical point-in-time snapshot retained for reference
 
 ### Simplification Backlog (2026-02-20) — Documented
 
@@ -37,14 +40,14 @@ These generated artifacts were moved out of the repository root to reduce top-le
 
 ### Completed Audits (Archived)
 
-The following completed audits have been moved to [`docs/archived/`](../archived/):
+The following completed audits have been moved to [`../../archive/docs/`](../../archive/docs/):
 
 | Document | Reason Archived |
 |----------|----------------|
-| **[CLEANUP_SUMMARY.md](../archived/CLEANUP_SUMMARY.md)** | All hygiene phases complete (H1–H3 done) |
-| **[H3_DEBUG_CODE_ANALYSIS.md](../archived/H3_DEBUG_CODE_ANALYSIS.md)** | Complete — no action required |
-| **[CLEANUP_OPPORTUNITIES.md](../archived/CLEANUP_OPPORTUNITIES.md)** | All platform cleanup items fully completed |
-| **[UWP_COMPREHENSIVE_AUDIT.md](../archived/UWP_COMPREHENSIVE_AUDIT.md)** | UWP fully removed from codebase |
+| **[CLEANUP_SUMMARY.md](../../archive/docs/assessments/CLEANUP_SUMMARY.md)** | All hygiene phases complete (H1–H3 done) |
+| **[H3_DEBUG_CODE_ANALYSIS.md](../../archive/docs/assessments/H3_DEBUG_CODE_ANALYSIS.md)** | Complete — no action required |
+| **[CLEANUP_OPPORTUNITIES.md](../../archive/docs/assessments/CLEANUP_OPPORTUNITIES.md)** | All platform cleanup items fully completed |
+| **[UWP_COMPREHENSIVE_AUDIT.md](../../archive/docs/assessments/UWP_COMPREHENSIVE_AUDIT.md)** | UWP fully removed from codebase |
 
 ## Audit Standards
 
@@ -80,7 +83,7 @@ When creating new audits, follow these guidelines:
 - [`docs/status/ROADMAP.md`](../status/ROADMAP.md) - Project roadmap
 - [`docs/development/`](../development/) - Development guides and best practices
 - [`docs/architecture/`](../architecture/) - Architecture decision records (ADRs)
-- [`docs/archived/`](../archived/) - Archived completed audit documents
+- [`../../archive/docs/`](../../archive/docs/) - Archived completed audit documents
 
 ## Audit History
 

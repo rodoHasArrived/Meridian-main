@@ -4,6 +4,7 @@ using Meridian.Contracts.Domain;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Events;
 using Meridian.Domain.Models;
+using Meridian.Domain.Telemetry;
 
 namespace Meridian.Domain.Collectors;
 
@@ -32,6 +33,7 @@ public sealed class QuoteCollector : IQuoteStateStore
         if (string.IsNullOrWhiteSpace(update.Symbol))
             return;
 
+        using var publishActivity = MarketEventIngressTracing.StartCollectorActivity("quote-collector", "quote", update.Symbol);
         var payload = Upsert(update);
         _publisher.TryPublish(MarketEvent.BboQuote(payload.Timestamp, payload.Symbol, payload));
     }

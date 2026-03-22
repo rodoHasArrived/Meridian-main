@@ -5,78 +5,87 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       mc:Ignorable="d"
       d:DesignHeight="900" d:DesignWidth="1200"
-      Background="{DynamicResource ConsoleBackgroundDarkBrush}"
+      Background="{DynamicResource ShellWindowBackgroundBrush}"
       Loaded="OnPageLoaded"
       Unloaded="OnPageUnloaded"
       AutomationProperties.Name="Notification Center">
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
         <StackPanel MaxWidth="1200">
 
             <!-- Header -->
-            <Grid Margin="0,0,0,24">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
+            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Column="0">
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-                        <TextBlock Text="&#xEA8F;"
-                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                   FontSize="28"
-                                   Foreground="{StaticResource InfoColorBrush}"
-                                   VerticalAlignment="Center" />
-                        <TextBlock Text="Notification Center"
-                                   Style="{StaticResource PageTitleStyle}"
-                                   Margin="12,0,0,0"
-                                   VerticalAlignment="Center" />
-                        <Border x:Name="UnreadBadge"
-                                Background="{StaticResource ErrorColorBrush}"
-                                CornerRadius="10"
-                                Padding="8,2"
-                                Margin="12,0,0,0"
-                                VerticalAlignment="Center"
-                                Visibility="Collapsed">
-                            <TextBlock x:Name="UnreadCountText"
-                                       Text="0"
-                                       FontSize="11"
-                                       Foreground="White"
-                                       FontWeight="SemiBold" />
-                        </Border>
+                    <StackPanel Grid.Column="0">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                            <Border Width="44" Height="44" CornerRadius="14"
+                                    Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                                    BorderBrush="{StaticResource InfoColorBrush}" BorderThickness="1">
+                                <TextBlock Text="&#xEA8F;"
+                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                           FontSize="24"
+                                           Foreground="{StaticResource InfoColorBrush}"
+                                           VerticalAlignment="Center"
+                                           HorizontalAlignment="Center" />
+                            </Border>
+                            <StackPanel Margin="12,0,0,0">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="Notification Center"
+                                               Style="{StaticResource PageTitleStyle}"
+                                               VerticalAlignment="Center" />
+                                    <Border x:Name="UnreadBadge"
+                                            Background="{StaticResource ErrorColorBrush}"
+                                            CornerRadius="999"
+                                            Padding="10,3"
+                                            Margin="12,0,0,0"
+                                            VerticalAlignment="Center"
+                                            Visibility="Collapsed">
+                                        <TextBlock x:Name="UnreadCountText"
+                                                   Text="0"
+                                                   FontSize="11"
+                                                   Foreground="White"
+                                                   FontWeight="SemiBold" />
+                                    </Border>
+                                </StackPanel>
+                                <TextBlock Text="View and manage notifications, alerts, and remediation playbooks"
+                                           Style="{StaticResource CardDescriptionStyle}"
+                                           Margin="0" />
+                            </StackPanel>
+                        </StackPanel>
                     </StackPanel>
-                    <TextBlock Text="View and manage notifications, alerts, and remediation playbooks"
-                               Style="{StaticResource CardDescriptionStyle}"
-                               Margin="0" />
-                </StackPanel>
 
-                <!-- Toolbar -->
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button x:Name="MarkAllReadButton"
-                            Click="MarkAllRead_Click"
-                            Style="{StaticResource SecondaryButtonStyle}"
-                            Margin="0,0,8,0">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="{StaticResource IconSuccess}"
-                                       FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                       FontSize="14"
-                                       Margin="0,0,6,0" />
-                            <TextBlock Text="Mark All Read" />
-                        </StackPanel>
-                    </Button>
-                    <Button x:Name="ClearAllButton"
-                            Click="ClearAll_Click"
-                            Style="{StaticResource GhostButtonStyle}">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="{StaticResource IconDelete}"
-                                       FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                       FontSize="14"
-                                       Margin="0,0,6,0" />
-                            <TextBlock Text="Clear All" />
-                        </StackPanel>
-                    </Button>
-                </StackPanel>
-            </Grid>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Button x:Name="MarkAllReadButton"
+                                Click="MarkAllRead_Click"
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                Margin="0,0,8,0">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{StaticResource IconSuccess}"
+                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                           FontSize="14"
+                                           Margin="0,0,6,0" />
+                                <TextBlock Text="Mark All Read" />
+                            </StackPanel>
+                        </Button>
+                        <Button x:Name="ClearAllButton"
+                                Click="ClearAll_Click"
+                                Style="{StaticResource GhostButtonStyle}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{StaticResource IconDelete}"
+                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                           FontSize="14"
+                                           Margin="0,0,6,0" />
+                                <TextBlock Text="Clear All" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
 
             <!-- Alert Summary Bar -->
             <Border x:Name="AlertSummaryBar" Style="{StaticResource CardStyle}" Margin="0,0,0,16" Padding="16">
@@ -102,13 +111,13 @@
                     </StackPanel>
 
                     <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="24,0,0,0">
-                        <Border x:Name="CriticalBadge" Background="#F44336" CornerRadius="4" Padding="8,2" Margin="0,0,8,0" Visibility="Collapsed">
+                        <Border x:Name="CriticalBadge" Background="#F44336" CornerRadius="999" Padding="10,3" Margin="0,0,8,0" Visibility="Collapsed">
                             <TextBlock x:Name="CriticalCountText" Text="0 Critical" FontSize="11" Foreground="White" FontWeight="SemiBold" />
                         </Border>
-                        <Border x:Name="ErrorBadge" Background="#FF5722" CornerRadius="4" Padding="8,2" Margin="0,0,8,0" Visibility="Collapsed">
+                        <Border x:Name="ErrorBadge" Background="#FF5722" CornerRadius="999" Padding="10,3" Margin="0,0,8,0" Visibility="Collapsed">
                             <TextBlock x:Name="ErrorCountText" Text="0 Errors" FontSize="11" Foreground="White" FontWeight="SemiBold" />
                         </Border>
-                        <Border x:Name="WarningBadge" Background="#FFC107" CornerRadius="4" Padding="8,2" Margin="0,0,8,0" Visibility="Collapsed">
+                        <Border x:Name="WarningBadge" Background="#FFC107" CornerRadius="999" Padding="10,3" Margin="0,0,8,0" Visibility="Collapsed">
                             <TextBlock x:Name="WarningCountText" Text="0 Warnings" FontSize="11" Foreground="#333" FontWeight="SemiBold" />
                         </Border>
                         <TextBlock x:Name="SnoozedCountText" Text=""

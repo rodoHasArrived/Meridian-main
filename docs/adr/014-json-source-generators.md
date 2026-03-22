@@ -253,7 +253,7 @@ public static class HighPerformanceJson
 - [Microsoft Docs: JSON source generation](https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/source-generation)
 - [Performance comparison blog post](https://devblogs.microsoft.com/dotnet/performance-improvements-in-dotnet-7/)
 - [Open Source References](../reference/open-source-references.md) - System.Text.Json techniques
-- [Storage Sink Implementations](../architecture/storage-design.md#storage-sinks)
+- [Storage Sink Implementations](../architecture/storage-design.md)
 - [WAL Durability ADR](007-write-ahead-log-durability.md) (uses HighPerformanceOptions)
 
 ---

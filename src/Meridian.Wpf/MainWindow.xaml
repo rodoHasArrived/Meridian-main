@@ -10,7 +10,7 @@
         Height="900" Width="1400"
         MinHeight="600" MinWidth="900"
         WindowStartupLocation="CenterScreen"
-        Background="{DynamicResource ConsoleBackgroundDarkBrush}"
+        Background="{DynamicResource ShellWindowBackgroundBrush}"
         Loaded="OnWindowLoaded"
         Closing="OnWindowClosing"
         KeyDown="OnWindowKeyDown"
@@ -36,6 +36,12 @@
                 Visibility="Collapsed"
                 Padding="8,6"
                 CornerRadius="0">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="{StaticResource ModeFixtureColor}" Offset="0" />
+                    <GradientStop Color="#C98A2B" Offset="1" />
+                </LinearGradientBrush>
+            </Border.Background>
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
@@ -69,6 +75,7 @@
 
         <Frame x:Name="RootFrame"
                Grid.Row="1"
+               Background="{DynamicResource ShellWindowBackgroundBrush}"
                NavigationUIVisibility="Hidden"
                Navigated="OnRootFrameNavigated" />
     </Grid>

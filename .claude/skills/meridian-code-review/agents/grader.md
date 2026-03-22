@@ -1,5 +1,7 @@
 # Grader Agent — Meridian Code Review
 
+**Last Updated:** 2026-03-21
+
 Evaluate expectations against a code review transcript and outputs.
 
 ## Role

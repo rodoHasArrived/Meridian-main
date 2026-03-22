@@ -319,19 +319,19 @@ public sealed class DashboardViewModel : BindableBase, IDisposable
         _alertService = AlertService.Instance;
 
         // Cache brush resources once at construction time so FindResource() is never called in hot paths (P2 fix).
-        _successBrush = (Brush)Application.Current.Resources["SuccessColorBrush"];
-        _errorBrush = (Brush)Application.Current.Resources["ErrorColorBrush"];
-        _warningBrush = (Brush)Application.Current.Resources["WarningColorBrush"];
-        _secondaryTextBrush = (Brush)Application.Current.Resources["ConsoleTextSecondaryBrush"];
-        _infoBrush = (Brush)Application.Current.Resources["InfoColorBrush"];
+        _successBrush = (Brush)System.Windows.Application.Current.Resources["SuccessColorBrush"];
+        _errorBrush = (Brush)System.Windows.Application.Current.Resources["ErrorColorBrush"];
+        _warningBrush = (Brush)System.Windows.Application.Current.Resources["WarningColorBrush"];
+        _secondaryTextBrush = (Brush)System.Windows.Application.Current.Resources["ConsoleTextSecondaryBrush"];
+        _infoBrush = (Brush)System.Windows.Application.Current.Resources["InfoColorBrush"];
 
         // Cache icon glyph strings.
-        _iconInfo = (string)Application.Current.Resources["IconInfo"];
-        _iconSuccess = (string)Application.Current.Resources["IconSuccess"];
-        _iconPause = (string)Application.Current.Resources["IconPause"];
-        _iconPlay = (string)Application.Current.Resources["IconPlay"];
-        _iconChevronDown = (string)Application.Current.Resources["IconChevronDown"];
-        _iconChevronUp = (string)Application.Current.Resources["IconChevronUp"];
+        _iconInfo = (string)System.Windows.Application.Current.Resources["IconInfo"];
+        _iconSuccess = (string)System.Windows.Application.Current.Resources["IconSuccess"];
+        _iconPause = (string)System.Windows.Application.Current.Resources["IconPause"];
+        _iconPlay = (string)System.Windows.Application.Current.Resources["IconPlay"];
+        _iconChevronDown = (string)System.Windows.Application.Current.Resources["IconChevronDown"];
+        _iconChevronUp = (string)System.Windows.Application.Current.Resources["IconChevronUp"];
 
         // Initialize brush-dependent properties with sensible defaults.
         _collectorStatusBadgeBackground = _errorBrush;
@@ -417,7 +417,7 @@ public sealed class DashboardViewModel : BindableBase, IDisposable
     private void OnLiveStatusReceived(object? sender, LiveStatusEventArgs e)
     {
         // Use InvokeAsync (fire-and-forget) so the service thread is not blocked (P1 fix).
-        _ = Application.Current.Dispatcher.InvokeAsync(() =>
+        _ = System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
         {
             if (e.Status != null)
             {
@@ -430,7 +430,7 @@ public sealed class DashboardViewModel : BindableBase, IDisposable
 
     private void OnBackendReachabilityChanged(object? sender, bool isReachable)
     {
-        _ = Application.Current.Dispatcher.InvokeAsync(() =>
+        _ = System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
         {
             if (!isReachable)
             {
@@ -445,7 +445,7 @@ public sealed class DashboardViewModel : BindableBase, IDisposable
 
     private void OnConnectionStateChanged(object? sender, ConnectionStateEventArgs e)
     {
-        _ = Application.Current.Dispatcher.InvokeAsync(() =>
+        _ = System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
         {
             var state = e.State == ConnectionState.Connected ? "Connected" : e.State.ToString();
             ConnectionStatusText = e.Provider ?? state;
@@ -457,7 +457,7 @@ public sealed class DashboardViewModel : BindableBase, IDisposable
 
     private void OnLatencyUpdated(object? sender, int latencyMs)
     {
-        _ = Application.Current.Dispatcher.InvokeAsync(() =>
+        _ = System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
         {
             LatencyText = $"{latencyMs} ms";
             AvgLatencyText = $"{latencyMs} ms";
@@ -468,7 +468,7 @@ public sealed class DashboardViewModel : BindableBase, IDisposable
     {
         if (message == "RefreshStatus")
         {
-            _ = Application.Current.Dispatcher.InvokeAsync(() => _ = RefreshStatusAsync());
+            _ = System.Windows.Application.Current.Dispatcher.InvokeAsync(() => _ = RefreshStatusAsync());
         }
     }
 

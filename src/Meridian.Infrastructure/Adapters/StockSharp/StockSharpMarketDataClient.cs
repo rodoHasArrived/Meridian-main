@@ -1247,9 +1247,10 @@ public sealed class StockSharpMarketDataClient : IMarketDataClient
     /// <summary>
     /// Centralizes the non-StockSharp guard so each #else stub can share one documented failure path.
     /// </summary>
-    private static Exception ThrowPlatformNotSupported() => new NotSupportedException(
-        "StockSharp integration requires StockSharp.Algo NuGet package. " +
-        "Install with: dotnet add package StockSharp.Algo");
+    private Exception ThrowPlatformNotSupported() => new NotSupportedException(
+        $"StockSharp connector '{_config.ConnectorType}' is unavailable because this build does not include StockSharp.Algo. " +
+        "Build with EnableStockSharp=true and install the required connector-specific StockSharp package(s). " +
+        "See docs/providers/stocksharp-connectors.md for supported connector types and prerequisites.");
 
     /// <summary>
     /// Stub: Connect not available without StockSharp packages.

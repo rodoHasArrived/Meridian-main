@@ -57,7 +57,7 @@ public static class ContractFactory
     /// Centralizes the non-IBAPI guard so every conditional-compilation stub throws the same guidance.
     /// </summary>
     private static Exception ThrowPlatformNotSupported() => new NotSupportedException(
-        "ContractFactory.Create requires IBApi. Reference IBApi and build with -p:DefineConstants=IBAPI.");
+        IBBuildGuidance.BuildRealProviderMessage("ContractFactory.Create"));
 
     public static object Create(SymbolConfig cfg)
         => throw ThrowPlatformNotSupported();

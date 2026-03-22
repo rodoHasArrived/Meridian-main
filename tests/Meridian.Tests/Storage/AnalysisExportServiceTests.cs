@@ -432,6 +432,57 @@ public class AnalysisExportServiceTests : IDisposable
         content.Should().Contain("load_trades");
     }
 
+    [Fact]
+    public async Task GenerateStandaloneLoaderAsync_RunMat_ShouldGenerateMatlabStyleLoaderScript()
+    {
+        await CreateTestJsonlFileAsync("SPY.Trade.jsonl", new[]
+        {
+            new { Timestamp = "2026-01-03T10:00:00Z", Symbol = "SPY", Price = 597.25m, Size = 10 }
+        });
+
+        var outputDir = Path.Combine(_testOutputDir, "runmat-loaders");
+
+        var scriptPath = await _service.GenerateStandaloneLoaderAsync(outputDir, "runmat");
+
+        scriptPath.Should().EndWith(".m");
+        File.Exists(scriptPath).Should().BeTrue();
+
+        var content = await File.ReadAllTextAsync(scriptPath);
+        content.Should().Contain("readmatrix");
+        content.Should().Contain("function data = load_data");
+        content.Should().Contain("pick_price_series");
+    }
+
+    [Fact]
+    public async Task ExportAsync_RunMatProfile_ShouldWriteNumericFriendlyCsvAndLoaderScript()
+    {
+        await CreateTestJsonlFileAsync("AAPL.Trade.jsonl", new[]
+        {
+            new { Timestamp = "2026-01-03T10:00:00Z", Symbol = "AAPL", Price = 185.50m, Size = 100, Exchange = "XNAS" }
+        });
+
+        var request = new ExportRequest
+        {
+            ProfileId = "runmat",
+            OutputDirectory = _testOutputDir,
+            EventTypes = new[] { "Trade" },
+            Symbols = new[] { "AAPL" },
+            StartDate = new DateTime(2026, 1, 1),
+            EndDate = new DateTime(2026, 1, 5)
+        };
+
+        var result = await _service.ExportAsync(request);
+
+        result.Success.Should().BeTrue();
+        result.LoaderScriptPath.Should().EndWith(".m");
+        result.FilesGenerated.Should().Be(1);
+
+        var csvContent = await File.ReadAllTextAsync(result.Files.Single().Path);
+        csvContent.Should().StartWith("Timestamp,Price,Size,BidPrice,BidSize,AskPrice,AskSize,Open,High,Low,Close,Volume");
+        csvContent.Should().NotContain("Symbol");
+        csvContent.Should().Contain("1767434400000,185.5,100");
+    }
+
     private async Task CreateTestJsonlFileAsync<T>(string fileName, T[] records)
     {
         var filePath = Path.Combine(_testDataRoot, fileName);
@@ -485,5 +536,17 @@ public class AnalysisExportServiceTests : IDisposable
         // Assert - original is not mutated
         original.Format.Should().Be(ExportFormat.Lean);
         modified.Format.Should().Be(ExportFormat.Csv);
+    }
+
+    [Fact]
+    public void GetProfiles_ShouldIncludeRunMatProfile()
+    {
+        var profiles = _service.GetProfiles();
+
+        profiles.Should().Contain(p => p.Id == "runmat");
+        var runMatProfile = profiles.Single(p => p.Id == "runmat");
+        runMatProfile.Format.Should().Be(ExportFormat.Csv);
+        runMatProfile.TargetTool.Should().Be("RunMat");
+        runMatProfile.TimestampSettings.Format.Should().Be(TimestampFormat.UnixMilliseconds);
     }
 }
