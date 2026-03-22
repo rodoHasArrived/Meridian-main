@@ -434,7 +434,7 @@ After implementing basic fixture mode:
   - [Desktop Platform Improvements](../evaluations/desktop-platform-improvements-implementation-guide.md) - Improvement roadmap
 
 - **Testing and Quality:**
-  - [Test Project README](../../tests/Meridian.Ui.Tests/README.md) - Test coverage details
+  - [Test Project README](https://github.com/rodoHasArrived/Meridian/blob/main/tests/Meridian.Ui.Tests/README.md) - Test coverage details
   - [Desktop Support Policy](./policies/desktop-support-policy.md) - Required validation checks
 
 - **Architecture:**

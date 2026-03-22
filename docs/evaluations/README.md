@@ -34,7 +34,7 @@ This directory contains in-depth evaluations of architecture components, provide
 | [Desktop Platform Improvements Guide](desktop-platform-improvements-implementation-guide.md) | Implementation guide: test infrastructure, fixture mode, DI modernization |
 | [Desktop Improvements Executive Summary](desktop-improvements-executive-summary.md) | Impact analysis, phase status, quick reference, and success criteria |
 
-**Archived:** [Desktop End-User Improvements](../../archive/docs/assessments/desktop-end-user-improvements.md) — Comprehensive desktop UX assessment retained for historical reference
+**Archived:** [Desktop End-User Improvements](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/assessments/desktop-end-user-improvements.md) — Comprehensive desktop UX assessment retained for historical reference
 
 ## Improvement Proposals & Brainstorms
 
@@ -46,7 +46,7 @@ This directory contains in-depth evaluations of architecture components, provide
 | [Nautilus-Inspired Restructuring](nautilus-inspired-restructuring-proposal.md) | Structural improvements inspired by nautilus_trader: co-located configs, parsing layer, FSM lifecycle |
 | [Assembly-Level Performance Opportunities](assembly-performance-opportunities.md) | SIMD/.NET hardware intrinsics optimization candidates for hot paths |
 
-**Archived:** [High-Impact Improvements Brainstorm](../../archive/docs/assessments/high-impact-improvements-brainstorm.md) — Older two-part brainstorm retained for historical reference after promotion of the newer March 2026 high-impact set and status-tracker summaries
+**Archived:** [High-Impact Improvements Brainstorm](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/assessments/high-impact-improvements-brainstorm.md) — Older two-part brainstorm retained for historical reference after promotion of the newer March 2026 high-impact set and status-tracker summaries
 
 ## Related
 

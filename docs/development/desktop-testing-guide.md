@@ -256,7 +256,7 @@ dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release -r win-x64
 **Fix**:
 1. Check XAML syntax in the Views/ directory
 2. Ensure all referenced resources exist
-3. See [Desktop App XAML Compiler Errors](../../archive/docs/migrations/desktop-app-xaml-compiler-errors.md) for historical diagnostics
+3. See [Desktop App XAML Compiler Errors](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/migrations/desktop-app-xaml-compiler-errors.md) for historical diagnostics
 
 ### Tests Not Running on Non-Windows
 
@@ -341,7 +341,7 @@ See `.github/workflows/desktop-builds.yml` for CI configuration.
   - [Desktop Improvements - Executive Summary](../evaluations/desktop-improvements-executive-summary.md) - Impact analysis, priorities, and quick reference
   
 - **Testing and Quality:**
-  - [Test Project README](../../tests/Meridian.Ui.Tests/README.md) - Ui.Tests project details
+  - [Test Project README](https://github.com/rodoHasArrived/Meridian/blob/main/tests/Meridian.Ui.Tests/README.md) - Ui.Tests project details
   
 - **Architecture and Policies:**
   - [Repository Organization Guide](./repository-organization-guide.md) - Code structure conventions

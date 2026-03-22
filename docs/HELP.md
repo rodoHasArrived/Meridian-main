@@ -2156,7 +2156,7 @@ docker-compose up -d
 
 | Document | Description |
 |----------|-------------|
-| [README.md](../archive/docs/README.md) | Project overview and quick start |
+| [README.md](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/README.md) | Project overview and quick start |
 | [HELP.md](HELP.md) | This comprehensive user guide |
 | [getting-started/README.md](getting-started/README.md) | Step-by-step setup guide |
 | [Configuration](#configuration) | Configuration reference |
@@ -2201,7 +2201,7 @@ docker-compose up -d
 We welcome contributions! If you've found a bug or have a feature request, please open an issue on GitHub.
 
 Before contributing code:
-1. Read [CLAUDE.md](../CLAUDE.md) for coding guidelines
+1. Read [CLAUDE.md](https://github.com/rodoHasArrived/Meridian/blob/main/CLAUDE.md) for coding guidelines
 2. Review [docs/adr/](adr/) for architectural decisions
 3. Run tests: `make test`
 4. Ensure code follows the style guide

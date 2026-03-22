@@ -2,7 +2,7 @@
 
 **Last Updated:** 2026-03-16
 
-> **Note:** For comprehensive project context, see [CLAUDE.md](../../../CLAUDE.md) in the repository root. For the master AI resource index, see [docs/ai/README.md](../../archive/docs/README.md).
+> **Note:** For comprehensive project context, see [CLAUDE.md](https://github.com/rodoHasArrived/Meridian/blob/main/CLAUDE.md) in the repository root. For the master AI resource index, see [docs/ai/README.md](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/README.md).
 
 ## Coding Agent Optimization (GitHub Best Practices)
 
@@ -142,7 +142,7 @@ Meridian/
 └── scripts/                              # Automation & diagnostic scripts
 ```
 
-For the complete repository tree with all 700+ files, see [`CLAUDE.md`](../../../CLAUDE.md) § Repository Structure.
+For the complete repository tree with all 700+ files, see [`CLAUDE.md`](https://github.com/rodoHasArrived/Meridian/blob/main/CLAUDE.md) § Repository Structure.
 
 ## CI/CD Workflow
 
@@ -174,7 +174,7 @@ Key workflows:
 - `sealed` classes by default
 - Central Package Management — never add `Version=` to `<PackageReference>`
 
-For the full conventions reference, see [`CLAUDE.md`](../../../CLAUDE.md) § Critical Rules and § Coding Conventions.
+For the full conventions reference, see [`CLAUDE.md`](https://github.com/rodoHasArrived/Meridian/blob/main/CLAUDE.md) § Critical Rules and § Coding Conventions.
 
 ## Common Issues & Workarounds
 
@@ -202,9 +202,9 @@ For the full conventions reference, see [`CLAUDE.md`](../../../CLAUDE.md) § Cri
 
 ## Related Resources
 
-- **Master AI index:** [`docs/ai/README.md`](../../archive/docs/README.md)
-- **Root context:** [`CLAUDE.md`](../../../CLAUDE.md)
+- **Master AI index:** [`docs/ai/README.md`](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/README.md)
+- **Root context:** [`CLAUDE.md`](https://github.com/rodoHasArrived/Meridian/blob/main/CLAUDE.md)
 - **Error prevention:** [`docs/ai/ai-known-errors.md`](../ai-known-errors.md)
-- **Code review:** [`.github/agents/code-review-agent.md`](../../../.github/agents/code-review-agent.md)
-- **Prompt templates:** [`.github/prompts/README.md`](../../../.github/prompts/README.md)
+- **Code review:** [`.github/agents/code-review-agent.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/agents/code-review-agent.md)
+- **Prompt templates:** [`.github/prompts/README.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/prompts/README.md)
 - **CI/CD details:** [`docs/ai/claude/CLAUDE.actions.md`](../claude/CLAUDE.actions.md)

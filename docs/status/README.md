@@ -6,6 +6,16 @@
 
 This folder contains the repository's authoritative planning, status, readiness, and implementation-tracking documents.
 
+## Active document criteria
+
+Keeping a document active in this set means:
+
+- it was not clearly historical enough to archive immediately,
+- it did not present a low-risk factual correction large enough to rewrite blindly,
+- it did not obviously contradict the new archive structure,
+
+and each active file is periodically reviewed so the signal stays strong.
+
 ## Documents
 
 | Document | Description |
@@ -51,4 +61,4 @@ This folder contains the repository's authoritative planning, status, readiness,
 - [Architecture Overview](../architecture/overview.md)
 - [Main Documentation Index](../README.md)
 
-For the main project documentation, see the [root README](../../README.md).
+For the main project documentation, see the [root README](https://github.com/rodoHasArrived/Meridian/blob/main/README.md).

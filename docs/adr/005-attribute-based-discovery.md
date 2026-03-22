@@ -189,7 +189,7 @@ public interface IDataSource { }
 
 ## References
 
-- [DataSourceAttribute Source](../../src/Meridian.ProviderSdk/DataSourceAttribute.cs)
+- [DataSourceAttribute Source](https://github.com/rodoHasArrived/Meridian/blob/main/src/Meridian.ProviderSdk/DataSourceAttribute.cs)
 - [Provider Implementation Guide](../development/provider-implementation.md)
 - [Microsoft Attribute Guidelines](https://docs.microsoft.com/en-us/dotnet/standard/design-guidelines/attributes)
 - [ADR-001: Provider Abstraction](001-provider-abstraction.md) - Defines the interfaces that discovered providers implement

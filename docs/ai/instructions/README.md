@@ -17,7 +17,7 @@ explicitly**.
 
 ### C# Source Instructions
 
-**File:** [`.github/instructions/csharp.instructions.md`](../../../.github/instructions/csharp.instructions.md)
+**File:** [`.github/instructions/csharp.instructions.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/instructions/csharp.instructions.md)
 **Applies to:** `src/**/*.cs`
 
 10 rules enforced when editing C# source files:
@@ -37,7 +37,7 @@ explicitly**.
 
 ### WPF / MVVM Instructions
 
-**File:** [`.github/instructions/wpf.instructions.md`](../../../.github/instructions/wpf.instructions.md)
+**File:** [`.github/instructions/wpf.instructions.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/instructions/wpf.instructions.md)
 **Applies to:** `src/Meridian.Wpf/**`
 
 10 rules enforced when editing WPF views or code-behind:
@@ -57,7 +57,7 @@ explicitly**.
 
 ### .NET Test Instructions
 
-**File:** [`.github/instructions/dotnet-tests.instructions.md`](../../../.github/instructions/dotnet-tests.instructions.md)
+**File:** [`.github/instructions/dotnet-tests.instructions.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/instructions/dotnet-tests.instructions.md)
 **Applies to:** `tests/**/*.cs`
 
 6 rules enforced when editing C# test files:
@@ -73,7 +73,7 @@ explicitly**.
 
 ### Documentation Instructions
 
-**File:** [`.github/instructions/docs.instructions.md`](../../../.github/instructions/docs.instructions.md)
+**File:** [`.github/instructions/docs.instructions.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/instructions/docs.instructions.md)
 **Applies to:** `**/*.md`
 
 5 rules enforced when editing Markdown documentation:
@@ -91,7 +91,7 @@ explicitly**.
 1. Create a new `.instructions.md` file in `.github/instructions/`
 2. Add the `applyTo:` frontmatter glob pattern
 3. Add an entry to this README
-4. Update [`docs/ai/README.md`](../../archive/docs/README.md) Tier 4 table
+4. Update [`docs/ai/README.md`](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/README.md) Tier 4 table
 
 ---
 
@@ -99,10 +99,10 @@ explicitly**.
 
 | Resource | Purpose |
 |----------|---------|
-| [`.github/copilot-instructions.md`](../../../.github/copilot-instructions.md) | Repository-wide Copilot instructions |
+| [`.github/copilot-instructions.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/copilot-instructions.md) | Repository-wide Copilot instructions |
 | [`docs/ai/copilot/instructions.md`](../copilot/instructions.md) | Extended Copilot guidance |
 | [`docs/ai/agents/README.md`](../agents/README.md) | Agent definitions (Copilot + Claude) |
-| [`docs/ai/README.md`](../../archive/docs/README.md) | Master AI resource index |
+| [`docs/ai/README.md`](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/README.md) | Master AI resource index |
 
 ---
 

@@ -148,7 +148,7 @@ If this returns any results (except commented lines), those projects need to be 
 ## Related Documentation
 
 - [NuGet Central Package Management Docs](https://learn.microsoft.com/en-us/nuget/consume-packages/central-package-management)
-- [Directory.Packages.props](../../Directory.Packages.props) - Central version definitions
+- [Directory.Packages.props](https://github.com/rodoHasArrived/Meridian/blob/main/Directory.Packages.props) - Central version definitions
 - [Build Observability Guide](build-observability.md) - CI/CD pipeline monitoring and diagnostics
 
 ## Troubleshooting
@@ -178,5 +178,5 @@ This is an anti-pattern with CPM. Consider:
 ## See Also
 
 - [DEPENDENCIES.md](../DEPENDENCIES.md) - Complete package list and documentation
-- [Directory.Build.props](../../Directory.Build.props) - Common build properties
+- [Directory.Build.props](https://github.com/rodoHasArrived/Meridian/blob/main/Directory.Build.props) - Common build properties
 - [Provider Implementation Guide](provider-implementation.md) - Adding new data providers

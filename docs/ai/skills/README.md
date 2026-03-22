@@ -61,7 +61,7 @@ Meridian's skill packages are written to work best in hosts that expose the foll
 - `run_skill_script` — execute deterministic helpers when the package bundles scripts
 
 The repository's code-defined provider at
-[`.claude/skills/skills_provider.py`](../../../.claude/skills/skills_provider.py) implements this
+[`.claude/skills/skills_provider.py`](https://github.com/rodoHasArrived/Meridian/blob/main/.claude/skills/skills_provider.py) implements this
 model for local use and keeps dynamic resources such as git context or project stats separate from
 static package content.
 
@@ -71,7 +71,7 @@ static package content.
 
 ### `meridian-blueprint`
 
-**Location:** [`.claude/skills/meridian-blueprint/`](../../../.claude/skills/meridian-blueprint/)
+**Location:** [`.claude/skills/meridian-blueprint/`](https://github.com/rodoHasArrived/Meridian/blob/main/.claude/skills/meridian-blueprint)
 **Purpose:** Turn one prioritized idea into a code-ready technical blueprint for Meridian.
 **When it triggers:** design-doc requests, architecture spikes, interface planning, or roadmap-to-implementation handoffs.
 **On-demand resources:**
@@ -82,7 +82,7 @@ static package content.
 
 ### `meridian-code-review`
 
-**Location:** [`.claude/skills/meridian-code-review/`](../../../.claude/skills/meridian-code-review/)
+**Location:** [`.claude/skills/meridian-code-review/`](https://github.com/rodoHasArrived/Meridian/blob/main/.claude/skills/meridian-code-review)
 **Purpose:** Apply Meridian's 7-lens architecture and code quality review framework.
 **When it triggers:** code review, refactoring, architecture audit, MVVM cleanup, provider compliance, or performance review tasks.
 **On-demand resources and scripts:**
@@ -95,7 +95,7 @@ static package content.
 
 ### `meridian-brainstorm`
 
-**Location:** [`.claude/skills/meridian-brainstorm/`](../../../.claude/skills/meridian-brainstorm/)
+**Location:** [`.claude/skills/meridian-brainstorm/`](https://github.com/rodoHasArrived/Meridian/blob/main/.claude/skills/meridian-brainstorm)
 **Purpose:** Generate high-value, implementable ideas that extend Meridian coherently.
 **When it triggers:** feature ideation, user-pain brainstorming, architecture brainstorms, or technical-debt ideation.
 **On-demand resources:**
@@ -106,7 +106,7 @@ static package content.
 
 ### `meridian-provider-builder`
 
-**Location:** [`.claude/skills/meridian-provider-builder/`](../../../.claude/skills/meridian-provider-builder/)
+**Location:** [`.claude/skills/meridian-provider-builder/`](https://github.com/rodoHasArrived/Meridian/blob/main/.claude/skills/meridian-provider-builder)
 **Purpose:** Scaffold Meridian data providers with the right ADR, DI, and resilience patterns.
 **When it triggers:** new exchange/provider work, historical providers, streaming adapters, or symbol search implementations.
 **On-demand resources:**
@@ -116,7 +116,7 @@ static package content.
 
 ### `meridian-test-writer`
 
-**Location:** [`.claude/skills/meridian-test-writer/`](../../../.claude/skills/meridian-test-writer/)
+**Location:** [`.claude/skills/meridian-test-writer/`](https://github.com/rodoHasArrived/Meridian/blob/main/.claude/skills/meridian-test-writer)
 **Purpose:** Produce idiomatic Meridian xUnit tests with the right async, mocking, and cleanup patterns.
 **When it triggers:** new tests, test-gap remediation, or code-review follow-up for missing coverage.
 **On-demand resources:**
@@ -126,7 +126,7 @@ static package content.
 
 ### `ai-docs-maintain` (code-defined)
 
-**Registered in:** [`.claude/skills/skills_provider.py`](../../../.claude/skills/skills_provider.py)
+**Registered in:** [`.claude/skills/skills_provider.py`](https://github.com/rodoHasArrived/Meridian/blob/main/.claude/skills/skills_provider.py)
 
 `ai-docs-maintain` is intentionally code-defined rather than file-backed. It still behaves like a
 skill package from the host's perspective, but its resources and scripts are surfaced directly from
@@ -169,10 +169,10 @@ The validator checks for:
 
 | Resource | Purpose |
 | -------- | ------- |
-| [`docs/ai/README.md`](../../archive/docs/README.md) | Master AI resource index |
+| [`docs/ai/README.md`](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/README.md) | Master AI resource index |
 | [`docs/ai/agents/README.md`](../agents/README.md) | GitHub/Copilot agent equivalents |
-| [`CLAUDE.md`](../../../CLAUDE.md) | Root project context and repo conventions |
-| [`.claude/skills/skills_provider.py`](../../../.claude/skills/skills_provider.py) | Local skills provider implementation |
+| [`CLAUDE.md`](https://github.com/rodoHasArrived/Meridian/blob/main/CLAUDE.md) | Root project context and repo conventions |
+| [`.claude/skills/skills_provider.py`](https://github.com/rodoHasArrived/Meridian/blob/main/.claude/skills/skills_provider.py) | Local skills provider implementation |
 
 ---
 

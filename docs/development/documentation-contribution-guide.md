@@ -355,7 +355,7 @@ Add provider by implementing interface.
 ### Special Cases
 
 - **ADRs**: Use format `NNN-short-title.md` (e.g., `001-provider-abstraction.md`)
-- **Archived**: Preserve original names but add entry to `../../archive/docs/INDEX.md`
+- **Archived**: Preserve original names but add entry to `https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/INDEX.md`
 - **Generated**: Prefix with `generated-` or use `generated/` directory
 
 ---
@@ -556,12 +556,12 @@ When documentation becomes outdated:
 
 1. **Add deprecation notice** at the top:
    ```markdown
-   > **⚠️ DEPRECATED:** This document has been superseded by [New Document](link).
+   > **⚠️ DEPRECATED:** This document has been superseded by [New Document](../status/ROADMAP.md).
    > Archived on 2026-02-12.
    ```
 
 2. **Move to `archive/docs/`** when no longer relevant
-3. **Add entry to [../../archive/docs/INDEX.md](../../archive/docs/INDEX.md)** explaining why archived
+3. **Add entry to [https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/INDEX.md](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/INDEX.md)** explaining why archived
 
 ---
 
@@ -688,8 +688,8 @@ public void Method1(string param)
 
 ## See Also
 
-- [Related Reference](link)
-- [Guide](link)
+- [Related Reference](../reference/api-reference.md)
+- [Guide](../development/provider-implementation.md)
 ```
 
 ---

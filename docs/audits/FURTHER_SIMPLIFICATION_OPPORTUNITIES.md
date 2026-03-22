@@ -7,7 +7,7 @@
 
 This document captures simplification opportunities discovered during two rounds of code review and cleanup. Each section includes rationale, affected files, estimated impact, and suggested approach. Items are updated as work is completed.
 
-For already-completed cleanup work, see [`CLEANUP_OPPORTUNITIES.md`](../../archive/docs/assessments/CLEANUP_OPPORTUNITIES.md) and [`CLEANUP_SUMMARY.md`](../../archive/docs/assessments/CLEANUP_SUMMARY.md).
+For already-completed cleanup work, see [`CLEANUP_OPPORTUNITIES.md`](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/assessments/CLEANUP_OPPORTUNITIES.md) and [`CLEANUP_SUMMARY.md`](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/assessments/CLEANUP_SUMMARY.md).
 
 ## Progress Overview (as of 2026-03-16)
 
@@ -262,7 +262,7 @@ public const string IsoDateFormat = "yyyy-MM-dd";
 
 **Status:** ✅ Completed
 
-**What was already done:** R1-R9 cleanup (see [`CLEANUP_OPPORTUNITIES.md`](../../archive/docs/assessments/CLEANUP_OPPORTUNITIES.md)), plus PR #1302 updated 13+ stale UWP references in comments and project metadata.
+**What was already done:** R1-R9 cleanup (see [`CLEANUP_OPPORTUNITIES.md`](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/assessments/CLEANUP_OPPORTUNITIES.md)), plus PR #1302 updated 13+ stale UWP references in comments and project metadata.
 
 **Update (2026-03-16):** All identified stale UWP references in source code have been removed. Verified clean across:
 `PipelinePolicyConstants.cs`, `Contracts.csproj`, `SharedResiliencePolicies.cs`, `StatusHttpServer.cs`,
@@ -358,8 +358,8 @@ Model classes are scattered across multiple projects with potential overlap:
 
 ## Cross-References
 
-- **Completed cleanup:** [`../../archive/docs/assessments/CLEANUP_OPPORTUNITIES.md`](../../archive/docs/assessments/CLEANUP_OPPORTUNITIES.md)
-- **Completed cleanup summary:** [`../../archive/docs/assessments/CLEANUP_SUMMARY.md`](../../archive/docs/assessments/CLEANUP_SUMMARY.md)
+- **Completed cleanup:** [`https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/assessments/CLEANUP_OPPORTUNITIES.md`](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/assessments/CLEANUP_OPPORTUNITIES.md)
+- **Completed cleanup summary:** [`https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/assessments/CLEANUP_SUMMARY.md`](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/assessments/CLEANUP_SUMMARY.md)
 - **Architecture refactor plan:** [`docs/development/refactor-map.md`](../development/refactor-map.md)
 - **Improvement tracking:** [`docs/status/IMPROVEMENTS.md`](../status/IMPROVEMENTS.md) (items C1, C2, C3 are related)
 - **Project roadmap:** [`docs/status/ROADMAP.md`](../status/ROADMAP.md)

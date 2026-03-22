@@ -503,4 +503,4 @@ src/Meridian/Integrations/Lean/
 
 ---
 
-**See Also:** [Architecture](../architecture/overview.md) | [Configuration](../HELP.md#configuration) | [Lean Integration README](../../src/Meridian/Integrations/Lean/README.md)
+**See Also:** [Architecture](../architecture/overview.md) | [Configuration](../HELP.md#configuration) | [Lean Integration README](https://github.com/rodoHasArrived/Meridian/blob/main/src/Meridian/Integrations/Lean/README.md)

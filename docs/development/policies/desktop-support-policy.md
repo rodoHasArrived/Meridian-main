@@ -48,5 +48,5 @@ Expected for WPF-affecting changes:
   - [Repository Organization Guide](../repository-organization-guide.md) - Code structure
 
 - **Workflows:**
-  - [Desktop Builds Workflow](../../../.github/workflows/desktop-builds.yml) - CI configuration
+  - [Desktop Builds Workflow](https://github.com/rodoHasArrived/Meridian/blob/main/.github/workflows/desktop-builds.yml) - CI configuration
   - [GitHub Actions Summary](../github-actions-summary.md) - CI/CD overview

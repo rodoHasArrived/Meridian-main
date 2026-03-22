@@ -8,8 +8,8 @@ discover them.
 
 ## Available Prompts
 
-Prompt files are located in [`.github/prompts/`](../../../.github/prompts/).
-Full usage instructions are in [`.github/prompts/README.md`](../../../.github/prompts/README.md).
+Prompt files are located in [`.github/prompts/`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/prompts).
+Full usage instructions are in [`.github/prompts/README.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/promptsREADME.md).
 
 ### Development
 
@@ -70,7 +70,7 @@ Or use them as a starting template and customize for your specific task.
 
 ## Auto-Generation
 
-The [`prompt-generation.yml`](../../../.github/workflows/prompt-generation.yml) workflow
+The [`prompt-generation.yml`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/workflows/prompt-generation.yml) workflow
 automatically generates targeted prompts from CI/CD failures:
 
 1. Analyzes failed workflow runs (test-matrix, code-quality, security, benchmarks)
@@ -86,7 +86,7 @@ Trigger manually: **Actions → Prompt Generation → Run workflow**
 
 1. Create a new `.prompt.yml` file in `.github/prompts/`
 2. Follow the YAML format used by existing prompts
-3. Add an entry to [`.github/prompts/README.md`](../../../.github/prompts/README.md)
+3. Add an entry to [`.github/prompts/README.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/promptsREADME.md)
 4. Add an entry to this README
 
 ---
@@ -95,9 +95,9 @@ Trigger manually: **Actions → Prompt Generation → Run workflow**
 
 | Resource | Purpose |
 |----------|---------|
-| [`.github/prompts/README.md`](../../../.github/prompts/README.md) | Full prompt usage guide |
+| [`.github/prompts/README.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/promptsREADME.md) | Full prompt usage guide |
 | [`docs/ai/agents/README.md`](../agents/README.md) | Full agent definitions |
-| [`docs/ai/README.md`](../../archive/docs/README.md) | Master AI resource index |
+| [`docs/ai/README.md`](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/README.md) | Master AI resource index |
 
 ---
 

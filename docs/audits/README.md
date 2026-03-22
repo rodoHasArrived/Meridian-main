@@ -28,7 +28,7 @@ These generated artifacts were moved out of the repository root to reduce top-le
 
 The dated Markdown snapshot from this audit window has been moved to the archive to keep `docs/audits/` focused on the active report surface:
 
-- **[AUDIT_REPORT_2026_03_20.md](../../archive/docs/assessments/AUDIT_REPORT_2026_03_20.md)** - Historical point-in-time snapshot retained for reference
+- **[AUDIT_REPORT_2026_03_20.md](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/assessments/AUDIT_REPORT_2026_03_20.md)** - Historical point-in-time snapshot retained for reference
 
 ### Simplification Backlog (2026-02-20) — Documented
 
@@ -40,14 +40,14 @@ The dated Markdown snapshot from this audit window has been moved to the archive
 
 ### Completed Audits (Archived)
 
-The following completed audits have been moved to [`../../archive/docs/`](../../archive/docs/):
+The following completed audits have been moved to [`https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs`](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs):
 
 | Document | Reason Archived |
 |----------|----------------|
-| **[CLEANUP_SUMMARY.md](../../archive/docs/assessments/CLEANUP_SUMMARY.md)** | All hygiene phases complete (H1–H3 done) |
-| **[H3_DEBUG_CODE_ANALYSIS.md](../../archive/docs/assessments/H3_DEBUG_CODE_ANALYSIS.md)** | Complete — no action required |
-| **[CLEANUP_OPPORTUNITIES.md](../../archive/docs/assessments/CLEANUP_OPPORTUNITIES.md)** | All platform cleanup items fully completed |
-| **[UWP_COMPREHENSIVE_AUDIT.md](../../archive/docs/assessments/UWP_COMPREHENSIVE_AUDIT.md)** | UWP fully removed from codebase |
+| **[CLEANUP_SUMMARY.md](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docsassessments/CLEANUP_SUMMARY.md)** | All hygiene phases complete (H1–H3 done) |
+| **[H3_DEBUG_CODE_ANALYSIS.md](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docsassessments/H3_DEBUG_CODE_ANALYSIS.md)** | Complete — no action required |
+| **[CLEANUP_OPPORTUNITIES.md](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docsassessments/CLEANUP_OPPORTUNITIES.md)** | All platform cleanup items fully completed |
+| **[UWP_COMPREHENSIVE_AUDIT.md](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docsassessments/UWP_COMPREHENSIVE_AUDIT.md)** | UWP fully removed from codebase |
 
 ## Audit Standards
 
@@ -83,7 +83,7 @@ When creating new audits, follow these guidelines:
 - [`docs/status/ROADMAP.md`](../status/ROADMAP.md) - Project roadmap
 - [`docs/development/`](../development/) - Development guides and best practices
 - [`docs/architecture/`](../architecture/) - Architecture decision records (ADRs)
-- [`../../archive/docs/`](../../archive/docs/) - Archived completed audit documents
+- [`https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs`](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs) - Archived completed audit documents
 
 ## Audit History
 

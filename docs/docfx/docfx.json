@@ -2,11 +2,32 @@
   "metadata": [
     {
       "src": [
-        { "src": "../..", "files": [ "src/**/*.csproj" ], "exclude": [ "src/**/*.fsproj" ] }
+        {
+          "src": "../..",
+          "files": [
+            "src/Meridian/Meridian.csproj",
+            "src/Meridian.Contracts/Meridian.Contracts.csproj",
+            "src/Meridian.Core/Meridian.Core.csproj",
+            "src/Meridian.Domain/Meridian.Domain.csproj",
+            "src/Meridian.Storage/Meridian.Storage.csproj",
+            "src/Meridian.ProviderSdk/Meridian.ProviderSdk.csproj",
+            "src/Meridian.Ledger/Meridian.Ledger.csproj",
+            "src/Meridian.Execution/Meridian.Execution.csproj",
+            "src/Meridian.Execution.Sdk/Meridian.Execution.Sdk.csproj",
+            "src/Meridian.Strategies/Meridian.Strategies.csproj",
+            "src/Meridian.Risk/Meridian.Risk.csproj",
+            "src/Meridian.Backtesting/Meridian.Backtesting.csproj",
+            "src/Meridian.Backtesting.Sdk/Meridian.Backtesting.Sdk.csproj",
+            "src/Meridian.Infrastructure/Meridian.Infrastructure.csproj",
+            "src/Meridian.Infrastructure.CppTrader/Meridian.Infrastructure.CppTrader.csproj",
+            "src/Meridian.Mcp/Meridian.Mcp.csproj",
+            "src/Meridian.McpServer/Meridian.McpServer.csproj"
+          ]
+        }
       ],
       "dest": "api",
       "properties": {
-        "TargetFramework": "net9.0"
+        "IsWindows": "true"
       }
     }
   ],

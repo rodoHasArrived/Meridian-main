@@ -8,12 +8,12 @@ This document is the **master index** for AI assistant guidance in the Meridian 
 
 | Task | Start Here | Deep Dive |
 |------|-----------|-----------|
-| Any task | [`CLAUDE.md`](../../CLAUDE.md) | This file for the full resource map |
+| Any task | [`CLAUDE.md`](https://github.com/rodoHasArrived/Meridian/blob/main/CLAUDE.md) | This file for the full resource map |
 | Before any change | [`ai-known-errors.md`](ai-known-errors.md) | Prevention checklists |
-| GitHub agent work | [`agents/README.md`](agents/README.md) | [`.github/agents/`](../../.github/agents/) |
-| Agent Skills work | [`skills/README.md`](skills/README.md) | [`.claude/skills/`](../../.claude/skills/) |
-| Copilot setup | [`copilot/instructions.md`](copilot/instructions.md) | [`.github/copilot-instructions.md`](../../.github/copilot-instructions.md) |
-| Prompt-driven work | [`prompts/README.md`](prompts/README.md) | [`.github/prompts/`](../../.github/prompts/) |
+| GitHub agent work | [`agents/README.md`](agents/README.md) | [`.github/agents/`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/agents) |
+| Agent Skills work | [`skills/README.md`](skills/README.md) | [`.claude/skills/`](https://github.com/rodoHasArrived/Meridian/blob/main/.claude/skills) |
+| Copilot setup | [`copilot/instructions.md`](copilot/instructions.md) | [`.github/copilot-instructions.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/copilot-instructions.md) |
+| Prompt-driven work | [`prompts/README.md`](prompts/README.md) | [`.github/prompts/`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/prompts) |
 | Documentation edits | [`instructions/README.md`](instructions/README.md) | [`agents/README.md`](agents/README.md) |
 
 ---
@@ -47,7 +47,7 @@ The repository tree below is maintained automatically by the README Tree Sync wo
 
 | File | Purpose |
 |------|---------|
-| [`CLAUDE.md`](../../CLAUDE.md) | Master project context, architecture, commands, and conventions |
+| [`CLAUDE.md`](https://github.com/rodoHasArrived/Meridian/blob/main/CLAUDE.md) | Master project context, architecture, commands, and conventions |
 | [`ai-known-errors.md`](ai-known-errors.md) | Canonical registry of recurring AI mistakes and prevention checklists |
 
 ### Tier 2: Specialized Guides
@@ -70,16 +70,16 @@ Located in `docs/ai/claude/`.
 | [`agents/README.md`](agents/README.md) | GitHub and Claude agent overview |
 | [`skills/README.md`](skills/README.md) | Portable Agent Skills overview |
 | [`prompts/README.md`](prompts/README.md) | Prompt catalog and usage guide |
-| [`.github/agents/`](../../.github/agents/) | GitHub Copilot agent definition files |
-| [`.claude/skills/`](../../.claude/skills/) | Portable Agent Skills packages, references, evals, and scripts |
+| [`.github/agents/`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/agents) | GitHub Copilot agent definition files |
+| [`.claude/skills/`](https://github.com/rodoHasArrived/Meridian/blob/main/.claude/skills) | Portable Agent Skills packages, references, evals, and scripts |
 
 ### Tier 4: Auto-Applied Instructions
 
 | Resource | Purpose |
 |----------|---------|
 | [`instructions/README.md`](instructions/README.md) | Index for path-specific instruction files |
-| [`.github/instructions/`](../../.github/instructions/) | Auto-applied Copilot instruction files |
-| [`.github/copilot-instructions.md`](../../.github/copilot-instructions.md) | Repository-wide Copilot guidance |
+| [`.github/instructions/`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/instructions) | Auto-applied Copilot instruction files |
+| [`.github/copilot-instructions.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/copilot-instructions.md) | Repository-wide Copilot guidance |
 
 ---
 
@@ -89,11 +89,11 @@ Located in `docs/ai/claude/`.
 
 | Topic | Canonical Source |
 |-------|------------------|
-| Code review lenses | [`.github/agents/code-review-agent.md`](../../.github/agents/code-review-agent.md) |
+| Code review lenses | [`.github/agents/code-review-agent.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/agentscode-review-agent.md) |
 | Agent catalog | [`agents/README.md`](agents/README.md) |
 | Skill catalog | [`skills/README.md`](skills/README.md) |
 | Prompt catalog | [`prompts/README.md`](prompts/README.md) |
-| Project overview & conventions | [`CLAUDE.md`](../../CLAUDE.md) |
+| Project overview & conventions | [`CLAUDE.md`](https://github.com/rodoHasArrived/Meridian/blob/main/CLAUDE.md) |
 | Error prevention | [`ai-known-errors.md`](ai-known-errors.md) |
 
 ### Adding a New AI Resource

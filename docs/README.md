@@ -73,6 +73,8 @@ This index is the main entry point for Meridian documentation. The current docum
 
 ## Current Planning Source of Truth
 
+These documents are the reconciled, living planning set. Historical or superseded material has moved to the archive so you can trust the links below when making decisions.
+
 Use these documents together when planning implementation:
 
 1. [status/ROADMAP.md](status/ROADMAP.md) for delivery waves and target state
@@ -95,10 +97,10 @@ Use these documents together when planning implementation:
 
 ## Archive
 
-Historical, deprecated, and superseded documentation now lives outside the active docs tree in [`../archive/docs/`](../archive/docs/).
+Historical, deprecated, and superseded documentation now lives outside the active docs tree in [`https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs`](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs).
 
-- [Archive index](../archive/docs/INDEX.md)
-- [Archive overview](../archive/docs/README.md)
+- [Archive index](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docsINDEX.md)
+- [Archive overview](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docsREADME.md)
 
 ## Documentation Maintenance
 

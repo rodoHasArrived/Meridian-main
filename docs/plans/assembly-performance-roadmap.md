@@ -346,7 +346,7 @@ Before merging any optimized path:
 
 - **Source evaluation:** [`docs/evaluations/assembly-performance-opportunities.md`](../evaluations/assembly-performance-opportunities.md)
 - **Main roadmap:** [`docs/status/ROADMAP.md`](../status/ROADMAP.md) — Phase 16 entry
-- **Benchmark project:** [`benchmarks/Meridian.Benchmarks/`](../../benchmarks/Meridian.Benchmarks/)
+- **Benchmark project:** [`benchmarks/Meridian.Benchmarks/`](https://github.com/rodoHasArrived/Meridian/blob/main/benchmarks/Meridian.Benchmarks)
 - **`SymbolTable`:** `src/Meridian.Core/Performance/SymbolTable.cs`
 - **`MemoryMappedJsonlReader`:** `src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs`
 - **`DataQualityScoringService`:** `src/Meridian.Storage/Services/DataQualityScoringService.cs`

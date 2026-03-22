@@ -58,6 +58,14 @@ This is where Meridian should concentrate financial correctness and deterministi
 - catalog, replay, and maintenance services
 - Security Master persistence and supporting storage models
 
+### Graceful shutdown
+
+Graceful shutdown depends on the same cancellation tokens and write-ahead-log durability discussed in the storage design doc. Collector services drain their channels, flush pending writes, and close subscriptions before the WPF shell, CLI, or API surface stops accepting new connections. Controlled shutdown is coordinated by `EventPipelinePolicy`, `WriteAheadLog`, and dedicated drain logic so retries, metrics, and telemetry complete cleanly.
+
+### Backpressure monitoring
+
+Backpressure is monitored through the bounded channel policies, metrics exporters, and telemetry dashboards already part of the platform. `BoundedChannelPolicy` enforces per-provider limits, `EventPipelinePolicy` captures overload signals, and monitoring pipelines report queue depth, publish rate, and retry counts so operators see when producers are saturating consumers.
+
 ## Language Split
 
 The current plan uses a deliberate C# / F# split:

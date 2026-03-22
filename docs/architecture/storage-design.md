@@ -114,6 +114,18 @@ Storage profiles are optional presets that map to existing storage options witho
 
 Profiles are applied by `StorageProfilePresets.ApplyProfile` and only adjust the options shown above unless the caller explicitly overrides them. The default profile when none is specified is **Research**.
 
+## Event pipeline
+
+Events emitted by each provider travel through a deterministic event pipeline that handles canonicalization, metadata tagging, and sink fan-out. The pipeline wires `MarketEvent` envelopes through the `EventPipelinePolicy`, `WriteAheadLog`, and the `CompositeSink` so storage tiers (JSONL, Parquet, catalog, and export services) all see the same canonicalized data.
+
+## Storage services
+
+Storage responsibilities are split into services that keep data organized, searchable, and healthy. `StorageCatalogService` maintains manifests and metadata, `StorageSearchService` powers lookups, `FileMaintenanceService` enforces retention/quotas, and `TierMigrationService` coordinates hot/warm/cold transitions.
+
+## Storage sinks
+
+Storage sinks describe the destinations the pipeline writes to. `StorageSinkRegistry` discovers available sinks, `CompositeSink` fans each event to JSONL/Parquet writers, and `ParquetConversionService` keeps the Parquet tier consistent with the JSONL master copy. Additional sinks (archives, exports, diagnostics) plug into the same registry so new storage targets can be added without touching the core pipeline.
+
 ---
 
 ## Naming Convention Improvements
@@ -3208,4 +3220,4 @@ The modular design allows incremental adoption—start with basic naming convent
 **Version:** 2.1.0
 **Last Updated:** 2026-03-14
 **Focus:** Data Collection, Archival & External Analysis Export
-**See Also:** [Meridian README](../../README.md) | [Architecture Overview](overview.md) | [Configuration Guide](../HELP.md#configuration) | [ADR-002: Tiered Storage](../adr/002-tiered-storage-architecture.md)
+**See Also:** [Meridian README](https://github.com/rodoHasArrived/Meridian/blob/main/README.md) | [Architecture Overview](overview.md) | [Configuration Guide](../HELP.md#configuration) | [ADR-002: Tiered Storage](../adr/002-tiered-storage-architecture.md)

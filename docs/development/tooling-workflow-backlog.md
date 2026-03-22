@@ -169,9 +169,9 @@ Track whether the cleanup is working by measuring:
 
 ## Related Files
 
-- [`Makefile`](../../Makefile)
-- [`package.json`](../../package.json)
-- [`.github/dependabot.yml`](../../.github/dependabot.yml)
-- [`.github/workflows/README.md`](../../.github/workflows/README.md)
-- [`README.md`](../../README.md)
-- [`Directory.Build.props`](../../Directory.Build.props)
+- [`Makefile`](https://github.com/rodoHasArrived/Meridian/blob/main/Makefile)
+- [`package.json`](https://github.com/rodoHasArrived/Meridian/blob/main/package.json)
+- [`.github/dependabot.yml`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/dependabot.yml)
+- [`.github/workflows/README.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/workflows/README.md)
+- [`README.md`](https://github.com/rodoHasArrived/Meridian/blob/main/README.md)
+- [`Directory.Build.props`](https://github.com/rodoHasArrived/Meridian/blob/main/Directory.Build.props)

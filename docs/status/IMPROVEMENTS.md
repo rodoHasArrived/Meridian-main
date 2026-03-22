@@ -1357,7 +1357,7 @@ These documents are superseded by this consolidated tracker:
 - `../../archive/docs/summaries/CHANGES_SUMMARY.md` — Historical changes (v1.5.0 and earlier)
 - `../../archive/docs/summaries/ROADMAP_UPDATE_SUMMARY.md` — Roadmap expansion summary (archived)
 
-See [`../../archive/docs/INDEX.md`](../../archive/docs/INDEX.md) for context on archived documents.
+See [`https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/INDEX.md`](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/INDEX.md) for context on archived documents.
 
 ---
 

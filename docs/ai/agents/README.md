@@ -10,7 +10,7 @@ Both sets are kept in sync so that Claude and Copilot have access to equivalent 
 
 ### ADR Generator Agent
 
-**File:** [`.github/agents/adr-generator.agent.md`](../../../.github/agents/adr-generator.agent.md)
+**File:** [`.github/agents/adr-generator.agent.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/agents/adr-generator.agent.md)
 **Used by:** GitHub Copilot agents
 
 Creates well-structured, comprehensive Architectural Decision Records (ADRs) for the
@@ -27,7 +27,7 @@ points (POS-NNN, NEG-NNN, ALT-NNN, IMP-NNN, REF-NNN), and a 15-item quality chec
 
 ### Blueprint Mode Agent
 
-**File:** [`.github/agents/blueprint-agent.md`](../../../.github/agents/blueprint-agent.md)
+**File:** [`.github/agents/blueprint-agent.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/agents/blueprint-agent.md)
 **Used by:** GitHub Copilot agents
 **Claude Code equivalent:** the corresponding Blueprint resources in `.claude/agents/` and `.claude/skills/`.
 
@@ -55,7 +55,7 @@ Brainstorm → Roadmap → Blueprint (this agent) → Implementation → Code Re
 
 ### Code Review Agent
 
-**File:** [`.github/agents/code-review-agent.md`](../../../.github/agents/code-review-agent.md)
+**File:** [`.github/agents/code-review-agent.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/agents/code-review-agent.md)
 **Used by:** GitHub Copilot agents and the corresponding Claude Code review skill
 
 Defines the canonical **7-lens code review framework** for the Meridian codebase:
@@ -76,7 +76,7 @@ The Claude Code equivalent is the corresponding review skill documented in the A
 
 ### Documentation Agent
 
-**File:** [`.github/agents/documentation-agent.md`](../../../.github/agents/documentation-agent.md)
+**File:** [`.github/agents/documentation-agent.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/agents/documentation-agent.md)
 **Used by:** GitHub Copilot agents
 **Claude Code equivalent:** the corresponding documentation agent in `.claude/agents/`.
 
@@ -91,7 +91,7 @@ Handles documentation maintenance and quality tasks:
 
 ### Brainstorming & Ideation Agent
 
-**File:** [`.github/agents/brainstorm-agent.md`](../../../.github/agents/brainstorm-agent.md)
+**File:** [`.github/agents/brainstorm-agent.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/agents/brainstorm-agent.md)
 **Used by:** GitHub Copilot agents
 **Claude Code equivalent:** the corresponding brainstorm resources in `.claude/skills/`.
 
@@ -104,7 +104,7 @@ Skill Improvement). Produces a summary table + narrative ideas + synthesis with 
 
 ### Provider Builder Agent
 
-**File:** [`.github/agents/provider-builder-agent.md`](../../../.github/agents/provider-builder-agent.md)
+**File:** [`.github/agents/provider-builder-agent.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/agents/provider-builder-agent.md)
 **Used by:** GitHub Copilot agents
 **Claude Code equivalent:** the corresponding provider-builder resources in `.claude/skills/`.
 
@@ -117,7 +117,7 @@ DI registration, and a matching test scaffold.
 
 ### Test Writer Agent
 
-**File:** [`.github/agents/test-writer-agent.md`](../../../.github/agents/test-writer-agent.md)
+**File:** [`.github/agents/test-writer-agent.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/agents/test-writer-agent.md)
 **Used by:** GitHub Copilot agents
 **Claude Code equivalent:** the corresponding test-writing resources in `.claude/skills/`.
 
@@ -129,7 +129,7 @@ and selects from 8 named patterns (A–H) based on the component type.
 
 ### Cleanup Agent
 
-**File:** [`.github/agents/cleanup-agent.md`](../../../.github/agents/cleanup-agent.md)
+**File:** [`.github/agents/cleanup-agent.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/agents/cleanup-agent.md)
 **Used by:** GitHub Copilot agents
 **Claude Code equivalent:** the corresponding cleanup agent in `.claude/agents/`.
 
@@ -150,7 +150,7 @@ observable behaviour. Covers 7 categories:
 
 ### Bug Fix Agent
 
-**File:** [`.github/agents/bug-fix-agent.md`](../../../.github/agents/bug-fix-agent.md)
+**File:** [`.github/agents/bug-fix-agent.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/agents/bug-fix-agent.md)
 **Used by:** GitHub Copilot agents
 
 Traces failures from symptom to root cause across all Meridian layers and applies the minimal
@@ -168,7 +168,7 @@ correct fix with a mandatory regression test. Follows a 5-step workflow:
 
 ### Performance Agent
 
-**File:** [`.github/agents/performance-agent.md`](../../../.github/agents/performance-agent.md)
+**File:** [`.github/agents/performance-agent.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/agents/performance-agent.md)
 **Used by:** GitHub Copilot agents
 
 Identifies and eliminates hot-path bottlenecks across streaming pipelines, storage sinks, and
@@ -191,7 +191,7 @@ provider adapters. Operates only on **measured** bottlenecks (BenchmarkDotNet / 
 
 **Location:** `.claude/agents/`
 **Used by:** Claude Code
-**Copilot equivalent:** [`.github/agents/blueprint-agent.md`](../../../.github/agents/blueprint-agent.md)
+**Copilot equivalent:** [`.github/agents/blueprint-agent.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/agents/blueprint-agent.md)
 **Skill equivalent:** the Blueprint skill documented under `.claude/skills/`
 
 Blueprint Mode specialist. Translates a single prioritised idea into a complete, code-ready
@@ -204,7 +204,7 @@ and implementation checklists — grounded in Meridian's actual stack.
 
 **Location:** `.claude/agents/`
 **Used by:** Claude Code
-**Copilot equivalent:** [`.github/agents/cleanup-agent.md`](../../../.github/agents/cleanup-agent.md)
+**Copilot equivalent:** [`.github/agents/cleanup-agent.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/agents/cleanup-agent.md)
 
 Cleanup specialist for the Meridian repository. Removes dead code, duplication,
 anti-patterns, and stale documentation across C# 13, F# 8, WPF, and .NET 9 source files —
@@ -218,7 +218,7 @@ and ADR attribute cleanup.
 
 **Location:** `.claude/agents/`
 **Used by:** Claude Code
-**Copilot equivalent:** [`.github/agents/documentation-agent.md`](../../../.github/agents/documentation-agent.md)
+**Copilot equivalent:** [`.github/agents/documentation-agent.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/agents/documentation-agent.md)
 
 Documentation maintenance specialist for the Meridian repository. Keeps docs accurate,
 comprehensive, and up-to-date across the AI guidance system (`docs/ai/`), architecture docs,
@@ -257,7 +257,7 @@ Copilot agents, referencing these files in the issue or prompt body improves out
 | Resource | Purpose |
 |----------|---------|
 | [`docs/ai/skills/README.md`](../skills/README.md) | Claude Code skill details |
-| [`docs/ai/README.md`](../../archive/docs/README.md) | Master AI resource index |
+| [`docs/ai/README.md`](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/README.md) | Master AI resource index |
 | [`docs/ai/ai-known-errors.md`](../ai-known-errors.md) | Error prevention registry |
 | [`docs/ai/instructions/README.md`](../instructions/README.md) | Path-specific Copilot instructions |
 

@@ -776,7 +776,7 @@ These evaluations are superseded or no longer applicable:
 | `CLEANUP_OPPORTUNITIES.md` | `../../archive/docs/` | All platform cleanup items fully completed; historical reference only |
 | `repository-cleanup-action-plan.md` | `../../archive/docs/` | All phases (1–6) complete; historical record of completed cleanup work |
 
-See [`../../archive/docs/INDEX.md`](../../archive/docs/INDEX.md) for the full archive index.
+See [`https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/INDEX.md`](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/INDEX.md) for the full archive index.
 
 ---
 

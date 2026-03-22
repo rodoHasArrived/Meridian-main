@@ -162,7 +162,7 @@ All critical issues identified in the code review have been addressed:
 
 Related documentation:
 - **Evaluation**: `docs/evaluations/desktop-ui-alternatives-evaluation.md`
-- **Migration History**: [UWP to WPF Migration](../../archive/docs/migrations/uwp-to-wpf-migration.md) (archived)
+- **Migration History**: [UWP to WPF Migration](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/migrations/uwp-to-wpf-migration.md) (archived)
 
 ### Testing
 

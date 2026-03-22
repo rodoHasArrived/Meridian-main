@@ -305,6 +305,9 @@ tail -n 5 data/AAPL.BboQuote.jsonl
 Each record includes `SequenceNumber`, `StreamId`, and `Venue` fields so you can reconcile feeds across providers.
 
 ---
+## Storage management
+
+These settings and policies keep the storage tier healthy and predictable. Use the configuration snippets and quotas below whenever you tune retention, cleanup, or tiering for a given deployment.
 
 ## Storage Configuration
 

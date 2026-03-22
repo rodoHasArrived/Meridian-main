@@ -821,10 +821,10 @@ public void PerformanceTest() { }
 
 ## Related Resources
 
-- **Master AI index:** [`docs/ai/README.md`](../../archive/docs/README.md)
-- **Root context:** [`CLAUDE.md`](../../../CLAUDE.md)
-- **Code review (Lens 4 - Test Quality):** [`.github/agents/code-review-agent.md`](../../../.github/agents/code-review-agent.md)
-- **Test instructions:** [`.github/instructions/dotnet-tests.instructions.md`](../../../.github/instructions/dotnet-tests.instructions.md)
+- **Master AI index:** [`docs/ai/README.md`](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/README.md)
+- **Root context:** [`CLAUDE.md`](https://github.com/rodoHasArrived/Meridian/blob/main/CLAUDE.md)
+- **Code review (Lens 4 - Test Quality):** [`.github/agents/code-review-agent.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/agents/code-review-agent.md)
+- **Test instructions:** [`.github/instructions/dotnet-tests.instructions.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/instructions/dotnet-tests.instructions.md)
 
 ---
 

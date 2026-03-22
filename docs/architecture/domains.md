@@ -94,6 +94,10 @@ These fields are additive — existing consumers and storage paths continue to w
 
 ## Collector Responsibilities
 
+## Domain events
+
+Domain events are the backbone of the platform. Every data point emitted by the collectors (trades, quotes, depth, integrity signals, or system notifications) is wrapped in a `MarketEvent` envelope with a typed `MarketEventPayload`. Consumer logic dispatches on the `MarketEventType` discriminator so side-by-side comparisons, canonicalization, and downstream routing stay predictable across providers.
+
 ## TradeDataCollector
 
 Processes `MarketTradeUpdate` and emits:

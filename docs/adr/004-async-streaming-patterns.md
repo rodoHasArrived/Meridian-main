@@ -203,7 +203,7 @@ await foreach (var item in stream.WithCancellation(ct))
 
 ## References
 
-- [CLAUDE.md Critical Rules](../../CLAUDE.md#critical-rules)
+- [CLAUDE.md Critical Rules](https://github.com/rodoHasArrived/Meridian/blob/main/CLAUDE.md)
 - [Configuration Reference](../HELP.md#configuration)
 - [Microsoft IAsyncEnumerable Docs](https://docs.microsoft.com/en-us/dotnet/csharp/whats-new/tutorials/generate-consume-asynchronous-stream)
 - [ADR-013: Bounded Channel Policy](013-bounded-channel-policy.md) - Defines the `EventPipelinePolicy` presets referenced in the Channel Benefits section above

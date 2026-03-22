@@ -75,6 +75,14 @@ Remaining work is tracked in `docs/status/IMPROVEMENTS.md` and the new [`FEATURE
 
 ---
 
+### Phase 6: Duplicate & Unused Code Cleanup
+
+- Status: **Completed**. The cleanup phase folded duplicate implementations into shared contracts, retired UWP artifacts, and created the lean baseline that delivered the completed Phases 0-5 narrative.
+
+### Phase 8: Repository Organization & Optimization
+
+- Status: **In progress**. This phase covers documentation refreshes, workspace cleanup, and automation improvements that keep the planning docs, TOCs, and automation scripts aligned with the current repo structure and archive strategy.
+
 ## Priority Roadmap (Current Delivery Waves)
 
 This section replaces the old sprint-by-sprint narrative with the current backlog ordering implied by the repository state.
@@ -153,6 +161,12 @@ These are the best near-term opportunities implied by the current repository sta
 - **Value:** Either capability would deepen the Research workspace and make Meridian feel materially more differentiated.
 - **Unlocks:** Script-backed experimentation, richer execution analysis, and a stronger end-to-end strategy lifecycle story.
 - **Track:** After the workstation baseline is stable.
+
+### Desktop improvements
+
+- **WPF is the sole client** now, and the navigation shells have been aligned around the Research, Trading, Data Operations, and Governance workspaces described in the workstation blueprint.
+- **Shared run/portfolio/ledger surfaces** now live inside the desktop experience, with fans for drill-ins, ledger views, and reconciliation helpers that are being polished in the current delivery wave.
+- **Operational polish** (observability, configuration, autop-run guards) keeps the desktop app aligned with the platform hardening tracked in `IMPROVEMENTS.md` and the Execution/Observation themes, so QA and operator testing have a clear checklist.
 
 ## Target End Product
 

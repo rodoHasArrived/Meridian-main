@@ -24,6 +24,8 @@ An ADR is a document that captures an important architectural decision along wit
 | [ADR-012](012-monitoring-and-alerting-pipeline.md) | Unified Monitoring & Alerting | Accepted | `IHealthCheckProvider`, `IAlertDispatcher` |
 | [ADR-013](013-bounded-channel-policy.md) | Bounded Channel Pipeline Policy | Accepted | `EventPipelinePolicy` |
 | [ADR-014](014-json-source-generators.md) | JSON Source Generators | Accepted | `MarketDataJsonContext` |
+| [ADR-015](015-strategy-execution-contract.md) | Strategy Execution Contract | Accepted | `IOrderGateway`, `IExecutionContext` |
+| [ADR-016](016-platform-architecture-migration.md) | Platform Architecture Migration Mandate | Accepted | `Meridian.Execution`, `Meridian.Strategies`, `StrategyRunStore` |
 
 ## ADR Dependencies
 

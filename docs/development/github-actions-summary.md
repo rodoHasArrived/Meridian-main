@@ -4,7 +4,7 @@ This document provides a quick reference for all GitHub Actions workflows in the
 
 **Last Updated:** 2026-03-20
 **Scope:** Core workflow summary (see `.github/workflows/README.md` for the full current inventory)
-**Authoritative Reference:** [`.github/workflows/README.md`](../../.github/workflows/README.md)
+**Authoritative Reference:** [`.github/workflows/README.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/workflows/README.md)
 
 ---
 
@@ -120,7 +120,7 @@ gh workflow run benchmark.yml
 
 ## Related Documentation
 
-- [`.github/workflows/README.md`](../../.github/workflows/README.md) - Full workflow details and dependency diagram
+- [`.github/workflows/README.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/workflows/README.md) - Full workflow details and dependency diagram
 - [`docs/ai/claude/CLAUDE.actions.md`](../ai/claude/CLAUDE.actions.md) - AI assistant CI/CD guide
 - [`docs/development/build-observability.md`](build-observability.md) - Build metrics system
 - [`docs/development/github-actions-testing.md`](github-actions-testing.md) - CI testing tips
