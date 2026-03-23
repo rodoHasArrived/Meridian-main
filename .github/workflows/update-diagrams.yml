@@ -76,7 +76,7 @@ jobs:
           done
 
       - name: Commit regenerated diagrams
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: 'docs(diagrams): regenerate SVG from DOT sources'
           file_pattern: docs/diagrams/*.dot docs/diagrams/*.svg
@@ -121,7 +121,7 @@ jobs:
           done
 
       - name: Commit regenerated UML diagrams
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: 'docs(uml): regenerate PNG diagrams from PlantUML sources'
           file_pattern: docs/diagrams/uml/*.png
