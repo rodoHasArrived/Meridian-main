@@ -10,6 +10,7 @@ using Meridian.Ui.Services.Services;
 using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Services;
 using SearchService = Meridian.Ui.Services.SearchService;
+using WorkspacePageModel = Meridian.Ui.Services.WorkspacePage;
 using WpfServices = Meridian.Wpf.Services;
 using SysNavigation = System.Windows.Navigation;
 
@@ -512,11 +513,11 @@ public partial class MainPage : Page
             // Parse banner color from detector
             try
             {
-                FixtureModeBannerBrush.Color = (Color)ColorConverter.ConvertFromString(detector.BannerColor);
+                SetFixtureModeBannerColor((Color)ColorConverter.ConvertFromString(detector.BannerColor));
             }
             catch
             {
-                FixtureModeBannerBrush.Color = Colors.Orange;
+                SetFixtureModeBannerColor(Colors.Orange);
             }
 
             // Adjust content frame margin to account for banner
@@ -526,6 +527,14 @@ public partial class MainPage : Page
         {
             FixtureModeBanner.Visibility = Visibility.Collapsed;
             ContentFrame.Margin = new Thickness(0, 56, 0, 0);
+        }
+    }
+
+    private void SetFixtureModeBannerColor(Color color)
+    {
+        if (FixtureModeBannerBrush.GradientStops.Count > 0)
+        {
+            FixtureModeBannerBrush.GradientStops[0].Color = color;
         }
     }
 
@@ -634,8 +643,8 @@ public partial class MainPage : Page
         var openPages = currentSession?.OpenPages
             .Where(page => !string.Equals(page.PageTag, pageTag, StringComparison.OrdinalIgnoreCase))
             .Select(CloneWorkspacePage)
-            .ToList() ?? new List<WorkspacePage>();
-        openPages.Insert(0, new WorkspacePage
+            .ToList() ?? new List<WorkspacePageModel>();
+        openPages.Insert(0, new WorkspacePageModel
         {
             PageTag = pageTag,
             Title = title,
@@ -723,9 +732,9 @@ public partial class MainPage : Page
         return _currentWorkspaceId;
     }
 
-    private static WorkspacePage CloneWorkspacePage(WorkspacePage page)
+    private static WorkspacePageModel CloneWorkspacePage(WorkspacePageModel page)
     {
-        return new WorkspacePage
+        return new WorkspacePageModel
         {
             PageTag = page.PageTag,
             Title = page.Title,

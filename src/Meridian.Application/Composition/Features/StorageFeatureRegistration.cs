@@ -1,9 +1,12 @@
 using Meridian.Application.Config;
+using Meridian.Application.DirectLending;
 using Meridian.Application.SecurityMaster;
+using Meridian.Contracts.DirectLending;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Application.UI;
 using Meridian.Contracts.Store;
 using Meridian.Storage;
+using Meridian.Storage.DirectLending;
 using Meridian.Storage.Export;
 using Meridian.Storage.Interfaces;
 using Meridian.Storage.Maintenance;
@@ -22,6 +25,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
     public IServiceCollection Register(IServiceCollection services, CompositionOptions options)
     {
         SecurityMasterStartup.EnsureEnvironmentDefaults();
+        DirectLendingStartup.EnsureEnvironmentDefaults();
 
         // StorageOptions - configured from AppConfig or defaults
         services.AddSingleton<StorageOptions>(sp =>
@@ -75,6 +79,18 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             ResolveInactiveByDefault = ParseBool("MERIDIAN_SECURITY_MASTER_RESOLVE_INACTIVE", true)
         });
 
+        services.AddSingleton(sp => new DirectLendingOptions
+        {
+            ConnectionString = Environment.GetEnvironmentVariable("MERIDIAN_DIRECT_LENDING_CONNECTION_STRING") ?? string.Empty,
+            Schema = Environment.GetEnvironmentVariable("MERIDIAN_DIRECT_LENDING_SCHEMA") ?? "direct_lending",
+            SnapshotIntervalVersions = ParseInt("MERIDIAN_DIRECT_LENDING_SNAPSHOT_INTERVAL", 50),
+            CurrentEventSchemaVersion = ParseInt("MERIDIAN_DIRECT_LENDING_EVENT_SCHEMA_VERSION", 1),
+            ProjectionEngineVersion = Environment.GetEnvironmentVariable("MERIDIAN_DIRECT_LENDING_PROJECTION_ENGINE_VERSION") ?? "dl-engine-v1",
+            OutboxBatchSize = ParseInt("MERIDIAN_DIRECT_LENDING_OUTBOX_BATCH_SIZE", 50),
+            OutboxPollIntervalSeconds = ParseInt("MERIDIAN_DIRECT_LENDING_OUTBOX_POLL_SECONDS", 5),
+            ReplayBatchSize = ParseInt("MERIDIAN_DIRECT_LENDING_REPLAY_BATCH_SIZE", 250)
+        });
+
         services.AddSingleton<ISecurityMasterEventStore, PostgresSecurityMasterEventStore>();
         services.AddSingleton<ISecurityMasterSnapshotStore, PostgresSecurityMasterSnapshotStore>();
         services.AddSingleton<ISecurityMasterStore, PostgresSecurityMasterStore>();
@@ -86,6 +102,14 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.AddSingleton<ISecurityMasterService, SecurityMasterService>();
         services.AddSingleton<ISecurityMasterQueryService, SecurityMasterQueryService>();
         services.AddSingleton<ISecurityResolver, SecurityResolver>();
+        services.AddSingleton<DirectLendingEventRebuilder>();
+        services.AddSingleton<IDirectLendingStateStore, PostgresDirectLendingStateStore>();
+        services.AddSingleton<IDirectLendingOperationsStore>(sp => (PostgresDirectLendingStateStore)sp.GetRequiredService<IDirectLendingStateStore>());
+        services.AddSingleton<DirectLendingMigrationRunner>();
+        services.AddSingleton<IDirectLendingQueryService, PostgresDirectLendingQueryService>();
+        services.AddSingleton<IDirectLendingCommandService, PostgresDirectLendingCommandService>();
+        services.AddSingleton<IDirectLendingService, PostgresDirectLendingService>();
+        services.AddHostedService<DirectLendingOutboxDispatcher>();
 
         return services;
     }

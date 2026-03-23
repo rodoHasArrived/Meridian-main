@@ -9,7 +9,55 @@ namespace Meridian.Strategies.Services;
 /// </summary>
 public sealed class LedgerReadService
 {
+    private readonly ISecurityReferenceLookup? _securityReferenceLookup;
+
+    public LedgerReadService()
+    {
+    }
+
+    public LedgerReadService(ISecurityReferenceLookup securityReferenceLookup)
+    {
+        _securityReferenceLookup = securityReferenceLookup ?? throw new ArgumentNullException(nameof(securityReferenceLookup));
+    }
+
     public LedgerSummary? BuildSummary(StrategyRunEntry entry)
+        => BuildBaseSummary(entry);
+
+    public async Task<LedgerSummary?> BuildSummaryAsync(StrategyRunEntry entry, CancellationToken ct = default)
+    {
+        var summary = BuildBaseSummary(entry);
+        if (summary is null || _securityReferenceLookup is null || summary.TrialBalance.Count == 0)
+        {
+            return summary;
+        }
+
+        var lookup = await ResolveSecuritiesAsync(
+                summary.TrialBalance
+                    .Select(static line => line.Symbol)
+                    .Where(static symbol => !string.IsNullOrWhiteSpace(symbol))!
+                    .Select(static symbol => symbol!),
+                ct)
+            .ConfigureAwait(false);
+
+        var trialBalance = summary.TrialBalance
+            .Select(line => line with
+            {
+                Security = line.Symbol is not null ? lookup.GetValueOrDefault(line.Symbol) : null
+            })
+            .ToArray();
+
+        var resolvedCount = lookup.Values.Count(static value => value is not null);
+        var missingCount = lookup.Count - resolvedCount;
+
+        return summary with
+        {
+            TrialBalance = trialBalance,
+            SecurityResolvedCount = resolvedCount,
+            SecurityMissingCount = missingCount
+        };
+    }
+
+    private static LedgerSummary? BuildBaseSummary(StrategyRunEntry entry)
     {
         ArgumentNullException.ThrowIfNull(entry);
 
@@ -66,4 +114,24 @@ public sealed class LedgerReadService
         => summaries
             .Where(summary => summary.Account.AccountType == accountType)
             .Sum(static summary => summary.Balance);
+
+    private async Task<Dictionary<string, WorkstationSecurityReference?>> ResolveSecuritiesAsync(
+        IEnumerable<string> symbols,
+        CancellationToken ct)
+    {
+        var lookup = new Dictionary<string, WorkstationSecurityReference?>(StringComparer.OrdinalIgnoreCase);
+        if (_securityReferenceLookup is null)
+        {
+            return lookup;
+        }
+
+        foreach (var symbol in symbols.Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            lookup[symbol] = await _securityReferenceLookup
+                .GetBySymbolAsync(symbol, ct)
+                .ConfigureAwait(false);
+        }
+
+        return lookup;
+    }
 }

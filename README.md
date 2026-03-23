@@ -1,6 +1,6 @@
 # Meridian
 
-Meridian is a comprehensive fund management platform in active delivery. The current platform already includes market-data ingestion, storage, backfill, replay, backtesting, paper-trading foundations, portfolio and ledger read models, and a WPF desktop shell. The next major delivery wave expands that baseline into a connected front-, middle-, and back-office product covering shared run workflows, Security Master, multi-ledger governance, cash-flow modeling, reconciliation, reporting, and trade-management operations.
+Meridian is a comprehensive fund management platform in active delivery. The current platform already includes market-data ingestion, storage, backfill, replay, backtesting, paper-trading foundations, portfolio and ledger read models, Security Master foundations, a first run-scoped reconciliation seam, direct-lending services and endpoints, and a WPF desktop shell. The next major delivery wave expands that baseline into a connected front-, middle-, and back-office product covering shared run workflows, Security Master productization, multi-ledger governance, cash-flow modeling, deeper reconciliation, reporting, and trade-management operations.
 
 ## Start Here
 

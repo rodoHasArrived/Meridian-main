@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Meridian.Backtesting.Sdk;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.Strategies.Models;
@@ -209,6 +210,96 @@ public sealed class StrategyRunReadServiceTests
         run.Governance!.HasParameters.Should().BeTrue();
     }
 
+    [Fact]
+    public async Task GetRunDetailAsync_WithSecurityLookup_EnrichesPortfolioAndLedgerSymbols()
+    {
+        var store = new StrategyRunStore();
+        var run = BuildCompletedRun(
+            runId: "run-security-a",
+            strategyId: "momentum-1",
+            strategyName: "Momentum",
+            finalEquity: 125_000m,
+            netPnl: 25_000m,
+            totalReturn: 0.25m,
+            realizedPnl: 9_000m,
+            unrealizedPnl: 16_000m,
+            fillCount: 2,
+            sharpeRatio: 1.42,
+            maxDrawdown: 5_500m);
+        await store.RecordRunAsync(run);
+
+        var lookup = new StubSecurityReferenceLookup();
+        lookup.Register("AAPL", new WorkstationSecurityReference(
+            SecurityId: Guid.Parse("11111111-1111-1111-1111-111111111111"),
+            DisplayName: "Apple Inc.",
+            AssetClass: "Equity",
+            Currency: "USD",
+            Status: SecurityStatusDto.Active,
+            PrimaryIdentifier: "AAPL"));
+
+        var service = new StrategyRunReadService(
+            store,
+            new PortfolioReadService(lookup),
+            new LedgerReadService(lookup));
+
+        var detail = await service.GetRunDetailAsync("run-security-a");
+
+        detail.Should().NotBeNull();
+        detail!.Portfolio.Should().NotBeNull();
+        detail.Portfolio!.SecurityResolvedCount.Should().Be(1);
+        detail.Portfolio.SecurityMissingCount.Should().Be(0);
+        detail.Portfolio.Positions.Should().ContainSingle();
+        detail.Portfolio.Positions[0].Security.Should().NotBeNull();
+        detail.Portfolio.Positions[0].Security!.DisplayName.Should().Be("Apple Inc.");
+
+        detail.Ledger.Should().NotBeNull();
+        detail.Ledger!.SecurityResolvedCount.Should().Be(1);
+        detail.Ledger.SecurityMissingCount.Should().Be(0);
+        detail.Ledger.TrialBalance
+            .Where(line => string.Equals(line.Symbol, "AAPL", StringComparison.OrdinalIgnoreCase))
+            .Should()
+            .OnlyContain(line => line.Security != null && line.Security.DisplayName == "Apple Inc.");
+    }
+
+    [Fact]
+    public async Task GetRunDetailAsync_WhenSecurityLookupMissesSymbol_TracksMissingCoverage()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(BuildCompletedRun(
+            runId: "run-security-missing",
+            strategyId: "momentum-1",
+            strategyName: "Momentum",
+            finalEquity: 125_000m,
+            netPnl: 25_000m,
+            totalReturn: 0.25m,
+            realizedPnl: 9_000m,
+            unrealizedPnl: 16_000m,
+            fillCount: 2,
+            sharpeRatio: 1.42,
+            maxDrawdown: 5_500m));
+
+        var service = new StrategyRunReadService(
+            store,
+            new PortfolioReadService(new StubSecurityReferenceLookup()),
+            new LedgerReadService(new StubSecurityReferenceLookup()));
+
+        var detail = await service.GetRunDetailAsync("run-security-missing");
+
+        detail.Should().NotBeNull();
+        detail!.Portfolio.Should().NotBeNull();
+        detail.Portfolio!.SecurityResolvedCount.Should().Be(0);
+        detail.Portfolio.SecurityMissingCount.Should().Be(1);
+        detail.Portfolio.Positions[0].Security.Should().BeNull();
+
+        detail.Ledger.Should().NotBeNull();
+        detail.Ledger!.SecurityResolvedCount.Should().Be(0);
+        detail.Ledger.SecurityMissingCount.Should().Be(1);
+        detail.Ledger.TrialBalance
+            .Where(line => string.Equals(line.Symbol, "AAPL", StringComparison.OrdinalIgnoreCase))
+            .Should()
+            .OnlyContain(line => line.Security == null);
+    }
+
     private static StrategyRunEntry BuildCompletedRun(
         string runId,
         string strategyId,
@@ -356,5 +447,21 @@ public sealed class StrategyRunReadServiceTests
                 ["lookback"] = "20",
                 ["threshold"] = "1.5"
             });
+    }
+
+    private sealed class StubSecurityReferenceLookup : ISecurityReferenceLookup
+    {
+        private readonly Dictionary<string, WorkstationSecurityReference> _references = new(StringComparer.OrdinalIgnoreCase);
+
+        public void Register(string symbol, WorkstationSecurityReference reference)
+        {
+            _references[symbol] = reference;
+        }
+
+        public Task<WorkstationSecurityReference?> GetBySymbolAsync(string symbol, CancellationToken ct = default)
+        {
+            _references.TryGetValue(symbol, out var reference);
+            return Task.FromResult<WorkstationSecurityReference?>(reference);
+        }
     }
 }

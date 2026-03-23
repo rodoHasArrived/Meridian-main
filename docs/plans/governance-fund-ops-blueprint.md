@@ -1,5 +1,7 @@
 # Governance and Fund Operations Blueprint
 
+**Last Updated:** 2026-03-22
+
 ## Summary
 
 Implement a Meridian-native governance and fund-operations capability set that makes `Security Master`, `account and entity management`, `multi-ledger accounting`, `trial balance`, `cash-flow modeling`, `reconciliation`, `trade-management support`, and `report generation` first-class product workflows inside the existing `Governance` workstation and broader fund-management product.
@@ -9,9 +11,13 @@ This blueprint starts from the current repository state:
 - shared run, portfolio, and ledger read services already exist
 - WPF already has `StrategyRuns`, `RunDetail`, `RunPortfolio`, and `RunLedger` surfaces
 - Security Master contracts, services, storage, migrations, and F# domain modules already exist
+- run-scoped reconciliation contracts, services, and workstation endpoints already exist
+- direct-lending services, migrations, projections, and `/api/loans/*` endpoints already exist as the first deep governance/UFL vertical slice
 - export infrastructure already exists for JSONL, Parquet, Arrow, XLSX, and CSV
 
 The design goal is to finish these capabilities without creating a parallel architecture outside Meridian's current workstation, strategy, ledger, and storage layers, while making Meridian credible as a comprehensive front-, middle-, and back-office fund-management platform.
+
+For the first deep vertical implementation of these governance patterns in direct lending, see [UFL Direct Lending Target-State Package V2](ufl-direct-lending-target-state-v2.md).
 
 ## Scope
 
@@ -470,3 +476,11 @@ dotnet test tests/Meridian.Wpf.Tests -c Release /p:EnableWindowsTargeting=true
 - Which cash-flow categories are required for the first release: coupons, distributions, financing, fees, margin, subscriptions/redemptions?
 - Does NAV/attribution need to ship before or after the first governed report-pack workflow?
 - Should report generation produce only artifacts, or also versioned stored report snapshots queryable inside Meridian?
+
+## Related Documents
+
+- [Fund Management Product Vision and Capability Matrix](fund-management-product-vision-and-capability-matrix.md)
+- [Fund Management Module Implementation Backlog](fund-management-module-implementation-backlog.md)
+- [Fund Management PR-Sequenced Roadmap](fund-management-pr-sequenced-roadmap.md)
+- [UFL Direct Lending Target-State Package V2](ufl-direct-lending-target-state-v2.md)
+- [Project Roadmap](../status/ROADMAP.md)

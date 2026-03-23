@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <WarnOn>3390;$(WarnOn)</WarnOn>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <AssemblyName>Meridian.FSharp.DirectLending.Aggregates</AssemblyName>
+    <RootNamespace>Meridian.FSharp.DirectLending.Aggregates</RootNamespace>
+    <Version>1.0.0</Version>
+    <Description>Direct lending write-side aggregate decisioning for Meridian, isolated for Sharpino-backed migration work.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="AggregateTypes.fs" />
+    <Compile Include="ContractAggregate.fs" />
+    <Compile Include="ServicingAggregate.fs" />
+    <Compile Include="Interop.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FSharp.Core" />
+    <PackageReference Include="Sharpino">
+      <ExcludeAssets>buildtransitive</ExcludeAssets>
+    </PackageReference>
+    <ProjectReference Include="..\Meridian.Contracts\Meridian.Contracts.csproj" />
+    <ProjectReference Include="..\Meridian.FSharp\Meridian.FSharp.fsproj" />
+  </ItemGroup>
+</Project>

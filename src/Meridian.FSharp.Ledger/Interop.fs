@@ -20,6 +20,49 @@ type LedgerBalanceResultDto = {
     Balance: decimal
 }
 
+[<CLIMutable>]
+type PortfolioLedgerCheckDto = {
+    CheckId: string
+    Label: string
+    ExpectedSource: string
+    ActualSource: string
+    ExpectedAmount: decimal
+    ActualAmount: decimal
+    HasExpectedAmount: bool
+    HasActualAmount: bool
+    ExpectedPresent: bool
+    ActualPresent: bool
+    ExpectedAsOf: DateTimeOffset
+    ActualAsOf: DateTimeOffset
+    HasExpectedAsOf: bool
+    HasActualAsOf: bool
+    CategoryHint: string
+    MissingSourceHint: string
+    ActualKind: string
+}
+
+[<CLIMutable>]
+type PortfolioLedgerCheckResultDto = {
+    CheckId: string
+    Label: string
+    IsMatch: bool
+    Category: string
+    Status: string
+    MissingSource: string
+    ExpectedSource: string
+    ActualSource: string
+    ExpectedAmount: decimal
+    ActualAmount: decimal
+    HasExpectedAmount: bool
+    HasActualAmount: bool
+    Variance: decimal
+    Reason: string
+    ExpectedAsOf: DateTimeOffset
+    ActualAsOf: DateTimeOffset
+    HasExpectedAsOf: bool
+    HasActualAsOf: bool
+}
+
 [<Sealed; Extension>]
 type LedgerInterop private () =
 
@@ -56,3 +99,51 @@ type LedgerInterop private () =
 
     static member ClassifyDifference(expected: decimal, actual: decimal) =
         Reconciliation.classifyDifference expected actual
+
+    static member ReconcilePortfolioLedgerChecks(
+        amountTolerance: decimal,
+        maxAsOfDriftMinutes: int,
+        checks: seq<PortfolioLedgerCheckDto>) : PortfolioLedgerCheckResultDto array =
+        checks
+        |> Seq.map (fun (check: PortfolioLedgerCheckDto) ->
+            ({
+                CheckId = check.CheckId
+                Label = check.Label
+                ExpectedSource = check.ExpectedSource
+                ActualSource = check.ActualSource
+                ExpectedAmount = check.ExpectedAmount
+                ActualAmount = check.ActualAmount
+                HasExpectedAmount = check.HasExpectedAmount
+                HasActualAmount = check.HasActualAmount
+                ExpectedPresent = check.ExpectedPresent
+                ActualPresent = check.ActualPresent
+                ExpectedAsOf = check.ExpectedAsOf
+                ActualAsOf = check.ActualAsOf
+                HasExpectedAsOf = check.HasExpectedAsOf
+                HasActualAsOf = check.HasActualAsOf
+                CategoryHint = check.CategoryHint
+                MissingSourceHint = check.MissingSourceHint
+                ActualKind = check.ActualKind
+            } : PortfolioLedgerCheck))
+        |> Reconciliation.reconcilePortfolioLedgerChecks amountTolerance maxAsOfDriftMinutes
+        |> Array.map (fun (result: PortfolioLedgerCheckResult) ->
+            ({
+                CheckId = result.CheckId
+                Label = result.Label
+                IsMatch = result.IsMatch
+                Category = result.Category
+                Status = result.Status
+                MissingSource = result.MissingSource
+                ExpectedSource = result.ExpectedSource
+                ActualSource = result.ActualSource
+                ExpectedAmount = result.ExpectedAmount
+                ActualAmount = result.ActualAmount
+                HasExpectedAmount = result.HasExpectedAmount
+                HasActualAmount = result.HasActualAmount
+                Variance = result.Variance
+                Reason = result.Reason
+                ExpectedAsOf = result.ExpectedAsOf
+                ActualAsOf = result.ActualAsOf
+                HasExpectedAsOf = result.HasExpectedAsOf
+                HasActualAsOf = result.HasActualAsOf
+            } : PortfolioLedgerCheckResultDto))

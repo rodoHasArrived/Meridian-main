@@ -3,6 +3,7 @@
     <TargetFramework>net9.0</TargetFramework>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <GenerateProgramFile>false</GenerateProgramFile>
     <AssemblyName>Meridian.FSharp.Tests</AssemblyName>
     <RootNamespace>Meridian.FSharp.Tests</RootNamespace>
   </PropertyGroup>
@@ -16,6 +17,7 @@
     <Compile Include="RiskPolicyTests.fs" />
     <Compile Include="TradingTransitionTests.fs" />
     <Compile Include="LedgerKernelTests.fs" />
+    <Compile Include="DirectLendingInteropTests.fs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -33,6 +35,7 @@
     <ProjectReference Include="..\..\src\Meridian.Backtesting.Sdk\Meridian.Backtesting.Sdk.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Execution.Sdk\Meridian.Execution.Sdk.csproj" />
     <ProjectReference Include="..\..\src\Meridian.FSharp\Meridian.FSharp.fsproj" />
+    <ProjectReference Include="..\..\src\Meridian.FSharp.DirectLending.Aggregates\Meridian.FSharp.DirectLending.Aggregates.fsproj" />
     <ProjectReference Include="..\..\src\Meridian.FSharp.Trading\Meridian.FSharp.Trading.fsproj" />
     <ProjectReference Include="..\..\src\Meridian.FSharp.Ledger\Meridian.FSharp.Ledger.fsproj" />
     <ProjectReference Include="..\..\src\Meridian.Ledger\Meridian.Ledger.csproj" />

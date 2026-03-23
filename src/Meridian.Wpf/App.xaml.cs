@@ -5,6 +5,13 @@ using System.Windows;
 using System.Windows.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Meridian.Application.SecurityMaster;
+using Meridian.Contracts.SecurityMaster;
+using Meridian.Storage.SecurityMaster;
+using Meridian.Strategies.Interfaces;
+using Meridian.Strategies.Services;
+using Meridian.Strategies.Storage;
+using Meridian.Ui.Shared.Services;
 using Meridian.Wpf.Contracts;
 using WpfServices = Meridian.Wpf.Services;
 using Meridian.Wpf.Views;
@@ -88,6 +95,7 @@ public partial class App : System.Windows.Application
             .Build();
 
         Services = _host.Services;
+        Services.GetRequiredService<WpfServices.StrategyRunWorkspaceService>();
 
         // Provide the DI container to NavigationService so it can resolve pages
         WpfServices.NavigationService.Instance.SetServiceProvider(Services);
@@ -175,6 +183,7 @@ public partial class App : System.Windows.Application
         services.AddSingleton<IDataQualityApiClient, DataQualityApiClient>();
         services.AddSingleton<IDataQualityPresentationService, DataQualityPresentationService>();
         services.AddTransient<IDataQualityRefreshService, DataQualityRefreshService>();
+        RegisterStrategyWorkspaceServices(services);
 
         // ── Background / infrastructure services ────────────────────────────
         services.AddSingleton(_ => WpfServices.BackgroundTaskSchedulerService.Instance);
@@ -258,6 +267,46 @@ public partial class App : System.Windows.Application
         services.AddTransient<Meridian.Wpf.ViewModels.StrategyRunLedgerViewModel>();
     }
 
+    private static void RegisterStrategyWorkspaceServices(IServiceCollection services)
+    {
+        var securityMasterConnectionString = Environment.GetEnvironmentVariable("MERIDIAN_SECURITY_MASTER_CONNECTION_STRING");
+        if (!string.IsNullOrWhiteSpace(securityMasterConnectionString))
+        {
+            services.AddSingleton(sp => new SecurityMasterOptions
+            {
+                ConnectionString = securityMasterConnectionString,
+                Schema = Environment.GetEnvironmentVariable("MERIDIAN_SECURITY_MASTER_SCHEMA") ?? "security_master",
+                SnapshotIntervalVersions = ParseInt("MERIDIAN_SECURITY_MASTER_SNAPSHOT_INTERVAL", 50),
+                ProjectionReplayBatchSize = ParseInt("MERIDIAN_SECURITY_MASTER_REPLAY_BATCH_SIZE", 500),
+                PreloadProjectionCache = ParseBool("MERIDIAN_SECURITY_MASTER_PRELOAD_CACHE", true),
+                ResolveInactiveByDefault = ParseBool("MERIDIAN_SECURITY_MASTER_RESOLVE_INACTIVE", true)
+            });
+            services.AddSingleton<ISecurityMasterEventStore, PostgresSecurityMasterEventStore>();
+            services.AddSingleton<ISecurityMasterStore, PostgresSecurityMasterStore>();
+            services.AddSingleton<ISecurityMasterQueryService, SecurityMasterQueryService>();
+            services.AddSingleton<ISecurityReferenceLookup, SecurityMasterSecurityReferenceLookup>();
+        }
+
+        services.AddSingleton<IStrategyRepository, StrategyRunStore>();
+        services.AddSingleton<PortfolioReadService>();
+        services.AddSingleton<LedgerReadService>();
+        services.AddSingleton<StrategyRunReadService>();
+        services.AddSingleton(sp =>
+        {
+            var service = new WpfServices.StrategyRunWorkspaceService(
+                sp.GetRequiredService<IStrategyRepository>(),
+                sp.GetRequiredService<StrategyRunReadService>());
+            WpfServices.StrategyRunWorkspaceService.SetInstance(service);
+            return service;
+        });
+    }
+
+    private static int ParseInt(string name, int defaultValue)
+        => int.TryParse(Environment.GetEnvironmentVariable(name), out var value) ? value : defaultValue;
+
+    private static bool ParseBool(string name, bool defaultValue)
+        => bool.TryParse(Environment.GetEnvironmentVariable(name), out var value) ? value : defaultValue;
+
     /// <summary>
     /// Performs async initialization with proper exception handling.
     /// </summary>
@@ -285,9 +334,6 @@ public partial class App : System.Windows.Application
 
             // Start background task scheduler
             await InitializeBackgroundServicesAsync();
-
-            // Restore last workspace session
-            await RestoreWorkspaceSessionAsync();
 
             // Notify if running in fixture mode
             if (_isFixtureMode)

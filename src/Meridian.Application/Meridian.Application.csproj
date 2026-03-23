@@ -80,5 +80,6 @@
     <ProjectReference Include="..\Meridian.Contracts\Meridian.Contracts.csproj" />
     <ProjectReference Include="..\Meridian.ProviderSdk\Meridian.ProviderSdk.csproj" />
     <ProjectReference Include="..\Meridian.FSharp\Meridian.FSharp.fsproj" />
+    <ProjectReference Include="..\Meridian.FSharp.DirectLending.Aggregates\Meridian.FSharp.DirectLending.Aggregates.fsproj" />
   </ItemGroup>
 </Project>

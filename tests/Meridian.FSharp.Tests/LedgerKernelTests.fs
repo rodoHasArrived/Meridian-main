@@ -267,6 +267,127 @@ let ``Ledger reconciliation treats disbursement as negative cash movement`` () =
     result.ActualAmount |> should equal -250m
 
 [<Fact>]
+let ``Portfolio ledger reconciliation marks exact match as matched`` () =
+    let checks : PortfolioLedgerCheckDto array =
+        [|
+            {
+                CheckId = "cash-balance"
+                Label = "Portfolio cash vs ledger cash"
+                ExpectedSource = "portfolio"
+                ActualSource = "ledger"
+                ExpectedAmount = 750m
+                ActualAmount = 750m
+                HasExpectedAmount = true
+                HasActualAmount = true
+                ExpectedPresent = true
+                ActualPresent = true
+                ExpectedAsOf = DateTimeOffset.Parse("2026-03-21T16:30:00Z")
+                ActualAsOf = DateTimeOffset.Parse("2026-03-21T16:30:00Z")
+                HasExpectedAsOf = true
+                HasActualAsOf = true
+                CategoryHint = "amount"
+                MissingSourceHint = ""
+                ActualKind = "amount"
+            }
+        |]
+
+    let result = LedgerInterop.ReconcilePortfolioLedgerChecks(0.01m, 5, checks) |> Array.exactlyOne
+
+    result.IsMatch |> should equal true
+    result.Category |> should equal "matched"
+
+[<Fact>]
+let ``Portfolio ledger reconciliation flags amount mismatch`` () =
+    let checks : PortfolioLedgerCheckDto array =
+        [|
+            {
+                CheckId = "net-equity"
+                Label = "Portfolio total equity vs ledger net assets"
+                ExpectedSource = "portfolio"
+                ActualSource = "ledger"
+                ExpectedAmount = 1000m
+                ActualAmount = 975m
+                HasExpectedAmount = true
+                HasActualAmount = true
+                ExpectedPresent = true
+                ActualPresent = true
+                ExpectedAsOf = DateTimeOffset.Parse("2026-03-21T16:30:00Z")
+                ActualAsOf = DateTimeOffset.Parse("2026-03-21T16:30:00Z")
+                HasExpectedAsOf = true
+                HasActualAsOf = true
+                CategoryHint = "amount"
+                MissingSourceHint = ""
+                ActualKind = "amount"
+            }
+        |]
+
+    let result = LedgerInterop.ReconcilePortfolioLedgerChecks(0.01m, 5, checks) |> Array.exactlyOne
+
+    result.IsMatch |> should equal false
+    result.Category |> should equal "amount_mismatch"
+
+[<Fact>]
+let ``Portfolio ledger reconciliation flags missing ledger coverage`` () =
+    let checks : PortfolioLedgerCheckDto array =
+        [|
+            {
+                CheckId = "long-AAPL"
+                Label = "Long position coverage for AAPL"
+                ExpectedSource = "portfolio"
+                ActualSource = "ledger"
+                ExpectedAmount = 0m
+                ActualAmount = 0m
+                HasExpectedAmount = false
+                HasActualAmount = false
+                ExpectedPresent = true
+                ActualPresent = false
+                ExpectedAsOf = DateTimeOffset.Parse("2026-03-21T16:30:00Z")
+                ActualAsOf = DateTimeOffset.Parse("2026-03-21T16:30:00Z")
+                HasExpectedAsOf = true
+                HasActualAsOf = true
+                CategoryHint = "long"
+                MissingSourceHint = "ledger"
+                ActualKind = ""
+            }
+        |]
+
+    let result = LedgerInterop.ReconcilePortfolioLedgerChecks(0.01m, 5, checks) |> Array.exactlyOne
+
+    result.IsMatch |> should equal false
+    result.Category |> should equal "missing_ledger_coverage"
+    result.MissingSource |> should equal "ledger"
+
+[<Fact>]
+let ``Portfolio ledger reconciliation flags classification gap`` () =
+    let checks : PortfolioLedgerCheckDto array =
+        [|
+            {
+                CheckId = "short-TSLA"
+                Label = "Short position coverage for TSLA"
+                ExpectedSource = "portfolio"
+                ActualSource = "ledger"
+                ExpectedAmount = 0m
+                ActualAmount = 0m
+                HasExpectedAmount = false
+                HasActualAmount = false
+                ExpectedPresent = true
+                ActualPresent = true
+                ExpectedAsOf = DateTimeOffset.Parse("2026-03-21T16:30:00Z")
+                ActualAsOf = DateTimeOffset.Parse("2026-03-21T16:30:00Z")
+                HasExpectedAsOf = true
+                HasActualAsOf = true
+                CategoryHint = "short"
+                MissingSourceHint = ""
+                ActualKind = "long"
+            }
+        |]
+
+    let result = LedgerInterop.ReconcilePortfolioLedgerChecks(0.01m, 5, checks) |> Array.exactlyOne
+
+    result.IsMatch |> should equal false
+    result.Category |> should equal "classification_gap"
+
+[<Fact>]
 let ``Ledger reconciliation reports missing actual when no event exists for flow`` () =
     let projectedFlows =
         [|

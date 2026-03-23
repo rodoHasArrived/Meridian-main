@@ -20,36 +20,38 @@
 
         <!-- Header -->
         <Border Grid.Row="0" Style="{StaticResource SectionCardStyle}" Margin="24,24,24,16">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
-            <StackPanel Grid.Column="0" Orientation="Horizontal">
-                <Border Width="44" Height="44" CornerRadius="14"
-                        Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
-                        BorderBrush="{StaticResource InfoColorBrush}" BorderThickness="1">
-                    <TextBlock Text="&#xE7BC;" FontFamily="{StaticResource SymbolThemeFontFamily}"
-                               FontSize="24" Foreground="{StaticResource InfoColorBrush}"
-                               VerticalAlignment="Center" HorizontalAlignment="Center" />
-                </Border>
-                <StackPanel Margin="12,0,0,0">
-                    <TextBlock Text="Activity Log" Style="{StaticResource PageTitleStyle}" />
-                    <TextBlock Text="Operational events, exportable traces, and filtered runtime messages for support workflows."
-                               Style="{StaticResource CardDescriptionStyle}" />
+                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <Border Width="44" Height="44" CornerRadius="14"
+                            Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                            BorderBrush="{StaticResource InfoColorBrush}" BorderThickness="1">
+                        <TextBlock Text="&#xE7BC;" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="24" Foreground="{StaticResource InfoColorBrush}"
+                                   VerticalAlignment="Center" HorizontalAlignment="Center" />
+                    </Border>
+                    <StackPanel Margin="12,0,0,0">
+                        <TextBlock Text="Activity Log" Style="{StaticResource PageTitleStyle}" />
+                        <TextBlock Text="Operational events, exportable traces, and filtered runtime messages for support workflows."
+                                   Style="{StaticResource CardDescriptionStyle}" />
+                    </StackPanel>
                 </StackPanel>
-            </StackPanel>
 
-            <StackPanel Grid.Column="1" Orientation="Horizontal">
-                <CheckBox x:Name="AutoScrollCheck" Content="Auto-scroll"
-                          IsChecked="{Binding IsAutoScrollEnabled, Mode=TwoWay}"
-                          Foreground="{StaticResource ConsoleTextMutedBrush}"
-                          VerticalAlignment="Center" Margin="0,0,16,0"/>
-                <Button Content="Export" Click="Export_Click" Margin="0,0,8,0"
-                        Style="{StaticResource SecondaryButtonStyle}"/>
-                <Button Content="Clear" Click="Clear_Click"
-                        Style="{StaticResource GhostButtonStyle}"/>
-            </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <CheckBox x:Name="AutoScrollCheck" Content="Auto-scroll"
+                              IsChecked="{Binding IsAutoScrollEnabled, Mode=TwoWay}"
+                              Foreground="{StaticResource ConsoleTextMutedBrush}"
+                              VerticalAlignment="Center" Margin="0,0,16,0"/>
+                    <Button Content="Export" Click="Export_Click" Margin="0,0,8,0"
+                            Style="{StaticResource SecondaryButtonStyle}"/>
+                    <Button Content="Clear" Click="Clear_Click"
+                            Style="{StaticResource GhostButtonStyle}"/>
+                </StackPanel>
+            </Grid>
         </Border>
 
         <!-- Filters -->

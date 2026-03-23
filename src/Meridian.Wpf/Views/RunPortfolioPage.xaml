@@ -87,6 +87,21 @@
                 </Border>
             </UniformGrid>
 
+            <UniformGrid Columns="2" Margin="0,0,0,20">
+                <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                    <StackPanel>
+                        <TextBlock Text="Security Resolved" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                        <TextBlock Text="{Binding SecurityResolvedText}" Style="{StaticResource CardHeaderStyle}" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="Security Missing" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                        <TextBlock Text="{Binding SecurityMissingText}" Style="{StaticResource CardHeaderStyle}" />
+                    </StackPanel>
+                </Border>
+            </UniformGrid>
+
             <Border Style="{StaticResource CardStyle}">
                 <StackPanel>
                     <TextBlock Text="Positions" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12" />
@@ -98,6 +113,9 @@
                               Background="{StaticResource ConsoleBackgroundLightBrush}">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Symbol" Binding="{Binding Symbol}" Width="*" />
+                            <DataGridTextColumn Header="Security" Binding="{Binding Security.DisplayName}" Width="180" />
+                            <DataGridTextColumn Header="Asset Class" Binding="{Binding Security.AssetClass}" Width="110" />
+                            <DataGridTextColumn Header="Identifier" Binding="{Binding Security.PrimaryIdentifier}" Width="120" />
                             <DataGridTextColumn Header="Qty" Binding="{Binding Quantity}" Width="90" />
                             <DataGridTextColumn Header="Avg Cost" Binding="{Binding AverageCostBasis, StringFormat={}{0:C2}}" Width="110" />
                             <DataGridTextColumn Header="Realized PnL" Binding="{Binding RealizedPnl, StringFormat={}{0:C2}}" Width="120" />

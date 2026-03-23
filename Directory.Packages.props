@@ -109,7 +109,7 @@
   <ItemGroup Label="Storage">
     <PackageVersion Include="Apache.Arrow" Version="22.1.0" />
     <PackageVersion Include="K4os.Compression.LZ4.Streams" Version="1.3.8" />
-    <PackageVersion Include="Npgsql" Version="9.0.3" />
+    <PackageVersion Include="Npgsql" Version="9.0.4" />
     <PackageVersion Include="Parquet.Net" Version="5.5.0" />
     <PackageVersion Include="ZstdSharp.Port" Version="0.8.7" />
   </ItemGroup>
@@ -143,6 +143,7 @@
 
   <ItemGroup Label="Testing">
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.3.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="9.0.12" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.12" />
     <PackageVersion Include="xunit" Version="2.9.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
@@ -154,6 +155,10 @@
     <PackageVersion Include="FsUnit.xUnit" Version="7.1.1" />
     <PackageVersion Include="TngTech.ArchUnitNET" Version="0.13.3" />
     <PackageVersion Include="TngTech.ArchUnitNET.xUnit" Version="0.13.3" />
+  </ItemGroup>
+
+  <ItemGroup Label="FSharp Event Sourcing">
+    <PackageVersion Include="Sharpino" Version="4.7.4" />
   </ItemGroup>
 
   <ItemGroup Label="WinUI / Desktop">

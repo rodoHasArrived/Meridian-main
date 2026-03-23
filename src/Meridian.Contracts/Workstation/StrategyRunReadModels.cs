@@ -1,3 +1,5 @@
+using Meridian.Contracts.SecurityMaster;
+
 namespace Meridian.Contracts.Workstation;
 
 /// <summary>
@@ -125,6 +127,17 @@ public sealed record StrategyRunDetail(
     StrategyRunGovernanceSummary? Governance = null);
 
 /// <summary>
+/// Lightweight Security Master reference used by workstation portfolio and ledger surfaces.
+/// </summary>
+public sealed record WorkstationSecurityReference(
+    Guid SecurityId,
+    string DisplayName,
+    string AssetClass,
+    string Currency,
+    SecurityStatusDto Status,
+    string? PrimaryIdentifier);
+
+/// <summary>
 /// Shared portfolio rollup for workstation research and trading surfaces.
 /// </summary>
 public sealed record PortfolioSummary(
@@ -141,7 +154,9 @@ public sealed record PortfolioSummary(
     decimal UnrealizedPnl,
     decimal Commissions,
     decimal Financing,
-    IReadOnlyList<PortfolioPositionSummary> Positions);
+    IReadOnlyList<PortfolioPositionSummary> Positions,
+    int SecurityResolvedCount = 0,
+    int SecurityMissingCount = 0);
 
 /// <summary>
 /// Shared position row for workstation portfolio views.
@@ -152,7 +167,8 @@ public sealed record PortfolioPositionSummary(
     decimal AverageCostBasis,
     decimal RealizedPnl,
     decimal UnrealizedPnl,
-    bool IsShort);
+    bool IsShort,
+    WorkstationSecurityReference? Security = null);
 
 /// <summary>
 /// Shared ledger rollup for workstation governance and audit surfaces.
@@ -169,7 +185,9 @@ public sealed record LedgerSummary(
     decimal RevenueBalance,
     decimal ExpenseBalance,
     IReadOnlyList<LedgerTrialBalanceLine> TrialBalance,
-    IReadOnlyList<LedgerJournalLine> Journal);
+    IReadOnlyList<LedgerJournalLine> Journal,
+    int SecurityResolvedCount = 0,
+    int SecurityMissingCount = 0);
 
 /// <summary>
 /// Shared trial-balance row for workstation ledger views.
@@ -180,7 +198,8 @@ public sealed record LedgerTrialBalanceLine(
     string? Symbol,
     string? FinancialAccountId,
     decimal Balance,
-    int EntryCount);
+    int EntryCount,
+    WorkstationSecurityReference? Security = null);
 
 /// <summary>
 /// Shared journal row for workstation audit surfaces.

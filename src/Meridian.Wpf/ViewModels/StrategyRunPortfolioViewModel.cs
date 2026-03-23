@@ -96,6 +96,20 @@ public sealed class StrategyRunPortfolioViewModel : BindableBase
         private set => SetProperty(ref _asOfText, value);
     }
 
+    private string _securityResolvedText = "-";
+    public string SecurityResolvedText
+    {
+        get => _securityResolvedText;
+        private set => SetProperty(ref _securityResolvedText, value);
+    }
+
+    private string _securityMissingText = "-";
+    public string SecurityMissingText
+    {
+        get => _securityMissingText;
+        private set => SetProperty(ref _securityMissingText, value);
+    }
+
     public IRelayCommand OpenBrowserCommand { get; }
     public IRelayCommand OpenRunDetailCommand { get; }
     public IRelayCommand OpenLedgerCommand { get; }
@@ -134,7 +148,9 @@ public sealed class StrategyRunPortfolioViewModel : BindableBase
         }
 
         Title = $"Portfolio {portfolio.PortfolioId}";
-        StatusText = $"{portfolio.Positions.Count} positions captured for run {portfolio.RunId}.";
+        StatusText = portfolio.SecurityMissingCount > 0
+            ? $"{portfolio.Positions.Count} positions captured for run {portfolio.RunId}. {portfolio.SecurityMissingCount} symbol(s) still need Security Master mapping."
+            : $"{portfolio.Positions.Count} positions captured for run {portfolio.RunId}.";
         EquityText = portfolio.TotalEquity.ToString("C2");
         CashText = portfolio.Cash.ToString("C2");
         GrossExposureText = portfolio.GrossExposure.ToString("C2");
@@ -143,6 +159,8 @@ public sealed class StrategyRunPortfolioViewModel : BindableBase
         UnrealizedPnlText = portfolio.UnrealizedPnl.ToString("C2");
         CommissionsText = portfolio.Commissions.ToString("C2");
         AsOfText = portfolio.AsOf.LocalDateTime.ToString("g");
+        SecurityResolvedText = portfolio.SecurityResolvedCount.ToString("N0");
+        SecurityMissingText = portfolio.SecurityMissingCount.ToString("N0");
 
         Positions.Clear();
         foreach (var position in portfolio.Positions)

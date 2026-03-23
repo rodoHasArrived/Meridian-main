@@ -24,7 +24,6 @@
             <Setter Property="Foreground" Value="{StaticResource InfoColorBrush}" />
             <Setter Property="FontSize" Value="11" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="LetterSpacing" Value="1.2" />
             <Setter Property="TextOptions.TextFormattingMode" Value="Ideal" />
             <Setter Property="Margin" Value="0,0,0,12" />
         </Style>

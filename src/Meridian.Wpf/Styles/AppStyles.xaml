@@ -119,14 +119,21 @@
     <!-- ========================================== -->
 
     <!-- Clickable Card Style (for navigation items) -->
-    <Style x:Key="ClickableCardStyle" TargetType="Border" BasedOn="{StaticResource CardStyle}">
+    <Style x:Key="ClickableCardStyle" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource ConsoleBackgroundLightBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="Padding" Value="20" />
     </Style>
 
     <!-- Elevated Card Style (with subtle shadow effect) -->
-    <Style x:Key="ElevatedCardStyle" TargetType="Border" BasedOn="{StaticResource CardStyle}">
+    <Style x:Key="ElevatedCardStyle" TargetType="Border">
         <Setter Property="Background" Value="{StaticResource ConsoleBackgroundLightBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
         <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="Padding" Value="20" />
     </Style>
 
     <!-- Outlined Card Style (transparent background, visible border) -->

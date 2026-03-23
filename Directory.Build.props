@@ -14,6 +14,8 @@
   <PropertyGroup>
     <!-- Allow resolving Windows-targeted TFMs on non-Windows CI runners to avoid NETSDK1100 -->
     <EnableWindowsTargeting Condition="'$([MSBuild]::IsOSPlatform(&quot;Windows&quot;))' != 'true'">true</EnableWindowsTargeting>
+    <!-- Keep generated build output trees out of compilation when local alternate obj/bin paths exist -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);**\obj\**;**\obj-*\**;**\bin\**;**\bin-*\**</DefaultItemExcludes>
     
     <!-- Suppress common benign warnings across all projects -->
     <!-- MSB3277: Assembly binding conflict (typically transitive dependencies, resolved automatically) -->

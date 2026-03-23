@@ -1,12 +1,12 @@
 # Meridian Documentation
 
-**Version:** 1.7.0
-**Last Updated:** 2026-03-21
+**Version:** 1.7.1
+**Last Updated:** 2026-03-22
 
 This index is the main entry point for Meridian documentation. The current documentation set is synchronized around two connected product tracks inside a broader comprehensive fund-management objective:
 
 - a workflow-centric front-office workstation for research, implementation, and trade management
-- a governance and fund-operations expansion for middle- and back-office workflows built on Security Master, portfolio, and ledger foundations
+- a governance and fund-operations expansion for middle- and back-office workflows built on Security Master, portfolio, ledger, reconciliation, and UFL asset-package foundations
 
 ## Quick Start
 
@@ -14,6 +14,9 @@ This index is the main entry point for Meridian documentation. The current docum
 - **Developers** -> [Repository Organization Guide](development/repository-organization-guide.md)
 - **Trading workstation migration** -> [Trading Workstation Migration Blueprint](plans/trading-workstation-migration-blueprint.md)
 - **Governance and fund operations expansion** -> [Governance and Fund Operations Blueprint](plans/governance-fund-ops-blueprint.md)
+- **Direct lending target state** -> [UFL Direct Lending Target-State Package V2](plans/ufl-direct-lending-target-state-v2.md)
+- **Direct lending execution roadmap** -> [UFL Direct Lending Implementation Roadmap](plans/ufl-direct-lending-implementation-roadmap.md)
+- **UFL asset packages** -> [UFL Supported Asset Packages](plans/ufl-supported-assets-index.md)
 - **Operators** -> [Operator Runbook](operations/operator-runbook.md)
 
 ## Documentation Zones
@@ -57,6 +60,9 @@ This index is the main entry point for Meridian documentation. The current docum
 - [Deterministic Canonicalization](architecture/deterministic-canonicalization.md)
 - [Trading Workstation Migration Blueprint](plans/trading-workstation-migration-blueprint.md)
 - [Governance and Fund Operations Blueprint](plans/governance-fund-ops-blueprint.md)
+- [UFL Supported Asset Packages](plans/ufl-supported-assets-index.md)
+- [UFL Direct Lending Target-State Package V2](plans/ufl-direct-lending-target-state-v2.md)
+- [UFL Direct Lending Implementation Roadmap](plans/ufl-direct-lending-implementation-roadmap.md)
 - [Fund Management Product Vision and Capability Matrix](plans/fund-management-product-vision-and-capability-matrix.md)
 - [Fund Management Module Implementation Backlog](plans/fund-management-module-implementation-backlog.md)
 - [Fund Management PR-Sequenced Execution Roadmap](plans/fund-management-pr-sequenced-roadmap.md)
@@ -83,9 +89,12 @@ Use these documents together when planning implementation:
 4. [plans/fund-management-pr-sequenced-roadmap.md](plans/fund-management-pr-sequenced-roadmap.md) for dependency-aware PR slices and parallel implementation lanes
 5. [plans/trading-workstation-migration-blueprint.md](plans/trading-workstation-migration-blueprint.md) for workstation structure
 6. [plans/governance-fund-ops-blueprint.md](plans/governance-fund-ops-blueprint.md) for Security Master, multi-ledger, cash-flow, reconciliation, and reporting
-7. [status/FEATURE_INVENTORY.md](status/FEATURE_INVENTORY.md) for capability status
-8. [status/FULL_IMPLEMENTATION_TODO_2026_03_20.md](status/FULL_IMPLEMENTATION_TODO_2026_03_20.md) for the normalized non-assembly implementation backlog
-9. [status/IMPROVEMENTS.md](status/IMPROVEMENTS.md) for tracked implementation themes
+7. [plans/ufl-supported-assets-index.md](plans/ufl-supported-assets-index.md) for the supported UFL asset packages across the current security-master model
+8. [plans/ufl-direct-lending-target-state-v2.md](plans/ufl-direct-lending-target-state-v2.md) for the direct-lending specialization of the governance and fund-ops target state
+9. [plans/ufl-direct-lending-implementation-roadmap.md](plans/ufl-direct-lending-implementation-roadmap.md) for the dependency-aware path from the current slice to the full direct-lending target state
+10. [status/FEATURE_INVENTORY.md](status/FEATURE_INVENTORY.md) for capability status
+11. [status/FULL_IMPLEMENTATION_TODO_2026_03_20.md](status/FULL_IMPLEMENTATION_TODO_2026_03_20.md) for the normalized non-assembly implementation backlog
+12. [status/IMPROVEMENTS.md](status/IMPROVEMENTS.md) for tracked implementation themes
 
 ## Reference
 
@@ -99,12 +108,13 @@ Use these documents together when planning implementation:
 
 Historical, deprecated, and superseded documentation now lives outside the active docs tree in [`https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs`](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs).
 
-- [Archive index](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docsINDEX.md)
-- [Archive overview](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docsREADME.md)
+- [Archive index](../archive/docs/INDEX.md)
+- [Archive overview](../archive/docs/README.md)
 
 ## Documentation Maintenance
 
 - [Documentation triage 2026-03-21](status/DOCUMENTATION_TRIAGE_2026_03_21.md)
+- [Project roadmap refresh 2026-03-22](status/ROADMAP.md)
 
 ## Maintenance Checklist
 

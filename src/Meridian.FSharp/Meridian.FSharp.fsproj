@@ -28,6 +28,7 @@
     <Compile Include="Domain/SecurityMasterEvents.fs" />
     <Compile Include="Domain/SecurityMasterCommands.fs" />
     <Compile Include="Domain/FundStructure.fs" />
+    <Compile Include="Domain/DirectLending.fs" />
 
     <!-- Validation layer: depends on Domain -->
     <Compile Include="Validation/ValidationTypes.fs" />
@@ -55,6 +56,7 @@
 
     <!-- C# interop helpers -->
     <Compile Include="Interop.SecurityMaster.fs" />
+    <Compile Include="Interop.DirectLending.fs" />
     <Compile Include="Interop.fs" />
   </ItemGroup>
 

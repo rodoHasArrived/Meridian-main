@@ -123,6 +123,40 @@
   items:
     - name: Overview
       href: status/README.md
+    - name: UFL Asset Packages
+      href: plans/ufl-supported-assets-index.md
+    - name: UFL Direct Lending V2
+      href: plans/ufl-direct-lending-target-state-v2.md
+    - name: UFL Direct Lending Roadmap
+      href: plans/ufl-direct-lending-implementation-roadmap.md
+    - name: UFL Equity V2
+      href: plans/ufl-equity-target-state-v2.md
+    - name: UFL Option V2
+      href: plans/ufl-option-target-state-v2.md
+    - name: UFL Future V2
+      href: plans/ufl-future-target-state-v2.md
+    - name: UFL Bond V2
+      href: plans/ufl-bond-target-state-v2.md
+    - name: UFL FX Spot V2
+      href: plans/ufl-fx-spot-target-state-v2.md
+    - name: UFL Deposit V2
+      href: plans/ufl-deposit-target-state-v2.md
+    - name: UFL Money Market Fund V2
+      href: plans/ufl-money-market-fund-target-state-v2.md
+    - name: UFL Certificate of Deposit V2
+      href: plans/ufl-certificate-of-deposit-target-state-v2.md
+    - name: UFL Commercial Paper V2
+      href: plans/ufl-commercial-paper-target-state-v2.md
+    - name: UFL Treasury Bill V2
+      href: plans/ufl-treasury-bill-target-state-v2.md
+    - name: UFL Repo V2
+      href: plans/ufl-repo-target-state-v2.md
+    - name: UFL Cash Sweep V2
+      href: plans/ufl-cash-sweep-target-state-v2.md
+    - name: UFL Other Security V2
+      href: plans/ufl-other-security-target-state-v2.md
+    - name: UFL Swap V2
+      href: plans/ufl-swap-target-state-v2.md
     - name: Roadmap
       href: status/ROADMAP.md
     - name: Feature Inventory

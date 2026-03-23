@@ -354,7 +354,9 @@ internal static class SecurityMasterMapping
             : throw new InvalidOperationException($"Missing required decimal '{propertyName}'.");
 
     private static decimal? GetOptionalDecimal(JsonElement json, string propertyName)
-        => json.TryGetProperty(propertyName, out var value) && value.TryGetDecimal(out var decimalValue)
+        => json.TryGetProperty(propertyName, out var value) &&
+           value.ValueKind == JsonValueKind.Number &&
+           value.TryGetDecimal(out var decimalValue)
             ? decimalValue
             : null;
 

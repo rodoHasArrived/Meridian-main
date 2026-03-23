@@ -52,6 +52,7 @@ BUILD_VERBOSITY ?= normal
 APPINSTALLER_URI ?=
 SIGNING_CERT_PFX ?=
 SIGNING_CERT_PASSWORD ?=
+DESKTOP_PUBLISH_READYTORUN ?= false
 
 ifeq ($(V),0)
 	BUILD_VERBOSITY := quiet
@@ -65,6 +66,7 @@ endif
 
 MSIX_APPINSTALLER_FLAGS :=
 MSIX_SIGNING_FLAGS :=
+DESKTOP_READYTORUN_FLAGS := -p:PublishReadyToRun=$(DESKTOP_PUBLISH_READYTORUN)
 ifneq ($(strip $(APPINSTALLER_URI)),)
 	MSIX_APPINSTALLER_FLAGS := -p:GenerateAppInstallerFile=true -p:AppInstallerUri=$(APPINSTALLER_URI) -p:AppInstallerCheckForUpdateFrequency=OnApplicationRun -p:AppInstallerUpdateFrequency=1
 endif
@@ -580,16 +582,18 @@ icons: ## Generate desktop app icons from SVG
 desktop: icons ## Build WPF desktop app (Windows only)
 	@echo "$(BLUE)Building WPF desktop app...$(NC)"
 ifeq ($(OS),Windows_NT)
-	dotnet build $(WPF_PROJECT) -c Release -r win-x64
+	dotnet build $(WPF_PROJECT) -c Release -r win-x64 -p:EnableFullWpfBuild=true
 else
 	@echo "$(YELLOW)Desktop app build requires Windows. Use GitHub Actions for CI builds.$(NC)"
-	@echo "Run on Windows: dotnet build $(WPF_PROJECT) -c Release -r win-x64"
+	@echo "Run on Windows: dotnet build $(WPF_PROJECT) -c Release -r win-x64 -p:EnableFullWpfBuild=true"
 endif
 
 desktop-publish: icons ## Publish WPF desktop app as MSIX (Windows only)
 	@echo "$(BLUE)Publishing WPF desktop app...$(NC)"
 ifeq ($(OS),Windows_NT)
 	dotnet publish $(WPF_PROJECT) -c Release -r win-x64 --self-contained true \
+		-p:EnableFullWpfBuild=true \
+		$(DESKTOP_READYTORUN_FLAGS) \
 		-p:WindowsPackageType=MSIX \
 		-p:AppxPackageDir=publish/desktop/ \
 		$(MSIX_APPINSTALLER_FLAGS) \

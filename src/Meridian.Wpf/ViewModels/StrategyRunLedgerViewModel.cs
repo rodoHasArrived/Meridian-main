@@ -90,6 +90,20 @@ public sealed class StrategyRunLedgerViewModel : BindableBase
         private set => SetProperty(ref _expenseBalanceText, value);
     }
 
+    private string _securityResolvedText = "-";
+    public string SecurityResolvedText
+    {
+        get => _securityResolvedText;
+        private set => SetProperty(ref _securityResolvedText, value);
+    }
+
+    private string _securityMissingText = "-";
+    public string SecurityMissingText
+    {
+        get => _securityMissingText;
+        private set => SetProperty(ref _securityMissingText, value);
+    }
+
     public IRelayCommand OpenBrowserCommand { get; }
     public IRelayCommand OpenRunDetailCommand { get; }
     public IRelayCommand OpenPortfolioCommand { get; }
@@ -128,7 +142,9 @@ public sealed class StrategyRunLedgerViewModel : BindableBase
         }
 
         Title = $"Ledger {ledger.LedgerReference}";
-        StatusText = $"{ledger.JournalEntryCount} journal entries and {ledger.TrialBalance.Count} trial-balance lines loaded.";
+        StatusText = ledger.SecurityMissingCount > 0
+            ? $"{ledger.JournalEntryCount} journal entries and {ledger.TrialBalance.Count} trial-balance lines loaded. {ledger.SecurityMissingCount} symbol(s) still need Security Master mapping."
+            : $"{ledger.JournalEntryCount} journal entries and {ledger.TrialBalance.Count} trial-balance lines loaded.";
         AsOfText = ledger.AsOf.LocalDateTime.ToString("g");
         JournalEntriesText = ledger.JournalEntryCount.ToString("N0");
         LedgerEntriesText = ledger.LedgerEntryCount.ToString("N0");
@@ -136,6 +152,8 @@ public sealed class StrategyRunLedgerViewModel : BindableBase
         EquityBalanceText = ledger.EquityBalance.ToString("C2");
         RevenueBalanceText = ledger.RevenueBalance.ToString("C2");
         ExpenseBalanceText = ledger.ExpenseBalance.ToString("C2");
+        SecurityResolvedText = ledger.SecurityResolvedCount.ToString("N0");
+        SecurityMissingText = ledger.SecurityMissingCount.ToString("N0");
 
         TrialBalance.Clear();
         foreach (var line in ledger.TrialBalance)

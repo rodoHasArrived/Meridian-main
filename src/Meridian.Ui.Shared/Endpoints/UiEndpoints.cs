@@ -175,6 +175,7 @@ public static class UiEndpoints
     private static void RegisterStrategyWorkstationServices(IServiceCollection services)
     {
         services.TryAddSingleton<IStrategyRepository, StrategyRunStore>();
+        services.TryAddSingleton<ISecurityReferenceLookup, SecurityMasterSecurityReferenceLookup>();
         services.TryAddSingleton<PortfolioReadService>();
         services.TryAddSingleton<LedgerReadService>();
         services.TryAddSingleton<StrategyRunReadService>();
@@ -255,6 +256,9 @@ public static class UiEndpoints
 
         // Options / Derivatives endpoints
         app.MapOptionsEndpoints(jsonOptions);
+
+        // Direct lending endpoints
+        app.MapDirectLendingEndpoints(jsonOptions);
 
         // Map quality drops endpoints (C3/#16)
         var auditTrail = app.Services.GetService<DroppedEventAuditTrail>();
@@ -347,6 +351,9 @@ public static class UiEndpoints
 
         // Options / Derivatives endpoints
         app.MapOptionsEndpoints(jsonOptions);
+
+        // Direct lending endpoints
+        app.MapDirectLendingEndpoints(jsonOptions);
 
         // Map quality drops endpoints (C3/#16 - DroppedEventAuditTrail exposure)
         var auditTrail = app.Services.GetService<DroppedEventAuditTrail>();

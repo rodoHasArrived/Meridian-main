@@ -51,11 +51,16 @@ public sealed class StrategyRunReadService
                 continue;
             }
 
+            var portfolioTask = _portfolioReadService.BuildSummaryAsync(run, ct);
+            var ledgerTask = _ledgerReadService.BuildSummaryAsync(run, ct);
+
+            await Task.WhenAll(portfolioTask, ledgerTask).ConfigureAwait(false);
+
             return new StrategyRunDetail(
                 Summary: ToSummary(run),
                 Parameters: run.ParameterSet ?? EmptyParameters,
-                Portfolio: _portfolioReadService.BuildSummary(run),
-                Ledger: _ledgerReadService.BuildSummary(run),
+                Portfolio: await portfolioTask.ConfigureAwait(false),
+                Ledger: await ledgerTask.ConfigureAwait(false),
                 Execution: BuildExecutionSummary(run),
                 Promotion: BuildPromotionSummary(run),
                 Governance: BuildGovernanceSummary(run));

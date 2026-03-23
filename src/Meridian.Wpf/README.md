@@ -1,215 +1,136 @@
 # Meridian - WPF Desktop Application
 
-This is the WPF (.NET 9) desktop application for Meridian, providing a modern Windows desktop experience with maximum stability and compatibility.
+This is the WPF (.NET 9) desktop application for Meridian. It is the primary desktop operator shell and the main host for the workstation migration.
 
 ## Overview
 
-The WPF application provides a native Windows desktop interface for managing market data collection, including:
+The current WPF application already spans research, trading-adjacent, data-operations, and governance-adjacent workflows:
 
-- **Real-time Dashboard** - Monitor collection status and system health
-- **Symbol Management** - Add, remove, and configure symbols to collect
-- **Backfill Operations** - Historical data download and management
-- **Settings & Configuration** - Application and provider configuration
-- **Data Quality Monitoring** - Track data quality metrics and alerts
+- **Research workflows** - dashboard, backtests, charts, replay, run comparison, RunMat, and Lean integration
+- **Trading-adjacent workflows** - live data, watchlists, order-book views, trading-hours awareness, and shared run drill-ins
+- **Data operations** - symbols, providers, backfills, schedules, storage, packaging, and export flows
+- **Governance-adjacent workflows** - portfolio and ledger drill-ins, diagnostics, provider health, retention, and settings
+
+The repo now also includes persisted built-in workspace categories for `Research`, `Trading`, `Data Operations`, and `Governance`, plus shared run, portfolio, ledger, and early reconciliation seams that the desktop shell can grow into.
 
 ## Why WPF?
 
-This project was migrated from UWP/WinUI 3 to WPF for several key reasons:
+This project was migrated from UWP/WinUI 3 to WPF for several reasons:
 
-### Benefits of WPF
-
-1. **Broader Compatibility** - Works on Windows 7+ (vs UWP's Windows 10+ requirement)
-2. **Mature & Stable** - 15+ years of production use and stability
-3. **No WinRT Metadata Issues** - Can reference standard .NET assemblies directly
-4. **Simpler Deployment** - Standard .exe deployment (no MSIX required)
-5. **Better Tooling** - Extensive third-party library support
-6. **Performance** - Optimized for desktop scenarios
-
-### Migration from UWP
-
-The previous UWP implementation had several challenges:
-- WinUI 3 XAML compiler rejected standard .NET assemblies
-- Required source file inclusion workarounds for shared contracts
-- Limited to Windows 10+ with Store deployment requirements
-- MSIX packaging complexity
-
-WPF solves these issues while providing a more straightforward development and deployment experience.
-
+1. **Broader compatibility** - Works on standard Windows desktop environments without UWP packaging constraints.
+2. **Mature and stable** - Strong tooling and long-lived desktop patterns.
+3. **Simpler deployment** - Standard executable and publish flows.
+4. **Cleaner .NET integration** - Avoids WinRT metadata and source-inclusion workarounds that complicated the prior stack.
 
 ## Migration Direction
 
-The WPF application remains Meridian's primary desktop surface, but it is now the host for the **Trading Workstation Migration**. The current codebase already contains broad feature coverage; the next implementation phase reorganizes that breadth into workflow-centric workspaces:
+The WPF application remains Meridian's primary desktop surface, but it is now the host for the **Trading Workstation Migration**. The current codebase already contains broad feature coverage, persisted built-in workspaces, and shared run drill-ins; the next implementation phase reorganizes that breadth into more durable workflow-centric workspaces:
 
-- **Research** — backtesting, experiment comparison, charts, replay
-- **Trading** — live monitoring, orders, positions, paper/live strategy operation
-- **Data Operations** — providers, symbols, backfill, storage, export
-- **Governance** — portfolio, ledger, diagnostics, audit, settings
+- **Research** - backtesting, experiment comparison, charts, replay, and research drill-ins
+- **Trading** - live monitoring, orders, positions, paper/live strategy operation, and promotion-adjacent workflows
+- **Data Operations** - providers, symbols, backfill, storage, schedules, and export
+- **Governance** - portfolio, ledger, diagnostics, retention, and settings, with deeper reconciliation and reporting still to come
 
-See [`docs/plans/trading-workstation-migration-blueprint.md`](../../docs/plans/trading-workstation-migration-blueprint.md) for the active migration blueprint and [`docs/architecture/ui-redesign.md`](../../docs/architecture/ui-redesign.md) for the target information architecture.
+See [`docs/plans/trading-workstation-migration-blueprint.md`](../../docs/plans/trading-workstation-migration-blueprint.md) for the active migration blueprint, [`docs/status/ROADMAP.md`](../../docs/status/ROADMAP.md) for the active delivery waves, and [`docs/architecture/ui-redesign.md`](../../docs/architecture/ui-redesign.md) for the target information architecture.
 
 ## Architecture
 
 ### Technology Stack
 
-- **.NET 9.0** - Latest .NET with Windows support
-- **WPF** - Windows Presentation Foundation for UI
-- **Material Design** - Modern, clean UI design system
-- **MVVM Pattern** - Model-View-ViewModel architecture
-- **Dependency Injection** - Microsoft.Extensions.DependencyInjection
-- **Async/Await** - Fully asynchronous operations
+- **.NET 9.0**
+- **WPF**
+- **MVVM pattern**
+- **Microsoft.Extensions.DependencyInjection**
+- **Async/await**
 
-### Project Structure
+### Key implementation seams
 
-```
-src/Meridian.Wpf/
-├── App.xaml                      # Application entry point
-├── App.xaml.cs                   # Application startup and DI
-├── MainWindow.xaml               # Main window with navigation
-├── MainWindow.xaml.cs            # Main window code-behind
-├── Services/                     # Application services
-│   ├── ConnectionService.cs      # API connection management
-│   ├── NavigationService.cs      # Page navigation
-│   ├── NotificationService.cs    # User notifications
-│   ├── ThemeService.cs           # Theme management
-│   ├── ConfigService.cs          # Configuration management
-│   └── ...                       # Other services
-├── Views/                        # XAML pages
-│   ├── DashboardPage.xaml        # Dashboard view
-│   ├── SymbolsPage.xaml          # Symbol management
-│   ├── BackfillPage.xaml         # Backfill operations
-│   └── SettingsPage.xaml         # Application settings
-├── ViewModels/                   # View models (MVVM)
-├── Styles/                       # XAML styles and themes
-└── Assets/                       # Images, icons, etc.
-```
+- `Services/NavigationService.cs` - page registration and navigation orchestration
+- `Services/WorkspaceService.cs` - persisted workspace templates and session restore
+- `Services/StrategyRunWorkspaceService.cs` - shared run drill-in coordination
+- `Views/MainPage.xaml` - workstation-oriented shell navigation
+- `ViewModels/` - incremental MVVM extraction for richer surfaces
 
-## Building
+## Build and Run
 
 ### Requirements
 
-- **.NET 9.0 SDK** or later
-- **Windows 10/11** (WPF requires Windows)
-- **Visual Studio 2022** (optional, recommended for XAML designer)
+- **.NET 9 SDK**
+- **Windows** for a functional WPF build
+- **Visual Studio 2022** optional, but useful for XAML work
 
-### Build Commands
+### Commands
 
 ```bash
 # Restore dependencies
-dotnet restore src/Meridian.Wpf/Meridian.Wpf.csproj
+dotnet restore src/Meridian.Wpf/Meridian.Wpf.csproj -p:EnableFullWpfBuild=true
 
 # Build
-dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj
+dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -p:EnableFullWpfBuild=true
 
 # Run
-dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj
+dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj -p:EnableFullWpfBuild=true
 
 # Publish (self-contained)
-dotnet publish src/Meridian.Wpf/Meridian.Wpf.csproj -c Release -r win-x64 --self-contained
+dotnet publish src/Meridian.Wpf/Meridian.Wpf.csproj -c Release -r win-x64 --self-contained -p:EnableFullWpfBuild=true
 ```
 
-### Platform Detection
+### Platform behavior
 
-The project uses conditional compilation to support cross-platform builds:
+- **On Windows**: builds as the full desktop application.
+- **On Linux/macOS**: builds as a minimal stub for CI compatibility.
 
-- **On Windows**: Builds as a full WPF application
-- **On Linux/macOS**: Builds as a minimal stub library (for CI/CD compatibility)
-
-This allows the solution to build on all platforms without errors, while only producing a functional application on Windows.
-
-## Running the Application
+## Running the App
 
 ### Prerequisites
 
-1. **Backend Service Running** - The WPF app connects to the backend API at `http://localhost:8080`
-2. **Configuration File** - Ensure `appsettings.json` exists with valid configuration
+1. Start the backend API, normally at `http://localhost:8080`.
+2. Ensure configuration exists in `appsettings.json` or the Meridian app-data location.
 
-### First Run
+### First run behavior
 
 On first run, the application will:
-1. Check for existing configuration
-2. Create default configuration if needed
-3. Detect system theme (Light/Dark)
-4. Initialize services and connect to backend
 
-### Keyboard Shortcuts
+1. Check for existing configuration.
+2. Create or copy a default config when needed.
+3. Initialize services.
+4. Restore the last saved workspace/session state when available.
 
-| Shortcut | Action |
-|----------|--------|
-| `Ctrl+D` | Navigate to Dashboard |
-| `Ctrl+S` | Navigate to Symbols |
-| `Ctrl+B` | Navigate to Backfill |
-| `Ctrl+,` | Open Settings |
-| `F5` | Start data collection |
-| `F6` | Stop data collection |
-| `Ctrl+Shift+T` | Toggle light/dark theme |
+## Current Surface Map
 
-## Development
+The application still contains many page-level screens, but the active desktop direction is to group them into workstation-native journeys.
 
-### Adding New Pages
+Examples:
 
-1. Create XAML page in `Views/` directory:
-```xaml
-<Page x:Class="Meridian.Wpf.Views.MyPage"
-      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      Title="My Page">
-    <Grid>
-        <!-- Your content here -->
-    </Grid>
-</Page>
-```
+- `Research`: `Dashboard`, `Backtest`, `StrategyRuns`, `LeanIntegration`, `Charts`, `RunMat`, `EventReplay`
+- `Trading`: `LiveData`, `StrategyRuns`, `RunPortfolio`, `RunLedger`, `OrderBook`, `PortfolioImport`, `TradingHours`, `Watchlist`
+- `Data Operations`: `Provider`, `Symbols`, `Backfill`, `Schedules`, `Storage`, `PackageManager`, `DataExport`
+- `Governance`: `DataQuality`, `RunLedger`, `ProviderHealth`, `SystemHealth`, `Diagnostics`, `RetentionAssurance`, `AdminMaintenance`, `Settings`
 
-2. Create code-behind in `Views/`:
-```csharp
-namespace Meridian.Wpf.Views;
+## Development Notes
 
-public partial class MyPage : Page
-{
-    public MyPage()
-    {
-        InitializeComponent();
-    }
-}
-```
+### Adding a page
 
-3. Register page in `NavigationService.cs`:
-```csharp
-_pages["MyPage"] = typeof(MyPage);
-```
+1. Add the XAML page under `Views/`.
+2. Add its code-behind or view model.
+3. Register it in `Services/NavigationService.cs`.
+4. Place it in the appropriate workstation or supporting navigation surface.
 
-4. Add navigation button in `MainWindow.xaml`
+### Adding a service
 
-### Adding New Services
+1. Add the interface and implementation under `Services/`.
+2. Register it in `App.xaml.cs` or the relevant composition path.
+3. Inject it into pages or view models through constructors.
 
-1. Create interface in `Services/`:
-```csharp
-public interface IMyService
-{
-    Task DoSomethingAsync(CancellationToken ct = default);
-}
-```
+### Implementation guidance
 
-2. Create implementation:
-```csharp
-public class MyService : IMyService
-{
-    public async Task DoSomethingAsync(CancellationToken ct = default)
-    {
-        // Implementation
-    }
-}
-```
-
-3. Register in `App.xaml.cs`:
-```csharp
-services.AddSingleton<IMyService, MyService>();
-```
-
-4. Inject into pages/view models via constructor
+- Keep business logic in services or view models instead of code-behind where practical.
+- Prefer extending shared run, portfolio, ledger, and workstation services before introducing parallel desktop-only models.
+- Treat the workstation categories as the user-facing source of truth even when legacy pages still exist underneath.
 
 ## Deployment
 
-### Standalone Executable
+### Single-file publish
 
 ```bash
 dotnet publish src/Meridian.Wpf/Meridian.Wpf.csproj \
@@ -217,65 +138,32 @@ dotnet publish src/Meridian.Wpf/Meridian.Wpf.csproj \
   -r win-x64 \
   --self-contained \
   -p:PublishSingleFile=true \
-  -p:IncludeNativeLibrariesForSelfExtract=true
+  -p:IncludeNativeLibrariesForSelfExtract=true \
+  -p:EnableFullWpfBuild=true
 ```
 
-This creates a single `.exe` file that includes the .NET runtime.
-
-### Framework-Dependent
+### Framework-dependent publish
 
 ```bash
 dotnet publish src/Meridian.Wpf/Meridian.Wpf.csproj \
   -c Release \
   -r win-x64 \
-  --no-self-contained
+  --no-self-contained \
+  -p:EnableFullWpfBuild=true
 ```
-
-Requires .NET 9.0 runtime to be installed on target machine.
 
 ## Configuration
 
 The application uses `appsettings.json` for configuration. On first run, it will copy `appsettings.sample.json` if no configuration exists.
 
-Configuration is stored in: `%APPDATA%\Meridian\appsettings.json`
+User-local configuration is stored under:
 
-## Troubleshooting
+`%APPDATA%\\Meridian\\appsettings.json`
 
-### Connection Issues
+Workspace/session state is stored separately under the Meridian local app-data area managed by `WorkspaceService`.
 
-- Ensure backend API is running at `http://localhost:8080`
-- Check firewall settings
-- Verify configuration in Settings page
+## Known Gaps
 
-### Theme Issues
-
-- Theme preference is stored in Windows registry
-- Check Windows system theme settings
-- Use `Ctrl+Shift+T` to toggle theme manually
-
-### Build Errors
-
-- Ensure .NET 9.0 SDK is installed
-- Run `dotnet restore` before building
-- Check that all NuGet packages are restored
-
-## Future Enhancements
-
-- [ ] Complete migration of all 39 UWP pages
-- [ ] Add ViewModels for MVVM pattern
-- [ ] Implement real-time data visualization (charts)
-- [ ] Add export/import functionality
-- [ ] Implement advanced filtering and search
-- [ ] Add data quality dashboards
-- [ ] Implement plugin system for extensibility
-
-## Related Documentation
-
-- [Architecture Overview](../../docs/architecture/overview.md)
-- [Getting Started Guide](../../docs/getting-started/setup.md)
-- [Configuration Guide](../../docs/getting-started/configuration.md)
-- [UWP to WPF Migration Guide](../../docs/development/uwp-to-wpf-migration.md)
-
-## License
-
-Copyright 2024-2026 Meridian Team. See [LICENSE](../../LICENSE) for details.
+- The workstation shell is real, but some flows still rely on older page-first composition.
+- Shared run drill-ins are established, but broader paper/live and governance-grade reconciliation/reporting workflows are still in progress.
+- MVVM extraction is incremental rather than complete across every page.

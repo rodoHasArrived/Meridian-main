@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using Meridian.Contracts.Workstation;
+using Meridian.Storage.Export;
 using Meridian.Strategies.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -14,6 +15,8 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// </summary>
 public static class WorkstationEndpoints
 {
+    private const int SecurityCoveragePreviewLimit = 5;
+
     public static void MapWorkstationEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
         var group = app.MapGroup("/api/workstation").WithTags("Workstation");
@@ -33,6 +36,82 @@ public static class WorkstationEndpoints
         })
         .WithName("GetResearchWorkspace")
         .Produces(200);
+
+        group.MapGet("/governance", async (HttpContext context) =>
+        {
+            var payload = await BuildGovernancePayloadAsync(context).ConfigureAwait(false);
+            return Results.Json(payload, jsonOptions);
+        })
+        .WithName("GetGovernanceWorkspace")
+        .Produces(200);
+
+        group.MapPost("/reconciliation/runs", async (ReconciliationRunRequest request, HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<IReconciliationRunService>();
+            if (service is null)
+            {
+                return Results.Problem("Reconciliation service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var detail = await service.RunAsync(request, context.RequestAborted).ConfigureAwait(false);
+            return detail is null
+                ? Results.NotFound()
+                : Results.Json(detail, jsonOptions);
+        })
+        .WithName("CreateReconciliationRun")
+        .Produces<ReconciliationRunDetail>(200)
+        .Produces(404);
+
+        group.MapGet("/reconciliation/runs/{reconciliationRunId}", async (string reconciliationRunId, HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<IReconciliationRunService>();
+            if (service is null)
+            {
+                return Results.Problem("Reconciliation service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var detail = await service.GetByIdAsync(reconciliationRunId, context.RequestAborted).ConfigureAwait(false);
+            return detail is null
+                ? Results.NotFound()
+                : Results.Json(detail, jsonOptions);
+        })
+        .WithName("GetReconciliationRun")
+        .Produces<ReconciliationRunDetail>(200)
+        .Produces(404);
+
+        group.MapGet("/runs/{runId}/reconciliation", async (string runId, HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<IReconciliationRunService>();
+            if (service is null)
+            {
+                return Results.Problem("Reconciliation service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var detail = await service.GetLatestForRunAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            return detail is null
+                ? Results.NotFound()
+                : Results.Json(detail, jsonOptions);
+        })
+        .WithName("GetLatestRunReconciliation")
+        .Produces<ReconciliationRunDetail>(200)
+        .Produces(404);
+
+        group.MapGet("/runs/{runId}/reconciliation/history", async (string runId, HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<IReconciliationRunService>();
+            if (service is null)
+            {
+                return Results.Problem("Reconciliation service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var history = await service.GetHistoryForRunAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            return history.Count == 0
+                ? Results.NotFound()
+                : Results.Json(history, jsonOptions);
+        })
+        .WithName("GetRunReconciliationHistory")
+        .Produces<IReadOnlyList<ReconciliationRunSummary>>(200)
+        .Produces(404);
 
         app.MapGet("/workstation", (IWebHostEnvironment environment) => ServeWorkstationIndex(environment))
             .ExcludeFromDescription();
@@ -61,6 +140,9 @@ public static class WorkstationEndpoints
 
         var runs = (await readService.GetRunsAsync(ct: context.RequestAborted).ConfigureAwait(false)).ToArray();
         var latest = runs.FirstOrDefault();
+        var latestDetail = latest is null
+            ? null
+            : await readService.GetRunDetailAsync(latest.RunId, context.RequestAborted).ConfigureAwait(false);
         var activeRuns = runs.Count(static run => run.Status is StrategyRunStatus.Running or StrategyRunStatus.Paused);
         var reviewRuns = runs.Count(static run => run.Promotion?.RequiresReview == true || run.Status is StrategyRunStatus.Failed or StrategyRunStatus.Cancelled);
 
@@ -71,7 +153,7 @@ public static class WorkstationEndpoints
             environment = MapEnvironment(latest),
             activeWorkspace = MapWorkspace(latest),
             commandCount = Math.Max(6, runs.Length + activeRuns + reviewRuns),
-            latestRun = latest is null ? null : BuildRunDigest(latest),
+            latestRun = latest is null ? null : BuildRunDigest(latest, latestDetail),
             workspaceSummary = new
             {
                 totalRuns = runs.Length,
@@ -94,6 +176,9 @@ public static class WorkstationEndpoints
         var runs = (await readService.GetRunsAsync(ct: context.RequestAborted).ConfigureAwait(false))
             .Take(6)
             .ToArray();
+        var runDetails = await Task.WhenAll(
+                runs.Select(run => readService.GetRunDetailAsync(run.RunId, context.RequestAborted)))
+            .ConfigureAwait(false);
 
         if (runs.Length == 0)
         {
@@ -127,7 +212,9 @@ public static class WorkstationEndpoints
                 new { id = "review-runs", label = "Needs Review", value = reviewRuns.ToString(CultureInfo.InvariantCulture), delta = reviewRuns == 0 ? "0%" : $"-{reviewRuns}", tone = "warning" },
                 new { id = "winning-runs", label = "Positive P&L", value = winningRuns.ToString(CultureInfo.InvariantCulture), delta = winningRuns == 0 ? "0%" : $"+{winningRuns}", tone = "default" }
             },
-            runs = runs.Select(BuildResearchRunCard).ToArray(),
+            runs = runs
+                .Zip(runDetails, static (run, detail) => BuildResearchRunCard(run, detail))
+                .ToArray(),
             workspace = new
             {
                 totalRuns = runs.Length,
@@ -165,13 +252,210 @@ public static class WorkstationEndpoints
                     pnl = "+4.2%",
                     sharpe = "1.41",
                     lastUpdated = "2m ago",
-                    notes = "Primary paper candidate with stable fill quality and healthy depth coverage."
+                    notes = "Primary paper candidate with stable fill quality and healthy depth coverage.",
+                    securityCoverage = new
+                    {
+                        portfolioResolved = 0,
+                        portfolioMissing = 0,
+                        ledgerResolved = 0,
+                        ledgerMissing = 0,
+                        hasIssues = false,
+                        tone = "default",
+                        summary = "Security Master coverage not yet evaluated.",
+                        resolvedReferences = Array.Empty<SecurityCoverageReferencePayload>(),
+                        missingReferences = Array.Empty<SecurityCoverageGapPayload>()
+                    }
                 }
             }
         };
     }
 
-    private static object BuildRunDigest(StrategyRunSummary run)
+    private static async Task<object> BuildGovernancePayloadAsync(HttpContext context)
+    {
+        var readService = context.RequestServices.GetService<StrategyRunReadService>();
+        if (readService is null)
+        {
+            return BuildGovernanceFallbackPayload();
+        }
+
+        var allRuns = (await readService.GetRunsAsync(ct: context.RequestAborted).ConfigureAwait(false)).ToArray();
+        var runs = allRuns.Take(6).ToArray();
+        if (runs.Length == 0)
+        {
+            return new
+            {
+                metrics = new[]
+                {
+                    new { id = "open-breaks", label = "Open Breaks", value = "0", tone = "success" },
+                    new { id = "timing-drift", label = "Timing Drift", value = "0", tone = "default" },
+                    new { id = "security-gaps", label = "Security Gaps", value = "0", tone = "success" },
+                    new { id = "audit-ready", label = "Audit Ready", value = "0", tone = "default" }
+                },
+                reconciliationQueue = Array.Empty<object>(),
+                workspace = new
+                {
+                    totalRuns = 0,
+                    reconciledRuns = 0,
+                    ledgerReadyRuns = 0,
+                    openBreaks = 0,
+                    securityIssues = 0
+                },
+                cashFlow = BuildGovernanceWorkspaceCashFlowSummary(Array.Empty<StrategyRunDetail?>()),
+                reporting = BuildGovernanceReportingPayload()
+            };
+        }
+
+        var reconciliationService = context.RequestServices.GetService<IReconciliationRunService>();
+        var detailTasks = runs.Select(run => readService.GetRunDetailAsync(run.RunId, context.RequestAborted));
+        var reconciliationTasks = reconciliationService is null
+            ? runs.Select(_ => Task.FromResult<ReconciliationRunDetail?>(null))
+            : runs.Select(run => reconciliationService.GetLatestForRunAsync(run.RunId, context.RequestAborted));
+
+        var details = await Task.WhenAll(detailTasks).ConfigureAwait(false);
+        var reconciliations = await Task.WhenAll(reconciliationTasks).ConfigureAwait(false);
+
+        var openBreaks = reconciliations.Sum(static detail => detail?.Summary.OpenBreakCount ?? 0);
+        var timingDriftRuns = reconciliations.Count(static detail => detail?.Summary.HasTimingDrift == true);
+        var runsWithBreaks = reconciliations.Count(static detail => (detail?.Summary.BreakCount ?? 0) > 0);
+        var runsWithSecurityIssues = details.Count(static detail =>
+            (detail?.Portfolio?.SecurityMissingCount ?? 0) > 0 ||
+            (detail?.Ledger?.SecurityMissingCount ?? 0) > 0);
+        var auditReadyRuns = runs.Count(static run => !string.IsNullOrWhiteSpace(run.AuditReference)) - runsWithBreaks;
+
+        return new
+        {
+            metrics = new[]
+            {
+                new { id = "open-breaks", label = "Open Breaks", value = openBreaks.ToString(CultureInfo.InvariantCulture), tone = openBreaks == 0 ? "success" : "warning" },
+                new { id = "timing-drift", label = "Timing Drift", value = timingDriftRuns.ToString(CultureInfo.InvariantCulture), tone = timingDriftRuns == 0 ? "default" : "warning" },
+                new { id = "security-gaps", label = "Security Gaps", value = runsWithSecurityIssues.ToString(CultureInfo.InvariantCulture), tone = runsWithSecurityIssues == 0 ? "success" : "warning" },
+                new { id = "audit-ready", label = "Audit Ready", value = Math.Max(0, auditReadyRuns).ToString(CultureInfo.InvariantCulture), tone = auditReadyRuns > 0 ? "success" : "default" }
+            },
+            reconciliationQueue = runs
+                .Zip(details, static (run, detail) => (run, detail))
+                .Zip(reconciliations, static (pair, reconciliation) => BuildGovernanceRunCard(pair.run, pair.detail, reconciliation))
+                .ToArray(),
+            workspace = new
+            {
+                totalRuns = allRuns.Length,
+                reconciledRuns = reconciliations.Count(static detail => detail is not null),
+                ledgerReadyRuns = runs.Count(static run => !string.IsNullOrWhiteSpace(run.LedgerReference)),
+                openBreaks,
+                securityIssues = runsWithSecurityIssues
+            },
+            cashFlow = BuildGovernanceWorkspaceCashFlowSummary(details),
+            reporting = BuildGovernanceReportingPayload()
+        };
+    }
+
+    private static object BuildGovernanceFallbackPayload()
+    {
+        return new
+        {
+            metrics = new[]
+            {
+                new { id = "open-breaks", label = "Open Breaks", value = "4", tone = "warning" },
+                new { id = "timing-drift", label = "Timing Drift", value = "1", tone = "warning" },
+                new { id = "security-gaps", label = "Security Gaps", value = "2", tone = "warning" },
+                new { id = "audit-ready", label = "Audit Ready", value = "9", tone = "success" }
+            },
+            reconciliationQueue = new[]
+            {
+                new
+                {
+                    runId = "gov-run-001",
+                    strategyName = "Global Macro Overlay",
+                    mode = "paper",
+                    status = "Completed",
+                    lastUpdated = "12m ago",
+                    auditReference = "audit-gov-run-001",
+                    breakCount = 2,
+                    openBreakCount = 2,
+                    reconciliationStatus = "BreaksOpen",
+                    latestReconciliation = new
+                    {
+                        breakCount = 2,
+                        openBreakCount = 2,
+                        hasTimingDrift = false,
+                        securityIssueCount = 2,
+                        hasSecurityCoverageIssues = true,
+                        lastUpdated = "15m ago",
+                        tone = "warning"
+                    },
+                    securityCoverage = new
+                    {
+                        portfolioResolved = 14,
+                        portfolioMissing = 1,
+                        ledgerResolved = 12,
+                        ledgerMissing = 1,
+                        hasIssues = true,
+                        tone = "warning",
+                        summary = "26 references mapped, 2 unresolved.",
+                        resolvedReferences = new[]
+                        {
+                            new SecurityCoverageReferencePayload(
+                                Source: "portfolio",
+                                Symbol: "AAPL",
+                                AccountName: null,
+                                SecurityId: "security-aapl",
+                                DisplayName: "Apple Inc.",
+                                AssetClass: "Equity",
+                                Currency: "USD",
+                                Status: "Active",
+                                PrimaryIdentifier: "AAPL")
+                        },
+                        missingReferences = new[]
+                        {
+                            new SecurityCoverageGapPayload(
+                                Source: "portfolio",
+                                Symbol: "XYZ",
+                                AccountName: null,
+                                Reason: "Portfolio position is missing a Security Master match."),
+                            new SecurityCoverageGapPayload(
+                                Source: "ledger",
+                                Symbol: "XYZ",
+                                AccountName: "Securities",
+                                Reason: "Ledger coverage is missing a Security Master match.")
+                        }
+                    },
+                    cashFlow = new
+                    {
+                        cashBalance = 1_250_000m,
+                        ledgerCashBalance = 1_247_500m,
+                        cashVariance = -2_500m,
+                        financing = 12_500m,
+                        realizedPnl = 42_000m,
+                        unrealizedPnl = 18_000m,
+                        journalEntryCount = 24,
+                        tone = "warning",
+                        summary = "Cash and ledger balances diverge and should be reviewed."
+                    }
+                }
+            },
+            workspace = new
+            {
+                totalRuns = 12,
+                reconciledRuns = 9,
+                ledgerReadyRuns = 10,
+                openBreaks = 4,
+                securityIssues = 2
+            },
+            cashFlow = new
+            {
+                totalCash = 2_450_000m,
+                totalLedgerCash = 2_447_500m,
+                netVariance = -2_500m,
+                totalFinancing = 12_500m,
+                runsWithCashSignals = 9,
+                runsWithCashVariance = 1,
+                tone = "warning",
+                summary = "Cash-flow coverage is available for 9 runs; 1 run needs variance review."
+            },
+            reporting = BuildGovernanceReportingPayload()
+        };
+    }
+
+    private static object BuildRunDigest(StrategyRunSummary run, StrategyRunDetail? detail)
     {
         return new
         {
@@ -181,11 +465,12 @@ public static class WorkstationEndpoints
             status = run.Status.ToString(),
             lastUpdated = FormatRelativeTime(run.LastUpdatedAt),
             hasLedger = !string.IsNullOrWhiteSpace(run.LedgerReference),
-            hasPortfolio = !string.IsNullOrWhiteSpace(run.PortfolioId)
+            hasPortfolio = !string.IsNullOrWhiteSpace(run.PortfolioId),
+            securityCoverage = BuildSecurityCoverage(detail)
         };
     }
 
-    private static object BuildResearchRunCard(StrategyRunSummary run)
+    private static object BuildResearchRunCard(StrategyRunSummary run, StrategyRunDetail? detail)
     {
         return new
         {
@@ -205,7 +490,298 @@ public static class WorkstationEndpoints
             portfolioId = run.PortfolioId,
             netPnl = run.NetPnl,
             totalReturn = run.TotalReturn,
-            finalEquity = run.FinalEquity
+            finalEquity = run.FinalEquity,
+            securityCoverage = BuildSecurityCoverage(detail)
+        };
+    }
+
+    private static object BuildGovernanceRunCard(
+        StrategyRunSummary run,
+        StrategyRunDetail? detail,
+        ReconciliationRunDetail? reconciliation)
+    {
+        return new
+        {
+            runId = run.RunId,
+            strategyName = run.StrategyName,
+            mode = run.Mode.ToString().ToLowerInvariant(),
+            status = run.Status.ToString(),
+            lastUpdated = FormatRelativeTime(run.LastUpdatedAt),
+            auditReference = run.AuditReference,
+            ledgerReference = run.LedgerReference,
+            portfolioId = run.PortfolioId,
+            breakCount = reconciliation?.Summary.BreakCount ?? 0,
+            openBreakCount = reconciliation?.Summary.OpenBreakCount ?? 0,
+            reconciliationStatus = MapReconciliationStatus(reconciliation),
+            governance = new
+            {
+                hasAuditTrail = run.Governance?.HasAuditTrail ?? false,
+                hasPortfolio = run.Governance?.HasPortfolio ?? false,
+                hasLedger = run.Governance?.HasLedger ?? false,
+                datasetReference = run.Governance?.DatasetReference,
+                feedReference = run.Governance?.FeedReference
+            },
+            securityCoverage = BuildSecurityCoverage(detail),
+            cashFlow = BuildGovernanceRunCashFlowSummary(detail),
+            latestReconciliation = reconciliation is null
+                ? null
+                : new
+                {
+                    reconciliationRunId = reconciliation.Summary.ReconciliationRunId,
+                    breakCount = reconciliation.Summary.BreakCount,
+                    openBreakCount = reconciliation.Summary.OpenBreakCount,
+                    matchCount = reconciliation.Summary.MatchCount,
+                    hasTimingDrift = reconciliation.Summary.HasTimingDrift,
+                    securityIssueCount = reconciliation.Summary.SecurityIssueCount,
+                    hasSecurityCoverageIssues = reconciliation.Summary.HasSecurityCoverageIssues,
+                    lastUpdated = FormatRelativeTime(reconciliation.Summary.CreatedAt),
+                    tone = reconciliation.Summary.BreakCount == 0 && !reconciliation.Summary.HasSecurityCoverageIssues ? "success" : "warning"
+                }
+        };
+    }
+
+    private static string MapReconciliationStatus(ReconciliationRunDetail? reconciliation)
+    {
+        if (reconciliation is null)
+        {
+            return "NotStarted";
+        }
+
+        if (reconciliation.Summary.OpenBreakCount > 0)
+        {
+            return "BreaksOpen";
+        }
+
+        if (reconciliation.Summary.HasSecurityCoverageIssues)
+        {
+            return "SecurityCoverageOpen";
+        }
+
+        if (reconciliation.Summary.BreakCount > 0)
+        {
+            return "Resolved";
+        }
+
+        return "Balanced";
+    }
+
+    private static object BuildSecurityCoverage(StrategyRunDetail? detail)
+    {
+        var portfolio = detail?.Portfolio;
+        var ledger = detail?.Ledger;
+        var portfolioResolved = portfolio?.SecurityResolvedCount ?? 0;
+        var portfolioMissing = portfolio?.SecurityMissingCount ?? 0;
+        var ledgerResolved = ledger?.SecurityResolvedCount ?? 0;
+        var ledgerMissing = ledger?.SecurityMissingCount ?? 0;
+        var hasIssues = portfolioMissing > 0 || ledgerMissing > 0;
+        var resolvedReferences = BuildResolvedSecurityReferences(detail);
+        var missingReferences = BuildMissingSecurityReferences(detail);
+        var resolvedCount = portfolioResolved + ledgerResolved;
+        var missingCount = portfolioMissing + ledgerMissing;
+
+        return new
+        {
+            portfolioResolved,
+            portfolioMissing,
+            ledgerResolved,
+            ledgerMissing,
+            hasIssues,
+            tone = hasIssues ? "warning" : resolvedCount > 0 ? "success" : "default",
+            summary = missingCount > 0
+                ? $"{resolvedCount} references mapped, {missingCount} unresolved."
+                : resolvedCount > 0
+                    ? $"{resolvedCount} references mapped with no unresolved symbols."
+                    : "Security Master coverage not yet evaluated.",
+            resolvedReferences,
+            missingReferences
+        };
+    }
+
+    private static SecurityCoverageReferencePayload[] BuildResolvedSecurityReferences(StrategyRunDetail? detail)
+    {
+        if (detail is null)
+        {
+            return [];
+        }
+
+        var results = new List<SecurityCoverageReferencePayload>();
+
+        if (detail.Portfolio is not null)
+        {
+            results.AddRange(
+                detail.Portfolio.Positions
+                    .Where(static position => position.Security is not null)
+                    .Select(static position => new SecurityCoverageReferencePayload(
+                        Source: "portfolio",
+                        Symbol: position.Symbol,
+                        AccountName: null,
+                        SecurityId: position.Security!.SecurityId.ToString("N"),
+                        DisplayName: position.Security.DisplayName,
+                        AssetClass: position.Security.AssetClass,
+                        Currency: position.Security.Currency,
+                        Status: position.Security.Status.ToString(),
+                        PrimaryIdentifier: position.Security.PrimaryIdentifier)));
+        }
+
+        if (detail.Ledger is not null)
+        {
+            results.AddRange(
+                detail.Ledger.TrialBalance
+                    .Where(static line => line.Security is not null && !string.IsNullOrWhiteSpace(line.Symbol))
+                    .Select(static line => new SecurityCoverageReferencePayload(
+                        Source: "ledger",
+                        Symbol: line.Symbol!,
+                        AccountName: line.AccountName,
+                        SecurityId: line.Security!.SecurityId.ToString("N"),
+                        DisplayName: line.Security.DisplayName,
+                        AssetClass: line.Security.AssetClass,
+                        Currency: line.Security.Currency,
+                        Status: line.Security.Status.ToString(),
+                        PrimaryIdentifier: line.Security.PrimaryIdentifier)));
+        }
+
+        return results
+            .DistinctBy(static item => $"{item.Source}|{item.Symbol}|{item.AccountName}|{item.SecurityId}", StringComparer.OrdinalIgnoreCase)
+            .Take(SecurityCoveragePreviewLimit)
+            .ToArray();
+    }
+
+    private static SecurityCoverageGapPayload[] BuildMissingSecurityReferences(StrategyRunDetail? detail)
+    {
+        if (detail is null)
+        {
+            return [];
+        }
+
+        var results = new List<SecurityCoverageGapPayload>();
+
+        if (detail.Portfolio is not null)
+        {
+            results.AddRange(
+                detail.Portfolio.Positions
+                    .Where(static position => position.Security is null && !string.IsNullOrWhiteSpace(position.Symbol))
+                    .Select(static position => new SecurityCoverageGapPayload(
+                        Source: "portfolio",
+                        Symbol: position.Symbol,
+                        AccountName: null,
+                        Reason: "Portfolio position is missing a Security Master match.")));
+        }
+
+        if (detail.Ledger is not null)
+        {
+            results.AddRange(
+                detail.Ledger.TrialBalance
+                    .Where(static line => line.Security is null && !string.IsNullOrWhiteSpace(line.Symbol))
+                    .Select(static line => new SecurityCoverageGapPayload(
+                        Source: "ledger",
+                        Symbol: line.Symbol!,
+                        AccountName: line.AccountName,
+                        Reason: "Ledger coverage is missing a Security Master match.")));
+        }
+
+        return results
+            .DistinctBy(static item => $"{item.Source}|{item.Symbol}|{item.AccountName}", StringComparer.OrdinalIgnoreCase)
+            .Take(SecurityCoveragePreviewLimit)
+            .ToArray();
+    }
+
+    private static object BuildGovernanceWorkspaceCashFlowSummary(IReadOnlyList<StrategyRunDetail?> details)
+    {
+        var totalCash = details.Sum(static detail => detail?.Portfolio?.Cash ?? 0m);
+        var totalLedgerCash = details.Sum(static detail => GetLedgerCashBalance(detail?.Ledger) ?? 0m);
+        var totalFinancing = details.Sum(static detail => detail?.Portfolio?.Financing ?? 0m);
+        var runsWithCashSignals = details.Count(static detail => detail?.Portfolio is not null || detail?.Ledger is not null);
+        var runsWithCashVariance = details.Count(static detail => Math.Abs(GetCashVariance(detail)) > 0.01m);
+        var netVariance = totalLedgerCash - totalCash;
+
+        return new
+        {
+            totalCash,
+            totalLedgerCash,
+            netVariance,
+            totalFinancing,
+            runsWithCashSignals,
+            runsWithCashVariance,
+            tone = runsWithCashVariance > 0 ? "warning" : runsWithCashSignals > 0 ? "success" : "default",
+            summary = runsWithCashSignals == 0
+                ? "Cash-flow coverage is not yet available."
+                : runsWithCashVariance > 0
+                    ? $"Cash-flow coverage is available for {runsWithCashSignals} runs; {runsWithCashVariance} run needs variance review."
+                    : $"Cash-flow coverage is aligned across {runsWithCashSignals} runs."
+        };
+    }
+
+    private static object BuildGovernanceRunCashFlowSummary(StrategyRunDetail? detail)
+    {
+        var cashBalance = detail?.Portfolio?.Cash ?? 0m;
+        var ledgerCashBalance = GetLedgerCashBalance(detail?.Ledger) ?? 0m;
+        var cashVariance = ledgerCashBalance - cashBalance;
+        var financing = detail?.Portfolio?.Financing ?? 0m;
+        var realizedPnl = detail?.Portfolio?.RealizedPnl ?? 0m;
+        var unrealizedPnl = detail?.Portfolio?.UnrealizedPnl ?? 0m;
+        var journalEntryCount = detail?.Ledger?.JournalEntryCount ?? 0;
+        var hasSignals = detail?.Portfolio is not null || detail?.Ledger is not null;
+
+        return new
+        {
+            cashBalance,
+            ledgerCashBalance,
+            cashVariance,
+            financing,
+            realizedPnl,
+            unrealizedPnl,
+            journalEntryCount,
+            tone = !hasSignals ? "default" : Math.Abs(cashVariance) > 0.01m ? "warning" : "success",
+            summary = !hasSignals
+                ? "Cash-flow coverage is not yet available."
+                : Math.Abs(cashVariance) > 0.01m
+                    ? "Cash and ledger balances diverge and should be reviewed."
+                    : "Cash and ledger balances are aligned."
+        };
+    }
+
+    private static decimal? GetLedgerCashBalance(LedgerSummary? ledger)
+        => ledger?.TrialBalance.FirstOrDefault(static line =>
+            string.Equals(line.AccountName, "Cash", StringComparison.OrdinalIgnoreCase))?.Balance;
+
+    private static decimal GetCashVariance(StrategyRunDetail? detail)
+    {
+        var portfolioCash = detail?.Portfolio?.Cash;
+        var ledgerCash = GetLedgerCashBalance(detail?.Ledger);
+        if (!portfolioCash.HasValue || !ledgerCash.HasValue)
+        {
+            return 0m;
+        }
+
+        return ledgerCash.Value - portfolioCash.Value;
+    }
+
+    private static object BuildGovernanceReportingPayload()
+    {
+        var profiles = ExportProfile.GetBuiltInProfiles()
+            .Select(static profile => new GovernanceReportingProfilePayload(
+                Id: profile.Id,
+                Name: profile.Name,
+                TargetTool: profile.TargetTool,
+                Format: profile.Format.ToString(),
+                Description: profile.Description ?? string.Empty,
+                LoaderScript: profile.IncludeLoaderScript,
+                DataDictionary: profile.IncludeDataDictionary))
+            .OrderBy(static profile => profile.Name, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        var recommended = profiles
+            .Where(static profile => profile.Id is "excel" or "python-pandas" or "postgresql" or "arrow-feather")
+            .Select(static profile => profile.Id)
+            .ToArray();
+
+        return new
+        {
+            profileCount = profiles.Length,
+            recommendedProfiles = recommended,
+            profiles,
+            reportPackTargets = new[] { "board", "investor", "compliance", "fund-ops" },
+            summary = $"{profiles.Length} export/reporting profiles are available for governance workflows."
         };
     }
 
@@ -387,4 +963,30 @@ public static class WorkstationEndpoints
                 message = "Build src/Meridian.Ui/dashboard before opening /workstation."
             });
     }
+
+    private sealed record SecurityCoverageReferencePayload(
+        string Source,
+        string Symbol,
+        string? AccountName,
+        string SecurityId,
+        string DisplayName,
+        string AssetClass,
+        string Currency,
+        string Status,
+        string? PrimaryIdentifier);
+
+    private sealed record SecurityCoverageGapPayload(
+        string Source,
+        string Symbol,
+        string? AccountName,
+        string Reason);
+
+    private sealed record GovernanceReportingProfilePayload(
+        string Id,
+        string Name,
+        string TargetTool,
+        string Format,
+        string Description,
+        bool LoaderScript,
+        bool DataDictionary);
 }

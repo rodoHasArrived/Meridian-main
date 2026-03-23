@@ -72,9 +72,6 @@
     <PackageReference Include="QuantConnect.Lean.Engine" />
     <PackageReference Include="QuantConnect.Common" />
     <PackageReference Include="QuantConnect.Indicators" />
-
-    <!-- BenchmarkDotNet (host-level) -->
-    <PackageReference Include="BenchmarkDotNet" />
   </ItemGroup>
 
   <!-- Layer Assembly References -->

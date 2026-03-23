@@ -1,7 +1,9 @@
 using FluentAssertions;
 using Meridian.Backtesting.Sdk;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
+using Meridian.Strategies.Storage;
 using Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.Tests.Services;
@@ -43,6 +45,49 @@ public sealed class StrategyRunWorkspaceServiceTests
         var latest = await service.GetLatestRunAsync();
         latest.Should().NotBeNull();
         latest!.RunId.Should().Be(runId);
+    }
+
+    [Fact]
+    public async Task RecordBacktestRunAsync_WithInjectedSecurityLookup_ShouldExposeSecurityCoverage()
+    {
+        var store = new StrategyRunStore();
+        var lookup = new StubSecurityReferenceLookup();
+        lookup.Register("AAPL", new WorkstationSecurityReference(
+            SecurityId: Guid.Parse("55555555-5555-5555-5555-555555555555"),
+            DisplayName: "Apple Inc.",
+            AssetClass: "Equity",
+            Currency: "USD",
+            Status: SecurityStatusDto.Active,
+            PrimaryIdentifier: "AAPL"));
+
+        var service = new StrategyRunWorkspaceService(
+            store,
+            new Meridian.Strategies.Services.PortfolioReadService(lookup),
+            new Meridian.Strategies.Services.LedgerReadService(lookup));
+        var request = new BacktestRequest(
+            From: new DateOnly(2026, 3, 1),
+            To: new DateOnly(2026, 3, 20),
+            Symbols: ["AAPL", "MSFT"],
+            InitialCash: 100_000m,
+            DataRoot: "./data/test");
+
+        var runId = await service.RecordBacktestRunAsync(request, "Buy & Hold (equal-weight)", BuildResult());
+        var detail = await service.GetRunDetailAsync(runId);
+
+        detail.Should().NotBeNull();
+        detail!.Portfolio.Should().NotBeNull();
+        detail.Portfolio!.SecurityResolvedCount.Should().Be(1);
+        detail.Portfolio.SecurityMissingCount.Should().Be(0);
+        detail.Portfolio.Positions[0].Security.Should().NotBeNull();
+        detail.Portfolio.Positions[0].Security!.DisplayName.Should().Be("Apple Inc.");
+
+        detail.Ledger.Should().NotBeNull();
+        detail.Ledger!.SecurityResolvedCount.Should().Be(1);
+        detail.Ledger.SecurityMissingCount.Should().Be(0);
+        detail.Ledger.TrialBalance.Should().Contain(line =>
+            line.Symbol == "AAPL" &&
+            line.Security != null &&
+            line.Security.DisplayName == "Apple Inc.");
     }
 
     private static BacktestResult BuildResult()
@@ -145,5 +190,21 @@ public sealed class StrategyRunWorkspaceServiceTests
             Ledger: ledger,
             ElapsedTime: TimeSpan.FromMinutes(15),
             TotalEventsProcessed: 1_250);
+    }
+
+    private sealed class StubSecurityReferenceLookup : Meridian.Strategies.Services.ISecurityReferenceLookup
+    {
+        private readonly Dictionary<string, WorkstationSecurityReference> _references = new(StringComparer.OrdinalIgnoreCase);
+
+        public void Register(string symbol, WorkstationSecurityReference reference)
+        {
+            _references[symbol] = reference;
+        }
+
+        public Task<WorkstationSecurityReference?> GetBySymbolAsync(string symbol, CancellationToken ct = default)
+        {
+            _references.TryGetValue(symbol, out var reference);
+            return Task.FromResult<WorkstationSecurityReference?>(reference);
+        }
     }
 }

@@ -155,11 +155,11 @@ module FundStructure =
         && effectiveFrom <= asOf
         && effectiveTo |> Option.forall (fun validTo -> validTo > asOf)
 
-    let nodeIsActiveAt asOf node =
+    let nodeIsActiveAt asOf (node: StructureNode) =
         isActiveAt asOf node.EffectiveFrom node.EffectiveTo node.IsActive
 
-    let ownershipIsActiveAt asOf link =
+    let ownershipIsActiveAt asOf (link: OwnershipLink) =
         isActiveAt asOf link.EffectiveFrom link.EffectiveTo true
 
-    let assignmentIsActiveAt asOf assignment =
+    let assignmentIsActiveAt asOf (assignment: StructureAssignment) =
         isActiveAt asOf assignment.EffectiveFrom assignment.EffectiveTo true

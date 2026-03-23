@@ -7,8 +7,12 @@ using Meridian.Application.Pipeline;
 using Meridian.Application.UI;
 using Meridian.Domain.Collectors;
 using Meridian.Infrastructure.Contracts;
+using Meridian.Strategies.Interfaces;
+using Meridian.Strategies.Services;
+using Meridian.Strategies.Storage;
 using Meridian.Ui.Shared;
 using Meridian.Ui.Shared.Endpoints;
+using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -73,6 +77,14 @@ public sealed class UiServer : IAsyncDisposable
 
         // Register session-based authentication service
         builder.Services.AddSingleton<LoginSessionService>();
+        builder.Services.AddSingleton<IStrategyRepository, StrategyRunStore>();
+        builder.Services.AddSingleton<ISecurityReferenceLookup, SecurityMasterSecurityReferenceLookup>();
+        builder.Services.AddSingleton<PortfolioReadService>();
+        builder.Services.AddSingleton<LedgerReadService>();
+        builder.Services.AddSingleton<StrategyRunReadService>();
+        builder.Services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+        builder.Services.AddSingleton<ReconciliationProjectionService>();
+        builder.Services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
 
         // Register OpenAPI/Swagger services
         builder.Services.AddEndpointsApiExplorer();
@@ -146,6 +158,7 @@ public sealed class UiServer : IAsyncDisposable
         _app = builder.Build();
         _logger = _app.Services.GetRequiredService<ILoggerFactory>().CreateLogger<UiServer>();
         SecurityMasterStartup.EnsureDatabaseReady(_app.Services, _logger);
+        DirectLendingStartup.EnsureDatabaseReady(_app.Services, _logger);
 
         // Wire Polly circuit breaker callbacks to CircuitBreakerStatusService
         ServiceCompositionRoot.InitializeCircuitBreakerCallbackRouter(_app.Services);
@@ -238,7 +251,7 @@ public sealed class UiServer : IAsyncDisposable
         _app.MapHistoricalEndpoints(s_jsonOptions);
 
         // Data Packaging API
-        var config = _app.Services.GetRequiredService<ConfigStore>().Load();
+        var config = _app.Services.GetRequiredService<Meridian.Application.UI.ConfigStore>().Load();
         _app.MapPackagingEndpoints(config.DataRoot);
 
         // Archive Maintenance API
@@ -294,9 +307,6 @@ public sealed class UiServer : IAsyncDisposable
 
         // UI API (includes resilience, quality, SLA, and all other endpoint groups)
         _app.MapUiEndpoints(s_jsonOptions);
-
-        // React workstation shell and placeholder API
-        _app.MapWorkstationEndpoints(s_jsonOptions);
     }
 
     public async Task StartAsync(CancellationToken ct = default)

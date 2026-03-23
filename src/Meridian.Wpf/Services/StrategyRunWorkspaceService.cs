@@ -1,5 +1,6 @@
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Workstation;
+using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
@@ -13,18 +14,41 @@ namespace Meridian.Wpf.Services;
 /// </summary>
 public sealed class StrategyRunWorkspaceService
 {
-    private static readonly Lazy<StrategyRunWorkspaceService> _instance = new(() => new StrategyRunWorkspaceService());
+    private static readonly Lazy<StrategyRunWorkspaceService> _fallbackInstance = new(() => new StrategyRunWorkspaceService());
+    private static StrategyRunWorkspaceService? _instance;
 
-    private readonly StrategyRunStore _store = new();
-    private readonly PortfolioReadService _portfolioReadService = new();
-    private readonly LedgerReadService _ledgerReadService = new();
+    private readonly IStrategyRepository _store;
     private readonly StrategyRunReadService _readService;
 
-    public static StrategyRunWorkspaceService Instance => _instance.Value;
+    public static StrategyRunWorkspaceService Instance => _instance ?? _fallbackInstance.Value;
 
-    private StrategyRunWorkspaceService()
+    public StrategyRunWorkspaceService()
+        : this(new StrategyRunStore(), new PortfolioReadService(), new LedgerReadService())
     {
-        _readService = new StrategyRunReadService(_store, _portfolioReadService, _ledgerReadService);
+    }
+
+    public StrategyRunWorkspaceService(
+        IStrategyRepository store,
+        PortfolioReadService portfolioReadService,
+        LedgerReadService ledgerReadService)
+        : this(store, new StrategyRunReadService(
+            store ?? throw new ArgumentNullException(nameof(store)),
+            portfolioReadService ?? throw new ArgumentNullException(nameof(portfolioReadService)),
+            ledgerReadService ?? throw new ArgumentNullException(nameof(ledgerReadService))))
+    {
+    }
+
+    public StrategyRunWorkspaceService(
+        IStrategyRepository store,
+        StrategyRunReadService readService)
+    {
+        _store = store ?? throw new ArgumentNullException(nameof(store));
+        _readService = readService ?? throw new ArgumentNullException(nameof(readService));
+    }
+
+    public static void SetInstance(StrategyRunWorkspaceService service)
+    {
+        _instance = service ?? throw new ArgumentNullException(nameof(service));
     }
 
     public string? LastRecordedRunId { get; private set; }

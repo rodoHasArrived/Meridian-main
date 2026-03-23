@@ -82,7 +82,7 @@ public partial class MainWindow : Window
         RestoreWindowState();
     }
 
-    private async void OnWindowLoaded(object sender, RoutedEventArgs e)
+    private void OnWindowLoaded(object sender, RoutedEventArgs e)
     {
         // Initialize navigation service with the frame
         _navigationService.Initialize(RootFrame);
@@ -90,10 +90,7 @@ public partial class MainWindow : Window
         // Initialize keyboard shortcuts
         _keyboardShortcutService.Initialize(this);
 
-        // Restore workspace session state from previous run
-        await RestoreWorkspaceSessionAsync();
-
-        // Navigate to the main page via DI
+        // Load the shell first; it owns the inner content frame and restores page state there.
         RootFrame.Navigate(App.Services.GetRequiredService<MainPage>());
     }
 

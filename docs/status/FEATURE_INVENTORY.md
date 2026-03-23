@@ -1,7 +1,7 @@
 # Meridian — Feature Inventory
 
-**Version:** 1.7.0
-**Date:** 2026-03-21
+**Version:** 1.7.1
+**Date:** 2026-03-22
 **Purpose:** Comprehensive inventory of every functional area, its current implementation status, and the remaining work required to reach full implementation.
 
 Use this document alongside [`ROADMAP.md`](ROADMAP.md) (delivery waves and sequencing), [`IMPROVEMENTS.md`](IMPROVEMENTS.md) (normalized improvement/backlog tracking), and [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md) (consolidated non-assembly execution backlog).
@@ -195,6 +195,8 @@ Use this document alongside [`ROADMAP.md`](ROADMAP.md) (delivery waves and seque
 | Sampling | `/api/sampling/*` | ✅ |
 | Alignment | `/api/alignment/*` | ✅ |
 | IB-specific | `/api/ib/*` | ✅ |
+| Direct lending | `/api/loans/*` | ✅ |
+| Workstation and reconciliation | `/api/workstation/*` | ✅ |
 | Metrics (Prometheus) | `/api/metrics` | ✅ |
 | SSE stream | `/api/events/stream` | ✅ |
 | OpenAPI / Swagger | `/swagger` | ✅ |
@@ -231,15 +233,15 @@ Use this document alongside [`ROADMAP.md`](ROADMAP.md) (delivery waves and seque
 
 ## 10. WPF Desktop Application
 
-### Shell & Navigation (✅ Complete)
+### Shell & Navigation (Complete baseline)
 
-- Workspace model (Monitor, Collect, Storage, Quality, Settings)
+- Workspace model now persists built-in `Research`, `Trading`, `Data Operations`, and `Governance` workspaces, including legacy workspace ID migration for older saved sessions.
 - Command palette (`Ctrl+K`), keyboard shortcuts
 - Theme switching, notification center, info bar
 - Offline indicator (single notification + warning on backend unreachable)
 - Session state persistence (active workspace, last page, window bounds)
 
-### Pages with live service connections (✅ Implemented)
+### Pages with live service connections (Implemented)
 
 | Page | Primary Service | Function |
 |------|----------------|---------|
@@ -284,23 +286,24 @@ Use this document alongside [`ROADMAP.md`](ROADMAP.md) (delivery waves and seque
 | TimeSeriesAlignmentPage | TimeSeriesAlignmentService | Multi-symbol time alignment |
 | WorkspacePage | WorkspaceService | Workspace management |
 
-### Trading workstation migration target (🔄 Planned / active in documentation)
+### Trading workstation migration target (Planned / partially implemented)
 
-The current WPF app exposes broad capability coverage, but the next implementation wave reorganizes those capabilities into four workflow workspaces:
+The current WPF app exposes broad capability coverage, but the active implementation wave reorganizes those capabilities into four workflow workspaces:
 
-- **Research** — backtests, Lean engine flows, charts, replay, experiment comparison
-- **Trading** — live monitoring, orders, fills, positions, strategy operation
-- **Data Operations** — providers, symbols, backfills, schedules, storage, exports
-- **Governance** — portfolio, ledger, diagnostics, notifications, settings
+- **Research** - backtests, Lean engine flows, charts, replay, experiment comparison
+- **Trading** - live monitoring, orders, fills, positions, strategy operation
+- **Data Operations** - providers, symbols, backfills, schedules, storage, exports
+- **Governance** - portfolio, ledger, diagnostics, retention, notifications, and settings
 
-This migration is tracked in [`../plans/trading-workstation-migration-blueprint.md`](../plans/trading-workstation-migration-blueprint.md) and [`ROADMAP.md`](ROADMAP.md) Phases 11–13.
+This migration is tracked in [`../plans/trading-workstation-migration-blueprint.md`](../plans/trading-workstation-migration-blueprint.md) and [`ROADMAP.md`](ROADMAP.md) Waves 1-3.
 
-### Shared run / portfolio / ledger model baseline (🔄 In progress)
+### Shared run / portfolio / ledger / reconciliation baseline (In progress)
 
 - Shared workstation DTOs now exist for run summaries/details, portfolio summaries/positions, ledger summaries, journal rows, trial balance rows, and run comparison views.
 - `StrategyRunReadService`, `PortfolioReadService`, and `LedgerReadService` now derive those models from recorded strategy/backtest results.
 - WPF now includes a first-pass `StrategyRuns` browser plus `RunDetail`, `RunPortfolio`, and `RunLedger` drill-in pages, and completed backtests are mirrored into that shared workstation flow.
-- The remaining gap is broader paper/live data-source adoption, richer portfolio/ledger analytics, explicit cash-flow and multi-ledger views, and more complete cockpit-style workflow integration.
+- Run-scoped reconciliation contracts and service flows now exist through `ReconciliationRunRequest`, `ReconciliationRunSummary`, `ReconciliationRunDetail`, `ReconciliationRunService`, and `/api/workstation/reconciliation/*`.
+- The remaining gap is broader paper/live data-source adoption, richer portfolio/ledger analytics, explicit cash-flow and multi-ledger views, richer reconciliation UX, and more complete cockpit-style workflow integration.
 
 ### Known WPF limitations
 
@@ -445,24 +448,26 @@ This section inventories the workflow-centric product model that now sits above 
 
 | Surface | Status | Notes |
 |---------|--------|-------|
-| Research workspace taxonomy | ðŸ”„ | Desktop vocabulary now aligns on `Research`; the remaining gap is deeper workspace-native shells and operator flows |
-| Trading workspace taxonomy | ðŸ”„ | Command palette and shell terminology align on `Trading`; cockpit-grade execution UX remains pending |
-| Data Operations workspace taxonomy | ðŸ”„ | Operational pages are grouped consistently; further cross-links and workflow shells remain |
-| Governance workspace taxonomy | ðŸ”„ | Portfolio/ledger/diagnostics/settings surfaces are grouped conceptually; governance-first product flows remain incomplete |
-| Shared `StrategyRun` DTO/read-model baseline | ðŸ”„ | Shared run summary/detail/comparison models exist; paper/live history expansion remains |
-| Shared portfolio read-model baseline | ðŸ”„ | Portfolio summaries/positions derived from recorded runs exist; equity-history and broader source coverage remain |
-| Shared ledger read-model baseline | ðŸ”„ | Ledger summaries, journal rows, and trial balance rows exist; account-summary and reconciliation UX remain |
-| WPF run browser/detail/portfolio/ledger surfaces | ðŸ”„ | First workstation browser and drill-in flow is implemented for backtest-fed results |
-| Backtest Studio unification | ðŸ“ | Native and Lean backtests are still distinct operator experiences |
-| Paper-trading cockpit | ðŸ“ | Execution primitives exist, but a dedicated orders/fills/positions/risk cockpit is still planned |
-| Promotion workflow (`Backtest -> Paper -> Live`) | ðŸ“ | Safety-gated lifecycle workflow remains planned |
+| Research workspace taxonomy | Partial | Desktop vocabulary now aligns on `Research`; the remaining gap is deeper workspace-native shells and operator flows |
+| Trading workspace taxonomy | Partial | Command palette and shell terminology align on `Trading`; cockpit-grade execution UX remains pending |
+| Data Operations workspace taxonomy | Partial | Operational pages are grouped consistently; further cross-links and workflow shells remain |
+| Governance workspace taxonomy | Partial | Portfolio/ledger/diagnostics/settings surfaces are grouped conceptually; governance-first product flows remain incomplete |
+| Shared `StrategyRun` DTO/read-model baseline | Partial | Shared run summary/detail/comparison models exist; paper/live history expansion remains |
+| Shared portfolio read-model baseline | Partial | Portfolio summaries/positions derived from recorded runs exist; equity-history and broader source coverage remain |
+| Shared ledger read-model baseline | Partial | Ledger summaries, journal rows, and trial balance rows exist; account-summary and richer reconciliation UX remain |
+| Reconciliation run baseline | Partial | Run-scoped reconciliation service, history, and Security Master coverage issue detection now exist; broader break queues and non-run workflows remain |
+| Security Master platform baseline | Partial | Contracts, services, storage, migrations, and F# domain modules exist; workstation-facing productization and shared metadata integration remain |
+| Direct lending vertical slice | Partial | Postgres-backed direct-lending services, migrations, workflow support, and `/api/loans/*` endpoints are live; broader governance/reporting integration remains |
+| WPF run browser/detail/portfolio/ledger surfaces | Partial | First workstation browser and drill-in flow is implemented for backtest-fed results |
+| Backtest Studio unification | Planned | Native and Lean backtests are still distinct operator experiences |
+| Paper-trading cockpit | Planned | Execution primitives exist, but a dedicated orders/fills/positions/risk cockpit is still planned |
+| Promotion workflow (`Backtest -> Paper -> Live`) | Planned | Safety-gated lifecycle workflow remains planned |
 
 ### Additional governance and platform tracks
 
-- **Security Master platform baseline:** contracts, services, storage, migrations, and F# domain modules exist; workstation-facing productization and shared metadata integration remain.
 - **Cash-flow modeling surfaces:** governance-oriented cash-movement and projection views are not yet productized.
-- **Multi-ledger tracking:** governance workflows do not yet expose multiple ledgers, ledger groups, or cross-ledger reconciliation explicitly.
-- **Reconciliation engine:** there is no explicit fund-ops reconciliation engine yet for position, cash, NAV, and ledger break management.
+- **Multi-ledger tracking:** governance workflows do not yet expose multiple ledgers, ledger groups, or cross-ledger consolidation explicitly.
+- **Reconciliation engine expansion:** run-scoped reconciliation now exists for recorded strategy runs, but broader position, cash, NAV, external statement, and exception-queue workflows remain incomplete.
 - **Report generation tools:** export infrastructure exists, but governed report-pack generation for investor, board, compliance, and fund-ops workflows is not yet productized.
 
 ### Remaining work
@@ -470,7 +475,8 @@ This section inventories the workflow-centric product model that now sits above 
 - Turn taxonomy alignment into true workspace-first shells with quick actions and cross-workflow entry points.
 - Extend the shared run/portfolio/ledger model to paper/live history, cash-flow views, multi-ledger tracking, and richer reconciliation views.
 - Elevate Security Master from backend capability to explicit platform/product infrastructure for research and governance.
-- Add a reconciliation engine with explicit break queues, match rules, and exception workflows.
+- Expand the current reconciliation seam into explicit break queues, match rules, exception workflows, and non-run governance use cases.
+- Extend the direct-lending slice into governance-grade projections, reconciliation hooks, and reporting outputs.
 - Add report generation tools that package auditable governance outputs for operators and stakeholders.
 - Replace page-by-page mental models with workstation-native journeys for research, trading, data ops, and governance.
 
@@ -549,6 +555,9 @@ Meridian’s intended end state is a comprehensive fund management platform rath
 
 ---
 
-*Last Updated: 2026-03-21*
+*Last Updated: 2026-03-22*
+
+
+
 
 

@@ -2,7 +2,7 @@
 
 **Owner:** Core Team
 **Audience:** Product, architecture, engineering, and delivery leads
-**Last Updated:** 2026-03-21
+**Last Updated:** 2026-03-22
 **Status:** Active implementation backlog
 
 ## Purpose
@@ -23,6 +23,7 @@ This backlog is derived from:
 - [Fund Management Product Vision and Capability Matrix](fund-management-product-vision-and-capability-matrix.md)
 - [Trading Workstation Migration Blueprint](trading-workstation-migration-blueprint.md)
 - [Governance and Fund Operations Blueprint](governance-fund-ops-blueprint.md)
+- [UFL Direct Lending Target-State Package V2](ufl-direct-lending-target-state-v2.md)
 - [Project Roadmap](../status/ROADMAP.md)
 - [Feature Inventory](../status/FEATURE_INVENTORY.md)
 
@@ -88,7 +89,7 @@ Workspace vocabulary exists, but the product still behaves too much like page na
 
 **Current state**
 
-Backtest-first shared run workflows exist and already power the first workstation browser/detail/portfolio/ledger flow.
+Backtest-first shared run workflows exist and already power the first workstation browser/detail/portfolio/ledger flow. A run-scoped reconciliation seam now also exists through `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs`, `src/Meridian.Strategies/Services/ReconciliationRunService.cs`, and workstation endpoints.
 
 **Primary backlog**
 
@@ -648,4 +649,5 @@ Data-ops controls exist, but they are not yet shaped around fund-ops reporting a
 - [Fund Management Product Vision and Capability Matrix](fund-management-product-vision-and-capability-matrix.md)
 - [Trading Workstation Migration Blueprint](trading-workstation-migration-blueprint.md)
 - [Governance and Fund Operations Blueprint](governance-fund-ops-blueprint.md)
+- [UFL Direct Lending Target-State Package V2](ufl-direct-lending-target-state-v2.md)
 - [Project Roadmap](../status/ROADMAP.md)

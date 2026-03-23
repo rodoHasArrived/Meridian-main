@@ -8,7 +8,54 @@ namespace Meridian.Strategies.Services;
 /// </summary>
 public sealed class PortfolioReadService
 {
+    private readonly ISecurityReferenceLookup? _securityReferenceLookup;
+
+    public PortfolioReadService()
+    {
+    }
+
+    public PortfolioReadService(ISecurityReferenceLookup securityReferenceLookup)
+    {
+        _securityReferenceLookup = securityReferenceLookup ?? throw new ArgumentNullException(nameof(securityReferenceLookup));
+    }
+
     public PortfolioSummary? BuildSummary(StrategyRunEntry entry)
+        => BuildBaseSummary(entry);
+
+    public async Task<PortfolioSummary?> BuildSummaryAsync(StrategyRunEntry entry, CancellationToken ct = default)
+    {
+        var summary = BuildBaseSummary(entry);
+        if (summary is null || _securityReferenceLookup is null || summary.Positions.Count == 0)
+        {
+            return summary;
+        }
+
+        var lookup = await ResolveSecuritiesAsync(
+                summary.Positions
+                    .Select(static position => position.Symbol)
+                    .Where(static symbol => !string.IsNullOrWhiteSpace(symbol)),
+                ct)
+            .ConfigureAwait(false);
+
+        var positions = summary.Positions
+            .Select(position => position with
+            {
+                Security = lookup.GetValueOrDefault(position.Symbol)
+            })
+            .ToArray();
+
+        var resolvedCount = lookup.Values.Count(static value => value is not null);
+        var missingCount = lookup.Count - resolvedCount;
+
+        return summary with
+        {
+            Positions = positions,
+            SecurityResolvedCount = resolvedCount,
+            SecurityMissingCount = missingCount
+        };
+    }
+
+    private static PortfolioSummary? BuildBaseSummary(StrategyRunEntry entry)
     {
         ArgumentNullException.ThrowIfNull(entry);
 
@@ -53,5 +100,25 @@ public sealed class PortfolioReadService
             Commissions: result.Metrics.TotalCommissions,
             Financing: financing,
             Positions: positions);
+    }
+
+    private async Task<Dictionary<string, WorkstationSecurityReference?>> ResolveSecuritiesAsync(
+        IEnumerable<string> symbols,
+        CancellationToken ct)
+    {
+        var lookup = new Dictionary<string, WorkstationSecurityReference?>(StringComparer.OrdinalIgnoreCase);
+        if (_securityReferenceLookup is null)
+        {
+            return lookup;
+        }
+
+        foreach (var symbol in symbols.Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            lookup[symbol] = await _securityReferenceLookup
+                .GetBySymbolAsync(symbol, ct)
+                .ConfigureAwait(false);
+        }
+
+        return lookup;
     }
 }

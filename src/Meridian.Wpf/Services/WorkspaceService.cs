@@ -10,6 +10,7 @@ using SessionState = Meridian.Ui.Services.SessionState;
 using WorkspaceCategory = Meridian.Ui.Services.WorkspaceCategory;
 using WorkspacePage = Meridian.Ui.Services.WorkspacePage;
 using WidgetPosition = Meridian.Ui.Services.WidgetPosition;
+using WindowBounds = Meridian.Ui.Services.WindowBounds;
 using WorkspaceEventArgs = Meridian.Ui.Services.WorkspaceEventArgs;
 
 namespace Meridian.Wpf.Services;

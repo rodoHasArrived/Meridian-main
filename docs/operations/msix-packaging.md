@@ -19,6 +19,12 @@ The easiest way to build and install the Desktop App:
 
 # Build only (no installation)
 .\build\scripts\install\install.ps1 -Mode Desktop -SkipInstall
+
+# Lower-disk local publish (disables ReadyToRun)
+.\build\scripts\install\install.ps1 -Mode Desktop -DisableReadyToRun
+
+# Release-style local publish (enables ReadyToRun)
+.\build\scripts\install\install.ps1 -Mode Desktop -EnableReadyToRun
 ```
 
 ## Build MSIX Packages
@@ -27,12 +33,24 @@ The easiest way to build and install the Desktop App:
 
 ```powershell
 make desktop-publish
+
+# Lower-disk local publish
+make desktop-publish DESKTOP_PUBLISH_READYTORUN=false
+
+# Release-style local publish
+make desktop-publish DESKTOP_PUBLISH_READYTORUN=true
 ```
 
 **PowerShell install script:**
 
 ```powershell
 .\build\scripts\install\install.ps1 -Mode Desktop
+
+# Lower-disk local publish
+.\build\scripts\install\install.ps1 -Mode Desktop -DisableReadyToRun
+
+# Release-style local publish
+.\build\scripts\install\install.ps1 -Mode Desktop -EnableReadyToRun
 ```
 
 Both commands output MSIX packages under:
@@ -53,8 +71,10 @@ The install script supports several options for Desktop mode:
 | `-Architecture ARM64` | Build for ARM64 (Surface Pro X, etc.) |
 | `-AutoInstallPrereqs` | Auto-install missing prerequisites via winget |
 | `-SkipInstall` | Build only, do not install the MSIX |
+| `-DisableReadyToRun` | Reduce disk usage during local publish by disabling ReadyToRun |
+| `-EnableReadyToRun` | Enable ReadyToRun for release-style local packaging |
 | `-NoTrustCert` | Skip the certificate trust prompt |
-| `-Verbose` | Show detailed build output |
+| `-DetailedOutput` | Show detailed build output |
 
 ## Uninstalling
 
@@ -142,3 +162,5 @@ make desktop-publish
 
 - Keep the package identity values in the project file and manifest in sync.
 - AppInstaller generation is optional; omit the URI to skip it.
+- Local desktop packaging defaults to `PublishReadyToRun=false` to reduce disk usage.
+- CI and release packaging should pass `PublishReadyToRun=true` explicitly.

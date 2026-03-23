@@ -81,6 +81,21 @@
                 </Border>
             </UniformGrid>
 
+            <UniformGrid Columns="2" Margin="0,0,0,20">
+                <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                    <StackPanel>
+                        <TextBlock Text="Security Resolved" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                        <TextBlock Text="{Binding SecurityResolvedText}" Style="{StaticResource CardHeaderStyle}" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="Security Missing" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                        <TextBlock Text="{Binding SecurityMissingText}" Style="{StaticResource CardHeaderStyle}" />
+                    </StackPanel>
+                </Border>
+            </UniformGrid>
+
             <Border Style="{StaticResource CardStyle}" Margin="0,0,0,20">
                 <StackPanel>
                     <TextBlock Text="Trial Balance" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12" />
@@ -94,6 +109,9 @@
                             <DataGridTextColumn Header="Account" Binding="{Binding AccountName}" Width="*" />
                             <DataGridTextColumn Header="Type" Binding="{Binding AccountType}" Width="110" />
                             <DataGridTextColumn Header="Symbol" Binding="{Binding Symbol}" Width="110" />
+                            <DataGridTextColumn Header="Security" Binding="{Binding Security.DisplayName}" Width="180" />
+                            <DataGridTextColumn Header="Asset Class" Binding="{Binding Security.AssetClass}" Width="110" />
+                            <DataGridTextColumn Header="Identifier" Binding="{Binding Security.PrimaryIdentifier}" Width="120" />
                             <DataGridTextColumn Header="Financial Account" Binding="{Binding FinancialAccountId}" Width="180" />
                             <DataGridTextColumn Header="Balance" Binding="{Binding Balance, StringFormat={}{0:C2}}" Width="120" />
                             <DataGridTextColumn Header="Entries" Binding="{Binding EntryCount}" Width="80" />

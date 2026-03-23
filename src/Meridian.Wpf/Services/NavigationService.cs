@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using Meridian.Ui.Services.Contracts;
@@ -142,27 +143,52 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
     {
         if (_frame == null) return false;
 
-        var page = CreatePage(pageType);
-
-        if (parameter != null && page is Page wpfPage && wpfPage.DataContext != null)
+        try
         {
-            var parameterProperty = wpfPage.DataContext.GetType().GetProperty("Parameter");
-            parameterProperty?.SetValue(wpfPage.DataContext, parameter);
-        }
+            var page = CreatePage(pageType);
 
-        var result = _frame.Navigate(page);
-
-        if (result)
-        {
-            // Trigger onboarding tour for the navigated page if applicable
-            var currentTag = GetCurrentPageTag();
-            if (currentTag != null)
+            if (parameter != null && page is Page wpfPage && wpfPage.DataContext != null)
             {
-                CheckOnboardingTourForPage(currentTag);
+                var parameterProperty = wpfPage.DataContext.GetType().GetProperty("Parameter");
+                parameterProperty?.SetValue(wpfPage.DataContext, parameter);
             }
-        }
 
-        return result;
+            var result = _frame.Navigate(page);
+
+            if (result)
+            {
+                // Trigger onboarding tour for the navigated page if applicable
+                var currentTag = GetCurrentPageTag();
+                if (currentTag != null)
+                {
+                    CheckOnboardingTourForPage(currentTag);
+                }
+            }
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            var pageName = pageType.Name;
+            LoggingService.Instance.LogError($"Navigation to {pageName} failed: {ex}");
+
+            _frame.Navigate(CreateNavigationErrorPage(pageName, ex));
+
+            try
+            {
+                MessageBox.Show(
+                    $"Navigation to '{pageName}' failed.\n\n{ex.Message}",
+                    "Navigation Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+            catch
+            {
+                // Last-resort path: keep the error page visible even if the dialog fails.
+            }
+
+            return false;
+        }
     }
 
     /// <summary>
@@ -228,5 +254,32 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
             // Page requires constructor injection but no DI container is available.
             return new Page();
         }
+    }
+
+    private static Page CreateNavigationErrorPage(string pageName, Exception ex)
+    {
+        var panel = new StackPanel
+        {
+            Margin = new Thickness(24)
+        };
+
+        panel.Children.Add(new TextBlock
+        {
+            Text = $"Unable to open {pageName}",
+            FontSize = 24,
+            FontWeight = FontWeights.SemiBold,
+            Margin = new Thickness(0, 0, 0, 12)
+        });
+
+        panel.Children.Add(new TextBlock
+        {
+            Text = ex.Message,
+            TextWrapping = TextWrapping.Wrap
+        });
+
+        return new Page
+        {
+            Content = panel
+        };
     }
 }

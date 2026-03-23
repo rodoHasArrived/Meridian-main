@@ -2,7 +2,7 @@
 
 **Owner:** Core Team
 **Audience:** Engineering leads, implementers, and reviewers
-**Last Updated:** 2026-03-21
+**Last Updated:** 2026-03-22
 **Status:** Active execution roadmap
 
 ## Purpose
@@ -102,7 +102,7 @@ Expand the shared run model beyond backtests.
 
 - paper/live-compatible run shapes
 - promotion state and execution summary fields
-- reusable comparison and governance hooks
+- reusable comparison, reconciliation, and governance hooks
 
 ### PR-03: Workstation Bootstrap Payload Alignment
 
@@ -462,3 +462,4 @@ Why:
 - [Fund Management Module Implementation Backlog](fund-management-module-implementation-backlog.md)
 - [Trading Workstation Migration Blueprint](trading-workstation-migration-blueprint.md)
 - [Governance and Fund Operations Blueprint](governance-fund-ops-blueprint.md)
+- [UFL Direct Lending Target-State Package V2](ufl-direct-lending-target-state-v2.md)

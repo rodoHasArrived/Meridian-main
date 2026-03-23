@@ -1,7 +1,11 @@
 using System.Net;
+using System.Net.Http.Json;
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Backtesting.Sdk;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
+using Meridian.Ledger;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
@@ -11,6 +15,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Meridian.Tests.Ui;
 
@@ -21,11 +26,7 @@ public sealed class WorkstationEndpointsTests
     {
         await using var app = await CreateAppAsync(services =>
         {
-            var store = new StrategyRunStore();
-            services.AddSingleton<IStrategyRepository>(store);
-            services.AddSingleton<PortfolioReadService>();
-            services.AddSingleton<LedgerReadService>();
-            services.AddSingleton<StrategyRunReadService>();
+            RegisterRunReadServices(services);
         });
 
         var store = app.Services.GetRequiredService<IStrategyRepository>();
@@ -52,7 +53,7 @@ public sealed class WorkstationEndpointsTests
         session.RootElement.GetProperty("displayName").GetString().Should().Be("Carry Pair Desk");
         session.RootElement.GetProperty("role").GetString().Should().Be("Research Lead");
         session.RootElement.GetProperty("environment").GetString().Should().Be("paper");
-        session.RootElement.GetProperty("activeWorkspace").GetString().Should().Be("research");
+        session.RootElement.GetProperty("activeWorkspace").GetString().Should().Be("operations");
         session.RootElement.GetProperty("latestRun").GetProperty("runId").GetString().Should().Be("run-latest");
         session.RootElement.GetProperty("workspaceSummary").GetProperty("totalRuns").GetInt32().Should().Be(2);
         session.RootElement.GetProperty("workspaceSummary").GetProperty("ledgerCoverage").GetInt32().Should().Be(2);
@@ -72,7 +73,7 @@ public sealed class WorkstationEndpointsTests
         latestRun.GetProperty("mode").GetString().Should().Be("paper");
         latestRun.GetProperty("status").GetString().Should().Be("Completed");
         latestRun.GetProperty("dataset").GetString().Should().Be("dataset/fx/spot");
-        latestRun.GetProperty("notes").GetString().Should().Contain("paper review");
+        latestRun.GetProperty("notes").GetString().Should().Contain("review");
 
         research.RootElement.GetProperty("metrics").EnumerateArray()
             .Should()
@@ -99,10 +100,320 @@ public sealed class WorkstationEndpointsTests
             .Contain(metric => metric.GetProperty("id").GetString() == "active-runs" &&
                                metric.GetProperty("value").GetString() == "24");
 
+        using var governance = await ReadJsonAsync(client, "/api/workstation/governance");
+        governance.RootElement.GetProperty("metrics").EnumerateArray()
+            .Should()
+            .Contain(metric => metric.GetProperty("id").GetString() == "open-breaks" &&
+                               metric.GetProperty("value").GetString() == "4");
+        governance.RootElement.GetProperty("reconciliationQueue").GetArrayLength().Should().Be(1);
+
         var runs = research.RootElement.GetProperty("runs");
         runs.GetArrayLength().Should().Be(1);
         runs[0].GetProperty("id").GetString().Should().Be("run-research-001");
         runs[0].GetProperty("strategyName").GetString().Should().Be("Mean Reversion FX");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_WithSecurityLookup_ShouldExposeSecurityCoverageInBootstrapPayloads()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            var lookup = new StubSecurityReferenceLookup();
+            lookup.Register("AAPL", new WorkstationSecurityReference(
+                SecurityId: Guid.Parse("22222222-2222-2222-2222-222222222222"),
+                DisplayName: "Apple Inc.",
+                AssetClass: "Equity",
+                Currency: "USD",
+                Status: SecurityStatusDto.Active,
+                PrimaryIdentifier: "AAPL"));
+
+            services.AddSingleton<IStrategyRepository>(new StrategyRunStore());
+            services.AddSingleton<ISecurityReferenceLookup>(lookup);
+            services.AddSingleton<PortfolioReadService>();
+            services.AddSingleton<LedgerReadService>();
+            services.AddSingleton<StrategyRunReadService>();
+        });
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildRun(
+            runId: "run-security",
+            strategyId: "carry-1",
+            strategyName: "Carry Pair",
+            runType: RunType.Backtest,
+            startedAt: new DateTimeOffset(2026, 3, 21, 16, 0, 0, TimeSpan.Zero),
+            datasetReference: "dataset/fx/spot",
+            feedReference: "synthetic:fx").Complete(BuildBacktestResultWithSymbol("AAPL")));
+
+        var client = app.GetTestClient();
+
+        using var session = await ReadJsonAsync(client, "/api/workstation/session");
+        var latestCoverage = session.RootElement.GetProperty("latestRun").GetProperty("securityCoverage");
+        latestCoverage.GetProperty("portfolioResolved").GetInt32().Should().Be(1);
+        latestCoverage.GetProperty("portfolioMissing").GetInt32().Should().Be(0);
+        latestCoverage.GetProperty("ledgerResolved").GetInt32().Should().Be(1);
+        latestCoverage.GetProperty("ledgerMissing").GetInt32().Should().Be(0);
+        latestCoverage.GetProperty("hasIssues").GetBoolean().Should().BeFalse();
+        latestCoverage.GetProperty("tone").GetString().Should().Be("success");
+        latestCoverage.GetProperty("resolvedReferences").GetArrayLength().Should().Be(2);
+        latestCoverage.GetProperty("missingReferences").GetArrayLength().Should().Be(0);
+        latestCoverage.GetProperty("summary").GetString().Should().Contain("no unresolved symbols");
+
+        using var research = await ReadJsonAsync(client, "/api/workstation/research");
+        var runCoverage = research.RootElement.GetProperty("runs")[0].GetProperty("securityCoverage");
+        runCoverage.GetProperty("portfolioResolved").GetInt32().Should().Be(1);
+        runCoverage.GetProperty("ledgerResolved").GetInt32().Should().Be(1);
+        runCoverage.GetProperty("hasIssues").GetBoolean().Should().BeFalse();
+        runCoverage.GetProperty("resolvedReferences").EnumerateArray()
+            .Should()
+            .Contain(item =>
+                item.GetProperty("source").GetString() == "portfolio" &&
+                item.GetProperty("symbol").GetString() == "AAPL" &&
+                item.GetProperty("displayName").GetString() == "Apple Inc.");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_WithGovernanceServices_ShouldExposeGovernanceWorkspacePayload()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            var lookup = new StubSecurityReferenceLookup();
+            lookup.Register("AAPL", new WorkstationSecurityReference(
+                SecurityId: Guid.Parse("33333333-3333-3333-3333-333333333333"),
+                DisplayName: "Apple Inc.",
+                AssetClass: "Equity",
+                Currency: "USD",
+                Status: SecurityStatusDto.Active,
+                PrimaryIdentifier: "AAPL"));
+
+            services.AddSingleton<IStrategyRepository>(new StrategyRunStore());
+            services.AddSingleton<ISecurityReferenceLookup>(lookup);
+            services.AddSingleton<PortfolioReadService>();
+            services.AddSingleton<LedgerReadService>();
+            services.AddSingleton<StrategyRunReadService>();
+            services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+            services.AddSingleton<ReconciliationProjectionService>();
+            services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        });
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildReconciliationReadyRun("run-governance-balanced"));
+        await store.RecordRunAsync(BuildReconciliationMismatchRun("run-governance-breaks"));
+
+        var reconciliationService = app.Services.GetRequiredService<IReconciliationRunService>();
+        await reconciliationService.RunAsync(new ReconciliationRunRequest("run-governance-balanced"));
+        await reconciliationService.RunAsync(new ReconciliationRunRequest("run-governance-breaks"));
+
+        var client = app.GetTestClient();
+        using var governance = await ReadJsonAsync(client, "/api/workstation/governance");
+
+        var workspace = governance.RootElement.GetProperty("workspace");
+        workspace.GetProperty("totalRuns").GetInt32().Should().Be(2);
+        workspace.GetProperty("ledgerReadyRuns").GetInt32().Should().Be(2);
+        workspace.GetProperty("reconciledRuns").GetInt32().Should().Be(2);
+        workspace.GetProperty("openBreaks").GetInt32().Should().BeGreaterThan(0);
+        workspace.GetProperty("securityIssues").GetInt32().Should().BeGreaterThan(0);
+
+        var cashFlow = governance.RootElement.GetProperty("cashFlow");
+        cashFlow.GetProperty("runsWithCashSignals").GetInt32().Should().Be(2);
+        cashFlow.GetProperty("runsWithCashVariance").GetInt32().Should().Be(1);
+        cashFlow.GetProperty("netVariance").GetDecimal().Should().Be(-100m);
+
+        var reporting = governance.RootElement.GetProperty("reporting");
+        reporting.GetProperty("profileCount").GetInt32().Should().BeGreaterThan(0);
+        reporting.GetProperty("profiles").EnumerateArray()
+            .Should()
+            .Contain(profile => profile.GetProperty("id").GetString() == "excel");
+        reporting.GetProperty("recommendedProfiles").EnumerateArray()
+            .Select(profile => profile.GetString())
+            .Should()
+            .Contain("excel");
+
+        governance.RootElement.GetProperty("metrics").EnumerateArray()
+            .Should()
+            .Contain(metric => metric.GetProperty("id").GetString() == "open-breaks" &&
+                               metric.GetProperty("value").GetString() != "0");
+
+        var queue = governance.RootElement.GetProperty("reconciliationQueue");
+        queue.GetArrayLength().Should().Be(2);
+
+        var breakRun = queue.EnumerateArray()
+            .Single(item => item.GetProperty("runId").GetString() == "run-governance-breaks");
+        breakRun.GetProperty("reconciliationStatus").GetString().Should().Be("BreaksOpen");
+        breakRun.GetProperty("openBreakCount").GetInt32().Should().BeGreaterThan(0);
+        breakRun.GetProperty("securityCoverage").GetProperty("hasIssues").GetBoolean().Should().BeTrue();
+        breakRun.GetProperty("securityCoverage").GetProperty("missingReferences").GetArrayLength().Should().BeGreaterThan(0);
+        breakRun.GetProperty("cashFlow").GetProperty("cashVariance").GetDecimal().Should().Be(-100m);
+        breakRun.GetProperty("latestReconciliation").GetProperty("hasSecurityCoverageIssues").GetBoolean().Should().BeTrue();
+        breakRun.GetProperty("latestReconciliation").GetProperty("securityIssueCount").GetInt32().Should().BeGreaterThan(0);
+
+        var balancedRun = queue.EnumerateArray()
+            .Single(item => item.GetProperty("runId").GetString() == "run-governance-balanced");
+        balancedRun.GetProperty("reconciliationStatus").GetString().Should().Be("SecurityCoverageOpen");
+        balancedRun.GetProperty("breakCount").GetInt32().Should().Be(0);
+        balancedRun.GetProperty("cashFlow").GetProperty("cashVariance").GetDecimal().Should().Be(0m);
+        balancedRun.GetProperty("latestReconciliation").GetProperty("hasSecurityCoverageIssues").GetBoolean().Should().BeTrue();
+        balancedRun.GetProperty("securityCoverage").GetProperty("missingReferences").EnumerateArray()
+            .Should()
+            .Contain(item => item.GetProperty("symbol").GetString() == "TSLA");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_ReconciliationRoutes_ShouldCreateAndFetchRun()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+            services.AddSingleton<ReconciliationProjectionService>();
+            services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        });
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildReconciliationReadyRun("run-recon"));
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsJsonAsync("/api/workstation/reconciliation/runs", new ReconciliationRunRequest("run-recon"));
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var created = await response.Content.ReadFromJsonAsync<ReconciliationRunDetail>();
+        created.Should().NotBeNull();
+        created!.Summary.RunId.Should().Be("run-recon");
+        created.Summary.BreakCount.Should().Be(0);
+        created.Matches.Should().Contain(match => match.CheckId == "cash-balance");
+
+        var latestResponse = await client.GetAsync("/api/workstation/runs/run-recon/reconciliation");
+        latestResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var latest = await latestResponse.Content.ReadFromJsonAsync<ReconciliationRunDetail>();
+        latest.Should().NotBeNull();
+        latest!.Summary.ReconciliationRunId.Should().Be(created.Summary.ReconciliationRunId);
+
+        var byIdResponse = await client.GetAsync($"/api/workstation/reconciliation/runs/{created.Summary.ReconciliationRunId}");
+        byIdResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var byId = await byIdResponse.Content.ReadFromJsonAsync<ReconciliationRunDetail>();
+        byId.Should().NotBeNull();
+        byId!.Summary.MatchCount.Should().BeGreaterThan(0);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_ReconciliationRoutes_ShouldReturnNotFoundWhenNoRunExists()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+            services.AddSingleton<ReconciliationProjectionService>();
+            services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        });
+
+        var client = app.GetTestClient();
+
+        var createResponse = await client.PostAsJsonAsync("/api/workstation/reconciliation/runs", new ReconciliationRunRequest("missing-run"));
+        createResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+
+        var latestResponse = await client.GetAsync("/api/workstation/runs/missing-run/reconciliation");
+        latestResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_ReconciliationHistoryRoute_ShouldReturnDescendingHistory()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+            services.AddSingleton<ReconciliationProjectionService>();
+            services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        });
+
+        var repository = app.Services.GetRequiredService<IReconciliationRunRepository>();
+        await repository.SaveAsync(BuildReconciliationDetail(
+            reconciliationRunId: "recon-1",
+            runId: "run-history",
+            createdAt: new DateTimeOffset(2026, 3, 21, 16, 0, 0, TimeSpan.Zero),
+            matchCount: 1,
+            breakCount: 0));
+        await repository.SaveAsync(BuildReconciliationDetail(
+            reconciliationRunId: "recon-2",
+            runId: "run-history",
+            createdAt: new DateTimeOffset(2026, 3, 21, 18, 0, 0, TimeSpan.Zero),
+            matchCount: 2,
+            breakCount: 1));
+        await repository.SaveAsync(BuildReconciliationDetail(
+            reconciliationRunId: "recon-3",
+            runId: "run-history",
+            createdAt: new DateTimeOffset(2026, 3, 21, 17, 0, 0, TimeSpan.Zero),
+            matchCount: 3,
+            breakCount: 0));
+
+        var client = app.GetTestClient();
+        var historyResponse = await client.GetAsync("/api/workstation/runs/run-history/reconciliation/history");
+        historyResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var history = await historyResponse.Content.ReadFromJsonAsync<List<ReconciliationRunSummary>>();
+        history.Should().NotBeNull();
+        history!.Should().HaveCount(3);
+        history.Select(item => item.ReconciliationRunId).Should().ContainInOrder("recon-2", "recon-3", "recon-1");
+        history[0].RunId.Should().Be("run-history");
+        history[0].CreatedAt.Should().Be(new DateTimeOffset(2026, 3, 21, 18, 0, 0, TimeSpan.Zero));
+        history[0].BreakCount.Should().Be(1);
+        history[1].CreatedAt.Should().Be(new DateTimeOffset(2026, 3, 21, 17, 0, 0, TimeSpan.Zero));
+        history[2].CreatedAt.Should().Be(new DateTimeOffset(2026, 3, 21, 16, 0, 0, TimeSpan.Zero));
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_ReconciliationHistoryRoute_ShouldHandleEmptyHistory()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+            services.AddSingleton<ReconciliationProjectionService>();
+            services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        });
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildReconciliationReadyRun("run-no-history"));
+
+        var client = app.GetTestClient();
+        var response = await client.GetAsync("/api/workstation/runs/run-no-history/reconciliation/history");
+
+        if (response.StatusCode == HttpStatusCode.NotFound)
+        {
+            response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+            return;
+        }
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var history = await response.Content.ReadFromJsonAsync<List<ReconciliationRunSummary>>();
+        history.Should().NotBeNull();
+        history.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_ReconciliationRoutes_ShouldReturnBreaksForMismatchedRun()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+            services.AddSingleton<ReconciliationProjectionService>();
+            services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        });
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildReconciliationMismatchRun("run-breaks"));
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsJsonAsync("/api/workstation/reconciliation/runs", new ReconciliationRunRequest("run-breaks"));
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var created = await response.Content.ReadFromJsonAsync<ReconciliationRunDetail>();
+        created.Should().NotBeNull();
+        created!.Summary.BreakCount.Should().BeGreaterThan(0);
+        created.Breaks.Should().NotBeEmpty();
+        created.Breaks.Should().Contain(breakRow =>
+            breakRow.Category == ReconciliationBreakCategory.AmountMismatch ||
+            breakRow.Category == ReconciliationBreakCategory.MissingLedgerCoverage);
     }
 
     private static async Task<WebApplication> CreateAppAsync(Action<IServiceCollection>? configureServices = null)
@@ -122,6 +433,15 @@ public sealed class WorkstationEndpointsTests
 
         await app.StartAsync();
         return app;
+    }
+
+    private static void RegisterRunReadServices(IServiceCollection services)
+    {
+        var store = new StrategyRunStore();
+        services.AddSingleton<IStrategyRepository>(store);
+        services.AddSingleton<PortfolioReadService>();
+        services.AddSingleton<LedgerReadService>();
+        services.AddSingleton<StrategyRunReadService>();
     }
 
     private static async Task<JsonDocument> ReadJsonAsync(HttpClient client, string path)
@@ -147,4 +467,408 @@ public sealed class WorkstationEndpointsTests
             StartedAt = startedAt,
             EndedAt = startedAt.AddMinutes(30),
             DatasetReference = datasetReference,
-            FeedReference = feedRefer
+            FeedReference = feedReference,
+            PortfolioId = $"{strategyId}-{runType.ToString().ToLowerInvariant()}-portfolio",
+            LedgerReference = $"{strategyId}-{runType.ToString().ToLowerInvariant()}-ledger",
+            AuditReference = $"audit-{runId}"
+        };
+    }
+
+    private static StrategyRunEntry BuildReconciliationReadyRun(string runId)
+    {
+        var startedAt = new DateTimeOffset(2026, 3, 21, 16, 0, 0, TimeSpan.Zero);
+        var completedAt = startedAt.AddMinutes(30);
+        var ledger = CreateLedger();
+        var positions = new Dictionary<string, Position>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["AAPL"] = new("AAPL", 10, 40m, 0m, 0m),
+            ["TSLA"] = new("TSLA", -5, 30m, 0m, 0m)
+        };
+        var accountSnapshot = new FinancialAccountSnapshot(
+            AccountId: BacktestDefaults.DefaultBrokerageAccountId,
+            DisplayName: "Primary Brokerage",
+            Kind: FinancialAccountKind.Brokerage,
+            Institution: "Simulated Broker",
+            Cash: 750m,
+            MarginBalance: 0m,
+            LongMarketValue: 400m,
+            ShortMarketValue: -150m,
+            Equity: 1000m,
+            Positions: positions,
+            Rules: new FinancialAccountRules());
+        var snapshot = new PortfolioSnapshot(
+            Timestamp: completedAt,
+            Date: DateOnly.FromDateTime(completedAt.UtcDateTime),
+            Cash: 750m,
+            MarginBalance: 0m,
+            LongMarketValue: 400m,
+            ShortMarketValue: -150m,
+            TotalEquity: 1000m,
+            DailyReturn: 0m,
+            Positions: positions,
+            Accounts: new Dictionary<string, FinancialAccountSnapshot>(StringComparer.OrdinalIgnoreCase)
+            {
+                [accountSnapshot.AccountId] = accountSnapshot
+            },
+            DayCashFlows: []);
+
+        var request = new BacktestRequest(
+            From: new DateOnly(2026, 3, 20),
+            To: new DateOnly(2026, 3, 21),
+            Symbols: ["AAPL", "TSLA"],
+            InitialCash: 1_000m,
+            DataRoot: "./data");
+        var metrics = new BacktestMetrics(
+            InitialCapital: 1_000m,
+            FinalEquity: 1_000m,
+            GrossPnl: 0m,
+            NetPnl: 0m,
+            TotalReturn: 0m,
+            AnnualizedReturn: 0m,
+            SharpeRatio: 0d,
+            SortinoRatio: 0d,
+            CalmarRatio: 0d,
+            MaxDrawdown: 0m,
+            MaxDrawdownPercent: 0m,
+            MaxDrawdownRecoveryDays: 0,
+            ProfitFactor: 1d,
+            WinRate: 1d,
+            TotalTrades: 0,
+            WinningTrades: 0,
+            LosingTrades: 0,
+            TotalCommissions: 0m,
+            TotalMarginInterest: 0m,
+            TotalShortRebates: 0m,
+            Xirr: 0d,
+            SymbolAttribution: new Dictionary<string, SymbolAttribution>());
+        var result = new BacktestResult(
+            Request: request,
+            Universe: new HashSet<string>(["AAPL", "TSLA"], StringComparer.OrdinalIgnoreCase),
+            Snapshots: [snapshot],
+            CashFlows: [],
+            Fills: [],
+            Metrics: metrics,
+            Ledger: ledger,
+            ElapsedTime: TimeSpan.FromMinutes(30),
+            TotalEventsProcessed: 100);
+
+        return StrategyRunEntry.Start("recon-strategy", "Reconciliation Strategy", RunType.Backtest) with
+        {
+            RunId = runId,
+            StartedAt = startedAt,
+            EndedAt = completedAt,
+            Metrics = result,
+            DatasetReference = "dataset/us/equities",
+            FeedReference = "synthetic:equities",
+            PortfolioId = "recon-portfolio",
+            LedgerReference = "recon-ledger",
+            AuditReference = $"audit-{runId}"
+        };
+    }
+
+    private static StrategyRunEntry BuildReconciliationMismatchRun(string runId)
+    {
+        var startedAt = new DateTimeOffset(2026, 3, 21, 17, 0, 0, TimeSpan.Zero);
+        var completedAt = startedAt.AddMinutes(30);
+        var ledger = CreateMismatchedLedger();
+        var positions = new Dictionary<string, Position>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["AAPL"] = new("AAPL", 10, 40m, 0m, 0m),
+            ["TSLA"] = new("TSLA", -5, 30m, 0m, 0m)
+        };
+        var accountSnapshot = new FinancialAccountSnapshot(
+            AccountId: BacktestDefaults.DefaultBrokerageAccountId,
+            DisplayName: "Primary Brokerage",
+            Kind: FinancialAccountKind.Brokerage,
+            Institution: "Simulated Broker",
+            Cash: 750m,
+            MarginBalance: 0m,
+            LongMarketValue: 400m,
+            ShortMarketValue: -150m,
+            Equity: 1000m,
+            Positions: positions,
+            Rules: new FinancialAccountRules());
+        var snapshot = new PortfolioSnapshot(
+            Timestamp: completedAt,
+            Date: DateOnly.FromDateTime(completedAt.UtcDateTime),
+            Cash: 750m,
+            MarginBalance: 0m,
+            LongMarketValue: 400m,
+            ShortMarketValue: -150m,
+            TotalEquity: 1000m,
+            DailyReturn: 0m,
+            Positions: positions,
+            Accounts: new Dictionary<string, FinancialAccountSnapshot>(StringComparer.OrdinalIgnoreCase)
+            {
+                [accountSnapshot.AccountId] = accountSnapshot
+            },
+            DayCashFlows: []);
+
+        var request = new BacktestRequest(
+            From: new DateOnly(2026, 3, 20),
+            To: new DateOnly(2026, 3, 21),
+            Symbols: ["AAPL", "TSLA"],
+            InitialCash: 1_000m,
+            DataRoot: "./data");
+        var metrics = new BacktestMetrics(
+            InitialCapital: 1_000m,
+            FinalEquity: 1_000m,
+            GrossPnl: 0m,
+            NetPnl: 0m,
+            TotalReturn: 0m,
+            AnnualizedReturn: 0m,
+            SharpeRatio: 0d,
+            SortinoRatio: 0d,
+            CalmarRatio: 0d,
+            MaxDrawdown: 0m,
+            MaxDrawdownPercent: 0m,
+            MaxDrawdownRecoveryDays: 0,
+            ProfitFactor: 1d,
+            WinRate: 1d,
+            TotalTrades: 0,
+            WinningTrades: 0,
+            LosingTrades: 0,
+            TotalCommissions: 0m,
+            TotalMarginInterest: 0m,
+            TotalShortRebates: 0m,
+            Xirr: 0d,
+            SymbolAttribution: new Dictionary<string, SymbolAttribution>());
+        var result = new BacktestResult(
+            Request: request,
+            Universe: new HashSet<string>(["AAPL", "TSLA"], StringComparer.OrdinalIgnoreCase),
+            Snapshots: [snapshot],
+            CashFlows: [],
+            Fills: [],
+            Metrics: metrics,
+            Ledger: ledger,
+            ElapsedTime: TimeSpan.FromMinutes(30),
+            TotalEventsProcessed: 100);
+
+        return StrategyRunEntry.Start("recon-break-strategy", "Reconciliation Break Strategy", RunType.Backtest) with
+        {
+            RunId = runId,
+            StartedAt = startedAt,
+            EndedAt = completedAt,
+            Metrics = result,
+            DatasetReference = "dataset/us/equities",
+            FeedReference = "synthetic:equities",
+            PortfolioId = "recon-break-portfolio",
+            LedgerReference = "recon-break-ledger",
+            AuditReference = $"audit-{runId}"
+        };
+    }
+
+    private static BacktestResult BuildBacktestResultWithSymbol(string symbol)
+    {
+        var startedAt = new DateTimeOffset(2026, 3, 21, 16, 0, 0, TimeSpan.Zero);
+        var completedAt = startedAt.AddMinutes(30);
+        var positions = new Dictionary<string, Position>(StringComparer.OrdinalIgnoreCase)
+        {
+            [symbol] = new(symbol, 10, 40m, 0m, 0m)
+        };
+        var accountSnapshot = new FinancialAccountSnapshot(
+            AccountId: BacktestDefaults.DefaultBrokerageAccountId,
+            DisplayName: "Primary Brokerage",
+            Kind: FinancialAccountKind.Brokerage,
+            Institution: "Simulated Broker",
+            Cash: 750m,
+            MarginBalance: 0m,
+            LongMarketValue: 400m,
+            ShortMarketValue: 0m,
+            Equity: 1_150m,
+            Positions: positions,
+            Rules: new FinancialAccountRules());
+        var snapshot = new PortfolioSnapshot(
+            Timestamp: completedAt,
+            Date: DateOnly.FromDateTime(completedAt.UtcDateTime),
+            Cash: 750m,
+            MarginBalance: 0m,
+            LongMarketValue: 400m,
+            ShortMarketValue: 0m,
+            TotalEquity: 1_150m,
+            DailyReturn: 0m,
+            Positions: positions,
+            Accounts: new Dictionary<string, FinancialAccountSnapshot>(StringComparer.OrdinalIgnoreCase)
+            {
+                [accountSnapshot.AccountId] = accountSnapshot
+            },
+            DayCashFlows: []);
+
+        var request = new BacktestRequest(
+            From: new DateOnly(2026, 3, 20),
+            To: new DateOnly(2026, 3, 21),
+            Symbols: [symbol],
+            InitialCash: 1_000m,
+            DataRoot: "./data");
+        var metrics = new BacktestMetrics(
+            InitialCapital: 1_000m,
+            FinalEquity: 1_150m,
+            GrossPnl: 150m,
+            NetPnl: 150m,
+            TotalReturn: 0.15m,
+            AnnualizedReturn: 0.15m,
+            SharpeRatio: 1.0d,
+            SortinoRatio: 1.0d,
+            CalmarRatio: 1.0d,
+            MaxDrawdown: 0m,
+            MaxDrawdownPercent: 0m,
+            MaxDrawdownRecoveryDays: 0,
+            ProfitFactor: 1d,
+            WinRate: 1d,
+            TotalTrades: 1,
+            WinningTrades: 1,
+            LosingTrades: 0,
+            TotalCommissions: 0m,
+            TotalMarginInterest: 0m,
+            TotalShortRebates: 0m,
+            Xirr: 0d,
+            SymbolAttribution: new Dictionary<string, SymbolAttribution>());
+
+        var ledger = new global::Meridian.Ledger.Ledger();
+        PostBalancedEntry(ledger, startedAt, "Initial capital",
+        [
+            (LedgerAccounts.Cash, 1_000m, 0m),
+            (LedgerAccounts.CapitalAccount, 0m, 1_000m)
+        ]);
+        PostBalancedEntry(ledger, completedAt, $"Buy {symbol}",
+        [
+            (LedgerAccounts.Securities(symbol), 400m, 0m),
+            (LedgerAccounts.Cash, 0m, 400m)
+        ]);
+
+        return new BacktestResult(
+            Request: request,
+            Universe: new HashSet<string>([symbol], StringComparer.OrdinalIgnoreCase),
+            Snapshots: [snapshot],
+            CashFlows: [],
+            Fills: [],
+            Metrics: metrics,
+            Ledger: ledger,
+            ElapsedTime: TimeSpan.FromMinutes(30),
+            TotalEventsProcessed: 100);
+    }
+
+    private static ReconciliationRunDetail BuildReconciliationDetail(
+        string reconciliationRunId,
+        string runId,
+        DateTimeOffset createdAt,
+        int matchCount,
+        int breakCount)
+    {
+        var matches = Enumerable.Range(0, matchCount)
+            .Select(index => new ReconciliationMatchDto(
+                CheckId: $"match-{index + 1}",
+                Label: $"Match {index + 1}",
+                ExpectedSource: ReconciliationSourceKind.Portfolio,
+                ActualSource: ReconciliationSourceKind.Ledger,
+                ExpectedAmount: 100m + index,
+                ActualAmount: 100m + index,
+                Variance: 0m,
+                ExpectedAsOf: createdAt,
+                ActualAsOf: createdAt))
+            .ToArray();
+
+        var breaks = Enumerable.Range(0, breakCount)
+            .Select(index => new ReconciliationBreakDto(
+                CheckId: $"break-{index + 1}",
+                Label: $"Break {index + 1}",
+                Category: ReconciliationBreakCategory.AmountMismatch,
+                Status: ReconciliationBreakStatus.Open,
+                MissingSource: ReconciliationSourceKind.Ledger,
+                ExpectedAmount: 100m + index,
+                ActualAmount: 95m + index,
+                Variance: 5m,
+                Reason: "Seeded mismatch for history coverage",
+                ExpectedAsOf: createdAt,
+                ActualAsOf: createdAt))
+            .ToArray();
+
+        var summary = new ReconciliationRunSummary(
+            ReconciliationRunId: reconciliationRunId,
+            RunId: runId,
+            CreatedAt: createdAt,
+            PortfolioAsOf: createdAt,
+            LedgerAsOf: createdAt,
+            MatchCount: matches.Length,
+            BreakCount: breaks.Length,
+            OpenBreakCount: breaks.Length,
+            HasTimingDrift: false,
+            AmountTolerance: 0.01m,
+            MaxAsOfDriftMinutes: 5);
+
+        return new ReconciliationRunDetail(summary, matches, breaks);
+    }
+
+    private static global::Meridian.Ledger.Ledger CreateLedger()
+    {
+        var ledger = new global::Meridian.Ledger.Ledger();
+        PostBalancedEntry(ledger, new DateTimeOffset(2026, 3, 21, 16, 0, 0, TimeSpan.Zero), "Initial capital",
+        [
+            (LedgerAccounts.Cash, 1_000m, 0m),
+            (LedgerAccounts.CapitalAccount, 0m, 1_000m)
+        ]);
+        PostBalancedEntry(ledger, new DateTimeOffset(2026, 3, 21, 16, 10, 0, TimeSpan.Zero), "Buy AAPL",
+        [
+            (LedgerAccounts.Securities("AAPL"), 400m, 0m),
+            (LedgerAccounts.Cash, 0m, 400m)
+        ]);
+        PostBalancedEntry(ledger, new DateTimeOffset(2026, 3, 21, 16, 20, 0, TimeSpan.Zero), "Open TSLA short",
+        [
+            (LedgerAccounts.Cash, 150m, 0m),
+            (LedgerAccounts.ShortSecuritiesPayable("TSLA"), 0m, 150m)
+        ]);
+        return ledger;
+    }
+
+    private static global::Meridian.Ledger.Ledger CreateMismatchedLedger()
+    {
+        var ledger = new global::Meridian.Ledger.Ledger();
+        PostBalancedEntry(ledger, new DateTimeOffset(2026, 3, 21, 17, 0, 0, TimeSpan.Zero), "Initial capital",
+        [
+            (LedgerAccounts.Cash, 1_000m, 0m),
+            (LedgerAccounts.CapitalAccount, 0m, 1_000m)
+        ]);
+        PostBalancedEntry(ledger, new DateTimeOffset(2026, 3, 21, 17, 10, 0, 0, TimeSpan.Zero), "Buy AAPL",
+        [
+            (LedgerAccounts.Securities("AAPL"), 350m, 0m),
+            (LedgerAccounts.Cash, 0m, 350m)
+        ]);
+        return ledger;
+    }
+
+    private static void PostBalancedEntry(
+        global::Meridian.Ledger.Ledger ledger,
+        DateTimeOffset timestamp,
+        string description,
+        IReadOnlyList<(LedgerAccount Account, decimal Debit, decimal Credit)> lines)
+    {
+        var journalId = Guid.NewGuid();
+        var ledgerLines = lines
+            .Select(line => new LedgerEntry(
+                Guid.NewGuid(),
+                journalId,
+                timestamp,
+                line.Account,
+                line.Debit,
+                line.Credit,
+                description))
+            .ToArray();
+        ledger.Post(new JournalEntry(journalId, timestamp, description, ledgerLines));
+    }
+
+    private sealed class StubSecurityReferenceLookup : ISecurityReferenceLookup
+    {
+        private readonly Dictionary<string, WorkstationSecurityReference> _references = new(StringComparer.OrdinalIgnoreCase);
+
+        public void Register(string symbol, WorkstationSecurityReference reference)
+        {
+            _references[symbol] = reference;
+        }
+
+        public Task<WorkstationSecurityReference?> GetBySymbolAsync(string symbol, CancellationToken ct = default)
+        {
+            _references.TryGetValue(symbol, out var reference);
+            return Task.FromResult<WorkstationSecurityReference?>(reference);
+        }
+    }
+}

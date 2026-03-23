@@ -17,6 +17,7 @@
     <ProjectReference Include="..\Meridian.Execution\Meridian.Execution.csproj" />
     <ProjectReference Include="..\Meridian.Execution.Sdk\Meridian.Execution.Sdk.csproj" />
     <ProjectReference Include="..\Meridian.FSharp\Meridian.FSharp.fsproj" />
+    <ProjectReference Include="..\Meridian.FSharp.Ledger\Meridian.FSharp.Ledger.fsproj" />
     <ProjectReference Include="..\Meridian.FSharp.Trading\Meridian.FSharp.Trading.fsproj" />
     <ProjectReference Include="..\Meridian.Infrastructure\Meridian.Infrastructure.csproj" />
   </ItemGroup>

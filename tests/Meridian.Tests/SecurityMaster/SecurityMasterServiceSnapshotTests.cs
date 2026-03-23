@@ -60,17 +60,7 @@ public sealed class SecurityMasterServiceSnapshotTests
             "create"));
 
         await snapshotStore.Received(1).SaveAsync(
-            Arg.Is<SecuritySnapshotRecord>(snapshot =>
-                snapshot.SecurityId == securityId &&
-                snapshot.Version == 1 &&
-                snapshot.Payload.TryGetProperty("classification", out var classification) &&
-                classification.TryGetProperty("assetClass", out var assetClass) &&
-                string.Equals(assetClass.GetString(), "CashEquivalent", StringComparison.Ordinal) &&
-                snapshot.Payload.TryGetProperty("economicTerms", out var economicTerms) &&
-                economicTerms.TryGetProperty("schemaVersion", out var schemaVersion) &&
-                schemaVersion.GetInt32() == 2 &&
-                snapshot.Payload.TryGetProperty("legacyAssetClass", out var legacyAssetClass) &&
-                string.Equals(legacyAssetClass.GetString(), "Deposit", StringComparison.Ordinal)),
+            Arg.Is<SecuritySnapshotRecord>(snapshot => MatchesCanonicalEconomicSnapshot(snapshot, securityId)),
             Arg.Any<CancellationToken>());
     }
 
@@ -200,4 +190,29 @@ public sealed class SecurityMasterServiceSnapshotTests
                 new SecurityIdentifierDto(SecurityIdentifierKind.Ticker, "ACME", true, DateTimeOffset.UtcNow.AddDays(-1), null, null)
             },
             Array.Empty<SecurityAliasDto>());
+
+    private static bool MatchesCanonicalEconomicSnapshot(SecuritySnapshotRecord snapshot, Guid securityId)
+    {
+        if (snapshot.SecurityId != securityId || snapshot.Version != 1)
+        {
+            return false;
+        }
+
+        if (!snapshot.Payload.TryGetProperty("classification", out var classification) ||
+            !classification.TryGetProperty("assetClass", out var assetClass) ||
+            !string.Equals(assetClass.GetString(), "CashEquivalent", StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        if (!snapshot.Payload.TryGetProperty("economicTerms", out var economicTerms) ||
+            !economicTerms.TryGetProperty("schemaVersion", out var schemaVersion) ||
+            schemaVersion.GetInt32() != 2)
+        {
+            return false;
+        }
+
+        return snapshot.Payload.TryGetProperty("legacyAssetClass", out var legacyAssetClass) &&
+               string.Equals(legacyAssetClass.GetString(), "Deposit", StringComparison.Ordinal);
+    }
 }
