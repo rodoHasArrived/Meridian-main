@@ -128,6 +128,18 @@ digraph EventPipelineSequence {
 
     CHANNEL_STATS [shape=note, fillcolor="#ddd6fe",
                    label="Metrics:\n• Channel depth\n• Events/second\n• Drop count\n• Dedup hit rate"];
+
+    // Dual-path routing from channel
+    CHANNEL -> HOT_PATH    [label="hot lane",  fontsize=8];
+    CHANNEL -> SLOW_PATH   [label="slow lane", fontsize=8];
+
+    // Durable path: validation + WAL + dedup into pipeline reader
+    SLOW_PATH -> DEDUP          [label="dedup check", fontsize=8];
+    DEDUP     -> PIPELINE_READER[label="batched read", fontsize=8];
+
+    // Observability: drops and channel metrics
+    CHANNEL -> DROPPED_AUDIT [style=dashed, label="on drop",   fontsize=8];
+    CHANNEL -> CHANNEL_STATS [style=dashed, label="metrics",   fontsize=8];
   }
 
   // Phase 6: Composite Publisher
