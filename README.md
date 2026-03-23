@@ -642,6 +642,7 @@ Use these documents together when planning or implementing new work:
 │   │   └── wpf-implementation-notes.md
 │   ├── diagrams
 │   │   ├── README.md
+│   │   ├── backtesting-engine.dot
 │   │   ├── c4-level1-context.dot
 │   │   ├── c4-level1-context.png
 │   │   ├── c4-level1-context.svg
@@ -657,12 +658,16 @@ Use these documents together when planning or implementing new work:
 │   │   ├── data-flow.dot
 │   │   ├── data-flow.png
 │   │   ├── data-flow.svg
+│   │   ├── data-quality-monitoring.dot
 │   │   ├── deployment-options.dot
 │   │   ├── deployment-options.png
 │   │   ├── deployment-options.svg
+│   │   ├── domain-event-model.dot
 │   │   ├── event-pipeline-sequence.dot
 │   │   ├── event-pipeline-sequence.png
 │   │   ├── event-pipeline-sequence.svg
+│   │   ├── execution-layer.dot
+│   │   ├── fsharp-domain.dot
 │   │   ├── onboarding-flow.dot
 │   │   ├── onboarding-flow.png
 │   │   ├── onboarding-flow.svg
@@ -678,6 +683,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── storage-architecture.dot
 │   │   ├── storage-architecture.png
 │   │   ├── storage-architecture.svg
+│   │   ├── strategy-lifecycle.dot
 │   │   ├── ui-implementation-flow.dot
 │   │   ├── ui-implementation-flow.svg
 │   │   ├── ui-navigation-map.dot
@@ -2663,6 +2669,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-368 directories, 2259 files
+368 directories, 2265 files
 ```
 <!-- readme-tree end -->
