@@ -2,7 +2,7 @@
 
 **Status:** Active  
 **Owner:** Core Team  
-**Reviewed:** 2026-03-15
+**Reviewed:** 2026-03-23
 
 This folder contains architecture diagrams for the Meridian system, updated to reflect the current monolithic runtime, UI options, and provider list. It is the single home for all visual assets:
 
