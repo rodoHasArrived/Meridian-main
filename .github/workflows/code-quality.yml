@@ -173,7 +173,7 @@ jobs:
         id: ai-quality
         if: always() && steps.analyze.outputs.has_issues == '1'
         continue-on-error: true
-        uses: actions/ai-inference@v1
+        uses: actions/ai-inference@v2
         with:
           model: gpt-4o-mini
           max-tokens: 1500
