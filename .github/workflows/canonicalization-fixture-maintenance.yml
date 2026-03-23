@@ -24,7 +24,7 @@ jobs:
         cat canonicalization-drift-report.md >> $GITHUB_STEP_SUMMARY
 
     - name: Upload maintenance report
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: canonicalization-drift-report
         path: canonicalization-drift-report.md

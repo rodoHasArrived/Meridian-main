@@ -197,7 +197,7 @@ jobs:
 
       - name: Upload ticker data artifact
         if: always() && steps.find-output.outputs.output_dir != ''
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ticker-data-${{ github.run_number }}-${{ github.sha }}
           path: ${{ steps.find-output.outputs.output_dir }}/
@@ -206,7 +206,7 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ticker-test-results-${{ github.run_number }}
           path: ./TestResults/

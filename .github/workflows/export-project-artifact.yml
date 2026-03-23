@@ -54,7 +54,7 @@ jobs:
           zip -r "${{ steps.metadata.outputs.base_name }}.zip" . -x '.git/*'
 
       - name: Upload exported project artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: project-export-${{ github.run_number }}-${{ github.sha }}
           path: |

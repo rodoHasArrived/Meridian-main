@@ -99,7 +99,7 @@ jobs:
             --blame-hang-timeout 60s
 
       - name: Upload test results on failure
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: test-results-Linux
@@ -180,7 +180,7 @@ jobs:
             --blame-hang-timeout 60s
 
       - name: Upload test results on failure
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: test-results-${{ matrix.os_name }}

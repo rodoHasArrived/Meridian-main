@@ -529,7 +529,7 @@ jobs:
 
       - name: Upload docs validation reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: docs-validation-reports
           path: .artifacts/
@@ -830,7 +830,7 @@ jobs:
 
       - name: Upload generated documentation snapshot
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: docs-generated-snapshot
           path: |
@@ -863,7 +863,7 @@ jobs:
           steps.changes.outputs.has_changes == 'true' &&
           github.event_name == 'workflow_dispatch' &&
           github.event.inputs.dry_run == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: docs-automation-diff
           path: docs-automation.patch
@@ -1194,7 +1194,7 @@ jobs:
           fi
 
       - name: Upload scan results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: todo-scan-results
           path: |
@@ -1712,7 +1712,7 @@ jobs:
           fi
 
       - name: Upload sync report artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ai-docs-sync-report
           path: docs/generated/ai-docs-sync-report.md

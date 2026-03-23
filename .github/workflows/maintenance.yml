@@ -62,7 +62,7 @@ jobs:
           PY
 
       - name: Upload route artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: maintenance-route
           path: .ai/maintenance-route.json
@@ -99,7 +99,7 @@ jobs:
 
       - name: Upload maintenance artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: maintenance-light
           path: |
@@ -146,7 +146,7 @@ jobs:
 
       - name: Upload maintenance artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: maintenance-full
           path: |
@@ -190,7 +190,7 @@ jobs:
           python3 build/scripts/docs/ai-docs-maintenance.py sync-report --output .ai/docs-sync-report.md
 
       - name: Upload docs artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: docs-drift
           path: .ai/docs-sync-report.md
