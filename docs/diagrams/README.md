@@ -2,7 +2,7 @@
 
 **Status:** Active  
 **Owner:** Core Team  
-**Reviewed:** 2026-03-15
+**Reviewed:** 2026-03-23
 
 This folder contains architecture diagrams for the Meridian system, updated to reflect the current monolithic runtime, UI options, and provider list. It is the single home for all visual assets:
 
@@ -29,6 +29,12 @@ This folder contains architecture diagrams for the Meridian system, updated to r
 | **Project Dependencies** | Project layer dependencies and test coverage | `project-dependencies.dot` |
 | **UI Navigation Map** | Auto-generated WPF sidebar/workspace navigation map from source code without hand-maintained drift | `ui-navigation-map.dot` |
 | **UI Implementation Flow** | Auto-generated WPF shell/DI/navigation flow from source code without hand-maintained drift | `ui-implementation-flow.dot` |
+| **Backtesting Engine** | Tick-level backtest replay: universe discovery, fill models, portfolio simulation, and metrics | `backtesting-engine.dot` |
+| **Strategy Lifecycle** | Strategy state machine, registration, promotion from backtest to paper to live | `strategy-lifecycle.dot` |
+| **Execution Layer** | Paper trading gateway, order lifecycle state machine, and position tracking | `execution-layer.dot` |
+| **Domain Event Model** | MarketEvent hierarchy: all payload types, event type enum, and tier classification | `domain-event-model.dot` |
+| **F# Domain Library** | Railway-oriented validation, type-safe calculations, and C# interop layer | `fsharp-domain.dot` |
+| **Data Quality & Monitoring** | Quality scoring, SLA enforcement, outlier detection, and observability stack | `data-quality-monitoring.dot` |
 
 ---
 
@@ -84,11 +90,12 @@ Details the provider abstraction:
 
 - **Core Interfaces**: IDataSource, IRealtimeDataSource, IHistoricalDataSource
 - **Legacy Interfaces**: IMarketDataClient, IHistoricalDataProvider
-- **Streaming Providers (5)**: Interactive Brokers, Alpaca, NYSE, Polygon, StockSharp
-- **Historical Providers (10+)**: Alpaca, Alpha Vantage, Finnhub, Interactive Brokers, Nasdaq Data Link, Polygon, StockSharp, Stooq, Tiingo, Yahoo Finance
-- **Resilience**: EnhancedIBConnectionManager, WebSocketResiliencePolicy, AutomaticFailoverManager, CircuitBreaker, RateLimiter
-- **Symbol Resolution**: OpenFIGI, SymbolMapper, ContractFactory
-- **CompositeHistoricalDataProvider**: Automatic failover, rate-limit rotation, priority selection
+- **Streaming Providers (6)**: Interactive Brokers, Alpaca, NYSE, Polygon, StockSharp, SyntheticMarketDataClient (dev)
+- **Historical Providers (13)**: Alpaca, Alpha Vantage, Finnhub, FRED, Interactive Brokers, Nasdaq Data Link, Polygon, StockSharp, Stooq, SyntheticHistoricalDataProvider (dev), Tiingo, Twelve Data, Yahoo Finance
+- **Symbol Search (5)**: Alpaca, Finnhub, OpenFIGI, Polygon, StockSharp
+- **Resilience**: EnhancedIBConnectionManager, WebSocketResiliencePolicy, FailoverAwareMarketDataClient (streaming), CircuitBreaker, RateLimiter
+- **Symbol Resolution**: OpenFIGI (FIGI/CUSIP/SEDOL/ISIN), SymbolMapper, ContractFactory (IB)
+- **CompositeHistoricalDataProvider**: Automatic failover, rate-limit rotation, priority-based selection (5–99)
 
 ### Storage Architecture
 
@@ -101,6 +108,9 @@ Details the archival-first storage pipeline:
 - **Tiered Storage**: Hot (SSD, 0-7d) → Warm (HDD, 7-30d) → Cold (S3/Glacier, 30d+)
 - **Export Formats**: Python/Pandas, R Statistics, QuantConnect Lean, Excel, PostgreSQL
 - **Quality Assessment**: Multi-dimensional scoring, outlier detection (4σ), A+ to F grading
+- **Security Master**: SecurityMasterEventStore (event-sourced), SnapshotStore, ProjectionCache (FIGI/ISIN/CUSIP lookups)
+- **Portable Data Packager**: ZIP (JSONL + Parquet + manifest), SQL DDL/COPY scripts, QuantConnect Lean native format
+- **Storage Catalog**: StorageCatalogService — symbol×date×type file inventory, gap identification, data lineage
 
 ### Event Pipeline Sequence
 
@@ -110,10 +120,11 @@ Shows the detailed event processing sequence:
 2. **Provider Client** → Normalize to domain updates
 3. **Domain Collectors** → Process trades/quotes/depth, emit domain events
 4. **F# Validation** → Railway-oriented type-safe validation
-5. **Event Pipeline** → Bounded channel async write/read
+4b. **Schema Upcasting (optional)** → SchemaUpcasterRegistry for legacy event format migration
+5. **Event Pipeline** → BoundedChannel (100K capacity) with DualPathEventPipeline (hot fast path + slow durable path), PersistentDedupLedger, DroppedEventAuditTrail
 6. **Composite Publisher** → Fanout to configured sinks
 7. **Storage Path** → WAL journal → JSONL persist
-8. **Observability** → Metrics, traces, status endpoints
+8. **Observability** → Prometheus metrics, OpenTelemetry traces, status endpoints
 
 ### Resilience Patterns
 
@@ -182,6 +193,74 @@ Shows the project layer dependencies:
 - **Layer 5 (Entry Point)**: Meridian main app
 - **Tests**: 140 main tests, 4 F# tests, 19 WPF tests, 50 UI tests
 - **Benchmarks**: BenchmarkDotNet performance tests
+
+### Backtesting Engine
+
+Details the tick-level strategy backtesting system:
+
+1. **Universe Discovery** — Scan JSONL data root to enumerate available symbols and validate date coverage
+2. **Portfolio & Strategy Setup** — SimulatedPortfolio, StrategyPluginLoader, commission models, ledger
+3. **Tick Replay Engine** — MultiSymbolMergeEnumerator: async priority-queue merge of per-symbol JSONL streams into a global chronological sequence
+4. **Strategy Dispatch** — BacktestContext routes events to IStrategyLifecycle callbacks: OnBarClosed, OnTrade, OnQuote, OnDepth, OnAssetEvent
+5. **Fill Models** — OrderBookFillModel (L2-depth slippage) and BarMidpointFillModel (simpler `(H+L)/2` fills)
+6. **Day-End Processing** — Portfolio snapshots, mark-to-market P&L, corporate action application, Day order expiry
+7. **Performance Metrics** — BacktestMetricsEngine: XIRR, Sharpe, Sortino, max drawdown, win rate, profit factor
+
+### Strategy Lifecycle
+
+Shows the full strategy lifecycle management:
+
+- **SDK** — IStrategyLifecycle interface with Initialize/OnBar.../Finalize callbacks and IBacktestContext injection
+- **Run Types** — RunType enum: Backtest, Paper, Live
+- **State Machine** — StrategyStatus: Initialized → Running → Paused → Stopped | Error, with valid transition edges
+- **Lifecycle Manager** — StrategyLifecycleManager: thread-safe registration, activation, pause, stop, error isolation
+- **Portfolio Tracking** — PortfolioReadService, LedgerReadService, StrategyRunReadService, EOD snapshots
+- **Promotion Path** — BacktestToLivePromoter with risk validation gate (Sharpe, drawdown, trade count thresholds)
+
+### Execution Layer
+
+Shows the order execution architecture:
+
+- **IOrderGateway** — SubmitAsync, CancelAsync, QueryAsync, GetPositionsAsync
+- **PaperTradingGateway** — Simulated fills: Market at notional, Limit if crossed, Stop variants; no partial fills in paper mode
+- **Order Types & TIF** — Market, Limit, StopMarket, StopLimit × Day, GTC, IOC, FOK
+- **Order State Machine** — Pending → Acknowledged → Filled/PartiallyFilled/Cancelled/Rejected
+- **OMS** — OrderManagementSystem + OrderLifecycleManager: thread-safe registry, timeout handling, audit trail
+- **Notification** — EventPipelinePolicy.CompletionQueue: terminal status events pushed async to strategy
+
+### Domain Event Model
+
+Shows the complete event model:
+
+- **MarketEvent** — Sealed record envelope with Timestamp, Symbol, Type, Payload, Sequence, Source, SchemaVersion, CanonicalSymbol, CanonicalVenue; 7 static factory methods
+- **MarketEventType** — 20+ variants: real-time (Trade, BboQuote, L2Snapshot, etc.), historical (HistoricalBar, Dividend), options (OptionQuote, Greeks), L3 order book (OrderAdd, OrderModify, etc.)
+- **MarketEventPayload** — Sealed union: TradePayload, BboQuotePayload, LobSnapshotPayload, HistoricalBarPayload, OrderFlowStatsPayload, IntegrityEventPayload, HeartbeatPayload
+- **MarketEventTier** — Raw → Canonicalized → Enriched processing stages
+- **Supporting Enums** — AggressorSide, IntegritySeverity, OrderBookSide, CanonicalTradeCondition
+
+### F# Domain Library
+
+Shows the F# domain library architecture:
+
+- **ValidationResult<'T>** — Discriminated union Ok | Error, railway-oriented composition with bind/map
+- **Built-In Validators** — TradeValidator, QuoteValidator, DepthValidator with 5+ rules each
+- **Pipeline Composition** — Error accumulation (all errors collected, not short-circuit)
+- **Market Calculations** — Pure functions: spread (abs + bps), VWAP (rolling), order flow imbalance, drawdown, Sharpe ratio
+- **FSharp.Trading** — Position P&L, XIRR (Newton-Raphson), slippage estimation
+- **FSharp.Ledger** — Fill aggregation, cost basis, realized P&L, discriminated union for ledger entries
+- **C# Interop** — Interop.fs: FSharpEventValidator C# class wrapping all F# validation; only boundary where DUs are hidden
+
+### Data Quality & Monitoring
+
+Shows data quality scoring and the observability stack:
+
+- **5-Dimension Scoring** — Completeness (30%), Accuracy (25%), Timeliness (20%), Consistency (15%), Validity (10%)
+- **Grades** — A+ (95-100%) to F (<60%) with automatic alert on grade regression
+- **Outlier Detection** — 4σ Z-score for price and volume, rolling calibration per symbol
+- **Gap & Sequence Detection** — Missing interval detection, out-of-order and duplicate event flagging, IntegrityEvent emission
+- **SLA Enforcement** — Per-symbol/provider targets: latency (P99 200ms), availability (99.9%), quality grade (min B)
+- **Retention & Catalog** — RetentionComplianceReporter (policy audit), StorageCatalogService (symbol×date×type inventory)
+- **Observability** — Prometheus metrics (12 counters/gauges), Grafana dashboards, OpenTelemetry traces, `/health` + `/metrics` HTTP endpoints
 
 ### UI Navigation Map _(auto-generated)_
 
@@ -350,4 +429,4 @@ See [uml/README.md](uml/README.md) for the full inventory and rendering instruct
 
 _Graphviz diagrams generated with DOT language. UML diagrams generated with PlantUML._
 
-_Last Updated: 2026-03-15_
+_Last Updated: 2026-03-23_

@@ -1,9 +1,10 @@
 // Storage Architecture Diagram
-// Meridian v1.6.1
-// Last Updated: 2026-02-21
+// Meridian v1.7.x
+// Last Updated: 2026-03-23
 //
 // This diagram shows the archival-first storage pipeline with WAL,
-// compression profiles, tiered storage, and export capabilities.
+// compression profiles, tiered storage, export capabilities, security master
+// event store, portable data packager, and storage catalog.
 //
 // Generate: dot -Tpng storage-architecture.dot -o storage-architecture.png
 //           dot -Tsvg storage-architecture.dot -o storage-architecture.svg
@@ -16,7 +17,7 @@ digraph StorageArchitecture {
 
   // Title
   labelloc="t";
-  label="Meridian - Storage Architecture\nArchival-First Pipeline | v1.6.1";
+  label="Meridian - Storage Architecture\nArchival-First Pipeline | v1.7.x";
 
   // Input Events
   subgraph cluster_input {
@@ -266,4 +267,78 @@ digraph StorageArchitecture {
 
   // Replay capability
   JSONL -> REPLAYER [style=dashed, color="#2c7a7b"];
+
+  // Security Master Event Store (Event Sourcing for Symbol Master Data)
+  subgraph cluster_security_master {
+    label="Security Master (Event-Sourced Symbol Data)";
+    color="#2b6cb0";
+    style="rounded";
+    bgcolor="#dbeafe";
+
+    SM_EVENTS [shape=cylinder, fillcolor="#93c5fd",
+               label="SecurityMasterEventStore\n\nEvent-sourced symbol master\nAppend-only event log\nCommands → Events\nSymbol attributes history"];
+
+    SM_SNAPSHOT [fillcolor="#bfdbfe",
+                 label="SecurityMasterSnapshotStore\n\nMaterialized symbol state\nPoint-in-time snapshots\nFast read access\nAuto-updated from events"];
+
+    SM_CACHE [fillcolor="#bfdbfe",
+              label="SecurityMasterProjectionCache\n\nIn-memory projections\nFIGI → Ticker mapping\nExchange → Symbol index\nISIN / CUSIP / SEDOL lookup"];
+  }
+
+  // Portable Data Packager
+  subgraph cluster_packager {
+    label="Portable Data Packager (PortableDataPackager)";
+    color="#38a169";
+    style="rounded";
+    bgcolor="#c6f6d5";
+
+    PACKAGER [fillcolor="#9ae6b4",
+              label="PortableDataPackager\n\nMulti-format data packaging\nSymbol + date range selection\nValidation before packaging\nManifest + checksum included"];
+
+    subgraph cluster_pack_formats {
+      label="Package Export Formats";
+      style="dashed";
+      color="#047857";
+
+      PACK_ZIP [shape=box, fillcolor="#bbf7d0",
+                label="ZIP Package\n\nJSONL + Parquet files\nManifest.json included\nSHA256 checksums\nSelf-validating archive"];
+
+      PACK_SQL [shape=box, fillcolor="#bbf7d0",
+                label="SQL Export\n\nDDL schema scripts\nINSERT or COPY statements\nTimescaleDB hypertable hints\nPostgreSQL-ready"];
+
+      PACK_LEAN [shape=box, fillcolor="#bbf7d0",
+                 label="QuantConnect Lean\n\nLean-native ZIP format\nSymbol resolution mapping\nResolution bucketing\nAlgorithm-ready data"];
+    }
+  }
+
+  // Storage Catalog
+  subgraph cluster_catalog {
+    label="Storage Catalog (StorageCatalogService)";
+    color="#718096";
+    style="rounded";
+    bgcolor="#e2e8f0";
+
+    CATALOG [fillcolor="#cbd5e0",
+             label="StorageCatalogService\n\nFile discovery and indexing\nSymbol × date × type inventory\nSize and record count tracking\nBackfill gap identification\nData lineage tracking"];
+
+    CATALOG_IDX [shape=note, fillcolor="#e2e8f0",
+                 label="Catalog Index:\n• Available symbols list\n• Date coverage per symbol\n• Event type availability\n• Storage tier per file\n• Last updated timestamp"];
+  }
+
+  // Additional connections
+  SM_EVENTS -> SM_SNAPSHOT [color="#2b6cb0", label="materialize"];
+  SM_SNAPSHOT -> SM_CACHE [color="#2b6cb0", label="project"];
+
+  JSONL -> PACKAGER [color="#38a169", label="source data"];
+  PARQUET -> PACKAGER [color="#38a169"];
+  PACKAGER -> PACK_ZIP [style=dashed];
+  PACKAGER -> PACK_SQL [style=dashed];
+  PACKAGER -> PACK_LEAN [style=dashed];
+
+  JSONL -> CATALOG [color="#718096", style=dashed, label="index"];
+  PARQUET -> CATALOG [color="#718096", style=dashed];
+  HOT_TIER -> CATALOG [color="#718096", style=dashed];
+  WARM_TIER -> CATALOG [color="#718096", style=dashed];
+  COLD_TIER -> CATALOG [color="#718096", style=dashed];
+  CATALOG -> CATALOG_IDX [style=dashed];
 }

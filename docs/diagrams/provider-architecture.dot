@@ -1,9 +1,9 @@
 // Provider Architecture Diagram
-// Meridian v1.6.1
-// Last Updated: 2026-02-21
+// Meridian v1.7.x
+// Last Updated: 2026-03-23
 //
 // This diagram shows the provider abstraction layer and all implemented
-// data providers for both real-time streaming and historical backfill.
+// data providers for streaming, historical backfill, and symbol search.
 //
 // Generate: dot -Tpng provider-architecture.dot -o provider-architecture.png
 //           dot -Tsvg provider-architecture.dot -o provider-architecture.svg
@@ -16,7 +16,7 @@ digraph ProviderArchitecture {
 
   // Title
   labelloc="t";
-  label="Meridian - Provider Architecture\nUnified Data Source Abstraction | v1.6.1";
+  label="Meridian - Provider Architecture\nUnified Data Source Abstraction | v1.7.x";
 
   // Provider Interfaces
   subgraph cluster_interfaces {
@@ -84,12 +84,15 @@ digraph ProviderArchitecture {
 
       POL_CLIENT [fillcolor="#bfdbfe",
                   label="PolygonMarketDataClient\n[Production]\n\nPolygon.io streaming\nTrades, quotes, websocket"];
+
+      SYNTH_CLIENT [fillcolor="#e0e7ff",
+                    label="SyntheticMarketDataClient\n[Development]\n\nDeterministic fake data\nOffline development\nSymbol search support\nReproducible test data"];
     }
   }
 
   // Historical Providers
   subgraph cluster_historical {
-    label="Historical Data Providers (10 Implemented)";
+    label="Historical Data Providers (12 Production + 1 Development)";
     color="#2c7a7b";
     style="rounded";
     bgcolor="#d1fae5";
@@ -114,7 +117,7 @@ digraph ProviderArchitecture {
     }
 
     subgraph cluster_hist_tier3 {
-      label="Tier 3 - Fallback (Priority 30+)";
+      label="Tier 3 - Fallback (Priority 25+)";
       style="dashed";
       color="#047857";
 
@@ -123,6 +126,9 @@ digraph ProviderArchitecture {
       FINNHUB_HIST [fillcolor="#bbf7d0", label="Finnhub\n[Priority 35]\n\nFundamentals\nEarnings, News"];
       AV_HIST [fillcolor="#bbf7d0", label="Alpha Vantage\n[Priority 40]\n\nIntraday data\n5min to monthly"];
       SS_HIST [fillcolor="#bbf7d0", label="StockSharp\n[Priority 35]\n\nMulti-exchange\nGlobal markets"];
+      TWELVE_HIST [fillcolor="#bbf7d0", label="Twelve Data\n[Priority 38]\n\nGlobal equities\n80+ exchanges\nForex, ETFs, crypto"];
+      FRED_HIST [fillcolor="#bbf7d0", label="FRED (St Louis Fed)\n[Priority 45]\n\nEconomic time series\nMapped to synthetic bars\nFree, no limits"];
+      SYNTH_HIST [fillcolor="#e0e7ff", label="SyntheticHistoricalDataProvider\n[Development]\n\nDeterministic OHLCV bars\nQuotes, trades, auctions\nCorporate action events\nNo API key required"];
     }
 
     // Composite Orchestrator
@@ -156,6 +162,23 @@ digraph ProviderArchitecture {
     }
   }
 
+  // Symbol Search Providers
+  subgraph cluster_symbol_search {
+    label="Symbol Search Providers (5 Implemented)";
+    color="#ed8936";
+    style="rounded";
+    bgcolor="#fffaf0";
+
+    I_SYMBOL_SEARCH [shape=ellipse, fillcolor="#fbd38d",
+                     label="ISymbolSearchProvider\n[Interface]\n\nSearchAsync(query, ct)\nReturns: SymbolSearchResult[]"];
+
+    ALP_SEARCH [fillcolor="#feebc8", label="AlpacaSymbolSearchProvider\n[Production]\n\nUS equities + ETFs\nReal-time status\nAsset class filter"];
+    FINNHUB_SEARCH [fillcolor="#feebc8", label="FinnhubSymbolSearchProvider\n[Production]\n\nGlobal stocks\nExchange filter\nType filter"];
+    POL_SEARCH [fillcolor="#feebc8", label="PolygonSymbolSearchProvider\n[Production]\n\nUS + global tickers\nFull text search\nMarket type filter"];
+    SS_SEARCH [fillcolor="#feebc8", label="StockSharpSymbolSearchProvider\n[Production]\n\n90+ exchange symbols\nMulti-exchange search\nGlobal coverage"];
+    FIGI_SEARCH [fillcolor="#feebc8", label="OpenFigiClient\n[Production]\n\nGlobal FIGI resolution\nFIGI → ticker mapping\nCUSIP/SEDOL/ISIN lookup\nCross-market identification"];
+  }
+
   // Symbol Resolution
   subgraph cluster_symbols {
     label="Symbol Resolution & Mapping";
@@ -163,8 +186,7 @@ digraph ProviderArchitecture {
     style="rounded";
     bgcolor="#c6f6d5";
 
-    FIGI [fillcolor="#9ae6b4", label="OpenFIGI Resolver\n\nGlobal symbol mapping\nFIGI to ticker\nCross-market identification"];
-    MAPPER [fillcolor="#9ae6b4", label="SymbolMapper\n\nProvider-specific formats\nExchange suffixes\nCUSIP/SEDOL/ISIN"];
+    MAPPER [fillcolor="#9ae6b4", label="SymbolMapper\n\nProvider-specific formats\nExchange suffixes\nCUSIP/SEDOL/ISIN normalization"];
     CONTRACT [fillcolor="#9ae6b4", label="ContractFactory\n\nIB contract resolution\nSymbol to contract\nMultiple exchange support"];
   }
 
@@ -176,6 +198,7 @@ digraph ProviderArchitecture {
   I_MARKET -> NYSE_CLIENT [style=dashed];
   I_MARKET -> SS_CLIENT [style=dashed];
   I_MARKET -> POL_CLIENT [style=dashed];
+  I_MARKET -> SYNTH_CLIENT [style=dashed];
 
   I_HIST_PROVIDER -> ALPACA_HIST [style=dashed];
   I_HIST_PROVIDER -> YAHOO_HIST [style=dashed];
@@ -187,36 +210,43 @@ digraph ProviderArchitecture {
   I_HIST_PROVIDER -> AV_HIST [style=dashed];
   I_HIST_PROVIDER -> IB_HIST [style=dashed];
   I_HIST_PROVIDER -> SS_HIST [style=dashed];
+  I_HIST_PROVIDER -> TWELVE_HIST [style=dashed];
+  I_HIST_PROVIDER -> FRED_HIST [style=dashed];
+  I_HIST_PROVIDER -> SYNTH_HIST [style=dashed];
+
+  // Symbol search implementations
+  I_SYMBOL_SEARCH -> ALP_SEARCH [style=dashed];
+  I_SYMBOL_SEARCH -> FINNHUB_SEARCH [style=dashed];
+  I_SYMBOL_SEARCH -> POL_SEARCH [style=dashed];
+  I_SYMBOL_SEARCH -> SS_SEARCH [style=dashed];
+  I_SYMBOL_SEARCH -> FIGI_SEARCH [style=dashed];
 
   // Composite orchestration
   COMPOSITE -> ALPACA_HIST [label="priority 5"];
-  COMPOSITE -> YAHOO_HIST [label="priority 10"];
-  COMPOSITE -> POLYGON_HIST;
-  COMPOSITE -> STOOQ_HIST;
-  COMPOSITE -> TIINGO_HIST;
-  COMPOSITE -> NASDAQ_HIST;
-  COMPOSITE -> FINNHUB_HIST;
-  COMPOSITE -> AV_HIST;
   COMPOSITE -> IB_HIST [label="priority 5"];
-  COMPOSITE -> SS_HIST;
+  COMPOSITE -> YAHOO_HIST [label="priority 10"];
+  COMPOSITE -> POLYGON_HIST [label="priority 15"];
+  COMPOSITE -> STOOQ_HIST [label="priority 20"];
+  COMPOSITE -> TIINGO_HIST [label="priority 25"];
+  COMPOSITE -> NASDAQ_HIST [label="priority 30"];
+  COMPOSITE -> SS_HIST [label="priority 35"];
+  COMPOSITE -> FINNHUB_HIST [label="priority 35"];
+  COMPOSITE -> TWELVE_HIST [label="priority 38"];
+  COMPOSITE -> AV_HIST [label="priority 40"];
+  COMPOSITE -> FRED_HIST [label="priority 45"];
+  COMPOSITE -> SYNTH_HIST [label="priority 99\n(dev only)", style=dashed];
 
   // Resilience connections
   IB_CLIENT -> CONN_MGR [color="#c53030"];
   ALP_CLIENT -> WS_RESILIENCE [color="#c53030"];
   NYSE_CLIENT -> WS_RESILIENCE [color="#c53030"];
-
-  FAILOVER -> COMPOSITE [color="#c53030"];
-  FAILOVER -> IB_CLIENT [style=dashed, color="#c53030"];
-  FAILOVER -> ALP_CLIENT [style=dashed, color="#c53030"];
-
-  MULTI_CONN -> IB_CLIENT [color="#c53030"];
-  MULTI_CONN -> ALP_CLIENT [color="#c53030"];
+  POL_CLIENT -> WS_RESILIENCE [color="#c53030"];
 
   CIRCUIT -> COMPOSITE [style=dashed, color="#c53030"];
   RATE_LIMIT -> COMPOSITE [style=dashed, color="#c53030"];
 
   // Symbol resolution
-  FIGI -> MAPPER [color="#38a169"];
+  FIGI_SEARCH -> MAPPER [color="#38a169"];
   MAPPER -> COMPOSITE [color="#38a169"];
   MAPPER -> IB_CLIENT [color="#38a169"];
   CONTRACT -> IB_CLIENT [color="#38a169"];
@@ -224,6 +254,21 @@ digraph ProviderArchitecture {
   // Capabilities/Registry
   CAPABILITIES -> REGISTRY [style=dashed];
   REGISTRY -> I_DATASOURCE [style=dashed];
+
+  // FailoverAwareMarketDataClient wraps streaming providers
+  subgraph cluster_streaming_failover {
+    label="Streaming Failover Wrapper";
+    color="#c53030";
+    style="dashed";
+    bgcolor="#fff5f5";
+
+    FAILOVER_WRAP [fillcolor="#fecaca",
+                   label="FailoverAwareMarketDataClient\n\nWraps multiple streaming clients\nAutomatic failover on disconnect\nPrimary/secondary priority\nHealth-based selection"];
+  }
+
+  FAILOVER_WRAP -> IB_CLIENT [style=dashed, color="#c53030", label="primary"];
+  FAILOVER_WRAP -> ALP_CLIENT [style=dashed, color="#c53030", label="secondary"];
+  FAILOVER_WRAP -> POL_CLIENT [style=dashed, color="#c53030", label="tertiary"];
 
   // Legend
   subgraph cluster_legend {
@@ -237,6 +282,8 @@ digraph ProviderArchitecture {
     L3 [shape=box, fillcolor="#6ee7b7", label="Tier 2 Historical"];
     L4 [shape=box, fillcolor="#bbf7d0", label="Tier 3 Historical"];
     L5 [shape=box, fillcolor="#fef3c7", label="Orchestrator"];
-    L6 [shape=box, fillcolor="#fecaca", label="Stub/Resilience"];
+    L6 [shape=box, fillcolor="#fecaca", label="Resilience/Failover"];
+    L7 [shape=box, fillcolor="#e0e7ff", label="Development/Synthetic"];
+    L8 [shape=box, fillcolor="#feebc8", label="Symbol Search"];
   }
 }

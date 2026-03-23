@@ -1,0 +1,239 @@
+// Backtesting Engine Diagram
+// Meridian v1.7.x
+// Last Updated: 2026-03-23
+//
+// This diagram shows the backtesting engine architecture: universe discovery,
+// chronological tick replay, fill models, portfolio simulation, and metrics.
+//
+// Generate: dot -Tpng backtesting-engine.dot -o backtesting-engine.png
+//           dot -Tsvg backtesting-engine.dot -o backtesting-engine.svg
+
+digraph BacktestingEngine {
+  rankdir=TB;
+  graph [fontname="Helvetica", fontsize=12, bgcolor="white", compound=true, pad=0.5];
+  node  [fontname="Helvetica", fontsize=10, shape=box, style="rounded,filled"];
+  edge  [fontname="Helvetica", fontsize=9, color="#4a5568"];
+
+  // Title
+  labelloc="t";
+  label="Meridian - Backtesting Engine\nTick-Level Strategy Replay | v1.7.x";
+
+  // Input
+  subgraph cluster_input {
+    label="Backtest Request";
+    color="#805ad5";
+    style="rounded";
+    bgcolor="#faf5ff";
+
+    REQUEST [shape=oval, fillcolor="#ddd6fe",
+             label="BacktestRequest\n\nSymbols universe\nDate range\nInitial capital\nStrategy assembly\nCommission model"];
+
+    CLI [fillcolor="#e9d5ff",
+         label="CLI / REST API\n\n--backfill --strategy\n/api/backtest/run"];
+  }
+
+  // Phase 1: Universe Discovery
+  subgraph cluster_universe {
+    label="1. Universe Discovery";
+    color="#2b6cb0";
+    style="rounded";
+    bgcolor="#dbeafe";
+
+    UNIVERSE [fillcolor="#bfdbfe",
+              label="UniverseDiscovery\n\nScan JSONL data root\nEnumerate available symbols\nDate range validation\nData availability check"];
+
+    DATA_ROOT [shape=cylinder, fillcolor="#93c5fd",
+               label="JSONL Data Root\n\n{root}/{symbol}/{type}/{date}.jsonl\nPer-symbol, per-type files\nOptional .gz compression"];
+  }
+
+  // Phase 2: Portfolio & Strategy Setup
+  subgraph cluster_setup {
+    label="2. Portfolio & Strategy Setup";
+    color="#38a169";
+    style="rounded";
+    bgcolor="#d1fae5";
+
+    SIM_PORT [fillcolor="#6ee7b7",
+              label="SimulatedPortfolio\n\nInitial cash balance\nPosition tracking\nCash flow recording\nAsset event handling"];
+
+    STRATEGY_LOADER [fillcolor="#6ee7b7",
+                     label="StrategyPluginLoader\n\nDynamic assembly load\nIStrategyLifecycle discovery\nInstance creation via DI\nHot-reload support"];
+
+    COMMISSION [fillcolor="#a7f3d0",
+                label="Commission Models\n\nPerShareCommissionModel\n(e.g. $0.005/share)\nZeroCommissionModel\nCustom ICommissionModel"];
+
+    LEDGER [fillcolor="#a7f3d0",
+            label="SimulatedLedger\n\nFill recording\nP&L tracking\nCash reconciliation\nDividend/Split events"];
+  }
+
+  // Phase 3: Tick Replay Engine
+  subgraph cluster_replay {
+    label="3. Tick Replay Engine (Chronological Merge)";
+    color="#c53030";
+    style="rounded";
+    bgcolor="#fee2e2";
+
+    MERGE [fillcolor="#fc8181", fontcolor="white",
+           label="MultiSymbolMergeEnumerator\n\nAsync merge of per-symbol streams\nTimestamp-ordered priority queue\nIAsyncEnumerable<MarketEvent>\nGlobal chronological ordering"];
+
+    REPLAYER [fillcolor="#fecaca",
+              label="JsonlReplayer\n\nPer-symbol JSONL reader\nAuto-decompress .gz files\nLinq filtering by date/type\nBackpressure-aware streaming"];
+
+    CTX [fillcolor="#fecaca",
+         label="BacktestContext\n\nCurrent simulation time\nActive portfolio snapshot\nPending orders queue\nSymbol universe reference\nMarket depth snapshot"];
+  }
+
+  // Phase 4: Strategy Dispatch
+  subgraph cluster_dispatch {
+    label="4. Strategy Event Dispatch";
+    color="#2c7a7b";
+    style="rounded";
+    bgcolor="#e6fffa";
+
+    DISPATCH [fillcolor="#81e6d9",
+              label="BacktestEngine\n(Event Router)\n\nRoute events to strategy\nManage simulation clock\nApply fill model on orders\nDay-end processing"];
+
+    subgraph cluster_callbacks {
+      label="IStrategyLifecycle Callbacks";
+      style="dashed";
+      color="#047857";
+
+      ON_BAR [shape=note, fillcolor="#b2f5ea",
+              label="OnBarClosed(bar)\nOHLCV + volume\nSession close signal"];
+      ON_TRADE [shape=note, fillcolor="#b2f5ea",
+                label="OnTrade(trade)\nTick-level price/size\nAggressor side"];
+      ON_QUOTE [shape=note, fillcolor="#b2f5ea",
+                label="OnQuote(bbo)\nBid/Ask spread\nMid-price updates"];
+      ON_DEPTH [shape=note, fillcolor="#b2f5ea",
+                label="OnDepth(lob)\nL2 order book\nFull depth snapshot"];
+      ON_ASSET [shape=note, fillcolor="#b2f5ea",
+                label="OnAssetEvent(ev)\nDividends, splits\nCorporate actions"];
+    }
+  }
+
+  // Phase 5: Fill Models
+  subgraph cluster_fill {
+    label="5. Fill Models (Order Simulation)";
+    color="#ed8936";
+    style="rounded";
+    bgcolor="#fffaf0";
+
+    FILL_IFACE [shape=ellipse, fillcolor="#fbd38d",
+                label="IFillModel\n[Interface]\n\nSimulateFill(order, context)\nReturns Fill or null"];
+
+    OB_FILL [fillcolor="#feebc8",
+             label="OrderBookFillModel\n\nUses L2 order book\nSlippage from book depth\nLiquidity-constrained fills\nPartial fills supported"];
+
+    BAR_FILL [fillcolor="#feebc8",
+              label="BarMidpointFillModel\n\nFills at bar midpoint\n(High + Low) / 2\nSimpler, faster simulation\nNo partial fills"];
+  }
+
+  // Phase 6: Day-End Processing
+  subgraph cluster_dayend {
+    label="6. Day-End Processing";
+    color="#805ad5";
+    style="rounded";
+    bgcolor="#ede9fe";
+
+    DAY_END [fillcolor="#ddd6fe",
+             label="Day-End Closure\n\nPortfolio snapshot (EOD)\nP&L mark-to-market\nCash flow recording\nApply dividends/splits\nExpire day orders"];
+
+    SNAPSHOTS [shape=cylinder, fillcolor="#c4b5fd",
+               label="Portfolio Snapshots\n\nTimestamped state\nPositions + cash\nRunning P&L\nExposure metrics"];
+  }
+
+  // Phase 7: Metrics Engine
+  subgraph cluster_metrics {
+    label="7. Performance Metrics";
+    color="#2b6cb0";
+    style="rounded";
+    bgcolor="#dbeafe";
+
+    METRICS_ENGINE [fillcolor="#93c5fd",
+                    label="BacktestMetricsEngine\n\nFull portfolio time series\nCash flow schedule\nComposite metrics scoring"];
+
+    subgraph cluster_metric_types {
+      label="Computed Metrics";
+      style="dashed";
+      color="#1e40af";
+
+      RETURNS [shape=note, fillcolor="#bfdbfe",
+               label="Return Metrics:\n• Total return %\n• Annualized return\n• XIRR (internal rate)\n• CAGR"];
+
+      RISK [shape=note, fillcolor="#bfdbfe",
+            label="Risk Metrics:\n• Sharpe ratio\n• Sortino ratio\n• Max drawdown %\n• Calmar ratio\n• VaR (95th pct)"];
+
+      TRADE_STATS [shape=note, fillcolor="#bfdbfe",
+                   label="Trade Statistics:\n• Win rate %\n• Profit factor\n• Avg win / Avg loss\n• Largest win/loss\n• Trade count"];
+    }
+
+    XIRR [fillcolor="#bfdbfe",
+          label="XirrCalculator\n\nNewton-Raphson solver\nCash flow schedule\nDate-weighted IRR\nHandles multi-currency"];
+  }
+
+  // Phase 8: Output
+  subgraph cluster_output {
+    label="8. Backtest Results";
+    color="#38a169";
+    style="rounded";
+    bgcolor="#d1fae5";
+
+    RUN_ENTRY [fillcolor="#6ee7b7",
+               label="StrategyRunEntry\n\nRun metadata + dates\nSymbol universe used\nTotal P&L summary\nFull metrics report\nTrade/fill journal"];
+
+    COMPARE [fillcolor="#a7f3d0",
+             label="Multi-Run Comparison\n\nSide-by-side metrics\nParameter sweep support\nBest-run selection\nPromote to paper/live"];
+  }
+
+  // Data Flow
+  CLI -> REQUEST [color="#805ad5"];
+  REQUEST -> UNIVERSE [color="#2b6cb0", penwidth=2, label="1. Discover"];
+  UNIVERSE -> DATA_ROOT [color="#2b6cb0"];
+
+  UNIVERSE -> SIM_PORT [color="#38a169", penwidth=2, label="2. Setup"];
+  UNIVERSE -> STRATEGY_LOADER [color="#38a169"];
+  SIM_PORT -> COMMISSION [color="#38a169", style=dashed];
+  SIM_PORT -> LEDGER [color="#38a169", style=dashed];
+
+  DATA_ROOT -> REPLAYER [color="#c53030", penwidth=2, label="3. Stream"];
+  REPLAYER -> MERGE [color="#c53030", penwidth=2];
+  MERGE -> CTX [color="#c53030", style=dashed];
+
+  MERGE -> DISPATCH [color="#2c7a7b", penwidth=2, label="4. Dispatch"];
+  DISPATCH -> ON_BAR [color="#2c7a7b", style=dashed];
+  DISPATCH -> ON_TRADE [color="#2c7a7b", style=dashed];
+  DISPATCH -> ON_QUOTE [color="#2c7a7b", style=dashed];
+  DISPATCH -> ON_DEPTH [color="#2c7a7b", style=dashed];
+  DISPATCH -> ON_ASSET [color="#2c7a7b", style=dashed];
+
+  DISPATCH -> FILL_IFACE [color="#ed8936", penwidth=2, label="5. Fill"];
+  FILL_IFACE -> OB_FILL [style=dashed];
+  FILL_IFACE -> BAR_FILL [style=dashed];
+  OB_FILL -> LEDGER [color="#38a169"];
+  BAR_FILL -> LEDGER [color="#38a169"];
+
+  DISPATCH -> DAY_END [color="#805ad5", penwidth=2, label="6. EOD"];
+  DAY_END -> SNAPSHOTS [color="#805ad5"];
+  SNAPSHOTS -> METRICS_ENGINE [color="#2b6cb0", penwidth=2, label="7. Metrics"];
+
+  METRICS_ENGINE -> RETURNS [style=dashed];
+  METRICS_ENGINE -> RISK [style=dashed];
+  METRICS_ENGINE -> TRADE_STATS [style=dashed];
+  METRICS_ENGINE -> XIRR [color="#2b6cb0"];
+
+  METRICS_ENGINE -> RUN_ENTRY [color="#38a169", penwidth=2, label="8. Output"];
+  RUN_ENTRY -> COMPARE [color="#38a169", style=dashed];
+  STRATEGY_LOADER -> DISPATCH [color="#2c7a7b", style=dashed, label="IStrategyLifecycle"];
+  CTX -> DISPATCH [color="#c53030", style=dashed];
+
+  // Legend
+  subgraph cluster_legend {
+    label="Legend";
+    style="rounded";
+    color="#666666";
+    bgcolor="#fafafa";
+
+    LEG [shape=plaintext,
+         label="━━ Main data flow\n─ ─ Configuration/Reference\nNumbers = processing phase order"];
+  }
+}

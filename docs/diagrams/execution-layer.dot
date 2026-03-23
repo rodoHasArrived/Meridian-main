@@ -1,0 +1,187 @@
+// Execution Layer Diagram
+// Meridian v1.7.x
+// Last Updated: 2026-03-23
+//
+// This diagram shows the order execution layer including the paper trading
+// gateway, order lifecycle state machine, and position management.
+//
+// Generate: dot -Tpng execution-layer.dot -o execution-layer.png
+//           dot -Tsvg execution-layer.dot -o execution-layer.svg
+
+digraph ExecutionLayer {
+  rankdir=LR;
+  graph [fontname="Helvetica", fontsize=12, bgcolor="white", compound=true, pad=0.5];
+  node  [fontname="Helvetica", fontsize=10, shape=box, style="rounded,filled"];
+  edge  [fontname="Helvetica", fontsize=9, color="#4a5568"];
+
+  // Title
+  labelloc="t";
+  label="Meridian - Execution Layer\nPaper Trading Gateway & Order Lifecycle | v1.7.x";
+
+  // Order Origination
+  subgraph cluster_origin {
+    label="Order Origination";
+    color="#805ad5";
+    style="rounded";
+    bgcolor="#faf5ff";
+
+    STRATEGY [fillcolor="#ddd6fe",
+              label="Trading Strategy\n[IStrategyLifecycle]\n\nSignal generation\nPosition sizing\nRisk-checked orders"];
+
+    ORDER_REQ [shape=note, fillcolor="#e9d5ff",
+               label="Order Request:\n• Symbol\n• OrderSide (Buy/Sell)\n• OrderType (Market/Limit/Stop)\n• Quantity\n• LimitPrice (if applicable)\n• TimeInForce\n• ClientOrderId"];
+  }
+
+  // Gateway Interface
+  subgraph cluster_gateway_iface {
+    label="Gateway Abstraction (Meridian.Execution.Sdk)";
+    color="#2b6cb0";
+    style="rounded";
+    bgcolor="#dbeafe";
+
+    I_GATEWAY [shape=ellipse, fillcolor="#bfdbfe",
+               label="IOrderGateway\n[Interface]\n\nSubmitAsync(order, ct)\nCancelAsync(orderId, ct)\nQueryAsync(orderId, ct)\nGetPositionsAsync(ct)"];
+
+    I_EXEC_CTX [shape=ellipse, fillcolor="#bfdbfe",
+                label="IExecutionContext\n[Interface]\n\nPortfolioState\nLiveFeedAdapter\nCurrentTime\nRisk limits"];
+
+    I_PORT_STATE [shape=ellipse, fillcolor="#bfdbfe",
+                  label="IPortfolioState\n[Interface]\n\nPositions dictionary\nCash balance\nAccount balances\nBuying power"];
+  }
+
+  // Paper Trading Gateway
+  subgraph cluster_paper {
+    label="Paper Trading Gateway (Meridian.Execution)";
+    color="#2c7a7b";
+    style="rounded";
+    bgcolor="#d1fae5";
+
+    PAPER_GW [fillcolor="#6ee7b7",
+              label="PaperTradingGateway\n[ADR-015]\n\nImplements IOrderGateway\nSimulated fills at market\nNo capital risk\nReal-time data feed\nAtomic position updates"];
+
+    FILL_LOGIC [fillcolor="#a7f3d0",
+                label="Fill Simulation\n\nMarket → notional price\nLimit → limit price if crossed\nStopMarket → trigger then market\nStopLimit → trigger then limit\nNo partial fills"];
+
+    TIF_LOGIC [shape=note, fillcolor="#bbf7d0",
+               label="Time-In-Force Rules:\n• Day → expire at session close\n• GTC → persist until cancel\n• IOC → fill or cancel immediately\n• FOK → fill all or cancel all"];
+
+    ORDER_TYPES [shape=note, fillcolor="#bbf7d0",
+                 label="Supported Order Types:\n• Market\n• Limit\n• StopMarket\n• StopLimit"];
+  }
+
+  // Order Management System
+  subgraph cluster_oms {
+    label="Order Management System";
+    color="#ed8936";
+    style="rounded";
+    bgcolor="#fffaf0";
+
+    OMS [fillcolor="#fbd38d",
+         label="OrderManagementSystem\n\nCentral order registry\nClient order ID → internal ID\nThread-safe order map\nQuery by status/symbol"];
+
+    ORDER_MGR [fillcolor="#feebc8",
+               label="OrderLifecycleManager\n\nState transition validation\nTimeout handling (Day orders)\nFill notification dispatch\nAudit trail per order"];
+  }
+
+  // Order State Machine
+  subgraph cluster_states {
+    label="Order State Machine";
+    color="#c53030";
+    style="rounded";
+    bgcolor="#fee2e2";
+
+    O_PENDING [shape=oval, fillcolor="#fecaca",
+               label="Pending\n\nSubmitted, not yet\nacknowledged by gateway"];
+
+    O_ACK [shape=oval, fillcolor="#fbd38d",
+           label="Acknowledged\n\nGateway accepted\nAwaiting fill conditions"];
+
+    O_FILLED [shape=oval, fillcolor="#9ae6b4",
+              label="Filled\n\nFull fill executed\nFill record created\nPosition updated"];
+
+    O_PARTIAL [shape=oval, fillcolor="#feebc8",
+               label="PartiallyFilled\n\nPartial fill executed\n(live trading only)\nRemaining qty active"];
+
+    O_CANCELLED [shape=oval, fillcolor="#e2e8f0",
+                 label="Cancelled\n\nExplicit cancel\nor IOC/FOK/Day expiry"];
+
+    O_REJECTED [shape=oval, fillcolor="#fc8181",
+                label="Rejected\n\nRisk check failed\nInvalid parameters\nInsufficient capital"];
+
+    // Transitions
+    O_PENDING -> O_ACK [label="gateway accept", color="#38a169"];
+    O_PENDING -> O_REJECTED [label="risk/validation fail", color="#c53030"];
+    O_ACK -> O_FILLED [label="fill at price", color="#38a169"];
+    O_ACK -> O_PARTIAL [label="partial fill", color="#ed8936", style=dashed];
+    O_PARTIAL -> O_FILLED [label="remaining filled", color="#38a169", style=dashed];
+    O_ACK -> O_CANCELLED [label="cancel / expiry", color="#718096"];
+    O_PARTIAL -> O_CANCELLED [label="cancel / FOK", color="#718096", style=dashed];
+  }
+
+  // Position Tracking
+  subgraph cluster_positions {
+    label="Position & Risk Tracking";
+    color="#38a169";
+    style="rounded";
+    bgcolor="#c6f6d5";
+
+    POSITIONS [fillcolor="#9ae6b4",
+               label="ExecutionPosition\n\nSymbol positions map\nAvg cost basis\nRealized P&L\nUnrealized P&L\nTotal exposure"];
+
+    RISK [fillcolor="#9ae6b4",
+          label="Risk Controls\n\nMax position size\nMax single order size\nMax portfolio exposure\nPre-trade risk check\nPattern-day-trader guard"];
+
+    FILLS [shape=cylinder, fillcolor="#68d391",
+           label="Fill Journal\n\nFill records (price/qty/time)\nCommission per fill\nSlippage tracking\nCumulative P&L\nAudit trail"];
+  }
+
+  // Event Notification
+  subgraph cluster_notify {
+    label="Status Notification (EventPipeline)";
+    color="#805ad5";
+    style="rounded";
+    bgcolor="#ede9fe";
+
+    COMPLETE_Q [fillcolor="#ddd6fe",
+                label="CompletionQueue\n[EventPipelinePolicy]\n\nTerminal status events\n(Filled / Rejected / Cancelled)\nAsync notification to strategy"];
+
+    STATUS_UPDATE [shape=note, fillcolor="#c4b5fd",
+                   label="OrderStatusUpdate:\n• OrderId\n• Status\n• Fill (if filled)\n• RejectReason (if rejected)\n• Timestamp"];
+  }
+
+  // Data Flow
+  STRATEGY -> ORDER_REQ [color="#805ad5"];
+  ORDER_REQ -> I_GATEWAY [color="#2b6cb0", penwidth=2];
+  I_EXEC_CTX -> PAPER_GW [style=dashed];
+  I_PORT_STATE -> PAPER_GW [style=dashed];
+
+  I_GATEWAY -> PAPER_GW [color="#2c7a7b", penwidth=2, label="implements"];
+  PAPER_GW -> FILL_LOGIC [color="#2c7a7b"];
+  FILL_LOGIC -> TIF_LOGIC [style=dashed];
+  FILL_LOGIC -> ORDER_TYPES [style=dashed];
+
+  PAPER_GW -> OMS [color="#ed8936", penwidth=2];
+  OMS -> ORDER_MGR [color="#ed8936"];
+
+  ORDER_MGR -> O_PENDING [color="#c53030", penwidth=2, label="submit"];
+  O_FILLED -> POSITIONS [color="#38a169", penwidth=2, label="update"];
+  O_FILLED -> FILLS [color="#38a169"];
+  POSITIONS -> RISK [style=dashed];
+
+  O_FILLED -> COMPLETE_Q [color="#805ad5", penwidth=2];
+  O_REJECTED -> COMPLETE_Q [color="#805ad5"];
+  O_CANCELLED -> COMPLETE_Q [color="#805ad5"];
+  COMPLETE_Q -> STATUS_UPDATE [style=dashed];
+  STATUS_UPDATE -> STRATEGY [color="#805ad5", style=dashed, label="async callback"];
+
+  // Legend
+  subgraph cluster_legend {
+    label="Legend";
+    style="rounded";
+    color="#666666";
+    bgcolor="#fafafa";
+
+    LEG [shape=plaintext,
+         label="━━ Primary flow\n─ ─ Reference / Async\nOval = Order state\nAll fills are simulated in Paper mode"];
+  }
+}

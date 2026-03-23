@@ -1,0 +1,195 @@
+// F# Domain Library Diagram
+// Meridian v1.7.x
+// Last Updated: 2026-03-23
+//
+// This diagram shows the F# domain library: railway-oriented validation,
+// discriminated unions, type-safe calculations, and C# interop.
+//
+// Generate: dot -Tpng fsharp-domain.dot -o fsharp-domain.png
+//           dot -Tsvg fsharp-domain.dot -o fsharp-domain.svg
+
+digraph FSharpDomain {
+  rankdir=TB;
+  graph [fontname="Helvetica", fontsize=12, bgcolor="white", compound=true, pad=0.5];
+  node  [fontname="Helvetica", fontsize=10, shape=box, style="rounded,filled"];
+  edge  [fontname="Helvetica", fontsize=9, color="#4a5568"];
+
+  // Title
+  labelloc="t";
+  label="Meridian - F# Domain Library\nRailway-Oriented Validation & Type-Safe Calculations | v1.7.x";
+
+  // Input from C# Layer
+  subgraph cluster_csharp_input {
+    label="C# Layer (Meridian.Domain)";
+    color="#2b6cb0";
+    style="rounded";
+    bgcolor="#dbeafe";
+
+    COLLECTORS [fillcolor="#bfdbfe",
+                label="Domain Collectors\n[C#]\n\nTradeDataCollector\nQuoteCollector\nMarketDepthCollector\nL3OrderBookCollector"];
+
+    RAW_EVENTS [shape=note, fillcolor="#dbeafe",
+                label="Raw domain events:\nMarketTradeUpdate\nMarketQuoteUpdate\nMarketDepthUpdate"];
+  }
+
+  // F# Validation Pipeline
+  subgraph cluster_validation {
+    label="F# Validation Pipeline (Meridian.FSharp / railway-oriented)";
+    color="#2c7a7b";
+    style="rounded";
+    bgcolor="#e6fffa";
+
+    subgraph cluster_result_type {
+      label="Validation Result Type";
+      style="dashed";
+      color="#047857";
+
+      RESULT [fillcolor="#81e6d9",
+              label="ValidationResult<'T>\n[Discriminated Union]\n\n| Ok of 'T\n| Error of ValidationError list\n\nRailway-oriented composition:\nbind: (T → Result<U>) → Result<T> → Result<U>\nmap: (T → U) → Result<T> → Result<U>"];
+
+      VAL_ERROR [shape=note, fillcolor="#b2f5ea",
+                 label="ValidationError:\n• Code: string\n• Message: string\n• Field: string option\n• Severity: Info|Warning|Error"];
+    }
+
+    subgraph cluster_validators {
+      label="Built-In Validators";
+      style="dashed";
+      color="#047857";
+
+      TRADE_VAL [fillcolor="#a7f3d0",
+                 label="TradeValidator\n\nvalidatePrice: price > 0M\nvalidateSize: size > 0M\nvalidateTimestamp: not default\nvalidateSymbol: not null/empty\nvalidateSequence: monotone inc\nvalidateSide: valid enum value"];
+
+      QUOTE_VAL [fillcolor="#a7f3d0",
+                 label="QuoteValidator\n\nvalidateBidPrice: bid > 0\nvalidateAskPrice: ask > bid\nvalidateSpread: spread ≥ 0\nvalidateSizes: bid/ask size > 0\nvalidateCrossedBook: ask > bid"];
+
+      DEPTH_VAL [fillcolor="#a7f3d0",
+                 label="DepthValidator\n\nvalidateLevels: bids/asks not empty\nvalidateBidAskCross: no crossed book\nvalidateMonotone: price ordering\nvalidateSequence: monotone inc\nvalidateDepthCount: count ≥ 0"];
+    }
+
+    subgraph cluster_composition {
+      label="Railway Composition";
+      style="dashed";
+      color="#047857";
+
+      PIPE [fillcolor="#81e6d9",
+            label="Validation Pipeline\n\nvalidate price\n  |> bind validateSize\n  |> bind validateTimestamp\n  |> bind validateSymbol\n  |> bind validateSequence\n  |> map toCanonicalTrade"];
+
+      ERROR_ACC [fillcolor="#b2f5ea",
+                 label="Error Accumulation\n\nCollect ALL errors\n(not short-circuit)\nReturn full error list\nfor reporting"];
+    }
+  }
+
+  // F# Calculations
+  subgraph cluster_calcs {
+    label="F# Type-Safe Calculations (Meridian.FSharp)";
+    color="#805ad5";
+    style="rounded";
+    bgcolor="#faf5ff";
+
+    MARKET_CALCS [fillcolor="#ddd6fe",
+                  label="MarketCalculations\n[Module]\n\nImmutable pure functions\nNo side effects\nDecimal precision\nUnit-of-measure safe"];
+
+    subgraph cluster_calc_funcs {
+      label="Calculation Functions";
+      style="dashed";
+      color="#6b21a8";
+
+      SPREAD [fillcolor="#e9d5ff",
+              label="Spread Calculation\n\ncalculateSpread bid ask\n  = ask - bid\n\ncalculateSpreadBps bid ask\n  = (ask - bid) / mid * 10000"];
+
+      VWAP [fillcolor="#e9d5ff",
+            label="VWAP Calculation\n\ncalculateVwap trades\n  = Σ(price × size) / Σ(size)\n\nRolling window support\nTime-weighted variant"];
+
+      IMBALANCE [fillcolor="#e9d5ff",
+                 label="Order Flow Imbalance\n\ncalculateImbalance buyVol sellVol\n  = (buy - sell) / (buy + sell)\n\nRange: [-1.0, +1.0]\n+1 = full buy pressure"];
+
+      DRAWDOWN [fillcolor="#e9d5ff",
+                label="Drawdown Calculation\n\ncalculateMaxDrawdown navSeries\n  = (peak - trough) / peak\n\nRolling high watermark\nMax over full time series"];
+
+      SHARPE [fillcolor="#e9d5ff",
+              label="Sharpe Ratio\n\ncalculateSharpe returns riskFree\n  = (mean(r) - rf) / stdev(r)\n  × sqrt(252) [annualized]\n\nHandles zero-variance edge case"];
+    }
+  }
+
+  // F# Trading Module
+  subgraph cluster_trading {
+    label="F# Trading Calculations (Meridian.FSharp.Trading)";
+    color="#ed8936";
+    style="rounded";
+    bgcolor="#fffaf0";
+
+    TRADE_CALCS [fillcolor="#fbd38d",
+                 label="TradingCalculations\n[Module]\n\nPosition P&L\nCommission models\nSlippage estimation\nReturns time series"];
+
+    XIRR_FSHARP [fillcolor="#feebc8",
+                 label="XIRR Calculator\n\nNewton-Raphson solver\nCash flow schedule\n(date × amount) list\nConvergence tolerance: 1e-8\nMax iterations: 1000"];
+  }
+
+  // F# Ledger Module
+  subgraph cluster_ledger {
+    label="F# Ledger (Meridian.FSharp.Ledger)";
+    color="#38a169";
+    style="rounded";
+    bgcolor="#c6f6d5";
+
+    LEDGER_CALCS [fillcolor="#9ae6b4",
+                  label="LedgerCalculations\n[Module]\n\nFill aggregation\nPosition netting\nCost basis tracking\nRealized P&L\nDividend accounting"];
+
+    DU_TYPES [shape=note, fillcolor="#bbf7d0",
+              label="Discriminated Unions:\n\nLedgerEntry =\n  | Fill of FillRecord\n  | Dividend of DivRecord\n  | Split of SplitRecord\n  | CashFlow of amount\n\nPositionSide = Long | Short | Flat"];
+  }
+
+  // C# Interop
+  subgraph cluster_interop {
+    label="C# Interop Layer (Interop.fs)";
+    color="#718096";
+    style="rounded";
+    bgcolor="#e2e8f0";
+
+    INTEROP [fillcolor="#cbd5e0",
+             label="Interop Module\n[F# → C# bridge]\n\nFSharpEventValidator (C# class)\nExposes F# validation as C# API\nResult<T> → (bool, errors[])\nAsync-safe interop\nNo F# DU exposure to C#"];
+
+    FSHARP_VAL_CS [fillcolor="#cbd5e0",
+                   label="FSharpEventValidator\n[C# class]\n\nValidateTradeAsync(trade)\nValidateQuoteAsync(quote)\nValidateDepthAsync(depth)\nReturns: ValidationResult record"];
+  }
+
+  // Data Flow
+  COLLECTORS -> RAW_EVENTS [color="#2b6cb0"];
+  RAW_EVENTS -> TRADE_VAL [color="#2c7a7b", penwidth=2, label="validate"];
+  RAW_EVENTS -> QUOTE_VAL [color="#2c7a7b", penwidth=2];
+  RAW_EVENTS -> DEPTH_VAL [color="#2c7a7b", penwidth=2];
+
+  TRADE_VAL -> PIPE [color="#2c7a7b"];
+  QUOTE_VAL -> PIPE [color="#2c7a7b"];
+  DEPTH_VAL -> PIPE [color="#2c7a7b"];
+  PIPE -> RESULT [color="#2c7a7b", penwidth=2];
+  PIPE -> ERROR_ACC [style=dashed];
+  RESULT -> VAL_ERROR [style=dashed];
+
+  RESULT -> MARKET_CALCS [color="#805ad5", penwidth=2, label="Ok path"];
+  MARKET_CALCS -> SPREAD [style=dashed];
+  MARKET_CALCS -> VWAP [style=dashed];
+  MARKET_CALCS -> IMBALANCE [style=dashed];
+  MARKET_CALCS -> DRAWDOWN [style=dashed];
+  MARKET_CALCS -> SHARPE [style=dashed];
+
+  MARKET_CALCS -> TRADE_CALCS [color="#ed8936"];
+  TRADE_CALCS -> XIRR_FSHARP [color="#ed8936"];
+  TRADE_CALCS -> LEDGER_CALCS [color="#38a169"];
+  LEDGER_CALCS -> DU_TYPES [style=dashed];
+
+  RESULT -> INTEROP [color="#718096", penwidth=2, label="C# interop"];
+  INTEROP -> FSHARP_VAL_CS [color="#718096"];
+  FSHARP_VAL_CS -> COLLECTORS [color="#718096", style=dashed, label="inject into C# pipeline"];
+
+  // Legend
+  subgraph cluster_legend {
+    label="Legend";
+    style="rounded";
+    color="#666666";
+    bgcolor="#fafafa";
+
+    LEG [shape=plaintext,
+         label="━━ Primary data flow\n─ ─ Type reference / composition\nAll F# functions are pure (no side effects)\nRailway: errors accumulate, don't short-circuit\nInterop.fs is the only C# boundary"];
+  }
+}
