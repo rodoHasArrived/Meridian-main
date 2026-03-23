@@ -92,7 +92,7 @@ digraph ProviderArchitecture {
 
   // Historical Providers
   subgraph cluster_historical {
-    label="Historical Data Providers (10 Implemented)";
+    label="Historical Data Providers (12 Production + 1 Development)";
     color="#2c7a7b";
     style="rounded";
     bgcolor="#d1fae5";

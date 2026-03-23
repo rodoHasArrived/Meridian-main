@@ -159,8 +159,9 @@ digraph StrategyLifecycle {
   RUN_READ -> PROMOTE [color="#38a169", label="evaluate metrics"];
   PROMOTE -> RISK_CHECK [color="#38a169"];
   RISK_CHECK -> PROMOTION_GATE [color="#38a169"];
-  PROMOTION_GATE -> PAPER [color="#38a169", label="yes: Paper first"];
-  PROMOTION_GATE -> LIVE [color="#38a169", style=dashed, label="yes: Paper → Live"];
+  PROMOTION_GATE -> PAPER [color="#38a169", label="Paper first"];
+  PROMOTION_GATE -> LIVE [color="#38a169", style=dashed, label="Direct to Live"];
+  PROMOTION_GATE -> BACKTEST [color="#c53030", style=dashed, label="Rejected:\nrevise strategy"];
 
   // Legend
   subgraph cluster_legend {

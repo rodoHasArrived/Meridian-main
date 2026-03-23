@@ -237,12 +237,13 @@ digraph EventPipelineSequence {
   FSHARP_VAL -> UPCASTER [style=dashed, label="4b if legacy"];
   UPCASTER -> CHANNEL [style=dashed];
   FSHARP_VAL -> CHANNEL [color="#805ad5", penwidth=2, label="4\nasync write"];
-  CHANNEL -> HOT_PATH [color="#805ad5", style=dashed];
-  CHANNEL -> SLOW_PATH [color="#805ad5", style=dashed];
-  SLOW_PATH -> DEDUP [color="#805ad5", style=dashed];
-  DEDUP -> DROPPED_AUDIT [style=dashed];
-  CHANNEL -> CHANNEL_STATS [style=dashed];
-  CHANNEL -> PIPELINE_READER [color="#805ad5", label="5\nasync read"];
+  CHANNEL -> HOT_PATH  [color="#805ad5", label="hot lane",  fontsize=8];
+  CHANNEL -> SLOW_PATH [color="#805ad5", label="slow lane", fontsize=8];
+  HOT_PATH  -> PIPELINE_READER [color="#805ad5", label="fast dispatch", fontsize=8];
+  SLOW_PATH -> DEDUP           [color="#805ad5", label="dedup check",   fontsize=8];
+  DEDUP     -> PIPELINE_READER [color="#805ad5", label="batched read",  fontsize=8];
+  CHANNEL -> DROPPED_AUDIT [style=dashed, label="on drop",  fontsize=8];
+  CHANNEL -> CHANNEL_STATS [style=dashed, label="metrics",  fontsize=8];
   PIPELINE_READER -> COMPOSITE [color="#805ad5", penwidth=2];
 
   COMPOSITE -> LOCAL_SINK [color="#805ad5", label="6a"];
