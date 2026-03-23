@@ -246,6 +246,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── DUPLICATE_CODE_ANALYSIS.md
 │       │   ├── H3_DEBUG_CODE_ANALYSIS.md
 │       │   ├── UWP_COMPREHENSIVE_AUDIT.md
+│       │   ├── canonicalization-drift-report.local.md
 │       │   ├── desktop-devex-high-value-improvements.md
 │       │   ├── desktop-end-user-improvements-shortlist.md
 │       │   ├── desktop-end-user-improvements.md
@@ -288,7 +289,6 @@ Use these documents together when planning or implementing new work:
 │   │   ├── StorageSinkBenchmarks.cs
 │   │   └── WalChecksumBenchmarks.cs
 │   └── run-bottleneck-benchmarks.sh
-├── canonicalization-drift-report.local.md
 ├── config
 │   ├── appsettings.sample.json
 │   ├── appsettings.schema.json
@@ -786,7 +786,24 @@ Use these documents together when planning or implementing new work:
 │   │   ├── readability-refactor-baseline.md
 │   │   ├── readability-refactor-roadmap.md
 │   │   ├── readability-refactor-technical-design-pack.md
-│   │   └── trading-workstation-migration-blueprint.md
+│   │   ├── trading-workstation-migration-blueprint.md
+│   │   ├── ufl-bond-target-state-v2.md
+│   │   ├── ufl-cash-sweep-target-state-v2.md
+│   │   ├── ufl-certificate-of-deposit-target-state-v2.md
+│   │   ├── ufl-commercial-paper-target-state-v2.md
+│   │   ├── ufl-deposit-target-state-v2.md
+│   │   ├── ufl-direct-lending-implementation-roadmap.md
+│   │   ├── ufl-direct-lending-target-state-v2.md
+│   │   ├── ufl-equity-target-state-v2.md
+│   │   ├── ufl-future-target-state-v2.md
+│   │   ├── ufl-fx-spot-target-state-v2.md
+│   │   ├── ufl-money-market-fund-target-state-v2.md
+│   │   ├── ufl-option-target-state-v2.md
+│   │   ├── ufl-other-security-target-state-v2.md
+│   │   ├── ufl-repo-target-state-v2.md
+│   │   ├── ufl-supported-assets-index.md
+│   │   ├── ufl-swap-target-state-v2.md
+│   │   └── ufl-treasury-bill-target-state-v2.md
 │   ├── providers
 │   │   ├── README.md
 │   │   ├── alpaca-setup.md
@@ -916,6 +933,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── WalRepairCommand.cs
 │   │   ├── Composition
 │   │   │   ├── CircuitBreakerCallbackRouter.cs
+│   │   │   ├── DirectLendingStartup.cs
 │   │   │   ├── Features
 │   │   │   │   ├── BackfillFeatureRegistration.cs
 │   │   │   │   ├── CanonicalizationFeatureRegistration.cs
@@ -970,6 +988,20 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── SubscriptionOwnershipService.cs
 │   │   ├── Credentials
 │   │   │   └── ICredentialStore.cs
+│   │   ├── DirectLending
+│   │   │   ├── DirectLendingEventRebuilder.cs
+│   │   │   ├── DirectLendingOutboxDispatcher.cs
+│   │   │   ├── DirectLendingServiceSupport.cs
+│   │   │   ├── DirectLendingWorkflowSupport.cs
+│   │   │   ├── DirectLendingWorkflowTopics.cs
+│   │   │   ├── IDirectLendingCommandService.cs
+│   │   │   ├── IDirectLendingQueryService.cs
+│   │   │   ├── IDirectLendingService.cs
+│   │   │   ├── InMemoryDirectLendingService.Workflows.cs
+│   │   │   ├── InMemoryDirectLendingService.cs
+│   │   │   ├── PostgresDirectLendingCommandService.cs
+│   │   │   ├── PostgresDirectLendingQueryService.cs
+│   │   │   └── PostgresDirectLendingService.cs
 │   │   ├── Etl
 │   │   │   ├── EtlAbstractions.cs
 │   │   │   └── EtlServices.cs
@@ -1217,6 +1249,11 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Credentials
 │   │   │   ├── CredentialModels.cs
 │   │   │   └── ISecretProvider.cs
+│   │   ├── DirectLending
+│   │   │   ├── DirectLendingCommandResults.cs
+│   │   │   ├── DirectLendingDtos.cs
+│   │   │   ├── DirectLendingOptions.cs
+│   │   │   └── DirectLendingWorkflowDtos.cs
 │   │   ├── Domain
 │   │   │   ├── CanonicalSymbol.cs
 │   │   │   ├── Enums
@@ -1303,6 +1340,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Store
 │   │   │   └── MarketDataQuery.cs
 │   │   └── Workstation
+│   │       ├── ReconciliationDtos.cs
 │   │       └── StrategyRunReadModels.cs
 │   ├── Meridian.Core
 │   │   ├── Config
@@ -1434,6 +1472,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Canonicalization
 │   │   │   └── MappingRules.fs
 │   │   ├── Domain
+│   │   │   ├── DirectLending.fs
 │   │   │   ├── FundStructure.fs
 │   │   │   ├── Integrity.fs
 │   │   │   ├── MarketEvents.fs
@@ -1448,6 +1487,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── Sides.fs
 │   │   ├── Generated
 │   │   │   └── Meridian.FSharp.Interop.g.cs
+│   │   ├── Interop.DirectLending.fs
 │   │   ├── Interop.SecurityMaster.fs
 │   │   ├── Interop.fs
 │   │   ├── Meridian.FSharp.fsproj
@@ -1465,6 +1505,12 @@ Use these documents together when planning or implementing new work:
 │   │       ├── TradeValidator.fs
 │   │       ├── ValidationPipeline.fs
 │   │       └── ValidationTypes.fs
+│   ├── Meridian.FSharp.DirectLending.Aggregates
+│   │   ├── AggregateTypes.fs
+│   │   ├── ContractAggregate.fs
+│   │   ├── Interop.fs
+│   │   ├── Meridian.FSharp.DirectLending.Aggregates.fsproj
+│   │   └── ServicingAggregate.fs
 │   ├── Meridian.FSharp.Ledger
 │   │   ├── Interop.fs
 │   │   ├── JournalValidation.fs
@@ -1734,6 +1780,20 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── CompressionProfileManager.cs
 │   │   │   ├── SchemaVersionManager.cs
 │   │   │   └── WriteAheadLog.cs
+│   │   ├── DirectLending
+│   │   │   ├── DirectLendingMigrationRunner.cs
+│   │   │   ├── DirectLendingPersistenceBatch.cs
+│   │   │   ├── IDirectLendingOperationsStore.cs
+│   │   │   ├── IDirectLendingStateStore.cs
+│   │   │   ├── Migrations
+│   │   │   │   ├── 001_direct_lending.sql
+│   │   │   │   ├── 002_direct_lending_projections.sql
+│   │   │   │   ├── 003_direct_lending_accrual_and_event_metadata.sql
+│   │   │   │   ├── 004_direct_lending_event_schema_and_snapshots.sql
+│   │   │   │   ├── 005_direct_lending_operations.sql
+│   │   │   │   └── 005_direct_lending_workflows.sql
+│   │   │   ├── PostgresDirectLendingStateStore.Operations.cs
+│   │   │   └── PostgresDirectLendingStateStore.cs
 │   │   ├── Etl
 │   │   │   └── EtlStores.cs
 │   │   ├── Export
@@ -1838,8 +1898,14 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Promotions
 │   │   │   └── BacktestToLivePromoter.cs
 │   │   ├── Services
+│   │   │   ├── IReconciliationRunRepository.cs
+│   │   │   ├── IReconciliationRunService.cs
+│   │   │   ├── ISecurityReferenceLookup.cs
+│   │   │   ├── InMemoryReconciliationRunRepository.cs
 │   │   │   ├── LedgerReadService.cs
 │   │   │   ├── PortfolioReadService.cs
+│   │   │   ├── ReconciliationProjectionService.cs
+│   │   │   ├── ReconciliationRunService.cs
 │   │   │   ├── StrategyLifecycleManager.cs
 │   │   │   └── StrategyRunReadService.cs
 │   │   └── Storage
@@ -2041,6 +2107,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── CppTraderEndpoints.cs
 │   │   │   ├── CronEndpoints.cs
 │   │   │   ├── DiagnosticsEndpoints.cs
+│   │   │   ├── DirectLendingEndpoints.cs
 │   │   │   ├── EndpointHelpers.cs
 │   │   │   ├── ExportEndpoints.cs
 │   │   │   ├── FailoverEndpoints.cs
@@ -2078,7 +2145,8 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Meridian.Ui.Shared.csproj
 │   │   └── Services
 │   │       ├── BackfillCoordinator.cs
-│   │       └── ConfigStore.cs
+│   │       ├── ConfigStore.cs
+│   │       └── SecurityMasterSecurityReferenceLookup.cs
 │   └── Meridian.Wpf
 │       ├── App.xaml
 │       ├── App.xaml.cs
@@ -2293,9 +2361,17 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Meridian.Backtesting.Tests.csproj
 │   │   ├── SimulatedPortfolioTests.cs
 │   │   └── XirrCalculatorTests.cs
+│   ├── Meridian.DirectLending.Tests
+│   │   ├── DirectLendingPostgresIntegrationTests.cs
+│   │   ├── DirectLendingPostgresTestDatabase.cs
+│   │   ├── DirectLendingServiceTests.cs
+│   │   ├── DirectLendingWorkflowTests.cs
+│   │   ├── GlobalUsings.cs
+│   │   └── Meridian.DirectLending.Tests.csproj
 │   ├── Meridian.FSharp.Tests
 │   │   ├── CalculationTests.fs
 │   │   ├── CanonicalizationTests.fs
+│   │   ├── DirectLendingInteropTests.fs
 │   │   ├── DomainTests.fs
 │   │   ├── LedgerKernelTests.fs
 │   │   ├── Meridian.FSharp.Tests.fsproj
@@ -2359,6 +2435,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── CredentialStatusTests.cs
 │   │   │   │   ├── CredentialTestingServiceTests.cs
 │   │   │   │   └── OAuthTokenTests.cs
+│   │   │   ├── DirectLendingServiceTests.cs
 │   │   │   ├── Etl
 │   │   │   │   ├── EtlJobDefinitionStoreTests.cs
 │   │   │   │   ├── EtlJobOrchestratorTests.cs
@@ -2400,6 +2477,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── MarketDataClientFactoryTests.cs
 │   │   │   │   ├── SpscRingBufferTests.cs
 │   │   │   │   └── WalEventPipelineTests.cs
+│   │   │   ├── ReconciliationRunServiceTests.cs
 │   │   │   └── Services
 │   │   │       ├── CanonicalizingPublisherTests.cs
 │   │   │       ├── CliModeResolverTests.cs
@@ -2592,6 +2670,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── PolygonStubClient.cs
 │   │   │   └── TestMarketEventPublisher.cs
 │   │   └── Ui
+│   │       ├── DirectLendingEndpointsTests.cs
 │   │       └── WorkstationEndpointsTests.cs
 │   ├── Meridian.Ui.Tests
 │   │   ├── Collections
@@ -2692,6 +2771,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-375 directories, 2281 files
+381 directories, 2354 files
 ```
 <!-- readme-tree end -->
