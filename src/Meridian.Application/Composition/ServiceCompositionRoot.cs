@@ -36,6 +36,7 @@ public static class ServiceCompositionRoot
         new ProviderFeatureRegistration(),
         new SymbolManagementFeatureRegistration(),
         new BackfillFeatureRegistration(),
+        new EtlFeatureRegistration(),
         new MaintenanceFeatureRegistration(),
         new DiagnosticsFeatureRegistration(),
         new PipelineFeatureRegistration(),
@@ -89,6 +90,9 @@ public static class ServiceCompositionRoot
         // Backfill services — depends on ProviderRegistry/ProviderFactory
         if (options.EnableBackfillServices)
             services.RegisterFeature<BackfillFeatureRegistration>(options);
+
+        if (options.EnableEtlServices)
+            services.RegisterFeature<EtlFeatureRegistration>(options);
 
         // Remaining optional services
         if (options.EnableMaintenanceServices)
@@ -208,6 +212,7 @@ public sealed record CompositionOptions
     {
         EnableSymbolManagement = true,
         EnableBackfillServices = true,
+        EnableEtlServices = true,
         EnableMaintenanceServices = true,
         EnableDiagnosticServices = true,
         EnableCredentialServices = true,
@@ -225,6 +230,7 @@ public sealed record CompositionOptions
     {
         EnableSymbolManagement = false,
         EnableBackfillServices = false,
+        EnableEtlServices = false,
         EnableMaintenanceServices = false,
         EnableDiagnosticServices = false,
         EnableCredentialServices = false,
@@ -241,6 +247,7 @@ public sealed record CompositionOptions
     {
         EnableSymbolManagement = true,
         EnableBackfillServices = true,
+        EnableEtlServices = true,
         EnableMaintenanceServices = true,
         EnableDiagnosticServices = true,
         EnableCredentialServices = true,
@@ -258,6 +265,7 @@ public sealed record CompositionOptions
     {
         EnableSymbolManagement = true,
         EnableBackfillServices = true,
+        EnableEtlServices = true,
         EnableMaintenanceServices = false,
         EnableDiagnosticServices = true,
         EnableCredentialServices = true,
@@ -275,6 +283,7 @@ public sealed record CompositionOptions
     {
         EnableSymbolManagement = false,
         EnableBackfillServices = true,
+        EnableEtlServices = true,
         EnableMaintenanceServices = false,
         EnableDiagnosticServices = false,
         EnableCredentialServices = true,
@@ -292,6 +301,7 @@ public sealed record CompositionOptions
     {
         EnableSymbolManagement = false,
         EnableBackfillServices = true,
+        EnableEtlServices = true,
         EnableMaintenanceServices = false,
         EnableDiagnosticServices = false,
         EnableCredentialServices = true,
@@ -314,6 +324,7 @@ public sealed record CompositionOptions
 
     public bool EnableSymbolManagement { get; init; }
     public bool EnableBackfillServices { get; init; }
+    public bool EnableEtlServices { get; init; }
     public bool EnableMaintenanceServices { get; init; }
     public bool EnableDiagnosticServices { get; init; }
     public bool EnableCredentialServices { get; init; }
