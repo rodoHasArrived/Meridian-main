@@ -144,6 +144,14 @@ internal sealed class PipelineFeatureRegistration : IServiceFeatureRegistration
                 logger: logger);
         });
 
+        services.AddSingleton<PersistentDedupLedger>(sp =>
+        {
+            var storageOptions = sp.GetRequiredService<StorageOptions>();
+            var ledger = new PersistentDedupLedger(Path.Combine(storageOptions.RootPath, "_dedup"));
+            ledger.InitializeAsync().GetAwaiter().GetResult();
+            return ledger;
+        });
+
         // EventPipeline - bounded channel event routing with WAL for durability.
         services.AddSingleton<EventPipeline>(sp =>
         {
@@ -151,6 +159,7 @@ internal sealed class PipelineFeatureRegistration : IServiceFeatureRegistration
             var metrics = sp.GetRequiredService<IEventMetrics>();
             var wal = sp.GetService<Storage.Archival.WriteAheadLog>();
             var auditTrail = sp.GetService<Pipeline.DroppedEventAuditTrail>();
+            var dedupLedger = sp.GetService<PersistentDedupLedger>();
 
             var configStore = sp.GetRequiredService<ConfigStore>();
             var config = configStore.Load();
@@ -175,7 +184,8 @@ internal sealed class PipelineFeatureRegistration : IServiceFeatureRegistration
                 auditTrail: auditTrail,
                 validator: validator,
                 deadLetterSink: deadLetterSink,
-                consumerCount: wal is null && validator is null && Environment.ProcessorCount > 2 ? 2 : 1);
+                dedupLedger: dedupLedger,
+                consumerCount: wal is null && validator is null && dedupLedger is null && Environment.ProcessorCount > 2 ? 2 : 1);
         });
 
         // IMarketEventPublisher - facade for publishing events.

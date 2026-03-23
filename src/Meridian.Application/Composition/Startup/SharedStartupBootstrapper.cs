@@ -247,6 +247,7 @@ internal static class CommandDispatchPlanner
             new DryRunCommand(cfg, configService, log),
             new SelfTestCommand(log),
             new PackageCommands(cfg, log),
+            new EtlCommands(cfgPath, log),
             new ConfigPresetCommand(new AutoConfigurationService(), log),
             new QueryCommand(new HistoricalDataQueryService(cfg.DataRoot), log),
             new CatalogCommand(storageSearchService, log),
