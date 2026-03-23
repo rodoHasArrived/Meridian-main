@@ -903,6 +903,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── ConfigPresetCommand.cs
 │   │   │   ├── DiagnosticsCommands.cs
 │   │   │   ├── DryRunCommand.cs
+│   │   │   ├── EtlCommands.cs
 │   │   │   ├── GenerateLoaderCommand.cs
 │   │   │   ├── HelpCommand.cs
 │   │   │   ├── ICliCommand.cs
@@ -923,6 +924,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── CoordinationFeatureRegistration.cs
 │   │   │   │   ├── CredentialFeatureRegistration.cs
 │   │   │   │   ├── DiagnosticsFeatureRegistration.cs
+│   │   │   │   ├── EtlFeatureRegistration.cs
 │   │   │   │   ├── HttpClientFeatureRegistration.cs
 │   │   │   │   ├── IServiceFeatureRegistration.cs
 │   │   │   │   ├── MaintenanceFeatureRegistration.cs
@@ -968,6 +970,9 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── SubscriptionOwnershipService.cs
 │   │   ├── Credentials
 │   │   │   └── ICredentialStore.cs
+│   │   ├── Etl
+│   │   │   ├── EtlAbstractions.cs
+│   │   │   └── EtlServices.cs
 │   │   ├── Filters
 │   │   │   └── MarketEventFilter.cs
 │   │   ├── GlobalUsings.cs
@@ -1267,6 +1272,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── SubscriptionId.cs
 │   │   │   ├── SymbolId.cs
 │   │   │   └── VenueCode.cs
+│   │   ├── Etl
+│   │   │   └── EtlModels.cs
 │   │   ├── Export
 │   │   │   ├── AnalysisExportModels.cs
 │   │   │   ├── ExportPreset.cs
@@ -1578,6 +1585,14 @@ Use these documents together when planning or implementing new work:
 │   │   ├── DataSources
 │   │   │   ├── DataSourceBase.cs
 │   │   │   └── DataSourceConfiguration.cs
+│   │   ├── Etl
+│   │   │   ├── CsvPartnerFileParser.cs
+│   │   │   ├── ISftpFilePublisher.cs
+│   │   │   ├── LocalFileSourceReader.cs
+│   │   │   ├── Sftp
+│   │   │   │   └── ISftpClientFactory.cs
+│   │   │   ├── SftpFilePublisher.cs
+│   │   │   └── SftpFileSourceReader.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── Http
 │   │   │   ├── HttpClientConfiguration.cs
@@ -1719,6 +1734,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── CompressionProfileManager.cs
 │   │   │   ├── SchemaVersionManager.cs
 │   │   │   └── WriteAheadLog.cs
+│   │   ├── Etl
+│   │   │   └── EtlStores.cs
 │   │   ├── Export
 │   │   │   ├── AnalysisExportService.Features.cs
 │   │   │   ├── AnalysisExportService.Formats.Arrow.cs
@@ -2342,6 +2359,10 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── CredentialStatusTests.cs
 │   │   │   │   ├── CredentialTestingServiceTests.cs
 │   │   │   │   └── OAuthTokenTests.cs
+│   │   │   ├── Etl
+│   │   │   │   ├── EtlJobDefinitionStoreTests.cs
+│   │   │   │   ├── EtlJobOrchestratorTests.cs
+│   │   │   │   └── EtlNormalizationServiceTests.cs
 │   │   │   ├── Indicators
 │   │   │   │   └── TechnicalIndicatorServiceTests.cs
 │   │   │   ├── Monitoring
@@ -2433,6 +2454,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   └── CppTraderOrderGatewayTests.cs
 │   │   │   ├── DataSources
 │   │   │   │   └── CredentialConfigTests.cs
+│   │   │   ├── Etl
+│   │   │   │   └── CsvPartnerFileParserTests.cs
 │   │   │   ├── Providers
 │   │   │   │   ├── AlpacaCredentialAndReconnectTests.cs
 │   │   │   │   ├── AlpacaMessageParsingTests.cs
@@ -2669,6 +2692,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-368 directories, 2265 files
+375 directories, 2281 files
 ```
 <!-- readme-tree end -->
