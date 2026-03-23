@@ -1,0 +1,190 @@
+// Domain Event Model Diagram
+// Meridian v1.7.x
+// Last Updated: 2026-03-23
+//
+// This diagram shows the MarketEvent domain model hierarchy: the sealed
+// record envelope, all payload types, event type enum, and tier classification.
+//
+// Generate: dot -Tpng domain-event-model.dot -o domain-event-model.png
+//           dot -Tsvg domain-event-model.dot -o domain-event-model.svg
+
+digraph DomainEventModel {
+  rankdir=TB;
+  graph [fontname="Helvetica", fontsize=12, bgcolor="white", compound=true, pad=0.5];
+  node  [fontname="Helvetica", fontsize=10, shape=box, style="rounded,filled"];
+  edge  [fontname="Helvetica", fontsize=9, color="#4a5568"];
+
+  // Title
+  labelloc="t";
+  label="Meridian - Domain Event Model\nMarketEvent Sealed Record Hierarchy | v1.7.x";
+
+  // Top-Level Event Envelope
+  subgraph cluster_envelope {
+    label="Event Envelope (Meridian.Contracts)";
+    color="#805ad5";
+    style="rounded";
+    bgcolor="#faf5ff";
+
+    EVENT [fillcolor="#ddd6fe",
+           label="MarketEvent\n[Sealed Record]\n\nTimestamp: DateTimeOffset\nSymbol: string\nType: MarketEventType\nPayload: MarketEventPayload\nSequence: long\nSource: string\nSchemaVersion: int\nCanonicalSymbol: string\nCanonicalVenue: string"];
+
+    FACTORIES [shape=note, fillcolor="#e9d5ff",
+               label="Static Factory Methods:\n\nMarketEvent.Trade(symbol, payload, source)\nMarketEvent.L2Snapshot(symbol, payload, source)\nMarketEvent.BboQuote(symbol, payload, source)\nMarketEvent.HistoricalBar(symbol, payload, source)\nMarketEvent.Heartbeat(symbol, source)\nMarketEvent.IntegrityEvent(symbol, payload, source)\nMarketEvent.OrderFlowStats(symbol, payload, source)"];
+  }
+
+  // Event Type Enum
+  subgraph cluster_type_enum {
+    label="MarketEventType (Enum)";
+    color="#2b6cb0";
+    style="rounded";
+    bgcolor="#dbeafe";
+
+    subgraph cluster_realtime_types {
+      label="Real-Time Event Types";
+      style="dashed";
+      color="#1e40af";
+
+      RT_TYPES [shape=note, fillcolor="#bfdbfe",
+                label="Trade\nBboQuote\nL2Snapshot\nAggregateBar\nOrderFlowStatistics\nHeartbeat\nIntegrityEvent"];
+    }
+
+    subgraph cluster_historical_types {
+      label="Historical Event Types";
+      style="dashed";
+      color="#1e40af";
+
+      HIST_TYPES [shape=note, fillcolor="#93c5fd",
+                  label="HistoricalBar\nDividend\nSplit\nCorporateAction"];
+    }
+
+    subgraph cluster_options_types {
+      label="Options Event Types";
+      style="dashed";
+      color="#1e40af";
+
+      OPT_TYPES [shape=note, fillcolor="#dbeafe",
+                 label="OptionQuote\nOptionTrade\nOptionGreeks\nOptionChain"];
+    }
+
+    subgraph cluster_order_types {
+      label="Order Book Event Types (L3)";
+      style="dashed";
+      color="#1e40af";
+
+      ORD_TYPES [shape=note, fillcolor="#e0e7ff",
+                 label="OrderAdd\nOrderModify\nOrderCancel\nOrderExecute\nOrderReplace"];
+    }
+  }
+
+  // Payload Union
+  subgraph cluster_payload {
+    label="MarketEventPayload (Sealed Union / Discriminated Union)";
+    color="#2c7a7b";
+    style="rounded";
+    bgcolor="#d1fae5";
+
+    PAYLOAD [shape=ellipse, fillcolor="#6ee7b7",
+             label="MarketEventPayload\n[Abstract Base]\n\nSealed class hierarchy\nOne payload per event\nPattern-match safe"];
+
+    // Trade Payload
+    TRADE_P [fillcolor="#a7f3d0",
+             label="TradePayload\n\nPrice: decimal\nSize: decimal\nSide: AggressorSide\nConditions: string[]\nSequenceNumber: long\nExchangeTime: DateTimeOffset\nTradeId: string"];
+
+    // BBO Quote Payload
+    BBO_P [fillcolor="#a7f3d0",
+           label="BboQuotePayload\n\nBidPrice: decimal\nBidSize: decimal\nAskPrice: decimal\nAskSize: decimal\nSpread: decimal (computed)\nMidPrice: decimal (computed)\nSequenceNumber: long"];
+
+    // LOB Snapshot Payload
+    LOB_P [fillcolor="#a7f3d0",
+           label="LobSnapshotPayload\n\nBids: PriceLevel[]\nAsks: PriceLevel[]\nDepthLevels: int\nSequenceNumber: long\nIsFullSnapshot: bool\nPriceLevel:\n  Price, Size, OrderCount"];
+
+    // Historical Bar Payload
+    BAR_P [fillcolor="#a7f3d0",
+           label="HistoricalBarPayload\n\nOpen: decimal\nHigh: decimal\nLow: decimal\nClose: decimal\nVolume: long\nVwap: decimal\nSessionDate: DateOnly\nSource: string\nInterval: TimeSpan\nIsAdjusted: bool\n(computed: Range, BodySize,\n IsBullish, TypicalPrice, Notional)"];
+
+    // Order Flow Statistics Payload
+    FLOW_P [fillcolor="#a7f3d0",
+            label="OrderFlowStatsPayload\n\nBuyVolume: long\nSellVolume: long\nDelta: long (computed)\nCumulativeDelta: long\nVwap: decimal\nImbalance: decimal\nWindowSize: TimeSpan"];
+
+    // Integrity Event Payload
+    INTEGRITY_P [fillcolor="#fecaca",
+                 label="IntegrityEventPayload\n\nSeverity: IntegritySeverity\n(Info/Warning/Error)\nGapStart: long (sequence)\nGapEnd: long (sequence)\nMissingCount: int\nEventType: MarketEventType\nDescription: string"];
+
+    // Heartbeat Payload
+    HEART_P [fillcolor="#e2e8f0",
+             label="HeartbeatPayload\n\nProviderStatus: string\nLatency: TimeSpan\nEventRate: double (events/sec)\nDroppedCount: long"];
+  }
+
+  // Event Tiers
+  subgraph cluster_tiers {
+    label="MarketEventTier (Processing Stage)";
+    color="#ed8936";
+    style="rounded";
+    bgcolor="#fffaf0";
+
+    TIER_RAW [fillcolor="#feebc8",
+              label="Raw\n\nDirect from provider\nMinimal processing\nProvider-native format"];
+
+    TIER_CANON [fillcolor="#fbd38d",
+                label="Canonicalized\n\nNormalized symbol\nStandard exchange code\nCanonicalSymbol populated\nCanonicalVenue populated"];
+
+    TIER_ENRICHED [fillcolor="#f6ad55",
+                   label="Enriched\n\nAdditional calculations\nVWAP computed\nSpread computed\nImbalance computed\nGreeks computed (options)"];
+
+    TIER_RAW -> TIER_CANON [color="#ed8936", penwidth=2, label="canonicalization"];
+    TIER_CANON -> TIER_ENRICHED [color="#ed8936", penwidth=2, label="enrichment"];
+  }
+
+  // Supporting Enums
+  subgraph cluster_enums {
+    label="Supporting Enums";
+    color="#38a169";
+    style="rounded";
+    bgcolor="#c6f6d5";
+
+    AGGRESSOR [shape=note, fillcolor="#9ae6b4",
+               label="AggressorSide:\nBuy | Sell | Unknown"];
+
+    INTEGRITY_SEV [shape=note, fillcolor="#9ae6b4",
+                   label="IntegritySeverity:\nInfo | Warning | Error"];
+
+    ORDER_SIDE [shape=note, fillcolor="#9ae6b4",
+                label="OrderBookSide:\nBid | Ask"];
+
+    COND_MAP [shape=note, fillcolor="#9ae6b4",
+              label="CanonicalTradeCondition:\nRegular, Opening, Closing,\nOddLot, FormT, Correction, ..."];
+  }
+
+  // Data Flow
+  EVENT -> PAYLOAD [color="#2c7a7b", penwidth=2, label="contains"];
+  EVENT -> FACTORIES [style=dashed, color="#805ad5"];
+
+  PAYLOAD -> TRADE_P [color="#2c7a7b", style=dashed];
+  PAYLOAD -> BBO_P [color="#2c7a7b", style=dashed];
+  PAYLOAD -> LOB_P [color="#2c7a7b", style=dashed];
+  PAYLOAD -> BAR_P [color="#2c7a7b", style=dashed];
+  PAYLOAD -> FLOW_P [color="#2c7a7b", style=dashed];
+  PAYLOAD -> INTEGRITY_P [color="#c53030", style=dashed];
+  PAYLOAD -> HEART_P [color="#718096", style=dashed];
+
+  EVENT -> RT_TYPES [style=dashed, color="#2b6cb0"];
+  EVENT -> HIST_TYPES [style=dashed, color="#2b6cb0"];
+  EVENT -> OPT_TYPES [style=dashed, color="#2b6cb0"];
+  EVENT -> ORD_TYPES [style=dashed, color="#2b6cb0"];
+
+  TRADE_P -> AGGRESSOR [style=dashed, color="#38a169"];
+  LOB_P -> ORDER_SIDE [style=dashed, color="#38a169"];
+  TRADE_P -> COND_MAP [style=dashed, color="#38a169"];
+  INTEGRITY_P -> INTEGRITY_SEV [style=dashed, color="#38a169"];
+
+  // Legend
+  subgraph cluster_legend {
+    label="Legend";
+    style="rounded";
+    color="#666666";
+    bgcolor="#fafafa";
+
+    LEG [shape=plaintext,
+         label="━━ Composition (contains)\n─ ─ Type association / enum membership\nSealed = no external subclassing allowed\nUnion = one payload type per event"];
+  }
+}

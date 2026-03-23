@@ -1,9 +1,10 @@
 // Event Pipeline Sequence Diagram
-// Meridian v1.6.1
-// Last Updated: 2026-02-21
+// Meridian v1.7.x
+// Last Updated: 2026-03-23
 //
 // This diagram shows the sequence of event processing through the pipeline,
-// from data source to storage and optional distributed messaging.
+// including the dual-path pipeline, dedup ledger, schema upcasting,
+// dropped event audit trail, and distributed messaging path.
 //
 // Generate: dot -Tpng event-pipeline-sequence.dot -o event-pipeline-sequence.png
 //           dot -Tsvg event-pipeline-sequence.dot -o event-pipeline-sequence.svg
@@ -16,7 +17,7 @@ digraph EventPipelineSequence {
 
   // Title
   labelloc="t";
-  label="Meridian - Event Pipeline Sequence\nAsync Producer-Consumer Pattern | v1.6.1";
+  label="Meridian - Event Pipeline Sequence\nAsync Producer-Consumer Pattern | v1.7.x";
 
   // Phase 1: Data Source
   subgraph cluster_source {
@@ -83,6 +84,17 @@ digraph EventPipelineSequence {
                label="Validation Rules:\n• Price > 0\n• Size > 0\n• Valid timestamp\n• Symbol format"];
   }
 
+  // Phase 4b: Schema Upcasting (optional)
+  subgraph cluster_upcaster {
+    label="4b. Schema Migration (optional)";
+    color="#718096";
+    style="dashed";
+    bgcolor="#f7fafc";
+
+    UPCASTER [fillcolor="#e2e8f0",
+              label="SchemaUpcasterRegistry\n\nSemantic version detection\nAutomatic schema migration\nLegacy event format support\nForward-compatible reads"];
+  }
+
   // Phase 5: Event Pipeline
   subgraph cluster_pipeline {
     label="5. Event Pipeline (System.Threading.Channels)";
@@ -93,11 +105,29 @@ digraph EventPipelineSequence {
     CHANNEL [fillcolor="#c4b5fd",
              label="BoundedChannel<MarketEvent>\n\nCapacity: 100,000\nDropOldest on full\nAsync write/read"];
 
+    subgraph cluster_dual_path {
+      label="DualPathEventPipeline";
+      style="dashed";
+      color="#6b21a8";
+
+      HOT_PATH [fillcolor="#ddd6fe",
+                label="Hot Path\n\nFast lane (no WAL)\nLow-latency dispatch\nMetrics only"];
+
+      SLOW_PATH [fillcolor="#ddd6fe",
+                 label="Slow Path\n\nValidation + WAL\nDedup check\nFull durability"];
+    }
+
     PIPELINE_READER [fillcolor="#c4b5fd",
-                     label="Pipeline Reader\n\nBackground consumer\nBatch processing"];
+                     label="Pipeline Reader\n\nBackground consumer\nBatch processing\n100 events / 5s flush"];
+
+    DEDUP [fillcolor="#c4b5fd",
+           label="PersistentDedupLedger\n\nCross-run deduplication\nBloom filter (fast path)\nContent hash storage\nPersisted to disk"];
+
+    DROPPED_AUDIT [fillcolor="#ddd6fe",
+                   label="DroppedEventAuditTrail\n\nTrack channel-dropped events\nSymbol + type + timestamp\nRecovery hints\nMetrics counter"];
 
     CHANNEL_STATS [shape=note, fillcolor="#ddd6fe",
-                   label="Metrics:\n• Channel depth\n• Events/second\n• Drop count"];
+                   label="Metrics:\n• Channel depth\n• Events/second\n• Drop count\n• Dedup hit rate"];
   }
 
   // Phase 6: Composite Publisher
@@ -192,7 +222,13 @@ digraph EventPipelineSequence {
   DEPTH_COLL -> FSHARP_VAL [color="#2c7a7b"];
   FSHARP_VAL -> VAL_RULES [style=dashed];
 
+  FSHARP_VAL -> UPCASTER [style=dashed, label="4b if legacy"];
+  UPCASTER -> CHANNEL [style=dashed];
   FSHARP_VAL -> CHANNEL [color="#805ad5", penwidth=2, label="4\nasync write"];
+  CHANNEL -> HOT_PATH [color="#805ad5", style=dashed];
+  CHANNEL -> SLOW_PATH [color="#805ad5", style=dashed];
+  SLOW_PATH -> DEDUP [color="#805ad5", style=dashed];
+  DEDUP -> DROPPED_AUDIT [style=dashed];
   CHANNEL -> CHANNEL_STATS [style=dashed];
   CHANNEL -> PIPELINE_READER [color="#805ad5", label="5\nasync read"];
   PIPELINE_READER -> COMPOSITE [color="#805ad5", penwidth=2];

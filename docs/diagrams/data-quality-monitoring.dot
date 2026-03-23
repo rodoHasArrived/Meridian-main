@@ -1,0 +1,220 @@
+// Data Quality & Monitoring Diagram
+// Meridian v1.7.x
+// Last Updated: 2026-03-23
+//
+// This diagram shows data quality scoring, SLA enforcement, outlier detection,
+// retention compliance, and the observability/monitoring stack.
+//
+// Generate: dot -Tpng data-quality-monitoring.dot -o data-quality-monitoring.png
+//           dot -Tsvg data-quality-monitoring.dot -o data-quality-monitoring.svg
+
+digraph DataQualityMonitoring {
+  rankdir=TB;
+  graph [fontname="Helvetica", fontsize=12, bgcolor="white", compound=true, pad=0.5];
+  node  [fontname="Helvetica", fontsize=10, shape=box, style="rounded,filled"];
+  edge  [fontname="Helvetica", fontsize=9, color="#4a5568"];
+
+  // Title
+  labelloc="t";
+  label="Meridian - Data Quality & Monitoring\nQuality Scoring, SLA Enforcement & Observability | v1.7.x";
+
+  // Data Quality Scoring
+  subgraph cluster_quality {
+    label="Data Quality Scoring (DataQualityScoringService)";
+    color="#c53030";
+    style="rounded";
+    bgcolor="#fee2e2";
+
+    DQS [fillcolor="#fc8181", fontcolor="white",
+         label="DataQualityScoringService\n\nMulti-dimensional quality scoring\nPer-symbol, per-provider\nConfigurable weights\nGrade assignment\nTime-windowed analysis"];
+
+    subgraph cluster_dimensions {
+      label="Quality Dimensions (Weighted Score)";
+      style="dashed";
+      color="#991b1b";
+
+      DIM1 [fillcolor="#fecaca",
+            label="Completeness (30%)\n\nExpected vs actual events\nGap count and duration\nMissing session data\nSubscription coverage"];
+
+      DIM2 [fillcolor="#fecaca",
+            label="Accuracy (25%)\n\nOutlier detection (4σ)\nPrice reasonability checks\nVolume spike detection\nCross-provider validation"];
+
+      DIM3 [fillcolor="#fecaca",
+            label="Timeliness (20%)\n\nEnd-to-end latency\nEvent arrival delay\nOut-of-order rate\nTimestamp drift"];
+
+      DIM4 [fillcolor="#fecaca",
+            label="Consistency (15%)\n\nSequence continuity\nIntra-day price continuity\nCross-symbol consistency\nDuplicate event rate"];
+
+      DIM5 [fillcolor="#fecaca",
+            label="Validity (10%)\n\nSchema compliance\nBusiness rule checks\n(bid < ask, vol ≥ 0)\nFormat correctness"];
+    }
+
+    GRADES [shape=note, fillcolor="#fecaca",
+            label="Quality Grades:\n\nA+ (95-100%) Excellent\nA  (90-94%)  Good\nB  (80-89%)  Acceptable\nC  (70-79%)  Marginal\nD  (60-69%)  Poor\nF  (<60%)    Failing"];
+
+    SCORE_FORMULA [shape=note, fillcolor="#feb2b2",
+                   label="Score Calculation:\n\nWeightedScore = Σ(dimension × weight)\nGrade = bucketize(WeightedScore)\nAlert if grade drops > 1 tier"];
+  }
+
+  // Outlier Detection
+  subgraph cluster_outlier {
+    label="Statistical Outlier Detection";
+    color="#ed8936";
+    style="rounded";
+    bgcolor="#fffaf0";
+
+    OUTLIER [fillcolor="#fbd38d",
+             label="Outlier Detector\n\n4-sigma threshold (Z-score)\nRolling mean + std dev\nPer-symbol calibration\nAdaptive window size"];
+
+    subgraph cluster_checks {
+      label="Detection Checks";
+      style="dashed";
+      color="#c05621";
+
+      PRICE_CHECK [shape=note, fillcolor="#feebc8",
+                   label="Price Outliers:\n|P - mean| > 4σ\nFlag and log\nOptional suppress"];
+
+      VOL_CHECK [shape=note, fillcolor="#feebc8",
+                 label="Volume Spikes:\nVol > 10× rolling avg\nFlag suspicious prints\nCross-validate with depth"];
+
+      SEQ_CHECK [shape=note, fillcolor="#feebc8",
+                 label="Sequence Validation:\nGap detection\nOut-of-order detection\nDuplicate detection\nEmit IntegrityEvent"];
+
+      GAP_CHECK [shape=note, fillcolor="#feebc8",
+                 label="Gap Detection:\nExpected event intervals\nSession boundary handling\nMissing bar detection\nBackfill trigger on gap"];
+    }
+  }
+
+  // SLA Enforcement
+  subgraph cluster_sla {
+    label="SLA Enforcement";
+    color="#2b6cb0";
+    style="rounded";
+    bgcolor="#dbeafe";
+
+    SLA_SERVICE [fillcolor="#bfdbfe",
+                 label="SlaEnforcementService\n\nPer-symbol SLA targets\nProvider-level SLAs\nReal-time monitoring\nAutomatic alerts on breach"];
+
+    subgraph cluster_sla_metrics {
+      label="SLA Metrics";
+      style="dashed";
+      color="#1e40af";
+
+      SLA_LATENCY [shape=note, fillcolor="#dbeafe",
+                   label="Latency SLA:\nMax end-to-end: 500ms\nP99 target: 200ms\nHeartbeat interval: 30s"];
+
+      SLA_AVAIL [shape=note, fillcolor="#dbeafe",
+                 label="Availability SLA:\nTarget uptime: 99.9%\nMax gap: 5 minutes\nSession coverage: 100%"];
+
+      SLA_QUALITY [shape=note, fillcolor="#dbeafe",
+                   label="Quality SLA:\nMin grade: B (80%)\nMax error rate: 0.1%\nMax duplicates: 0.01%"];
+    }
+
+    SLA_BREACH [shape=diamond, fillcolor="#fc8181",
+                label="SLA\nBreach?"];
+  }
+
+  // Retention Compliance
+  subgraph cluster_retention {
+    label="Retention & Compliance (RetentionComplianceReporter)";
+    color="#38a169";
+    style="rounded";
+    bgcolor="#c6f6d5";
+
+    RETENTION [fillcolor="#9ae6b4",
+               label="RetentionComplianceReporter\n\nPolicy enforcement audit\nStorage size tracking\nAge-based deletion rules\nCompliance report generation\nRegulatory data retention"];
+
+    CATALOG [fillcolor="#9ae6b4",
+             label="StorageCatalogService\n\nFile discovery and indexing\nSymbol × date × type inventory\nSize and record count tracking\nBackfill gap identification\nData lineage tracking"];
+
+    POLICIES [shape=note, fillcolor="#bbf7d0",
+              label="Retention Policies:\n• Time-based (RetentionDays)\n• Capacity-based (MaxTotalBytes)\n• Tier-based (auto-migrate)\n• Eager enforcement on write"];
+  }
+
+  // Observability Stack
+  subgraph cluster_observability {
+    label="Observability Stack";
+    color="#805ad5";
+    style="rounded";
+    bgcolor="#faf5ff";
+
+    PROMETHEUS [fillcolor="#ddd6fe",
+                label="Prometheus Metrics\n\nmdc_events_published_total\nmdc_events_dropped_total\nmdc_events_per_second\nmdc_channel_depth\nmdc_provider_health_score\nmdc_quality_grade_numeric\nmdc_wal_pending_bytes\nmdc_backfill_progress_pct"];
+
+    GRAFANA [fillcolor="#e9d5ff",
+             label="Grafana Dashboards\n\nReal-time event rate\nProvider health heatmap\nQuality grade trends\nStorage tier utilization\nBackfill progress tracker\nSLA breach alerts"];
+
+    OTEL [fillcolor="#e9d5ff",
+          label="OpenTelemetry Traces\n\nSpan per event batch\nDistributed context\nProvider → pipeline → storage\nEnd-to-end latency tracking"];
+
+    HEALTH [fillcolor="#e9d5ff",
+            label="Health Checks\n/health\n/metrics\n/status\n\nProvider connectivity\nStorage write-ability\nPipeline throughput\nMemory pressure"];
+
+    STATUS_HTTP [fillcolor="#ddd6fe",
+                 label="StatusHttpServer\n\n:5000 (default)\nHTTP status endpoint\nPrometheus scrape target\nLiveness + readiness probes"];
+  }
+
+  // Alerting
+  subgraph cluster_alerts {
+    label="Alert Channels";
+    color="#e53e3e";
+    style="rounded";
+    bgcolor="#fff5f5";
+
+    ALERT_LOG [fillcolor="#fecaca",
+               label="Structured Log Alerts\n\nSerilog warning/error\nContext-rich entries\nProvider + symbol + code"];
+
+    ALERT_PROM [fillcolor="#fecaca",
+                label="Prometheus Alertmanager\n\nSLA breach rules\nQuality grade alerts\nProvider down alerts\nChannel saturation alert"];
+
+    ALERT_HEALTH [fillcolor="#fecaca",
+                  label="Health Check Failures\n\nReadiness probe fails\nK8s/Docker health check\nRestart policy triggers"];
+  }
+
+  // Data Flow
+  DQS -> DIM1 [style=dashed];
+  DQS -> DIM2 [style=dashed];
+  DQS -> DIM3 [style=dashed];
+  DQS -> DIM4 [style=dashed];
+  DQS -> DIM5 [style=dashed];
+  DQS -> GRADES [style=dashed];
+  DQS -> SCORE_FORMULA [style=dashed];
+
+  DIM2 -> OUTLIER [color="#ed8936", penwidth=2, label="feeds"];
+  OUTLIER -> PRICE_CHECK [style=dashed];
+  OUTLIER -> VOL_CHECK [style=dashed];
+  DIM4 -> SEQ_CHECK [color="#ed8936"];
+  DIM1 -> GAP_CHECK [color="#ed8936"];
+
+  DQS -> SLA_SERVICE [color="#2b6cb0", penwidth=2, label="score → check SLA"];
+  SLA_SERVICE -> SLA_LATENCY [style=dashed];
+  SLA_SERVICE -> SLA_AVAIL [style=dashed];
+  SLA_SERVICE -> SLA_QUALITY [style=dashed];
+  SLA_SERVICE -> SLA_BREACH [color="#2b6cb0"];
+
+  SLA_BREACH -> ALERT_PROM [label="yes", color="#c53030"];
+  SLA_BREACH -> ALERT_LOG [label="yes", color="#c53030"];
+
+  DQS -> RETENTION [color="#38a169", label="triggers policy"];
+  RETENTION -> CATALOG [color="#38a169"];
+  RETENTION -> POLICIES [style=dashed];
+
+  DQS -> PROMETHEUS [color="#805ad5", penwidth=2, label="emit metrics"];
+  PROMETHEUS -> GRAFANA [color="#805ad5"];
+  PROMETHEUS -> ALERT_PROM [color="#805ad5", style=dashed];
+  STATUS_HTTP -> PROMETHEUS [color="#805ad5", style=dashed];
+  OTEL -> GRAFANA [color="#805ad5", style=dashed];
+  HEALTH -> STATUS_HTTP [color="#805ad5"];
+  HEALTH -> ALERT_HEALTH [color="#805ad5", style=dashed];
+
+  // Legend
+  subgraph cluster_legend {
+    label="Legend";
+    style="rounded";
+    color="#666666";
+    bgcolor="#fafafa";
+
+    LEG [shape=plaintext,
+         label="━━ Primary data flow\n─ ─ Configuration / Reference\nDiamond = Decision point\nAll metrics are Prometheus-compatible"];
+  }
+}
