@@ -126,7 +126,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload Copilot brief artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: copilot-swe-agent-brief-${{ github.run_id }}
           path: ${{ env.RESULTS_FILE }}

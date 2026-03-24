@@ -154,7 +154,7 @@ jobs:
 
     - name: Upload golden fixture results
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: golden-fixture-results
         path: tests/Meridian.Tests/TestResults/golden-fixtures.trx
@@ -170,7 +170,7 @@ jobs:
 
     - name: Upload canonicalization drift report
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: canonicalization-drift-report
         path: canonicalization-drift-report.md
