@@ -48,7 +48,6 @@
   <ItemGroup Label="ASP.NET Core">
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="9.0.14" />
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="10.1.5" />
-    <PackageVersion Include="AspNetCoreRateLimit" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup Label="Logging - Serilog">
@@ -83,7 +82,6 @@
 
   <ItemGroup Label="Validation">
     <PackageVersion Include="FluentValidation" Version="12.1.1" />
-    <PackageVersion Include="FluentValidation.AspNetCore" Version="11.3.1" />
   </ItemGroup>
 
   <ItemGroup Label="JSON Serialization">
@@ -135,7 +133,6 @@
     <PackageVersion Include="StockSharp.InteractiveBrokers" Version="5.0.129" />
   </ItemGroup>
 
-
   <ItemGroup Label="Benchmarking">
     <PackageVersion Include="BenchmarkDotNet" Version="0.15.8" />
     <PackageVersion Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.15.8" />
@@ -143,7 +140,6 @@
 
   <ItemGroup Label="Testing">
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.3.0" />
-    <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="9.0.12" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.12" />
     <PackageVersion Include="xunit" Version="2.9.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
@@ -163,20 +159,9 @@
 
   <ItemGroup Label="WinUI / Desktop">
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.2.2" />
-    <PackageVersion Include="CommunityToolkit.WinUI.Controls.Primitives" Version="8.2.251219" />
-    <PackageVersion Include="CommunityToolkit.WinUI.Controls.Sizers" Version="8.2.250402" />
-    <!-- Use stable 1.7.7 release (1.7.251107005) instead of preview 1.7.0 (1.7.250310001) for better .NET 9 compatibility -->
-    <PackageVersion Include="Microsoft.WindowsAppSDK" Version="1.7.251107005" />
-    <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.1" />
     <!-- WPF-specific packages -->
     <PackageVersion Include="MaterialDesignThemes" Version="5.2.0" />
     <PackageVersion Include="MaterialDesignColors" Version="5.2.0" />
-    <PackageVersion Include="Extended.Wpf.Toolkit" Version="4.6.1" />
-  </ItemGroup>
-
-  <ItemGroup Label="Code Analysis and Tools">
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="5.3.0" />
-    <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
   </ItemGroup>
 
   <ItemGroup Label="Model Context Protocol (MCP)">
