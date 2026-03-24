@@ -27,7 +27,7 @@ concurrency:
 
 jobs:
   regenerate-diagrams:
-    name: Regenerate Graphviz diagrams
+    name: Regenerate diagram artifacts
     runs-on: ubuntu-latest
 
     steps:
@@ -70,22 +70,6 @@ jobs:
             echo "Generated ${base}.png"
           done
 
-      - name: Commit regenerated diagrams
-        uses: stefanzweifel/git-auto-commit-action@v7
-        with:
-          commit_message: 'docs(diagrams): regenerate Graphviz artifacts from DOT sources'
-          file_pattern: docs/diagrams/**/*.dot docs/diagrams/**/*.svg docs/diagrams/**/*.png
-
-  regenerate-uml-diagrams:
-    name: Regenerate PNG diagrams from PlantUML sources
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
       - name: Install PlantUML
         run: |
           sudo apt-get update
@@ -115,8 +99,8 @@ jobs:
             plantuml -tpng "$file"
           done
 
-      - name: Commit regenerated UML diagrams
+      - name: Commit regenerated diagram artifacts
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
-          commit_message: 'docs(uml): regenerate PNG diagrams from PlantUML sources'
-          file_pattern: docs/diagrams/uml/*.png
+          commit_message: 'docs(diagrams): regenerate diagram artifacts from sources'
+          file_pattern: docs/diagrams/**/*.dot docs/diagrams/**/*.puml docs/diagrams/**/*.svg docs/diagrams/**/*.png
