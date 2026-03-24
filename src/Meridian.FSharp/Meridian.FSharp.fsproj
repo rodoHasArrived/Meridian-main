@@ -71,7 +71,10 @@
     <PropertyGroup>
       <InteropOutput>$(MSBuildProjectDirectory)/Generated/Meridian.FSharp.Interop.g.cs</InteropOutput>
     </PropertyGroup>
-    <Exec Command="dotnet run --project &quot;$(MSBuildProjectDirectory)/../../build/dotnet/FSharpInteropGenerator/FSharpInteropGenerator.csproj&quot; -- --output &quot;$(InteropOutput)&quot;" />
+    <!-- Only regenerate when the output file is missing; skip if it already exists to avoid
+         requiring the FSharpInteropGenerator tool during offline or CI-cached builds. -->
+    <Exec Command="dotnet run --project &quot;$(MSBuildProjectDirectory)/../../build/dotnet/FSharpInteropGenerator/FSharpInteropGenerator.csproj&quot; -- --output &quot;$(InteropOutput)&quot;"
+          Condition="!Exists('$(InteropOutput)')" />
     <ItemGroup>
       <None Include="$(InteropOutput)" Pack="true" PackagePath="contentFiles/any/any/Generated/" />
     </ItemGroup>

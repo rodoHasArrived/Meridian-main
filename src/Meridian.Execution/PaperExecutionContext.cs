@@ -34,7 +34,7 @@ public sealed class PaperExecutionContext : IExecutionContext
         ILiveFeedAdapter feed,
         IReadOnlySet<string> universe,
         decimal initialCash,
-        Ledger? ledger = null)
+        Meridian.Ledger.Ledger? ledger = null)
     {
         Gateway = gateway ?? throw new ArgumentNullException(nameof(gateway));
         Feed = feed ?? throw new ArgumentNullException(nameof(feed));

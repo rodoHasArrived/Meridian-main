@@ -101,7 +101,7 @@ public sealed class NyseNationalTradesCsvParserTests
         record.Timestamp.Minute.Should().Be(31);
         record.Timestamp.Second.Should().Be(56);
         // 104292761 ns → 1042927 ticks (truncated to 100-ns resolution)
-        record.Timestamp.Ticks % TimeSpan.TicksPerSecond.Should().BeGreaterThan(0,
+        (record.Timestamp.Ticks % TimeSpan.TicksPerSecond).Should().BeGreaterThan(0,
             because: "sub-second precision should be preserved from the nanosecond timestamp");
     }
 

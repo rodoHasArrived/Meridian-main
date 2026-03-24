@@ -1,4 +1,3 @@
-using Meridian.Application.Etl;
 using Meridian.Contracts.Etl;
 
 namespace Meridian.Infrastructure.Etl;

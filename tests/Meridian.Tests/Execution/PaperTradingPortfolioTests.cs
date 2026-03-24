@@ -1,5 +1,4 @@
 using FluentAssertions;
-using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
 using Meridian.Ledger;
@@ -25,7 +24,7 @@ public sealed class PaperTradingPortfolioTests
     [Fact]
     public void Constructor_WithLedger_PostsOpeningCapitalEntry()
     {
-        var ledger = new Ledger();
+        var ledger = new Meridian.Ledger.Ledger();
 
         _ = new PaperTradingPortfolio(100_000m, ledger);
 
@@ -41,7 +40,7 @@ public sealed class PaperTradingPortfolioTests
     [Fact]
     public void Constructor_WithLedger_ZeroCash_DoesNotPostOpeningEntry()
     {
-        var ledger = new Ledger();
+        var ledger = new Meridian.Ledger.Ledger();
         _ = new PaperTradingPortfolio(0m, ledger);
 
         ledger.Journal.Should().BeEmpty();
@@ -66,7 +65,7 @@ public sealed class PaperTradingPortfolioTests
     [Fact]
     public void ApplyFill_Buy_PostsSecuritiesAndCashEntriesToLedger()
     {
-        var ledger = new Ledger();
+        var ledger = new Meridian.Ledger.Ledger();
         var portfolio = new PaperTradingPortfolio(100_000m, ledger);
         portfolio.ApplyFill(BuildFill("AAPL", OrderSide.Buy, qty: 10, price: 200m));
 
@@ -81,7 +80,7 @@ public sealed class PaperTradingPortfolioTests
     [Fact]
     public void ApplyFill_Buy_DeductsCommissionFromCash_AndPostsExpenseEntry()
     {
-        var ledger = new Ledger();
+        var ledger = new Meridian.Ledger.Ledger();
         var portfolio = new PaperTradingPortfolio(100_000m, ledger);
         portfolio.ApplyFill(BuildFill("AAPL", OrderSide.Buy, qty: 10, price: 200m, commission: 5m));
 
@@ -99,7 +98,7 @@ public sealed class PaperTradingPortfolioTests
     [Fact]
     public void ApplyFill_Sell_WithGain_RealisesGainAndUpdatesLedger()
     {
-        var ledger = new Ledger();
+        var ledger = new Meridian.Ledger.Ledger();
         var portfolio = new PaperTradingPortfolio(100_000m, ledger);
         portfolio.ApplyFill(BuildFill("AAPL", OrderSide.Buy, qty: 10, price: 200m));
         portfolio.ApplyFill(BuildFill("AAPL", OrderSide.Sell, qty: 10, price: 220m));
@@ -115,7 +114,7 @@ public sealed class PaperTradingPortfolioTests
     [Fact]
     public void ApplyFill_Sell_WithLoss_RealisesLossAndUpdatesLedger()
     {
-        var ledger = new Ledger();
+        var ledger = new Meridian.Ledger.Ledger();
         var portfolio = new PaperTradingPortfolio(100_000m, ledger);
         portfolio.ApplyFill(BuildFill("AAPL", OrderSide.Buy, qty: 10, price: 200m));
         portfolio.ApplyFill(BuildFill("AAPL", OrderSide.Sell, qty: 10, price: 180m));
@@ -130,7 +129,7 @@ public sealed class PaperTradingPortfolioTests
     [Fact]
     public void ApplyFill_Sell_AtCost_PostsSimpleTwoLineEntry()
     {
-        var ledger = new Ledger();
+        var ledger = new Meridian.Ledger.Ledger();
         var portfolio = new PaperTradingPortfolio(100_000m, ledger);
         portfolio.ApplyFill(BuildFill("AAPL", OrderSide.Buy, qty: 10, price: 200m));
         portfolio.ApplyFill(BuildFill("AAPL", OrderSide.Sell, qty: 10, price: 200m));
@@ -186,7 +185,7 @@ public sealed class PaperTradingPortfolioTests
     [Fact]
     public void AfterBuyAndSell_LedgerTrialBalanceIsBalanced()
     {
-        var ledger = new Ledger();
+        var ledger = new Meridian.Ledger.Ledger();
         var portfolio = new PaperTradingPortfolio(100_000m, ledger);
         portfolio.ApplyFill(BuildFill("AAPL", OrderSide.Buy, qty: 5, price: 300m, commission: 2.5m));
         portfolio.ApplyFill(BuildFill("AAPL", OrderSide.Sell, qty: 5, price: 350m, commission: 2.5m));

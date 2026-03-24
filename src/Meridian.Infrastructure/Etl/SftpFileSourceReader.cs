@@ -1,8 +1,6 @@
-using Meridian.Application.Etl;
 using Meridian.Contracts.Etl;
 using Meridian.Infrastructure.Etl.Sftp;
 using Meridian.Storage.Etl;
-using Renci.SshNet;
 
 namespace Meridian.Infrastructure.Etl;
 
@@ -54,7 +52,7 @@ public sealed class SftpFileSourceReader : IEtlSourceReader
         return staged;
     }
 
-    private SftpClient CreateClient(EtlSourceDefinition source, Uri uri)
+    private ISftpClient CreateClient(EtlSourceDefinition source, Uri uri)
     {
         var password = source.SecretRef ?? throw new InvalidOperationException("SFTP secretRef must contain the password in v1.");
         var username = source.Username ?? throw new InvalidOperationException("SFTP username is required.");

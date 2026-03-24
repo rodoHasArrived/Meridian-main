@@ -10,7 +10,7 @@ namespace Meridian.Execution.Services;
 /// </summary>
 public sealed class PaperTradingPortfolio : IPortfolioState
 {
-    private readonly Ledger? _ledger;
+    private readonly Meridian.Ledger.Ledger? _ledger;
     private readonly Lock _lock = new();
     private decimal _cash;
     private decimal _realisedPnl;
@@ -21,7 +21,7 @@ public sealed class PaperTradingPortfolio : IPortfolioState
     /// Initialises the portfolio with <paramref name="initialCash"/> and an optional ledger.
     /// If a ledger is provided, an opening capital entry is posted immediately.
     /// </summary>
-    public PaperTradingPortfolio(decimal initialCash, Ledger? ledger = null)
+    public PaperTradingPortfolio(decimal initialCash, Meridian.Ledger.Ledger? ledger = null)
     {
         if (initialCash < 0)
         {

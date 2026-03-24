@@ -1,7 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using Meridian.Application.Etl;
 using Meridian.Application.Logging;
 using Meridian.Contracts.Etl;
 using Meridian.Storage.Archival;
@@ -76,7 +75,7 @@ public sealed class EtlAuditStore
     public async Task SaveCheckpointAsync(string jobId, EtlCheckpointToken checkpoint, CancellationToken ct = default)
     {
         var path = GetAuditPath(jobId, "checkpoint.json");
-        await AtomicFileWriter.WriteTextAsync(path, JsonSerializer.Serialize(checkpoint, _jsonOptions), ct).ConfigureAwait(false);
+        await AtomicFileWriter.WriteAsync(path, JsonSerializer.Serialize(checkpoint, _jsonOptions), ct).ConfigureAwait(false);
     }
 
     public async Task<EtlCheckpointToken?> LoadCheckpointAsync(string jobId, CancellationToken ct = default)
