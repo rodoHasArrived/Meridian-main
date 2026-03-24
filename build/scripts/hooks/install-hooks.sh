@@ -3,7 +3,7 @@
 # Meridian Git Hook Installer
 # =============================================================================
 #
-# Copies pre-commit and commit-msg hooks from .githooks/ into .git/hooks/.
+# Copies all git hooks from .githooks/ into .git/hooks/.
 #
 # Usage:
 #   ./build/scripts/hooks/install-hooks.sh
