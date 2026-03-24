@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-03-24 22:33:32 UTC. Do not edit manually.
+> Auto-generated on 2026-03-24 23:24:48 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -250,11 +250,18 @@ Meridian-main
 │   │   └── cli
 │   │       └── buildctl.py
 │   └── scripts
-│       └── docs
-│           ├── generate-prompts.py
-│           ├── generate-structure-docs.py
-│           ├── scan-todos.py
-│           └── update-claude-md.py
+│       ├── docs
+│       │   ├── generate-prompts.py
+│       │   ├── generate-structure-docs.py
+│       │   ├── scan-todos.py
+│       │   ├── update-claude-md.py
+│       │   └── validate-golden-path.sh
+│       ├── hooks
+│       │   ├── commit-msg
+│       │   ├── install-hooks.sh
+│       │   └── pre-commit
+│       └── install
+│           └── install.sh
 ├── config
 │   ├── appsettings.sample.json
 │   ├── appsettings.schema.json
@@ -1178,7 +1185,8 @@ Meridian-main
 │   │   ├── Order.cs
 │   │   ├── PortfolioSnapshot.cs
 │   │   ├── Position.cs
-│   │   └── StrategyParameterAttribute.cs
+│   │   ├── StrategyParameterAttribute.cs
+│   │   └── TradeTicket.cs
 │   ├── Meridian.Contracts
 │   │   ├── Api
 │   │   │   ├── Quality
@@ -1914,6 +1922,8 @@ Meridian-main
 │   │   │   │   ├── screens
 │   │   │   │   │   ├── research-screen.test.tsx
 │   │   │   │   │   ├── research-screen.tsx
+│   │   │   │   │   ├── trading-screen.test.tsx
+│   │   │   │   │   ├── trading-screen.tsx
 │   │   │   │   │   └── workspace-placeholder.tsx
 │   │   │   │   ├── styles
 │   │   │   │   │   └── index.css

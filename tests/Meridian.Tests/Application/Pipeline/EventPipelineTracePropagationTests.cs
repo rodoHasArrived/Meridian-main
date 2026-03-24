@@ -31,6 +31,8 @@ public sealed class EventPipelineTracePropagationTests
         sink.ParentSpanIds[0].Should().NotBeNullOrWhiteSpace();
         sink.ParentSpanIds[0].Should().NotBe(parentActivity.SpanId.ToString());
         sink.OperationNames.Should().ContainSingle(name => name == "StoreMarketEvent.TraceCapturingSink");
+        sink.EventTraceIds.Should().ContainSingle(parentActivity.TraceId.ToString());
+        sink.EventParentSpanIds.Should().ContainSingle(parentActivity.SpanId.ToString());
     }
 
     [Fact]
@@ -45,6 +47,8 @@ public sealed class EventPipelineTracePropagationTests
 
         sink.TraceIds.Should().ContainSingle(id => !string.IsNullOrWhiteSpace(id));
         sink.OperationNames.Should().ContainSingle(name => name == "StoreMarketEvent.TraceCapturingSink");
+        sink.EventTraceIds.Should().ContainSingle(id => string.IsNullOrWhiteSpace(id));
+        sink.EventParentSpanIds.Should().ContainSingle(id => string.IsNullOrWhiteSpace(id));
     }
 
     private static ActivityListener CreateListener()
@@ -80,6 +84,8 @@ public sealed class EventPipelineTracePropagationTests
         private readonly List<string?> _traceIds = new();
         private readonly List<string?> _parentSpanIds = new();
         private readonly List<string?> _operationNames = new();
+        private readonly List<string?> _eventTraceIds = new();
+        private readonly List<string?> _eventParentSpanIds = new();
         private readonly TaskCompletionSource<bool> _received = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
         public IReadOnlyList<string?> TraceIds => _traceIds;
@@ -88,11 +94,17 @@ public sealed class EventPipelineTracePropagationTests
 
         public IReadOnlyList<string?> OperationNames => _operationNames;
 
+        public IReadOnlyList<string?> EventTraceIds => _eventTraceIds;
+
+        public IReadOnlyList<string?> EventParentSpanIds => _eventParentSpanIds;
+
         public ValueTask AppendAsync(MarketEvent evt, CancellationToken ct = default)
         {
             _traceIds.Add(Activity.Current?.TraceId.ToString());
             _parentSpanIds.Add(Activity.Current?.ParentSpanId.ToString());
             _operationNames.Add(Activity.Current?.OperationName);
+            _eventTraceIds.Add(evt.TraceId);
+            _eventParentSpanIds.Add(evt.ParentSpanId);
             _received.TrySetResult(true);
             return ValueTask.CompletedTask;
         }

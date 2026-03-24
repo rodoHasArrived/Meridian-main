@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { getResearchWorkspace, getSession } from "@/lib/api";
-import type { ResearchWorkspaceResponse, SessionInfo } from "@/types";
+import { getResearchWorkspace, getSession, getTradingWorkspace } from "@/lib/api";
+import type { ResearchWorkspaceResponse, SessionInfo, TradingWorkspaceResponse } from "@/types";
 
 interface WorkstationState {
   session: SessionInfo | null;
   research: ResearchWorkspaceResponse | null;
+  trading: TradingWorkspaceResponse | null;
   loading: boolean;
   error: string | null;
 }
@@ -13,6 +14,7 @@ export function useWorkstationData(): WorkstationState {
   const [state, setState] = useState<WorkstationState>({
     session: null,
     research: null,
+    trading: null,
     loading: true,
     error: null
   });
@@ -22,11 +24,12 @@ export function useWorkstationData(): WorkstationState {
 
     async function load() {
       try {
-        const [session, research] = await Promise.all([getSession(), getResearchWorkspace()]);
+        const [session, research, trading] = await Promise.all([getSession(), getResearchWorkspace(), getTradingWorkspace()]);
         if (!cancelled) {
           setState({
             session,
             research,
+            trading,
             loading: false,
             error: null
           });
@@ -36,6 +39,7 @@ export function useWorkstationData(): WorkstationState {
           setState({
             session: null,
             research: null,
+            trading: null,
             loading: false,
             error: error instanceof Error ? error.message : "Unable to load workstation data."
           });

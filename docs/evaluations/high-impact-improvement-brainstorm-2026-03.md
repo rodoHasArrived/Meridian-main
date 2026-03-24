@@ -1,7 +1,8 @@
 # High-Impact Improvement Brainstorm — March 2026
 
-**Date:** 2026-03-01
-**Status:** Active — 15 of 31 items complete; 1 partial (1.5); 15 open
+**Date:** 2026-03-01 (initial brainstorm)
+**Last Reconciled:** 2026-03-24
+**Status:** Historical brainstorm; use `docs/status/IMPROVEMENTS.md`, `docs/status/ROADMAP.md`, and `docs/status/FULL_IMPLEMENTATION_TODO_2026_03_20.md` for active execution tracking
 **Author:** Architecture Review
 
 > **Scope**: Ideas that meaningfully improve the quality of the codebase and the
@@ -10,8 +11,25 @@
 
 ---
 
+## Current-State Reconciliation (2026-03-24)
+
+This document is preserved as a **high-impact ideation artifact**, not the active backlog source.
+
+- The initial 2026-03-01 assessment and ratings remain useful as defect discovery context.
+- Delivery ownership has since moved to normalized status docs and delivery waves.
+- Core platform improvement themes are now tracked as complete in `docs/status/IMPROVEMENTS.md` (A-G and canonicalization theme J).
+- Remaining platform-critical work is now sequenced in `docs/status/ROADMAP.md`, especially provider confidence hardening, paper trading cockpit wiring, promotion workflow, and portfolio depth.
+
+**How to use this file now:**
+1. Read it to understand why certain fixes were prioritized in early March 2026.
+2. Do **not** treat this file as the source of truth for current delivery status.
+3. For sprint planning, prioritize `FULL_IMPLEMENTATION_TODO_2026_03_20.md` + roadmap wave sequencing.
+
+---
+
 ## Contents
 
+- [Current-State Reconciliation (2026-03-24)](#current-state-reconciliation-2026-03-24)
 - [Executive Assessment](#executive-assessment)
 - [Category 1: Data Integrity & Correctness](#category-1-data-integrity--correctness)
 - [Category 2: Resource Management & Stability](#category-2-resource-management--stability)
@@ -24,6 +42,8 @@
 - [Implementation Follow-Up (2026-03-10)](#implementation-follow-up-2026-03-10)
 - [Implementation Follow-Up (2026-03-11)](#implementation-follow-up-2026-03-11)
 - [Implementation Follow-Up (2026-03-12)](#implementation-follow-up-2026-03-12)
+- [Implementation Summary (Historical Snapshot — 2026-03-19)](#implementation-summary-historical-snapshot--2026-03-19)
+- [Recommended Next-Step Sources (2026-03-24)](#recommended-next-step-sources-2026-03-24)
 
 ---
 
@@ -324,11 +344,9 @@ meaningful error code.
 These changes improve the system's fundamental design, making it more
 maintainable, extensible, and correct by construction.
 
-### 3.1 End-to-End Trace Context Propagation — 📝 Open
+### 3.1 End-to-End Trace Context Propagation — ✅ Done (2026-03-24)
 
-**Current state**: OpenTelemetry is wired up (`TracedEventMetrics`,
-`OpenTelemetrySetup`), but there's no trace context flowing through the event
-pipeline. Each component logs independently with no correlation.
+**Current state**: Trace context is captured at pipeline ingress, restored in processing/storage spans, and stamped onto `MarketEvent` records (`TraceId`, `ParentSpanId`) so sinks and logs can correlate operations end-to-end.
 
 **What's missing**: When a trade arrives from Alpaca, gets processed through the
 pipeline, validated by data quality, and written to storage — there's no single
@@ -633,7 +651,7 @@ exhaustive and the compiler catches missing cases.
 | 2.4 | WebSocket buffer size limit | Stability | Low | High | ✅ Done (2026-03-12) |
 | 2.5 | Reconnection race fix | Stability | Medium | High | ✅ Done (2026-03-12) |
 | 2.6 | Provider connection timeout | Stability | Low | High | ✅ Done (2026-03-11) |
-| 3.1 | E2E trace propagation | Architecture | Low | High | 📝 Open |
+| 3.1 | E2E trace propagation | Architecture | Low | High | ✅ Done (2026-03-24) |
 | 3.2 | WebSocket provider base class | Architecture | Low | High | 📝 Open |
 | 3.3 | Decide F# strategy | Architecture | Low | Medium | 📝 Open |
 | 3.4 | Idempotent writes | Architecture | **Critical** | **Critical** | 📝 Open |
@@ -712,9 +730,9 @@ Test coverage added:
 
 ---
 
-## Implementation Summary (2026-03-19)
+## Implementation Summary (Historical Snapshot — 2026-03-19)
 
-**Overall Status:** 15 of 31 items fully complete; 1 item partial; 15 items open
+**Overall Status (at 2026-03-19 snapshot):** 15 of 31 items fully complete; 1 item partial; 15 items open
 
 ### Completion Rate by Category
 
@@ -768,3 +786,15 @@ Test coverage added:
 ---
 
 *Initial Brainstorm: 2026-03-02 | Follow-ups: 2026-03-10, 2026-03-11, 2026-03-12 | Summary: 2026-03-19*
+
+
+## Recommended Next-Step Sources (2026-03-24)
+
+To reflect the current project state, continue execution from these documents:
+
+1. `docs/status/IMPROVEMENTS.md` — normalized improvement tracking (current status baseline).
+2. `docs/status/ROADMAP.md` — delivery-wave sequencing and dependencies.
+3. `docs/status/FULL_IMPLEMENTATION_TODO_2026_03_20.md` — consolidated backlog for non-assembly execution.
+
+This brainstorm remains a supporting reference for rationale and root-cause framing, not a live status board.
+

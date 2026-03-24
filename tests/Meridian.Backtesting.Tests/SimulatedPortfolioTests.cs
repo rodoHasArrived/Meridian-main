@@ -332,7 +332,10 @@ public sealed class SimulatedPortfolioTests
         portfolio.Cash.Should().Be(6_012.5m);
         var snapshot = portfolio.TakeSnapshot(exDate, DateOnly.FromDateTime(exDate.Date));
         snapshot.DayCashFlows.OfType<AssetEventCashFlow>().Should().ContainSingle(flow => flow.Amount == 12.5m && flow.EventType == AssetEventType.Dividend);
-        ledger.GetBalance(LedgerAccounts.DividendIncome).Should().Be(12.5m);
+        ledger.GetBalance(LedgerAccounts.DividendIncomeFor(BacktestDefaults.DefaultBrokerageAccountId)).Should().Be(12.5m);
+        ledger.GetJournalEntries(new LedgerQuery(ActivityType: "asset_event_dividend", Symbol: "SPY"))
+            .Should()
+            .ContainSingle();
     }
 
     [Fact]
@@ -346,7 +349,7 @@ public sealed class SimulatedPortfolioTests
         portfolio.ApplyAssetEvent(new AssetEvent(paymentDate, "TLT", AssetEventType.Coupon, CashPerShare: 2m));
 
         portfolio.Cash.Should().Be(10_490m);
-        ledger.GetBalance(LedgerAccounts.CouponExpense).Should().Be(10m);
+        ledger.GetBalance(LedgerAccounts.CouponExpenseFor(BacktestDefaults.DefaultBrokerageAccountId)).Should().Be(10m);
         var snapshot = portfolio.TakeSnapshot(paymentDate, DateOnly.FromDateTime(paymentDate.Date));
         snapshot.DayCashFlows.OfType<AssetEventCashFlow>().Should().ContainSingle(flow => flow.Amount == -10m && flow.EventType == AssetEventType.Coupon);
     }
@@ -392,7 +395,7 @@ public sealed class SimulatedPortfolioTests
         newPosition.Quantity.Should().Be(1);
         newPosition.AverageCostBasis.Should().Be(180m);
         portfolio.Cash.Should().Be(9_945m);
-        ledger.GetBalance(LedgerAccounts.CorporateActionIncome).Should().Be(215m);
+        ledger.GetBalance(LedgerAccounts.CorporateActionIncomeFor(BacktestDefaults.DefaultBrokerageAccountId)).Should().Be(215m);
     }
 
 }
