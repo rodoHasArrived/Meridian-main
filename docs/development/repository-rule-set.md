@@ -94,8 +94,12 @@ At minimum, run commands relevant to touched areas:
 - `dotnet build Meridian.sln -c Release --no-restore /p:EnableWindowsTargeting=true`
 - `dotnet test` projects affected by the changed code
 
-If uncertain about impact, run full validation lane (`make test` or equivalent CI-aligned command set).
+If uncertain about impact, run full repository validation:
 
+- `dotnet restore Meridian.sln /p:EnableWindowsTargeting=true`
+- `dotnet build Meridian.sln -c Release --no-restore /p:EnableWindowsTargeting=true`
+- `dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release /p:EnableWindowsTargeting=true`
+- `dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj -c Release /p:EnableWindowsTargeting=true`
 ### 4.4 Documentation and traceability
 
 - Behavior changes must include doc updates in same PR.
