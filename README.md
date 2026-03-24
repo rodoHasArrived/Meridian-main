@@ -2363,6 +2363,7 @@ Use these documents together when planning or implementing new work:
 ├── tests
 │   ├── Directory.Build.props
 │   ├── Meridian.Backtesting.Tests
+│   │   ├── BacktestEngineIntegrationTests.cs
 │   │   ├── BracketOrderTests.cs
 │   │   ├── FillModelExpansionTests.cs
 │   │   ├── FillModelTests.cs
@@ -2562,7 +2563,9 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   │   └── ib_order_stop_buy_ioc.json
 │   │   │   │   │   └── Polygon
 │   │   │   │   │       ├── polygon-recorded-session-aapl.json
+│   │   │   │   │       ├── polygon-recorded-session-gld-cboe-sell.json
 │   │   │   │   │       ├── polygon-recorded-session-msft-edge.json
+│   │   │   │   │       ├── polygon-recorded-session-nvda-multi-batch.json
 │   │   │   │   │       └── polygon-recorded-session-spy-etf.json
 │   │   │   │   ├── FreeProviderContractTests.cs
 │   │   │   │   ├── HistoricalDataProviderContractTests.cs
@@ -2787,6 +2790,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-381 directories, 2368 files
+381 directories, 2371 files
 ```
 <!-- readme-tree end -->
