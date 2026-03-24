@@ -1,0 +1,70 @@
+{
+  "description": "Recorded-style Polygon stock feed session for SPY (SPDR S&P 500 ETF) on CBOE/BATS exchange. Covers ETF trading patterns including higher-volume aggregates, CBOE exchange code (8), multi-condition trades, and cross-symbol filtering for a subscribed non-ETF symbol (AAPL) that must be dropped.",
+  "subscriptions": {
+    "trades": ["SPY"],
+    "quotes": ["SPY"],
+    "aggregates": ["SPY"]
+  },
+  "expected": {
+    "trade": {
+      "symbol": "SPY",
+      "price": 524.37,
+      "size": 500,
+      "timestampMs": 1742567400123,
+      "streamId": "55991234",
+      "venue": "CBOE",
+      "aggressor": "Buy",
+      "rawConditions": ["14", "41"]
+    },
+    "quote": {
+      "symbol": "SPY",
+      "bidPrice": 524.35,
+      "bidSize": 1200,
+      "askPrice": 524.38,
+      "askSize": 900,
+      "timestampMs": 1742567400456,
+      "venue": "CBOE"
+    },
+    "aggregates": [
+      {
+        "timeframe": "Second",
+        "symbol": "SPY",
+        "open": 524.30,
+        "high": 524.40,
+        "low": 524.28,
+        "close": 524.37,
+        "volume": 85000,
+        "vwap": 524.34,
+        "tradeCount": 142,
+        "startTimeMs": 1742567400000,
+        "endTimeMs": 1742567401000
+      },
+      {
+        "timeframe": "Minute",
+        "symbol": "SPY",
+        "open": 524.10,
+        "high": 524.45,
+        "low": 524.05,
+        "close": 524.37,
+        "volume": 4250000,
+        "vwap": 524.22,
+        "tradeCount": 7800,
+        "startTimeMs": 1742567340000,
+        "endTimeMs": 1742567400000
+      }
+    ],
+    "expectedIntegrityEvents": 0
+  },
+  "messages": [
+    "[{\"ev\":\"status\",\"status\":\"connected\",\"message\":\"Connected Successfully\"}]",
+    "[{\"ev\":\"status\",\"status\":\"auth_success\",\"message\":\"authenticated\"}]",
+    "[{\"ev\":\"status\",\"status\":\"success\",\"message\":\"subscribed to: T.SPY,Q.SPY,A.SPY,AM.SPY\"}]",
+    "[{\"ev\":\"T\",\"sym\":\"SPY\",\"p\":524.37,\"s\":500,\"t\":1742567400123,\"i\":\"55991234\",\"x\":8,\"c\":[14,41]}]",
+    "[{\"ev\":\"Q\",\"sym\":\"SPY\",\"bp\":524.35,\"bs\":1200,\"ap\":524.38,\"as\":900,\"t\":1742567400456,\"x\":8}]",
+    "[{\"ev\":\"A\",\"sym\":\"SPY\",\"o\":524.30,\"h\":524.40,\"l\":524.28,\"c\":524.37,\"v\":85000,\"vw\":524.34,\"s\":1742567400000,\"e\":1742567401000,\"n\":142}]",
+    "[{\"ev\":\"AM\",\"sym\":\"SPY\",\"o\":524.10,\"h\":524.45,\"l\":524.05,\"c\":524.37,\"v\":4250000,\"vw\":524.22,\"s\":1742567340000,\"e\":1742567400000,\"n\":7800}]",
+    "[{\"ev\":\"T\",\"sym\":\"AAPL\",\"p\":213.50,\"s\":100,\"t\":1742567400600,\"i\":\"ignored-aapl-cross\",\"x\":4,\"c\":[12]}]",
+    "[{\"ev\":\"Q\",\"sym\":\"AAPL\",\"bp\":213.48,\"bs\":50,\"ap\":213.52,\"as\":75,\"t\":1742567400700,\"x\":4}]",
+    "[{\"ev\":\"A\",\"sym\":\"SPY\",\"o\":0,\"h\":524.45,\"l\":524.28,\"c\":524.40,\"v\":500,\"vw\":524.35,\"s\":1742567401000,\"e\":1742567402000,\"n\":3}]"
+  ]
+}
