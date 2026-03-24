@@ -92,7 +92,7 @@
   </ItemGroup>
 
   <ItemGroup Label="System Libraries">
-    <PackageVersion Include="Renci.SshNet" Version="2024.2.0" />
+    <PackageVersion Include="SSH.NET" Version="2024.2.0" />
     <PackageVersion Include="System.Threading.Channels" Version="10.0.5" />
     <PackageVersion Include="System.IO.Pipelines" Version="10.0.5" />
     <PackageVersion Include="System.IO.Compression" Version="4.3.0" />

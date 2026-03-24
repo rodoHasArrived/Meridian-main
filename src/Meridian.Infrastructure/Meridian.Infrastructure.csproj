@@ -55,7 +55,7 @@
     <PackageReference Include="Microsoft.Extensions.ObjectPool" />
     <PackageReference Include="System.Text.Json" />
     <PackageReference Include="System.Threading.Channels" />
-    <PackageReference Include="Renci.SshNet" />
+    <PackageReference Include="SSH.NET" />
 
     <!-- StockSharp (optional) -->
     <PackageReference Include="StockSharp.Algo" Condition="'$(EnableStockSharp)' == 'true'" />
@@ -73,6 +73,7 @@
     <ProjectReference Include="..\Meridian.Domain\Meridian.Domain.csproj" />
     <ProjectReference Include="..\Meridian.Contracts\Meridian.Contracts.csproj" />
     <ProjectReference Include="..\Meridian.ProviderSdk\Meridian.ProviderSdk.csproj" />
+    <ProjectReference Include="..\Meridian.Storage\Meridian.Storage.csproj" />
     <ProjectReference Include="..\Meridian.IbApi.SmokeStub\Meridian.IbApi.SmokeStub.csproj" Condition="'$(EnableIbApiSmoke)' == 'true'" />
   </ItemGroup>
 
