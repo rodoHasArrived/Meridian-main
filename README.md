@@ -2140,6 +2140,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── ReplayEndpoints.cs
 │   │   │   ├── ResilienceEndpoints.cs
 │   │   │   ├── SamplingEndpoints.cs
+│   │   │   ├── SecurityMasterEndpoints.cs
 │   │   │   ├── StatusEndpoints.cs
 │   │   │   ├── StorageEndpoints.cs
 │   │   │   ├── StorageQualityEndpoints.cs
@@ -2794,6 +2795,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-384 directories, 2372 files
+384 directories, 2373 files
 ```
 <!-- readme-tree end -->
