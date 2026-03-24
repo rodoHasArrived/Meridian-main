@@ -1351,6 +1351,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── MarketDataQuery.cs
 │   │   └── Workstation
 │   │       ├── ReconciliationDtos.cs
+│   │       ├── SecurityMasterWorkstationDtos.cs
 │   │       └── StrategyRunReadModels.cs
 │   ├── Meridian.Core
 │   │   ├── Config
@@ -2795,6 +2796,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-384 directories, 2373 files
+384 directories, 2374 files
 ```
 <!-- readme-tree end -->
