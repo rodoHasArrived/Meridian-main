@@ -47,6 +47,14 @@ public static class WorkstationEndpoints
         .WithName("GetTradingWorkspace")
         .Produces(200);
 
+        group.MapGet("/data-operations", async (HttpContext context) =>
+        {
+            var payload = await BuildDataOperationsPayloadAsync(context).ConfigureAwait(false);
+            return Results.Json(payload, jsonOptions);
+        })
+        .WithName("GetDataOperationsWorkspace")
+        .Produces(200);
+
         group.MapGet("/governance", async (HttpContext context) =>
         {
             var payload = await BuildGovernancePayloadAsync(context).ConfigureAwait(false);
@@ -559,6 +567,76 @@ public static class WorkstationEndpoints
                 orderIngress = "healthy (p50 19ms)",
                 fillFeed = "healthy (p50 31ms)",
                 notes = "Paper execution routing is synchronized with run-level reconciliation wiring."
+            }
+        };
+    }
+
+    private static async Task<object> BuildDataOperationsPayloadAsync(HttpContext context)
+    {
+        var readService = context.RequestServices.GetService<StrategyRunReadService>();
+        if (readService is null)
+        {
+            return BuildDataOperationsFallbackPayload();
+        }
+
+        var runs = (await readService.GetRunsAsync(ct: context.RequestAborted).ConfigureAwait(false)).ToArray();
+        var activeRuns = runs.Count(static run => run.Status is StrategyRunStatus.Running or StrategyRunStatus.Paused);
+        var reviewRuns = runs.Count(static run => run.Promotion?.RequiresReview == true || run.Status is StrategyRunStatus.Failed or StrategyRunStatus.Cancelled);
+
+        return new
+        {
+            metrics = new[]
+            {
+                new { id = "providers-healthy", label = "Providers Healthy", value = "4", delta = "0", tone = "success" },
+                new { id = "backfills-running", label = "Backfills Running", value = Math.Max(1, activeRuns).ToString(CultureInfo.InvariantCulture), delta = activeRuns == 0 ? "0" : $"+{activeRuns}", tone = activeRuns > 0 ? "default" : "success" },
+                new { id = "exports-ready", label = "Exports Ready", value = "3", delta = "+1", tone = "success" },
+                new { id = "ops-review", label = "Needs Review", value = reviewRuns.ToString(CultureInfo.InvariantCulture), delta = reviewRuns == 0 ? "0" : $"+{reviewRuns}", tone = reviewRuns == 0 ? "default" : "warning" }
+            },
+            providers = new[]
+            {
+                new { provider = "Interactive Brokers", status = "Healthy", capability = "Execution + fills", latency = "23ms p50", note = "Paper session heartbeat and ingress are healthy." },
+                new { provider = "Polygon", status = "Healthy", capability = "Streaming equities", latency = "18ms p50", note = "Quote and trade subscriptions are within expected envelope." },
+                new { provider = "Databento", status = "Warning", capability = "Historical replay", latency = "74ms p50", note = "Backfill queue is elevated for options symbols." }
+            },
+            backfills = new[]
+            {
+                new { jobId = "BF-1042", scope = "US equities / 30d", provider = "Databento", status = activeRuns > 0 ? "Running" : "Queued", progress = activeRuns > 0 ? "62%" : "0%", updatedAt = "2m ago" },
+                new { jobId = "BF-1044", scope = "Options chains / 7d", provider = "Databento", status = "Review", progress = "95%", updatedAt = "5m ago" }
+            },
+            exports = new[]
+            {
+                new { exportId = "EX-2201", profile = "python-pandas", target = "research pack", status = "Ready", rows = "124k", updatedAt = "4m ago" },
+                new { exportId = "EX-2203", profile = "excel", target = "governance review", status = "Running", rows = "18k", updatedAt = "1m ago" }
+            }
+        };
+    }
+
+    private static object BuildDataOperationsFallbackPayload()
+    {
+        return new
+        {
+            metrics = new[]
+            {
+                new { id = "providers-healthy", label = "Providers Healthy", value = "4", delta = "0", tone = "success" },
+                new { id = "backfills-running", label = "Backfills Running", value = "2", delta = "+1", tone = "default" },
+                new { id = "exports-ready", label = "Exports Ready", value = "3", delta = "+1", tone = "success" },
+                new { id = "ops-review", label = "Needs Review", value = "1", delta = "+1", tone = "warning" }
+            },
+            providers = new[]
+            {
+                new { provider = "Interactive Brokers", status = "Healthy", capability = "Execution + fills", latency = "21ms p50", note = "Paper adapter routing is available." },
+                new { provider = "Polygon", status = "Healthy", capability = "Streaming equities", latency = "16ms p50", note = "Realtime subscriptions are steady." },
+                new { provider = "Databento", status = "Warning", capability = "Historical replay", latency = "69ms p50", note = "Replay queue is elevated but within tolerance." }
+            },
+            backfills = new[]
+            {
+                new { jobId = "BF-1038", scope = "US equities / 30d", provider = "Databento", status = "Running", progress = "58%", updatedAt = "3m ago" },
+                new { jobId = "BF-1040", scope = "FX majors / 14d", provider = "Polygon", status = "Queued", progress = "0%", updatedAt = "6m ago" }
+            },
+            exports = new[]
+            {
+                new { exportId = "EX-2196", profile = "python-pandas", target = "research pack", status = "Ready", rows = "118k", updatedAt = "7m ago" },
+                new { exportId = "EX-2198", profile = "postgresql", target = "ops warehouse", status = "Attention", rows = "42k", updatedAt = "9m ago" }
             }
         };
     }

@@ -34,7 +34,7 @@ internal sealed class ProcessBackedCppTraderSessionClient : ICppTraderSessionCli
         var input = process.StandardOutput.BaseStream;
         var output = process.StandardInput.BaseStream;
         _protocolStream = new LengthPrefixedProtocolStream(input, output);
-        _readerTask = Task.Run(() => ReaderLoopAsync(_readerCts.Token));
+        _readerTask = ReaderLoopAsync(_readerCts.Token);
     }
 
     public Task<RegisterSymbolResponse> RegisterSymbolAsync(RegisterSymbolRequest request, CancellationToken ct = default) =>

@@ -29,4 +29,16 @@ describe("CommandPalette", () => {
     expect(screen.getByText("Research")).toBeInTheDocument();
     expect(screen.getByText("Trading")).toBeInTheDocument();
   });
+
+  it("renders deep-link actions for each workspace", () => {
+    render(
+      <MemoryRouter>
+        <CommandPalette open={true} onOpenChange={() => undefined} />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByText("Open orders blotter")).toBeInTheDocument();
+    expect(screen.getByText("Open backfill queue")).toBeInTheDocument();
+    expect(screen.getByText("Review reconciliation history")).toBeInTheDocument();
+  });
 });

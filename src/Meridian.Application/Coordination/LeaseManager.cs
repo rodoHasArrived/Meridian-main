@@ -27,7 +27,7 @@ public sealed class LeaseManager : ILeaseManager, IAsyncDisposable
         _log = log ?? LoggingSetup.ForContext<LeaseManager>();
 
         if (Enabled)
-            _renewalTask = Task.Run(() => RunRenewalLoopAsync(_cts.Token));
+            _renewalTask = RunRenewalLoopAsync(_cts.Token);
     }
 
     public bool Enabled => _config.IsSharedStorageEnabled;

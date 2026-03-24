@@ -198,7 +198,7 @@ public sealed class CppTraderOrderGateway : IOrderGateway
 
         var created = await _hostManager.CreateSessionAsync(CppTraderSessionKind.Execution, "meridian-execution", ct).ConfigureAwait(false);
         var sessionCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        var eventPump = Task.Run(() => PumpEventsAsync(created, sessionCts.Token), sessionCts.Token);
+        var eventPump = PumpEventsAsync(created, sessionCts.Token);
 
         lock (_gate)
         {

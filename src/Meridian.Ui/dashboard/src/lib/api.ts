@@ -1,4 +1,10 @@
-import type { ResearchWorkspaceResponse, SessionInfo, TradingWorkspaceResponse } from "@/types";
+import type {
+  DataOperationsWorkspaceResponse,
+  GovernanceWorkspaceResponse,
+  ResearchWorkspaceResponse,
+  SessionInfo,
+  TradingWorkspaceResponse
+} from "@/types";
 
 async function getJson<T>(path: string): Promise<T> {
   const response = await fetch(path, {
@@ -24,4 +30,12 @@ export function getResearchWorkspace() {
 
 export function getTradingWorkspace() {
   return getJson<TradingWorkspaceResponse>("/api/workstation/trading");
+}
+
+export function getDataOperationsWorkspace() {
+  return getJson<DataOperationsWorkspaceResponse>("/api/workstation/data-operations");
+}
+
+export function getGovernanceWorkspace() {
+  return getJson<GovernanceWorkspaceResponse>("/api/workstation/governance");
 }

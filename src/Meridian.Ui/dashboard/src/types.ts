@@ -3,7 +3,7 @@ export type WorkspaceKey = "research" | "trading" | "data-operations" | "governa
 export interface SessionInfo {
   displayName: string;
   role: string;
-  environment: "paper" | "live";
+  environment: "paper" | "live" | "research";
   activeWorkspace: WorkspaceKey;
   commandCount: number;
 }
@@ -40,6 +40,39 @@ export interface ResearchRunRecord {
 export interface ResearchWorkspaceResponse {
   metrics: MetricSnapshot[];
   runs: ResearchRunRecord[];
+}
+
+export interface DataOperationsProviderRecord {
+  provider: string;
+  status: "Healthy" | "Warning" | "Degraded";
+  capability: string;
+  latency: string;
+  note: string;
+}
+
+export interface DataOperationsBackfillRecord {
+  jobId: string;
+  scope: string;
+  provider: string;
+  status: "Queued" | "Running" | "Review";
+  progress: string;
+  updatedAt: string;
+}
+
+export interface DataOperationsExportRecord {
+  exportId: string;
+  profile: string;
+  target: string;
+  status: "Ready" | "Running" | "Attention";
+  rows: string;
+  updatedAt: string;
+}
+
+export interface DataOperationsWorkspaceResponse {
+  metrics: MetricSnapshot[];
+  providers: DataOperationsProviderRecord[];
+  backfills: DataOperationsBackfillRecord[];
+  exports: DataOperationsExportRecord[];
 }
 
 export interface TradingPosition {
@@ -104,4 +137,51 @@ export interface TradingWorkspaceResponse {
   fills: TradingFill[];
   risk: TradingRiskState;
   brokerage: BrokerageWiringStatus;
+}
+
+export interface GovernanceReconciliationRecord {
+  runId: string;
+  strategyName: string;
+  mode: "paper" | "live" | "backtest";
+  status: string;
+  lastUpdated: string;
+  breakCount: number;
+  openBreakCount: number;
+  reconciliationStatus: "NotStarted" | "BreaksOpen" | "SecurityCoverageOpen" | "Resolved" | "Balanced";
+}
+
+export interface GovernanceCashFlowSummary {
+  totalCash: number;
+  totalLedgerCash: number;
+  netVariance: number;
+  totalFinancing: number;
+  runsWithCashSignals: number;
+  runsWithCashVariance: number;
+  tone: "default" | "success" | "warning" | "danger";
+  summary: string;
+}
+
+export interface GovernanceReportingProfile {
+  id: string;
+  name: string;
+  targetTool: string;
+  format: string;
+  description: string;
+  loaderScript: boolean;
+  dataDictionary: boolean;
+}
+
+export interface GovernanceReportingSummary {
+  profileCount: number;
+  recommendedProfiles: string[];
+  profiles: GovernanceReportingProfile[];
+  reportPackTargets: string[];
+  summary: string;
+}
+
+export interface GovernanceWorkspaceResponse {
+  metrics: MetricSnapshot[];
+  reconciliationQueue: GovernanceReconciliationRecord[];
+  cashFlow: GovernanceCashFlowSummary;
+  reporting: GovernanceReportingSummary;
 }

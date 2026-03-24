@@ -14,8 +14,10 @@ import type { WorkspaceKey } from "@/types";
 export function App() {
   const [commandOpen, setCommandOpen] = useState(false);
   const { pathname } = useLocation();
-  const { session, research, trading, loading, error } = useWorkstationData();
+  const { session, research, trading, loading, error, workspaceErrors } = useWorkstationData();
   const activeWorkspace = getWorkspaceForPath(pathname);
+  const degradedWorkspaceCount = Object.keys(workspaceErrors).length;
+  const bootstrapFailed = !loading && !session && !research && !trading;
 
   return (
     <div className="min-h-screen p-4 lg:p-6">
@@ -30,6 +32,16 @@ export function App() {
           />
 
           <div className="mt-8">
+            {!loading && degradedWorkspaceCount > 0 ? (
+              <Card className="mb-4 border-warning/30">
+                <CardHeader>
+                  <CardTitle>Workstation bootstrap is partially degraded</CardTitle>
+                </CardHeader>
+                <CardContent className="text-sm text-muted-foreground">
+                  {error ?? "Some prefetched workspace summaries did not load. Routes remain available while those slices recover."}
+                </CardContent>
+              </Card>
+            ) : null}
             {loading ? (
               <Card>
                 <CardHeader>
@@ -39,35 +51,35 @@ export function App() {
                   Loading session state, workspace summaries, and the initial research slice.
                 </CardContent>
               </Card>
-            ) : error ? (
-              <Card className="border-danger/20">
-                <CardHeader>
-                  <CardTitle>Workstation bootstrap failed</CardTitle>
-                </CardHeader>
-                <CardContent className="text-sm text-danger">{error}</CardContent>
-              </Card>
-            ) : (
+            ) : bootstrapFailed ? (
+                <Card className="border-danger/20">
+                  <CardHeader>
+                    <CardTitle>Workstation bootstrap failed</CardTitle>
+                  </CardHeader>
+                  <CardContent className="text-sm text-danger">{error}</CardContent>
+                </Card>
+              ) : (
               <Routes>
                 <Route path="/" element={<ResearchScreen data={research} />} />
                 <Route
-                  path="/trading"
+                  path="/trading/*"
                   element={<TradingScreen data={trading} />}
                 />
                 <Route
-                  path="/data-operations"
+                  path="/data-operations/*"
                   element={
                     <WorkspacePlaceholder
                       title="Data Operations Workspace"
-                      description="Provider health, backfills, storage, and export workflows will share the same workstation primitives."
+                      description="Provider health, backfills, storage, and export workflows now have reserved deep links and shell-prefetched summaries."
                     />
                   }
                 />
                 <Route
-                  path="/governance"
+                  path="/governance/*"
                   element={
                     <WorkspacePlaceholder
                       title="Governance Workspace"
-                      description="Ledger, diagnostics, notifications, and settings are reserved in the IA and ready for follow-on slices."
+                      description="Ledger, reconciliation, and security-master workflows now participate in shell bootstrap and command-palette navigation."
                     />
                   }
                 />

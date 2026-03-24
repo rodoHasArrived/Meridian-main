@@ -1,4 +1,4 @@
-import { ArrowRight, Layers3, LayoutPanelTop, Search } from "lucide-react";
+import { ArrowRight, LayoutPanelTop, Sparkles } from "lucide-react";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -11,7 +11,7 @@ import {
   CommandList,
   CommandSeparator
 } from "@/components/ui/command";
-import { WORKSPACES, workspacePath } from "@/lib/workspace";
+import { WORKSPACE_COMMANDS, WORKSPACES, workspacePath } from "@/lib/workspace";
 
 interface CommandPaletteProps {
   open: boolean;
@@ -62,16 +62,25 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
               ))}
             </CommandGroup>
             <CommandSeparator />
-            <CommandGroup heading="Quick Actions">
-              <CommandItem onSelect={() => goTo("/")}>
-                <Search className="h-4 w-4 text-primary" />
-                <span>Open active research run queue</span>
-              </CommandItem>
-              <CommandItem onSelect={() => goTo("/")}>
-                <Layers3 className="h-4 w-4 text-primary" />
-                <span>Review run comparison metrics</span>
-              </CommandItem>
-            </CommandGroup>
+            {WORKSPACES.map((workspace, index) => (
+              <div key={`${workspace.key}-commands`}>
+                <CommandGroup heading={`${workspace.label} Actions`}>
+                  {WORKSPACE_COMMANDS
+                    .filter((command) => command.workspace === workspace.key)
+                    .map((command) => (
+                      <CommandItem key={command.id} onSelect={() => goTo(command.href)}>
+                        <Sparkles className="h-4 w-4 text-primary" />
+                        <span className="flex-1">
+                          <span className="block font-medium">{command.label}</span>
+                          <span className="block text-xs text-muted-foreground">{command.description}</span>
+                        </span>
+                        <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                      </CommandItem>
+                    ))}
+                </CommandGroup>
+                {index < WORKSPACES.length - 1 ? <CommandSeparator /> : null}
+              </div>
+            ))}
           </CommandList>
         </Command>
       </DialogContent>
