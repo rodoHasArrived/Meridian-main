@@ -33,7 +33,7 @@ public sealed class IntegrityEventsServiceTests
     }
 
     [Fact]
-    public void Instance_ThreadSafety_MultipleThreadsGetSameInstance()
+    public async Task Instance_ThreadSafety_MultipleThreadsGetSameInstance()
     {
         // Arrange
         IntegrityEventsService? instance1 = null;
@@ -42,7 +42,7 @@ public sealed class IntegrityEventsServiceTests
         var task2 = Task.Run(() => instance2 = IntegrityEventsService.Instance);
 
         // Act
-        Task.WaitAll(task1, task2);
+        await Task.WhenAll(task1, task2);
 
         // Assert
         instance1.Should().NotBeNull();

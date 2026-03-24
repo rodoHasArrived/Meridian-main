@@ -140,7 +140,7 @@ public sealed class BoundedObservableCollectionTests
     }
 
     [Fact]
-    public void ThreadSafety_ConcurrentAdds_DoesNotExceedCapacity()
+    public async Task ThreadSafety_ConcurrentAdds_DoesNotExceedCapacity()
     {
         // Arrange
         var collection = new BoundedObservableCollection<int>(maxCapacity: 100);
@@ -160,7 +160,7 @@ public sealed class BoundedObservableCollectionTests
             tasks.Add(task);
         }
 
-        Task.WaitAll(tasks.ToArray());
+        await Task.WhenAll(tasks);
 
         // Assert
         collection.Count.Should().BeLessThanOrEqualTo(100, "Collection should never exceed capacity");
