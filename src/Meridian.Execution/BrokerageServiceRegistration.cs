@@ -61,7 +61,24 @@ public static class BrokerageServiceRegistration
             return new BrokerageGatewayAdapter(gateway, adapterLogger);
         });
 
-        // Register the OMS using the IExecutionGateway registered above
+        // Register IExecutionGateway for the OMS.
+        // IBrokerageGateway extends IExecutionGateway, so in live mode the underlying brokerage
+        // gateway is used directly. In paper mode the SDK-level PaperTradingGateway is used.
+        services.TryAddSingleton<IExecutionGateway>(sp =>
+        {
+            var brokerageConfig = sp.GetRequiredService<BrokerageConfiguration>();
+
+            if (!brokerageConfig.LiveExecutionEnabled || brokerageConfig.Gateway == "paper")
+            {
+                var paperLogger = sp.GetRequiredService<ILogger<PaperTradingGateway>>();
+                return new PaperTradingGateway(paperLogger);
+            }
+
+            // IBrokerageGateway : IExecutionGateway — use the live gateway directly.
+            return ResolveBrokerageGateway(sp, brokerageConfig.Gateway);
+        });
+
+        // Register the OMS with the resolved gateway
         services.TryAddSingleton<IOrderManager>(sp =>
         {
             var gateway = sp.GetRequiredService<IExecutionGateway>();

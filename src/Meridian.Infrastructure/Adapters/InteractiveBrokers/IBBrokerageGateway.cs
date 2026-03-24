@@ -44,6 +44,10 @@ public sealed class IBBrokerageGateway : IBrokerageGateway
     private bool _disposed;
     private int _nextOrderId;
 
+    // Tracks submitted orders so cancel/modify reports can carry the correct symbol and side.
+    // In a full TWS implementation the IB API provides this information via callbacks.
+    private readonly Dictionary<string, (string Symbol, OrderSide Side, string? ClientOrderId)> _submittedOrders = new();
+
     public IBBrokerageGateway(
         IBOptions options,
         ILogger<IBBrokerageGateway> logger)
@@ -132,6 +136,10 @@ public sealed class IBBrokerageGateway : IBrokerageGateway
         // Build IB contract and order via the TWS API
         // This is where the IB API placeOrder() call would go
         var report = await SubmitToTwsAsync(orderId, request, ct).ConfigureAwait(false);
+
+        // Track submitted order so cancel/modify reports can carry the correct symbol and side.
+        _submittedOrders[orderId] = (request.Symbol, request.Side, request.ClientOrderId);
+
         await _reportChannel.Writer.WriteAsync(report, ct).ConfigureAwait(false);
         return report;
     }
@@ -145,14 +153,18 @@ public sealed class IBBrokerageGateway : IBrokerageGateway
 
         _logger.LogInformation("IB cancelling order {OrderId}", orderId);
 
+        _submittedOrders.TryGetValue(orderId, out var tracked);
+
         // This is where the IB API cancelOrder() call would go
         var report = new ExecutionReport
         {
             OrderId = orderId,
+            ClientOrderId = tracked.ClientOrderId,
             ReportType = ExecutionReportType.Cancelled,
-            Symbol = string.Empty,
-            Side = OrderSide.Buy,
+            Symbol = tracked.Symbol ?? string.Empty,
+            Side = tracked.Symbol is not null ? tracked.Side : OrderSide.Buy,
             OrderStatus = OrderStatus.Cancelled,
+            GatewayOrderId = orderId,
             Timestamp = DateTimeOffset.UtcNow,
         };
         await _reportChannel.Writer.WriteAsync(report, ct).ConfigureAwait(false);
@@ -170,14 +182,18 @@ public sealed class IBBrokerageGateway : IBrokerageGateway
 
         _logger.LogInformation("IB modifying order {OrderId}", orderId);
 
+        _submittedOrders.TryGetValue(orderId, out var tracked);
+
         // IB modification is done by re-placing the order with the same orderId
         var report = new ExecutionReport
         {
             OrderId = orderId,
+            ClientOrderId = tracked.ClientOrderId,
             ReportType = ExecutionReportType.Modified,
-            Symbol = string.Empty,
-            Side = OrderSide.Buy,
+            Symbol = tracked.Symbol ?? string.Empty,
+            Side = tracked.Symbol is not null ? tracked.Side : OrderSide.Buy,
             OrderStatus = OrderStatus.Accepted,
+            GatewayOrderId = orderId,
             Timestamp = DateTimeOffset.UtcNow,
         };
         await _reportChannel.Writer.WriteAsync(report, ct).ConfigureAwait(false);
@@ -293,6 +309,7 @@ public sealed class IBBrokerageGateway : IBrokerageGateway
         return Task.FromResult(new ExecutionReport
         {
             OrderId = orderId,
+            ClientOrderId = request.ClientOrderId,
             ReportType = ExecutionReportType.New,
             Symbol = request.Symbol,
             Side = request.Side,
