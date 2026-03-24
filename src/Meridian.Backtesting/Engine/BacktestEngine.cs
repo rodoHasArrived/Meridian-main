@@ -129,7 +129,8 @@ public sealed class BacktestEngine(
             "Backtest complete: {Events} events, final equity {Equity:C}, net PnL {NetPnl:C} in {Elapsed}ms",
             eventsProcessed, metrics.FinalEquity, metrics.NetPnl, sw.ElapsedMilliseconds);
 
-        return new BacktestResult(request, universe, allSnapshots, allCashFlows, allFills, metrics, ledger, sw.Elapsed, eventsProcessed);
+        var tradeTickets = BuildTradeTickets(allCashFlows);
+        return new BacktestResult(request, universe, allSnapshots, allCashFlows, allFills, metrics, ledger, sw.Elapsed, eventsProcessed, tradeTickets);
     }
 
     // ── Private helpers ──────────────────────────────────────────────────────
@@ -351,7 +352,7 @@ public sealed class BacktestEngine(
     private static BacktestResult CreateEmptyResult(BacktestRequest request, IReadOnlySet<string> universe, TimeSpan elapsed)
     {
         var metrics = BacktestMetricsEngine.Compute([], [], [], request);
-        return new BacktestResult(request, universe, [], [], [], metrics, new BacktestLedger(), elapsed, 0);
+        return new BacktestResult(request, universe, [], [], [], metrics, new BacktestLedger(), elapsed, 0, []);
     }
 
     private static IFillModel SelectFillModel(
@@ -366,5 +367,108 @@ public sealed class BacktestEngine(
             ExecutionModel.BarMidpoint => barModel,
             _ => evt.Payload is LOBSnapshot ? lobModel : barModel
         };
+    }
+
+    private static IReadOnlyList<TradeTicket> BuildTradeTickets(IReadOnlyList<CashFlowEntry> cashFlows)
+    {
+        var tickets = new List<TradeTicket>(cashFlows.Count);
+
+        foreach (var flow in cashFlows.OrderBy(flow => flow.Timestamp))
+        {
+            switch (flow)
+            {
+                case TradeCashFlow trade:
+                    tickets.Add(new TradeTicket(
+                        Guid.NewGuid(),
+                        trade.Timestamp,
+                        "trade_cash_flow",
+                        trade.Symbol,
+                        $"Trade execution cash impact for {trade.Symbol} ({trade.Quantity} @ {trade.Price:F4}).",
+                        trade.Amount,
+                        trade.Quantity,
+                        trade.Price,
+                        trade.AccountId));
+                    break;
+                case CommissionCashFlow commission:
+                    tickets.Add(new TradeTicket(
+                        Guid.NewGuid(),
+                        commission.Timestamp,
+                        "commission",
+                        commission.Symbol,
+                        $"Commission charged for order {commission.OrderId} on {commission.Symbol}.",
+                        commission.Amount,
+                        AccountId: commission.AccountId,
+                        OrderId: commission.OrderId));
+                    break;
+                case AssetEventCashFlow assetEvent:
+                    tickets.Add(new TradeTicket(
+                        Guid.NewGuid(),
+                        assetEvent.Timestamp,
+                        $"asset_event:{assetEvent.EventType}".ToLowerInvariant(),
+                        assetEvent.Symbol,
+                        BuildAssetEventNarrative(assetEvent),
+                        assetEvent.Amount,
+                        assetEvent.UnitsImpacted,
+                        assetEvent.CashPerShare));
+                    break;
+                case DividendCashFlow dividend:
+                    tickets.Add(new TradeTicket(
+                        Guid.NewGuid(),
+                        dividend.Timestamp,
+                        "dividend",
+                        dividend.Symbol,
+                        $"Dividend receipt/charge for {dividend.Symbol} ({dividend.Shares} shares @ {dividend.DividendPerShare:F4}).",
+                        dividend.Amount,
+                        dividend.Shares,
+                        dividend.DividendPerShare,
+                        dividend.AccountId));
+                    break;
+                case MarginInterestCashFlow margin:
+                    tickets.Add(new TradeTicket(
+                        Guid.NewGuid(),
+                        margin.Timestamp,
+                        "margin_interest",
+                        Symbol: null,
+                        Narrative: $"Margin interest accrual at {margin.AnnualRate:P2} annualized rate.",
+                        CashImpact: margin.Amount,
+                        AccountId: margin.AccountId));
+                    break;
+                case CashInterestCashFlow cashInterest:
+                    tickets.Add(new TradeTicket(
+                        Guid.NewGuid(),
+                        cashInterest.Timestamp,
+                        "cash_interest",
+                        Symbol: null,
+                        Narrative: $"Cash interest accrual at {cashInterest.AnnualRate:P2} annualized rate.",
+                        CashImpact: cashInterest.Amount,
+                        AccountId: cashInterest.AccountId));
+                    break;
+                case ShortRebateCashFlow shortRebate:
+                    tickets.Add(new TradeTicket(
+                        Guid.NewGuid(),
+                        shortRebate.Timestamp,
+                        "short_rebate",
+                        shortRebate.Symbol,
+                        $"Short rebate on {shortRebate.Symbol} ({shortRebate.ShortShares} shares @ {shortRebate.AnnualRebateRate:P2}).",
+                        shortRebate.Amount,
+                        shortRebate.ShortShares,
+                        AccountId: shortRebate.AccountId));
+                    break;
+            }
+        }
+
+        return tickets;
+    }
+
+    private static string BuildAssetEventNarrative(AssetEventCashFlow assetEvent)
+    {
+        if (!string.IsNullOrWhiteSpace(assetEvent.Description))
+            return assetEvent.Description!;
+
+        var related = string.IsNullOrWhiteSpace(assetEvent.RelatedSymbol)
+            ? string.Empty
+            : $" related symbol {assetEvent.RelatedSymbol}.";
+
+        return $"{assetEvent.EventType} on {assetEvent.Symbol}: {assetEvent.UnitsImpacted} units impacted at {assetEvent.CashPerShare:F4} cash/share.{related}";
     }
 }

@@ -46,4 +46,5 @@ public sealed record BacktestResult(
     BacktestMetrics Metrics,
     IReadOnlyLedger Ledger,
     TimeSpan ElapsedTime,
-    long TotalEventsProcessed);
+    long TotalEventsProcessed,
+    IReadOnlyList<TradeTicket>? TradeTickets = null);

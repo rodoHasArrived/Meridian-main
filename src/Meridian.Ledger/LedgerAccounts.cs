@@ -67,6 +67,22 @@ public static class LedgerAccounts
 
     public static LedgerAccount DividendIncomeFor(string financialAccountId) =>
         CreateScoped("Dividend Income", LedgerAccountType.Revenue, financialAccountId);
+
+    public static LedgerAccount DividendExpenseFor(string financialAccountId) =>
+        CreateScoped("Dividend Expense", LedgerAccountType.Expense, financialAccountId);
+
+    public static LedgerAccount CouponIncomeFor(string financialAccountId) =>
+        CreateScoped("Coupon Income", LedgerAccountType.Revenue, financialAccountId);
+
+    public static LedgerAccount CouponExpenseFor(string financialAccountId) =>
+        CreateScoped("Coupon Expense", LedgerAccountType.Expense, financialAccountId);
+
+    public static LedgerAccount CorporateActionIncomeFor(string financialAccountId) =>
+        CreateScoped("Corporate Action Income", LedgerAccountType.Revenue, financialAccountId);
+
+    public static LedgerAccount CorporateActionExpenseFor(string financialAccountId) =>
+        CreateScoped("Corporate Action Expense", LedgerAccountType.Expense, financialAccountId);
+
     /// <summary>Dividend expense owed on short positions or other negative dividend adjustments.</summary>
     public static readonly LedgerAccount DividendExpense =
         new("Dividend Expense", LedgerAccountType.Expense);
