@@ -291,6 +291,17 @@ public static class UiApiRoutes
     public const string CalendarHolidays = "/api/calendar/holidays";
     public const string CalendarTradingDays = "/api/calendar/trading-days";
 
+
+    // Security Master endpoints
+    public const string SecurityMasterById = "/api/security-master/{securityId:guid}";
+    public const string SecurityMasterResolve = "/api/security-master/resolve";
+    public const string SecurityMasterSearch = "/api/security-master/search";
+    public const string SecurityMasterHistory = "/api/security-master/{securityId:guid}/history";
+    public const string SecurityMasterCreate = "/api/security-master";
+    public const string SecurityMasterAmend = "/api/security-master/amend";
+    public const string SecurityMasterDeactivate = "/api/security-master/deactivate";
+    public const string SecurityMasterAliasesUpsert = "/api/security-master/aliases/upsert";
+
     // Messaging endpoints
     public const string MessagingConfig = "/api/messaging/config";
     public const string MessagingStatus = "/api/messaging/status";

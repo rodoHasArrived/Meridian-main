@@ -260,6 +260,9 @@ public static class UiEndpoints
         // Direct lending endpoints
         app.MapDirectLendingEndpoints(jsonOptions);
 
+        // Security Master endpoints
+        app.MapSecurityMasterEndpoints(jsonOptions);
+
         // Map quality drops endpoints (C3/#16)
         var auditTrail = app.Services.GetService<DroppedEventAuditTrail>();
         app.MapQualityDropsEndpoints(auditTrail, jsonOptions);
@@ -354,6 +357,9 @@ public static class UiEndpoints
 
         // Direct lending endpoints
         app.MapDirectLendingEndpoints(jsonOptions);
+
+        // Security Master endpoints
+        app.MapSecurityMasterEndpoints(jsonOptions);
 
         // Map quality drops endpoints (C3/#16 - DroppedEventAuditTrail exposure)
         var auditTrail = app.Services.GetService<DroppedEventAuditTrail>();
