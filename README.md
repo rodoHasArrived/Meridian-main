@@ -2149,7 +2149,7 @@ Use these documents together when planning or implementing new work:
 │   │       ├── BackfillCoordinator.cs
 │   │       ├── ConfigStore.cs
 │   │       └── SecurityMasterSecurityReferenceLookup.cs
-│   └── Meridian.Wpf  ← DELAYED IMPLEMENTATION (not in active solution build)
+│   └── Meridian.Wpf
 │       ├── App.xaml
 │       ├── App.xaml.cs
 │       ├── AssemblyInfo.cs
