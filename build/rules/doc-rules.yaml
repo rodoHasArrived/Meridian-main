@@ -1,0 +1,105 @@
+# Documentation validation rules for Meridian
+# Used by: build/scripts/docs/rules-engine.py
+#
+# Rule types:
+#   must_contain       - file must contain a literal string or regex
+#   must_not_contain   - file must NOT contain a literal string or regex
+#   must_match         - at least one line must match the regex
+#   required_sections  - file must have Markdown headings matching these strings
+
+rules:
+  # ---------------------------------------------------------------------------
+  # Architecture Decision Records
+  # ---------------------------------------------------------------------------
+  - name: "ADR has status field"
+    applies_to: "docs/adr/*.md"
+    must_contain: "Status:"
+    severity: error
+
+  - name: "ADR has date"
+    applies_to: "docs/adr/*.md"
+    must_match: "Date:|date:"
+    severity: warning
+
+  - name: "ADR has context section"
+    applies_to: "docs/adr/*.md"
+    required_sections:
+      - "Context"
+    severity: warning
+
+  - name: "ADR has decision section"
+    applies_to: "docs/adr/*.md"
+    required_sections:
+      - "Decision"
+    severity: warning
+
+  # ---------------------------------------------------------------------------
+  # Generated documentation
+  # ---------------------------------------------------------------------------
+  - name: "Generated docs have auto-generated notice"
+    applies_to: "docs/generated/*.md"
+    must_contain: "auto-generated"
+    severity: warning
+
+  # ---------------------------------------------------------------------------
+  # Provider documentation
+  # ---------------------------------------------------------------------------
+  - name: "Provider docs mention setup steps"
+    applies_to: "docs/providers/*-setup.md"
+    required_sections:
+      - "Prerequisites"
+      - "Configuration"
+    severity: warning
+
+  # ---------------------------------------------------------------------------
+  # Top-level project files
+  # ---------------------------------------------------------------------------
+  - name: "README has project description"
+    applies_to: "README.md"
+    required_sections:
+      - "Meridian"
+    severity: error
+
+  - name: "CLAUDE.md has quick commands"
+    applies_to: "CLAUDE.md"
+    required_sections:
+      - "Quick Commands"
+      - "Repository Structure"
+      - "Critical Rules"
+    severity: error
+
+  - name: "CHANGELOG exists and has entries"
+    applies_to: "docs/status/CHANGELOG.md"
+    required_sections:
+      - "Changelog"
+    severity: warning
+
+  # ---------------------------------------------------------------------------
+  # Security and credential hygiene
+  # ---------------------------------------------------------------------------
+  - name: "No hardcoded localhost URLs in docs"
+    applies_to: "docs/**/*.md"
+    must_not_contain: "http://localhost"
+    severity: info
+
+  - name: "No hardcoded API keys in docs"
+    applies_to: "docs/**/*.md"
+    must_not_contain: "sk_live_|pk_live_|AKIA[0-9A-Z]{16}"
+    severity: error
+
+  # ---------------------------------------------------------------------------
+  # AI assistant guides
+  # ---------------------------------------------------------------------------
+  - name: "AI guides reference the project name"
+    applies_to: "docs/ai/claude/*.md"
+    must_contain: "Meridian"
+    severity: info
+
+  # ---------------------------------------------------------------------------
+  # Operations runbooks
+  # ---------------------------------------------------------------------------
+  - name: "Operator runbook has troubleshooting section"
+    applies_to: "docs/operations/operator-runbook.md"
+    required_sections:
+      - "Troubleshooting"
+    severity: warning

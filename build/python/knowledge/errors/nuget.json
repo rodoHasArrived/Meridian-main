@@ -1,0 +1,42 @@
+{
+  "error_code": "NU1301",
+  "patterns": [
+    {"pattern": "NU1301"},
+    {"pattern": "Unable to load the service index"}
+  ],
+  "severity": "error",
+  "category": "dependency",
+  "diagnosis": {
+    "summary": "NuGet feed is unreachable",
+    "explanation": "The restore step cannot reach a configured NuGet source, often due to network, proxy, or TLS issues.",
+    "investigation_steps": [
+      {
+        "command": "dotnet nuget list source",
+        "description": "Verify the configured package sources"
+      },
+      {
+        "command": "curl -I https://api.nuget.org/v3/index.json",
+        "description": "Check network connectivity to NuGet"
+      }
+    ]
+  },
+  "remediation": {
+    "auto_fixable": false,
+    "auto_fix_command": "",
+    "manual_steps": [
+      "Confirm proxy settings and retry the restore",
+      "Check TLS inspection or corporate firewall rules",
+      "Temporarily disable custom feeds to isolate the issue"
+    ],
+    "prevention": [
+      "Document required network access for build environments",
+      "Cache NuGet packages locally for offline builds"
+    ]
+  },
+  "related_docs": [
+    "https://learn.microsoft.com/nuget/reference/errors-and-warnings/nu1301"
+  ],
+  "examples": [
+    "NU1301: Unable to load the service index for source https://api.nuget.org/v3/index.json."
+  ]
+}

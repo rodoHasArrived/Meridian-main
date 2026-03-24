@@ -1,0 +1,41 @@
+{
+  "error_code": "CS0246",
+  "patterns": [
+    {"pattern": "CS0246"},
+    {"pattern": "The type or namespace name .* could not be found"}
+  ],
+  "severity": "error",
+  "category": "compilation",
+  "diagnosis": {
+    "summary": "Missing reference or using statement",
+    "explanation": "The compiler cannot locate a type or namespace, usually because a package reference is missing or a using directive is incorrect.",
+    "investigation_steps": [
+      {
+        "command": "dotnet list package",
+        "description": "Verify that the required package is referenced"
+      },
+      {
+        "command": "rg -n \"using .*\" src",
+        "description": "Check using directives for missing or incorrect namespaces"
+      }
+    ]
+  },
+  "remediation": {
+    "auto_fixable": false,
+    "auto_fix_command": "",
+    "manual_steps": [
+      "Add the missing package reference to the project file",
+      "Update the namespace or using directive to the correct value"
+    ],
+    "prevention": [
+      "Keep package references aligned across projects",
+      "Use shared Directory.Packages.props for common dependencies"
+    ]
+  },
+  "related_docs": [
+    "https://learn.microsoft.com/dotnet/csharp/language-reference/compiler-messages/cs0246"
+  ],
+  "examples": [
+    "error CS0246: The type or namespace name 'Foo' could not be found (are you missing a using directive or an assembly reference?)"
+  ]
+}
