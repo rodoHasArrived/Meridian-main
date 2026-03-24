@@ -155,7 +155,7 @@ public sealed class ConnectionServiceBaseTests
     }
 
     [Fact]
-    public async Task ResumeAutoReconnect_WhenDisconnected_ShouldScheduleReconnect()
+    public async Task ResumeAutoReconnect_AfterManualDisconnect_ShouldNotScheduleReconnect()
     {
         using var svc = new TestConnectionService();
         await svc.ConnectAsync("Provider");
@@ -164,8 +164,8 @@ public sealed class ConnectionServiceBaseTests
 
         svc.ResumeAutoReconnect();
 
-        svc.State.Should().Be(ConnectionState.Reconnecting);
-        svc.ReconnectTimerStartCount.Should().Be(1);
+        svc.State.Should().Be(ConnectionState.Disconnected);
+        svc.ReconnectTimerStartCount.Should().Be(0);
     }
 
     // ── DisconnectAsync ──────────────────────────────────────────────
@@ -286,6 +286,19 @@ public sealed class ConnectionServiceBaseTests
     }
 
     [Fact]
+    public async Task HealthCheck_Success_WithoutConnect_ShouldNotTransitionToConnected()
+    {
+        using var svc = new TestConnectionService();
+        svc.HealthCheckResult = true;
+        svc.StartMonitoring();
+
+        await svc.SimulateHealthCheck();
+
+        svc.State.Should().Be(ConnectionState.Disconnected);
+        svc.Uptime.Should().BeNull();
+    }
+
+    [Fact]
     public async Task HealthCheck_Failure_ShouldRaiseConnectionHealthUpdated()
     {
         using var svc = new TestConnectionService();
@@ -367,6 +380,21 @@ public sealed class ConnectionServiceBaseTests
 
         received.Should().NotBeNull();
         received!.Error.Should().NotBeNullOrEmpty();
+    }
+
+    [Fact]
+    public async Task HealthCheck_Success_AfterManualDisconnect_ShouldRemainDisconnected()
+    {
+        using var svc = new TestConnectionService();
+        await svc.ConnectAsync("Provider");
+        await svc.DisconnectAsync();
+        svc.StartMonitoring();
+        svc.HealthCheckResult = true;
+
+        await svc.SimulateHealthCheck();
+
+        svc.State.Should().Be(ConnectionState.Disconnected);
+        svc.Uptime.Should().BeNull();
     }
 
     // ── GetReconnectDelayMs ──────────────────────────────────────────

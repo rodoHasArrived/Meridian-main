@@ -27,6 +27,7 @@ public abstract class ConnectionServiceBase : IDisposable
     private bool _autoReconnectEnabled = true;
     private bool _autoReconnectPaused;
     private int _reconnectAttempts;
+    private bool _maintainConnection;
 
     /// <summary>Gets the current service URL being used for connections.</summary>
     public string ServiceUrl => _settings.ServiceUrl;
@@ -103,6 +104,9 @@ public abstract class ConnectionServiceBase : IDisposable
     {
         StopMonitoring();
         _settings = new ConnectionSettings();
+        _maintainConnection = false;
+        _consecutiveFailures = 0;
+        _reconnectAttempts = 0;
         OnSettingsUpdated(_settings);
     }
 
@@ -155,6 +159,7 @@ public abstract class ConnectionServiceBase : IDisposable
     public async Task<bool> ConnectAsync(string provider, CancellationToken ct = default)
     {
         _currentProvider = provider;
+        _maintainConnection = true;
 
         bool isHealthy;
         try
@@ -191,9 +196,12 @@ public abstract class ConnectionServiceBase : IDisposable
     /// </summary>
     public Task DisconnectAsync(CancellationToken ct = default)
     {
+        _maintainConnection = false;
         StopAutoReconnect();
         SetState(ConnectionState.Disconnected);
         _connectedAt = null;
+        _consecutiveFailures = 0;
+        _reconnectAttempts = 0;
         return Task.CompletedTask;
     }
 
@@ -220,7 +228,9 @@ public abstract class ConnectionServiceBase : IDisposable
             _autoReconnectPaused = false;
             LogOperation("Auto-reconnect resumed");
 
-            if (_state == ConnectionState.Disconnected && _autoReconnectEnabled)
+            if (_maintainConnection
+                && (_state == ConnectionState.Disconnected || _state == ConnectionState.Reconnecting)
+                && _autoReconnectEnabled)
             {
                 ScheduleReconnect();
             }
@@ -303,12 +313,15 @@ public abstract class ConnectionServiceBase : IDisposable
 
             if (isHealthy)
             {
-                _consecutiveFailures = 0;
-
-                if (_state == ConnectionState.Disconnected || _state == ConnectionState.Reconnecting)
+                if (_maintainConnection)
                 {
-                    SetState(ConnectionState.Connected);
-                    _connectedAt = DateTime.UtcNow;
+                    _consecutiveFailures = 0;
+
+                    if (_state == ConnectionState.Disconnected || _state == ConnectionState.Reconnecting)
+                    {
+                        SetState(ConnectionState.Connected);
+                        _connectedAt = DateTime.UtcNow;
+                    }
                 }
             }
             else
@@ -340,7 +353,7 @@ public abstract class ConnectionServiceBase : IDisposable
             Timestamp = DateTime.UtcNow
         });
 
-        if (!isHealthy)
+        if (!isHealthy && _maintainConnection)
         {
             _consecutiveFailures++;
 
