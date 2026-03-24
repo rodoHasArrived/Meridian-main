@@ -50,11 +50,13 @@ case "$TARGET" in
     "")
         info "Publishing for all platforms..."
         publish_rid "linux-x64"
+        publish_rid "linux-arm64"
         publish_rid "win-x64"
         publish_rid "osx-x64"
+        publish_rid "osx-arm64"
         ;;
     *)
-        echo "ERROR: Unknown target '${TARGET}'. Valid: linux-x64, win-x64, osx-x64" >&2
+        echo "ERROR: Unknown target '${TARGET}'. Valid: linux-x64, win-x64, osx-x64, osx-arm64, linux-arm64" >&2
         exit 1
         ;;
 esac
