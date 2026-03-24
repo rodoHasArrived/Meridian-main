@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Backtesting.Sdk;
+using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
@@ -414,6 +415,72 @@ public sealed class WorkstationEndpointsTests
         created.Breaks.Should().Contain(breakRow =>
             breakRow.Category == ReconciliationBreakCategory.AmountMismatch ||
             breakRow.Category == ReconciliationBreakCategory.MissingLedgerCoverage);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_SecurityMasterRoutes_ShouldReturnSearchAndDetailPayloads()
+    {
+        var securityId = Guid.Parse("44444444-4444-4444-4444-444444444444");
+        var queryService = new StubSecurityMasterQueryService();
+        queryService.Register(
+            new SecuritySummaryDto(
+                SecurityId: securityId,
+                AssetClass: "Equity",
+                Status: SecurityStatusDto.Active,
+                DisplayName: "Apple Inc.",
+                PrimaryIdentifier: "AAPL",
+                Currency: "USD",
+                Version: 4),
+            new SecurityDetailDto(
+                SecurityId: securityId,
+                AssetClass: "Equity",
+                Status: SecurityStatusDto.Active,
+                DisplayName: "Apple Inc.",
+                Currency: "USD",
+                CommonTerms: JsonSerializer.SerializeToElement(new { lotSize = 1 }),
+                AssetSpecificTerms: JsonSerializer.SerializeToElement(new { primaryExchange = "NASDAQ" }),
+                Identifiers:
+                [
+                    new SecurityIdentifierDto(SecurityIdentifierKind.Ticker, "AAPL", null, true)
+                ],
+                Aliases: [],
+                Version: 4,
+                EffectiveFrom: new DateTimeOffset(2026, 3, 21, 0, 0, 0, TimeSpan.Zero),
+                EffectiveTo: null));
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<ISecurityMasterQueryService>(queryService);
+        });
+
+        var client = app.GetTestClient();
+
+        using var search = await ReadJsonAsync(client, "/api/workstation/security-master/securities?query=AAPL&take=5&activeOnly=true");
+        var rows = search.RootElement;
+        rows.GetArrayLength().Should().Be(1);
+        rows[0].GetProperty("securityId").GetGuid().Should().Be(securityId);
+        rows[0].GetProperty("status").GetString().Should().Be("Active");
+        rows[0].GetProperty("classification").GetProperty("assetClass").GetString().Should().Be("Equity");
+        rows[0].GetProperty("classification").GetProperty("primaryIdentifierValue").GetString().Should().Be("AAPL");
+        rows[0].GetProperty("economicDefinition").GetProperty("effectiveFrom").ValueKind.Should().Be(JsonValueKind.Null);
+
+        using var detail = await ReadJsonAsync(client, $"/api/workstation/security-master/securities/{securityId}");
+        detail.RootElement.GetProperty("securityId").GetGuid().Should().Be(securityId);
+        detail.RootElement.GetProperty("economicDefinition").GetProperty("currency").GetString().Should().Be("USD");
+        detail.RootElement.GetProperty("economicDefinition").GetProperty("version").GetInt64().Should().Be(4);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_SecurityMasterSearch_ShouldRequireQuery()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<ISecurityMasterQueryService>(new StubSecurityMasterQueryService());
+        });
+
+        var client = app.GetTestClient();
+        var response = await client.GetAsync("/api/workstation/security-master/securities");
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     private static async Task<WebApplication> CreateAppAsync(Action<IServiceCollection>? configureServices = null)
@@ -870,5 +937,46 @@ public sealed class WorkstationEndpointsTests
             _references.TryGetValue(symbol, out var reference);
             return Task.FromResult<WorkstationSecurityReference?>(reference);
         }
+    }
+
+    private sealed class StubSecurityMasterQueryService : ISecurityMasterQueryService
+    {
+        private readonly Dictionary<Guid, SecurityDetailDto> _details = [];
+        private readonly List<SecuritySummaryDto> _summaries = [];
+
+        public void Register(SecuritySummaryDto summary, SecurityDetailDto detail)
+        {
+            _summaries.Add(summary);
+            _details[detail.SecurityId] = detail;
+        }
+
+        public Task<SecurityDetailDto?> GetByIdAsync(Guid securityId, CancellationToken ct = default)
+        {
+            _details.TryGetValue(securityId, out var detail);
+            return Task.FromResult<SecurityDetailDto?>(detail);
+        }
+
+        public Task<SecurityDetailDto?> GetByIdentifierAsync(SecurityIdentifierKind identifierKind, string identifierValue, string? provider, CancellationToken ct = default)
+        {
+            var detail = _details.Values.FirstOrDefault(item =>
+                item.Identifiers.Any(id =>
+                    id.Kind == identifierKind &&
+                    string.Equals(id.Value, identifierValue, StringComparison.OrdinalIgnoreCase)));
+            return Task.FromResult<SecurityDetailDto?>(detail);
+        }
+
+        public Task<IReadOnlyList<SecuritySummaryDto>> SearchAsync(SecuritySearchRequest request, CancellationToken ct = default)
+        {
+            var rows = _summaries
+                .Where(item =>
+                    item.DisplayName.Contains(request.Query, StringComparison.OrdinalIgnoreCase) ||
+                    item.PrimaryIdentifier.Contains(request.Query, StringComparison.OrdinalIgnoreCase))
+                .Take(request.Take)
+                .ToArray();
+            return Task.FromResult<IReadOnlyList<SecuritySummaryDto>>(rows);
+        }
+
+        public Task<IReadOnlyList<SecurityMasterEventEnvelope>> GetHistoryAsync(SecurityHistoryRequest request, CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<SecurityMasterEventEnvelope>>(Array.Empty<SecurityMasterEventEnvelope>());
     }
 }
