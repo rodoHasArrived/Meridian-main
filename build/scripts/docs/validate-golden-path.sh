@@ -84,7 +84,7 @@ echo "Checking that all installer-referenced files exist..."
 echo ""
 
 for f in "${REQUIRED_FILES[@]}"; do
-    if [ -e "$f" ]; then
+    if [ -f "$f" ]; then
         pass "$f"
     else
         fail "$f"
