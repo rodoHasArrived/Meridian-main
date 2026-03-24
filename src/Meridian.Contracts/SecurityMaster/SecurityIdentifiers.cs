@@ -28,8 +28,8 @@ public sealed record SecurityIdentifierDto(
     string Value,
     bool IsPrimary,
     DateTimeOffset ValidFrom,
-    DateTimeOffset? ValidTo,
-    string? Provider);
+    DateTimeOffset? ValidTo = null,
+    string? Provider = null);
 
 public sealed record SecurityAliasDto(
     Guid AliasId,
