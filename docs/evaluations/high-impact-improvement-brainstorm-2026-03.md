@@ -344,11 +344,9 @@ meaningful error code.
 These changes improve the system's fundamental design, making it more
 maintainable, extensible, and correct by construction.
 
-### 3.1 End-to-End Trace Context Propagation — 📝 Open
+### 3.1 End-to-End Trace Context Propagation — ✅ Done (2026-03-24)
 
-**Current state**: OpenTelemetry is wired up (`TracedEventMetrics`,
-`OpenTelemetrySetup`), but there's no trace context flowing through the event
-pipeline. Each component logs independently with no correlation.
+**Current state**: Trace context is captured at pipeline ingress, restored in processing/storage spans, and stamped onto `MarketEvent` records (`TraceId`, `ParentSpanId`) so sinks and logs can correlate operations end-to-end.
 
 **What's missing**: When a trade arrives from Alpaca, gets processed through the
 pipeline, validated by data quality, and written to storage — there's no single
@@ -653,7 +651,7 @@ exhaustive and the compiler catches missing cases.
 | 2.4 | WebSocket buffer size limit | Stability | Low | High | ✅ Done (2026-03-12) |
 | 2.5 | Reconnection race fix | Stability | Medium | High | ✅ Done (2026-03-12) |
 | 2.6 | Provider connection timeout | Stability | Low | High | ✅ Done (2026-03-11) |
-| 3.1 | E2E trace propagation | Architecture | Low | High | 📝 Open |
+| 3.1 | E2E trace propagation | Architecture | Low | High | ✅ Done (2026-03-24) |
 | 3.2 | WebSocket provider base class | Architecture | Low | High | 📝 Open |
 | 3.3 | Decide F# strategy | Architecture | Low | Medium | 📝 Open |
 | 3.4 | Idempotent writes | Architecture | **Critical** | **Critical** | 📝 Open |

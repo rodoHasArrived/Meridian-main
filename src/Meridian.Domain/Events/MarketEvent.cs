@@ -21,7 +21,10 @@ public sealed record MarketEvent(
     // Canonicalization fields
     string? CanonicalSymbol = null,
     byte CanonicalizationVersion = 0,
-    string? CanonicalVenue = null
+    string? CanonicalVenue = null,
+    // End-to-end trace context captured at pipeline ingress.
+    string? TraceId = null,
+    string? ParentSpanId = null
 )
 {
     public static MarketEvent Trade(DateTimeOffset ts, string symbol, Trade trade, long seq = 0, string source = "IB")
@@ -135,6 +138,19 @@ public sealed record MarketEvent(
     /// to ensure consistent behavior regardless of canonicalization state.
     /// </summary>
     public string EffectiveSymbol => CanonicalSymbol ?? Symbol;
+
+    /// <summary>
+    /// Stamps the event with trace context captured at ingress so downstream sinks,
+    /// logs, and dead-letter flows can correlate records without relying on ambient Activity state.
+    /// </summary>
+    public MarketEvent StampTraceContext(ActivityContext parentContext)
+        => parentContext.TraceId == default
+            ? this
+            : this with
+            {
+                TraceId = parentContext.TraceId.ToString(),
+                ParentSpanId = parentContext.SpanId.ToString()
+            };
 
     /// <summary>
     /// Computes the estimated end-to-end latency in milliseconds using monotonic clock,
