@@ -1,4 +1,3 @@
-using Meridian.Application.Etl;
 using Meridian.Contracts.Etl;
 using Meridian.Infrastructure.Etl.Sftp;
 using Meridian.Storage.Etl;

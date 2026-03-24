@@ -70,8 +70,9 @@
   <Target Name="GenerateCSharpInterop" BeforeTargets="BeforeCompile">
     <PropertyGroup>
       <InteropOutput>$(MSBuildProjectDirectory)/Generated/Meridian.FSharp.Interop.g.cs</InteropOutput>
+      <GeneratorProject>$(MSBuildProjectDirectory)/../../build/dotnet/FSharpInteropGenerator/FSharpInteropGenerator.csproj</GeneratorProject>
     </PropertyGroup>
-    <Exec Command="dotnet run --project &quot;$(MSBuildProjectDirectory)/../../build/dotnet/FSharpInteropGenerator/FSharpInteropGenerator.csproj&quot; -- --output &quot;$(InteropOutput)&quot;" />
+    <Exec Command="dotnet run --project &quot;$(GeneratorProject)&quot; -- --output &quot;$(InteropOutput)&quot;" Condition="Exists('$(GeneratorProject)')" />
     <ItemGroup>
       <None Include="$(InteropOutput)" Pack="true" PackagePath="contentFiles/any/any/Generated/" />
     </ItemGroup>
