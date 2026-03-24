@@ -364,6 +364,7 @@ Meridian-main
 │       └── docs
 │           ├── generate-prompts.py
 │           ├── generate-structure-docs.py
+│           ├── scan-todos.py
 │           └── update-claude-md.py
 ├── config
 │   ├── appsettings.sample.json

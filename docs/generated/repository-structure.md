@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-03-24 20:53:46 UTC. Do not edit manually.
+> Auto-generated on 2026-03-24 21:03:17 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -253,6 +253,7 @@ Meridian-main
 │       └── docs
 │           ├── generate-prompts.py
 │           ├── generate-structure-docs.py
+│           ├── scan-todos.py
 │           └── update-claude-md.py
 ├── config
 │   ├── appsettings.sample.json
