@@ -4,8 +4,6 @@
 #   - update-uml-diagrams.yml (PlantUML → PNG)
 
 name: Update Diagram Artifacts
-# Replaces and combines:
-#   - update-uml-diagrams.yml (Regenerate PNG diagrams from PlantUML sources)
 
 on:
   push:

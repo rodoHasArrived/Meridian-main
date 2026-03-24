@@ -1,0 +1,212 @@
+// Backfill Workflow Diagram
+// Meridian v1.7.x
+// Last Updated: 2026-03-24
+//
+// This diagram shows the end-to-end backfill workflow:
+// CLI command parsing → BackfillCoordinator → CompositeHistoricalDataProvider
+// → per-provider rate limiting → gap detection → WAL + storage.
+//
+// Generate: dot -Tpng backfill-workflow.dot -o backfill-workflow.png
+//           dot -Tsvg backfill-workflow.dot -o backfill-workflow.svg
+
+digraph BackfillWorkflow {
+  rankdir=TB;
+  graph [fontname="Helvetica", fontsize=12, bgcolor="white", compound=true, pad=0.5, splines=ortho];
+  node  [fontname="Helvetica", fontsize=10, shape=box, style="rounded,filled"];
+  edge  [fontname="Helvetica", fontsize=9, color="#4a5568"];
+
+  // Title
+  labelloc="t";
+  label="Meridian - Backfill Workflow\nCLI → CompositeProvider → Rate Limiting → Storage | v1.7.x";
+
+  // 1. Entry Points
+  subgraph cluster_entry {
+    label="1. Backfill Entry Points";
+    color="#805ad5";
+    style="rounded";
+    bgcolor="#faf5ff";
+
+    CLI [fillcolor="#ddd6fe",
+         label="CLI Command\n\n--backfill\n--backfill-provider <name>\n--backfill-symbols SPY,AAPL\n--backfill-from 2024-01-01\n--backfill-to   2024-01-31"];
+
+    REST [fillcolor="#ddd6fe",
+          label="REST API\n\nPOST /api/backfill/run\n{\n  provider, symbols,\n  from, to\n}"];
+
+    SCHEDULED [fillcolor="#e9d5ff",
+               label="Scheduled / Gap Repair\n\nBackfillScheduler\nAutomatic gap detection\nMissing date fills"];
+  }
+
+  // 2. Coordinator
+  subgraph cluster_coordinator {
+    label="2. Backfill Coordinator";
+    color="#2b6cb0";
+    style="rounded";
+    bgcolor="#dbeafe";
+
+    COORD [fillcolor="#93c5fd",
+           label="BackfillCoordinator\n\nValidate request params\nResolve provider by name\nPartition date range\nEnqueue work items\nTrack run status"];
+
+    CATALOG_CHECK [fillcolor="#bfdbfe",
+                   label="StorageCatalogService\n\nCheck existing coverage\nIdentify missing gaps\nSkip already-filled dates\nData lineage tracking"];
+
+    REQUEST [shape=note, fillcolor="#dbeafe",
+             label="BackfillRequest:\n• Symbols[]\n• DateRange (from/to)\n• ProviderName (optional)\n• MaxConcurrency\n• ForceRefresh flag"];
+  }
+
+  // 3. CompositeHistoricalDataProvider
+  subgraph cluster_composite {
+    label="3. CompositeHistoricalDataProvider (Failover Orchestrator)";
+    color="#2c7a7b";
+    style="rounded";
+    bgcolor="#d1fae5";
+
+    COMPOSITE [fillcolor="#6ee7b7",
+               label="CompositeHistoricalDataProvider\n\nPriority-based provider selection\nAutomatic failover on error\nCircuit breaker per provider\nRate-limit rotation\nHealth-based exclusion"];
+
+    PRIORITY [shape=note, fillcolor="#a7f3d0",
+              label="Provider Priority Order:\n1. Alpaca (5) / IB (5)\n2. Yahoo Finance (10)\n3. Polygon (15)\n4. Stooq (20)\n5. Tiingo (25)\n6. Nasdaq Data Link (30)\n7. StockSharp (35)\n8. Finnhub (35)\n9. Twelve Data (38)\n10. Alpha Vantage (40)\n11. FRED (45)"];
+
+    CIRCUIT [fillcolor="#a7f3d0",
+             label="CircuitBreaker\n[Per Provider]\n\nClosed → Open → Half-Open\nFailure counting\nAuto-recovery cooldown\nHealth metric export"];
+  }
+
+  // 4. Rate Limiting
+  subgraph cluster_ratelimit {
+    label="4. Rate Limiting & Throttling";
+    color="#ed8936";
+    style="rounded";
+    bgcolor="#fffaf0";
+
+    RATE_LIMITER [fillcolor="#fbd38d",
+                  label="ProviderRateLimitTracker\n\nToken bucket per provider\nRequest counting\nCooldown enforcement\nBurst allowance"];
+
+    BACKOFF [fillcolor="#feebc8",
+             label="Exponential Backoff\n\nOn 429 / rate-limit response\n1s → 2s → 4s → 8s → 16s\nJitter randomization\nMax 5 retries"];
+
+    subgraph cluster_provider_limits {
+      label="Per-Provider Rate Limits";
+      style="dashed";
+      color="#b7791f";
+
+      LIM_ALP  [shape=note, fillcolor="#fefcbf", label="Alpaca\n200 req/min"];
+      LIM_POL  [shape=note, fillcolor="#fefcbf", label="Polygon\n5 req/min (free)"];
+      LIM_AV   [shape=note, fillcolor="#fefcbf", label="Alpha Vantage\n5 req/min (free)"];
+      LIM_FINN [shape=note, fillcolor="#fefcbf", label="Finnhub\n60 req/min"];
+      LIM_TIING[shape=note, fillcolor="#fefcbf", label="Tiingo\n500 req/hr"];
+    }
+  }
+
+  // 5. Provider Execution
+  subgraph cluster_providers {
+    label="5. Historical Provider Execution";
+    color="#2c7a7b";
+    style="dashed";
+    bgcolor="#e6fffa";
+
+    HIST_CALL [fillcolor="#81e6d9",
+               label="IHistoricalDataProvider\n.GetHistoricalBarsAsync()\n.StreamHistoricalBarsAsync()\n\nIAsyncEnumerable<HistoricalBar>\nPaged fetch with backpressure\nAuto-decompress responses"];
+
+    PARSE [fillcolor="#b2f5ea",
+           label="Response Parsing\n\nJSON / CSV deserialization\nADR-014 source generators\nOHLCV normalization\nTimezone canonicalization (UTC)\nAdjusted price handling"];
+  }
+
+  // 6. Gap Detection & Validation
+  subgraph cluster_gaps {
+    label="6. Gap Detection & Sequence Validation";
+    color="#718096";
+    style="rounded";
+    bgcolor="#f7fafc";
+
+    GAP_DETECT [fillcolor="#e2e8f0",
+                label="Gap Detector\n\nCompare fetched vs expected dates\nMissing interval flagging\nOut-of-order detection\nIntegrityEvent emission on anomaly"];
+
+    FSHARP_VAL [fillcolor="#e2e8f0",
+                label="F# Validation Pipeline\n[Railway-Oriented]\n\nPrice > 0, Volume ≥ 0\nHigh ≥ Low, Close in range\nTimestamp monotonic\nError accumulation"];
+  }
+
+  // 7. Storage
+  subgraph cluster_storage {
+    label="7. Durable Storage";
+    color="#c53030";
+    style="rounded";
+    bgcolor="#fee2e2";
+
+    WAL [fillcolor="#fc8181", fontcolor="white",
+         label="Write-Ahead Log\n\nJournal before write\nCrash-safe guarantee\nSHA256 per entry\nNoSync / Batched modes"];
+
+    JSONL_SINK [fillcolor="#fecaca",
+                label="JSONL Sink\n\nAppend-only writes\nDaily partition files\n{root}/{symbol}/{type}/{date}.jsonl\nOptional LZ4 compression"];
+
+    PARQUET_SINK [fillcolor="#fecaca",
+                  label="Parquet Sink\n\nColumnar archival format\n10-20x compression\nSchema versioning\nBatch flush (1000 rows)"];
+
+    TIERED [fillcolor="#fecaca",
+            label="Tiered Storage Manager\n\nHot (SSD): 0-7 days\nWarm (HDD): 7-30 days\nCold (S3/Glacier): 30d+\nAutomatic tier promotion"];
+  }
+
+  // 8. Observability
+  subgraph cluster_obs {
+    label="8. Observability & Status";
+    color="#38a169";
+    style="rounded";
+    bgcolor="#f0fff4";
+
+    PROGRESS [fillcolor="#9ae6b4",
+              label="BackfillProgressTracker\n\nSymbol × date coverage\nRows fetched / stored\nProvider used per segment\nETA estimation"];
+
+    METRICS [fillcolor="#9ae6b4",
+             label="Prometheus Metrics\n\nmdc_backfill_requests_total\nmdc_backfill_rows_fetched\nmdc_backfill_errors_total\nmdc_provider_latency_seconds"];
+
+    RUN_RESULT [shape=note, fillcolor="#c6f6d5",
+                label="BackfillRunResult:\n• Symbol coverage map\n• Rows per provider\n• Gaps remaining\n• Duration + errors\n• StorageCatalog updated"];
+  }
+
+  // Data Flow
+  CLI -> COORD [color="#805ad5", penwidth=2, label="1. request"];
+  REST -> COORD [color="#805ad5", penwidth=2];
+  SCHEDULED -> COORD [color="#805ad5", style=dashed];
+
+  COORD -> CATALOG_CHECK [color="#2b6cb0", label="2. gap check"];
+  CATALOG_CHECK -> COORD [color="#2b6cb0", style=dashed, label="missing dates"];
+  COORD -> REQUEST [style=dashed];
+
+  COORD -> COMPOSITE [color="#2c7a7b", penwidth=2, label="3. fetch"];
+  COMPOSITE -> PRIORITY [style=dashed];
+  COMPOSITE -> CIRCUIT [color="#c53030", style=dashed];
+
+  COMPOSITE -> RATE_LIMITER [color="#ed8936", label="4. throttle"];
+  RATE_LIMITER -> BACKOFF [color="#ed8936", style=dashed, label="on 429"];
+  RATE_LIMITER -> LIM_ALP [style=dashed];
+  RATE_LIMITER -> LIM_POL [style=dashed];
+  RATE_LIMITER -> LIM_AV  [style=dashed];
+  RATE_LIMITER -> LIM_FINN[style=dashed];
+  RATE_LIMITER -> LIM_TIING[style=dashed];
+
+  RATE_LIMITER -> HIST_CALL [color="#2c7a7b", penwidth=2, label="5. execute"];
+  HIST_CALL -> PARSE [color="#2c7a7b"];
+
+  PARSE -> GAP_DETECT [color="#718096", label="6. validate"];
+  GAP_DETECT -> FSHARP_VAL [color="#718096"];
+
+  FSHARP_VAL -> WAL [color="#c53030", penwidth=2, label="7. store"];
+  WAL -> JSONL_SINK [color="#c53030", penwidth=2];
+  WAL -> PARQUET_SINK [color="#c53030"];
+  JSONL_SINK -> TIERED [color="#c53030", style=dashed];
+  PARQUET_SINK -> TIERED [color="#c53030", style=dashed];
+
+  COORD -> PROGRESS [color="#38a169", style=dashed, label="8. track"];
+  PROGRESS -> METRICS [color="#38a169", style=dashed];
+  COORD -> RUN_RESULT [color="#38a169", label="result"];
+  CATALOG_CHECK -> TIERED [style=dashed, color="#2b6cb0", label="update catalog"];
+
+  // Legend
+  subgraph cluster_legend {
+    label="Legend";
+    style="rounded";
+    color="#666666";
+    bgcolor="#fafafa";
+
+    LEG [shape=plaintext,
+         label="━━ Main backfill flow\n─ ─ Reference / Error handling\nNumbers = processing phase order"];
+  }
+}
