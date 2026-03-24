@@ -123,8 +123,8 @@ public sealed class FillModelExpansionTests
             LimitPrice: 394m,
             StopPrice: 395m,
             SubmittedAt: DateTimeOffset.UtcNow);
-        // high=397 >= limitPrice=394, so the limit condition is satisfied
-        var evt = MakeBarEvent("SPY", 398m, 397m, 393m, 394m);
+        // open=396 <= high=397 (valid OHLC); low=393 crosses stopPrice=395; high=397 >= limitPrice=394
+        var evt = MakeBarEvent("SPY", 396m, 397m, 393m, 394m);
 
         var result = model.TryFill(order, evt);
 

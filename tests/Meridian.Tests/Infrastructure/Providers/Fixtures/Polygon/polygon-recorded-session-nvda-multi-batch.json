@@ -1,0 +1,66 @@
+{
+  "description": "Recorded-style Polygon stock feed session for NVDA testing multi-event batched WebSocket frames. A single message frame contains multiple T+Q events and another contains both A+AM events. A third frame mixes non-subscribed symbols (AMD, TSLA) that must all be dropped. Verifies correct unpacking of batched Polygon frames.",
+  "subscriptions": {
+    "trades": ["NVDA"],
+    "quotes": ["NVDA"],
+    "aggregates": ["NVDA"]
+  },
+  "expected": {
+    "trade": {
+      "symbol": "NVDA",
+      "price": 875.60,
+      "size": 150,
+      "timestampMs": 1742654400100,
+      "streamId": "99123456",
+      "venue": "NASDAQ",
+      "aggressor": "Sell",
+      "rawConditions": ["29"]
+    },
+    "quote": {
+      "symbol": "NVDA",
+      "bidPrice": 875.55,
+      "bidSize": 80,
+      "askPrice": 875.65,
+      "askSize": 120,
+      "timestampMs": 1742654400200,
+      "venue": "NASDAQ"
+    },
+    "aggregates": [
+      {
+        "timeframe": "Second",
+        "symbol": "NVDA",
+        "open": 875.50,
+        "high": 875.70,
+        "low": 875.45,
+        "close": 875.60,
+        "volume": 3200,
+        "vwap": 875.58,
+        "tradeCount": 48,
+        "startTimeMs": 1742654400000,
+        "endTimeMs": 1742654401000
+      },
+      {
+        "timeframe": "Minute",
+        "symbol": "NVDA",
+        "open": 874.80,
+        "high": 875.75,
+        "low": 874.70,
+        "close": 875.60,
+        "volume": 198000,
+        "vwap": 875.22,
+        "tradeCount": 2940,
+        "startTimeMs": 1742654340000,
+        "endTimeMs": 1742654400000
+      }
+    ],
+    "expectedIntegrityEvents": 0
+  },
+  "messages": [
+    "[{\"ev\":\"status\",\"status\":\"connected\",\"message\":\"Connected Successfully\"}]",
+    "[{\"ev\":\"status\",\"status\":\"auth_success\",\"message\":\"authenticated\"}]",
+    "[{\"ev\":\"status\",\"status\":\"success\",\"message\":\"subscribed to: T.NVDA,Q.NVDA,A.NVDA,AM.NVDA\"}]",
+    "[{\"ev\":\"T\",\"sym\":\"NVDA\",\"p\":875.60,\"s\":150,\"t\":1742654400100,\"i\":\"99123456\",\"x\":4,\"c\":[29]},{\"ev\":\"Q\",\"sym\":\"NVDA\",\"bp\":875.55,\"bs\":80,\"ap\":875.65,\"as\":120,\"t\":1742654400200,\"x\":4}]",
+    "[{\"ev\":\"A\",\"sym\":\"NVDA\",\"o\":875.50,\"h\":875.70,\"l\":875.45,\"c\":875.60,\"v\":3200,\"vw\":875.58,\"s\":1742654400000,\"e\":1742654401000,\"n\":48},{\"ev\":\"AM\",\"sym\":\"NVDA\",\"o\":874.80,\"h\":875.75,\"l\":874.70,\"c\":875.60,\"v\":198000,\"vw\":875.22,\"s\":1742654340000,\"e\":1742654400000,\"n\":2940}]",
+    "[{\"ev\":\"T\",\"sym\":\"AMD\",\"p\":162.30,\"s\":200,\"t\":1742654400310,\"i\":\"amd-ignored\",\"x\":4,\"c\":[14]},{\"ev\":\"T\",\"sym\":\"TSLA\",\"p\":195.80,\"s\":75,\"t\":1742654400320,\"i\":\"tsla-ignored\",\"x\":4,\"c\":[14]}]"
+  ]
+}

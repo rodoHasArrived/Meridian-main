@@ -1,5 +1,5 @@
 {
-  "description": "Recorded-style Polygon stock feed session for SPY (SPDR S&P 500 ETF) on CBOE/BATS exchange. Covers ETF trading patterns including higher-volume aggregates, CBOE exchange code (8), multi-condition trades, and cross-symbol filtering for a subscribed non-ETF symbol (AAPL) that must be dropped.",
+  "description": "Recorded-style Polygon stock feed session for SPY (SPDR S&P 500 ETF) on BATS exchange (code 8). Covers ETF trading patterns including higher-volume aggregates, BATS exchange code, multi-condition trades (Unknown aggressor), and cross-symbol filtering for a non-subscribed symbol (AAPL) that must be dropped.",
   "subscriptions": {
     "trades": ["SPY"],
     "quotes": ["SPY"],
@@ -12,8 +12,8 @@
       "size": 500,
       "timestampMs": 1742567400123,
       "streamId": "55991234",
-      "venue": "CBOE",
-      "aggressor": "Buy",
+      "venue": "BATS",
+      "aggressor": "Unknown",
       "rawConditions": ["14", "41"]
     },
     "quote": {
@@ -23,7 +23,7 @@
       "askPrice": 524.38,
       "askSize": 900,
       "timestampMs": 1742567400456,
-      "venue": "CBOE"
+      "venue": "BATS"
     },
     "aggregates": [
       {
