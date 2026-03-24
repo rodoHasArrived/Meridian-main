@@ -9,7 +9,7 @@ jobs:
       max-parallel: 5
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Set up Python 3.10
       uses: actions/setup-python@v6
       with:
@@ -31,4 +31,8 @@ jobs:
     - name: Test with pytest
       run: |
         conda install pytest
-        pytest
+        if find . -type f \( -name "test_*.py" -o -name "*_test.py" \) | grep -q .; then
+          pytest
+        else
+          echo "No Python tests found; skipping pytest."
+        fi
