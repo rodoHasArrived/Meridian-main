@@ -26,12 +26,12 @@ public sealed class LiveDataServiceTests
     }
 
     [Fact]
-    public void Instance_ThreadSafety_ShouldReturnSameInstance()
+    public async Task Instance_ThreadSafety_ShouldReturnSameInstance()
     {
         LiveDataService? i1 = null, i2 = null;
         var t1 = Task.Run(() => i1 = LiveDataService.Instance);
         var t2 = Task.Run(() => i2 = LiveDataService.Instance);
-        Task.WaitAll(t1, t2);
+        await Task.WhenAll(t1, t2);
 
         i1.Should().NotBeNull();
         i1.Should().BeSameAs(i2);
