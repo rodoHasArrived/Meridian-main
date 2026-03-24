@@ -209,17 +209,73 @@ public sealed class NyseTaqCollectorIntegrationTests
     }
 
     // -------------------------------------------------------------------------
-    // Test 7 – Two AAPL pre-market trades within 6 seconds on the same stream:
-    //          VWAP must be the price-volume-weighted average of both trades.
+    // Test 7 – Two AAPL pre-market trades land on different venues because their
+    //          exchange codes differ: code 5 → "NYSE", code 6 → "EDGX".
+    //          The collector tracks state per (symbol, streamId, venue), so each
+    //          trade is accumulated into its own independent rolling window.
+    //          Using ToUpdate(record) exercises the real NyseNationalTradesCsvParser
+    //          → NyseMarketDataClient.OnTrade mapping path end-to-end.
     //
     // Data (from golden samples):
-    //   AAPL @ 09:28:00 — 3 shares @ 171.08  (AaplPreMarketFinalCorrection)
-    //   AAPL @ 09:28:06 — 2 shares @ 171.04  (AaplEarlyPreMarket)
+    //   AaplPreMarketFinalCorrection: AAPL @ 09:28:00 — 3 shares @ 171.08
+    //                                 exchange code 5 → Venue = "NYSE"
+    //   AaplEarlyPreMarket:           AAPL @ 09:28:06 — 2 shares @ 171.04
+    //                                 exchange code 6 → Venue = "EDGX"
     //
-    // ToRealtimeTrade maps these to different Venues (NYSE vs EDGX) because the
-    // exchange codes differ (5 vs 6).  To exercise a multi-trade VWAP within the
-    // same rolling window, both updates are explicitly wired to the same stream
-    // (StreamId="nyse-taq", Venue="NYSE") using the TAQ-derived prices.
+    // Expected per-venue VWAP:
+    //   NYSE  track: single trade → VWAP = 171.08
+    //   EDGX  track: single trade → VWAP = 171.04
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void TaqTwoPreMarketTrades_DifferentVenues_PerVenueVwapTrackedIndependently()
+    {
+        var record1 = NyseNationalTradesCsvParser.ParseTradeLine(AaplPreMarketFinalCorrection, SessionDate)!;
+        var record2 = NyseNationalTradesCsvParser.ParseTradeLine(AaplEarlyPreMarket, SessionDate)!;
+
+        _collector.OnTrade(ToUpdate(record1));
+        _collector.OnTrade(ToUpdate(record2));
+
+        // Exchange codes differ (5 = NYSE, 6 = EDGX), so each trade lands on a
+        // separate (symbol, streamId, venue) state track.  Each track sees its
+        // first-ever trade, so no prior sequence exists to compare against —
+        // no IntegrityEvents are expected.
+        _publisher.PublishedEvents
+            .Where(e => e.Type == MarketEventType.Integrity)
+            .Should().BeEmpty(
+                because: "the two trades land on different venue tracks (NYSE vs EDGX); "
+                       + "each track sees its first trade, so no sequence gap is possible");
+
+        var orderFlowEvents = _publisher.PublishedEvents
+            .Where(e => e.Type == MarketEventType.OrderFlow)
+            .Select(e => e.Payload.Should().BeOfType<OrderFlowStatistics>().Subject)
+            .ToList();
+
+        orderFlowEvents.Should().HaveCount(2,
+            because: "each accepted trade emits one OrderFlowStatistics event");
+
+        var nyseStats = orderFlowEvents.Single(s => s.Venue == "NYSE");
+        nyseStats.VWAP.Should().Be(171.08m,
+            because: "the NYSE track has only the one trade at 171.08 so VWAP equals the trade price");
+        nyseStats.UnknownVolume.Should().Be(3,
+            because: "AggressorSide.Unknown with volume 3 on the NYSE trade");
+
+        var edgxStats = orderFlowEvents.Single(s => s.Venue == "EDGX");
+        edgxStats.VWAP.Should().Be(171.04m,
+            because: "the EDGX track has only the one trade at 171.04 so VWAP equals the trade price");
+        edgxStats.UnknownVolume.Should().Be(2,
+            because: "AggressorSide.Unknown with volume 2 on the EDGX trade");
+    }
+
+    // -------------------------------------------------------------------------
+    // Test 7b – Two AAPL trades on the same (symbol, streamId, venue) track:
+    //           VWAP must be the price-volume-weighted average of both trades.
+    //
+    // Both updates are wired to (AAPL, "nyse-taq", "NYSE") using TAQ-derived
+    // prices and volumes so the collector accumulates them on a single rolling
+    // window.  The sequence numbers come directly from the golden-sample records
+    // (64802, then 64834), which introduces a gap that fires one IntegrityEvent
+    // — but both trades are still accepted and both count toward VWAP.
     //
     // Expected VWAP = (171.08 × 3 + 171.04 × 2) / (3 + 2)
     //              = (513.24 + 342.08) / 5
@@ -228,43 +284,57 @@ public sealed class NyseTaqCollectorIntegrationTests
     // -------------------------------------------------------------------------
 
     [Fact]
-    public void TaqTwoPreMarketTrades_WithinRollingWindow_VwapIsWeightedAverage()
+    public void TaqTwoTradesOnSameVenueTrack_VwapIsWeightedAverage()
     {
         var record1 = NyseNationalTradesCsvParser.ParseTradeLine(AaplPreMarketFinalCorrection, SessionDate)!;
         var record2 = NyseNationalTradesCsvParser.ParseTradeLine(AaplEarlyPreMarket, SessionDate)!;
 
-        // Both trades on the same logical stream so their state is accumulated together.
-        MarketTradeUpdate CreateVwapTestUpdate(NyseTaqTradeRecord record) =>
-            new(
-                Timestamp: record.Timestamp,
-                Symbol: record.Symbol,
-                Price: record.Price,
-                Size: record.Volume,
-                Aggressor: AggressorSide.Unknown,
-                SequenceNumber: record.GlobalSequenceNumber,
-                StreamId: "nyse-taq",
-                Venue: "NYSE");
+        // Route both trades onto the same (AAPL, nyse-taq, NYSE) collector track
+        // by using TAQ-derived prices/volumes with an explicit shared venue.
+        _collector.OnTrade(new MarketTradeUpdate(
+            Timestamp: record1.Timestamp,
+            Symbol: record1.Symbol,
+            Price: record1.Price,
+            Size: record1.Volume,
+            Aggressor: AggressorSide.Unknown,
+            SequenceNumber: record1.GlobalSequenceNumber,
+            StreamId: "nyse-taq",
+            Venue: "NYSE"));
 
-        var update1 = CreateVwapTestUpdate(record1);
-        var update2 = CreateVwapTestUpdate(record2);
+        _collector.OnTrade(new MarketTradeUpdate(
+            Timestamp: record2.Timestamp,
+            Symbol: record2.Symbol,
+            Price: record2.Price,
+            Size: record2.Volume,
+            Aggressor: AggressorSide.Unknown,
+            SequenceNumber: record2.GlobalSequenceNumber,
+            StreamId: "nyse-taq",
+            Venue: "NYSE"));
 
-        _collector.OnTrade(update1);
-        _collector.OnTrade(update2);
+        // Sequence 64802 → 64834 is a gap (expected 64803); this fires one
+        // IntegrityEvent but both trades are still accepted.
+        _publisher.PublishedEvents
+            .Where(e => e.Type == MarketEventType.Integrity)
+            .Should().ContainSingle(
+                because: "seq 64802 → 64834 (gap of 31) must emit exactly one gap IntegrityEvent");
 
-        // Second update triggers a sequence gap (64802 → expected 64803, received 64834).
-        // The gap emits an IntegrityEvent but the trade is still accepted.
         var orderFlowEvents = _publisher.PublishedEvents
             .Where(e => e.Type == MarketEventType.OrderFlow)
+            .Select(e => e.Payload.Should().BeOfType<OrderFlowStatistics>().Subject)
             .ToList();
+
         orderFlowEvents.Should().HaveCount(2,
             because: "each accepted trade emits one OrderFlowStatistics event");
 
-        var stats = orderFlowEvents.Last().Payload.Should().BeOfType<OrderFlowStatistics>().Subject;
-
-        const decimal expectedVwap = (171.08m * 3 + 171.04m * 2) / (3 + 2); // 171.064
-        stats.VWAP.Should().Be(expectedVwap,
-            because: "both trades fall within the 10-second rolling window and must be included in VWAP");
-        stats.UnknownVolume.Should().Be(5, because: "both trades have AggressorSide.Unknown");
+        var expectedVwap = (record1.Price * record1.Volume + record2.Price * record2.Volume)
+                          / (record1.Volume + record2.Volume); // 171.064
+        var lastStats = orderFlowEvents.Last();
+        lastStats.VWAP.Should().Be(expectedVwap,
+            because: "both trades fall within the rolling window and contribute to the weighted-average VWAP");
+        lastStats.UnknownVolume.Should().Be(record1.Volume + record2.Volume,
+            because: "both trades have AggressorSide.Unknown so all shares accumulate in UnknownVolume");
+        lastStats.TradeCount.Should().Be(2,
+            because: "two trades have been accumulated in this rolling window");
     }
 
     // -------------------------------------------------------------------------
