@@ -441,7 +441,7 @@ public sealed class WorkstationEndpointsTests
                 AssetSpecificTerms: JsonSerializer.SerializeToElement(new { primaryExchange = "NASDAQ" }),
                 Identifiers:
                 [
-                    new SecurityIdentifierDto(SecurityIdentifierKind.Ticker, "AAPL", null, true)
+                    new SecurityIdentifierDto(SecurityIdentifierKind.Ticker, "AAPL", true, new DateTimeOffset(2026, 3, 21, 0, 0, 0, TimeSpan.Zero), null, null)
                 ],
                 Aliases: [],
                 Version: 4,
@@ -458,16 +458,16 @@ public sealed class WorkstationEndpointsTests
         using var search = await ReadJsonAsync(client, "/api/workstation/security-master/securities?query=AAPL&take=5&activeOnly=true");
         var rows = search.RootElement;
         rows.GetArrayLength().Should().Be(1);
-        rows[0].GetProperty("securityId").GetGuid().Should().Be(securityId);
-        rows[0].GetProperty("status").GetString().Should().Be("Active");
-        rows[0].GetProperty("classification").GetProperty("assetClass").GetString().Should().Be("Equity");
-        rows[0].GetProperty("classification").GetProperty("primaryIdentifierValue").GetString().Should().Be("AAPL");
-        rows[0].GetProperty("economicDefinition").GetProperty("effectiveFrom").ValueKind.Should().Be(JsonValueKind.Null);
+        rows[0].GetProperty(CamelCase(nameof(SecurityMasterWorkstationDto.SecurityId))).GetGuid().Should().Be(securityId);
+        rows[0].GetProperty(CamelCase(nameof(SecurityMasterWorkstationDto.Status))).GetString().Should().Be("Active");
+        rows[0].GetProperty(CamelCase(nameof(SecurityMasterWorkstationDto.Classification))).GetProperty(CamelCase(nameof(SecurityClassificationSummaryDto.AssetClass))).GetString().Should().Be("Equity");
+        rows[0].GetProperty(CamelCase(nameof(SecurityMasterWorkstationDto.Classification))).GetProperty(CamelCase(nameof(SecurityClassificationSummaryDto.PrimaryIdentifierValue))).GetString().Should().Be("AAPL");
+        rows[0].GetProperty(CamelCase(nameof(SecurityMasterWorkstationDto.EconomicDefinition))).GetProperty(CamelCase(nameof(SecurityEconomicDefinitionSummaryDto.EffectiveFrom))).ValueKind.Should().Be(JsonValueKind.Null);
 
         using var detail = await ReadJsonAsync(client, $"/api/workstation/security-master/securities/{securityId}");
-        detail.RootElement.GetProperty("securityId").GetGuid().Should().Be(securityId);
-        detail.RootElement.GetProperty("economicDefinition").GetProperty("currency").GetString().Should().Be("USD");
-        detail.RootElement.GetProperty("economicDefinition").GetProperty("version").GetInt64().Should().Be(4);
+        detail.RootElement.GetProperty(CamelCase(nameof(SecurityMasterWorkstationDto.SecurityId))).GetGuid().Should().Be(securityId);
+        detail.RootElement.GetProperty(CamelCase(nameof(SecurityMasterWorkstationDto.EconomicDefinition))).GetProperty(CamelCase(nameof(SecurityEconomicDefinitionSummaryDto.Currency))).GetString().Should().Be("USD");
+        detail.RootElement.GetProperty(CamelCase(nameof(SecurityMasterWorkstationDto.EconomicDefinition))).GetProperty(CamelCase(nameof(SecurityEconomicDefinitionSummaryDto.Version))).GetInt64().Should().Be(4);
     }
 
     [Fact]
@@ -567,6 +567,8 @@ public sealed class WorkstationEndpointsTests
         services.AddSingleton<LedgerReadService>();
         services.AddSingleton<StrategyRunReadService>();
     }
+
+    private static string CamelCase(string propertyName) => JsonNamingPolicy.CamelCase.ConvertName(propertyName);
 
     private static async Task<JsonDocument> ReadJsonAsync(HttpClient client, string path)
     {
