@@ -1,7 +1,7 @@
 # Meridian - Production Status
 
-**Version:** 1.7.0
-**Last Updated:** 2026-03-21
+**Version:** 1.7.2
+**Last Updated:** 2026-03-24
 **Status:** Development / Pilot Ready (comprehensive fund-management planning active)
 
 This document summarizes the current production-readiness posture and the next product-delivery gaps from the current repository state.
@@ -21,7 +21,12 @@ The active plan now has two connected delivery tracks:
 |----------|--------|-------|
 | Core event pipeline | Implemented | Channel-based processing with backpressure, metrics, validation, and storage fan-out |
 | Storage layer | Implemented | JSONL/Parquet composite sink with WAL, catalog, packaging, and export support |
-| Backfill providers | Implemented | Multiple providers available; some require credentials |
+| Backfill providers | Implemented | 10+ providers with fallback chain; some require credentials |
+| Backtesting engine | Implemented | Tick-by-tick replay with fill models, portfolio metrics, and Lean integration |
+| Paper trading gateway | Implemented | Risk rules (position limits, drawdown stops, order rate throttle), position and fill tracking |
+| **Brokerage gateway framework** | **Implemented** | `BaseBrokerageGateway` + Alpaca, IB, StockSharp adapters; live-validated runtime paths pending |
+| Direct lending module | Implemented | PostgreSQL-backed services, workflows, and `/api/loans/*` endpoints |
+| CppTrader integration | Implemented | Host management, order gateway, ITCH ingestion, replay service |
 | WPF desktop shell | Delayed implementation | Code present in `src/Meridian.Wpf/`; excluded from active solution build pending roadmap prioritization |
 | Shared run / portfolio / ledger model | In progress | First workstation browser/detail/portfolio/ledger flow is in code; broader paper/live coverage remains |
 | Security Master baseline | Implemented in code, not yet productized | Contracts, application, storage, and F# domain anchors exist |
@@ -32,12 +37,16 @@ The active plan now has two connected delivery tracks:
 
 ## Current Strengths
 
-- mature ingestion, replay, storage, and export foundations
-- shared composition and host startup patterns
-- WPF desktop application code preserved in `src/Meridian.Wpf/` (delayed implementation — not in active build)
-- portfolio and ledger concepts already present in the codebase
+- Mature ingestion, replay, storage, and export foundations
+- Shared composition and host startup patterns
+- **Brokerage gateway framework** with Alpaca, IB, and StockSharp adapters ready for cockpit integration
+- Backtesting engine with tick replay, fill models, and QuantConnect Lean integration
+- Direct lending module with PostgreSQL persistence, workflows, and API endpoints
+- Portfolio and ledger concepts already present in the codebase (double-entry accounting, F# ledger, trading state machines)
 - Security Master foundations already present in contracts, storage, application, and F# domain modules
-- existing export infrastructure that can support future report-pack generation
+- Existing export infrastructure that can support future report-pack generation
+- WPF desktop application code preserved in `src/Meridian.Wpf/` (delayed implementation — not in active build)
+- Comprehensive test coverage (~4,424 tests across 7 test projects)
 
 ## Current Gaps
 
@@ -81,6 +90,8 @@ The current planning set is synchronized around these documents:
 
 - [ ] Configure real provider credentials and validate operator startup paths
 - [ ] Complete remaining provider-confidence hardening for Polygon, StockSharp, IB, and optional NYSE
+- [ ] Validate brokerage gateway adapters (Alpaca, IB, StockSharp) against live vendor surfaces
+- [ ] Build paper-trading cockpit in web dashboard wired to brokerage gateways
 - [ ] Finish workspace-first trading workstation flows beyond the first shared run baseline
 - [ ] Productize Security Master for workstation use
 - [ ] Implement multi-ledger, trial-balance, and cash-flow governance views

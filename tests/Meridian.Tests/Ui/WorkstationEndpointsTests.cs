@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Backtesting.Sdk;
+using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
@@ -416,6 +417,135 @@ public sealed class WorkstationEndpointsTests
             breakRow.Category == ReconciliationBreakCategory.MissingLedgerCoverage);
     }
 
+    [Fact]
+    public async Task MapWorkstationEndpoints_SecurityMasterRoutes_ShouldReturnSearchAndDetailPayloads()
+    {
+        var securityId = Guid.Parse("44444444-4444-4444-4444-444444444444");
+        var queryService = new StubSecurityMasterQueryService();
+        queryService.Register(
+            new SecuritySummaryDto(
+                SecurityId: securityId,
+                AssetClass: "Equity",
+                Status: SecurityStatusDto.Active,
+                DisplayName: "Apple Inc.",
+                PrimaryIdentifier: "AAPL",
+                Currency: "USD",
+                Version: 4),
+            new SecurityDetailDto(
+                SecurityId: securityId,
+                AssetClass: "Equity",
+                Status: SecurityStatusDto.Active,
+                DisplayName: "Apple Inc.",
+                Currency: "USD",
+                CommonTerms: JsonSerializer.SerializeToElement(new { lotSize = 1 }),
+                AssetSpecificTerms: JsonSerializer.SerializeToElement(new { primaryExchange = "NASDAQ" }),
+                Identifiers:
+                [
+                    new SecurityIdentifierDto(
+                        SecurityIdentifierKind.Ticker,
+                        "AAPL",
+                        true,
+                        new DateTimeOffset(2026, 3, 21, 0, 0, 0, TimeSpan.Zero),
+                        null,
+                        null)
+                ],
+                Aliases: [],
+                Version: 4,
+                EffectiveFrom: new DateTimeOffset(2026, 3, 21, 0, 0, 0, TimeSpan.Zero),
+                EffectiveTo: null));
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<ISecurityMasterQueryService>(queryService);
+        });
+
+        var client = app.GetTestClient();
+
+        using var search = await ReadJsonAsync(client, "/api/workstation/security-master/securities?query=AAPL&take=5&activeOnly=true");
+        var rows = search.RootElement;
+        rows.GetArrayLength().Should().Be(1);
+        rows[0].GetProperty(CamelCase(nameof(SecurityMasterWorkstationDto.SecurityId))).GetGuid().Should().Be(securityId);
+        rows[0].GetProperty(CamelCase(nameof(SecurityMasterWorkstationDto.Status))).GetString().Should().Be("Active");
+        rows[0].GetProperty(CamelCase(nameof(SecurityMasterWorkstationDto.Classification))).GetProperty(CamelCase(nameof(SecurityClassificationSummaryDto.AssetClass))).GetString().Should().Be("Equity");
+        rows[0].GetProperty(CamelCase(nameof(SecurityMasterWorkstationDto.Classification))).GetProperty(CamelCase(nameof(SecurityClassificationSummaryDto.PrimaryIdentifierValue))).GetString().Should().Be("AAPL");
+        rows[0].GetProperty(CamelCase(nameof(SecurityMasterWorkstationDto.EconomicDefinition))).GetProperty(CamelCase(nameof(SecurityEconomicDefinitionSummaryDto.EffectiveFrom))).ValueKind.Should().Be(JsonValueKind.Null);
+
+        using var detail = await ReadJsonAsync(client, $"/api/workstation/security-master/securities/{securityId}");
+        detail.RootElement.GetProperty(CamelCase(nameof(SecurityMasterWorkstationDto.SecurityId))).GetGuid().Should().Be(securityId);
+        detail.RootElement.GetProperty(CamelCase(nameof(SecurityMasterWorkstationDto.EconomicDefinition))).GetProperty(CamelCase(nameof(SecurityEconomicDefinitionSummaryDto.Currency))).GetString().Should().Be("USD");
+        detail.RootElement.GetProperty(CamelCase(nameof(SecurityMasterWorkstationDto.EconomicDefinition))).GetProperty(CamelCase(nameof(SecurityEconomicDefinitionSummaryDto.Version))).GetInt64().Should().Be(4);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_SecurityMasterSearch_ShouldRequireQuery()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<ISecurityMasterQueryService>(new StubSecurityMasterQueryService());
+        });
+
+        var client = app.GetTestClient();
+        var response = await client.GetAsync("/api/workstation/security-master/securities");
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_SecurityMasterHistory_ShouldReturnHistoryPayload()
+    {
+        var securityId = Guid.Parse("55555555-5555-5555-5555-555555555555");
+        var queryService = new StubSecurityMasterQueryService();
+        queryService.RegisterHistory(
+            securityId,
+            [
+                new SecurityMasterEventEnvelope(
+                    GlobalSequence: 101,
+                    SecurityId: securityId,
+                    StreamVersion: 2,
+                    EventType: "SecurityAmended",
+                    EventTimestamp: new DateTimeOffset(2026, 3, 22, 12, 0, 0, TimeSpan.Zero),
+                    Actor: "governance.user",
+                    CorrelationId: null,
+                    CausationId: null,
+                    Payload: JsonSerializer.SerializeToElement(new { field = "displayName" }),
+                    Metadata: JsonSerializer.SerializeToElement(new { source = "test" })),
+                new SecurityMasterEventEnvelope(
+                    GlobalSequence: 100,
+                    SecurityId: securityId,
+                    StreamVersion: 1,
+                    EventType: "SecurityCreated",
+                    EventTimestamp: new DateTimeOffset(2026, 3, 21, 12, 0, 0, TimeSpan.Zero),
+                    Actor: "governance.user",
+                    CorrelationId: null,
+                    CausationId: null,
+                    Payload: JsonSerializer.SerializeToElement(new { displayName = "Sample Security" }),
+                    Metadata: JsonSerializer.SerializeToElement(new { source = "test" }))
+            ]);
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<ISecurityMasterQueryService>(queryService);
+        });
+
+        var client = app.GetTestClient();
+        using var history = await ReadJsonAsync(client, $"/api/workstation/security-master/securities/{securityId}/history?take=1");
+        history.RootElement.GetArrayLength().Should().Be(1);
+        history.RootElement[0].GetProperty("eventType").GetString().Should().Be("SecurityAmended");
+        history.RootElement[0].GetProperty("streamVersion").GetInt64().Should().Be(2);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_SecurityMasterHistory_ShouldReturnNotFoundWithoutEvents()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<ISecurityMasterQueryService>(new StubSecurityMasterQueryService());
+        });
+
+        var client = app.GetTestClient();
+        var response = await client.GetAsync($"/api/workstation/security-master/securities/{Guid.NewGuid()}/history");
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
     private static async Task<WebApplication> CreateAppAsync(Action<IServiceCollection>? configureServices = null)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
@@ -443,6 +573,8 @@ public sealed class WorkstationEndpointsTests
         services.AddSingleton<LedgerReadService>();
         services.AddSingleton<StrategyRunReadService>();
     }
+
+    private static string CamelCase(string propertyName) => JsonNamingPolicy.CamelCase.ConvertName(propertyName);
 
     private static async Task<JsonDocument> ReadJsonAsync(HttpClient client, string path)
     {
@@ -869,6 +1001,61 @@ public sealed class WorkstationEndpointsTests
         {
             _references.TryGetValue(symbol, out var reference);
             return Task.FromResult<WorkstationSecurityReference?>(reference);
+        }
+    }
+
+    private sealed class StubSecurityMasterQueryService : ISecurityMasterQueryService
+    {
+        private readonly Dictionary<Guid, SecurityDetailDto> _details = [];
+        private readonly Dictionary<Guid, IReadOnlyList<SecurityMasterEventEnvelope>> _history = [];
+        private readonly List<SecuritySummaryDto> _summaries = [];
+
+        public void Register(SecuritySummaryDto summary, SecurityDetailDto detail)
+        {
+            _summaries.Add(summary);
+            _details[detail.SecurityId] = detail;
+        }
+
+        public void RegisterHistory(Guid securityId, IReadOnlyList<SecurityMasterEventEnvelope> history)
+        {
+            _history[securityId] = history;
+        }
+
+        public Task<SecurityDetailDto?> GetByIdAsync(Guid securityId, CancellationToken ct = default)
+        {
+            _details.TryGetValue(securityId, out var detail);
+            return Task.FromResult<SecurityDetailDto?>(detail);
+        }
+
+        public Task<SecurityDetailDto?> GetByIdentifierAsync(SecurityIdentifierKind identifierKind, string identifierValue, string? provider, CancellationToken ct = default)
+        {
+            var detail = _details.Values.FirstOrDefault(item =>
+                item.Identifiers.Any(id =>
+                    id.Kind == identifierKind &&
+                    string.Equals(id.Value, identifierValue, StringComparison.OrdinalIgnoreCase)));
+            return Task.FromResult<SecurityDetailDto?>(detail);
+        }
+
+        public Task<IReadOnlyList<SecuritySummaryDto>> SearchAsync(SecuritySearchRequest request, CancellationToken ct = default)
+        {
+            var rows = _summaries
+                .Where(item =>
+                    item.DisplayName.Contains(request.Query, StringComparison.OrdinalIgnoreCase) ||
+                    item.PrimaryIdentifier.Contains(request.Query, StringComparison.OrdinalIgnoreCase))
+                .Take(request.Take)
+                .ToArray();
+            return Task.FromResult<IReadOnlyList<SecuritySummaryDto>>(rows);
+        }
+
+        public Task<IReadOnlyList<SecurityMasterEventEnvelope>> GetHistoryAsync(SecurityHistoryRequest request, CancellationToken ct = default)
+        {
+            if (!_history.TryGetValue(request.SecurityId, out var history))
+            {
+                return Task.FromResult<IReadOnlyList<SecurityMasterEventEnvelope>>(Array.Empty<SecurityMasterEventEnvelope>());
+            }
+
+            var rows = history.Take(request.Take).ToArray();
+            return Task.FromResult<IReadOnlyList<SecurityMasterEventEnvelope>>(rows);
         }
     }
 }

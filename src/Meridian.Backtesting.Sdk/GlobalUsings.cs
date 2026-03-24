@@ -4,3 +4,13 @@ global using System.Threading;
 global using System.Threading.Tasks;
 global using Meridian.Contracts.Domain.Events;
 global using Meridian.Contracts.Domain.Models;
+global using Meridian.Ledger;
+
+// Type aliases for backward compatibility with backtesting SDK namespace conventions
+global using BacktestLedger = Meridian.Ledger.Ledger;
+global using BacktestJournalEntry = Meridian.Ledger.JournalEntry;
+global using BacktestJournalEntryMetadata = Meridian.Ledger.JournalEntryMetadata;
+global using BacktestLedgerEntry = Meridian.Ledger.LedgerEntry;
+global using BacktestLedgerAccount = Meridian.Ledger.LedgerAccount;
+global using BacktestLedgerAccountType = Meridian.Ledger.LedgerAccountType;
+global using BacktestLedgerAccounts = Meridian.Ledger.LedgerAccounts;

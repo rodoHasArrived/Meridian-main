@@ -116,7 +116,7 @@ public sealed class BackfillServiceTests
     }
 
     [Fact]
-    public void Instance_ThreadSafety_MultipleThreadsGetSameInstance()
+    public async Task Instance_ThreadSafety_MultipleThreadsGetSameInstance()
     {
         // Arrange
         BackfillService? instance1 = null;
@@ -125,7 +125,7 @@ public sealed class BackfillServiceTests
         var task2 = Task.Run(() => instance2 = BackfillService.Instance);
 
         // Act
-        Task.WaitAll(task1, task2);
+        await Task.WhenAll(task1, task2);
 
         // Assert
         instance1.Should().NotBeNull();

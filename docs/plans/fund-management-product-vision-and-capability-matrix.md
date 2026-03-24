@@ -2,7 +2,7 @@
 
 **Owner:** Core Team
 **Audience:** Product, architecture, engineering, operations, and stakeholders
-**Last Updated:** 2026-03-21
+**Last Updated:** 2026-03-24
 **Status:** Active planning document
 
 ## 1. Product Vision
@@ -198,3 +198,50 @@ Meridian should be considered successful against this vision when:
 - [Improvements Tracker](../status/IMPROVEMENTS.md)
 - [Trading Workstation Migration Blueprint](trading-workstation-migration-blueprint.md)
 - [Governance and Fund Operations Blueprint](governance-fund-ops-blueprint.md)
+
+## 11. Recommended Next Steps (2026-03-24 Snapshot)
+
+These next steps convert this vision matrix into an executable near-term sequence, aligned with the PR-sequenced roadmap and module backlog.
+
+### Wave A (next 2 weeks): lock the Phase 1 base
+
+1. **Finish workspace shell hardening and bootstrap alignment** (`PR-01`, `PR-03`).
+2. **Complete shared run contract expansion** with paper/live-compatible run fields (`PR-02`).
+3. **Publish a Phase 1 acceptance checklist** for run browser/detail/portfolio/ledger parity across WPF and shared API contracts.
+
+**Exit criteria**
+
+- `Research`, `Trading`, `Data Operations`, and `Governance` shells are stable enough for day-to-day operator navigation.
+- Shared run payloads no longer depend on placeholder bootstrap data.
+- Run drill-ins are the canonical entry path for backtest and paper history.
+
+### Wave B (following 2–4 weeks): establish Phase 2 control plane
+
+1. **Start trade-management contract and cockpit baseline** (`PR-05`, `PR-11`).
+2. **Productize Security Master** and merge projection enrichment (`PR-06`, `PR-08`).
+3. **Introduce account/entity/fund-structure contracts** as a shared dependency for governance and accounting surfaces (`PR-07`).
+
+**Exit criteria**
+
+- Traders can move from research output to implementation intent with explicit order/fill/position status.
+- Governance surfaces can read normalized instrument, account, and entity context.
+- Security Master data is consumable as a product surface, not just backend storage.
+
+### Wave C (next planning increment): open the Phase 3 accounting path
+
+1. **Deliver multi-ledger kernel baseline** (`PR-09`).
+2. **Add governance DTO and read-model expansion** needed by accounting views (`PR-10`).
+3. **Ship trial balance and cash-flow operator surfaces** (`PR-12`).
+
+**Exit criteria**
+
+- Fund/entity/sleeve/account structures can be represented in ledger groupings.
+- Governance workspace shows trial balance and cash/liquidity summaries from shared read models.
+- Phase 4 reconciliation work can begin without redefining core accounting contracts.
+
+### Cross-wave guardrails
+
+- Keep **contract-first sequencing**: merge shared DTO/read-model slices before dependent UI surfaces.
+- Treat **WPF + shared endpoint parity** as a release gate for each wave.
+- Maintain **evidence and auditability** by preserving replay/export/diagnostics support in every phase.
+- Run a **monthly roadmap reconciliation** between this matrix, the implementation backlog, and the PR-sequenced roadmap to avoid phase drift.

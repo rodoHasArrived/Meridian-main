@@ -1,8 +1,8 @@
 # Meridian 6-Week Roadmap
 
-**Last Updated:** 2026-03-21
+**Last Updated:** 2026-03-24
 **Horizon:** Next 6 weeks
-**Status:** Current repo-grounded proposal
+**Status:** Current repo-grounded proposal (updated to reflect brokerage gateway framework delivery)
 
 This plan assumes the current repository baseline, not the older partial-item baseline. C3, G2, I3, and J8 are already closed. The next six weeks should therefore focus on trust, workflow coherence, and operator-facing productization.
 
@@ -12,10 +12,11 @@ This plan assumes the current repository baseline, not the older partial-item ba
 
 The highest-value near-term work is:
 
-1. strengthen provider confidence where operator trust still depends on replay evidence or runtime setup knowledge
-2. turn the workstation vocabulary into a real workspace-first shell
-3. deepen the shared run / portfolio / ledger baseline into broader research and trading workflows
-4. establish the first governance/fund-operations product slices on top of the existing Security Master and ledger foundations
+1. Strengthen provider confidence where operator trust still depends on replay evidence or runtime setup knowledge
+2. Wire the new brokerage gateway adapters into the paper-trading cockpit and begin live-vendor validation
+3. Turn the workstation vocabulary into a real workspace-first shell
+4. Deepen the shared run / portfolio / ledger baseline into broader research and trading workflows
+5. Establish the first governance/fund-operations product slices on top of the existing Security Master and ledger foundations
 
 Out of scope for this six-week window:
 
@@ -28,11 +29,13 @@ Out of scope for this six-week window:
 
 ## Repo Constraints
 
-- ingestion, WAL, and storage foundations are already in place and should be built on rather than rewritten
-- workspace categories already use `Research`, `Trading`, `Data Operations`, and `Governance`, but navigation still carries a page-first registration model
-- the first shared run/browser/detail/portfolio/ledger workstation flow exists, but it is still too backtest-first
+- Ingestion, WAL, and storage foundations are already in place and should be built on rather than rewritten
+- Workspace categories already use `Research`, `Trading`, `Data Operations`, and `Governance`, but navigation still carries a page-first registration model
+- The first shared run/browser/detail/portfolio/ledger workstation flow exists, but it is still too backtest-first
+- **Brokerage gateway framework** (Alpaca, IB, StockSharp adapters) is now implemented — the next step is wiring these into the paper-trading cockpit and validating against live vendor surfaces
 - Security Master and coordination foundations exist in code, but neither is yet a fully productized operator capability
-- provider readiness remains uneven enough that trust work still matters before broader workstation claims
+- Provider readiness remains uneven enough that trust work still matters before broader workstation claims
+- Direct lending module is operational with PostgreSQL persistence, but governance-grade reporting integration remains
 
 ---
 

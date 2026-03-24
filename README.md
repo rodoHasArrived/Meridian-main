@@ -1,6 +1,6 @@
 # Meridian
 
-Meridian is a comprehensive fund management platform in active delivery. The current platform already includes market-data ingestion, storage, backfill, replay, backtesting, paper-trading foundations, portfolio and ledger read models, Security Master foundations, a first run-scoped reconciliation seam, and direct-lending services and endpoints. The next major delivery wave expands that baseline into a connected front-, middle-, and back-office product covering shared run workflows, Security Master productization, multi-ledger governance, cash-flow modeling, deeper reconciliation, reporting, and trade-management operations.
+Meridian is a comprehensive fund management platform in active delivery. The current platform includes market-data ingestion (90+ streaming sources, 10+ backfill providers), tiered storage (WAL + JSONL/Parquet), backtesting (tick-level replay with fill models), a brokerage gateway framework (Alpaca, IB, StockSharp adapters), paper-trading with risk rules, portfolio and ledger read models, Security Master foundations, direct-lending services, and a web dashboard with 300 API routes. The next delivery wave focuses on wiring brokerage gateways into a paper-trading cockpit, provider confidence hardening, Security Master productization, and governance/fund-operations product slices.
 
 > **WPF Desktop App:** Code is present in `src/Meridian.Wpf/` but is not included in the active solution build. The web dashboard (`make run-ui`) is the current UI surface. WPF is a delayed implementation retained for future resumption.
 
@@ -131,6 +131,8 @@ Use these documents together when planning or implementing new work:
 ├── .editorconfig
 ├── .flake8
 ├── .gitattributes
+├── .githooks
+│   └── pre-commit
 ├── .github
 │   ├── ISSUE_TEMPLATE
 │   │   ├── .gitkeep
@@ -291,6 +293,23 @@ Use these documents together when planning or implementing new work:
 │   │   ├── StorageSinkBenchmarks.cs
 │   │   └── WalChecksumBenchmarks.cs
 │   └── run-bottleneck-benchmarks.sh
+├── build
+│   ├── python
+│   │   └── cli
+│   │       └── buildctl.py
+│   └── scripts
+│       ├── docs
+│       │   ├── generate-prompts.py
+│       │   ├── generate-structure-docs.py
+│       │   ├── scan-todos.py
+│       │   ├── update-claude-md.py
+│       │   └── validate-golden-path.sh
+│       ├── hooks
+│       │   ├── commit-msg
+│       │   ├── install-hooks.sh
+│       │   └── pre-commit
+│       └── install
+│           └── install.sh
 ├── config
 │   ├── appsettings.sample.json
 │   ├── appsettings.schema.json
@@ -631,6 +650,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── documentation-contribution-guide.md
 │   │   ├── expanding-scripts.md
 │   │   ├── fsharp-decision-rule.md
+│   │   ├── git-hooks.md
 │   │   ├── github-actions-summary.md
 │   │   ├── github-actions-testing.md
 │   │   ├── otlp-trace-visualization.md
@@ -639,11 +659,13 @@ Use these documents together when planning or implementing new work:
 │   │   ├── provider-implementation.md
 │   │   ├── refactor-map.md
 │   │   ├── repository-organization-guide.md
+│   │   ├── repository-rule-set.md
 │   │   ├── tooling-workflow-backlog.md
 │   │   ├── ui-fixture-mode-guide.md
 │   │   └── wpf-implementation-notes.md
 │   ├── diagrams
 │   │   ├── README.md
+│   │   ├── backfill-workflow.dot
 │   │   ├── backtesting-engine.dot
 │   │   ├── c4-level1-context.dot
 │   │   ├── c4-level1-context.png
@@ -657,6 +679,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── cli-commands.dot
 │   │   ├── cli-commands.png
 │   │   ├── cli-commands.svg
+│   │   ├── configuration-management.dot
 │   │   ├── data-flow.dot
 │   │   ├── data-flow.png
 │   │   ├── data-flow.svg
@@ -670,6 +693,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── event-pipeline-sequence.svg
 │   │   ├── execution-layer.dot
 │   │   ├── fsharp-domain.dot
+│   │   ├── mcp-server.dot
 │   │   ├── onboarding-flow.dot
 │   │   ├── onboarding-flow.png
 │   │   ├── onboarding-flow.svg
@@ -686,6 +710,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── storage-architecture.png
 │   │   ├── storage-architecture.svg
 │   │   ├── strategy-lifecycle.dot
+│   │   ├── symbol-search-resolution.dot
 │   │   ├── ui-implementation-flow.dot
 │   │   ├── ui-implementation-flow.svg
 │   │   ├── ui-navigation-map.dot
@@ -870,7 +895,8 @@ Use these documents together when planning or implementing new work:
 │   ├── dev
 │   │   ├── build-ibapi-smoke.ps1
 │   │   ├── desktop-dev.ps1
-│   │   └── diagnose-uwp-xaml.ps1
+│   │   ├── diagnose-uwp-xaml.ps1
+│   │   └── install-git-hooks.sh
 │   ├── generate-diagrams.mjs
 │   ├── lib
 │   │   ├── ui-diagram-generator.mjs
@@ -1208,18 +1234,12 @@ Use these documents together when planning or implementing new work:
 │   │   ├── GlobalUsings.cs
 │   │   ├── IBacktestContext.cs
 │   │   ├── IBacktestStrategy.cs
-│   │   ├── Ledger
-│   │   │   ├── BacktestLedger.cs
-│   │   │   ├── JournalEntry.cs
-│   │   │   ├── LedgerAccount.cs
-│   │   │   ├── LedgerAccountType.cs
-│   │   │   ├── LedgerAccounts.cs
-│   │   │   └── LedgerEntry.cs
 │   │   ├── Meridian.Backtesting.Sdk.csproj
 │   │   ├── Order.cs
 │   │   ├── PortfolioSnapshot.cs
 │   │   ├── Position.cs
-│   │   └── StrategyParameterAttribute.cs
+│   │   ├── StrategyParameterAttribute.cs
+│   │   └── TradeTicket.cs
 │   ├── Meridian.Contracts
 │   │   ├── Api
 │   │   │   ├── BackfillApiModels.cs
@@ -1312,7 +1332,6 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── SymbolId.cs
 │   │   │   └── VenueCode.cs
 │   │   ├── Etl
-│   │   │   ├── EtlAbstractions.cs
 │   │   │   └── EtlModels.cs
 │   │   ├── Export
 │   │   │   ├── AnalysisExportModels.cs
@@ -1344,6 +1363,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── MarketDataQuery.cs
 │   │   └── Workstation
 │   │       ├── ReconciliationDtos.cs
+│   │       ├── SecurityMasterWorkstationDtos.cs
 │   │       └── StrategyRunReadModels.cs
 │   ├── Meridian.Core
 │   │   ├── Config
@@ -1439,7 +1459,10 @@ Use these documents together when planning or implementing new work:
 │   │       └── MarketEventIngressTracing.cs
 │   ├── Meridian.Execution
 │   │   ├── Adapters
+│   │   │   ├── BaseBrokerageGateway.cs
+│   │   │   ├── BrokerageGatewayAdapter.cs
 │   │   │   └── PaperTradingGateway.cs
+│   │   ├── BrokerageServiceRegistration.cs
 │   │   ├── Exceptions
 │   │   │   └── UnsupportedOrderRequestException.cs
 │   │   ├── GlobalUsings.cs
@@ -1464,6 +1487,8 @@ Use these documents together when planning or implementing new work:
 │   │       ├── OrderLifecycleManager.cs
 │   │       └── PaperTradingPortfolio.cs
 │   ├── Meridian.Execution.Sdk
+│   │   ├── BrokerageConfiguration.cs
+│   │   ├── IBrokerageGateway.cs
 │   │   ├── IExecutionGateway.cs
 │   │   ├── IOrderManager.cs
 │   │   ├── IPositionTracker.cs
@@ -1537,6 +1562,7 @@ Use these documents together when planning or implementing new work:
 │   ├── Meridian.Infrastructure
 │   │   ├── Adapters
 │   │   │   ├── Alpaca
+│   │   │   │   ├── AlpacaBrokerageGateway.cs
 │   │   │   │   ├── AlpacaConstants.cs
 │   │   │   │   ├── AlpacaHistoricalDataProvider.cs
 │   │   │   │   ├── AlpacaMarketDataClient.cs
@@ -1588,6 +1614,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── EnhancedIBConnectionManager.IBApi.cs
 │   │   │   │   ├── EnhancedIBConnectionManager.cs
 │   │   │   │   ├── IBApiLimits.cs
+│   │   │   │   ├── IBBrokerageGateway.cs
 │   │   │   │   ├── IBBuildGuidance.cs
 │   │   │   │   ├── IBCallbackRouter.cs
 │   │   │   │   ├── IBConnectionManager.cs
@@ -1614,6 +1641,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── Converters
 │   │   │   │   │   ├── MessageConverter.cs
 │   │   │   │   │   └── SecurityConverter.cs
+│   │   │   │   ├── StockSharpBrokerageGateway.cs
 │   │   │   │   ├── StockSharpConnectorCapabilities.cs
 │   │   │   │   ├── StockSharpConnectorFactory.cs
 │   │   │   │   ├── StockSharpHistoricalDataProvider.cs
@@ -1625,6 +1653,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── SyntheticHistoricalDataProvider.cs
 │   │   │   │   ├── SyntheticMarketDataClient.cs
 │   │   │   │   └── SyntheticReferenceDataCatalog.cs
+│   │   │   ├── Templates
+│   │   │   │   └── TemplateBrokerageGateway.cs
 │   │   │   ├── Tiingo
 │   │   │   │   └── TiingoHistoricalDataProvider.cs
 │   │   │   ├── TwelveData
@@ -2133,6 +2163,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── ReplayEndpoints.cs
 │   │   │   ├── ResilienceEndpoints.cs
 │   │   │   ├── SamplingEndpoints.cs
+│   │   │   ├── SecurityMasterEndpoints.cs
 │   │   │   ├── StatusEndpoints.cs
 │   │   │   ├── StorageEndpoints.cs
 │   │   │   ├── StorageQualityEndpoints.cs
@@ -2360,6 +2391,7 @@ Use these documents together when planning or implementing new work:
 ├── tests
 │   ├── Directory.Build.props
 │   ├── Meridian.Backtesting.Tests
+│   │   ├── BacktestEngineIntegrationTests.cs
 │   │   ├── BracketOrderTests.cs
 │   │   ├── FillModelExpansionTests.cs
 │   │   ├── FillModelTests.cs
@@ -2533,6 +2565,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   └── TradeModelTests.cs
 │   │   │   └── StrongDomainTypeTests.cs
 │   │   ├── Execution
+│   │   │   ├── BrokerageGatewayAdapterTests.cs
 │   │   │   ├── PaperTradingGatewayTests.cs
 │   │   │   └── PaperTradingPortfolioTests.cs
 │   │   ├── GlobalUsings.cs
@@ -2559,7 +2592,9 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   │   └── ib_order_stop_buy_ioc.json
 │   │   │   │   │   └── Polygon
 │   │   │   │   │       ├── polygon-recorded-session-aapl.json
+│   │   │   │   │       ├── polygon-recorded-session-gld-cboe-sell.json
 │   │   │   │   │       ├── polygon-recorded-session-msft-edge.json
+│   │   │   │   │       ├── polygon-recorded-session-nvda-multi-batch.json
 │   │   │   │   │       └── polygon-recorded-session-spy-etf.json
 │   │   │   │   ├── FreeProviderContractTests.cs
 │   │   │   │   ├── HistoricalDataProviderContractTests.cs
@@ -2784,6 +2819,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-381 directories, 2365 files
+389 directories, 2392 files
 ```
 <!-- readme-tree end -->

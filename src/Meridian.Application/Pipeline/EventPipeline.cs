@@ -997,7 +997,14 @@ public sealed class EventPipeline : IMarketEventPublisher, IBackpressureSignal, 
     public IEventMetrics EventMetrics => _metrics;
 
     private static TracedMarketEvent CaptureTraceContext(in MarketEvent evt)
-        => new(evt, EventTraceContext.CaptureCurrent());
+    {
+        var traceContext = EventTraceContext.CaptureCurrent();
+        var tracedEvent = traceContext.HasParent
+            ? evt.StampTraceContext(traceContext.ParentContext)
+            : evt;
+
+        return new TracedMarketEvent(tracedEvent, traceContext);
+    }
 
     private static Dictionary<string, object?> CreateLogScope(
         MarketEvent evt,

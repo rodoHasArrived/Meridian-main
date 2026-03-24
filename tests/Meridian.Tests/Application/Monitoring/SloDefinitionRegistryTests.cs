@@ -204,7 +204,7 @@ public sealed class AlertRunbookRegistryTests
     {
         var registry = AlertRunbookRegistry.Instance;
 
-        var entry = registry.GetByAlertName("mdcdown");
+        var entry = registry.GetByAlertName("meridiandown");
 
         entry.Should().NotBeNull();
     }

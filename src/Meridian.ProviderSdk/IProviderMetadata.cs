@@ -114,6 +114,8 @@ public interface IProviderMetadata
             types.Add("Auctions");
         if (caps.SupportsOptionsChain)
             types.Add("OptionsChain");
+        if (caps.SupportsBrokerage)
+            types.Add("Brokerage");
 
         return types.ToArray();
     }
@@ -160,6 +162,9 @@ public sealed record ProviderCapabilities
 
     /// <summary>Supports options chain data retrieval.</summary>
     public bool SupportsOptionsChain { get; init; }
+
+    /// <summary>Supports brokerage order execution (submit, cancel, modify orders).</summary>
+    public bool SupportsBrokerage { get; init; }
 
     #endregion
 
@@ -319,6 +324,20 @@ public sealed record ProviderCapabilities
             SupportsRealtimeQuotes = streaming
         };
 
+    /// <summary>Brokerage provider supporting order execution.</summary>
+    public static ProviderCapabilities Brokerage(
+        bool streaming = false,
+        bool backfill = false,
+        bool trades = true,
+        bool quotes = true) => new()
+        {
+            SupportsBrokerage = true,
+            SupportsStreaming = streaming,
+            SupportsBackfill = backfill,
+            SupportsRealtimeTrades = trades,
+            SupportsRealtimeQuotes = quotes
+        };
+
     /// <summary>Hybrid provider supporting both streaming and backfill.</summary>
     public static ProviderCapabilities Hybrid(
         bool trades = true,
@@ -381,6 +400,8 @@ public sealed record ProviderCapabilities
             dict["SupportsSymbolSearch"] = true;
         if (SupportsOptionsChain)
             dict["SupportsOptionsChain"] = true;
+        if (SupportsBrokerage)
+            dict["SupportsBrokerage"] = true;
 
         // Streaming
         if (SupportsRealtimeTrades)

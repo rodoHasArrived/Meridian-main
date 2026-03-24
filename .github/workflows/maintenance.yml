@@ -12,6 +12,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: maintenance-checks-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
   DOTNET_NOLOGO: true
@@ -22,6 +26,7 @@ jobs:
   detect-changes:
     name: maintenance / route
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     outputs:
       mode: ${{ steps.route.outputs.mode }}
       docs_only: ${{ steps.route.outputs.docs_only }}
@@ -31,9 +36,9 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
-          fetch-depth: 0
+          fetch-depth: 2
 
       - name: Classify maintenance route
         id: route
@@ -46,13 +51,11 @@ jobs:
           else
             BASE_REF="$(git rev-list --max-count=2 HEAD | tail -1)"
           fi
-
+          git cat-file -e "$BASE_REF^{commit}" 2>/dev/null || git fetch --no-tags --depth=1 origin "$BASE_REF"
           bash scripts/ai/route-maintenance.sh --classify-only --base "$BASE_REF" --head "${{ github.sha }}"
-
           python3 - <<'PY' >> "$GITHUB_OUTPUT"
           import json
           from pathlib import Path
-
           route = json.loads(Path(".ai/maintenance-route.json").read_text(encoding="utf-8"))
           for key in ("mode", "docs_only", "workflow_changes", "ui_changes", "ledger_changes"):
               value = route[key]
@@ -71,12 +74,15 @@ jobs:
   maintenance-light:
     name: maintenance / light
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     needs: detect-changes
     if: github.event_name != 'schedule' && needs.detect-changes.outputs.mode == 'light'
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 2
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -95,6 +101,9 @@ jobs:
           else
             BASE_REF="${{ github.event.before }}"
           fi
+          if [[ -n "$BASE_REF" && "$BASE_REF" != "0000000000000000000000000000000000000000" ]]; then
+            git cat-file -e "$BASE_REF^{commit}" 2>/dev/null || git fetch --no-tags --depth=1 origin "$BASE_REF"
+          fi
           bash scripts/ai/route-maintenance.sh --base "$BASE_REF" --head "${{ github.sha }}"
 
       - name: Upload maintenance artifacts
@@ -112,14 +121,15 @@ jobs:
   maintenance-full:
     name: maintenance / full
     runs-on: ubuntu-latest
+    timeout-minutes: 90
     needs: detect-changes
     if: github.event_name == 'schedule' || github.event_name == 'push' || needs.detect-changes.outputs.mode == 'full'
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
-          fetch-depth: 0
+          fetch-depth: 2
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -141,6 +151,9 @@ jobs:
             else
               BASE_REF="${{ github.event.before }}"
             fi
+            if [[ -n "$BASE_REF" && "$BASE_REF" != "0000000000000000000000000000000000000000" ]]; then
+              git cat-file -e "$BASE_REF^{commit}" 2>/dev/null || git fetch --no-tags --depth=1 origin "$BASE_REF"
+            fi
             bash scripts/ai/route-maintenance.sh --base "$BASE_REF" --head "${{ github.sha }}"
           fi
 
@@ -158,12 +171,13 @@ jobs:
   doctor-environment:
     name: doctor / environment
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     needs: [detect-changes, maintenance-full]
     if: always() && (github.event_name == 'schedule' || needs.detect-changes.outputs.mode == 'full')
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Prepare AI agent environment
         run: bash scripts/ai/setup-ai-agent.sh --install-dotnet
@@ -176,12 +190,13 @@ jobs:
   docs-drift:
     name: docs / drift
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     needs: detect-changes
     if: github.event_name == 'schedule' || needs.detect-changes.outputs.docs_only == 'true'
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Run docs drift checks
         run: |
@@ -199,12 +214,13 @@ jobs:
   ledger-targeted:
     name: ledger / targeted
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     needs: detect-changes
     if: needs.detect-changes.outputs.ledger_changes == 'true'
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Prepare AI agent environment
         run: bash scripts/ai/setup-ai-agent.sh --install-dotnet

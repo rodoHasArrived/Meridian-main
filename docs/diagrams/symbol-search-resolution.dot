@@ -1,0 +1,187 @@
+// Symbol Search & Resolution Diagram
+// Meridian v1.7.x
+// Last Updated: 2026-03-24
+//
+// This diagram shows the symbol search and resolution flow:
+// search query → 5 search providers → result aggregation → OpenFIGI canonical
+// ID resolution → SymbolMapper → canonical symbol ready for data collection.
+//
+// Generate: dot -Tpng symbol-search-resolution.dot -o symbol-search-resolution.png
+//           dot -Tsvg symbol-search-resolution.dot -o symbol-search-resolution.svg
+
+digraph SymbolSearchResolution {
+  rankdir=TB;
+  graph [fontname="Helvetica", fontsize=12, bgcolor="white", compound=true, pad=0.5];
+  node  [fontname="Helvetica", fontsize=10, shape=box, style="rounded,filled"];
+  edge  [fontname="Helvetica", fontsize=9, color="#4a5568"];
+
+  // Title
+  labelloc="t";
+  label="Meridian - Symbol Search & Resolution\nSearch → OpenFIGI Canonical ID → Provider-Specific Formats | v1.7.x";
+
+  // 1. Search Entry
+  subgraph cluster_entry {
+    label="1. Search Entry";
+    color="#805ad5";
+    style="rounded";
+    bgcolor="#faf5ff";
+
+    USER_QUERY [fillcolor="#ddd6fe",
+                label="Search Query\n\nFree-text: \"Apple Inc\"\nTicker: \"AAPL\"\nISIN: \"US0378331005\"\nCUSIP: \"037833100\"\nSEDOL: \"2046251\""];
+
+    CLI_SEARCH [fillcolor="#e9d5ff",
+                label="CLI / REST API\n\n--symbols-add AAPL\n--symbol-status AAPL\nPOST /api/symbols/search\nGET  /api/symbols/{ticker}"];
+  }
+
+  // 2. Symbol Search Interface
+  subgraph cluster_interface {
+    label="2. ISymbolSearchProvider Interface";
+    color="#2b6cb0";
+    style="rounded";
+    bgcolor="#dbeafe";
+
+    I_SEARCH [shape=ellipse, fillcolor="#93c5fd",
+              label="ISymbolSearchProvider\n[Interface]\n\nSearchAsync(query, ct)\nReturns: SymbolSearchResult[]"];
+
+    SEARCH_RESULT [shape=note, fillcolor="#bfdbfe",
+                   label="SymbolSearchResult:\n• Ticker (exchange-local)\n• Name (company/fund)\n• Exchange (e.g. XNAS)\n• AssetClass (Equity, ETF…)\n• Currency\n• Description"];
+  }
+
+  // 3. Search Providers
+  subgraph cluster_providers {
+    label="3. Symbol Search Providers (5 Implemented)";
+    color="#2c7a7b";
+    style="rounded";
+    bgcolor="#d1fae5";
+
+    ALP_SEARCH [fillcolor="#6ee7b7",
+                label="AlpacaSymbolSearchProvider\n[Production]\n\nUS equities + ETFs\nReal-time status (active/inactive)\nAsset class filter\nFull text + ticker match"];
+
+    FINN_SEARCH [fillcolor="#6ee7b7",
+                 label="FinnhubSymbolSearchProvider\n[Production]\n\nGlobal stocks\nExchange filter\nInstrument type filter\nFull description included"];
+
+    POL_SEARCH [fillcolor="#6ee7b7",
+                label="PolygonSymbolSearchProvider\n[Production]\n\nUS + global tickers\nFull text search\nMarket type filter (stocks, fx…)\nActive/inactive flag"];
+
+    SS_SEARCH [fillcolor="#6ee7b7",
+               label="StockSharpSymbolSearchProvider\n[Production]\n\n90+ exchange coverage\nMulti-exchange search\nGlobal market identifiers"];
+
+    FIGI_SEARCH [fillcolor="#a7f3d0",
+                 label="OpenFigiClient\n[Production — FIGI Resolution]\n\nGlobal FIGI assignment lookup\nFIGI → ticker mapping\nCUSIP / SEDOL / ISIN → FIGI\nCross-market identification\nBulk batch API support"];
+  }
+
+  // 4. Result Aggregation
+  subgraph cluster_aggregate {
+    label="4. Result Aggregation & Deduplication";
+    color="#718096";
+    style="rounded";
+    bgcolor="#f7fafc";
+
+    AGGREGATOR [fillcolor="#e2e8f0",
+                label="SymbolSearchAggregator\n\nFanout to all providers\nDedup by ticker + exchange\nRank by confidence score\nMerge metadata fields\nSelect best canonical form"];
+
+    RANK [shape=note, fillcolor="#edf2f7",
+          label="Ranking Factors:\n• Exact ticker match\n• Provider priority\n• Market cap weight\n• Active status\n• FIGI confirmation"];
+  }
+
+  // 5. OpenFIGI Canonical ID
+  subgraph cluster_figi {
+    label="5. OpenFIGI Canonical Identification";
+    color="#ed8936";
+    style="rounded";
+    bgcolor="#fffaf0";
+
+    FIGI_API [fillcolor="#fbd38d",
+              label="OpenFIGI API\n(api.openfigi.com)\n\nMapping request:\n{idType, idValue, exchCode}\nReturns: FIGI + metadata\nFree tier: 250 req/hr"];
+
+    FIGI_RESULT [shape=note, fillcolor="#feebc8",
+                 label="FIGI Response:\n• FIGI (global unique ID)\n• CompositeFIGI\n• Ticker\n• Name\n• ExchangeCode\n• SecurityType\n• MarketSector"];
+
+    FIGI_CACHE [shape=cylinder, fillcolor="#fef3c7",
+                label="SecurityMasterEventStore\n[Event-sourced cache]\n\nFIGI → ticker map persisted\nISIN / CUSIP / SEDOL index\nSnapshot + projection cache\nZero-latency repeat lookups"];
+  }
+
+  // 6. Symbol Mapping
+  subgraph cluster_mapping {
+    label="6. Provider-Specific Symbol Mapping";
+    color="#38a169";
+    style="rounded";
+    bgcolor="#c6f6d5";
+
+    SYMBOL_MAPPER [fillcolor="#9ae6b4",
+                   label="SymbolMapper\n\nCanonical → provider format\nExchange suffix rules\nNormalize CUSIP/SEDOL/ISIN\nHandle ADR suffixes\nRegional market variants"];
+
+    CONTRACT_FACTORY [fillcolor="#9ae6b4",
+                      label="ContractFactory\n[IB-specific]\n\nSymbol → IB Contract\nMultiple exchange resolution\nConId lookup\nOption / futures specs"];
+
+    subgraph cluster_format_examples {
+      label="Format Examples";
+      style="dashed";
+      color="#276749";
+
+      FMT_IB   [shape=note, fillcolor="#c6f6d5", label="IB Format:\nAAPL [SMART/USD]"];
+      FMT_ALP  [shape=note, fillcolor="#c6f6d5", label="Alpaca Format:\nAAPL"];
+      FMT_POL  [shape=note, fillcolor="#c6f6d5", label="Polygon Format:\nAAPL"];
+      FMT_STOOQ[shape=note, fillcolor="#c6f6d5", label="Stooq Format:\nAAPL.US"];
+      FMT_YAHOO[shape=note, fillcolor="#c6f6d5", label="Yahoo Format:\nAAPL"];
+    }
+  }
+
+  // 7. Canonical Symbol
+  subgraph cluster_output {
+    label="7. Canonical Symbol — Ready for Data Collection";
+    color="#2b6cb0";
+    style="rounded";
+    bgcolor="#dbeafe";
+
+    CANONICAL [fillcolor="#93c5fd",
+               label="CanonicalSymbol\n\nGlobal identifier (FIGI)\nExchange-qualified ticker\nAsset class + currency\nProvider format cache\nReady to subscribe / backfill"];
+
+    SYMBOL_STORE [shape=cylinder, fillcolor="#bfdbfe",
+                  label="Symbol Registry\n(appsettings.json)\n\nMonitored symbols list\nArchival symbols list\nTier assignment\nAdded via --symbols-add"];
+  }
+
+  // Data Flow
+  USER_QUERY -> I_SEARCH [color="#805ad5", penwidth=2, label="1. query"];
+  CLI_SEARCH -> I_SEARCH [color="#805ad5", style=dashed];
+
+  I_SEARCH -> ALP_SEARCH [color="#2c7a7b", label="2. fanout"];
+  I_SEARCH -> FINN_SEARCH [color="#2c7a7b"];
+  I_SEARCH -> POL_SEARCH [color="#2c7a7b"];
+  I_SEARCH -> SS_SEARCH [color="#2c7a7b"];
+
+  ALP_SEARCH -> AGGREGATOR [color="#718096"];
+  FINN_SEARCH -> AGGREGATOR [color="#718096"];
+  POL_SEARCH -> AGGREGATOR [color="#718096"];
+  SS_SEARCH -> AGGREGATOR [color="#718096"];
+  AGGREGATOR -> RANK [style=dashed];
+  AGGREGATOR -> SEARCH_RESULT [style=dashed];
+
+  AGGREGATOR -> FIGI_SEARCH [color="#ed8936", label="3. FIGI lookup"];
+  FIGI_SEARCH -> FIGI_API [color="#ed8936", penwidth=2];
+  FIGI_API -> FIGI_RESULT [style=dashed];
+  FIGI_SEARCH -> FIGI_CACHE [color="#ed8936", label="cache hit?"];
+  FIGI_RESULT -> FIGI_CACHE [color="#ed8936", label="persist"];
+
+  FIGI_CACHE -> SYMBOL_MAPPER [color="#38a169", penwidth=2, label="4. map"];
+  SYMBOL_MAPPER -> CONTRACT_FACTORY [color="#38a169", style=dashed, label="IB only"];
+  SYMBOL_MAPPER -> FMT_IB [style=dashed];
+  SYMBOL_MAPPER -> FMT_ALP [style=dashed];
+  SYMBOL_MAPPER -> FMT_POL [style=dashed];
+  SYMBOL_MAPPER -> FMT_STOOQ [style=dashed];
+  SYMBOL_MAPPER -> FMT_YAHOO [style=dashed];
+
+  SYMBOL_MAPPER -> CANONICAL [color="#2b6cb0", penwidth=2, label="5. canonical"];
+  CANONICAL -> SYMBOL_STORE [color="#2b6cb0", label="register"];
+
+  // Legend
+  subgraph cluster_legend {
+    label="Legend";
+    style="rounded";
+    color="#666666";
+    bgcolor="#fafafa";
+
+    LEG [shape=plaintext,
+         label="━━ Search / resolution flow\n─ ─ Reference / Cache path\nGreen  = Search providers\nOrange = FIGI canonical ID\nBlue   = Final canonical symbol"];
+  }
+}

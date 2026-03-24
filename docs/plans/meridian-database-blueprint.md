@@ -1,8 +1,8 @@
 # Meridian Database Blueprint
 
-**Owner:** Core Team  
-**Audience:** Platform, storage, workstation, strategy, governance, and API contributors  
-**Last Updated:** 2026-03-21  
+**Owner:** Core Team
+**Audience:** Platform, storage, workstation, strategy, governance, and API contributors
+**Last Updated:** 2026-03-24
 **Status:** Proposed blueprint grounded in current repository architecture
 
 ## Scope
@@ -45,25 +45,131 @@ flowchart LR
 
 ### Design Decisions
 
-- **Decision:** Keep market-event archival storage outside the relational database.
-  **Alternatives:** Put all ticks, quotes, depth, and bars into PostgreSQL.
-  **Rationale:** This matches ADR-002 and the current `StorageDesign` direction: Meridian is archival-first and optimized for high-throughput ingestion plus export.
-  **Consequences:** The relational database becomes the operational and query coordination plane, not the raw event sink.
+This revision makes the storage topology explicit and decision-driven. It keeps PostgreSQL as the operational system of record, while narrowing scope, enforcing boundaries, and reserving specialized stores for specialized workloads.
 
-- **Decision:** Add one PostgreSQL database with multiple schemas instead of many databases.
-  **Alternatives:** Separate database per domain, SQLite for desktop-only flows, document store for flexible records.
-  **Rationale:** Meridian already has PostgreSQL integration, and one database with domain schemas keeps joins, migrations, security, and backups manageable.
-  **Consequences:** We need strong schema boundaries and retention rules to avoid turning PostgreSQL into an unbounded event lake.
+#### Decision 1: Topology and boundaries
 
-- **Decision:** Model workstation-facing state as read models and journals, not only normalized OLTP tables.
-  **Alternatives:** Fully normalized only; fully denormalized only.
-  **Rationale:** The repo already exposes read-model DTOs such as `StrategyRunSummary`, `PortfolioSummary`, and `LedgerSummary`. The workstation needs fast browse/detail queries.
-  **Consequences:** Projection jobs and refresh logic become first-class application responsibilities.
+**Recommended option:** One PostgreSQL database initially (`meridian`) with module-per-schema ownership and API-only cross-domain reads.
 
-- **Decision:** Use append-friendly domain journals for runs, orders, fills, and ledger/reconciliation activity.
-  **Alternatives:** Mutable status-only rows with minimal history.
-  **Rationale:** Meridian's roadmap emphasizes auditability, promotion workflows, governance, and operator trust.
-  **Consequences:** Write volume grows moderately, but audit and replay improve significantly.
+**What this means:**
+- keep a single operational database for migration/backups/ops simplicity
+- assign write roles per domain schema (for example: `ref_rw`, `strategy_rw`, `ops_rw`)
+- deny cross-schema direct `SELECT` by default
+- expose only curated cross-domain read APIs (versioned `read.*` views/functions or application query services)
+
+**Why this is the default now:** it preserves single-DB operational simplicity while giving enforceable boundaries instead of convention-only boundaries.
+
+**Why not the alternatives (now):**
+
+| Alternative | Why not chosen as default |
+|---|---|
+| One DB with convention-only schema boundaries | Too easy for accidental cross-schema coupling; weak long-term governance. |
+| Two DBs (`meridian_ref` + `meridian_ops`) from day one | Strong model, but adds immediate operational and query complexity before required by current scale. |
+
+**Trigger to revisit:** promote to two-DB split when Security Master backup/restore SLAs and governance controls require independent RPO/RTO and change cadence.
+
+#### Decision 2: Operational store composition
+
+**Recommended option:** PostgreSQL as source of truth + Redis-style cache for browse UX (optional but first-class).
+
+**What this means:**
+- Postgres remains authoritative for correctness, transactional workflows, and queryability
+- projection workers can publish browse-oriented rows (run list, recent activity, break queues) into cache keys/sets
+- workstation screens use cache-first + Postgres fallback for low-latency list/detail navigation
+
+**Why this is the default now:** it avoids forcing `read.*` to absorb all latency-sensitive UI pressure while keeping correctness in Postgres.
+
+**Why not the alternatives (now):**
+
+| Alternative | Why not chosen as default |
+|---|---|
+| Postgres-only for all browse/query UX | Risks over-expanding `read.*` and hurts workstation responsiveness under load. |
+| Postgres + OLAP immediately | Valuable for heavy analytics, but premature until cross-run/time-range analytics become dominant. |
+
+**Trigger to revisit:** add OLAP when run comparisons/attribution/performance series exceed acceptable latency or produce sustained wide-scan pressure on Postgres.
+
+#### Decision 3: Read model construction
+
+**Recommended option:** CQRS projection tables as the primary read-model mechanism; materialized views allowed only for safe aggregates.
+
+**What this means:**
+- projection workers own explicit `read.*` tables and incremental updates
+- each projection records watermark/checkpoint, projection version, and updated timestamp
+- matviews are limited to non-critical, bounded-cost aggregates with predictable refresh behavior
+
+**Why this is the default now:** projection tables provide deterministic, incremental, resumable behavior aligned with checkpointing.
+
+**Why not the alternatives (now):**
+
+| Alternative | Why not chosen as default |
+|---|---|
+| Materialized-view-first read architecture | Can drift into full-refresh operational pain (locks, long refresh windows, planner surprises). |
+| Fully normalized OLTP-only query model | Misses workstation/API browse performance needs and increases app query complexity. |
+
+#### Decision 4: Event history and audit strategy
+
+**Recommended option:** Keep full-fidelity domain event history in archival storage; keep Postgres journals narrowly focused on operational/audit needs.
+
+**What this means:**
+- Postgres stores current state + minimal append audit trails needed for operator trust and traceability
+- WAL/JSONL/Parquet remains the long-horizon replay and portability source of truth for full event detail
+- outbox pattern remains available per domain when downstream integration/replay requirements justify it
+
+**Why this is the default now:** prevents Postgres from becoming a second event lake while preserving auditability for workflows.
+
+**Why not the alternatives (now):**
+
+| Alternative | Why not chosen as default |
+|---|---|
+| Full immutable event store in Postgres for every domain immediately | Strong replay model but higher up-front complexity and storage growth before all domains need it. |
+| Mutable status rows with minimal history | Insufficient for governance, reconciliation, and operator forensic workflows. |
+
+#### Decision 5: Partitioning and time-series extensions
+
+**Recommended option:** Partition only high-churn append/event tables; keep entity tables unpartitioned by default.
+
+**What this means:**
+- candidate partitioned tables: `trading.order_events`, `trading.executions`, `ops.health_snapshots`, `audit.action_log`
+- keep entity/state tables (`strategy.strategy_runs`, `strategy.strategies`, `accounting.ledger_accounts`) unpartitioned unless measured pressure demands it
+- use TimescaleDB only for operational telemetry snapshots if adopted, not for core financial correctness tables
+
+**Why this is the default now:** minimizes schema/migration complexity early while preserving clear scaling levers.
+
+**Why not the alternatives (now):**
+
+| Alternative | Why not chosen as default |
+|---|---|
+| Broad monthly partitioning across many tables from day one | Adds significant DDL/test/maintenance overhead without proven need. |
+| Timescale as a core dependency across domains | Increases extension coupling for core accounting/trading workflows. |
+
+#### Decision 6: Delivery scope for initial implementation waves
+
+**Recommended option:** First implementation wave focuses on three schemas: `ref`, `strategy`, and `ops` (+ `read` projections).
+
+**What this means:**
+- implement immediately: security master/reference metadata, strategy run lifecycle metadata, operations/backfill/subscriptions/checkpoints, workstation read models
+- delay full `accounting`, `trading`, and `research` schemas until domain invariants and lifecycle semantics stabilize
+
+**Why this is the default now:** reduces speculative schema churn and makes execution feasible within 1–2 quarters.
+
+**Why not the alternatives (now):**
+
+| Alternative | Why not chosen as default |
+|---|---|
+| Full 9-schema rollout in first phase | High risk of rework and slow delivery due to unresolved domain details. |
+| Single monolithic schema | Fast short-term start but weak boundary enforcement and high long-term coupling. |
+
+#### Decision-driven schema checklist (required for each new schema)
+
+Every schema proposal must document the following before implementation:
+
+1. **Fast-path queries:** which queries must remain low latency and at what target percentile.
+2. **Write profile:** expected write rate and peak burst shape.
+3. **Retention profile:** retention duration, archive/export policy, and purge rules.
+4. **Source of truth:** whether truth lives in archive, Postgres, or dual with reconciliation.
+5. **Recomputability:** what can be rebuilt from archive/events vs what must be preserved.
+
+This checklist is the gate that determines projection-table-vs-matview, partition-now-vs-later, and Postgres-only-vs-Postgres+specialized-store decisions.
 
 ## Verified Constraints From The Repository
 
@@ -201,9 +307,9 @@ public sealed class OperationalDatabaseOptions
 
 ### `PostgresStrategyRunRepository`
 
-**Namespace:** `Meridian.Strategies.Storage`  
-**Type:** `sealed class`  
-**Lifetime:** Singleton  
+**Namespace:** `Meridian.Strategies.Storage`
+**Type:** `sealed class`
+**Lifetime:** Singleton
 **Responsibilities:**
 
 - persist `StrategyRunEntry` into normalized strategy/run tables
@@ -211,15 +317,15 @@ public sealed class OperationalDatabaseOptions
 - support workstation run browser queries
 - expose run metadata independently of archive files
 
-**Dependencies:** `NpgsqlDataSource`, serialization helpers, projection checkpoint store  
-**Concurrency Model:** optimistic upsert by `run_id` and `row_version`  
-**Error Handling:** database exceptions mapped to strategy persistence errors; duplicate version writes rejected  
+**Dependencies:** `NpgsqlDataSource`, serialization helpers, projection checkpoint store
+**Concurrency Model:** optimistic upsert by `run_id` and `row_version`
+**Error Handling:** database exceptions mapped to strategy persistence errors; duplicate version writes rejected
 
 ### `OperationalProjectionWorker`
 
-**Namespace:** `Meridian.Application.Projections`  
-**Type:** `BackgroundService`  
-**Lifetime:** Singleton  
+**Namespace:** `Meridian.Application.Projections`
+**Type:** `BackgroundService`
+**Lifetime:** Singleton
 **Responsibilities:**
 
 - consume completed runs, ledger updates, and maintenance events
@@ -227,15 +333,15 @@ public sealed class OperationalDatabaseOptions
 - refresh portfolio, ledger, and governance projections
 - save projection checkpoints
 
-**Dependencies:** domain repositories, `IProjectionCheckpointStore`, metrics  
-**Concurrency Model:** serialized per projection stream; parallel across independent projection families  
-**Error Handling:** retry with checkpoint safety; projection idempotency required  
+**Dependencies:** domain repositories, `IProjectionCheckpointStore`, metrics
+**Concurrency Model:** serialized per projection stream; parallel across independent projection families
+**Error Handling:** retry with checkpoint safety; projection idempotency required
 
 ### `PostgresBackfillJobStore`
 
-**Namespace:** `Meridian.Application.Backfill`  
-**Type:** `sealed class`  
-**Lifetime:** Singleton  
+**Namespace:** `Meridian.Application.Backfill`
+**Type:** `sealed class`
+**Lifetime:** Singleton
 **Responsibilities:**
 
 - persist scheduled and ad hoc backfill jobs
@@ -244,9 +350,9 @@ public sealed class OperationalDatabaseOptions
 
 ### `GovernanceReadRepository`
 
-**Namespace:** `Meridian.Application.Governance`  
-**Type:** `sealed class`  
-**Lifetime:** Singleton  
+**Namespace:** `Meridian.Application.Governance`
+**Type:** `sealed class`
+**Lifetime:** Singleton
 **Responsibilities:**
 
 - query reconciliations, breaks, cash ladders, and report packs
@@ -605,7 +711,7 @@ This extends the already-existing Security Master PostgreSQL design.
 
 ## Implementation Checklist
 
-**Estimated effort:** High  
+**Estimated effort:** High
 **Suggested branch:** `codex/meridian-database-blueprint`
 
 ### Phase 1: Foundation

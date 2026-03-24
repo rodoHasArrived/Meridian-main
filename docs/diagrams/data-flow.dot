@@ -1,6 +1,6 @@
 // Data Flow Diagram
-// Meridian v1.6.1
-// Last Updated: 2026-02-21
+// Meridian v1.7.x
+// Last Updated: 2026-03-24
 //
 // This diagram shows the end-to-end data flow through the system,
 // from ingestion to storage and export.
@@ -16,7 +16,7 @@ digraph DataFlow {
 
   // Title
   labelloc="t";
-  label="Meridian - Data Flow Diagram\nEnd-to-End Event Processing | v1.6.1";
+  label="Meridian - Data Flow Diagram\nEnd-to-End Event Processing | v1.7.x";
 
   // Onboarding Flow (First-Time Setup)
   subgraph cluster_onboarding {
@@ -28,13 +28,13 @@ digraph DataFlow {
     FIRST_RUN [fillcolor="#fbd38d", label="First-Run Detection\n\nDetect new install\nDisplay welcome"];
     WIZARD [fillcolor="#fbd38d", label="Configuration Wizard\n[8 Steps]\n\nInteractive setup\nProvider selection"];
     AUTO_CONFIG [fillcolor="#fbd38d", label="Auto-Configuration\n\nEnv var detection\nGenerate config"];
-    VALIDATE [fillcolor="#fbd38d", label="Validation\n\nTest connectivity\nValidate credentials"];
+    VALIDATE [fillcolor="#fbd38d", label="Validation\n\n--validate-credentials\n--test-connectivity"];
     CONFIG_FILE [shape=note, fillcolor="#feebc8", label="appsettings.json\n\nGenerated config\nReady to run"];
   }
 
   // Data Sources - Streaming
   subgraph cluster_streaming_sources {
-    label="Real-Time Streaming Sources";
+    label="Real-Time Streaming Sources (5 Providers)";
     color="#2b6cb0";
     style="rounded";
     bgcolor="#f0f8ff";
@@ -42,12 +42,13 @@ digraph DataFlow {
     IB [fillcolor="#4a90d9", fontcolor="white", label="IB TWS/Gateway\n[WebSocket]\n\nTrades, Quotes\nL2 Depth, Scanner"];
     ALP [fillcolor="#4a90d9", fontcolor="white", label="Alpaca\n[WebSocket]\n\nTrades, Quotes\nIEX/SIP Feeds"];
     NYSE [fillcolor="#4a90d9", fontcolor="white", label="NYSE Direct\n[Exchange Feed]\n\nUS Equities\nReal-time"];
-    SS [fillcolor="#4a90d9", fontcolor="white", label="StockSharp\n[Multi-Exchange]\n\nGlobal Markets"];
+    POL_STREAM [fillcolor="#4a90d9", fontcolor="white", label="Polygon.io\n[WebSocket]\n\nTrades, Quotes\nUS + Global"];
+    SS [fillcolor="#4a90d9", fontcolor="white", label="StockSharp\n[Multi-Exchange]\n\nGlobal Markets\n90+ Connectors"];
   }
 
   // Data Sources - Historical
   subgraph cluster_historical_sources {
-    label="Historical Data Sources (10 Providers)";
+    label="Historical Data Sources (13 Providers)";
     color="#2c7a7b";
     style="rounded";
     bgcolor="#e6fffa";
@@ -55,7 +56,7 @@ digraph DataFlow {
     YAHOO [fillcolor="#38a169", fontcolor="white", label="Yahoo Finance\n[REST]\n\n50K+ securities\nFree OHLCV"];
     TIINGO [fillcolor="#38a169", fontcolor="white", label="Tiingo\n[REST]\n\nDividend-adjusted\nFundamentals"];
     FINNHUB [fillcolor="#38a169", fontcolor="white", label="Finnhub\n[REST]\n\nHistorical\nNews, Fundamentals"];
-    OTHERS [fillcolor="#38a169", fontcolor="white", label="Polygon, Stooq\nNasdaq, Alpha V.\nIB, StockSharp\n\nEOD/Intraday"];
+    OTHERS [fillcolor="#38a169", fontcolor="white", label="Polygon, Stooq, Nasdaq\nAlpha V., IB, StockSharp\nTwelve Data, FRED\n\nEOD/Intraday/Economic"];
   }
 
   // Ingestion Layer
@@ -162,6 +163,7 @@ digraph DataFlow {
   IB -> STREAM_INGEST [color="#2b6cb0", penwidth=2, label="L1/L2\nstreaming"];
   ALP -> STREAM_INGEST [color="#2b6cb0", penwidth=2, label="trades\nquotes"];
   NYSE -> STREAM_INGEST [color="#2b6cb0", penwidth=2, label="exchange\nfeed"];
+  POL_STREAM -> STREAM_INGEST [color="#2b6cb0", penwidth=2, label="websocket\nfeed"];
   SS -> STREAM_INGEST [color="#2b6cb0", penwidth=2];
 
   // Data Flow Edges - Historical Sources
@@ -218,6 +220,7 @@ digraph DataFlow {
   FIRST_RUN -> AUTO_CONFIG [color="#ed8936", label="--auto-config"];
   WIZARD -> AUTO_CONFIG [color="#ed8936"];
   AUTO_CONFIG -> CONFIG_FILE [color="#ed8936", label="generates"];
+  AUTO_CONFIG -> VALIDATE [color="#ed8936", label="optional"];
   VALIDATE -> CONFIG_FILE [color="#ed8936", style=dashed, label="validates"];
   CONFIG_FILE -> STREAM_INGEST [color="#ed8936", style=dashed, label="enables"];
   CONFIG_FILE -> HIST_INGEST [color="#ed8936", style=dashed, label="enables"];

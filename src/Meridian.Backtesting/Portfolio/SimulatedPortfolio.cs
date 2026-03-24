@@ -314,7 +314,7 @@ internal sealed class SimulatedPortfolio
     {
         var amount = quantity * assetEvent.CashPerShare;
         account.Cash += amount;
-        PostAssetCashLedgerEntry(assetEvent, amount, quantity, assetEvent.Symbol, assetEvent.TargetSymbol);
+        PostAssetCashLedgerEntry(account, assetEvent, amount, quantity, assetEvent.Symbol, assetEvent.TargetSymbol);
         return amount;
     }
 
@@ -352,7 +352,7 @@ internal sealed class SimulatedPortfolio
         if (cashInLieu != 0m)
         {
             account.Cash += cashInLieu;
-            PostAssetCashLedgerEntry(assetEvent, cashInLieu, existingQty, assetEvent.Symbol, targetSymbol, suffix: "cash in lieu");
+            PostAssetCashLedgerEntry(account, assetEvent, cashInLieu, existingQty, assetEvent.Symbol, targetSymbol, suffix: "cash in lieu");
         }
 
         return cashInLieu;
@@ -377,6 +377,7 @@ internal sealed class SimulatedPortfolio
     }
 
     private void PostAssetCashLedgerEntry(
+        AccountState account,
         AssetEvent assetEvent,
         decimal amount,
         long quantity,
@@ -387,7 +388,10 @@ internal sealed class SimulatedPortfolio
         if (_ledger is null || amount == 0m)
             return;
 
-        var counterpartyAccount = SelectAssetEventAccount(assetEvent.EventType, amount);
+        var accountId = account.Account.AccountId;
+        var counterpartyAccount = SelectAssetEventAccount(assetEvent.EventType, amount, accountId);
+        var cashAccount = LedgerAccounts.CashAccount(accountId);
+        var metadata = BuildAssetEventMetadata(account, assetEvent, symbol, relatedSymbol, quantity, amount, suffix);
         var description = string.IsNullOrWhiteSpace(assetEvent.Description)
             ? $"{assetEvent.EventType} – {symbol}" + (string.IsNullOrWhiteSpace(relatedSymbol) || relatedSymbol.Equals(symbol, StringComparison.OrdinalIgnoreCase)
                 ? string.Empty
@@ -400,9 +404,10 @@ internal sealed class SimulatedPortfolio
                 assetEvent.EffectiveAt,
                 description,
                 [
-                    (LedgerAccounts.Cash, amount, 0m),
+                    (cashAccount, amount, 0m),
                     (counterpartyAccount, 0m, amount),
-                ]);
+                ],
+                metadata);
         }
         else
         {
@@ -412,18 +417,49 @@ internal sealed class SimulatedPortfolio
                 description,
                 [
                     (counterpartyAccount, outflow, 0m),
-                    (LedgerAccounts.Cash, 0m, outflow),
-                ]);
+                    (cashAccount, 0m, outflow),
+                ],
+                metadata);
         }
     }
 
-    private static LedgerAccount SelectAssetEventAccount(AssetEventType eventType, decimal amount) => eventType switch
+    private static LedgerAccount SelectAssetEventAccount(AssetEventType eventType, decimal amount, string accountId) => eventType switch
     {
-        AssetEventType.Dividend => amount >= 0m ? LedgerAccounts.DividendIncome : LedgerAccounts.DividendExpense,
-        AssetEventType.Coupon => amount >= 0m ? LedgerAccounts.CouponIncome : LedgerAccounts.CouponExpense,
-        AssetEventType.Fee => LedgerAccounts.CorporateActionExpense,
-        _ => amount >= 0m ? LedgerAccounts.CorporateActionIncome : LedgerAccounts.CorporateActionExpense,
+        AssetEventType.Dividend => amount >= 0m ? LedgerAccounts.DividendIncomeFor(accountId) : LedgerAccounts.DividendExpenseFor(accountId),
+        AssetEventType.Coupon => amount >= 0m ? LedgerAccounts.CouponIncomeFor(accountId) : LedgerAccounts.CouponExpenseFor(accountId),
+        AssetEventType.Fee => LedgerAccounts.CorporateActionExpenseFor(accountId),
+        _ => amount >= 0m ? LedgerAccounts.CorporateActionIncomeFor(accountId) : LedgerAccounts.CorporateActionExpenseFor(accountId),
     };
+
+    private JournalEntryMetadata BuildAssetEventMetadata(
+        AccountState account,
+        AssetEvent assetEvent,
+        string symbol,
+        string? relatedSymbol,
+        long quantity,
+        decimal amount,
+        string? suffix)
+    {
+        var tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["event_type"] = assetEvent.EventType.ToString(),
+            ["cash_per_share"] = assetEvent.CashPerShare.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            ["position_factor"] = assetEvent.PositionFactor.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            ["units_impacted"] = quantity.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            ["cash_impact"] = amount.ToString(System.Globalization.CultureInfo.InvariantCulture),
+        };
+
+        if (!string.IsNullOrWhiteSpace(relatedSymbol))
+            tags["related_symbol"] = relatedSymbol!;
+
+        if (!string.IsNullOrWhiteSpace(suffix))
+            tags["ticket_variant"] = suffix!;
+
+        return BuildAccountMetadata(account, $"asset_event_{assetEvent.EventType.ToString().ToLowerInvariant()}", symbol) with
+        {
+            Tags = tags
+        };
+    }
 
     private static long ConvertToWholeUnits(decimal quantity) => quantity >= 0m
         ? (long)Math.Floor(quantity)

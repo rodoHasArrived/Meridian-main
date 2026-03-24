@@ -1,7 +1,7 @@
 # Meridian — Feature Inventory
 
-**Version:** 1.7.1
-**Date:** 2026-03-22
+**Version:** 1.7.2
+**Date:** 2026-03-24
 **Purpose:** Comprehensive inventory of every functional area, its current implementation status, and the remaining work required to reach full implementation.
 
 Use this document alongside [`ROADMAP.md`](ROADMAP.md) (delivery waves and sequencing), [`IMPROVEMENTS.md`](IMPROVEMENTS.md) (normalized improvement/backlog tracking), and [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md) (consolidated non-assembly execution backlog).
@@ -399,15 +399,48 @@ This migration is tracked in [`../plans/trading-workstation-migration-blueprint.
 
 ---
 
-## 15. Testing
+## 15. Execution & Brokerage
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Paper trading gateway | ✅ | `PaperTradingGateway` in `Meridian.Execution`; zero-risk strategy validation |
+| Order management system | ✅ | `OrderManagementSystem`, `OrderLifecycleManager` |
+| Risk validation framework | ✅ | `CompositeRiskValidator` with `IRiskRule` implementations |
+| Position limit rule | ✅ | `PositionLimitRule`; configurable per-symbol and total position limits |
+| Drawdown circuit breaker | ✅ | `DrawdownCircuitBreaker`; automatic stop on drawdown threshold |
+| Order rate throttle | ✅ | `OrderRateThrottle`; configurable order frequency limits |
+| **Brokerage gateway framework** | ✅ | `IBrokerageGateway`, `BaseBrokerageGateway`, `BrokerageGatewayAdapter` |
+| **Alpaca brokerage gateway** | ✅ | `AlpacaBrokerageGateway`; fractional quantity support, client order ID mapping |
+| **IB brokerage gateway** | 🔑 | `IBBrokerageGateway`; conditional on IBAPI build flag |
+| **StockSharp brokerage gateway** | 🔑 | `StockSharpBrokerageGateway`; connector-dependent |
+| **Template brokerage gateway** | ✅ | `TemplateBrokerageGateway`; scaffold for new adapters |
+| Brokerage DI registration | ✅ | `BrokerageServiceRegistration`; `BrokerageConfiguration` options |
+| Execution SDK | ✅ | `Meridian.Execution.Sdk`; `IExecutionGateway`, `IOrderManager`, `IPositionTracker` |
+| Paper trading portfolio | ✅ | `PaperTradingPortfolio`; simulated position and cash tracking |
+| CppTrader order gateway | ✅ | `CppTraderOrderGateway`; native C++ matching engine integration |
+| CppTrader live feed adapter | ✅ | `CppTraderLiveFeedAdapter`; real-time data from CppTrader host |
+
+### Remaining execution work
+
+- Wire brokerage gateways into the web dashboard paper-trading cockpit
+- Validate brokerage adapters against live vendor APIs
+- Build explicit `Backtest → Paper → Live` promotion workflow with audit trail
+- Add paper-trading session persistence and replay
+
+---
+
+## 16. Testing
 
 | Test Project | Test Files | Methods | Focus |
 |---|---|---|---|
-| `Meridian.Tests` | 185 | ~2,663 | Core: backfill, storage, pipeline, monitoring, providers, credentials, serialization, domain, integration endpoints |
-| `Meridian.FSharp.Tests` | 6 | ~99 | F# domain validation, calculations, transforms, validation pipeline |
-| `Meridian.Wpf.Tests` | 19 | ~324 | WPF desktop services (navigation, config, status, connection) — *not in active solution build* |
-| `Meridian.Ui.Tests` | 63 | ~1,007 | Desktop UI services (API client, backfill, fixtures, forms, health, watchlist) |
-| **Total** | **273** | **~4,093** | |
+| `Meridian.Tests` | 229 | ~3,100 | Core: backfill, storage, pipeline, monitoring, providers, credentials, serialization, domain, integration endpoints, execution |
+| `Meridian.FSharp.Tests` | 9 | ~120 | F# domain validation, calculations, transforms, trading transitions, ledger, risk, direct lending interop |
+| `Meridian.Ui.Tests` | 54 | ~900 | UI services (API client, backfill, fixtures, forms, health, watchlist) |
+| `Meridian.Wpf.Tests` | 27 | ~350 | WPF desktop services (navigation, config, status, connection) — *not in active solution build* |
+| `Meridian.Backtesting.Tests` | 8 | ~90 | Backtest engine, fill models, portfolio simulation, XIRR |
+| `Meridian.DirectLending.Tests` | 5 | ~50 | Direct lending services, workflows, PostgreSQL integration |
+| `Meridian.McpServer.Tests` | 3 | ~30 | MCP server tools (backfill, storage) |
+| **Total** | **335** | **~4,424** | |
 
 ### Key test infrastructure
 
@@ -434,7 +467,7 @@ This migration is tracked in [`../plans/trading-workstation-migration-blueprint.
 
 ---
 
-## 16. Configuration Schema Validation
+## 17. Configuration Schema Validation
 
 | Feature | Status | Notes |
 |---------|--------|-------|
@@ -444,7 +477,7 @@ This migration is tracked in [`../plans/trading-workstation-migration-blueprint.
 
 ---
 
-## 17. Trading Workstation Product Surfaces
+## 18. Trading Workstation Product Surfaces
 
 This section inventories the workflow-centric product model that now sits above the older page inventory.
 
@@ -462,8 +495,8 @@ This section inventories the workflow-centric product model that now sits above 
 | Direct lending vertical slice | Partial | Postgres-backed direct-lending services, migrations, workflow support, and `/api/loans/*` endpoints are live; broader governance/reporting integration remains |
 | WPF run browser/detail/portfolio/ledger surfaces | Delayed | Code present in `src/Meridian.Wpf/`; excluded from active build |
 | Backtest Studio unification | Planned | Native and Lean backtests are still distinct operator experiences |
-| Paper-trading cockpit | Planned | Execution primitives exist, but a dedicated orders/fills/positions/risk cockpit is still planned |
-| Promotion workflow (`Backtest -> Paper -> Live`) | Planned | Safety-gated lifecycle workflow remains planned |
+| Paper-trading cockpit | Partial | Execution primitives and brokerage gateway adapters (Alpaca, IB, StockSharp) exist; dedicated web dashboard cockpit wiring is still planned |
+| Promotion workflow (`Backtest -> Paper -> Live`) | Partial | Brokerage gateway framework provides the execution adapter layer; safety-gated lifecycle workflow remains planned |
 
 ### Additional governance and platform tracks
 
@@ -484,7 +517,7 @@ This section inventories the workflow-centric product model that now sits above 
 
 ---
 
-## 18. Flagship Planned Capabilities
+## 19. Flagship Planned Capabilities
 
 These areas are part of the documented implementation scope even though they are not yet productized in the current repo state.
 
@@ -557,7 +590,7 @@ Meridian’s intended end state is a comprehensive fund management platform rath
 
 ---
 
-*Last Updated: 2026-03-22*
+*Last Updated: 2026-03-24*
 
 
 

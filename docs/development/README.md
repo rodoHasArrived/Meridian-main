@@ -39,6 +39,7 @@ This directory contains guides for developers contributing to or extending the M
 | Document | Description |
 |----------|-------------|
 | [Repository Organization Guide](repository-organization-guide.md) | **START HERE** — Project layout and conventions |
+| [Repository Rule Set](repository-rule-set.md) | Repository-wide contribution and quality rules |
 | [Documentation Contribution Guide](documentation-contribution-guide.md) | Writing and maintaining docs |
 
 ### Building & Extending
@@ -63,6 +64,7 @@ This directory contains guides for developers contributing to or extending the M
 |----------|-------------|
 | [GitHub Actions Summary](github-actions-summary.md) | CI/CD pipeline overview |
 | [Build Observability](build-observability.md) | Build metrics and diagnostics |
+| [Git Hooks](git-hooks.md) | Local pre-commit quality checks (`dotnet format`) |
 | [Tooling & Workflow Backlog](tooling-workflow-backlog.md) | Prioritized cleanup plan for repo automation |
 
 ### Desktop Development
