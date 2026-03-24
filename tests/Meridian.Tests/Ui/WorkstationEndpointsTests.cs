@@ -483,6 +483,63 @@ public sealed class WorkstationEndpointsTests
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
+    [Fact]
+    public async Task MapWorkstationEndpoints_SecurityMasterHistory_ShouldReturnHistoryPayload()
+    {
+        var securityId = Guid.Parse("55555555-5555-5555-5555-555555555555");
+        var queryService = new StubSecurityMasterQueryService();
+        queryService.RegisterHistory(
+            securityId,
+            [
+                new SecurityMasterEventEnvelope(
+                    GlobalSequence: 101,
+                    SecurityId: securityId,
+                    StreamVersion: 2,
+                    EventType: "SecurityAmended",
+                    EventTimestamp: new DateTimeOffset(2026, 3, 22, 12, 0, 0, TimeSpan.Zero),
+                    Actor: "governance.user",
+                    CorrelationId: null,
+                    CausationId: null,
+                    Payload: JsonSerializer.SerializeToElement(new { field = "displayName" }),
+                    Metadata: JsonSerializer.SerializeToElement(new { source = "test" })),
+                new SecurityMasterEventEnvelope(
+                    GlobalSequence: 100,
+                    SecurityId: securityId,
+                    StreamVersion: 1,
+                    EventType: "SecurityCreated",
+                    EventTimestamp: new DateTimeOffset(2026, 3, 21, 12, 0, 0, TimeSpan.Zero),
+                    Actor: "governance.user",
+                    CorrelationId: null,
+                    CausationId: null,
+                    Payload: JsonSerializer.SerializeToElement(new { displayName = "Sample Security" }),
+                    Metadata: JsonSerializer.SerializeToElement(new { source = "test" }))
+            ]);
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<ISecurityMasterQueryService>(queryService);
+        });
+
+        var client = app.GetTestClient();
+        using var history = await ReadJsonAsync(client, $"/api/workstation/security-master/securities/{securityId}/history?take=1");
+        history.RootElement.GetArrayLength().Should().Be(1);
+        history.RootElement[0].GetProperty("eventType").GetString().Should().Be("SecurityAmended");
+        history.RootElement[0].GetProperty("streamVersion").GetInt64().Should().Be(2);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_SecurityMasterHistory_ShouldReturnNotFoundWithoutEvents()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<ISecurityMasterQueryService>(new StubSecurityMasterQueryService());
+        });
+
+        var client = app.GetTestClient();
+        var response = await client.GetAsync($"/api/workstation/security-master/securities/{Guid.NewGuid()}/history");
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
     private static async Task<WebApplication> CreateAppAsync(Action<IServiceCollection>? configureServices = null)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
@@ -942,12 +999,18 @@ public sealed class WorkstationEndpointsTests
     private sealed class StubSecurityMasterQueryService : ISecurityMasterQueryService
     {
         private readonly Dictionary<Guid, SecurityDetailDto> _details = [];
+        private readonly Dictionary<Guid, IReadOnlyList<SecurityMasterEventEnvelope>> _history = [];
         private readonly List<SecuritySummaryDto> _summaries = [];
 
         public void Register(SecuritySummaryDto summary, SecurityDetailDto detail)
         {
             _summaries.Add(summary);
             _details[detail.SecurityId] = detail;
+        }
+
+        public void RegisterHistory(Guid securityId, IReadOnlyList<SecurityMasterEventEnvelope> history)
+        {
+            _history[securityId] = history;
         }
 
         public Task<SecurityDetailDto?> GetByIdAsync(Guid securityId, CancellationToken ct = default)
@@ -977,6 +1040,14 @@ public sealed class WorkstationEndpointsTests
         }
 
         public Task<IReadOnlyList<SecurityMasterEventEnvelope>> GetHistoryAsync(SecurityHistoryRequest request, CancellationToken ct = default)
-            => Task.FromResult<IReadOnlyList<SecurityMasterEventEnvelope>>(Array.Empty<SecurityMasterEventEnvelope>());
+        {
+            if (!_history.TryGetValue(request.SecurityId, out var history))
+            {
+                return Task.FromResult<IReadOnlyList<SecurityMasterEventEnvelope>>(Array.Empty<SecurityMasterEventEnvelope>());
+            }
+
+            var rows = history.Take(request.Take).ToArray();
+            return Task.FromResult<IReadOnlyList<SecurityMasterEventEnvelope>>(rows);
+        }
     }
 }

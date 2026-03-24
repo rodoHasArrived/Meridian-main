@@ -239,6 +239,33 @@ public static class WorkstationEndpoints
         .Produces(404)
         .Produces(501);
 
+        group.MapGet("/security-master/securities/{securityId:guid}/history", async (
+            Guid securityId,
+            int? take,
+            HttpContext context) =>
+        {
+            var queryService = context.RequestServices.GetService<ISecurityMasterQueryService>();
+            if (queryService is null)
+            {
+                return Results.Problem("Security Master query service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var history = await queryService.GetHistoryAsync(
+                    new SecurityHistoryRequest(
+                        SecurityId: securityId,
+                        Take: Math.Clamp(take ?? 50, 1, 500)),
+                    context.RequestAborted)
+                .ConfigureAwait(false);
+
+            return history.Count == 0
+                ? Results.NotFound()
+                : Results.Json(history, jsonOptions);
+        })
+        .WithName("GetSecurityMasterWorkstationSecurityHistory")
+        .Produces<IReadOnlyList<SecurityMasterEventEnvelope>>(200)
+        .Produces(404)
+        .Produces(501);
+
         app.MapGet("/workstation", (IWebHostEnvironment environment) => ServeWorkstationIndex(environment))
             .ExcludeFromDescription();
 
