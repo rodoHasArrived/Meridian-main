@@ -144,7 +144,11 @@ public sealed class PaperTradingPortfolio : IPortfolioState
             _positions[symbol] = pos;
         }
 
-        if (signedQty > 0)
+        if (signedQty > 0 && pos.Quantity < 0)
+        {
+            ApplyCoverShort(pos, symbol, signedQty, price, commission, ts);
+        }
+        else if (signedQty > 0)
         {
             ApplyBuy(pos, symbol, signedQty, price, commission, ts, orderId);
         }
@@ -193,6 +197,36 @@ public sealed class PaperTradingPortfolio : IPortfolioState
                     (LedgerAccounts.Cash, 0m, notional),
                 ]);
         }
+    }
+
+    private void ApplyCoverShort(
+        PaperPosition pos,
+        string symbol,
+        decimal qty,
+        decimal price,
+        decimal commission,
+        DateTimeOffset ts)
+    {
+        var coverQty = Math.Min(qty, Math.Abs(pos.Quantity));
+        var proceedsRemoved = coverQty * pos.CostBasis;
+        var coverCost = coverQty * price;
+        var realised = proceedsRemoved - coverCost;
+
+        pos.Quantity += coverQty;
+        if (pos.Quantity == 0m)
+        {
+            pos.CostBasis = 0m;
+        }
+
+        _cash -= coverCost + commission;
+        _realisedPnl += realised;
+
+        if (_ledger is null)
+        {
+            return;
+        }
+
+        PostCoverShortEntry(symbol, coverQty, price, proceedsRemoved, realised, ts);
     }
 
     private void ApplySellLong(
@@ -284,6 +318,44 @@ public sealed class PaperTradingPortfolio : IPortfolioState
             [
                 (LedgerAccounts.Cash, proceeds, 0m),
                 (LedgerAccounts.Securities(symbol), 0m, costBasisRemoved),
+            ]);
+        }
+    }
+
+    private void PostCoverShortEntry(
+        string symbol,
+        decimal coverQty,
+        decimal price,
+        decimal proceedsRemoved,
+        decimal realised,
+        DateTimeOffset ts)
+    {
+        var coverCost = coverQty * price;
+        var description = $"Cover {coverQty} {symbol} @ {price:F4}";
+        if (realised > 0m)
+        {
+            _ledger!.PostLines(ts, description,
+            [
+                (LedgerAccounts.ShortSecuritiesPayable(symbol), proceedsRemoved, 0m),
+                (LedgerAccounts.Cash, 0m, coverCost),
+                (LedgerAccounts.RealizedGain, 0m, realised),
+            ]);
+        }
+        else if (realised < 0m)
+        {
+            _ledger!.PostLines(ts, description,
+            [
+                (LedgerAccounts.ShortSecuritiesPayable(symbol), proceedsRemoved, 0m),
+                (LedgerAccounts.RealizedLoss, Math.Abs(realised), 0m),
+                (LedgerAccounts.Cash, 0m, coverCost),
+            ]);
+        }
+        else
+        {
+            _ledger!.PostLines(ts, description,
+            [
+                (LedgerAccounts.ShortSecuritiesPayable(symbol), proceedsRemoved, 0m),
+                (LedgerAccounts.Cash, 0m, coverCost),
             ]);
         }
     }
