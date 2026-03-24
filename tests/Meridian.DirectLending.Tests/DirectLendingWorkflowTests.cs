@@ -109,6 +109,45 @@ public sealed class DirectLendingWorkflowTests
         checkpoints.Should().ContainSingle(x => x.ProjectionName == "direct-lending.full-rebuild");
     }
 
+
+    [Fact]
+    public async Task WorkflowCommands_ShouldThrowTypedValidationErrors_ForNonPositiveAmounts()
+    {
+        var service = new InMemoryDirectLendingService();
+        var loan = await service.CreateLoanAsync(BuildCreateRequest());
+
+        var mixedPayment = () => service.ApplyMixedPaymentAsync(
+            loan.LoanId,
+            new ApplyMixedPaymentRequest(0m, new DateOnly(2026, 3, 25), null, "pay-invalid"));
+        var fee = () => service.AssessFeeAsync(loan.LoanId, new AssessFeeRequest("Origination", 0m, new DateOnly(2026, 3, 25), "invalid"));
+        var writeOff = () => service.ApplyWriteOffAsync(loan.LoanId, new ApplyWriteOffRequest(0m, new DateOnly(2026, 3, 25), "invalid"));
+
+        var mixedPaymentException = await Assert.ThrowsAsync<DirectLendingCommandException>(mixedPayment);
+        var feeException = await Assert.ThrowsAsync<DirectLendingCommandException>(fee);
+        var writeOffException = await Assert.ThrowsAsync<DirectLendingCommandException>(writeOff);
+
+        mixedPaymentException.Error.Code.Should().Be(DirectLendingErrorCode.Validation);
+        feeException.Error.Code.Should().Be(DirectLendingErrorCode.Validation);
+        writeOffException.Error.Code.Should().Be(DirectLendingErrorCode.Validation);
+    }
+
+    [Fact]
+    public async Task ProjectionAndReconciliation_ShouldThrowNotFound_WhenLoanIsMissing()
+    {
+        var service = new InMemoryDirectLendingService();
+        var missingLoanId = Guid.NewGuid();
+
+        var projection = () => service.RequestProjectionAsync(missingLoanId, new DateOnly(2026, 4, 1));
+        var reconciliation = () => service.ReconcileAsync(missingLoanId);
+
+        var projectionException = await Assert.ThrowsAsync<DirectLendingCommandException>(projection);
+        var reconciliationException = await Assert.ThrowsAsync<DirectLendingCommandException>(reconciliation);
+
+        projectionException.Error.Code.Should().Be(DirectLendingErrorCode.NotFound);
+        reconciliationException.Error.Code.Should().Be(DirectLendingErrorCode.NotFound);
+    }
+
+
     private static CreateLoanRequest BuildCreateRequest() =>
         new(
             LoanId: Guid.NewGuid(),

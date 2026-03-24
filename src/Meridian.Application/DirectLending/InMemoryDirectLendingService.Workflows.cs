@@ -21,6 +21,12 @@ public sealed partial class InMemoryDirectLendingService
 
     public Task<LoanServicingStateDto?> ApplyMixedPaymentAsync(Guid loanId, ApplyMixedPaymentRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
     {
+        ArgumentNullException.ThrowIfNull(request);
+        if (request.Amount <= 0m)
+        {
+            throw new DirectLendingCommandException(new DirectLendingCommandError(DirectLendingErrorCode.Validation, "Payment amount must be positive."));
+        }
+
         lock (_gate)
         {
             if (!_loans.TryGetValue(loanId, out var stored))
@@ -69,6 +75,12 @@ public sealed partial class InMemoryDirectLendingService
 
     public Task<LoanServicingStateDto?> AssessFeeAsync(Guid loanId, AssessFeeRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
     {
+        ArgumentNullException.ThrowIfNull(request);
+        if (request.Amount <= 0m)
+        {
+            throw new DirectLendingCommandException(new DirectLendingCommandError(DirectLendingErrorCode.Validation, "Fee amount must be positive."));
+        }
+
         lock (_gate)
         {
             if (!_loans.TryGetValue(loanId, out var stored))
@@ -92,6 +104,12 @@ public sealed partial class InMemoryDirectLendingService
 
     public Task<LoanServicingStateDto?> ApplyWriteOffAsync(Guid loanId, ApplyWriteOffRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
     {
+        ArgumentNullException.ThrowIfNull(request);
+        if (request.Amount <= 0m)
+        {
+            throw new DirectLendingCommandException(new DirectLendingCommandError(DirectLendingErrorCode.Validation, "Write-off amount must be positive."));
+        }
+
         lock (_gate)
         {
             if (!_loans.TryGetValue(loanId, out var stored))
@@ -124,7 +142,10 @@ public sealed partial class InMemoryDirectLendingService
     {
         lock (_gate)
         {
-            var stored = _loans[loanId];
+            if (!_loans.TryGetValue(loanId, out var stored))
+            {
+                throw new DirectLendingCommandException(new DirectLendingCommandError(DirectLendingErrorCode.NotFound, $"Loan '{loanId}' was not found."));
+            }
             var run = new ProjectionRunDto(Guid.NewGuid(), loanId, stored.TermsVersions[^1].VersionNumber, stored.Servicing.ServicingRevision, projectionAsOf ?? stored.TermsVersions[^1].Terms.MaturityDate, null, stored.History.LastOrDefault()?.EventId, "manual.request", ComputeTermsHash(stored.TermsVersions[^1].Terms), "in-memory", ProjectionRunStatus.Completed, GetList(_projectionRuns, loanId).LastOrDefault()?.ProjectionRunId, DateTimeOffset.UtcNow);
             var flows = BuildFlows(stored, run);
             GetList(_projectionRuns, loanId).Add(run);
@@ -160,6 +181,10 @@ public sealed partial class InMemoryDirectLendingService
     {
         lock (_gate)
         {
+            if (!_loans.ContainsKey(loanId))
+            {
+                throw new DirectLendingCommandException(new DirectLendingCommandError(DirectLendingErrorCode.NotFound, $"Loan '{loanId}' was not found."));
+            }
             var latestProjection = GetList(_projectionRuns, loanId).OrderByDescending(static x => x.GeneratedAt).FirstOrDefault();
             if (latestProjection is null)
             {
