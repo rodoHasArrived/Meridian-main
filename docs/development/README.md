@@ -39,6 +39,7 @@ This directory contains guides for developers contributing to or extending the M
 | Document | Description |
 |----------|-------------|
 | [Repository Organization Guide](repository-organization-guide.md) | **START HERE** — Project layout and conventions |
+| [Repository Rule Set](repository-rule-set.md) | Repository-wide contribution and quality rules |
 | [Documentation Contribution Guide](documentation-contribution-guide.md) | Writing and maintaining docs |
 
 ### Building & Extending
