@@ -101,6 +101,8 @@ public sealed record ExecutionReport
     public DateTimeOffset Timestamp { get; init; } = DateTimeOffset.UtcNow;
     public string? RejectReason { get; init; }
     public string? GatewayOrderId { get; init; }
+    /// <summary>The client-provided order ID from the original <see cref="OrderRequest"/>.</summary>
+    public string? ClientOrderId { get; init; }
 }
 
 /// <summary>Result of an order management operation.</summary>

@@ -1,6 +1,6 @@
 #if STOCKSHARP
 using System.Runtime.CompilerServices;
-using System.Threading.Channels;
+using Meridian.Application.Pipeline;
 using Meridian.Execution.Sdk;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
@@ -36,14 +36,17 @@ public sealed class StockSharpBrokerageGateway : IBrokerageGateway
     /// <summary>The underlying StockSharp adapter type (e.g., "Rithmic", "CQG", "IB").</summary>
     private readonly string _adapterType;
 
+    // Tracks submitted orders so cancel/modify reports can carry the correct symbol and side.
+    // In a full StockSharp implementation the Connector raises events with order details.
+    private readonly Dictionary<string, (string Symbol, OrderSide Side, string? ClientOrderId)> _submittedOrders = new();
+
     public StockSharpBrokerageGateway(
         string adapterType,
         ILogger<StockSharpBrokerageGateway> logger)
     {
         _adapterType = adapterType ?? throw new ArgumentNullException(nameof(adapterType));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _reportChannel = Channel.CreateBounded<ExecutionReport>(
-            new BoundedChannelOptions(500) { FullMode = BoundedChannelFullMode.Wait });
+        _reportChannel = EventPipelinePolicy.Default.CreateChannel<ExecutionReport>();
     }
 
     /// <inheritdoc />
@@ -115,6 +118,7 @@ public sealed class StockSharpBrokerageGateway : IBrokerageGateway
         var report = new ExecutionReport
         {
             OrderId = orderId,
+            ClientOrderId = request.ClientOrderId,
             ReportType = ExecutionReportType.New,
             Symbol = request.Symbol,
             Side = request.Side,
@@ -123,6 +127,10 @@ public sealed class StockSharpBrokerageGateway : IBrokerageGateway
             GatewayOrderId = orderId,
             Timestamp = DateTimeOffset.UtcNow,
         };
+
+        // Track submitted order so cancel/modify reports carry the correct symbol and side.
+        _submittedOrders[orderId] = (request.Symbol, request.Side, request.ClientOrderId);
+
         await _reportChannel.Writer.WriteAsync(report, ct).ConfigureAwait(false);
         return report;
     }
@@ -136,14 +144,18 @@ public sealed class StockSharpBrokerageGateway : IBrokerageGateway
 
         _logger.LogInformation("StockSharp ({Adapter}) cancelling {OrderId}", _adapterType, orderId);
 
+        _submittedOrders.TryGetValue(orderId, out var tracked);
+
         // Connector.CancelOrder(order)
         var report = new ExecutionReport
         {
             OrderId = orderId,
+            ClientOrderId = tracked.ClientOrderId,
             ReportType = ExecutionReportType.Cancelled,
-            Symbol = string.Empty,
-            Side = OrderSide.Buy,
+            Symbol = tracked.Symbol ?? string.Empty,
+            Side = tracked.Symbol is not null ? tracked.Side : OrderSide.Buy,
             OrderStatus = OrderStatus.Cancelled,
+            GatewayOrderId = orderId,
             Timestamp = DateTimeOffset.UtcNow,
         };
         await _reportChannel.Writer.WriteAsync(report, ct).ConfigureAwait(false);
@@ -161,14 +173,18 @@ public sealed class StockSharpBrokerageGateway : IBrokerageGateway
 
         _logger.LogInformation("StockSharp ({Adapter}) modifying {OrderId}", _adapterType, orderId);
 
+        _submittedOrders.TryGetValue(orderId, out var tracked);
+
         // Connector.ReRegisterOrder(oldOrder, newOrder)
         var report = new ExecutionReport
         {
             OrderId = orderId,
+            ClientOrderId = tracked.ClientOrderId,
             ReportType = ExecutionReportType.Modified,
-            Symbol = string.Empty,
-            Side = OrderSide.Buy,
+            Symbol = tracked.Symbol ?? string.Empty,
+            Side = tracked.Symbol is not null ? tracked.Side : OrderSide.Buy,
             OrderStatus = OrderStatus.Accepted,
+            GatewayOrderId = orderId,
             Timestamp = DateTimeOffset.UtcNow,
         };
         await _reportChannel.Writer.WriteAsync(report, ct).ConfigureAwait(false);

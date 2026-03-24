@@ -1,8 +1,10 @@
+using System.Globalization;
 using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Channels;
+using Meridian.Application.Pipeline;
 using Meridian.Execution.Sdk;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
@@ -56,10 +58,10 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         if (string.IsNullOrWhiteSpace(_options.KeyId) || string.IsNullOrWhiteSpace(_options.SecretKey))
-            throw new ArgumentException("Alpaca KeyId and SecretKey are required for brokerage.");
+            _logger.LogWarning(
+                "Alpaca brokerage credentials are missing or incomplete; gateway will remain unavailable until valid credentials are provided.");
 
-        _reportChannel = Channel.CreateBounded<ExecutionReport>(
-            new BoundedChannelOptions(500) { FullMode = BoundedChannelFullMode.Wait });
+        _reportChannel = EventPipelinePolicy.Default.CreateChannel<ExecutionReport>();
     }
 
     /// <inheritdoc />
@@ -87,6 +89,10 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         if (_connected) return;
+
+        if (string.IsNullOrWhiteSpace(_options.KeyId) || string.IsNullOrWhiteSpace(_options.SecretKey))
+            throw new InvalidOperationException(
+                "Alpaca KeyId and SecretKey are required for brokerage. Configure credentials before calling ConnectAsync.");
 
         var account = await GetAccountInfoAsync(ct).ConfigureAwait(false);
         _connected = true;
@@ -138,6 +144,7 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway
             var rejectReport = new ExecutionReport
             {
                 OrderId = request.ClientOrderId ?? Guid.NewGuid().ToString("N"),
+                ClientOrderId = request.ClientOrderId,
                 ReportType = ExecutionReportType.Rejected,
                 Symbol = request.Symbol,
                 Side = request.Side,
@@ -155,6 +162,7 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway
         var report = new ExecutionReport
         {
             OrderId = order?.Id ?? request.ClientOrderId ?? Guid.NewGuid().ToString("N"),
+            ClientOrderId = request.ClientOrderId,
             ReportType = ExecutionReportType.New,
             Symbol = request.Symbol,
             Side = request.Side,
@@ -175,22 +183,39 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway
         EnsureConnected();
 
         using var client = CreateHttpClient();
-        var response = await client.DeleteAsync($"{BaseUrl}/v2/orders/{orderId}", ct).ConfigureAwait(false);
 
-        if (!response.IsSuccessStatusCode)
+        // Fetch current order details so the report carries the correct symbol and side.
+        AlpacaOrderResponse? existing = null;
+        try
         {
-            var errorBody = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+            var getResponse = await client.GetAsync($"{BaseUrl}/v2/orders/{orderId}", ct).ConfigureAwait(false);
+            if (getResponse.IsSuccessStatusCode)
+                existing = await getResponse.Content.ReadFromJsonAsync(
+                    AlpacaBrokerageSerializerContext.Default.AlpacaOrderResponse, ct).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Alpaca failed to fetch order {OrderId} before cancel", orderId);
+        }
+
+        var deleteResponse = await client.DeleteAsync($"{BaseUrl}/v2/orders/{orderId}", ct).ConfigureAwait(false);
+
+        if (!deleteResponse.IsSuccessStatusCode)
+        {
+            var errorBody = await deleteResponse.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
             _logger.LogWarning("Alpaca cancel failed for {OrderId}: {Body}", orderId, errorBody);
         }
 
         var report = new ExecutionReport
         {
             OrderId = orderId,
-            ReportType = response.IsSuccessStatusCode ? ExecutionReportType.Cancelled : ExecutionReportType.Rejected,
-            Symbol = string.Empty,
-            Side = OrderSide.Buy,
-            OrderStatus = response.IsSuccessStatusCode ? OrderStatus.Cancelled : OrderStatus.Rejected,
-            RejectReason = response.IsSuccessStatusCode ? null : "Cancel request failed",
+            ClientOrderId = existing?.ClientOrderId,
+            ReportType = deleteResponse.IsSuccessStatusCode ? ExecutionReportType.Cancelled : ExecutionReportType.Rejected,
+            Symbol = existing?.Symbol ?? string.Empty,
+            Side = existing?.Side == "sell" ? OrderSide.Sell : OrderSide.Buy,
+            OrderStatus = deleteResponse.IsSuccessStatusCode ? OrderStatus.Cancelled : OrderStatus.Rejected,
+            RejectReason = deleteResponse.IsSuccessStatusCode ? null : "Cancel request failed",
+            GatewayOrderId = orderId,
             Timestamp = DateTimeOffset.UtcNow,
         };
         await _reportChannel.Writer.WriteAsync(report, ct).ConfigureAwait(false);
@@ -332,6 +357,7 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "Alpaca health check failed");
             return BrokerHealthStatus.Unhealthy(ex.Message);
         }
     }
@@ -404,7 +430,7 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway
     };
 
     private static decimal ParseDecimal(string? value) =>
-        decimal.TryParse(value, out var result) ? result : 0m;
+        decimal.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var result) ? result : 0m;
 
     // ── JSON DTOs (ADR-014: source generators) ─────────────────────────
 
