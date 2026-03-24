@@ -83,7 +83,7 @@ public sealed class NyseTaqCollectorIntegrationTests
             SequenceNumber: trade.SequenceNumber ?? 0,
             StreamId: trade.SourceId,
             Venue: trade.Exchange,
-            RawConditions: trade.Conditions is not null
+            RawConditions: !string.IsNullOrWhiteSpace(trade.Conditions)
                 ? trade.Conditions.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
                 : null);
     }
@@ -233,19 +233,26 @@ public sealed class NyseTaqCollectorIntegrationTests
         var record1 = NyseNationalTradesCsvParser.ParseTradeLine(AaplPreMarketFinalCorrection, SessionDate)!;
         var record2 = NyseNationalTradesCsvParser.ParseTradeLine(AaplEarlyPreMarket, SessionDate)!;
 
-        _collector.OnTrade(ToUpdate(record1));
-        _collector.OnTrade(ToUpdate(record2));
+        // Both trades on the same logical stream so their state is accumulated together.
+        MarketTradeUpdate CreateVwapTestUpdate(NyseTaqTradeRecord record) =>
+            new(
+                Timestamp: record.Timestamp,
+                Symbol: record.Symbol,
+                Price: record.Price,
+                Size: record.Volume,
+                Aggressor: AggressorSide.Unknown,
+                SequenceNumber: record.GlobalSequenceNumber,
+                StreamId: "nyse-taq",
+                Venue: "NYSE");
 
-        // Exchange codes differ (5 = NYSE, 6 = EDGX), so each trade lands on a
-        // separate (symbol, streamId, venue) state track.  Each track sees its
-        // first-ever trade, so no prior sequence exists to compare against —
-        // no IntegrityEvents are expected.
-        _publisher.PublishedEvents
-            .Where(e => e.Type == MarketEventType.Integrity)
-            .Should().BeEmpty(
-                because: "the two trades land on different venue tracks (NYSE vs EDGX); "
-                       + "each track sees its first trade, so no sequence gap is possible");
+        var update1 = CreateVwapTestUpdate(record1);
+        var update2 = CreateVwapTestUpdate(record2);
 
+        _collector.OnTrade(update1);
+        _collector.OnTrade(update2);
+
+        // Second update triggers a sequence gap (64802 → expected 64803, received 64834).
+        // The gap emits an IntegrityEvent but the trade is still accepted.
         var orderFlowEvents = _publisher.PublishedEvents
             .Where(e => e.Type == MarketEventType.OrderFlow)
             .Select(e => e.Payload.Should().BeOfType<OrderFlowStatistics>().Subject)
@@ -272,22 +279,29 @@ public sealed class NyseTaqCollectorIntegrationTests
     //          so TAQ global sequence numbers that are non-monotonic across symbols
     //          must not trigger cross-symbol IntegrityEvents.
     //
-    //  File order (by TAQ global seq):
-    //    SPY   seq 62239  (SpyPreMarket)
-    //    TSLA  seq 61928  (TslaEarlyPreMarket — LOWER than SPY's; different symbol)
-    //    AAPL  seq 64802  (AaplPreMarketFinalCorrection)
+    //  Feeding order (deliberately chosen to expose false-keying bugs):
+    //    AAPL  seq 64802  venue NYSE  (AaplPreMarketFinalCorrection)  — first on NYSE
+    //    TSLA  seq 61928  venue NYSE  (TslaEarlyPreMarket)            — lower seq, same venue!
+    //    SPY   seq 62239  venue ARCA  (SpyPreMarket)
+    //
+    //  If the continuity key were (streamId, venue) only — without symbol — the collector
+    //  would see NYSE sequence go 64802 → 61928 (decrease) and fire a spurious
+    //  out-of-order IntegrityEvent for TSLA.  The correct key is (symbol, streamId, venue),
+    //  which gives AAPL and TSLA independent sequence tracks so no event is emitted.
     // -------------------------------------------------------------------------
 
     [Fact]
     public void TaqMultiSymbol_PerSymbolSequenceIsolation_NoCrossSymbolIntegrityEvents()
     {
-        var spyRecord = NyseNationalTradesCsvParser.ParseTradeLine(SpyPreMarket, SessionDate)!;
-        var tslaRecord = NyseNationalTradesCsvParser.ParseTradeLine(TslaEarlyPreMarket, SessionDate)!;
+        // AAPL comes first: establishes NYSE sequence at 64802.
         var aaplRecord = NyseNationalTradesCsvParser.ParseTradeLine(AaplPreMarketFinalCorrection, SessionDate)!;
+        // TSLA seq 61928 is *lower* than AAPL's 64802 but on a separate symbol track.
+        var tslaRecord = NyseNationalTradesCsvParser.ParseTradeLine(TslaEarlyPreMarket, SessionDate)!;
+        var spyRecord  = NyseNationalTradesCsvParser.ParseTradeLine(SpyPreMarket, SessionDate)!;
 
-        _collector.OnTrade(ToUpdate(spyRecord));
-        _collector.OnTrade(ToUpdate(tslaRecord));
         _collector.OnTrade(ToUpdate(aaplRecord));
+        _collector.OnTrade(ToUpdate(tslaRecord));
+        _collector.OnTrade(ToUpdate(spyRecord));
 
         var integrityEvents = _publisher.PublishedEvents
             .Where(e => e.Type == MarketEventType.Integrity)
@@ -295,8 +309,8 @@ public sealed class NyseTaqCollectorIntegrationTests
 
         integrityEvents.Should().BeEmpty(
             because: "sequence continuity is tracked per (symbol, streamId, venue) tuple; "
-                   + "TSLA's lower global sequence number (61928 < SPY's 62239) is on a completely "
-                   + "separate sequence track and must not produce a cross-symbol IntegrityEvent");
+                   + "TSLA's lower sequence number (61928) arriving after AAPL's (64802) on the same "
+                   + "venue (NYSE) must not fire an integrity event — they are independent symbol tracks");
 
         // All three trades must be accepted
         _publisher.PublishedEvents
