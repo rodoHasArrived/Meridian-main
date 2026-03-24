@@ -2033,6 +2033,8 @@ Meridian-main
 │   │   │   │   ├── screens
 │   │   │   │   │   ├── research-screen.test.tsx
 │   │   │   │   │   ├── research-screen.tsx
+│   │   │   │   │   ├── trading-screen.test.tsx
+│   │   │   │   │   ├── trading-screen.tsx
 │   │   │   │   │   └── workspace-placeholder.tsx
 │   │   │   │   ├── styles
 │   │   │   │   │   └── index.css
