@@ -291,6 +291,10 @@ Use these documents together when planning or implementing new work:
 │   │   ├── StorageSinkBenchmarks.cs
 │   │   └── WalChecksumBenchmarks.cs
 │   └── run-bottleneck-benchmarks.sh
+├── build
+│   └── scripts
+│       └── docs
+│           └── generate-structure-docs.py
 ├── config
 │   ├── appsettings.sample.json
 │   ├── appsettings.schema.json
@@ -2790,6 +2794,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-381 directories, 2371 files
+384 directories, 2372 files
 ```
 <!-- readme-tree end -->
