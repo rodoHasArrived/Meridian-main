@@ -1458,7 +1458,10 @@ Use these documents together when planning or implementing new work:
 │   │       └── MarketEventIngressTracing.cs
 │   ├── Meridian.Execution
 │   │   ├── Adapters
+│   │   │   ├── BaseBrokerageGateway.cs
+│   │   │   ├── BrokerageGatewayAdapter.cs
 │   │   │   └── PaperTradingGateway.cs
+│   │   ├── BrokerageServiceRegistration.cs
 │   │   ├── Exceptions
 │   │   │   └── UnsupportedOrderRequestException.cs
 │   │   ├── GlobalUsings.cs
@@ -1483,6 +1486,8 @@ Use these documents together when planning or implementing new work:
 │   │       ├── OrderLifecycleManager.cs
 │   │       └── PaperTradingPortfolio.cs
 │   ├── Meridian.Execution.Sdk
+│   │   ├── BrokerageConfiguration.cs
+│   │   ├── IBrokerageGateway.cs
 │   │   ├── IExecutionGateway.cs
 │   │   ├── IOrderManager.cs
 │   │   ├── IPositionTracker.cs
@@ -1556,6 +1561,7 @@ Use these documents together when planning or implementing new work:
 │   ├── Meridian.Infrastructure
 │   │   ├── Adapters
 │   │   │   ├── Alpaca
+│   │   │   │   ├── AlpacaBrokerageGateway.cs
 │   │   │   │   ├── AlpacaConstants.cs
 │   │   │   │   ├── AlpacaHistoricalDataProvider.cs
 │   │   │   │   ├── AlpacaMarketDataClient.cs
@@ -1607,6 +1613,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── EnhancedIBConnectionManager.IBApi.cs
 │   │   │   │   ├── EnhancedIBConnectionManager.cs
 │   │   │   │   ├── IBApiLimits.cs
+│   │   │   │   ├── IBBrokerageGateway.cs
 │   │   │   │   ├── IBBuildGuidance.cs
 │   │   │   │   ├── IBCallbackRouter.cs
 │   │   │   │   ├── IBConnectionManager.cs
@@ -1633,6 +1640,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── Converters
 │   │   │   │   │   ├── MessageConverter.cs
 │   │   │   │   │   └── SecurityConverter.cs
+│   │   │   │   ├── StockSharpBrokerageGateway.cs
 │   │   │   │   ├── StockSharpConnectorCapabilities.cs
 │   │   │   │   ├── StockSharpConnectorFactory.cs
 │   │   │   │   ├── StockSharpHistoricalDataProvider.cs
@@ -1644,6 +1652,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── SyntheticHistoricalDataProvider.cs
 │   │   │   │   ├── SyntheticMarketDataClient.cs
 │   │   │   │   └── SyntheticReferenceDataCatalog.cs
+│   │   │   ├── Templates
+│   │   │   │   └── TemplateBrokerageGateway.cs
 │   │   │   ├── Tiingo
 │   │   │   │   └── TiingoHistoricalDataProvider.cs
 │   │   │   ├── TwelveData
@@ -2554,6 +2564,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   └── TradeModelTests.cs
 │   │   │   └── StrongDomainTypeTests.cs
 │   │   ├── Execution
+│   │   │   ├── BrokerageGatewayAdapterTests.cs
 │   │   │   ├── PaperTradingGatewayTests.cs
 │   │   │   └── PaperTradingPortfolioTests.cs
 │   │   ├── GlobalUsings.cs
@@ -2807,6 +2818,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-387 directories, 2382 files
+388 directories, 2392 files
 ```
 <!-- readme-tree end -->
