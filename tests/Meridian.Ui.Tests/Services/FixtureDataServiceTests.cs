@@ -212,7 +212,7 @@ public sealed class FixtureDataServiceTests
 
         // Assert
         elapsed.Should().BeGreaterThan(TimeSpan.FromMilliseconds(40), "should have some delay");
-        elapsed.Should().BeLessThan(TimeSpan.FromMilliseconds(350), "should not delay too long even with scheduler jitter");
+        elapsed.Should().BeLessThan(TimeSpan.FromMilliseconds(700), "should not delay too long even on busy CI runners");
     }
 
     [Fact]

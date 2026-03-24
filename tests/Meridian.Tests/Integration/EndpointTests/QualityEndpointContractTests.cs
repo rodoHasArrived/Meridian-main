@@ -106,6 +106,7 @@ public sealed class QualityEndpointContractTests
         using var client = host.GetTestClient();
 
         var route = UiApiRoutes.WithParam(UiApiRoutes.QualityComparison, "symbol", "AAPL");
+        route = $"{route}?date=2026-03-20";
         var response = await client.GetAsync(route);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
