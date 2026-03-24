@@ -17,6 +17,10 @@ out/
 x64/
 x86/
 [Bb]uild/
+!build/
+!build/scripts/
+!build/scripts/docs/
+!build/scripts/docs/*.py
 bld/
 
 # Publish output
