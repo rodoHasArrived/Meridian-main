@@ -64,6 +64,7 @@ This directory contains guides for developers contributing to or extending the M
 |----------|-------------|
 | [GitHub Actions Summary](github-actions-summary.md) | CI/CD pipeline overview |
 | [Build Observability](build-observability.md) | Build metrics and diagnostics |
+| [Git Hooks](git-hooks.md) | Local pre-commit quality checks (`dotnet format`) |
 | [Tooling & Workflow Backlog](tooling-workflow-backlog.md) | Prioritized cleanup plan for repo automation |
 
 ### Desktop Development
