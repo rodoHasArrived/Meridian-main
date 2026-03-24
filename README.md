@@ -1984,6 +1984,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── screens
 │   │   │   │   │   ├── research-screen.test.tsx
 │   │   │   │   │   ├── research-screen.tsx
+│   │   │   │   │   ├── trading-screen.test.tsx
+│   │   │   │   │   ├── trading-screen.tsx
 │   │   │   │   │   └── workspace-placeholder.tsx
 │   │   │   │   ├── styles
 │   │   │   │   │   └── index.css
@@ -2819,6 +2821,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-389 directories, 2392 files
+389 directories, 2394 files
 ```
 <!-- readme-tree end -->
