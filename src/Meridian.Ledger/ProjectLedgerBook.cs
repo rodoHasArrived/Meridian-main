@@ -166,8 +166,8 @@ public sealed class ProjectLedgerBook
                     : current.LastPostedAt;
 
                 summaries[summary.Account] = (
-                    current.Debits + summary.Debits,
-                    current.Credits + summary.Credits,
+                    current.Debits + summary.TotalDebits,
+                    current.Credits + summary.TotalCredits,
                     current.EntryCount + summary.EntryCount,
                     firstPostedAt,
                     lastPostedAt);

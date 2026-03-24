@@ -244,13 +244,13 @@ public sealed class LedgerIntegrationTests
         var revenueSummary = summaries.Single(s => s.Account == revenue);
 
         cashSummary.Balance.Should().Be(130m);
-        cashSummary.Debits.Should().Be(130m);
-        cashSummary.Credits.Should().Be(0m);
+        cashSummary.TotalDebits.Should().Be(130m);
+        cashSummary.TotalCredits.Should().Be(0m);
         cashSummary.EntryCount.Should().Be(2);
 
         revenueSummary.Balance.Should().Be(130m);
-        revenueSummary.Debits.Should().Be(0m);
-        revenueSummary.Credits.Should().Be(130m);
+        revenueSummary.TotalDebits.Should().Be(0m);
+        revenueSummary.TotalCredits.Should().Be(130m);
         revenueSummary.EntryCount.Should().Be(2);
     }
 
