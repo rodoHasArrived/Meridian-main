@@ -1238,7 +1238,8 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Order.cs
 │   │   ├── PortfolioSnapshot.cs
 │   │   ├── Position.cs
-│   │   └── StrategyParameterAttribute.cs
+│   │   ├── StrategyParameterAttribute.cs
+│   │   └── TradeTicket.cs
 │   ├── Meridian.Contracts
 │   │   ├── Api
 │   │   │   ├── BackfillApiModels.cs
@@ -2818,6 +2819,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-389 directories, 2391 files
+389 directories, 2392 files
 ```
 <!-- readme-tree end -->
