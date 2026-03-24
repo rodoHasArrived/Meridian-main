@@ -12,10 +12,16 @@
     <!-- StockSharp integration is optional -->
     <EnableStockSharp Condition="'$(EnableStockSharp)' == ''">false</EnableStockSharp>
     <EnableIbApiSmoke Condition="'$(EnableIbApiSmoke)' == ''">false</EnableIbApiSmoke>
+    <!-- SFTP ETL adapter requires Renci.SshNet (>= 2024.2.0); set EnableSftp=true to include it -->
+    <EnableSftp Condition="'$(EnableSftp)' == ''">false</EnableSftp>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(EnableStockSharp)' == 'true'">
     <DefineConstants>$(DefineConstants);STOCKSHARP;STOCKSHARP_RITHMIC;STOCKSHARP_IQFEED;STOCKSHARP_CQG;STOCKSHARP_INTERACTIVEBROKERS</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(EnableSftp)' == 'true'">
+    <DefineConstants>$(DefineConstants);SFTP</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(EnableIbApiSmoke)' == 'true'">
@@ -55,7 +61,7 @@
     <PackageReference Include="Microsoft.Extensions.ObjectPool" />
     <PackageReference Include="System.Text.Json" />
     <PackageReference Include="System.Threading.Channels" />
-    <PackageReference Include="SSH.NET" />
+    <PackageReference Include="Renci.SshNet" Condition="'$(EnableSftp)' == 'true'" />
 
     <!-- StockSharp (optional) -->
     <PackageReference Include="StockSharp.Algo" Condition="'$(EnableStockSharp)' == 'true'" />

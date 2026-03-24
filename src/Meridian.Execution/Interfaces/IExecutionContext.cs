@@ -1,4 +1,5 @@
 using Meridian.Execution.Models;
+using Meridian.Ledger;
 
 namespace Meridian.Execution.Interfaces;
 
@@ -23,4 +24,10 @@ public interface IExecutionContext
 
     /// <summary>Wall-clock time at the moment of the current market event.</summary>
     DateTimeOffset CurrentTime { get; }
+
+    /// <summary>
+    /// Read-only view of the double-entry ledger for this session.
+    /// <c>null</c> when the session was started without ledger tracking enabled.
+    /// </summary>
+    IReadOnlyLedger? Ledger { get; }
 }

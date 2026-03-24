@@ -46,7 +46,7 @@ public sealed class SftpFilePublisher : ISftpFilePublisher
         return Task.CompletedTask;
     }
 
-    private static void EnsureRemoteDirectory(Renci.SshNet.SftpClient client, string remoteDirectory)
+    private static void EnsureRemoteDirectory(ISftpClient client, string remoteDirectory)
     {
         if (string.IsNullOrWhiteSpace(remoteDirectory) || remoteDirectory == "/")
             return;

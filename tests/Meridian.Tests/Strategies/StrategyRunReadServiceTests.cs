@@ -300,6 +300,80 @@ public sealed class StrategyRunReadServiceTests
             .OnlyContain(line => line.Security == null);
     }
 
+    [Fact]
+    public async Task GetLedgerSummaryAsync_ReturnsLedgerSummaryForKnownRun()
+    {
+        var store = new StrategyRunStore();
+        var run = BuildCompletedRun(
+            runId: "run-ledger-direct",
+            strategyId: "momentum-1",
+            strategyName: "Momentum",
+            finalEquity: 115_000m,
+            netPnl: 15_000m,
+            totalReturn: 0.15m,
+            realizedPnl: 10_000m,
+            unrealizedPnl: 5_000m,
+            fillCount: 1,
+            sharpeRatio: 1.1,
+            maxDrawdown: 2_000m);
+
+        await store.RecordRunAsync(run);
+
+        var service = new StrategyRunReadService(
+            store,
+            new PortfolioReadService(),
+            new LedgerReadService());
+
+        var summary = await service.GetLedgerSummaryAsync("run-ledger-direct");
+
+        summary.Should().NotBeNull();
+        summary!.RunId.Should().Be("run-ledger-direct");
+        summary.JournalEntryCount.Should().Be(2);
+        summary.TrialBalance.Should().NotBeEmpty();
+        summary.Journal.Should().HaveCount(2);
+        summary.Journal.Should().BeInDescendingOrder(j => j.Timestamp);
+        summary.AssetBalance.Should().BePositive();
+    }
+
+    [Fact]
+    public async Task GetLedgerSummaryAsync_ReturnsNullForUnknownRun()
+    {
+        var store = new StrategyRunStore();
+        var service = new StrategyRunReadService(
+            store,
+            new PortfolioReadService(),
+            new LedgerReadService());
+
+        var summary = await service.GetLedgerSummaryAsync("no-such-run");
+
+        summary.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetLedgerSummaryAsync_ReturnsNullWhenRunHasNoLedger()
+    {
+        var store = new StrategyRunStore();
+        var runWithoutLedger = new StrategyRunEntry(
+            RunId: "run-no-ledger",
+            StrategyId: "strat-1",
+            StrategyName: "TestStrategy",
+            RunType: RunType.Backtest,
+            StartedAt: new DateTimeOffset(2026, 3, 21, 9, 0, 0, TimeSpan.Zero),
+            EndedAt: new DateTimeOffset(2026, 3, 21, 11, 0, 0, TimeSpan.Zero),
+            Metrics: null);
+
+        await store.RecordRunAsync(runWithoutLedger);
+
+        var service = new StrategyRunReadService(
+            store,
+            new PortfolioReadService(),
+            new LedgerReadService());
+
+        var summary = await service.GetLedgerSummaryAsync("run-no-ledger");
+
+        summary.Should().BeNull();
+    }
+
     private static StrategyRunEntry BuildCompletedRun(
         string runId,
         string strategyId,

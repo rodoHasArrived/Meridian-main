@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+
 namespace Meridian.Contracts.Etl;
 
 [JsonConverter(typeof(JsonStringEnumConverter))]
@@ -248,6 +249,41 @@ public sealed class EtlRejectRecord
     public DateTime CapturedAtUtc { get; init; } = DateTime.UtcNow;
 }
 
+/// <summary>A file discovered on a remote ETL source (e.g. an SFTP server).</summary>
+public sealed class EtlRemoteFile
+{
+    [JsonPropertyName("path")]
+    public required string Path { get; init; }
+
+    [JsonPropertyName("name")]
+    public required string Name { get; init; }
+
+    [JsonPropertyName("sizeBytes")]
+    public long SizeBytes { get; init; }
+
+    [JsonPropertyName("lastModifiedUtc")]
+    public DateTimeOffset? LastModifiedUtc { get; init; }
+}
+
+/// <summary>A file that has been downloaded from a remote source and staged locally.</summary>
+public sealed class EtlStagedFile
+{
+    [JsonPropertyName("originalPath")]
+    public required string OriginalPath { get; init; }
+
+    [JsonPropertyName("stagedPath")]
+    public required string StagedPath { get; init; }
+
+    [JsonPropertyName("fileName")]
+    public required string FileName { get; init; }
+
+    [JsonPropertyName("checksumSha256")]
+    public required string ChecksumSha256 { get; init; }
+
+    [JsonPropertyName("sizeBytes")]
+    public long SizeBytes { get; init; }
+}
+
 public sealed class EtlAuditEvent
 {
     [JsonPropertyName("stage")]
@@ -258,4 +294,36 @@ public sealed class EtlAuditEvent
 
     [JsonPropertyName("capturedAtUtc")]
     public DateTime CapturedAtUtc { get; init; } = DateTime.UtcNow;
+}
+
+/// <summary>Column mapping schema for a CSV partner file.</summary>
+public sealed class CsvSchemaDefinition
+{
+    public required string SchemaId { get; init; }
+    public bool HasHeaderRow { get; init; } = true;
+    public char Delimiter { get; init; } = ',';
+    public required IReadOnlyDictionary<string, string> Columns { get; init; }
+}
+
+/// <summary>Reads source files (local or remote) for an ETL job.</summary>
+public interface IEtlSourceReader
+{
+    EtlSourceKind Kind { get; }
+    Task<IReadOnlyList<EtlRemoteFile>> ListFilesAsync(EtlSourceDefinition source, CancellationToken ct = default);
+    Task<EtlStagedFile> StageFileAsync(string jobId, EtlSourceDefinition source, EtlRemoteFile file, CancellationToken ct = default);
+}
+
+/// <summary>Parses a staged partner file into record envelopes.</summary>
+public interface IPartnerFileParser
+{
+    string SchemaId { get; }
+    bool CanParse(EtlStagedFile file);
+    IAsyncEnumerable<PartnerRecordEnvelope> ParseAsync(EtlStagedFile file, EtlCheckpointToken? checkpoint, CancellationToken ct = default);
+}
+
+/// <summary>Resolves CSV column schemas by partner schema ID.</summary>
+public interface IPartnerSchemaRegistry
+{
+    CsvSchemaDefinition GetCsvSchema(string schemaId);
+    bool IsSupported(string schemaId);
 }

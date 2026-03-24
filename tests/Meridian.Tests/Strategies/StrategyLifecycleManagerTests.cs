@@ -113,5 +113,6 @@ public sealed class StrategyLifecycleManagerTests
         public IPortfolioState Portfolio => throw new NotImplementedException();
         public IReadOnlySet<string> Universe { get; } = new HashSet<string>();
         public DateTimeOffset CurrentTime => DateTimeOffset.UtcNow;
+        public Meridian.Ledger.IReadOnlyLedger? Ledger => null;
     }
 }

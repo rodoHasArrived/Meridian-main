@@ -28,7 +28,7 @@ public sealed class FillModelExpansionTests
     private static MarketEvent MakeMultiLevelLobEvent(string symbol, IReadOnlyList<(decimal Price, long Qty)> askLevels, decimal bidPrice = 409m, long bidQty = 1_000L)
     {
         var asks = askLevels
-            .Select((l, i) => new OrderBookLevel(OrderBookSide.Ask, i, l.Price, l.Qty))
+            .Select((l, i) => new OrderBookLevel(OrderBookSide.Ask, (ushort)i, l.Price, l.Qty))
             .ToArray();
         var bids = new[] { new OrderBookLevel(OrderBookSide.Bid, 0, bidPrice, bidQty) };
         return MarketEvent.L2Snapshot(DateTimeOffset.UtcNow, symbol, new LOBSnapshot(
