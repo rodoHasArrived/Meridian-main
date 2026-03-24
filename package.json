@@ -4,7 +4,7 @@
   "private": true,
   "description": "Build tools for Meridian",
   "scripts": {
-    "generate-icons": "node build/node/generate-icons.mjs",
+    "generate-icons": "node scripts/generate-icons.mjs",
     "generate-diagrams": "node scripts/generate-diagrams.mjs",
     "ui:dashboard:install": "npm --prefix src/Meridian.Ui/dashboard install",
     "ui:dashboard:build": "npm --prefix src/Meridian.Ui/dashboard run build",
