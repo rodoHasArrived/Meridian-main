@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using System.Threading.Channels;
+using Meridian.Application.Pipeline;
 using Meridian.Execution.Sdk;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;

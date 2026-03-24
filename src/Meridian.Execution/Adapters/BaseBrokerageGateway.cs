@@ -37,10 +37,6 @@ public abstract class BaseBrokerageGateway : IBrokerageGateway
     }
 
     // ── IExecutionGateway ──────────────────────────────────────────────
-
-    }
-
-    // ── IExecutionGateway ──────────────────────────────────────────────
     /// <inheritdoc />
     public abstract string GatewayId { get; }
 

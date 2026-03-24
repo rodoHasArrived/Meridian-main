@@ -100,7 +100,10 @@ public sealed record ExecutionReport
     public decimal? Commission { get; init; }
     public DateTimeOffset Timestamp { get; init; } = DateTimeOffset.UtcNow;
     public string? RejectReason { get; init; }
+    /// <summary>Broker-assigned order ID (may differ from the client-provided <see cref="OrderId"/>).</summary>
     public string? GatewayOrderId { get; init; }
+    /// <summary>Client-provided order ID, if one was supplied in the original <see cref="OrderRequest"/>.</summary>
+    public string? ClientOrderId { get; init; }
 }
 
 /// <summary>Result of an order management operation.</summary>

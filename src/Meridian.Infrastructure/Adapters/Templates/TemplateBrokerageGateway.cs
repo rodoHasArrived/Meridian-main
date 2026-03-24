@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using System.Threading.Channels;
+using Meridian.Application.Pipeline;
 using Meridian.Execution.Sdk;
 using Microsoft.Extensions.Logging;
 using OrderSide = Meridian.Execution.Sdk.OrderSide;
@@ -43,8 +44,8 @@ public sealed class TemplateBrokerageGateway : IBrokerageGateway
         ILogger<TemplateBrokerageGateway> logger)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _reportChannel = Channel.CreateBounded<ExecutionReport>(
-            new BoundedChannelOptions(500) { FullMode = BoundedChannelFullMode.Wait });
+        _reportChannel = EventPipelinePolicy.Default.CreateChannel<ExecutionReport>(
+            singleReader: false, singleWriter: false);
     }
 
     // TODO: Change to your broker's ID (lowercase, no spaces)

@@ -1,6 +1,7 @@
 #if STOCKSHARP
 using System.Runtime.CompilerServices;
 using System.Threading.Channels;
+using Meridian.Application.Pipeline;
 using Meridian.Execution.Sdk;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
@@ -42,8 +43,8 @@ public sealed class StockSharpBrokerageGateway : IBrokerageGateway
     {
         _adapterType = adapterType ?? throw new ArgumentNullException(nameof(adapterType));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _reportChannel = Channel.CreateBounded<ExecutionReport>(
-            new BoundedChannelOptions(500) { FullMode = BoundedChannelFullMode.Wait });
+        _reportChannel = EventPipelinePolicy.Default.CreateChannel<ExecutionReport>(
+            singleReader: false, singleWriter: false);
     }
 
     /// <inheritdoc />

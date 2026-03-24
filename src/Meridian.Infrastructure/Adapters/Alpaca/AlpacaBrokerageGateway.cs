@@ -1,8 +1,10 @@
+using System.Globalization;
 using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Channels;
+using Meridian.Application.Pipeline;
 using Meridian.Execution.Sdk;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
@@ -56,10 +58,13 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         if (string.IsNullOrWhiteSpace(_options.KeyId) || string.IsNullOrWhiteSpace(_options.SecretKey))
-            throw new ArgumentException("Alpaca KeyId and SecretKey are required for brokerage.");
+        {
+            _logger.LogWarning(
+                "Alpaca brokerage credentials are missing or incomplete; gateway will remain unavailable until valid credentials are provided.");
+        }
 
-        _reportChannel = Channel.CreateBounded<ExecutionReport>(
-            new BoundedChannelOptions(500) { FullMode = BoundedChannelFullMode.Wait });
+        _reportChannel = EventPipelinePolicy.Default.CreateChannel<ExecutionReport>(
+            singleReader: false, singleWriter: false);
     }
 
     /// <inheritdoc />
@@ -87,6 +92,9 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         if (_connected) return;
+
+        if (string.IsNullOrWhiteSpace(_options.KeyId) || string.IsNullOrWhiteSpace(_options.SecretKey))
+            throw new InvalidOperationException("Alpaca KeyId and SecretKey are required for brokerage. Set credentials before calling ConnectAsync.");
 
         var account = await GetAccountInfoAsync(ct).ConfigureAwait(false);
         _connected = true;
@@ -143,6 +151,7 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway
                 Side = request.Side,
                 OrderStatus = OrderStatus.Rejected,
                 RejectReason = $"Alpaca API error: {response.StatusCode} — {errorBody}",
+                ClientOrderId = request.ClientOrderId,
                 Timestamp = DateTimeOffset.UtcNow,
             };
             await _reportChannel.Writer.WriteAsync(rejectReport, ct).ConfigureAwait(false);
@@ -161,6 +170,7 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway
             OrderStatus = MapAlpacaStatus(order?.Status),
             OrderQuantity = request.Quantity,
             GatewayOrderId = order?.Id,
+            ClientOrderId = request.ClientOrderId,
             Timestamp = order?.CreatedAt ?? DateTimeOffset.UtcNow,
         };
         await _reportChannel.Writer.WriteAsync(report, ct).ConfigureAwait(false);
@@ -404,7 +414,8 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway
     };
 
     private static decimal ParseDecimal(string? value) =>
-        decimal.TryParse(value, out var result) ? result : 0m;
+        decimal.TryParse(value, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign,
+            CultureInfo.InvariantCulture, out var result) ? result : 0m;
 
     // ── JSON DTOs (ADR-014: source generators) ─────────────────────────
 
