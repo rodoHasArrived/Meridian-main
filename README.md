@@ -301,6 +301,7 @@ Use these documents together when planning or implementing new work:
 │       └── docs
 │           ├── generate-prompts.py
 │           ├── generate-structure-docs.py
+│           ├── scan-todos.py
 │           └── update-claude-md.py
 ├── config
 │   ├── appsettings.sample.json
@@ -2806,6 +2807,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-387 directories, 2381 files
+387 directories, 2382 files
 ```
 <!-- readme-tree end -->
