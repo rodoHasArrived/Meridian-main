@@ -1,0 +1,354 @@
+<Page x:Class="Meridian.Wpf.Views.BacktestPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="Backtest"
+      Background="{DynamicResource ShellWindowBackgroundBrush}"
+      Loaded="OnPageLoaded"
+      Unloaded="OnPageUnloaded"
+      AutomationProperties.Name="Backtest">
+
+    <Page.Resources>
+        <Style x:Key="LabelStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource ConsoleTextMutedBrush}" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Margin" Value="0,2,0,4" />
+        </Style>
+
+        <Style x:Key="ValueStyle" TargetType="TextBlock">
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
+            <Setter Property="Margin" Value="0,0,0,10" />
+        </Style>
+
+        <Style x:Key="SectionEyebrowStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource InfoColorBrush}" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="TextOptions.TextFormattingMode" Value="Ideal" />
+            <Setter Property="Margin" Value="0,0,0,12" />
+        </Style>
+    </Page.Resources>
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="16" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Style="{StaticResource SectionCardStyle}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Orientation="Horizontal">
+                    <Border Width="44"
+                            Height="44"
+                            CornerRadius="14"
+                            Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                            BorderBrush="{StaticResource InfoColorBrush}"
+                            BorderThickness="1">
+                        <TextBlock Text="&#xE9D2;"
+                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="24"
+                                   Foreground="{StaticResource InfoColorBrush}"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center" />
+                    </Border>
+                    <StackPanel Margin="12,0,0,0">
+                        <TextBlock Text="Backtest Workstation" Style="{StaticResource PageTitleStyle}" />
+                        <TextBlock Text="Configure strategies, run simulations, and inspect portfolio, ledger, and attribution output in one dense workstation."
+                                   Style="{StaticResource CardDescriptionStyle}" />
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Content="Run Browser"
+                            Command="{Binding OpenRunBrowserCommand}"
+                            Style="{StaticResource GhostButtonStyle}"
+                            Margin="0,0,8,0" />
+                    <Button Content="Latest Detail"
+                            Command="{Binding OpenRunDetailCommand}"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            Margin="0,0,8,0" />
+                    <Button Content="Latest Portfolio"
+                            Command="{Binding OpenRunPortfolioCommand}"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            Margin="0,0,8,0" />
+                    <Button Content="Latest Ledger"
+                            Command="{Binding OpenRunLedgerCommand}"
+                            Style="{StaticResource PrimaryButtonStyle}" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="280" />
+                <ColumnDefinition Width="16" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="16" />
+                <ColumnDefinition Width="320" />
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Style="{StaticResource CardStyle}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <TextBlock Text="CONFIGURATION" Style="{StaticResource SectionEyebrowStyle}" />
+
+                        <TextBlock Text="Symbols (comma-separated; blank = all)" Style="{StaticResource LabelStyle}" />
+                        <TextBox Text="{Binding SymbolsText, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource FormTextBoxStyle}"
+                                 Margin="0,0,0,10" />
+
+                        <TextBlock Text="From Date" Style="{StaticResource LabelStyle}" />
+                        <DatePicker SelectedDate="{Binding FromDate}" Margin="0,0,0,10" />
+
+                        <TextBlock Text="To Date" Style="{StaticResource LabelStyle}" />
+                        <DatePicker SelectedDate="{Binding ToDate}" Margin="0,0,0,10" />
+
+                        <TextBlock Text="Initial Capital (USD)" Style="{StaticResource LabelStyle}" />
+                        <TextBox Text="{Binding InitialCash, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource FormTextBoxStyle}"
+                                 Margin="0,0,0,10" />
+
+                        <TextBlock Text="Annual Margin Rate" Style="{StaticResource LabelStyle}" />
+                        <TextBox Text="{Binding AnnualMarginRate, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource FormTextBoxStyle}"
+                                 Margin="0,0,0,10" />
+
+                        <TextBlock Text="Data Root Path" Style="{StaticResource LabelStyle}" />
+                        <TextBox Text="{Binding DataRoot, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource FormTextBoxStyle}"
+                                 Margin="0,0,0,16" />
+
+                        <Border Background="{StaticResource PremiumPanelBrush}"
+                                BorderBrush="{StaticResource ConsoleBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="12"
+                                Padding="12"
+                                Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="STRATEGY" Style="{StaticResource SectionEyebrowStyle}" Margin="0,0,0,8" />
+                                <TextBlock Text="Buy &amp; Hold (equal-weight)"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                           FontStyle="Italic"
+                                           Margin="0,0,0,4" />
+                                <TextBlock Text="Strategy plugins: drop a .dll into /strategies"
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                           TextWrapping="Wrap"
+                                           FontSize="11" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Background="{StaticResource PremiumPanelBrush}"
+                                BorderBrush="{StaticResource ConsoleBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="12"
+                                Padding="12"
+                                Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="DISCOVERED UNIVERSE" Style="{StaticResource SectionEyebrowStyle}" Margin="0,0,0,8" />
+                                <TextBlock Text="{Binding Universe}"
+                                           TextWrapping="Wrap"
+                                           FontSize="11"
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+                            </StackPanel>
+                        </Border>
+
+                        <Button Content="Run Backtest"
+                                Command="{Binding RunBacktestCommand}"
+                                IsEnabled="{Binding CanRun}"
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                HorizontalAlignment="Stretch"
+                                Margin="0,0,0,8" />
+
+                        <Button Content="Cancel"
+                                Command="{Binding CancelBacktestCommand}"
+                                Style="{StaticResource GhostButtonStyle}"
+                                HorizontalAlignment="Stretch"
+                                Margin="0,0,0,18" />
+
+                        <TextBlock Text="WORKSTATION LINKS" Style="{StaticResource SectionEyebrowStyle}" />
+
+                        <Button Content="Open Strategy Runs"
+                                Command="{Binding OpenRunBrowserCommand}"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                HorizontalAlignment="Stretch"
+                                Margin="0,0,0,8" />
+
+                        <Button Content="Open Latest Run Detail"
+                                Command="{Binding OpenRunDetailCommand}"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                HorizontalAlignment="Stretch"
+                                Margin="0,0,0,8" />
+
+                        <Button Content="Open Latest Portfolio"
+                                Command="{Binding OpenRunPortfolioCommand}"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                HorizontalAlignment="Stretch"
+                                Margin="0,0,0,8" />
+
+                        <Button Content="Open Latest Ledger"
+                                Command="{Binding OpenRunLedgerCommand}"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                HorizontalAlignment="Stretch" />
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+
+            <Border Grid.Column="2" Style="{StaticResource CardStyle}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0"
+                               Text="Equity Curve"
+                               Style="{StaticResource CardHeaderStyle}"
+                               Margin="0,0,0,12" />
+
+                    <Border Grid.Row="1"
+                            Background="{StaticResource PremiumPanelBrush}"
+                            BorderBrush="{StaticResource ConsoleBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="12"
+                            Padding="8">
+                        <Canvas x:Name="EquityCanvas" ClipToBounds="True">
+                            <Polyline x:Name="EquityPolyline"
+                                      Stroke="{StaticResource InfoColorBrush}"
+                                      StrokeThickness="1.5"
+                                      StrokeLineJoin="Round" />
+                        </Canvas>
+                    </Border>
+
+                    <TextBlock Grid.Row="2"
+                               Text="{Binding StatusText}"
+                               Margin="0,10,0,6"
+                               Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+
+                    <ProgressBar Grid.Row="3"
+                                 Value="{Binding ProgressFraction}"
+                                 Maximum="1.0"
+                                 Height="6"
+                                 Margin="0,0,0,0"
+                                 IsIndeterminate="False" />
+                </Grid>
+            </Border>
+
+            <Border Grid.Column="4" Style="{StaticResource CardStyle}">
+                <TabControl>
+                    <TabItem Header="Summary">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <StackPanel Margin="12">
+                                <TextBlock Text="PERFORMANCE" Style="{StaticResource SectionEyebrowStyle}" Margin="0,0,0,8" />
+
+                                <TextBlock Text="Total Return" Style="{StaticResource LabelStyle}" />
+                                <TextBlock Text="{Binding TotalReturn}" Style="{StaticResource ValueStyle}" />
+
+                                <TextBlock Text="Annualised Return" Style="{StaticResource LabelStyle}" />
+                                <TextBlock Text="{Binding AnnualisedReturn}" Style="{StaticResource ValueStyle}" />
+
+                                <TextBlock Text="Net P&amp;L" Style="{StaticResource LabelStyle}" />
+                                <TextBlock Text="{Binding NetPnl}" Style="{StaticResource ValueStyle}" />
+
+                                <TextBlock Text="RISK" Style="{StaticResource SectionEyebrowStyle}" Margin="0,8,0,8" />
+
+                                <TextBlock Text="Sharpe Ratio" Style="{StaticResource LabelStyle}" />
+                                <TextBlock Text="{Binding SharpeRatio}" Style="{StaticResource ValueStyle}" />
+
+                                <TextBlock Text="Sortino Ratio" Style="{StaticResource LabelStyle}" />
+                                <TextBlock Text="{Binding SortinoRatio}" Style="{StaticResource ValueStyle}" />
+
+                                <TextBlock Text="Calmar Ratio" Style="{StaticResource LabelStyle}" />
+                                <TextBlock Text="{Binding CalmarRatio}" Style="{StaticResource ValueStyle}" />
+
+                                <TextBlock Text="Max Drawdown" Style="{StaticResource LabelStyle}" />
+                                <TextBlock Text="{Binding MaxDrawdown}" Style="{StaticResource ValueStyle}" />
+
+                                <TextBlock Text="TRADES" Style="{StaticResource SectionEyebrowStyle}" Margin="0,8,0,8" />
+
+                                <TextBlock Text="Win Rate" Style="{StaticResource LabelStyle}" />
+                                <TextBlock Text="{Binding WinRate}" Style="{StaticResource ValueStyle}" />
+
+                                <TextBlock Text="Total Trades" Style="{StaticResource LabelStyle}" />
+                                <TextBlock Text="{Binding TotalTrades}" Style="{StaticResource ValueStyle}" />
+
+                                <TextBlock Text="COSTS" Style="{StaticResource SectionEyebrowStyle}" Margin="0,8,0,8" />
+
+                                <TextBlock Text="Commissions Paid" Style="{StaticResource LabelStyle}" />
+                                <TextBlock Text="{Binding TotalCommissions}" Style="{StaticResource ValueStyle}" />
+
+                                <TextBlock Text="Margin Interest Paid" Style="{StaticResource LabelStyle}" />
+                                <TextBlock Text="{Binding TotalMarginInterest}" Style="{StaticResource ValueStyle}" />
+
+                                <TextBlock Text="XIRR (Cash-Weighted IRR)" Style="{StaticResource LabelStyle}" />
+                                <TextBlock Text="{Binding Xirr}" Style="{StaticResource ValueStyle}" />
+
+                                <TextBlock Text="RUN INFO" Style="{StaticResource SectionEyebrowStyle}" Margin="0,8,0,8" />
+
+                                <TextBlock Text="Events Processed" Style="{StaticResource LabelStyle}" />
+                                <TextBlock Text="{Binding EventsProcessed}" Style="{StaticResource ValueStyle}" />
+
+                                <TextBlock Text="Elapsed" Style="{StaticResource LabelStyle}" />
+                                <TextBlock Text="{Binding ElapsedTime}" Style="{StaticResource ValueStyle}" />
+                            </StackPanel>
+                        </ScrollViewer>
+                    </TabItem>
+
+                    <TabItem Header="Trades">
+                        <DataGrid ItemsSource="{Binding Fills}"
+                                  AutoGenerateColumns="False"
+                                  IsReadOnly="True"
+                                  CanUserSortColumns="True"
+                                  FontSize="11">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Time" Binding="{Binding Time}" Width="130" />
+                                <DataGridTextColumn Header="Symbol" Binding="{Binding Symbol}" Width="70" />
+                                <DataGridTextColumn Header="Qty" Binding="{Binding Quantity}" Width="70" />
+                                <DataGridTextColumn Header="Price" Binding="{Binding Price}" Width="80" />
+                                <DataGridTextColumn Header="Commission" Binding="{Binding Commission}" Width="90" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </TabItem>
+
+                    <TabItem Header="Cash Flows">
+                        <DataGrid ItemsSource="{Binding CashFlows}"
+                                  AutoGenerateColumns="False"
+                                  IsReadOnly="True"
+                                  CanUserSortColumns="True"
+                                  FontSize="11">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Date" Binding="{Binding Time}" Width="90" />
+                                <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="110" />
+                                <DataGridTextColumn Header="Symbol" Binding="{Binding Symbol}" Width="70" />
+                                <DataGridTextColumn Header="Amount" Binding="{Binding Amount}" Width="90" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </TabItem>
+
+                    <TabItem Header="Attribution">
+                        <DataGrid ItemsSource="{Binding Attribution}"
+                                  AutoGenerateColumns="False"
+                                  IsReadOnly="True"
+                                  CanUserSortColumns="True"
+                                  FontSize="11">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Symbol" Binding="{Binding Symbol}" Width="70" />
+                                <DataGridTextColumn Header="Realised PnL" Binding="{Binding RealizedPnl}" Width="90" />
+                                <DataGridTextColumn Header="Unrealised" Binding="{Binding UnrealizedPnl}" Width="90" />
+                                <DataGridTextColumn Header="Trades" Binding="{Binding Trades}" Width="60" />
+                                <DataGridTextColumn Header="Commission" Binding="{Binding Commissions}" Width="90" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </TabItem>
+                </TabControl>
+            </Border>
+        </Grid>
+    </Grid>
+</Page>

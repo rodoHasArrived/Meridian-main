@@ -1,0 +1,475 @@
+<Page x:Class="Meridian.Wpf.Views.DataSourcesPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      mc:Ignorable="d"
+      Background="{DynamicResource ShellWindowBackgroundBrush}"
+      Loaded="OnPageLoaded"
+      AutomationProperties.Name="Data Sources">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
+        <StackPanel MaxWidth="1200">
+            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24">
+                <StackPanel Orientation="Horizontal">
+                    <Border Width="44" Height="44" CornerRadius="14"
+                            Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                            BorderBrush="{StaticResource InfoColorBrush}" BorderThickness="1">
+                        <TextBlock Text="&#xE943;" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="24" Foreground="{StaticResource InfoColorBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                    </Border>
+                    <StackPanel Margin="12,0,0,0">
+                        <TextBlock Text="Data Sources Configuration" Style="{StaticResource PageTitleStyle}" />
+                        <TextBlock Text="Prioritize, fail over, and govern real-time and historical feeds with a unified source policy."
+                                   Style="{StaticResource CardDescriptionStyle}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                        <TextBlock Text="{StaticResource IconSettings}"
+                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="18" Foreground="{StaticResource InfoColorBrush}"
+                                   VerticalAlignment="Center" />
+                        <TextBlock Text="Failover Settings" Style="{StaticResource CardHeaderStyle}" Margin="8,0,0,0" />
+                    </StackPanel>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <CheckBox x:Name="EnableFailoverToggle"
+                                  Grid.Column="0"
+                                  Content="Enable automatic failover"
+                                  Checked="EnableFailoverToggle_Changed"
+                                  Unchecked="EnableFailoverToggle_Changed"
+                                  Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+
+                        <StackPanel Grid.Column="1">
+                            <TextBlock Text="Failover Timeout (seconds)" Style="{StaticResource FormLabelStyle}" />
+                            <TextBox x:Name="FailoverTimeoutBox"
+                                     Style="{StaticResource FormTextBoxStyle}"
+                                     TextChanged="FailoverTimeoutBox_TextChanged" />
+                            <TextBlock x:Name="FailoverTimeoutError"
+                                       Foreground="{StaticResource ErrorColorBrush}"
+                                       FontSize="11"
+                                       Visibility="Collapsed"
+                                       Margin="0,4,0,0" />
+                        </StackPanel>
+                    </Grid>
+
+                    <Border Background="{StaticResource ConsoleAccentBlueAlpha10Brush}"
+                            BorderBrush="{StaticResource ConsoleBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="12"
+                            Padding="12"
+                            Margin="0,16,0,0">
+                        <TextBlock Text="When enabled, the system automatically switches to the next available data source if the primary source fails."
+                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                   TextWrapping="Wrap" />
+                    </Border>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                        <TextBlock Text="{StaticResource IconProvider}"
+                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="18" Foreground="{StaticResource InfoColorBrush}"
+                                   VerticalAlignment="Center" />
+                        <TextBlock Text="Default Data Sources" Style="{StaticResource CardHeaderStyle}" Margin="8,0,0,0" />
+                    </StackPanel>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Default Real-Time Source" Style="{StaticResource FormLabelStyle}" />
+                            <ComboBox x:Name="DefaultRealTimeCombo"
+                                      Style="{StaticResource FormComboBoxStyle}"
+                                      DisplayMemberPath="Name"
+                                      SelectionChanged="DefaultRealTimeCombo_SelectionChanged" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1">
+                            <TextBlock Text="Default Historical Source" Style="{StaticResource FormLabelStyle}" />
+                            <ComboBox x:Name="DefaultHistoricalCombo"
+                                      Style="{StaticResource FormComboBoxStyle}"
+                                      DisplayMemberPath="Name"
+                                      SelectionChanged="DefaultHistoricalCombo_SelectionChanged" />
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
+                <StackPanel>
+                    <Grid Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{StaticResource IconList}"
+                                       FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                       FontSize="18" Foreground="{StaticResource InfoColorBrush}"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text="Configured Data Sources" Style="{StaticResource CardHeaderStyle}" Margin="8,0,0,0" />
+                            <TextBlock x:Name="SourceCountText" Text="(0)"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                       Margin="8,2,0,0" />
+                        </StackPanel>
+
+                        <Button Grid.Column="1"
+                                Style="{StaticResource AccentButtonStyle}"
+                                Click="AddDataSource_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{StaticResource IconAdd}"
+                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                           FontSize="12"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Text="Add Data Source" Margin="8,0,0,0" />
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+
+                    <ListView x:Name="DataSourcesList"
+                              ItemsSource="{Binding DataSources}"
+                              SelectionMode="Single"
+                              BorderThickness="0"
+                              Background="Transparent"
+                              MaxHeight="420">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Border Margin="0,4"
+                                        Padding="12"
+                                        CornerRadius="12"
+                                        BorderBrush="{StaticResource ConsoleBorderBrush}"
+                                        BorderThickness="1"
+                                        Background="{StaticResource PremiumPanelBrush}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <CheckBox Grid.Column="0"
+                                                  IsChecked="{Binding Enabled, Mode=TwoWay}"
+                                                  Checked="SourceEnabled_Changed"
+                                                  Unchecked="SourceEnabled_Changed"
+                                                  VerticalAlignment="Center" />
+
+                                        <StackPanel Grid.Column="1">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold"
+                                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                                <Border Background="{StaticResource ConsoleAccentBlueAlpha20}"
+                                                        CornerRadius="999" Padding="8,3" Margin="8,0,0,0">
+                                                    <TextBlock Text="{Binding Provider}" FontSize="11" />
+                                                </Border>
+                                                <Border Background="{StaticResource ConsoleBackgroundDarkBrush}"
+                                                        CornerRadius="999" Padding="8,3" Margin="8,0,0,0">
+                                                    <TextBlock Text="{Binding Type}" FontSize="11"
+                                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+                                                </Border>
+                                            </StackPanel>
+                                            <TextBlock Text="{Binding Description}"
+                                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                       FontSize="12"
+                                                       TextTrimming="CharacterEllipsis" />
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                                            <TextBlock Text="Priority" Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
+                                            <TextBlock Text="{Binding Priority}" FontWeight="SemiBold" />
+                                        </StackPanel>
+
+                                        <Button Grid.Column="3" Content="Edit"
+                                                Tag="{Binding Id}"
+                                                Click="EditDataSource_Click"
+                                                Margin="8,0,0,0"
+                                                Style="{StaticResource SecondaryButtonStyle}" />
+
+                                        <Button Grid.Column="4" Content="Delete"
+                                                Tag="{Binding Id}"
+                                                Click="DeleteDataSource_Click"
+                                                Margin="8,0,0,0"
+                                                Style="{StaticResource GhostButtonStyle}" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+
+                    <TextBlock x:Name="NoSourcesText"
+                               Text="No data sources configured. Click 'Add Data Source' to get started."
+                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                               HorizontalAlignment="Center"
+                               Margin="0,24"
+                               Visibility="Collapsed" />
+                </StackPanel>
+            </Border>
+
+            <Border x:Name="EditPanel" Style="{StaticResource CardStyle}" Visibility="Collapsed">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                        <TextBlock Text="{StaticResource IconEdit}"
+                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="18" Foreground="{StaticResource InfoColorBrush}"
+                                   VerticalAlignment="Center" />
+                        <TextBlock x:Name="EditPanelTitle" Text="Add Data Source"
+                                   Style="{StaticResource CardHeaderStyle}" Margin="8,0,0,0" />
+                    </StackPanel>
+
+                    <Grid Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Row="0" Grid.Column="0">
+                            <TextBlock Text="Name *" Style="{StaticResource FormLabelStyle}" />
+                            <TextBox x:Name="SourceNameBox" Style="{StaticResource FormTextBoxStyle}" />
+                            <TextBlock x:Name="SourceNameError"
+                                       Foreground="{StaticResource ErrorColorBrush}"
+                                       FontSize="11"
+                                       Visibility="Collapsed"
+                                       Margin="0,4,0,0" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Row="0" Grid.Column="1">
+                            <TextBlock Text="Provider *" Style="{StaticResource FormLabelStyle}" />
+                            <ComboBox x:Name="ProviderCombo"
+                                      Style="{StaticResource FormComboBoxStyle}"
+                                      SelectionChanged="ProviderCombo_SelectionChanged">
+                                <ComboBoxItem Content="Interactive Brokers (IB)" Tag="IB" />
+                                <ComboBoxItem Content="Alpaca" Tag="Alpaca" />
+                                <ComboBoxItem Content="Polygon.io" Tag="Polygon" />
+                            </ComboBox>
+                        </StackPanel>
+
+                        <StackPanel Grid.Row="1" Grid.Column="0">
+                            <TextBlock Text="Data Type *" Style="{StaticResource FormLabelStyle}" />
+                            <ComboBox x:Name="TypeCombo" Style="{StaticResource FormComboBoxStyle}">
+                                <ComboBoxItem Content="Real-Time" Tag="RealTime" />
+                                <ComboBoxItem Content="Historical" Tag="Historical" />
+                                <ComboBoxItem Content="Both" Tag="Both" />
+                            </ComboBox>
+                        </StackPanel>
+
+                        <StackPanel Grid.Row="1" Grid.Column="1">
+                            <TextBlock Text="Priority (lower = higher)" Style="{StaticResource FormLabelStyle}" />
+                            <TextBox x:Name="PriorityBox" Style="{StaticResource FormTextBoxStyle}" />
+                            <TextBlock x:Name="PriorityError"
+                                       Foreground="{StaticResource ErrorColorBrush}"
+                                       FontSize="11"
+                                       Visibility="Collapsed"
+                                       Margin="0,4,0,0" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Row="2" Grid.ColumnSpan="2">
+                            <TextBlock Text="Description" Style="{StaticResource FormLabelStyle}" />
+                            <TextBox x:Name="DescriptionBox" Style="{StaticResource FormTextBoxStyle}" />
+                        </StackPanel>
+                    </Grid>
+
+                    <Border x:Name="IBSettingsPanel"
+                            Background="{StaticResource ConsoleBackgroundLightBrush}"
+                            CornerRadius="8" Padding="16"
+                            Margin="0,0,0,16">
+                        <StackPanel>
+                            <TextBlock Text="Interactive Brokers Settings" FontWeight="SemiBold" Margin="0,0,0,8" />
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <StackPanel Grid.Row="0" Grid.Column="0">
+                                    <TextBlock Text="Host" Style="{StaticResource FormLabelStyle}" />
+                                    <TextBox x:Name="IBHostBox" Style="{StaticResource FormTextBoxStyle}" />
+                                </StackPanel>
+
+                                <StackPanel Grid.Row="0" Grid.Column="1">
+                                    <TextBlock Text="Port" Style="{StaticResource FormLabelStyle}" />
+                                    <TextBox x:Name="IBPortBox" Style="{StaticResource FormTextBoxStyle}" />
+                                </StackPanel>
+
+                                <StackPanel Grid.Row="0" Grid.Column="2">
+                                    <TextBlock Text="Client ID" Style="{StaticResource FormLabelStyle}" />
+                                    <TextBox x:Name="IBClientIdBox" Style="{StaticResource FormTextBoxStyle}" />
+                                </StackPanel>
+
+                                <CheckBox x:Name="IBPaperTradingCheck"
+                                          Grid.Row="1" Grid.Column="0"
+                                          Content="Paper Trading"
+                                          Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+
+                                <CheckBox x:Name="IBSubscribeDepthCheck"
+                                          Grid.Row="1" Grid.Column="1"
+                                          Content="Subscribe Depth"
+                                          Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+
+                                <CheckBox x:Name="IBTickByTickCheck"
+                                          Grid.Row="1" Grid.Column="2"
+                                          Content="Tick-by-Tick"
+                                          Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <Border x:Name="AlpacaSettingsPanel"
+                            Background="{StaticResource ConsoleBackgroundLightBrush}"
+                            CornerRadius="8" Padding="16"
+                            Margin="0,0,0,16"
+                            Visibility="Collapsed">
+                        <StackPanel>
+                            <TextBlock Text="Alpaca Settings" FontWeight="SemiBold" Margin="0,0,0,8" />
+                            <Border Background="{StaticResource ConsoleAccentBlueAlpha10Brush}"
+                                    CornerRadius="6" Padding="8" Margin="0,0,0,12">
+                                <TextBlock Text="API credentials are stored securely. Use the Provider page to manage credentials."
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}" TextWrapping="Wrap" />
+                            </Border>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Feed Type" Style="{StaticResource FormLabelStyle}" />
+                                    <ComboBox x:Name="AlpacaFeedCombo" Style="{StaticResource FormComboBoxStyle}">
+                                        <ComboBoxItem Content="IEX (Free)" Tag="iex" />
+                                        <ComboBoxItem Content="SIP (Paid)" Tag="sip" />
+                                        <ComboBoxItem Content="Delayed SIP" Tag="delayed_sip" />
+                                    </ComboBox>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="Environment" Style="{StaticResource FormLabelStyle}" />
+                                    <ComboBox x:Name="AlpacaEnvironmentCombo" Style="{StaticResource FormComboBoxStyle}">
+                                        <ComboBoxItem Content="Production" Tag="false" />
+                                        <ComboBoxItem Content="Sandbox" Tag="true" />
+                                    </ComboBox>
+                                </StackPanel>
+                            </Grid>
+
+                            <CheckBox x:Name="AlpacaSubscribeQuotesCheck"
+                                      Content="Subscribe to Quotes (BBO)"
+                                      Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border x:Name="PolygonSettingsPanel"
+                            Background="{StaticResource ConsoleBackgroundLightBrush}"
+                            CornerRadius="8" Padding="16"
+                            Margin="0,0,0,16"
+                            Visibility="Collapsed">
+                        <StackPanel>
+                            <TextBlock Text="Polygon.io Settings" FontWeight="SemiBold" Margin="0,0,0,8" />
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <StackPanel Grid.Row="0" Grid.Column="0">
+                                    <TextBlock Text="API Key" Style="{StaticResource FormLabelStyle}" />
+                                    <PasswordBox x:Name="PolygonApiKeyBox" />
+                                </StackPanel>
+
+                                <StackPanel Grid.Row="0" Grid.Column="1">
+                                    <TextBlock Text="Feed" Style="{StaticResource FormLabelStyle}" />
+                                    <ComboBox x:Name="PolygonFeedCombo" Style="{StaticResource FormComboBoxStyle}">
+                                        <ComboBoxItem Content="Stocks" Tag="stocks" />
+                                        <ComboBoxItem Content="Options" Tag="options" />
+                                        <ComboBoxItem Content="Forex" Tag="forex" />
+                                        <ComboBoxItem Content="Crypto" Tag="crypto" />
+                                    </ComboBox>
+                                </StackPanel>
+
+                                <CheckBox x:Name="PolygonDelayedCheck"
+                                          Grid.Row="1" Grid.Column="0"
+                                          Content="Use Delayed Data (15 min)"
+                                          Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+
+                                <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal">
+                                    <CheckBox x:Name="PolygonTradesCheck" Content="Trades" IsChecked="True"
+                                              Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,0,12,0" />
+                                    <CheckBox x:Name="PolygonQuotesCheck" Content="Quotes"
+                                              Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,0,12,0" />
+                                    <CheckBox x:Name="PolygonAggregatesCheck" Content="Aggregates"
+                                              Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Background="{StaticResource ConsoleBackgroundLightBrush}" CornerRadius="8" Padding="16">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Symbols (Optional)" FontWeight="SemiBold" />
+                                <TextBlock Text="Leave empty to use global symbol list"
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                           Margin="8,2,0,0" />
+                            </StackPanel>
+                            <TextBox x:Name="SymbolsBox" Style="{StaticResource FormTextBoxStyle}"
+                                     Margin="0,8,0,0" />
+                        </StackPanel>
+                    </Border>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
+                        <Button x:Name="SaveSourceButton"
+                                Content="Save Data Source"
+                                Style="{StaticResource AccentButtonStyle}"
+                                Click="SaveDataSource_Click" />
+                        <Button Content="Cancel"
+                                Click="CancelEdit_Click"
+                                Margin="12,0,0,0" />
+                        <ProgressBar x:Name="SaveProgress"
+                                     Width="120"
+                                     Height="8"
+                                     Margin="12,8,0,0"
+                                     Visibility="Collapsed" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <Border x:Name="StatusPanel"
+                    Background="{StaticResource ConsoleBackgroundLightBrush}"
+                    CornerRadius="8"
+                    Padding="12"
+                    Margin="0,24,0,0"
+                    Visibility="Collapsed">
+                <TextBlock x:Name="StatusText"
+                           Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                           TextWrapping="Wrap" />
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

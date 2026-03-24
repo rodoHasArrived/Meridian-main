@@ -1,0 +1,312 @@
+# Consolidated Desktop Application Builds
+#
+# Replaces and combines:
+#   - wpf-desktop.yml (WPF Desktop Build)
+#   - wpf-commands.yml (WPF Commands - smoke test)
+#
+# All desktop build, publish, test, and release functionality unified here.
+#
+# NOTE: UWP/WinUI 3 application has been removed. WPF is the sole desktop client.
+
+name: Desktop Builds
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'src/Meridian.Wpf/**'
+      - 'src/Meridian.Contracts/**'
+      - '.github/workflows/desktop-builds.yml'
+
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'src/Meridian.Wpf/**'
+      - 'src/Meridian.Contracts/**'
+      - '.github/workflows/desktop-builds.yml'
+  workflow_dispatch:
+    inputs:
+      build_config:
+        description: 'Build configuration'
+        required: false
+        default: 'Release'
+        type: choice
+        options:
+          - Release
+          - Debug
+      verbose_logging:
+        description: 'Enable verbose build logging'
+        required: false
+        default: false
+        type: boolean
+      build_target:
+        description: 'Which desktop app to build'
+        required: false
+        default: 'wpf'
+        type: choice
+        options:
+          - wpf
+          - wpf-smoke-test
+
+permissions:
+  contents: read
+  models: read
+
+concurrency:
+  group: desktop-builds-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  WPF_PROJECT: 'src/Meridian.Wpf/Meridian.Wpf.csproj'
+  BUILD_CONFIG: ${{ inputs.build_config || 'Release' }}
+  VERBOSE_LOGGING: ${{ inputs.verbose_logging || 'false' }}
+
+jobs:
+  # ═══════════════════════════════════════════════════════════════════════
+  # WPF Desktop App
+  # ═══════════════════════════════════════════════════════════════════════
+
+  wpf-build:
+    name: WPF - Build
+    runs-on: windows-latest
+    timeout-minutes: 15
+    if: |
+      github.event.inputs.build_target == 'wpf' ||
+      github.event.inputs.build_target == 'wpf-smoke-test' ||
+      github.event.inputs.build_target == '' ||
+      github.event.inputs.build_target == null
+
+    env:
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+      DOTNET_GENERATE_ASPNET_CERTIFICATE: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup .NET with Cache
+        uses: ./.github/actions/setup-dotnet-cache
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          cache-suffix: 'wpf'
+
+      - name: Restore dependencies
+        run: dotnet restore ${{ env.WPF_PROJECT }} --verbosity minimal
+
+      - name: Build
+        run: dotnet build ${{ env.WPF_PROJECT }} -c ${{ env.BUILD_CONFIG }} --no-restore -p:TargetFramework=net9.0-windows --verbosity minimal
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: wpf-build-output
+          path: src/Meridian.Wpf/bin/${{ env.BUILD_CONFIG }}/
+          retention-days: 1
+
+  wpf-publish:
+    name: WPF - Publish ${{ matrix.artifact_suffix }}
+    needs: wpf-build
+    runs-on: windows-latest
+    timeout-minutes: 25
+    if: |
+      (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch') &&
+      github.event.inputs.build_target != 'wpf-smoke-test'
+
+    env:
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+      DOTNET_GENERATE_ASPNET_CERTIFICATE: false
+
+    strategy:
+      matrix:
+        include:
+          - rid: win-x64
+            artifact_suffix: x64
+          - rid: win-arm64
+            artifact_suffix: arm64
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET with Cache
+        uses: ./.github/actions/setup-dotnet-cache
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          cache-suffix: 'wpf'
+
+      - name: Publish (self-contained)
+        run: |
+          dotnet publish ${{ env.WPF_PROJECT }} `
+            -c ${{ env.BUILD_CONFIG }} `
+            -r ${{ matrix.rid }} `
+            -o ./publish/${{ matrix.rid }} `
+            --self-contained true `
+            -p:TargetFramework=net9.0-windows `
+            -p:PublishSingleFile=true `
+            -p:PublishReadyToRun=true `
+            -p:EnableCompressionInSingleFile=true `
+            -p:IncludeNativeLibrariesForSelfExtract=true
+
+      - name: Publish (framework-dependent)
+        run: |
+          dotnet publish ${{ env.WPF_PROJECT }} `
+            -c ${{ env.BUILD_CONFIG }} `
+            -r ${{ matrix.rid }} `
+            -o ./publish/${{ matrix.rid }}-fdd `
+            --self-contained false `
+            -p:TargetFramework=net9.0-windows `
+            -p:PublishSingleFile=true `
+            -p:PublishReadyToRun=true
+
+      - name: Copy configuration
+        run: |
+          if (Test-Path "config/appsettings.sample.json") {
+            Copy-Item "config/appsettings.sample.json" "./publish/${{ matrix.rid }}/appsettings.json"
+            Copy-Item "config/appsettings.sample.json" "./publish/${{ matrix.rid }}-fdd/appsettings.json"
+          }
+        shell: pwsh
+
+      - name: Create archive (self-contained)
+        run: |
+          Compress-Archive -Path "./publish/${{ matrix.rid }}/*" -DestinationPath "Meridian.Desktop-${{ matrix.rid }}-selfcontained.zip"
+
+      - name: Create archive (framework-dependent)
+        run: |
+          Compress-Archive -Path "./publish/${{ matrix.rid }}-fdd/*" -DestinationPath "Meridian.Desktop-${{ matrix.rid }}-fdd.zip"
+
+      - name: Upload self-contained artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: Meridian.Desktop-${{ matrix.rid }}-selfcontained
+          path: Meridian.Desktop-${{ matrix.rid }}-selfcontained.zip
+          retention-days: 30
+
+      - name: Upload framework-dependent artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: Meridian.Desktop-${{ matrix.rid }}-fdd
+          path: Meridian.Desktop-${{ matrix.rid }}-fdd.zip
+          retention-days: 30
+
+  # ═══════════════════════════════════════════════════════════════════════
+  # WPF Smoke Test (from wpf-commands.yml)
+  # ═══════════════════════════════════════════════════════════════════════
+
+  wpf-smoke-test:
+    name: WPF - Smoke Test
+    needs: wpf-build
+    runs-on: windows-latest
+    timeout-minutes: 10
+    if: github.event_name == 'workflow_dispatch'
+
+    env:
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+      DOTNET_GENERATE_ASPNET_CERTIFICATE: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET with Cache
+        uses: ./.github/actions/setup-dotnet-cache
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          cache-suffix: 'wpf'
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v8
+        with:
+          name: wpf-build-output
+          path: src/Meridian.Wpf/bin/${{ env.BUILD_CONFIG }}/
+
+      - name: Run (smoke test)
+        shell: pwsh
+        run: |
+          $process = Start-Process dotnet -ArgumentList @(
+            "run",
+            "--project",
+            "${{ env.WPF_PROJECT }}",
+            "--configuration",
+            "${{ env.BUILD_CONFIG }}",
+            "--no-build"
+          ) -PassThru
+          Start-Sleep -Seconds 10
+          Stop-Process -Id $process.Id
+
+  # ═══════════════════════════════════════════════════════════════════════
+  # AI Build Failure Analysis
+  # ═══════════════════════════════════════════════════════════════════════
+
+  ai-build-analysis:
+    name: AI Build Failure Analysis
+    needs: [wpf-build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: failure()
+
+    steps:
+      - name: Download build logs
+        uses: actions/download-artifact@v8
+        with:
+          pattern: '*-build-logs-*'
+          path: build-logs/
+          merge-multiple: true
+        continue-on-error: true
+
+      - name: AI analyze build failures
+        id: ai-analysis
+        continue-on-error: true
+        uses: actions/ai-inference@v2
+        with:
+          model: gpt-4o-mini
+          max-tokens: 1500
+          prompt: |
+            A desktop application build has failed in a CI/CD pipeline.
+            The project is a .NET 9.0 WPF desktop application for market data collection.
+
+            Common failure patterns include:
+            - XAML compiler errors
+            - Platform-specific build issues (x64 vs arm64)
+            - NuGet restore failures
+            - Central Package Management (NU1008) errors
+
+            Based on these common patterns, provide:
+            1) Top 3 most likely causes for the failure
+            2) Suggested diagnostic steps
+            3) Quick fix recommendations
+
+            Keep response under 200 words in markdown format.
+
+      - name: Post analysis to summary
+        if: always()
+        run: |
+          echo "## AI Build Failure Analysis" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -n "${{ steps.ai-analysis.outputs.response }}" ]; then
+            echo "${{ steps.ai-analysis.outputs.response }}" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "AI analysis was not available. Check build logs manually." >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # ═══════════════════════════════════════════════════════════════════════
+  # Cleanup
+  # ═══════════════════════════════════════════════════════════════════════
+
+  cleanup:
+    name: Cleanup Intermediate Artifacts
+    needs: [wpf-build, wpf-publish, wpf-smoke-test]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: always()
+    permissions:
+      actions: write
+
+    steps:
+      - name: Delete intermediate artifacts
+        uses: geekyeggo/delete-artifact@v6.0.0
+        with:
+          name: wpf-build-output
+          failOnError: false

@@ -1,0 +1,653 @@
+<Page x:Class="Meridian.Wpf.Views.SymbolsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      mc:Ignorable="d"
+      d:DesignHeight="900" d:DesignWidth="1400"
+      Background="{DynamicResource ShellWindowBackgroundBrush}"
+      Loaded="OnPageLoaded"
+      AutomationProperties.Name="Symbols">
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Style="{StaticResource SectionCardStyle}" Margin="0,0,0,16">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Orientation="Horizontal">
+                <Border Width="44" Height="44" CornerRadius="14"
+                        Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                        BorderBrush="{StaticResource InfoColorBrush}" BorderThickness="1">
+                    <TextBlock Text="{StaticResource IconList}"
+                               FontFamily="{StaticResource SymbolThemeFontFamily}"
+                               FontSize="24"
+                               Foreground="{StaticResource InfoColorBrush}"
+                               VerticalAlignment="Center" HorizontalAlignment="Center" />
+                </Border>
+                <StackPanel Margin="12,0,0,0">
+                    <TextBlock Text="Symbol Subscriptions"
+                               Style="{StaticResource PageTitleStyle}" />
+                    <TextBlock Text="Manage monitored symbols, bulk subscription actions, and exchange-level feed coverage."
+                               Style="{StaticResource CardDescriptionStyle}" />
+                </StackPanel>
+                <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                        CornerRadius="999"
+                        Padding="8,4"
+                        VerticalAlignment="Center"
+                        Margin="12,0,0,0">
+                    <TextBlock x:Name="SymbolCountText" Text="0 symbols"
+                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                               FontSize="12" />
+                </Border>
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <Button Style="{StaticResource SecondaryButtonStyle}"
+                        Click="ImportCsv_Click"
+                        Margin="0,0,8,0">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{StaticResource IconImport}"
+                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="14"
+                                   VerticalAlignment="Center" />
+                        <TextBlock Text="Import CSV" Margin="8,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+                <Button Style="{StaticResource SecondaryButtonStyle}"
+                        Click="ExportCsv_Click">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{StaticResource IconExport}"
+                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="14"
+                                   VerticalAlignment="Center" />
+                        <TextBlock Text="Export" Margin="8,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Grid>
+        </Border>
+
+        <!-- Search and Filters Bar -->
+        <Border Grid.Row="1" Style="{StaticResource CardStyle}" Margin="0,0,0,16" Padding="16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBox x:Name="SymbolSearchBox"
+                         Grid.Column="0"
+                         Style="{StaticResource FormTextBoxStyle}"
+                         TextChanged="SymbolSearch_TextChanged">
+                    <TextBox.Template>
+                        <ControlTemplate TargetType="TextBox">
+                            <Border Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="6">
+                                <Grid>
+                                    <TextBlock Text="Search or add symbols (e.g., AAPL, MSFT)..."
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                               VerticalAlignment="Center"
+                                               Margin="12,0,0,0"
+                                               Visibility="{Binding Text, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource StringToVisibilityConverter}}" />
+                                    <ScrollViewer x:Name="PART_ContentHost" Margin="12,8" />
+                                </Grid>
+                            </Border>
+                        </ControlTemplate>
+                    </TextBox.Template>
+                </TextBox>
+
+                <ComboBox x:Name="FilterCombo"
+                          Grid.Column="1"
+                          Style="{StaticResource FormComboBoxStyle}"
+                          Width="150"
+                          Margin="16,0,0,0"
+                          SelectionChanged="Filter_Changed">
+                    <ComboBoxItem Content="All Symbols" Tag="All" IsSelected="True" />
+                    <ComboBoxItem Content="Trades Only" Tag="Trades" />
+                    <ComboBoxItem Content="Depth Only" Tag="Depth" />
+                    <ComboBoxItem Content="Trades + Depth" Tag="Both" />
+                </ComboBox>
+
+                <ComboBox x:Name="ExchangeFilterCombo"
+                          Grid.Column="2"
+                          Style="{StaticResource FormComboBoxStyle}"
+                          Width="130"
+                          Margin="16,0,0,0"
+                          SelectionChanged="Filter_Changed">
+                    <ComboBoxItem Content="All Exchanges" Tag="All" IsSelected="True" />
+                    <ComboBoxItem Content="SMART" Tag="SMART" />
+                    <ComboBoxItem Content="NYSE" Tag="NYSE" />
+                    <ComboBoxItem Content="NASDAQ" Tag="NASDAQ" />
+                    <ComboBoxItem Content="ARCA" Tag="ARCA" />
+                </ComboBox>
+
+                <Button Grid.Column="3"
+                        Content="Clear Filters"
+                        Style="{StaticResource GhostButtonStyle}"
+                        Click="ClearFilters_Click"
+                        Margin="16,0,0,0" />
+            </Grid>
+        </Border>
+
+        <!-- Main Content -->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="380" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Symbols List -->
+            <Border Grid.Column="0" Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <!-- Bulk Actions Bar -->
+                    <Border Grid.Row="0" Background="{StaticResource PremiumPanelBrush}"
+                            BorderBrush="{StaticResource ConsoleBorderBrush}" BorderThickness="1"
+                            CornerRadius="12" Padding="12" Margin="0,0,0,12">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <CheckBox x:Name="SelectAllCheck"
+                                      Content="Select All"
+                                      Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                      Checked="SelectAll_Changed"
+                                      Unchecked="SelectAll_Changed" />
+
+                            <TextBlock x:Name="SelectionCountText"
+                                       Grid.Column="1"
+                                       Text="0 selected"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       FontSize="12"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center" />
+
+                            <StackPanel Grid.Column="2" Orientation="Horizontal">
+                                <Button x:Name="BulkEnableTradesBtn"
+                                        Content="Enable Trades"
+                                        Style="{StaticResource GhostButtonStyle}"
+                                        Click="BulkEnableTrades_Click"
+                                        IsEnabled="False"
+                                        Margin="0,0,8,0" />
+                                <Button x:Name="BulkEnableDepthBtn"
+                                        Content="Enable Depth"
+                                        Style="{StaticResource GhostButtonStyle}"
+                                        Click="BulkEnableDepth_Click"
+                                        IsEnabled="False"
+                                        Margin="0,0,8,0" />
+                                <Button x:Name="BulkDeleteBtn"
+                                        Content="Delete Selected"
+                                        Style="{StaticResource GhostButtonStyle}"
+                                        Click="BulkDelete_Click"
+                                        IsEnabled="False" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- List Header -->
+                    <Grid Grid.Row="1" Margin="0,0,0,4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="40" />
+                            <ColumnDefinition Width="100" />
+                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition Width="60" />
+                            <ColumnDefinition Width="100" />
+                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Column="1" Text="Symbol" FontWeight="SemiBold"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
+                        <TextBlock Grid.Column="2" Text="Trades" FontWeight="SemiBold"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
+                        <TextBlock Grid.Column="3" Text="Depth" FontWeight="SemiBold"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
+                        <TextBlock Grid.Column="4" Text="Levels" FontWeight="SemiBold"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
+                        <TextBlock Grid.Column="5" Text="Exchange" FontWeight="SemiBold"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
+                        <TextBlock Grid.Column="6" Text="Status" FontWeight="SemiBold"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
+                        <TextBlock Grid.Column="7" Text="Local Symbol" FontWeight="SemiBold"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
+                    </Grid>
+
+                    <ListView x:Name="SymbolsListView"
+                              Grid.Row="2"
+                              Background="Transparent"
+                              BorderThickness="0"
+                              SelectionChanged="SymbolsListView_SelectionChanged">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,4">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="40" />
+                                        <ColumnDefinition Width="100" />
+                                        <ColumnDefinition Width="80" />
+                                        <ColumnDefinition Width="80" />
+                                        <ColumnDefinition Width="60" />
+                                        <ColumnDefinition Width="100" />
+                                        <ColumnDefinition Width="80" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <CheckBox Grid.Column="0"
+                                              IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                              Checked="SymbolCheckbox_Changed"
+                                              Unchecked="SymbolCheckbox_Changed" />
+                                    <TextBlock Grid.Column="1" Text="{Binding Symbol}"
+                                               FontWeight="SemiBold"
+                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                               VerticalAlignment="Center" />
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Ellipse Width="8" Height="8" Fill="{Binding TradesStatusColor}" Margin="0,0,4,0" />
+                                        <TextBlock Text="{Binding TradesText}"
+                                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Ellipse Width="8" Height="8" Fill="{Binding DepthStatusColor}" Margin="0,0,4,0" />
+                                        <TextBlock Text="{Binding DepthText}"
+                                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+                                    </StackPanel>
+                                    <TextBlock Grid.Column="4" Text="{Binding DepthLevels}"
+                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                               VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="5" Text="{Binding Exchange}"
+                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                               VerticalAlignment="Center" />
+                                    <Border Grid.Column="6" Background="{Binding StatusBackground}"
+                                            CornerRadius="4" Padding="6,2" VerticalAlignment="Center"
+                                            HorizontalAlignment="Left">
+                                        <TextBlock Text="{Binding StatusText}" FontSize="11"
+                                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                    </Border>
+                                    <TextBlock Grid.Column="7" Text="{Binding LocalSymbol}"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                               VerticalAlignment="Center" />
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </Grid>
+            </Border>
+
+            <!-- Right Panel - Add/Edit & Templates -->
+            <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <!-- Add/Edit Symbol Panel -->
+                    <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
+                        <StackPanel>
+                            <TextBlock x:Name="FormTitle" Text="Add Symbol"
+                                       Style="{StaticResource CardHeaderStyle}"
+                                       Margin="0,0,0,16" />
+
+                            <StackPanel Margin="0,0,0,12">
+                                <TextBlock Text="Symbol *" Style="{StaticResource FormLabelStyle}" Margin="0,0,0,4" />
+                                <TextBox x:Name="SymbolBox"
+                                         Style="{StaticResource FormTextBoxStyle}" />
+                            </StackPanel>
+
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                                    <TextBlock Text="Trades" Style="{StaticResource FormLabelStyle}" Margin="0,0,0,4" />
+                                    <CheckBox x:Name="SubscribeTradesToggle"
+                                              Content="Subscribe"
+                                              IsChecked="True"
+                                              Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="Depth" Style="{StaticResource FormLabelStyle}" Margin="0,0,0,4" />
+                                    <CheckBox x:Name="SubscribeDepthToggle"
+                                              Content="Subscribe"
+                                              Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+                                </StackPanel>
+                            </Grid>
+
+                            <StackPanel Margin="0,0,0,12">
+                                <TextBlock Text="Depth Levels" Style="{StaticResource FormLabelStyle}" Margin="0,0,0,4" />
+                                <TextBox x:Name="DepthLevelsBox"
+                                         Style="{StaticResource FormTextBoxStyle}"
+                                         Text="10"
+                                         Width="100"
+                                         HorizontalAlignment="Left" />
+                            </StackPanel>
+
+                            <StackPanel Margin="0,0,0,12">
+                                <TextBlock Text="Security Type" Style="{StaticResource FormLabelStyle}" Margin="0,0,0,4" />
+                                <ComboBox x:Name="SecurityTypeCombo"
+                                          Style="{StaticResource FormComboBoxStyle}"
+                                          SelectionChanged="SecurityType_Changed">
+                                    <ComboBoxItem Content="Stock (STK)" Tag="STK" IsSelected="True" />
+                                    <ComboBoxItem Content="ETF (ETF)" Tag="ETF" />
+                                    <ComboBoxItem Content="Equity Option (OPT)" Tag="OPT" />
+                                    <ComboBoxItem Content="Index Option (IND_OPT)" Tag="IND_OPT" />
+                                    <ComboBoxItem Content="Futures Option (FOP)" Tag="FOP" />
+                                    <ComboBoxItem Content="Future (FUT)" Tag="FUT" />
+                                    <ComboBoxItem Content="Single Stock Future (SSF)" Tag="SSF" />
+                                    <ComboBoxItem Content="Index (IND)" Tag="IND" />
+                                    <ComboBoxItem Content="Forex / Cash (CASH)" Tag="CASH" />
+                                    <ComboBoxItem Content="Commodity (CMDTY)" Tag="CMDTY" />
+                                    <ComboBoxItem Content="Crypto (CRYPTO)" Tag="CRYPTO" />
+                                    <ComboBoxItem Content="CFD (CFD)" Tag="CFD" />
+                                    <ComboBoxItem Content="Bond (BOND)" Tag="BOND" />
+                                    <ComboBoxItem Content="Fund (FUND)" Tag="FUND" />
+                                    <ComboBoxItem Content="Warrant (WAR)" Tag="WAR" />
+                                    <ComboBoxItem Content="Combination / Spread (BAG)" Tag="BAG" />
+                                    <ComboBoxItem Content="Margin Product (MARGIN)" Tag="MARGIN" />
+                                </ComboBox>
+                            </StackPanel>
+
+                            <Expander x:Name="OptionsExpander"
+                                      Header="Options Contract Details"
+                                      Visibility="Collapsed"
+                                      Margin="0,0,0,16">
+                                <StackPanel Margin="0,12,0,0">
+                                    <StackPanel Margin="0,0,0,12">
+                                        <TextBlock Text="Strike Price" Style="{StaticResource FormLabelStyle}" Margin="0,0,0,4" />
+                                        <TextBox x:Name="StrikeBox"
+                                                 Style="{StaticResource FormTextBoxStyle}" />
+                                    </StackPanel>
+
+                                    <StackPanel Margin="0,0,0,12">
+                                        <TextBlock Text="Right" Style="{StaticResource FormLabelStyle}" Margin="0,0,0,4" />
+                                        <ComboBox x:Name="RightCombo"
+                                                  Style="{StaticResource FormComboBoxStyle}">
+                                            <ComboBoxItem Content="Call" Tag="Call" IsSelected="True" />
+                                            <ComboBoxItem Content="Put" Tag="Put" />
+                                        </ComboBox>
+                                    </StackPanel>
+
+                                    <StackPanel Margin="0,0,0,12">
+                                        <TextBlock Text="Expiration Date" Style="{StaticResource FormLabelStyle}" Margin="0,0,0,4" />
+                                        <DatePicker x:Name="ExpirationPicker" />
+                                    </StackPanel>
+
+                                    <StackPanel Margin="0,0,0,12">
+                                        <TextBlock Text="Option Style" Style="{StaticResource FormLabelStyle}" Margin="0,0,0,4" />
+                                        <ComboBox x:Name="OptionStyleCombo"
+                                                  Style="{StaticResource FormComboBoxStyle}">
+                                            <ComboBoxItem Content="American" Tag="American" IsSelected="True" />
+                                            <ComboBoxItem Content="European" Tag="European" />
+                                        </ComboBox>
+                                    </StackPanel>
+
+                                    <StackPanel>
+                                        <TextBlock Text="Multiplier" Style="{StaticResource FormLabelStyle}" Margin="0,0,0,4" />
+                                        <TextBox x:Name="MultiplierBox"
+                                                 Style="{StaticResource FormTextBoxStyle}"
+                                                 Text="100"
+                                                 Width="100"
+                                                 HorizontalAlignment="Left" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Expander>
+
+                            <Expander Header="IB-Specific Options" Margin="0,0,0,16">
+                                <StackPanel Margin="0,12,0,0">
+                                    <StackPanel Margin="0,0,0,12">
+                                        <TextBlock Text="Exchange" Style="{StaticResource FormLabelStyle}" Margin="0,0,0,4" />
+                                        <TextBox x:Name="ExchangeBox"
+                                                 Style="{StaticResource FormTextBoxStyle}"
+                                                 Text="SMART" />
+                                    </StackPanel>
+
+                                    <StackPanel Margin="0,0,0,12">
+                                        <TextBlock Text="Primary Exchange" Style="{StaticResource FormLabelStyle}" Margin="0,0,0,4" />
+                                        <TextBox x:Name="PrimaryExchangeBox"
+                                                 Style="{StaticResource FormTextBoxStyle}" />
+                                    </StackPanel>
+
+                                    <StackPanel>
+                                        <TextBlock Text="Local Symbol" Style="{StaticResource FormLabelStyle}" Margin="0,0,0,4" />
+                                        <TextBox x:Name="LocalSymbolBox"
+                                                 Style="{StaticResource FormTextBoxStyle}" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Expander>
+
+                            <StackPanel Orientation="Horizontal">
+                                <Button x:Name="SaveSymbolButton"
+                                        Content="Add Symbol"
+                                        Style="{StaticResource PrimaryButtonStyle}"
+                                        Click="SaveSymbol_Click"
+                                        Margin="0,0,8,0" />
+                                <Button x:Name="DeleteSymbolButton"
+                                        Content="Delete"
+                                        Style="{StaticResource GhostButtonStyle}"
+                                        Visibility="Collapsed"
+                                        Click="DeleteSymbol_Click"
+                                        Margin="0,0,8,0" />
+                                <Button x:Name="ClearButton"
+                                        Content="Clear"
+                                        Style="{StaticResource GhostButtonStyle}"
+                                        Click="ClearForm_Click" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Subscription Templates -->
+                    <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                                <TextBlock Text="{StaticResource IconChart}"
+                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                           FontSize="16"
+                                           Foreground="{StaticResource InfoColorBrush}"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Text="Subscription Templates"
+                                           Style="{StaticResource CardHeaderStyle}"
+                                           Margin="8,0,0,0" />
+                            </StackPanel>
+
+                            <TextBlock Text="Quickly add popular symbol groups"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       FontSize="12"
+                                       Margin="0,0,0,12" />
+
+                            <Button Style="{StaticResource GhostButtonStyle}"
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Left"
+                                    Click="AddTemplate_Click"
+                                    Tag="FAANG"
+                                    Margin="0,0,0,8">
+                                <Grid Width="300">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="FAANG" FontWeight="SemiBold"
+                                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                        <TextBlock Text="META, AAPL, AMZN, NFLX, GOOGL"
+                                                   FontSize="11"
+                                                   Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                    </StackPanel>
+                                    <TextBlock Grid.Column="1" Text="5 symbols"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                               FontSize="11"
+                                               VerticalAlignment="Center" />
+                                </Grid>
+                            </Button>
+
+                            <Button Style="{StaticResource GhostButtonStyle}"
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Left"
+                                    Click="AddTemplate_Click"
+                                    Tag="MagnificentSeven"
+                                    Margin="0,0,0,8">
+                                <Grid Width="300">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="Magnificent 7" FontWeight="SemiBold"
+                                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                        <TextBlock Text="AAPL, MSFT, GOOGL, AMZN, NVDA, META, TSLA"
+                                                   FontSize="11"
+                                                   Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                    </StackPanel>
+                                    <TextBlock Grid.Column="1" Text="7 symbols"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                               FontSize="11"
+                                               VerticalAlignment="Center" />
+                                </Grid>
+                            </Button>
+
+                            <Button Style="{StaticResource GhostButtonStyle}"
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Left"
+                                    Click="AddTemplate_Click"
+                                    Tag="MajorETFs"
+                                    Margin="0,0,0,8">
+                                <Grid Width="300">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="Major ETFs" FontWeight="SemiBold"
+                                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                        <TextBlock Text="SPY, QQQ, IWM, DIA, VTI"
+                                                   FontSize="11"
+                                                   Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                    </StackPanel>
+                                    <TextBlock Grid.Column="1" Text="5 symbols"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                               FontSize="11"
+                                               VerticalAlignment="Center" />
+                                </Grid>
+                            </Button>
+
+                            <Button Style="{StaticResource GhostButtonStyle}"
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Left"
+                                    Click="AddTemplate_Click"
+                                    Tag="Semiconductors">
+                                <Grid Width="300">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="Semiconductors" FontWeight="SemiBold"
+                                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                        <TextBlock Text="NVDA, AMD, INTC, TSM, AVGO, QCOM"
+                                                   FontSize="11"
+                                                   Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                    </StackPanel>
+                                    <TextBlock Grid.Column="1" Text="6 symbols"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                               FontSize="11"
+                                               VerticalAlignment="Center" />
+                                </Grid>
+                            </Button>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Watchlists -->
+                    <Border Style="{StaticResource CardStyle}">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                <TextBlock Text="{StaticResource IconWatchlist}"
+                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                           FontSize="16"
+                                           Foreground="{StaticResource InfoColorBrush}"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Text="Watchlists"
+                                           Style="{StaticResource CardHeaderStyle}"
+                                           Margin="8,0,0,0" />
+                            </StackPanel>
+
+                            <ListView x:Name="WatchlistsView"
+                                      Background="Transparent"
+                                      BorderThickness="0"
+                                      MaxHeight="200">
+                                <ListView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,4">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{Binding Name}"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                                       VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="1" Text="{Binding SymbolCount}"
+                                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                       FontSize="11"
+                                                       VerticalAlignment="Center"
+                                                       Margin="0,0,8,0" />
+                                            <Button Grid.Column="2"
+                                                    Content="Load"
+                                                    Style="{StaticResource GhostButtonStyle}"
+                                                    FontSize="11"
+                                                    Padding="8,4"
+                                                    Click="LoadWatchlist_Click"
+                                                    Tag="{Binding Name}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+
+                            <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                                <Button Content="Save as Watchlist"
+                                        Style="{StaticResource SecondaryButtonStyle}"
+                                        Click="SaveWatchlist_Click"
+                                        Margin="0,0,8,0" />
+                                <Button Content="Manage"
+                                        Style="{StaticResource GhostButtonStyle}"
+                                        Click="ManageWatchlists_Click" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+
+        <!-- Bottom Actions -->
+        <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,16,0,0">
+            <Button Content="Refresh List"
+                    Style="{StaticResource SecondaryButtonStyle}"
+                    Click="RefreshList_Click"
+                    Margin="0,0,12,0" />
+            <TextBlock x:Name="LastRefreshText"
+                       Text="Last refreshed: just now"
+                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                       FontSize="12"
+                       VerticalAlignment="Center" />
+        </StackPanel>
+    </Grid>
+</Page>

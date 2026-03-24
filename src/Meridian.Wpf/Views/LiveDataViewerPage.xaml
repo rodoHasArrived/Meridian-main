@@ -1,0 +1,326 @@
+<Page x:Class="Meridian.Wpf.Views.LiveDataViewerPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      mc:Ignorable="d"
+      Background="{DynamicResource ShellWindowBackgroundBrush}"
+      Loaded="OnPageLoaded"
+      AutomationProperties.Name="Live Data Viewer">
+
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </Page.Resources>
+
+    <Grid Background="{DynamicResource ShellWindowBackgroundBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Style="{StaticResource SectionCardStyle}" Margin="24,24,24,16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0">
+                    <StackPanel Orientation="Horizontal">
+                        <Border Width="44" Height="44" CornerRadius="14"
+                                Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                                BorderBrush="{StaticResource InfoColorBrush}" BorderThickness="1">
+                            <TextBlock Text="&#xE7F4;" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                       FontSize="24" Foreground="{StaticResource InfoColorBrush}"
+                                       VerticalAlignment="Center" HorizontalAlignment="Center" />
+                        </Border>
+                        <StackPanel Margin="12,0,0,0">
+                            <TextBlock Text="Live Data Viewer" Style="{StaticResource PageTitleStyle}" />
+                            <TextBlock Text="Streaming monitor for quotes, trades, and connection posture."
+                                       Style="{StaticResource CardDescriptionStyle}" />
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border x:Name="ConnectionStatusBorder" Style="{StaticResource NeutralBadgeStyle}" Margin="0,0,16,0"
+                            Background="{StaticResource ConsoleBackgroundMediumBrush}">
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse x:Name="ConnectionIndicator" Width="8" Height="8"
+                                     Fill="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="ConnectionStatusText" Text="{Binding ConnectionStatusText}" Margin="8,0,0,0"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                    <Button Content="Strategy Runs" Click="OpenStrategyRuns_Click"
+                            Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,0"/>
+                    <Button x:Name="PauseResumeButton" Content="{Binding PauseResumeButtonText}" Click="PauseResume_Click"
+                            Style="{StaticResource PrimaryButtonStyle}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Symbol Selection and Stats -->
+        <Grid Grid.Row="1" Margin="24,0,24,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Symbol Selector -->
+            <StackPanel Grid.Column="0" Orientation="Horizontal">
+                <TextBlock Text="Symbol:" VerticalAlignment="Center"
+                           Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,8,0"/>
+                <ComboBox x:Name="SymbolComboBox" Width="150" SelectionChanged="Symbol_SelectionChanged"
+                          Background="{DynamicResource ConsoleBackgroundMediumBrush}"
+                          Foreground="{DynamicResource ConsoleTextBrush}"
+                          BorderThickness="1" Padding="8,6"/>
+                <Button Content="Add Symbol" Click="AddSymbol_Click" Margin="8,0,0,0"
+                        Style="{StaticResource GhostButtonStyle}" Padding="10,6"/>
+            </StackPanel>
+
+            <!-- Live Stats -->
+            <StackPanel Grid.Column="2" Orientation="Horizontal">
+                <Border Style="{StaticResource CompactCardStyle}" Padding="12,8" Margin="0,0,12,0">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Events/sec:" Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   VerticalAlignment="Center"/>
+                        <TextBlock x:Name="EventsPerSecText" Text="{Binding EventRateText}" FontWeight="Bold" Margin="8,0,0,0"
+                                   Foreground="{StaticResource SuccessColorBrush}" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource CompactCardStyle}" Padding="12,8" Margin="0,0,12,0">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Total:" Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   VerticalAlignment="Center"/>
+                        <TextBlock x:Name="TotalEventsText" Text="{Binding TotalEventsText}" FontWeight="Bold" Margin="8,0,0,0"
+                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+                <Button Content="Clear" Click="Clear_Click" Style="{StaticResource GhostButtonStyle}" Padding="12,6"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Main Content Area -->
+        <Grid Grid.Row="2" Margin="24,0,24,24">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="320"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Live Data Feed -->
+            <Border Grid.Column="0" Style="{StaticResource CardStyle}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0" Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Live Feed" Style="{StaticResource CardHeaderStyle}"/>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                            <CheckBox x:Name="ShowTradesCheck" Content="Trades" IsChecked="True"
+                                      Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,12,0"/>
+                            <CheckBox x:Name="ShowQuotesCheck" Content="Quotes" IsChecked="True"
+                                      Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,12,0"/>
+                            <CheckBox x:Name="AutoScrollCheck" Content="Auto-scroll" IsChecked="True"
+                                      Foreground="{StaticResource ConsoleTextMutedBrush}"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <ListBox x:Name="LiveFeedList" Grid.Row="1"
+                             Background="Transparent" BorderThickness="0"
+                             VirtualizingPanel.IsVirtualizing="True"
+                             VirtualizingPanel.VirtualizationMode="Recycling"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,2">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="80"/>
+                                        <ColumnDefinition Width="60"/>
+                                        <ColumnDefinition Width="80"/>
+                                        <ColumnDefinition Width="80"/>
+                                        <ColumnDefinition Width="80"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Grid.Column="0" Text="{Binding Timestamp}"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11"
+                                               FontFamily="Consolas"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding Type}"
+                                               Foreground="{Binding TypeColor}" FontSize="11"
+                                               FontWeight="SemiBold" FontFamily="Consolas"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding Symbol}"
+                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" FontSize="11"
+                                               FontFamily="Consolas"/>
+                                    <TextBlock Grid.Column="3" Text="{Binding Price}"
+                                               Foreground="{Binding PriceColor}" FontSize="11"
+                                               FontFamily="Consolas" TextAlignment="Right"/>
+                                    <TextBlock Grid.Column="4" Text="{Binding Size}"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11"
+                                               FontFamily="Consolas" TextAlignment="Right"/>
+                                    <TextBlock Grid.Column="5" Text="{Binding Exchange}"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11"
+                                               FontFamily="Consolas" Margin="8,0,0,0"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <TextBlock x:Name="NoDataText" Grid.Row="1"
+                               Text="No live data. Select a symbol and ensure connection is active."
+                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                               Visibility="{Binding NoDataVisible, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                </Grid>
+            </Border>
+
+            <!-- Right Panel: Quote Card and Recent Trades -->
+            <StackPanel Grid.Column="2">
+                <!-- Quote Card -->
+                <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
+                    <StackPanel>
+                        <TextBlock Text="Current Quote" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,16"/>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Bid -->
+                            <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                                <TextBlock Text="BID" FontSize="10" Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                           HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="BidPriceText" Text="{Binding BidPriceText}" FontSize="24" FontWeight="Bold"
+                                           Foreground="{StaticResource SuccessColorBrush}"
+                                           HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="BidSizeText" Text="{Binding BidSizeText}" FontSize="12"
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                           HorizontalAlignment="Center"/>
+                            </StackPanel>
+
+                            <!-- Ask -->
+                            <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                                <TextBlock Text="ASK" FontSize="10" Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                           HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="AskPriceText" Text="{Binding AskPriceText}" FontSize="24" FontWeight="Bold"
+                                           Foreground="{StaticResource ErrorColorBrush}"
+                                           HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="AskSizeText" Text="{Binding AskSizeText}" FontSize="12"
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                           HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <Border Height="1" Background="{StaticResource ConsoleBorderBrush}" Margin="0,16"/>
+
+                        <!-- Spread and Mid -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                                <TextBlock Text="SPREAD" FontSize="10" Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                           HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="SpreadText" Text="{Binding SpreadText}" FontSize="16" FontWeight="SemiBold"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                           HorizontalAlignment="Center"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                                <TextBlock Text="MID" FontSize="10" Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                           HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="MidPriceText" Text="{Binding MidPriceText}" FontSize="16" FontWeight="SemiBold"
+                                           Foreground="{StaticResource InfoColorBrush}"
+                                           HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <Border Height="1" Background="{StaticResource ConsoleBorderBrush}" Margin="0,16"/>
+
+                        <!-- Last Trade -->
+                        <StackPanel>
+                            <TextBlock Text="LAST TRADE" FontSize="10" Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock x:Name="LastTradeText" Text="{Binding LastTradeText}" FontSize="20" FontWeight="Bold"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock x:Name="LastTradeTimeText" Text="{Binding LastTradeTimeText}" FontSize="11"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Session Stats -->
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="Session Statistics" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,16"/>
+
+                        <Grid Margin="0,0,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="High" Foreground="{StaticResource ConsoleTextMutedBrush}"/>
+                            <TextBlock x:Name="SessionHighText" Grid.Column="1" Text="{Binding SessionHighText}"
+                                       Foreground="{StaticResource SuccessColorBrush}" FontWeight="SemiBold"/>
+                        </Grid>
+
+                        <Grid Margin="0,0,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Low" Foreground="{StaticResource ConsoleTextMutedBrush}"/>
+                            <TextBlock x:Name="SessionLowText" Grid.Column="1" Text="{Binding SessionLowText}"
+                                       Foreground="{StaticResource ErrorColorBrush}" FontWeight="SemiBold"/>
+                        </Grid>
+
+                        <Grid Margin="0,0,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Volume" Foreground="{StaticResource ConsoleTextMutedBrush}"/>
+                            <TextBlock x:Name="SessionVolumeText" Grid.Column="1" Text="{Binding SessionVolumeText}"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" FontWeight="SemiBold"/>
+                        </Grid>
+
+                        <Grid Margin="0,0,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Trade Count" Foreground="{StaticResource ConsoleTextMutedBrush}"/>
+                            <TextBlock x:Name="TradeCountText" Grid.Column="1" Text="{Binding TradeCountText}"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" FontWeight="SemiBold"/>
+                        </Grid>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="VWAP" Foreground="{StaticResource ConsoleTextMutedBrush}"/>
+                            <TextBlock x:Name="VwapText" Grid.Column="1" Text="{Binding VwapText}"
+                                       Foreground="{StaticResource InfoColorBrush}" FontWeight="SemiBold"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Page>

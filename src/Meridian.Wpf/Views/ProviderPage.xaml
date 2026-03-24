@@ -1,0 +1,587 @@
+<Page x:Class="Meridian.Wpf.Views.ProviderPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      mc:Ignorable="d"
+      d:DesignHeight="900" d:DesignWidth="1400"
+      Background="{DynamicResource ConsoleBackgroundDarkBrush}"
+      Loaded="OnPageLoaded"
+      AutomationProperties.Name="Provider">
+
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+    </Page.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24">
+        <StackPanel MaxWidth="1200">
+
+            <!-- Header -->
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                <TextBlock Text="&#xE8B9;" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                           FontSize="28" Foreground="{StaticResource InfoColorBrush}"
+                           VerticalAlignment="Center" />
+                <TextBlock Text="Data Providers" Style="{StaticResource PageTitleStyle}"
+                           Margin="12,0,0,0" VerticalAlignment="Center" />
+            </StackPanel>
+            <TextBlock Text="Configure and manage market data providers for real-time and historical data."
+                       Style="{StaticResource PageSubtitleStyle}" Margin="0,0,0,24" />
+
+            <!-- ================================================ -->
+            <!-- Streaming Providers Card                         -->
+            <!-- ================================================ -->
+            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
+                <StackPanel>
+                    <TextBlock Text="Streaming Providers" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,16" />
+
+                    <!-- Interactive Brokers -->
+                    <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                            CornerRadius="8" Padding="16" Margin="0,0,0,12">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Ellipse Width="10" Height="10"
+                                         Fill="{StaticResource ConsoleTextMutedBrush}"
+                                         VerticalAlignment="Center" Margin="0,0,12,0" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="Interactive Brokers" FontWeight="SemiBold" FontSize="14"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                <TextBlock Text="Full Level 2 depth and tick-by-tick trades. Requires TWS/Gateway."
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                           FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0" />
+                            </StackPanel>
+
+                            <Button Grid.Column="2" Content="Configure"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Click="ConfigureProvider_Click"
+                                    VerticalAlignment="Center" Margin="12,0,0,0" />
+                        </Grid>
+                    </Border>
+
+                    <!-- Alpaca -->
+                    <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                            CornerRadius="8" Padding="16" Margin="0,0,0,12">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Ellipse Width="10" Height="10"
+                                         Fill="{StaticResource ConsoleTextMutedBrush}"
+                                         VerticalAlignment="Center" Margin="0,0,12,0" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="Alpaca" FontWeight="SemiBold" FontSize="14"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                <TextBlock Text="Real-time trades and quotes via WebSocket. Free IEX tier available."
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                           FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0" />
+                            </StackPanel>
+
+                            <Button Grid.Column="2" Content="Configure"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Click="ConfigureProvider_Click"
+                                    VerticalAlignment="Center" Margin="12,0,0,0" />
+                        </Grid>
+                    </Border>
+
+                    <!-- Polygon -->
+                    <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                            CornerRadius="8" Padding="16" Margin="0,0,0,12">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Ellipse Width="10" Height="10"
+                                         Fill="{StaticResource ConsoleTextMutedBrush}"
+                                         VerticalAlignment="Center" Margin="0,0,12,0" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="Polygon" FontWeight="SemiBold" FontSize="14"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                <TextBlock Text="Real-time data with circuit breaker and retry patterns."
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                           FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0" />
+                            </StackPanel>
+
+                            <Button Grid.Column="2" Content="Configure"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Click="ConfigureProvider_Click"
+                                    VerticalAlignment="Center" Margin="12,0,0,0" />
+                        </Grid>
+                    </Border>
+
+                    <!-- StockSharp -->
+                    <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                            CornerRadius="8" Padding="16" Margin="0,0,0,12">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Ellipse Width="10" Height="10"
+                                         Fill="{StaticResource ConsoleTextMutedBrush}"
+                                         VerticalAlignment="Center" Margin="0,0,12,0" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="StockSharp" FontWeight="SemiBold" FontSize="14"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                <TextBlock Text="Access to 90+ data sources through unified interface."
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                           FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0" />
+                            </StackPanel>
+
+                            <Button Grid.Column="2" Content="Configure"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Click="ConfigureProvider_Click"
+                                    VerticalAlignment="Center" Margin="12,0,0,0" />
+                        </Grid>
+                    </Border>
+
+                    <!-- NYSE -->
+                    <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                            CornerRadius="8" Padding="16">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Ellipse Width="10" Height="10"
+                                         Fill="{StaticResource ConsoleTextMutedBrush}"
+                                         VerticalAlignment="Center" Margin="0,0,12,0" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="NYSE" FontWeight="SemiBold" FontSize="14"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                <TextBlock Text="Hybrid streaming and historical data source."
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                           FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0" />
+                            </StackPanel>
+
+                            <Button Grid.Column="2" Content="Configure"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Click="ConfigureProvider_Click"
+                                    VerticalAlignment="Center" Margin="12,0,0,0" />
+                        </Grid>
+                    </Border>
+                </StackPanel>
+            </Border>
+
+            <!-- ================================================ -->
+            <!-- Backfill Provider Settings Card (Phase 1)        -->
+            <!-- ================================================ -->
+            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
+                <StackPanel>
+                    <Grid Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Backfill Provider Settings"
+                                   Style="{StaticResource CardHeaderStyle}" />
+                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                            <Button x:Name="ValidateConfigButton" Content="Validate"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Click="ValidateConfig_Click" Margin="0,0,8,0" />
+                            <Button x:Name="RefreshProvidersButton" Content="Refresh"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Click="RefreshProviders_Click" />
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Validation Status Panel -->
+                    <Border x:Name="ValidationPanel" Visibility="Collapsed"
+                            CornerRadius="6" Padding="12" Margin="0,0,0,16">
+                        <TextBlock x:Name="ValidationText" TextWrapping="Wrap" FontSize="12" />
+                    </Border>
+
+                    <!-- Column Headers -->
+                    <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                            CornerRadius="4" Padding="12,8" Margin="0,0,0,4">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="50" />
+                                <ColumnDefinition Width="140" />
+                                <ColumnDefinition Width="70" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="100" />
+                                <ColumnDefinition Width="100" />
+                                <ColumnDefinition Width="80" />
+                                <ColumnDefinition Width="100" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Column="0" Text="On" FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}" FontSize="12" />
+                            <TextBlock Grid.Column="1" Text="Provider" FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}" FontSize="12" />
+                            <TextBlock Grid.Column="2" Text="Priority" FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}" FontSize="12" />
+                            <TextBlock Grid.Column="3" Text="Data Types" FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}" FontSize="12" />
+                            <TextBlock Grid.Column="4" Text="Rate/min" FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}" FontSize="12" />
+                            <TextBlock Grid.Column="5" Text="Rate/hr" FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}" FontSize="12" />
+                            <TextBlock Grid.Column="6" Text="Source" FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}" FontSize="12" />
+                            <TextBlock Grid.Column="7" Text="Actions" FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}" FontSize="12" />
+                        </Grid>
+                    </Border>
+
+                    <!-- Dynamic Provider Rows -->
+                    <ItemsControl x:Name="ProviderSettingsList">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Padding="12,10" BorderThickness="0,0,0,1"
+                                        BorderBrush="{StaticResource ConsoleBorderBrush}">
+                                    <StackPanel>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="50" />
+                                                <ColumnDefinition Width="140" />
+                                                <ColumnDefinition Width="70" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="100" />
+                                                <ColumnDefinition Width="100" />
+                                                <ColumnDefinition Width="80" />
+                                                <ColumnDefinition Width="100" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <!-- Enabled Toggle -->
+                                            <CheckBox Grid.Column="0"
+                                                      IsChecked="{Binding IsEnabled, Mode=TwoWay}"
+                                                      VerticalAlignment="Center"
+                                                      Checked="ProviderToggle_Changed"
+                                                      Unchecked="ProviderToggle_Changed" />
+
+                                            <!-- Provider Name -->
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold"
+                                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" FontSize="13" />
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="{Binding ProviderId}"
+                                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                               FontSize="10" />
+                                                    <TextBlock Text=" (free)" FontSize="10"
+                                                               Foreground="{StaticResource SuccessColorBrush}"
+                                                               Visibility="{Binding FreeTier, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                                </StackPanel>
+                                            </StackPanel>
+
+                                            <!-- Priority -->
+                                            <TextBox Grid.Column="2"
+                                                     Text="{Binding Priority, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                                     VerticalAlignment="Center" HorizontalAlignment="Left"
+                                                     Width="50" FontSize="12"
+                                                     LostFocus="PriorityField_LostFocus" />
+
+                                            <!-- Data Types -->
+                                            <TextBlock Grid.Column="3"
+                                                       Text="{Binding DataTypes}"
+                                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                       VerticalAlignment="Center" FontSize="12"
+                                                       TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
+
+                                            <!-- Rate Limit Per Minute -->
+                                            <TextBox Grid.Column="4"
+                                                     Text="{Binding RateLimitPerMinute, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                                     VerticalAlignment="Center" HorizontalAlignment="Left"
+                                                     Width="70" FontSize="12"
+                                                     LostFocus="RateLimitField_LostFocus" />
+
+                                            <!-- Rate Limit Per Hour -->
+                                            <TextBox Grid.Column="5"
+                                                     Text="{Binding RateLimitPerHour, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                                     VerticalAlignment="Center" HorizontalAlignment="Left"
+                                                     Width="70" FontSize="12"
+                                                     LostFocus="RateLimitField_LostFocus" />
+
+                                            <!-- Config Source Badge -->
+                                            <Border Grid.Column="6"
+                                                    Background="{Binding ConfigSourceBrush}"
+                                                    CornerRadius="4" Padding="6,2"
+                                                    HorizontalAlignment="Left" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding ConfigSource}"
+                                                           FontSize="10" FontWeight="SemiBold"
+                                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                            </Border>
+
+                                            <!-- Reset Button -->
+                                            <Button Grid.Column="7" Content="Reset"
+                                                    Style="{StaticResource SecondaryButtonStyle}"
+                                                    Tag="{Binding ProviderId}"
+                                                    Click="ResetProvider_Click"
+                                                    VerticalAlignment="Center"
+                                                    FontSize="11" Padding="8,3" />
+                                        </Grid>
+
+                                        <!-- Inline validation warning (shown below the row) -->
+                                        <TextBlock Text="{Binding InlineWarning}"
+                                                   Foreground="{StaticResource WarningColorBrush}"
+                                                   FontSize="11" Margin="50,2,0,0"
+                                                   TextWrapping="Wrap"
+                                                   Visibility="{Binding HasInlineWarning, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <!-- ================================================ -->
+            <!-- Fallback Chain Preview (Phase 2)                 -->
+            <!-- ================================================ -->
+            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
+                <StackPanel>
+                    <TextBlock Text="Fallback Chain Preview" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,8" />
+                    <TextBlock Text="Shows the effective provider order used during backfill operations. Only enabled providers are included."
+                               Foreground="{StaticResource ConsoleTextSecondaryBrush}" FontSize="12"
+                               TextWrapping="Wrap" Margin="0,0,0,16" />
+
+                    <ItemsControl x:Name="FallbackChainList">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                                        CornerRadius="6" Padding="12,8" Margin="0,0,0,6">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="40" />
+                                            <ColumnDefinition Width="130" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Priority badge -->
+                                        <Border Grid.Column="0" Background="{StaticResource ConsoleAccentBlueAlpha10Brush}"
+                                                CornerRadius="4" Padding="8,2" HorizontalAlignment="Left">
+                                            <TextBlock Text="{Binding Priority}" FontWeight="Bold"
+                                                       Foreground="{StaticResource InfoColorBrush}"
+                                                       HorizontalAlignment="Center" FontSize="12" />
+                                        </Border>
+
+                                        <!-- Provider name -->
+                                        <TextBlock Grid.Column="1" Text="{Binding DisplayName}" FontWeight="SemiBold"
+                                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                                   VerticalAlignment="Center" FontSize="13" />
+
+                                        <!-- Data types -->
+                                        <TextBlock Grid.Column="2" Text="{Binding DataTypes}"
+                                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                   VerticalAlignment="Center" FontSize="12" />
+
+                                        <!-- Rate limit usage -->
+                                        <TextBlock Grid.Column="3" Text="{Binding RateLimitUsage}"
+                                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                   VerticalAlignment="Center" FontSize="11"
+                                                   Margin="8,0" />
+
+                                        <!-- Config source badge -->
+                                        <Border Grid.Column="4"
+                                                Background="{Binding ConfigSourceBrush}"
+                                                CornerRadius="4" Padding="4,1"
+                                                HorizontalAlignment="Left" VerticalAlignment="Center"
+                                                Margin="4,0">
+                                            <TextBlock Text="{Binding ConfigSource}"
+                                                       FontSize="9" FontWeight="SemiBold"
+                                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                        </Border>
+
+                                        <!-- Health indicator -->
+                                        <StackPanel Grid.Column="5" Orientation="Horizontal" VerticalAlignment="Center"
+                                                    Margin="8,0,0,0">
+                                            <Ellipse Width="8" Height="8"
+                                                     Fill="{Binding HealthBrush}"
+                                                     VerticalAlignment="Center" Margin="0,0,6,0" />
+                                            <TextBlock Text="{Binding HealthStatus}"
+                                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                       FontSize="11" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <TextBlock x:Name="EmptyFallbackChainText"
+                               Text="No enabled providers. Enable at least one provider above."
+                               Foreground="{StaticResource WarningColorBrush}"
+                               FontSize="12" Margin="0,8,0,0" Visibility="Collapsed" />
+                </StackPanel>
+            </Border>
+
+            <!-- ================================================ -->
+            <!-- Dry-Run Backfill Plan (Phase 4)                  -->
+            <!-- ================================================ -->
+            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
+                <StackPanel>
+                    <TextBlock Text="Dry-Run Backfill Plan" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,8" />
+                    <TextBlock Text="Preview which providers will be selected per symbol without executing a backfill."
+                               Foreground="{StaticResource ConsoleTextSecondaryBrush}" FontSize="12"
+                               TextWrapping="Wrap" Margin="0,0,0,12" />
+
+                    <Grid Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBox x:Name="DryRunSymbolsInput"
+                                 Grid.Column="0"
+                                 Text="SPY,AAPL,MSFT"
+                                 VerticalAlignment="Center" FontSize="12" Margin="0,0,8,0" />
+                        <Button x:Name="DryRunButton" Grid.Column="1"
+                                Content="Preview Plan"
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                Click="DryRunPlan_Click" />
+                    </Grid>
+
+                    <!-- Dry-run results -->
+                    <Border x:Name="DryRunResultsPanel" Visibility="Collapsed"
+                            Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                            CornerRadius="6" Padding="12" Margin="0,4,0,0">
+                        <StackPanel>
+                            <ItemsControl x:Name="DryRunResultsList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                            <TextBlock Text="{Binding Symbol}" FontWeight="SemiBold"
+                                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                                       Width="80" FontSize="12" />
+                                            <TextBlock Text="&#x2192;" Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                       Margin="4,0" FontSize="12" />
+                                            <TextBlock Text="{Binding SelectedProvider}" FontWeight="SemiBold"
+                                                       Foreground="{StaticResource InfoColorBrush}" FontSize="12" />
+                                            <TextBlock Text="{Binding FallbackSequence}"
+                                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                       Margin="8,0,0,0" FontSize="11" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <TextBlock x:Name="DryRunWarningsText" Visibility="Collapsed"
+                                       Foreground="{StaticResource WarningColorBrush}"
+                                       FontSize="11" TextWrapping="Wrap" Margin="0,8,0,0" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Border>
+
+            <!-- ================================================ -->
+            <!-- Provider Configuration Card                      -->
+            <!-- ================================================ -->
+            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
+                <StackPanel>
+                    <TextBlock Text="Provider Configuration" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,16" />
+
+                    <Grid Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Active Streaming Provider -->
+                        <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                            <TextBlock Text="Active Streaming Provider"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                       FontSize="12" Margin="0,0,0,8" />
+                            <ComboBox x:Name="ActiveProviderCombo" SelectedIndex="0">
+                                <ComboBoxItem Content="Interactive Brokers" Tag="IB" />
+                                <ComboBoxItem Content="Alpaca" Tag="Alpaca" />
+                                <ComboBoxItem Content="Polygon" Tag="Polygon" />
+                                <ComboBoxItem Content="StockSharp" Tag="StockSharp" />
+                                <ComboBoxItem Content="NYSE" Tag="NYSE" />
+                            </ComboBox>
+                        </StackPanel>
+
+                        <!-- Failover Enabled -->
+                        <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Bottom">
+                            <CheckBox Content="Failover Enabled"
+                                      Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                        </StackPanel>
+                    </Grid>
+
+                    <Button Content="Test All Connections"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            Click="TestAllConnections_Click"
+                            HorizontalAlignment="Left" />
+                </StackPanel>
+            </Border>
+
+            <!-- ================================================ -->
+            <!-- Audit Trail (Phase 4)                            -->
+            <!-- ================================================ -->
+            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
+                <StackPanel>
+                    <TextBlock Text="Configuration Change Log" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,8" />
+                    <TextBlock Text="Recent provider configuration changes made from the desktop application."
+                               Foreground="{StaticResource ConsoleTextSecondaryBrush}" FontSize="12"
+                               TextWrapping="Wrap" Margin="0,0,0,12" />
+
+                    <ItemsControl x:Name="AuditLogList">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Padding="8,6" BorderThickness="0,0,0,1"
+                                        BorderBrush="{StaticResource ConsoleBorderBrush}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="160" />
+                                            <ColumnDefinition Width="120" />
+                                            <ColumnDefinition Width="80" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock Grid.Column="0" Text="{Binding Timestamp}"
+                                                   Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
+                                        <TextBlock Grid.Column="1" Text="{Binding ProviderId}"
+                                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                                   FontWeight="SemiBold" FontSize="11" />
+                                        <TextBlock Grid.Column="2" Text="{Binding Action}"
+                                                   Foreground="{StaticResource InfoColorBrush}" FontSize="11" />
+                                        <TextBlock Grid.Column="3" Text="{Binding Summary}"
+                                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                   FontSize="11" TextTrimming="CharacterEllipsis" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <TextBlock x:Name="EmptyAuditText"
+                               Text="No configuration changes recorded yet."
+                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                               FontSize="12" Margin="0,8,0,0" Visibility="Visible" />
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
+    </ScrollViewer>
+</Page>

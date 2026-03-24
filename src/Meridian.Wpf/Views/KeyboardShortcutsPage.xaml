@@ -1,0 +1,89 @@
+<Page x:Class="Meridian.Wpf.Views.KeyboardShortcutsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      mc:Ignorable="d"
+      d:DesignHeight="900" d:DesignWidth="1200"
+      Background="{DynamicResource ShellWindowBackgroundBrush}"
+      AutomationProperties.Name="Keyboard Shortcuts">
+
+    <Page.Resources>
+        <Style x:Key="KeyboardShortcutStyle" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource PremiumPanelBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderHoverBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="10,5" />
+            <Setter Property="MinWidth" Value="24" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="Margin" Value="0,4" />
+        </Style>
+
+        <Style x:Key="ShortcutKeyTextStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Cascadia Code, Consolas" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+        </Style>
+
+        <Style x:Key="ShortcutDescriptionStyle" TargetType="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Foreground" Value="{StaticResource ConsoleTextSecondaryBrush}" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Margin" Value="12,0,0,0" />
+        </Style>
+
+        <Style x:Key="SectionLabelStyle" TargetType="TextBlock">
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Foreground" Value="{StaticResource InfoColorBrush}" />
+            <Setter Property="Margin" Value="0,0,0,12" />
+        </Style>
+    </Page.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
+        <StackPanel MaxWidth="1200">
+            <!-- Header -->
+            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24">
+                <StackPanel Orientation="Horizontal">
+                    <Border Width="44" Height="44" CornerRadius="14"
+                            Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                            BorderBrush="{StaticResource InfoColorBrush}" BorderThickness="1">
+                        <TextBlock Text="&#xE765;" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="24" Foreground="{StaticResource InfoColorBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                    </Border>
+                    <StackPanel Margin="12,0,0,0">
+                        <TextBlock Text="Keyboard Shortcuts" Style="{StaticResource PageTitleStyle}" />
+                        <TextBlock Text="Operator keymaps, dynamic command bindings, and quick-reference guidance for fast navigation."
+                                   Style="{StaticResource CardDescriptionStyle}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Dynamically populated shortcuts panel -->
+            <StackPanel x:Name="DynamicShortcutsPanel" />
+
+            <!-- Tip footer -->
+            <Border Style="{StaticResource CardStyle}" Margin="0,24,0,0">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="{StaticResource IconInfo}"
+                               FontFamily="{StaticResource SymbolThemeFontFamily}"
+                               FontSize="16"
+                               Foreground="{StaticResource InfoColorBrush}"
+                               VerticalAlignment="Center" />
+                    <TextBlock Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                               VerticalAlignment="Center"
+                               Margin="10,0,0,0"
+                               TextWrapping="Wrap">
+                        <Run FontWeight="SemiBold" Text="Tip:" />
+                        <Run Text=" Press" />
+                        <Run FontFamily="Cascadia Code, Consolas" FontWeight="SemiBold" Text=" Ctrl + ? " />
+                        <Run Text="from any page to open this shortcut reference." />
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

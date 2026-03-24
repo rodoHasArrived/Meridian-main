@@ -1,0 +1,206 @@
+<Page x:Class="Meridian.Wpf.Views.WatchlistPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Background="{DynamicResource ShellWindowBackgroundBrush}"
+      Loaded="OnPageLoaded"
+      AutomationProperties.Name="Watchlist">
+    <Page.Resources>
+        <Style x:Key="WatchlistCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource ConsoleBackgroundMediumBrush}"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="16"/>
+            <Setter Property="Margin" Value="0,0,0,12"/>
+        </Style>
+        <Style x:Key="ActionButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource ConsoleTextMutedBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Foreground" Value="{DynamicResource ConsoleTextBrush}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Page.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
+        <Grid MaxWidth="1200">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Border Grid.Row="0" Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24">
+                <StackPanel Orientation="Horizontal">
+                    <Border Width="44" Height="44" CornerRadius="14"
+                            Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                            BorderBrush="{StaticResource InfoColorBrush}" BorderThickness="1">
+                        <TextBlock Text="&#xE7B3;" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="24" Foreground="{StaticResource InfoColorBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                    </Border>
+                    <StackPanel Margin="12,0,0,0">
+                        <TextBlock Text="Watchlists" Style="{StaticResource PageTitleStyle}" />
+                        <TextBlock Text="Curate symbol sets for operator monitoring, imports, and quick workspace loading."
+                                   Style="{StaticResource CardDescriptionStyle}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Toolbar -->
+            <Border Grid.Row="1" Style="{StaticResource CardStyle}" Margin="0,0,0,16">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Orientation="Horizontal">
+                        <TextBox x:Name="SearchBox" Width="250"
+                                 Background="{DynamicResource ConsoleBackgroundDarkBrush}"
+                                 Foreground="{DynamicResource ConsoleTextBrush}"
+                                 BorderBrush="{DynamicResource ConsoleBorderBrush}"
+                                 Padding="8,6" Margin="0,0,12,0"
+                                 TextChanged="SearchBox_TextChanged">
+                            <TextBox.Style>
+                                <Style TargetType="TextBox">
+                                    <Style.Triggers>
+                                        <Trigger Property="Text" Value="">
+                                            <Setter Property="Background" Value="{DynamicResource ConsoleBackgroundDarkBrush}"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBox.Style>
+                        </TextBox>
+                        <TextBlock Text="Search watchlists..." Foreground="{DynamicResource ConsoleTextMutedBrush}"
+                                   VerticalAlignment="Center" IsHitTestVisible="False" Margin="-230,0,0,0"
+                                   Visibility="{Binding Text.Length, ElementName=SearchBox, Converter={StaticResource IntToVisibilityConverter}, ConverterParameter=Inverse, FallbackValue=Visible}"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                        <Button Content="+ New Watchlist" Click="CreateWatchlist_Click"
+                                Style="{StaticResource PrimaryButtonStyle}" Margin="0,0,8,0"/>
+                        <Button Content="Import" Click="ImportWatchlist_Click"
+                                Style="{StaticResource SecondaryButtonStyle}"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Watchlist Grid -->
+            <ItemsControl x:Name="WatchlistsContainer" Grid.Row="2">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Width="350" Margin="0,0,16,16" CornerRadius="12"
+                                Background="{StaticResource PremiumPanelBrush}" BorderBrush="{StaticResource ConsoleBorderBrush}" BorderThickness="1">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <!-- Header -->
+                                <Border Grid.Row="0" CornerRadius="8,8,0,0" Padding="16,12">
+                                    <Border.Background>
+                                        <SolidColorBrush Color="{Binding ColorValue, FallbackValue=#3A3A4E}"/>
+                                    </Border.Background>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="16"
+                                                       Foreground="White"/>
+                                            <TextBlock Text="{Binding SymbolCount}" Foreground="#CCFFFFFF" FontSize="12"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                            <Button Content="&#xE718;" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                                    Style="{StaticResource ActionButtonStyle}" Foreground="White"
+                                                    Tag="{Binding Id}" Click="PinWatchlist_Click"
+                                                    ToolTip="Pin watchlist"/>
+                                            <Button Content="&#xE712;" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                                    Style="{StaticResource ActionButtonStyle}" Foreground="White"
+                                                    Tag="{Binding Id}" Click="WatchlistMenu_Click"
+                                                    ToolTip="More options"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+
+                                <!-- Symbols Preview -->
+                                <Border Grid.Row="1" Padding="16,12" MinHeight="100">
+                                    <ItemsControl ItemsSource="{Binding SymbolsPreview}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Background="{DynamicResource ConsoleBackgroundDarkBrush}"
+                                                        CornerRadius="4" Padding="8,4" Margin="0,0,6,6">
+                                                    <TextBlock Text="{Binding}" FontFamily="Consolas" FontSize="12"
+                                                               Foreground="{DynamicResource ConsoleTextBrush}"/>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </Border>
+
+                                <!-- Actions -->
+                                <Border Grid.Row="2" BorderThickness="0,1,0,0"
+                                        BorderBrush="{DynamicResource ConsoleBorderBrush}" Padding="12,8">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="{Binding ModifiedText}"
+                                                   Foreground="{DynamicResource ConsoleTextMutedBrush}" FontSize="11"
+                                                   VerticalAlignment="Center"/>
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                            <Button Content="Load" Tag="{Binding Id}" Click="LoadWatchlist_Click"
+                                                    Background="{StaticResource InfoColorBrush}" Foreground="White"
+                                                    BorderThickness="0" Padding="12,4" Margin="0,0,6,0" FontSize="12"/>
+                                            <Button Content="Edit" Tag="{Binding Id}" Click="EditWatchlist_Click"
+                                                    Background="{DynamicResource ConsoleBackgroundDarkBrush}"
+                                                    Foreground="{DynamicResource ConsoleTextBrush}"
+                                                    BorderThickness="0" Padding="12,4" FontSize="12"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <!-- Empty State -->
+            <Border x:Name="EmptyState" Grid.Row="2" Visibility="Collapsed"
+                    Style="{StaticResource CardStyle}" Padding="48" HorizontalAlignment="Center">
+                <StackPanel HorizontalAlignment="Center">
+                    <TextBlock Text="&#xE8F1;" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                               FontSize="48" Foreground="{StaticResource ConsoleTextMutedBrush}"
+                               HorizontalAlignment="Center" Margin="0,0,0,16"/>
+                    <TextBlock Text="No Watchlists Yet" FontSize="18" FontWeight="SemiBold"
+                               Foreground="{DynamicResource ConsoleTextBrush}"
+                               HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                    <TextBlock Text="Create your first watchlist to organize your symbols."
+                               Foreground="{DynamicResource ConsoleTextMutedBrush}"
+                               HorizontalAlignment="Center" Margin="0,0,0,16"/>
+                    <Button Content="Create Watchlist" Click="CreateWatchlist_Click"
+                            Background="{StaticResource SuccessColorBrush}" Foreground="White"
+                            BorderThickness="0" Padding="24,12" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </ScrollViewer>
+</Page>

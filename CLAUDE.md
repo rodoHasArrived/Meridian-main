@@ -25,6 +25,7 @@ Repo-local Codex skills live under `.codex/skills/`. Use them for Meridian-speci
 - Paper trading and strategy execution framework
 - Portfolio performance tracking and multi-run analysis
 - Web dashboard
+- WPF desktop app (Windows) — **code present in `src/Meridian.Wpf/`, not included in active solution build; delayed implementation**
 - QuantConnect Lean Engine integration
 
 ---
@@ -142,7 +143,8 @@ Meridian/
 │   ├── Meridian.Strategies/  # Strategy lifecycle, portfolio tracking
 │   ├── Meridian.Ui.Shared/   # Shared endpoints, HTML templates
 │   ├── Meridian.Ui/          # Web UI entry point
-│   └── Meridian.McpServer/   # MCP server tools
+│   ├── Meridian.McpServer/   # MCP server tools
+│   └── Meridian.Wpf/         # WPF desktop app (Windows) — NOT in active solution; delayed implementation
 ├── tests/                   # 4 test projects, ~4,135 tests
 ├── benchmarks/              # BenchmarkDotNet performance benchmarks
 ├── docs/                    # 214 documentation files

@@ -1,0 +1,224 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <!-- ========================================== -->
+    <!-- ICON GLYPH RESOURCES (Segoe MDL2 Assets) -->
+    <!-- Centralized icon definitions for consistency -->
+    <!-- ========================================== -->
+
+    <!-- Navigation Icons -->
+    <sys:String x:Key="IconHome">&#xE80F;</sys:String>
+    <sys:String x:Key="IconDashboard">&#xE71D;</sys:String>
+    <sys:String x:Key="IconSettings">&#xE713;</sys:String>
+    <sys:String x:Key="IconHelp">&#xE897;</sys:String>
+    <sys:String x:Key="IconMenu">&#xE700;</sys:String>
+    <sys:String x:Key="IconBack">&#xE72B;</sys:String>
+    <sys:String x:Key="IconForward">&#xE72A;</sys:String>
+
+    <!-- Action Icons -->
+    <sys:String x:Key="IconPlay">&#xE768;</sys:String>
+    <sys:String x:Key="IconPause">&#xE769;</sys:String>
+    <sys:String x:Key="IconStop">&#xE71A;</sys:String>
+    <sys:String x:Key="IconRefresh">&#xE72C;</sys:String>
+    <sys:String x:Key="IconSync">&#xE895;</sys:String>
+    <sys:String x:Key="IconAdd">&#xE710;</sys:String>
+    <sys:String x:Key="IconRemove">&#xE738;</sys:String>
+    <sys:String x:Key="IconDelete">&#xE74D;</sys:String>
+    <sys:String x:Key="IconEdit">&#xE70F;</sys:String>
+    <sys:String x:Key="IconSave">&#xE74E;</sys:String>
+    <sys:String x:Key="IconCancel">&#xE711;</sys:String>
+    <sys:String x:Key="IconClose">&#xE8BB;</sys:String>
+    <sys:String x:Key="IconSearch">&#xE721;</sys:String>
+    <sys:String x:Key="IconFilter">&#xE71C;</sys:String>
+    <sys:String x:Key="IconSort">&#xE8CB;</sys:String>
+    <sys:String x:Key="IconDownload">&#xE896;</sys:String>
+    <sys:String x:Key="IconUpload">&#xE898;</sys:String>
+    <sys:String x:Key="IconExport">&#xEDE1;</sys:String>
+    <sys:String x:Key="IconImport">&#xE8B5;</sys:String>
+    <sys:String x:Key="IconCopy">&#xE8C8;</sys:String>
+    <sys:String x:Key="IconPaste">&#xE77F;</sys:String>
+    <sys:String x:Key="IconUndo">&#xE7A7;</sys:String>
+    <sys:String x:Key="IconRedo">&#xE7A6;</sys:String>
+
+    <!-- Status Icons -->
+    <sys:String x:Key="IconSuccess">&#xE73E;</sys:String>
+    <sys:String x:Key="IconCheckmark">&#xE73E;</sys:String>
+    <sys:String x:Key="IconWarning">&#xE7BA;</sys:String>
+    <sys:String x:Key="IconError">&#xE783;</sys:String>
+    <sys:String x:Key="IconInfo">&#xE946;</sys:String>
+    <sys:String x:Key="IconQuestion">&#xE9CE;</sys:String>
+    <sys:String x:Key="IconBlocked">&#xE733;</sys:String>
+    <sys:String x:Key="IconPending">&#xE823;</sys:String>
+
+    <!-- Connection/Network Icons -->
+    <sys:String x:Key="IconConnected">&#xE701;</sys:String>
+    <sys:String x:Key="IconDisconnected">&#xE8CD;</sys:String>
+    <sys:String x:Key="IconNetwork">&#xE968;</sys:String>
+    <sys:String x:Key="IconGlobe">&#xE774;</sys:String>
+    <sys:String x:Key="IconCloud">&#xE753;</sys:String>
+    <sys:String x:Key="IconCloudSync">&#xEE6E;</sys:String>
+
+    <!-- Data/Chart Icons -->
+    <sys:String x:Key="IconChart">&#xE9D9;</sys:String>
+    <sys:String x:Key="IconChartLine">&#xE9D2;</sys:String>
+    <sys:String x:Key="IconTrending">&#xE8A3;</sys:String>
+    <sys:String x:Key="IconDatabase">&#xEE94;</sys:String>
+    <sys:String x:Key="IconTable">&#xE80A;</sys:String>
+    <sys:String x:Key="IconList">&#xE8FD;</sys:String>
+    <sys:String x:Key="IconGrid">&#xE80A;</sys:String>
+
+    <!-- File/Folder Icons -->
+    <sys:String x:Key="IconFolder">&#xE8B7;</sys:String>
+    <sys:String x:Key="IconFolderOpen">&#xE838;</sys:String>
+    <sys:String x:Key="IconFile">&#xE7C3;</sys:String>
+    <sys:String x:Key="IconDocument">&#xE8A5;</sys:String>
+    <sys:String x:Key="IconCode">&#xE943;</sys:String>
+
+    <!-- Time/Calendar Icons -->
+    <sys:String x:Key="IconCalendar">&#xE787;</sys:String>
+    <sys:String x:Key="IconClock">&#xE823;</sys:String>
+    <sys:String x:Key="IconHistory">&#xE81C;</sys:String>
+    <sys:String x:Key="IconSchedule">&#xE8A5;</sys:String>
+    <sys:String x:Key="IconTimer">&#xE916;</sys:String>
+
+    <!-- Market/Finance Icons -->
+    <sys:String x:Key="IconMarket">&#xE9D9;</sys:String>
+    <sys:String x:Key="IconStock">&#xE8A3;</sys:String>
+    <sys:String x:Key="IconMoney">&#xE8C7;</sys:String>
+    <sys:String x:Key="IconWallet">&#xE8C7;</sys:String>
+    <sys:String x:Key="IconExchange">&#xE8AB;</sys:String>
+
+    <!-- Provider Icons -->
+    <sys:String x:Key="IconProvider">&#xE8B9;</sys:String>
+    <sys:String x:Key="IconPlugin">&#xEA86;</sys:String>
+    <sys:String x:Key="IconExtension">&#xE8F1;</sys:String>
+    <sys:String x:Key="IconIntegration">&#xE703;</sys:String>
+
+    <!-- Miscellaneous Icons -->
+    <sys:String x:Key="IconStar">&#xE734;</sys:String>
+    <sys:String x:Key="IconStarFilled">&#xE735;</sys:String>
+    <sys:String x:Key="IconFavorite">&#xE728;</sys:String>
+    <sys:String x:Key="IconPin">&#xE718;</sys:String>
+    <sys:String x:Key="IconUnpin">&#xE77A;</sys:String>
+    <sys:String x:Key="IconLock">&#xE72E;</sys:String>
+    <sys:String x:Key="IconUnlock">&#xE785;</sys:String>
+    <sys:String x:Key="IconEye">&#xE7B3;</sys:String>
+    <sys:String x:Key="IconEyeOff">&#xED1A;</sys:String>
+    <sys:String x:Key="IconExpand">&#xE740;</sys:String>
+    <sys:String x:Key="IconCollapse">&#xE73F;</sys:String>
+    <sys:String x:Key="IconMore">&#xE712;</sys:String>
+    <sys:String x:Key="IconOptions">&#xE10C;</sys:String>
+    <sys:String x:Key="IconAttach">&#xE723;</sys:String>
+    <sys:String x:Key="IconLink">&#xE71B;</sys:String>
+    <sys:String x:Key="IconUnlink">&#xE8A7;</sys:String>
+    <sys:String x:Key="IconShare">&#xE72D;</sys:String>
+    <sys:String x:Key="IconPrint">&#xE749;</sys:String>
+    <sys:String x:Key="IconMail">&#xE715;</sys:String>
+    <sys:String x:Key="IconNotification">&#xE7E7;</sys:String>
+    <sys:String x:Key="IconBell">&#xEA8F;</sys:String>
+    <sys:String x:Key="IconBellOff">&#xE7ED;</sys:String>
+    <sys:String x:Key="IconVolume">&#xE767;</sys:String>
+    <sys:String x:Key="IconMute">&#xE74F;</sys:String>
+    <sys:String x:Key="IconFullscreen">&#xE740;</sys:String>
+    <sys:String x:Key="IconExitFullscreen">&#xE73F;</sys:String>
+    <sys:String x:Key="IconDeveloper">&#xEC7A;</sys:String>
+    <sys:String x:Key="IconTerminal">&#xE756;</sys:String>
+    <sys:String x:Key="IconConsole">&#xE756;</sys:String>
+
+    <!-- Arrows -->
+    <sys:String x:Key="IconArrowUp">&#xE74A;</sys:String>
+    <sys:String x:Key="IconArrowDown">&#xE74B;</sys:String>
+    <sys:String x:Key="IconArrowLeft">&#xE76B;</sys:String>
+    <sys:String x:Key="IconArrowRight">&#xE76C;</sys:String>
+    <sys:String x:Key="IconChevronUp">&#xE70E;</sys:String>
+    <sys:String x:Key="IconChevronDown">&#xE70D;</sys:String>
+    <sys:String x:Key="IconChevronLeft">&#xE76B;</sys:String>
+    <sys:String x:Key="IconChevronRight">&#xE76C;</sys:String>
+
+    <!-- ========================================== -->
+    <!-- ICON FONT FAMILY -->
+    <!-- ========================================== -->
+
+    <FontFamily x:Key="SymbolThemeFontFamily">Segoe MDL2 Assets</FontFamily>
+
+    <!-- ========================================== -->
+    <!-- ICON STYLES (Using TextBlock for WPF) -->
+    <!-- ========================================== -->
+
+    <!-- Small Icon (12px) -->
+    <Style x:Key="IconSmallStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontFamily" Value="{StaticResource SymbolThemeFontFamily}" />
+        <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+    </Style>
+
+    <!-- Medium Icon (16px) - Default -->
+    <Style x:Key="IconMediumStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="FontFamily" Value="{StaticResource SymbolThemeFontFamily}" />
+        <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+    </Style>
+
+    <!-- Large Icon (20px) -->
+    <Style x:Key="IconLargeStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="20" />
+        <Setter Property="FontFamily" Value="{StaticResource SymbolThemeFontFamily}" />
+        <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+    </Style>
+
+    <!-- Extra Large Icon (24px) -->
+    <Style x:Key="IconXLargeStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="24" />
+        <Setter Property="FontFamily" Value="{StaticResource SymbolThemeFontFamily}" />
+        <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+    </Style>
+
+    <!-- Hero Icon (32px) -->
+    <Style x:Key="IconHeroStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="32" />
+        <Setter Property="FontFamily" Value="{StaticResource SymbolThemeFontFamily}" />
+        <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+    </Style>
+
+    <!-- Accent Icon Styles -->
+    <Style x:Key="IconSuccessStyle" TargetType="TextBlock" BasedOn="{StaticResource IconMediumStyle}">
+        <Setter Property="Foreground" Value="{StaticResource SuccessColorBrush}" />
+    </Style>
+
+    <Style x:Key="IconWarningStyle" TargetType="TextBlock" BasedOn="{StaticResource IconMediumStyle}">
+        <Setter Property="Foreground" Value="{StaticResource WarningColorBrush}" />
+    </Style>
+
+    <Style x:Key="IconErrorStyle" TargetType="TextBlock" BasedOn="{StaticResource IconMediumStyle}">
+        <Setter Property="Foreground" Value="{StaticResource ErrorColorBrush}" />
+    </Style>
+
+    <Style x:Key="IconInfoStyle" TargetType="TextBlock" BasedOn="{StaticResource IconMediumStyle}">
+        <Setter Property="Foreground" Value="{StaticResource InfoColorBrush}" />
+    </Style>
+
+    <Style x:Key="IconMutedStyle" TargetType="TextBlock" BasedOn="{StaticResource IconMediumStyle}">
+        <Setter Property="Foreground" Value="{StaticResource ConsoleTextMutedBrush}" />
+    </Style>
+
+    <!-- Empty State Icon -->
+    <Style x:Key="EmptyStateIconStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="48" />
+        <Setter Property="FontFamily" Value="{StaticResource SymbolThemeFontFamily}" />
+        <Setter Property="Foreground" Value="{StaticResource ConsoleTextMutedBrush}" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+    </Style>
+
+</ResourceDictionary>

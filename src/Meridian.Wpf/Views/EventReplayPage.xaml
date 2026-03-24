@@ -1,0 +1,101 @@
+<Page x:Class="Meridian.Wpf.Views.EventReplayPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Background="{DynamicResource ShellWindowBackgroundBrush}"
+      Loaded="OnPageLoaded"
+      AutomationProperties.Name="Event Replay">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
+        <StackPanel MaxWidth="1200">
+            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24">
+                <StackPanel Orientation="Horizontal">
+                    <Border Width="44" Height="44" CornerRadius="14"
+                            Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                            BorderBrush="{StaticResource InfoColorBrush}" BorderThickness="1">
+                        <TextBlock Text="&#xE768;" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="24" Foreground="{StaticResource InfoColorBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                    </Border>
+                    <StackPanel Margin="12,0,0,0">
+                        <TextBlock Text="Event Replay" Style="{StaticResource PageTitleStyle}" />
+                        <TextBlock Text="Replay captured event streams for troubleshooting, validation, and environment checks."
+                                   Style="{StaticResource CardDescriptionStyle}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="360" />
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="Replay Sessions" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12" />
+                        <DataGrid ItemsSource="{Binding Replays}"
+                                  AutoGenerateColumns="False"
+                                  CanUserAddRows="False"
+                                  SelectedItem="{Binding SelectedReplay}">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*" />
+                                <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="120" />
+                                <DataGridTextColumn Header="Last Run" Binding="{Binding LastRun}" Width="160" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="1" Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="Replay Controls" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12" />
+
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="Playback Speed" Style="{StaticResource FormLabelStyle}" />
+                            <ComboBox Style="{StaticResource FormComboBoxStyle}"
+                                      ItemsSource="{Binding Speeds}"
+                                      SelectedItem="{Binding SelectedSpeed}" />
+                        </StackPanel>
+
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="Filter" Style="{StaticResource FormLabelStyle}" />
+                            <TextBox Style="{StaticResource FormTextBoxStyle}"
+                                     Text="{Binding Filter, UpdateSourceTrigger=PropertyChanged}" />
+                        </StackPanel>
+
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="Target Environment" Style="{StaticResource FormLabelStyle}" />
+                            <ComboBox Style="{StaticResource FormComboBoxStyle}"
+                                      ItemsSource="{Binding Targets}"
+                                      SelectedItem="{Binding SelectedTarget}" />
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="Start"
+                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    Click="StartReplay_Click"
+                                    Margin="0,0,8,0"
+                                    IsEnabled="{Binding CanStart}" />
+                            <Button Content="Pause"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Click="PauseReplay_Click"
+                                    Margin="0,0,8,0"
+                                    IsEnabled="{Binding CanPause}" />
+                            <Button Content="Stop"
+                                    Style="{StaticResource GhostButtonStyle}"
+                                    Click="StopReplay_Click"
+                                    IsEnabled="{Binding CanStop}" />
+                        </StackPanel>
+
+                        <TextBlock Text="{Binding StatusMessage}"
+                                   Foreground="{StaticResource InfoColorBrush}"
+                                   Margin="0,12,0,0" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <TextBlock Text="{Binding ValidationSummary}"
+                       Foreground="{StaticResource ErrorColorBrush}"
+                       Margin="0,12,0,0"
+                       Visibility="{Binding ValidationSummary, Converter={StaticResource StringToVisibilityConverter}}" />
+        </StackPanel>
+    </ScrollViewer>
+</Page>
