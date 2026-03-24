@@ -298,11 +298,18 @@ Use these documents together when planning or implementing new work:
 │   │   └── cli
 │   │       └── buildctl.py
 │   └── scripts
-│       └── docs
-│           ├── generate-prompts.py
-│           ├── generate-structure-docs.py
-│           ├── scan-todos.py
-│           └── update-claude-md.py
+│       ├── docs
+│       │   ├── generate-prompts.py
+│       │   ├── generate-structure-docs.py
+│       │   ├── scan-todos.py
+│       │   ├── update-claude-md.py
+│       │   └── validate-golden-path.sh
+│       ├── hooks
+│       │   ├── commit-msg
+│       │   ├── install-hooks.sh
+│       │   └── pre-commit
+│       └── install
+│           └── install.sh
 ├── config
 │   ├── appsettings.sample.json
 │   ├── appsettings.schema.json
@@ -2811,6 +2818,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-387 directories, 2386 files
+389 directories, 2391 files
 ```
 <!-- readme-tree end -->
