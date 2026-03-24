@@ -142,6 +142,41 @@ public sealed class PaperTradingPortfolioTests
         sellEntry.Lines.Should().NotContain(l => l.Account == LedgerAccounts.RealizedLoss);
     }
 
+    [Fact]
+    public void ApplyFill_CoverShort_WithGain_RealisesGainAndPostsLedgerEntries()
+    {
+        var ledger = new Meridian.Ledger.Ledger();
+        var portfolio = new PaperTradingPortfolio(100_000m, ledger);
+        portfolio.ApplyFill(BuildFill("AAPL", OrderSide.Sell, qty: 10, price: 200m));
+        portfolio.ApplyFill(BuildFill("AAPL", OrderSide.Buy, qty: 10, price: 180m));
+
+        portfolio.Cash.Should().Be(100_000m + 2_000m - 1_800m);
+        portfolio.RealisedPnl.Should().Be(200m);
+        portfolio.Positions.Should().NotContainKey("AAPL");
+
+        var coverEntry = ledger.Journal.Single(e => e.Description.Contains("Cover"));
+        coverEntry.Lines.Should().Contain(l => l.Account == LedgerAccounts.ShortSecuritiesPayable("AAPL") && l.Debit == 2_000m);
+        coverEntry.Lines.Should().Contain(l => l.Account == LedgerAccounts.Cash && l.Credit == 1_800m);
+        coverEntry.Lines.Should().Contain(l => l.Account == LedgerAccounts.RealizedGain && l.Credit == 200m);
+    }
+
+    [Fact]
+    public void ApplyFill_CoverShort_WithLoss_RealisesLossAndPostsLedgerEntries()
+    {
+        var ledger = new Meridian.Ledger.Ledger();
+        var portfolio = new PaperTradingPortfolio(100_000m, ledger);
+        portfolio.ApplyFill(BuildFill("AAPL", OrderSide.Sell, qty: 10, price: 200m));
+        portfolio.ApplyFill(BuildFill("AAPL", OrderSide.Buy, qty: 10, price: 220m));
+
+        portfolio.Cash.Should().Be(100_000m + 2_000m - 2_200m);
+        portfolio.RealisedPnl.Should().Be(-200m);
+
+        var coverEntry = ledger.Journal.Single(e => e.Description.Contains("Cover"));
+        coverEntry.Lines.Should().Contain(l => l.Account == LedgerAccounts.ShortSecuritiesPayable("AAPL") && l.Debit == 2_000m);
+        coverEntry.Lines.Should().Contain(l => l.Account == LedgerAccounts.Cash && l.Credit == 2_200m);
+        coverEntry.Lines.Should().Contain(l => l.Account == LedgerAccounts.RealizedLoss && l.Debit == 200m);
+    }
+
     // -------------------------------------------------------------------------
     // UpdateMarketPrice / unrealised P&L
     // -------------------------------------------------------------------------
