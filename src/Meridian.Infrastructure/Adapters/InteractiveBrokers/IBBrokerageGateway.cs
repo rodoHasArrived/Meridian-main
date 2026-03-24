@@ -49,8 +49,7 @@ public sealed class IBBrokerageGateway : IBrokerageGateway
     {
         _options = options ?? throw new ArgumentNullException(nameof(options));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _reportChannel = Channel.CreateBounded<ExecutionReport>(
-            new BoundedChannelOptions(500) { FullMode = BoundedChannelFullMode.Wait });
+        _reportChannel = EventPipelinePolicy.CompletionQueue.CreateChannel<ExecutionReport>();
     }
 
     /// <inheritdoc />
