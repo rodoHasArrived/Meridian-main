@@ -13,6 +13,16 @@ public sealed record LedgerAccountSummary(
     DateTimeOffset? LastPostedAt)
 {
     /// <summary>
+    /// Backward-compatible alias for <see cref="TotalDebits"/>.
+    /// </summary>
+    public decimal Debits => TotalDebits;
+
+    /// <summary>
+    /// Backward-compatible alias for <see cref="TotalCredits"/>.
+    /// </summary>
+    public decimal Credits => TotalCredits;
+
+    /// <summary>
     /// Creates an empty summary for an account with no postings.
     /// </summary>
     public static LedgerAccountSummary Empty(LedgerAccount account)
