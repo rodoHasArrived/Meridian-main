@@ -1,6 +1,6 @@
 # Consolidated diagram artifact workflow
 # Replaces and combines:
-#   - update-diagrams.yml (Graphviz/DOT → SVG)
+#   - update-diagrams.yml (Graphviz/DOT → SVG + PNG)
 #   - update-uml-diagrams.yml (PlantUML → PNG)
 
 name: Update Diagram Artifacts
@@ -10,10 +10,12 @@ on:
     branches:
       - main
     paths:
-      - 'docs/diagrams/*.dot'
+      - 'docs/diagrams/**/*.dot'
       - 'docs/diagrams/uml/*.puml'
       - 'scripts/generate-diagrams.mjs'
       - 'scripts/lib/ui-diagram-generator.mjs'
+      - 'src/Meridian.Wpf/**/*.xaml'
+      - 'src/Meridian.Wpf/**/*.cs'
   workflow_dispatch:
 
 permissions:
@@ -25,7 +27,7 @@ concurrency:
 
 jobs:
   regenerate-diagrams:
-    name: Regenerate SVG diagrams
+    name: Regenerate Graphviz diagrams
     runs-on: ubuntu-latest
 
     steps:
@@ -49,12 +51,11 @@ jobs:
       - name: Install Graphviz
         run: sudo apt-get update && sudo apt-get install -y graphviz
 
-      - name: Regenerate all diagram artifacts
+      - name: Regenerate Graphviz artifacts from DOT
         run: |
           set -euo pipefail
 
-          shopt -s nullglob
-          dot_files=(docs/diagrams/*.dot)
+          mapfile -t dot_files < <(find docs/diagrams -type f -name '*.dot' | sort)
 
           if [ ${#dot_files[@]} -eq 0 ]; then
             echo "No DOT files found in docs/diagrams"
@@ -64,14 +65,16 @@ jobs:
           for file in "${dot_files[@]}"; do
             base="${file%.dot}"
             dot -Tsvg "$file" -o "${base}.svg"
+            dot -Tpng "$file" -o "${base}.png"
             echo "Generated ${base}.svg"
+            echo "Generated ${base}.png"
           done
 
       - name: Commit regenerated diagrams
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
-          commit_message: 'docs(diagrams): regenerate SVG from DOT sources'
-          file_pattern: docs/diagrams/*.dot docs/diagrams/*.svg
+          commit_message: 'docs(diagrams): regenerate Graphviz artifacts from DOT sources'
+          file_pattern: docs/diagrams/**/*.dot docs/diagrams/**/*.svg docs/diagrams/**/*.png
 
   regenerate-uml-diagrams:
     name: Regenerate PNG diagrams from PlantUML sources
