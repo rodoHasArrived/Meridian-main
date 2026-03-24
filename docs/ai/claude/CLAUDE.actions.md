@@ -13,7 +13,7 @@ The project uses 35 GitHub Actions workflows in `.github/workflows/`:
 | Code Quality | `code-quality.yml` | Push/PRs (source changes) | Formatting, analyzers, AI quality suggestions |
 | Security | `security.yml` | PRs to main, weekly (Mon), manual | CodeQL, dependency review, secret detection, SAST |
 | Validate Workflows | `validate-workflows.yml` | PRs (workflow changes), manual | YAML validation, action ref checks, permission audit |
-| Desktop Builds | `desktop-builds.yml` | Push/PRs (desktop paths), manual | WPF builds, MSIX packaging |
+| Desktop Builds | `desktop-builds.yml` | Push/PRs (desktop paths), manual | WPF builds, MSIX packaging — **delayed implementation** |
 | Docker | `docker.yml` | Manual dispatch | Multi-arch Docker images, GHCR push |
 | Release | `release.yml` | Manual dispatch | Semver validation, changelog, GitHub release |
 | Benchmark | `benchmark.yml` | Manual dispatch | BenchmarkDotNet performance tracking |
@@ -72,8 +72,8 @@ When modifying build logic, change the reusable workflow rather than individual 
 ### Updating artifact actions
 The project standardizes on `actions/upload-artifact@v4` and `actions/download-artifact@v4` for compatibility. See `../../../archive/docs/assessments/ARTIFACT_ACTIONS_DOWNGRADE.md` for rationale.
 
-### Desktop build targets
-The consolidated `desktop-builds.yml` supports selective builds via workflow dispatch:
+### Desktop build targets *(delayed implementation)*
+The consolidated `desktop-builds.yml` exists but targets a delayed implementation. `src/Meridian.Wpf/` is not in the active solution build.
 - `all` - Build all desktop targets
 - `wpf` - WPF only (self-contained + framework-dependent)
 - `wpf-smoke-test` - WPF startup validation only

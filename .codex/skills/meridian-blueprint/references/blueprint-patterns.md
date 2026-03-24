@@ -17,8 +17,8 @@ Use this reference when a blueprint needs concrete naming or implementation patt
 - Application: `Meridian.Application.[Area]`
 - Infrastructure: `Meridian.Infrastructure.[Area]`
 - Storage: `Meridian.Storage.[Area]`
-- WPF: `Meridian.Wpf.[Area]`
 - UI Services: `Meridian.Ui.Services.[Area]`
+- WPF: `Meridian.Wpf.[Area]` — **delayed implementation, not in active solution build**
 
 ## ADR Reminders
 

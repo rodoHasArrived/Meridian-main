@@ -128,11 +128,11 @@ public sealed class TestWriterPrompts(RepoPathService repo)
                 break;
 
             case "wpf-service":
-                sb.AppendLine("These tests live in `tests/Meridian.Wpf.Tests/Services/`.\n");
+                sb.AppendLine("These tests live in `tests/Meridian.Ui.Tests/Services/`.\n");
                 sb.AppendLine("```csharp");
                 sb.AppendLine($"public sealed class {className}Tests");
                 sb.AppendLine("{");
-                sb.AppendLine("    // WPF services have no UI — test service logic only");
+                sb.AppendLine("    // UI services have no UI dependency — test service logic only");
                 sb.AppendLine("    // Mock IApiClientService, ILoggingService, etc.");
                 sb.AppendLine("    [Fact] public void PropertyChange_WhenValueSet_RaisesNotification() { }");
                 sb.AppendLine("}");

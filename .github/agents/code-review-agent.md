@@ -59,13 +59,11 @@ Meridian/
 │   ├── Meridian.Storage/       ← storage sinks and archival
 │   ├── Meridian.Ui.Services/   ← platform-neutral UI services
 │   ├── Meridian.Ui.Shared/     ← shared UI endpoints
-│   └── Meridian.Wpf/           ← WPF desktop app
 └── tests/
     ├── Meridian.Tests/
     ├── Meridian.FSharp.Tests/
     ├── Meridian.Ui.Tests/
-    └── Meridian.Wpf.Tests/
-```
+    ```
 
 ---
 
@@ -381,7 +379,6 @@ These apply to any file in the project.
 // new property names (see binding migration notes below).
 // =============================================================================
 
-namespace Meridian.Wpf.ViewModels;
 // ... refactored code
 ```
 

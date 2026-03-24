@@ -25,7 +25,7 @@ This document provides guidance for AI assistants working with tests in Meridian
 | C# Unit Tests | `tests/Meridian.Tests/` | 134 | Main test suite |
 | F# Tests | `tests/Meridian.FSharp.Tests/` | 4 | F# domain tests |
 | UI Service Tests | `tests/Meridian.Ui.Tests/` | 15 | Desktop UI service tests |
-| WPF Tests | `tests/Meridian.Wpf.Tests/` | 5 | WPF desktop service tests |
+| WPF Tests | `tests/Meridian.Wpf.Tests/` | 5 | WPF desktop service tests — **delayed, not in active solution build** |
 | Benchmarks | `benchmarks/Meridian.Benchmarks/` | - | Performance benchmarks |
 
 **Total: 158 test files (154 C# + 4 F#)**
@@ -46,10 +46,10 @@ dotnet test tests/Meridian.Tests
 # Run F# tests
 dotnet test tests/Meridian.FSharp.Tests
 
-# Run WPF desktop service tests (Windows only)
-dotnet test tests/Meridian.Wpf.Tests
+# Run WPF desktop service tests — delayed, not in active solution build
+# dotnet test tests/Meridian.Wpf.Tests
 
-# Run desktop UI service tests (Windows only)
+# Run UI service tests (cross-platform)
 dotnet test tests/Meridian.Ui.Tests
 
 # Run all desktop tests

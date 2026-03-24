@@ -147,7 +147,7 @@ Consider assigning ownership or creating tracking issues for these items.
 
 ### NOTE (14)
 
-- [ ] `.github\workflows\desktop-builds.yml:9`
+- [ ] `.github\workflows\desktop-builds.yml:9` *(delayed — WPF not in active build)*
   > UWP/WinUI 3 application has been removed. WPF is the sole desktop client.
 
 - [ ] `.github\workflows\test-matrix.yml:5`
@@ -159,7 +159,7 @@ Consider assigning ownership or creating tracking issues for these items.
 - [ ] `src\Meridian.Ui.Services\Services\ProviderHealthService.cs:516`
   > ProviderComparison is defined in AdvancedAnalyticsModels.cs for cross-provider comparison ProviderHealthComparison below is for overall provider ranking
 
-- [ ] `src\Meridian.Wpf\GlobalUsings.cs:7`
+- [ ] `src\Meridian.Wpf\GlobalUsings.cs:7` *(delayed — WPF not in active build)*
   > Type aliases and Contracts namespaces are NOT re-defined here because they are already provided by the referenced Meridian.Ui.Services project (via its GlobalUsings.cs). Re-defining them would cause CS0101 duplicate type definition errors.
 
 - [ ] `tests\Meridian.Tests\Application\Backfill\BackfillWorkerServiceTests.cs:28`
@@ -183,10 +183,10 @@ Consider assigning ownership or creating tracking issues for these items.
 - [ ] `tests\Meridian.Ui.Tests\Services\ScheduledMaintenanceServiceTests.cs:85`
   > since this is a singleton shared across tests, if StartScheduler was previously called, we stop it first to ensure test isolation.
 
-- [ ] `tests\Meridian.Wpf.Tests\Services\OfflineTrackingPersistenceServiceTests.cs:27`
+- [ ] `tests\Meridian.Wpf.Tests\Services\OfflineTrackingPersistenceServiceTests.cs:27` *(delayed — WPF not in active build)*
   > Singleton state may persist across tests. We explicitly shut down first to verify the default state transition.
 
-- [ ] `tests\Meridian.Wpf.Tests\Services\PendingOperationsQueueServiceTests.cs:30`
+- [ ] `tests\Meridian.Wpf.Tests\Services\PendingOperationsQueueServiceTests.cs:30` *(delayed — WPF not in active build)*
   > This may not be false if other tests have run InitializeAsync. We test the lifecycle explicitly below.
 
 ---

@@ -141,7 +141,7 @@ observable behaviour. Covers 7 categories:
 | 1 | Dead code removal (C# / F#) |
 | 2 | Anti-pattern correction (Meridian-specific) |
 | 3 | Duplication consolidation |
-| 4 | WPF code-behind mechanical cleanup |
+| 4 | WPF code-behind mechanical cleanup *(delayed — WPF not in active build)* |
 | 5 | Documentation cleanup (stale refs, broken links) |
 | 6 | Central Package Management (CPM) compliance |
 | 7 | ADR attribute cleanup (`[DataSource]`, `[ImplementsAdr]`) |
@@ -159,7 +159,7 @@ correct fix with a mandatory regression test. Follows a 5-step workflow:
 | Step | Action |
 |------|--------|
 | 1 | Reproduce — confirm the failure with exact CLI / test command |
-| 2 | Isolate — identify the layer (provider, pipeline, storage, WPF, F#) |
+| 2 | Isolate — identify the layer (provider, pipeline, storage, web UI, F#) |
 | 3 | Diagnose — apply layer-specific diagnostic lens |
 | 4 | Fix — minimal change at the root cause, following all CLAUDE.md rules |
 | 5 | Regression test — new test that was red before, green after |
@@ -207,9 +207,9 @@ and implementation checklists — grounded in Meridian's actual stack.
 **Copilot equivalent:** [`.github/agents/cleanup-agent.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/agents/cleanup-agent.md)
 
 Cleanup specialist for the Meridian repository. Removes dead code, duplication,
-anti-patterns, and stale documentation across C# 13, F# 8, WPF, and .NET 9 source files —
+anti-patterns, and stale documentation across C# 13, F# 8, and .NET 9 source files —
 without changing observable behaviour. Covers 7 categories: dead code, anti-pattern correction,
-duplication consolidation, WPF code-behind cleanup, documentation cleanup, CPM compliance,
+duplication consolidation, WPF code-behind cleanup (delayed — code preserved), documentation cleanup, CPM compliance,
 and ADR attribute cleanup.
 
 ---

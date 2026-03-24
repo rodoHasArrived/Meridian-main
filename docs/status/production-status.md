@@ -8,7 +8,7 @@ This document summarizes the current production-readiness posture and the next p
 
 ## Executive Summary
 
-Meridian already has working ingestion, storage, replay, backtesting, provider orchestration, export tooling, and a WPF desktop shell. The current product gap is not the absence of core building blocks; it is the remaining work required to unify those blocks into a coherent operator-facing fund-management product spanning front, middle, and back office workflows.
+Meridian already has working ingestion, storage, replay, backtesting, provider orchestration, export tooling, and a web dashboard. The current product gap is not the absence of core building blocks; it is the remaining work required to unify those blocks into a coherent operator-facing fund-management product spanning front, middle, and back office workflows.
 
 The active plan now has two connected delivery tracks:
 
@@ -22,7 +22,7 @@ The active plan now has two connected delivery tracks:
 | Core event pipeline | Implemented | Channel-based processing with backpressure, metrics, validation, and storage fan-out |
 | Storage layer | Implemented | JSONL/Parquet composite sink with WAL, catalog, packaging, and export support |
 | Backfill providers | Implemented | Multiple providers available; some require credentials |
-| WPF desktop shell | Workflow migration active | Broad page coverage exists; workspace-first product UX is still being delivered |
+| WPF desktop shell | Delayed implementation | Code present in `src/Meridian.Wpf/`; excluded from active solution build pending roadmap prioritization |
 | Shared run / portfolio / ledger model | In progress | First workstation browser/detail/portfolio/ledger flow is in code; broader paper/live coverage remains |
 | Security Master baseline | Implemented in code, not yet productized | Contracts, application, storage, and F# domain anchors exist |
 | Governance product surfaces | Planned | Trial balance, multi-ledger, cash-flow, reconciliation, investor reporting, and governed reporting are blueprint-backed but not fully implemented |
@@ -34,7 +34,7 @@ The active plan now has two connected delivery tracks:
 
 - mature ingestion, replay, storage, and export foundations
 - shared composition and host startup patterns
-- WPF desktop application as the sole desktop client
+- WPF desktop application code preserved in `src/Meridian.Wpf/` (delayed implementation — not in active build)
 - portfolio and ledger concepts already present in the codebase
 - Security Master foundations already present in contracts, storage, application, and F# domain modules
 - existing export infrastructure that can support future report-pack generation

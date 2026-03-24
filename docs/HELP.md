@@ -77,7 +77,7 @@ This guide covers everything from installation to advanced configuration.
 
 ### Technical Stack
 
-Built on **.NET 9.0** using **C# 13** and **F# 8.0**. Supports deployment as a self-contained executable, Docker container, or systemd service. Includes a web dashboard and a WPF desktop app for Windows.
+Built on **.NET 9.0** using **C# 13** and **F# 8.0**. Supports deployment as a self-contained executable, Docker container, or systemd service. Includes a web dashboard. A WPF desktop app for Windows exists in `src/Meridian.Wpf/` as a delayed implementation — not part of the active build.
 
 ---
 
@@ -121,13 +121,13 @@ make run-ui
 
 Then open your browser to `http://localhost:8080`
 
-**Option B: Windows Desktop App (WPF)**
+**Option B: Windows Desktop App (WPF)** *(Delayed implementation — not in active build)*
 
-For secure credential management on Windows:
+> The WPF desktop app code exists in `src/Meridian.Wpf/` but is not included in the solution. Use the web dashboard (Option A) as the current UI.
 
-```bash
+<!--
 dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj
-```
+-->
 
 ### 2. Configure Your Data Provider
 
@@ -1390,7 +1390,9 @@ The dashboard shows toast notifications for:
 
 ---
 
-## Windows Desktop App
+## Windows Desktop App *(Delayed Implementation)*
+
+> **Status:** The WPF desktop app (`src/Meridian.Wpf/`) is not included in the active solution build. The documentation below describes the intended desktop experience and is retained for reference when WPF development resumes. Use the [Web Dashboard](#web-dashboard) in the meantime.
 
 The WPF desktop application provides a native Windows experience for configuring and monitoring Meridian.
 

@@ -25,7 +25,7 @@
       href: architecture/crystallized-storage-format.md
     - name: Deterministic Canonicalization
       href: architecture/deterministic-canonicalization.md
-    - name: Desktop Layers
+    - name: Desktop Layers (Delayed Implementation)
       href: architecture/desktop-layers.md
     - name: UI Redesign
       href: architecture/ui-redesign.md
@@ -73,9 +73,9 @@
       href: development/repository-organization-guide.md
     - name: Provider Implementation
       href: development/provider-implementation.md
-    - name: WPF Implementation Notes
+    - name: WPF Implementation Notes (Delayed Implementation)
       href: development/wpf-implementation-notes.md
-    - name: Desktop Testing Guide
+    - name: Desktop Testing Guide (Delayed Implementation)
       href: development/desktop-testing-guide.md
     - name: Central Package Management
       href: development/central-package-management.md

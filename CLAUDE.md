@@ -24,7 +24,8 @@ Repo-local Codex skills live under `.codex/skills/`. Use them for Meridian-speci
 - Backtesting engine with tick-by-tick replay and fill models
 - Paper trading and strategy execution framework
 - Portfolio performance tracking and multi-run analysis
-- Web dashboard and WPF desktop app (Windows)
+- Web dashboard
+- WPF desktop app (Windows) — **code present in `src/Meridian.Wpf/`, not included in active solution build; delayed implementation**
 - QuantConnect Lean Engine integration
 
 ---
@@ -64,9 +65,6 @@ dotnet run --project src/Meridian -- \
   --backfill-symbols SPY,AAPL \
   --backfill-from 2024-01-01 --backfill-to 2024-01-05
 
-# Desktop (Windows only)
-make build-wpf
-make test-desktop-services
 ```
 
 ---
@@ -101,7 +99,6 @@ Always complete this checklist before submitting a PR or marking work as complet
 3. **Run tests relevant to touched code:**
    - If you modified `src/Meridian.Domain/**`: `dotnet test tests/Meridian.Tests -c Release /p:EnableWindowsTargeting=true`
    - If you modified `src/Meridian.FSharp/**`: also run `dotnet test tests/Meridian.FSharp.Tests -c Release /p:EnableWindowsTargeting=true`
-   - If you modified WPF files: also run `dotnet test tests/Meridian.Wpf.Tests -c Release /p:EnableWindowsTargeting=true`
    - Run `make test` to run all tests if unsure
 
 4. **Update docs when behavior changes:**
@@ -144,11 +141,10 @@ Meridian/
 │   ├── Meridian.Backtesting.Sdk/ # Backtest strategy SDK and strategy interfaces
 │   ├── Meridian.Execution/   # Order execution, paper trading gateway
 │   ├── Meridian.Strategies/  # Strategy lifecycle, portfolio tracking
-│   ├── Meridian.Wpf/         # WPF desktop app (Windows)
-│   ├── Meridian.Ui.Services/ # Shared desktop UI services
 │   ├── Meridian.Ui.Shared/   # Shared endpoints, HTML templates
 │   ├── Meridian.Ui/          # Web UI entry point
-│   └── Meridian.McpServer/   # MCP server tools
+│   ├── Meridian.McpServer/   # MCP server tools
+│   └── Meridian.Wpf/         # WPF desktop app (Windows) — NOT in active solution; delayed implementation
 ├── tests/                   # 4 test projects, ~4,135 tests
 ├── benchmarks/              # BenchmarkDotNet performance benchmarks
 ├── docs/                    # 214 documentation files
@@ -229,9 +225,6 @@ When working with files in specific paths or types, additional rules apply. Revi
 - Use existing test utilities and fixtures before introducing new helpers
 - Name tests to communicate behavior: `[MethodName]_[Condition]_[Expectation]`
 - Run the nearest test project and report exact command used
-
-**WPF/MVVM files** (`src/Meridian.Wpf/**`):
-- See `.github/instructions/wpf.instructions.md` for WPF-specific conventions
 
 Complete rules for each path are in `.github/instructions/` directory.
 

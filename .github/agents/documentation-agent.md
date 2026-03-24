@@ -1417,7 +1417,6 @@ Meridian/
 │   │   ├── LeanSymbolMapper.cs
 │   │   ├── LoginSessionService.cs
 │   │   └── Meridian.Ui.Shared.csproj
-│   └── Meridian.Wpf/
 │       ├── Contracts/
 │       │   ├── IConnectionService.cs
 │       │   └── INavigationService.cs
@@ -1597,7 +1596,6 @@ Meridian/
 │       ├── GlobalUsings.cs
 │       ├── MainWindow.xaml
 │       ├── MainWindow.xaml.cs
-│       ├── Meridian.Wpf.csproj
 │       └── README.md
 ├── tests/  # Test projects
 │   ├── Meridian.Backtesting.Tests/
@@ -1773,7 +1771,6 @@ Meridian/
 │   │   │   └── WatchlistServiceTests.cs
 │   │   ├── Meridian.Ui.Tests.csproj
 │   │   └── README.md
-│   ├── Meridian.Wpf.Tests/
 │   │   ├── Services/
 │   │   │   ├── AdminMaintenanceServiceTests.cs
 │   │   │   ├── BackgroundTaskSchedulerServiceTests.cs
@@ -1797,7 +1794,6 @@ Meridian/
 │   │   ├── ViewModels/
 │   │   │   └── DataQualityViewModelCharacterizationTests.cs
 │   │   ├── GlobalUsings.cs
-│   │   └── Meridian.Wpf.Tests.csproj
 │   ├── scripts/  # Automation scripts
 │   │   └── setup-verification.sh
 │   ├── coverlet.runsettings
