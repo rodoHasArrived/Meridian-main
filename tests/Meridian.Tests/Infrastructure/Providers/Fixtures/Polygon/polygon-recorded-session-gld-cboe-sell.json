@@ -1,0 +1,69 @@
+{
+  "description": "Recorded-style Polygon stock feed session for GLD (SPDR Gold Shares ETF) on CBOE exchange (code 15). Covers CBOE venue mapping, Sell aggressor via condition code 29 (Seller-initiated), and IEX exchange (code 9) for quote. Verifies exchange codes not previously exercised in other fixtures.",
+  "subscriptions": {
+    "trades": ["GLD"],
+    "quotes": ["GLD"],
+    "aggregates": ["GLD"]
+  },
+  "expected": {
+    "trade": {
+      "symbol": "GLD",
+      "price": 189.42,
+      "size": 300,
+      "timestampMs": 1742740800050,
+      "streamId": "77654321",
+      "venue": "CBOE",
+      "aggressor": "Sell",
+      "rawConditions": ["29"]
+    },
+    "quote": {
+      "symbol": "GLD",
+      "bidPrice": 189.40,
+      "bidSize": 500,
+      "askPrice": 189.44,
+      "askSize": 400,
+      "timestampMs": 1742740800150,
+      "venue": "IEX"
+    },
+    "aggregates": [
+      {
+        "timeframe": "Second",
+        "symbol": "GLD",
+        "open": 189.38,
+        "high": 189.46,
+        "low": 189.35,
+        "close": 189.42,
+        "volume": 12000,
+        "vwap": 189.41,
+        "tradeCount": 62,
+        "startTimeMs": 1742740800000,
+        "endTimeMs": 1742740801000
+      },
+      {
+        "timeframe": "Minute",
+        "symbol": "GLD",
+        "open": 189.20,
+        "high": 189.50,
+        "low": 189.15,
+        "close": 189.42,
+        "volume": 680000,
+        "vwap": 189.33,
+        "tradeCount": 3520,
+        "startTimeMs": 1742740740000,
+        "endTimeMs": 1742740800000
+      }
+    ],
+    "expectedIntegrityEvents": 0
+  },
+  "messages": [
+    "[{\"ev\":\"status\",\"status\":\"connected\",\"message\":\"Connected Successfully\"}]",
+    "[{\"ev\":\"status\",\"status\":\"auth_success\",\"message\":\"authenticated\"}]",
+    "[{\"ev\":\"status\",\"status\":\"success\",\"message\":\"subscribed to: T.GLD,Q.GLD,A.GLD,AM.GLD\"}]",
+    "[{\"ev\":\"T\",\"sym\":\"GLD\",\"p\":189.42,\"s\":300,\"t\":1742740800050,\"i\":\"77654321\",\"x\":15,\"c\":[29]}]",
+    "[{\"ev\":\"Q\",\"sym\":\"GLD\",\"bp\":189.40,\"bs\":500,\"ap\":189.44,\"as\":400,\"t\":1742740800150,\"x\":9}]",
+    "[{\"ev\":\"A\",\"sym\":\"GLD\",\"o\":189.38,\"h\":189.46,\"l\":189.35,\"c\":189.42,\"v\":12000,\"vw\":189.41,\"s\":1742740800000,\"e\":1742740801000,\"n\":62}]",
+    "[{\"ev\":\"AM\",\"sym\":\"GLD\",\"o\":189.20,\"h\":189.50,\"l\":189.15,\"c\":189.42,\"v\":680000,\"vw\":189.33,\"s\":1742740740000,\"e\":1742740800000,\"n\":3520}]",
+    "[{\"ev\":\"T\",\"sym\":\"SLV\",\"p\":22.15,\"s\":1000,\"t\":1742740800200,\"i\":\"slv-ignored\",\"x\":15,\"c\":[14]}]",
+    "[{\"ev\":\"A\",\"sym\":\"GLD\",\"o\":0,\"h\":189.48,\"l\":189.38,\"c\":189.44,\"v\":200,\"vw\":189.42,\"s\":1742740801000,\"e\":1742740802000,\"n\":4}]"
+  ]
+}
