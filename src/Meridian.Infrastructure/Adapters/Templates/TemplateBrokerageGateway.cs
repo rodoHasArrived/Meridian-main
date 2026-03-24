@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using System.Threading.Channels;
+using Meridian.Application.Pipeline;
 using Meridian.Execution.Sdk;
 using Microsoft.Extensions.Logging;
 using OrderSide = Meridian.Execution.Sdk.OrderSide;
@@ -38,13 +39,16 @@ public sealed class TemplateBrokerageGateway : IBrokerageGateway
     private volatile bool _connected;
     private bool _disposed;
 
+    // Tracks submitted orders so cancel/modify reports carry the correct symbol and side.
+    // TODO: In a full implementation, prefer querying the broker's API for live order state.
+    private readonly Dictionary<string, (string Symbol, OrderSide Side, string? ClientOrderId)> _submittedOrders = new();
+
     public TemplateBrokerageGateway(
         // TODO: Add IHttpClientFactory, options, etc.
         ILogger<TemplateBrokerageGateway> logger)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _reportChannel = Channel.CreateBounded<ExecutionReport>(
-            new BoundedChannelOptions(500) { FullMode = BoundedChannelFullMode.Wait });
+        _reportChannel = EventPipelinePolicy.Default.CreateChannel<ExecutionReport>();
     }
 
     // TODO: Change to your broker's ID (lowercase, no spaces)
@@ -103,6 +107,7 @@ public sealed class TemplateBrokerageGateway : IBrokerageGateway
         var report = new ExecutionReport
         {
             OrderId = orderId,
+            ClientOrderId = request.ClientOrderId,
             ReportType = ExecutionReportType.New,
             Symbol = request.Symbol,
             Side = request.Side,
@@ -111,6 +116,10 @@ public sealed class TemplateBrokerageGateway : IBrokerageGateway
             GatewayOrderId = orderId,
             Timestamp = DateTimeOffset.UtcNow,
         };
+
+        // Track submitted order so cancel/modify reports carry the correct symbol and side.
+        _submittedOrders[orderId] = (request.Symbol, request.Side, request.ClientOrderId);
+
         await _reportChannel.Writer.WriteAsync(report, ct).ConfigureAwait(false);
         return report;
     }
@@ -121,14 +130,19 @@ public sealed class TemplateBrokerageGateway : IBrokerageGateway
         EnsureConnected();
 
         // TODO: Call your broker's cancel API
+        // TODO: For brokers that return order details on cancel, use the response to populate Symbol/Side.
+
+        _submittedOrders.TryGetValue(orderId, out var tracked);
 
         var report = new ExecutionReport
         {
             OrderId = orderId,
+            ClientOrderId = tracked.ClientOrderId,
             ReportType = ExecutionReportType.Cancelled,
-            Symbol = string.Empty,
-            Side = OrderSide.Buy,
+            Symbol = tracked.Symbol ?? string.Empty,
+            Side = tracked.Symbol is not null ? tracked.Side : OrderSide.Buy,
             OrderStatus = OrderStatus.Cancelled,
+            GatewayOrderId = orderId,
             Timestamp = DateTimeOffset.UtcNow,
         };
         await _reportChannel.Writer.WriteAsync(report, ct).ConfigureAwait(false);
@@ -144,13 +158,17 @@ public sealed class TemplateBrokerageGateway : IBrokerageGateway
         // TODO: Call your broker's modify/amend API
         // Some brokers require cancel-replace instead of in-place modification
 
+        _submittedOrders.TryGetValue(orderId, out var tracked);
+
         var report = new ExecutionReport
         {
             OrderId = orderId,
+            ClientOrderId = tracked.ClientOrderId,
             ReportType = ExecutionReportType.Modified,
-            Symbol = string.Empty,
-            Side = OrderSide.Buy,
+            Symbol = tracked.Symbol ?? string.Empty,
+            Side = tracked.Symbol is not null ? tracked.Side : OrderSide.Buy,
             OrderStatus = OrderStatus.Accepted,
+            GatewayOrderId = orderId,
             Timestamp = DateTimeOffset.UtcNow,
         };
         await _reportChannel.Writer.WriteAsync(report, ct).ConfigureAwait(false);
