@@ -1087,7 +1087,7 @@ jobs:
       - name: AI comprehensive health analysis
         id: ai-health
         continue-on-error: true
-        uses: actions/ai-inference@v1
+        uses: actions/ai-inference@v2
         with:
           model: gpt-4o-mini
           max-tokens: 2000

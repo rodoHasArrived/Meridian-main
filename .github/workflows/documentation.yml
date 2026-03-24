@@ -764,7 +764,7 @@ jobs:
           github.event_name == 'schedule' ||
           (github.event_name == 'workflow_dispatch' && github.event.inputs.regenerate == 'true')
         continue-on-error: true
-        uses: actions/ai-inference@v1
+        uses: actions/ai-inference@v2
         with:
           model: gpt-4o-mini
           max-tokens: 1500
@@ -1030,7 +1030,7 @@ jobs:
         id: copilot
         if: github.event.inputs.use_copilot != 'false'
         continue-on-error: true
-        uses: actions/ai-inference@v1
+        uses: actions/ai-inference@v2
         with:
           model: gpt-4o-mini
           max-tokens: 1800

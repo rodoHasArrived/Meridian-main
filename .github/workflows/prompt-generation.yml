@@ -245,7 +245,7 @@ jobs:
           (github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'failure') &&
           env.HAS_MODELS_TOKEN == 'true'
         continue-on-error: true
-        uses: actions/ai-inference@v1
+        uses: actions/ai-inference@v2
         with:
           token: ${{ secrets.MODELS_GITHUB_TOKEN }}
           model: gpt-4o-mini
