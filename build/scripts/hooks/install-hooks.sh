@@ -33,7 +33,11 @@ fi
 mkdir -p "$HOOKS_DST"
 
 installed=0
-for hook in "$HOOKS_SRC"/*; do
+shopt -s nullglob
+hooks_to_install=("$HOOKS_SRC"/*)
+shopt -u nullglob
+
+for hook in "${hooks_to_install[@]}"; do
     name="$(basename "$hook")"
     dst="${HOOKS_DST}/${name}"
     cp "$hook" "$dst"
