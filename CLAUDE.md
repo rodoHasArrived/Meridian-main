@@ -1528,6 +1528,8 @@ Meridian-main
 │   │   └── Meridian.Domain.csproj
 │   ├── Meridian.Execution
 │   │   ├── Adapters
+│   │   │   ├── BaseBrokerageGateway.cs
+│   │   │   ├── BrokerageGatewayAdapter.cs
 │   │   │   └── PaperTradingGateway.cs
 │   │   ├── Exceptions
 │   │   │   └── UnsupportedOrderRequestException.cs
@@ -1546,6 +1548,7 @@ Meridian-main
 │   │   ├── Services
 │   │   │   ├── OrderLifecycleManager.cs
 │   │   │   └── PaperTradingPortfolio.cs
+│   │   ├── BrokerageServiceRegistration.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── IRiskValidator.cs
 │   │   ├── Meridian.Execution.csproj
@@ -1553,6 +1556,8 @@ Meridian-main
 │   │   ├── PaperExecutionContext.cs
 │   │   └── PaperTradingGateway.cs
 │   ├── Meridian.Execution.Sdk
+│   │   ├── BrokerageConfiguration.cs
+│   │   ├── IBrokerageGateway.cs
 │   │   ├── IExecutionGateway.cs
 │   │   ├── IOrderManager.cs
 │   │   ├── IPositionTracker.cs
@@ -1626,6 +1631,7 @@ Meridian-main
 │   ├── Meridian.Infrastructure
 │   │   ├── Adapters
 │   │   │   ├── Alpaca
+│   │   │   │   ├── AlpacaBrokerageGateway.cs
 │   │   │   │   ├── AlpacaConstants.cs
 │   │   │   │   ├── AlpacaHistoricalDataProvider.cs
 │   │   │   │   ├── AlpacaMarketDataClient.cs
@@ -1677,6 +1683,7 @@ Meridian-main
 │   │   │   │   ├── EnhancedIBConnectionManager.cs
 │   │   │   │   ├── EnhancedIBConnectionManager.IBApi.cs
 │   │   │   │   ├── IBApiLimits.cs
+│   │   │   │   ├── IBBrokerageGateway.cs
 │   │   │   │   ├── IBBuildGuidance.cs
 │   │   │   │   ├── IBCallbackRouter.cs
 │   │   │   │   ├── IBConnectionManager.cs
@@ -1703,6 +1710,7 @@ Meridian-main
 │   │   │   │   ├── Converters
 │   │   │   │   │   ├── MessageConverter.cs
 │   │   │   │   │   └── SecurityConverter.cs
+│   │   │   │   ├── StockSharpBrokerageGateway.cs
 │   │   │   │   ├── StockSharpConnectorCapabilities.cs
 │   │   │   │   ├── StockSharpConnectorFactory.cs
 │   │   │   │   ├── StockSharpHistoricalDataProvider.cs
@@ -1714,6 +1722,8 @@ Meridian-main
 │   │   │   │   ├── SyntheticHistoricalDataProvider.cs
 │   │   │   │   ├── SyntheticMarketDataClient.cs
 │   │   │   │   └── SyntheticReferenceDataCatalog.cs
+│   │   │   ├── Templates
+│   │   │   │   └── TemplateBrokerageGateway.cs
 │   │   │   ├── Tiingo
 │   │   │   │   └── TiingoHistoricalDataProvider.cs
 │   │   │   ├── TwelveData
@@ -2623,6 +2633,7 @@ Meridian-main
 │   │   │   │   └── TradeModelTests.cs
 │   │   │   └── StrongDomainTypeTests.cs
 │   │   ├── Execution
+│   │   │   ├── BrokerageGatewayAdapterTests.cs
 │   │   │   ├── PaperTradingGatewayTests.cs
 │   │   │   └── PaperTradingPortfolioTests.cs
 │   │   ├── Infrastructure
