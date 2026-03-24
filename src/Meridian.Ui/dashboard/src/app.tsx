@@ -6,15 +6,16 @@ import { WorkspaceNav } from "@/components/meridian/workspace-nav";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useWorkstationData } from "@/hooks/use-workstation-data";
 import { WORKSPACES } from "@/lib/workspace";
+import { DataOperationsScreen } from "@/screens/data-operations-screen";
+import { GovernanceScreen } from "@/screens/governance-screen";
 import { ResearchScreen } from "@/screens/research-screen";
 import { TradingScreen } from "@/screens/trading-screen";
-import { WorkspacePlaceholder } from "@/screens/workspace-placeholder";
 import type { WorkspaceKey } from "@/types";
 
 export function App() {
   const [commandOpen, setCommandOpen] = useState(false);
   const { pathname } = useLocation();
-  const { session, research, trading, loading, error, workspaceErrors } = useWorkstationData();
+  const { session, research, trading, dataOperations, governance, loading, error, workspaceErrors } = useWorkstationData();
   const activeWorkspace = getWorkspaceForPath(pathname);
   const degradedWorkspaceCount = Object.keys(workspaceErrors).length;
   const bootstrapFailed = !loading && !session && !research && !trading;
@@ -67,21 +68,11 @@ export function App() {
                 />
                 <Route
                   path="/data-operations/*"
-                  element={
-                    <WorkspacePlaceholder
-                      title="Data Operations Workspace"
-                      description="Provider health, backfills, storage, and export workflows now have reserved deep links and shell-prefetched summaries."
-                    />
-                  }
+                  element={<DataOperationsScreen data={dataOperations} />}
                 />
                 <Route
                   path="/governance/*"
-                  element={
-                    <WorkspacePlaceholder
-                      title="Governance Workspace"
-                      description="Ledger, reconciliation, and security-master workflows now participate in shell bootstrap and command-palette navigation."
-                    />
-                  }
+                  element={<GovernanceScreen data={governance} />}
                 />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>

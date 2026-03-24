@@ -153,7 +153,6 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway
                 Side = request.Side,
                 OrderStatus = OrderStatus.Rejected,
                 RejectReason = $"Alpaca API error: {response.StatusCode} — {errorBody}",
-                ClientOrderId = request.ClientOrderId,
                 Timestamp = DateTimeOffset.UtcNow,
             };
             await _reportChannel.Writer.WriteAsync(rejectReport, ct).ConfigureAwait(false);
@@ -173,7 +172,6 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway
             OrderStatus = MapAlpacaStatus(order?.Status),
             OrderQuantity = request.Quantity,
             GatewayOrderId = order?.Id,
-            ClientOrderId = request.ClientOrderId,
             Timestamp = order?.CreatedAt ?? DateTimeOffset.UtcNow,
         };
         await _reportChannel.Writer.WriteAsync(report, ct).ConfigureAwait(false);
