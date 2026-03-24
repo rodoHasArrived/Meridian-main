@@ -131,6 +131,8 @@ Use these documents together when planning or implementing new work:
 ├── .editorconfig
 ├── .flake8
 ├── .gitattributes
+├── .githooks
+│   └── pre-commit
 ├── .github
 │   ├── ISSUE_TEMPLATE
 │   │   ├── .gitkeep
@@ -292,6 +294,9 @@ Use these documents together when planning or implementing new work:
 │   │   └── WalChecksumBenchmarks.cs
 │   └── run-bottleneck-benchmarks.sh
 ├── build
+│   ├── python
+│   │   └── cli
+│   │       └── buildctl.py
 │   └── scripts
 │       └── docs
 │           ├── generate-prompts.py
@@ -636,6 +641,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── documentation-contribution-guide.md
 │   │   ├── expanding-scripts.md
 │   │   ├── fsharp-decision-rule.md
+│   │   ├── git-hooks.md
 │   │   ├── github-actions-summary.md
 │   │   ├── github-actions-testing.md
 │   │   ├── otlp-trace-visualization.md
@@ -644,6 +650,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── provider-implementation.md
 │   │   ├── refactor-map.md
 │   │   ├── repository-organization-guide.md
+│   │   ├── repository-rule-set.md
 │   │   ├── tooling-workflow-backlog.md
 │   │   ├── ui-fixture-mode-guide.md
 │   │   └── wpf-implementation-notes.md
@@ -879,7 +886,8 @@ Use these documents together when planning or implementing new work:
 │   ├── dev
 │   │   ├── build-ibapi-smoke.ps1
 │   │   ├── desktop-dev.ps1
-│   │   └── diagnose-uwp-xaml.ps1
+│   │   ├── diagnose-uwp-xaml.ps1
+│   │   └── install-git-hooks.sh
 │   ├── generate-diagrams.mjs
 │   ├── lib
 │   │   ├── ui-diagram-generator.mjs
@@ -2797,6 +2805,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-384 directories, 2375 files
+387 directories, 2380 files
 ```
 <!-- readme-tree end -->
