@@ -1,5 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
+using Meridian.Application.SecurityMaster;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Export;
 using Meridian.Strategies.Services;
@@ -189,6 +191,80 @@ public static class WorkstationEndpoints
         .WithName("GetRunLedgerJournal")
         .Produces<IReadOnlyList<LedgerJournalLine>>(200)
         .Produces(404);
+
+        group.MapGet("/security-master/securities", async (
+            string? query,
+            int? take,
+            bool activeOnly,
+            HttpContext context) =>
+        {
+            var queryService = context.RequestServices.GetService<ISecurityMasterQueryService>();
+            if (queryService is null)
+            {
+                return Results.Problem("Security Master query service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                return Results.BadRequest(new { error = "Query is required." });
+            }
+
+            var request = new SecuritySearchRequest(
+                Query: query.Trim(),
+                Take: Math.Clamp(take ?? 25, 1, 100),
+                ActiveOnly: activeOnly);
+            var results = await queryService.SearchAsync(request, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(results.Select(MapToWorkstationSecurity).ToArray(), jsonOptions);
+        })
+        .WithName("SearchSecurityMasterWorkstation")
+        .Produces<IReadOnlyList<SecurityMasterWorkstationDto>>(200)
+        .Produces(400)
+        .Produces(501);
+
+        group.MapGet("/security-master/securities/{securityId:guid}", async (Guid securityId, HttpContext context) =>
+        {
+            var queryService = context.RequestServices.GetService<ISecurityMasterQueryService>();
+            if (queryService is null)
+            {
+                return Results.Problem("Security Master query service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var detail = await queryService.GetByIdAsync(securityId, context.RequestAborted).ConfigureAwait(false);
+            return detail is null
+                ? Results.NotFound()
+                : Results.Json(MapToWorkstationSecurity(detail), jsonOptions);
+        })
+        .WithName("GetSecurityMasterWorkstationSecurity")
+        .Produces<SecurityMasterWorkstationDto>(200)
+        .Produces(404)
+        .Produces(501);
+
+        group.MapGet("/security-master/securities/{securityId:guid}/history", async (
+            Guid securityId,
+            int? take,
+            HttpContext context) =>
+        {
+            var queryService = context.RequestServices.GetService<ISecurityMasterQueryService>();
+            if (queryService is null)
+            {
+                return Results.Problem("Security Master query service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var history = await queryService.GetHistoryAsync(
+                    new SecurityHistoryRequest(
+                        SecurityId: securityId,
+                        Take: Math.Clamp(take ?? 50, 1, 500)),
+                    context.RequestAborted)
+                .ConfigureAwait(false);
+
+            return history.Count == 0
+                ? Results.NotFound()
+                : Results.Json(history, jsonOptions);
+        })
+        .WithName("GetSecurityMasterWorkstationSecurityHistory")
+        .Produces<IReadOnlyList<SecurityMasterEventEnvelope>>(200)
+        .Produces(404)
+        .Produces(501);
 
         app.MapGet("/workstation", (IWebHostEnvironment environment) => ServeWorkstationIndex(environment))
             .ExcludeFromDescription();
@@ -1025,6 +1101,44 @@ public static class WorkstationEndpoints
         }
 
         return $"{sign}${scaled.ToString("0.##", CultureInfo.InvariantCulture)}{suffix}";
+    }
+
+    private static SecurityMasterWorkstationDto MapToWorkstationSecurity(SecuritySummaryDto summary)
+        => new(
+            SecurityId: summary.SecurityId,
+            DisplayName: summary.DisplayName,
+            Status: summary.Status,
+            Classification: new SecurityClassificationSummaryDto(
+                AssetClass: summary.AssetClass,
+                SubType: null,
+                PrimaryIdentifierKind: null,
+                PrimaryIdentifierValue: summary.PrimaryIdentifier),
+            EconomicDefinition: new SecurityEconomicDefinitionSummaryDto(
+                Currency: summary.Currency,
+                Version: summary.Version,
+                EffectiveFrom: null,
+                EffectiveTo: null));
+
+    private static SecurityMasterWorkstationDto MapToWorkstationSecurity(SecurityDetailDto detail)
+    {
+        var primaryIdentifier = detail.Identifiers
+            .FirstOrDefault(static identifier => identifier.IsPrimary)
+            ?? detail.Identifiers.FirstOrDefault();
+
+        return new SecurityMasterWorkstationDto(
+            SecurityId: detail.SecurityId,
+            DisplayName: detail.DisplayName,
+            Status: detail.Status,
+            Classification: new SecurityClassificationSummaryDto(
+                AssetClass: detail.AssetClass,
+                SubType: null,
+                PrimaryIdentifierKind: primaryIdentifier?.Kind.ToString(),
+                PrimaryIdentifierValue: primaryIdentifier?.Value),
+            EconomicDefinition: new SecurityEconomicDefinitionSummaryDto(
+                Currency: detail.Currency,
+                Version: detail.Version,
+                EffectiveFrom: detail.EffectiveFrom,
+                EffectiveTo: detail.EffectiveTo));
     }
 
     private static IResult ServeWorkstationIndex(IWebHostEnvironment environment)
