@@ -441,7 +441,13 @@ public sealed class WorkstationEndpointsTests
                 AssetSpecificTerms: JsonSerializer.SerializeToElement(new { primaryExchange = "NASDAQ" }),
                 Identifiers:
                 [
-                    new SecurityIdentifierDto(SecurityIdentifierKind.Ticker, "AAPL", null, true)
+                    new SecurityIdentifierDto(
+                        SecurityIdentifierKind.Ticker,
+                        "AAPL",
+                        true,
+                        new DateTimeOffset(2026, 3, 21, 0, 0, 0, TimeSpan.Zero),
+                        null,
+                        null)
                 ],
                 Aliases: [],
                 Version: 4,
