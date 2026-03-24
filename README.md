@@ -308,8 +308,10 @@ Use these documents together when planning or implementing new work:
 │       │   ├── commit-msg
 │       │   ├── install-hooks.sh
 │       │   └── pre-commit
-│       └── install
-│           └── install.sh
+│       ├── install
+│       │   └── install.sh
+│       └── publish
+│           └── publish.sh
 ├── config
 │   ├── appsettings.sample.json
 │   ├── appsettings.schema.json
@@ -2821,6 +2823,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-389 directories, 2394 files
+390 directories, 2395 files
 ```
 <!-- readme-tree end -->
