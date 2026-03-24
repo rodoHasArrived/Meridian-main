@@ -7,13 +7,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useWorkstationData } from "@/hooks/use-workstation-data";
 import { WORKSPACES } from "@/lib/workspace";
 import { ResearchScreen } from "@/screens/research-screen";
+import { TradingScreen } from "@/screens/trading-screen";
 import { WorkspacePlaceholder } from "@/screens/workspace-placeholder";
 import type { WorkspaceKey } from "@/types";
 
 export function App() {
   const [commandOpen, setCommandOpen] = useState(false);
   const { pathname } = useLocation();
-  const { session, research, loading, error } = useWorkstationData();
+  const { session, research, trading, loading, error } = useWorkstationData();
   const activeWorkspace = getWorkspaceForPath(pathname);
 
   return (
@@ -50,12 +51,7 @@ export function App() {
                 <Route path="/" element={<ResearchScreen data={research} />} />
                 <Route
                   path="/trading"
-                  element={
-                    <WorkspacePlaceholder
-                      title="Trading Workspace"
-                      description="Paper operations, blotter, positions, and risk controls will compose into this shared shell next."
-                    />
-                  }
+                  element={<TradingScreen data={trading} />}
                 />
                 <Route
                   path="/data-operations"
