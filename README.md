@@ -294,24 +294,92 @@ Use these documents together when planning or implementing new work:
 │   │   └── WalChecksumBenchmarks.cs
 │   └── run-bottleneck-benchmarks.sh
 ├── build
+│   ├── dotnet
+│   │   ├── DocGenerator
+│   │   │   ├── DocGenerator.csproj
+│   │   │   └── Program.cs
+│   │   └── FSharpInteropGenerator
+│   │       ├── FSharpInteropGenerator.csproj
+│   │       └── Program.cs
+│   ├── node
+│   │   ├── generate-diagrams.mjs
+│   │   └── generate-icons.mjs
 │   ├── python
-│   │   └── cli
-│   │       └── buildctl.py
+│   │   ├── __init__.py
+│   │   ├── adapters
+│   │   │   ├── __init__.py
+│   │   │   └── dotnet.py
+│   │   ├── analytics
+│   │   │   ├── __init__.py
+│   │   │   ├── history.py
+│   │   │   ├── metrics.py
+│   │   │   └── profile.py
+│   │   ├── cli
+│   │   │   └── buildctl.py
+│   │   ├── core
+│   │   │   ├── __init__.py
+│   │   │   ├── events.py
+│   │   │   ├── fingerprint.py
+│   │   │   ├── graph.py
+│   │   │   └── utils.py
+│   │   ├── diagnostics
+│   │   │   ├── __init__.py
+│   │   │   ├── doctor.py
+│   │   │   ├── env_diff.py
+│   │   │   ├── error_matcher.py
+│   │   │   ├── preflight.py
+│   │   │   └── validate_data.py
+│   │   └── knowledge
+│   │       └── errors
+│   │           ├── msbuild.json
+│   │           └── nuget.json
+│   ├── rules
+│   │   └── doc-rules.yaml
 │   └── scripts
+│       ├── ai-architecture-check.py
+│       ├── ai-repo-updater.py
 │       ├── docs
+│       │   ├── README.md
+│       │   ├── add-todos.py
+│       │   ├── ai-docs-maintenance.py
+│       │   ├── create-todo-issues.py
+│       │   ├── generate-changelog.py
+│       │   ├── generate-coverage.py
+│       │   ├── generate-dependency-graph.py
+│       │   ├── generate-health-dashboard.py
+│       │   ├── generate-metrics-dashboard.py
 │       │   ├── generate-prompts.py
 │       │   ├── generate-structure-docs.py
+│       │   ├── repair-links.py
+│       │   ├── rules-engine.py
+│       │   ├── run-docs-automation.py
 │       │   ├── scan-todos.py
+│       │   ├── sync-readme-badges.py
+│       │   ├── test-scripts.py
 │       │   ├── update-claude-md.py
-│       │   └── validate-golden-path.sh
+│       │   ├── validate-api-docs.py
+│       │   ├── validate-docs-structure.py
+│       │   ├── validate-examples.py
+│       │   ├── validate-golden-path.sh
+│       │   └── validate-skill-packages.py
 │       ├── hooks
 │       │   ├── commit-msg
 │       │   ├── install-hooks.sh
 │       │   └── pre-commit
 │       ├── install
+│       │   ├── install.ps1
 │       │   └── install.sh
-│       └── publish
-│           └── publish.sh
+│       ├── lib
+│       │   └── BuildNotification.psm1
+│       ├── publish
+│       │   ├── publish.ps1
+│       │   └── publish.sh
+│       ├── run
+│       │   ├── start-collector.ps1
+│       │   ├── start-collector.sh
+│       │   ├── stop-collector.ps1
+│       │   └── stop-collector.sh
+│       └── validate-tooling-metadata.py
 ├── config
 │   ├── appsettings.sample.json
 │   ├── appsettings.schema.json
@@ -832,7 +900,9 @@ Use these documents together when planning or implementing new work:
 │   │   ├── ufl-repo-target-state-v2.md
 │   │   ├── ufl-supported-assets-index.md
 │   │   ├── ufl-swap-target-state-v2.md
-│   │   └── ufl-treasury-bill-target-state-v2.md
+│   │   ├── ufl-treasury-bill-target-state-v2.md
+│   │   ├── workstation-release-readiness-blueprint.md
+│   │   └── workstation-sprint-1-implementation-backlog.md
 │   ├── providers
 │   │   ├── README.md
 │   │   ├── alpaca-setup.md
@@ -1984,6 +2054,10 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   └── workspace.ts
 │   │   │   │   ├── main.tsx
 │   │   │   │   ├── screens
+│   │   │   │   │   ├── data-operations-screen.test.tsx
+│   │   │   │   │   ├── data-operations-screen.tsx
+│   │   │   │   │   ├── governance-screen.test.tsx
+│   │   │   │   │   ├── governance-screen.tsx
 │   │   │   │   │   ├── research-screen.test.tsx
 │   │   │   │   │   ├── research-screen.tsx
 │   │   │   │   │   ├── trading-screen.test.tsx
@@ -2823,6 +2897,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-390 directories, 2395 files
+403 directories, 2456 files
 ```
 <!-- readme-tree end -->
