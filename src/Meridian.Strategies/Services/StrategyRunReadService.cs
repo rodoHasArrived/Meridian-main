@@ -69,6 +69,23 @@ public sealed class StrategyRunReadService
         return null;
     }
 
+    public async Task<LedgerSummary?> GetLedgerSummaryAsync(string runId, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+
+        await foreach (var run in _repository.GetAllRunsAsync(ct).WithCancellation(ct).ConfigureAwait(false))
+        {
+            if (!string.Equals(run.RunId, runId, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            return await _ledgerReadService.BuildSummaryAsync(run, ct).ConfigureAwait(false);
+        }
+
+        return null;
+    }
+
     public async Task<IReadOnlyList<StrategyRunComparison>> CompareRunsAsync(
         IEnumerable<string> runIds,
         CancellationToken ct = default)

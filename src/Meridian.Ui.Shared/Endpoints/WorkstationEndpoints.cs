@@ -113,6 +113,83 @@ public static class WorkstationEndpoints
         .Produces<IReadOnlyList<ReconciliationRunSummary>>(200)
         .Produces(404);
 
+        group.MapGet("/runs/{runId}/ledger", async (string runId, HttpContext context) =>
+        {
+            var readService = context.RequestServices.GetService<StrategyRunReadService>();
+            if (readService is null)
+            {
+                return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var summary = await readService.GetLedgerSummaryAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            return summary is null
+                ? Results.NotFound()
+                : Results.Json(summary, jsonOptions);
+        })
+        .WithName("GetRunLedger")
+        .Produces<LedgerSummary>(200)
+        .Produces(404);
+
+        group.MapGet("/runs/{runId}/ledger/trial-balance", async (string runId, string? accountType, HttpContext context) =>
+        {
+            var readService = context.RequestServices.GetService<StrategyRunReadService>();
+            if (readService is null)
+            {
+                return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var summary = await readService.GetLedgerSummaryAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            if (summary is null)
+            {
+                return Results.NotFound();
+            }
+
+            var lines = string.IsNullOrWhiteSpace(accountType)
+                ? summary.TrialBalance
+                : summary.TrialBalance
+                    .Where(l => string.Equals(l.AccountType, accountType, StringComparison.OrdinalIgnoreCase))
+                    .ToArray();
+            return Results.Json(lines, jsonOptions);
+        })
+        .WithName("GetRunLedgerTrialBalance")
+        .Produces<IReadOnlyList<LedgerTrialBalanceLine>>(200)
+        .Produces(404);
+
+        group.MapGet("/runs/{runId}/ledger/journal", async (
+            string runId,
+            DateTimeOffset? from,
+            DateTimeOffset? to,
+            HttpContext context) =>
+        {
+            var readService = context.RequestServices.GetService<StrategyRunReadService>();
+            if (readService is null)
+            {
+                return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var summary = await readService.GetLedgerSummaryAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            if (summary is null)
+            {
+                return Results.NotFound();
+            }
+
+            IEnumerable<LedgerJournalLine> entries = summary.Journal;
+            if (from.HasValue)
+            {
+                entries = entries.Where(e => e.Timestamp >= from.Value);
+            }
+
+            if (to.HasValue)
+            {
+                entries = entries.Where(e => e.Timestamp <= to.Value);
+            }
+
+            return Results.Json(entries.ToArray(), jsonOptions);
+        })
+        .WithName("GetRunLedgerJournal")
+        .Produces<IReadOnlyList<LedgerJournalLine>>(200)
+        .Produces(404);
+
         app.MapGet("/workstation", (IWebHostEnvironment environment) => ServeWorkstationIndex(environment))
             .ExcludeFromDescription();
 
