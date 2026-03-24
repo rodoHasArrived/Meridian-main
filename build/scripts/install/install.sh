@@ -22,6 +22,14 @@ NC='\033[0m'
 
 MODE="${1:-}"
 
+# Move to repo root so all repo-relative paths (config/, data/, Meridian.sln,
+# deploy/) resolve correctly regardless of where the script is invoked from.
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || {
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    REPO_ROOT="$(cd "${SCRIPT_DIR}/../../.." && pwd)"
+}
+cd "$REPO_ROOT"
+
 # --- helpers -----------------------------------------------------------------
 info()    { echo -e "${BLUE}$*${NC}"; }
 success() { echo -e "${GREEN}$*${NC}"; }
@@ -128,7 +136,8 @@ check_prerequisites() {
         ver=$(dotnet --version)
         success "  .NET SDK ${ver}"
         if [[ "${ver%%.*}" -lt 9 ]]; then
-            warn "  .NET 9+ recommended"
+            warn "  .NET SDK ${ver} is too old — 9.0.100 or later is required (see global.json)"
+            ok=false
         fi
     else
         warn "  .NET SDK not found (required for native install)"

@@ -8,8 +8,10 @@
 # Usage:
 #   ./build/scripts/publish/publish.sh              All platforms
 #   ./build/scripts/publish/publish.sh linux-x64    Linux x64 only
+#   ./build/scripts/publish/publish.sh linux-arm64  Linux ARM64 only
 #   ./build/scripts/publish/publish.sh win-x64      Windows x64 only
 #   ./build/scripts/publish/publish.sh osx-x64      macOS x64 only
+#   ./build/scripts/publish/publish.sh osx-arm64    macOS ARM64 (Apple Silicon)
 #
 # =============================================================================
 
@@ -18,6 +20,14 @@ set -euo pipefail
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 NC='\033[0m'
+
+# Move to repo root so PROJECT and OUTPUT_DIR resolve correctly regardless of
+# where the script is invoked from.
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || {
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    REPO_ROOT="$(cd "${SCRIPT_DIR}/../../.." && pwd)"
+}
+cd "$REPO_ROOT"
 
 PROJECT="src/Meridian/Meridian.csproj"
 OUTPUT_DIR="publish"

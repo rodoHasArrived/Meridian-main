@@ -29,8 +29,9 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-pass() { echo -e "  ${GREEN}OK${NC}  $1"; }
-fail() { echo -e "  ${RED}MISSING${NC}  $1"; FAILURES+=("$1"); }
+pass()         { echo -e "  ${GREEN}OK${NC}             $1"; }
+fail()         { echo -e "  ${RED}MISSING${NC}        $1"; FAILURES+=("$1"); }
+fail_notexec() { echo -e "  ${RED}NOT EXECUTABLE${NC} $1"; FAILURES+=("$1"); }
 
 FAILURES=()
 
@@ -112,7 +113,7 @@ for f in "${REQUIRED_EXECUTABLES[@]}"; do
     if [ -x "$f" ]; then
         pass "$f (executable)"
     else
-        fail "$f (not executable — run: chmod +x $f)"
+        fail_notexec "$f  (run: chmod +x $f)"
     fi
 done
 
@@ -125,7 +126,7 @@ if [ "${#FAILURES[@]}" -eq 0 ]; then
     echo ""
     exit 0
 else
-    echo -e "${RED}Validation FAILED — ${#FAILURES[@]} missing reference(s):${NC}"
+    echo -e "${RED}Validation FAILED — ${#FAILURES[@]} issue(s):${NC}"
     for f in "${FAILURES[@]}"; do
         echo -e "  ${YELLOW}${f}${NC}"
     done
