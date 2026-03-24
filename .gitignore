@@ -21,12 +21,17 @@ x86/
 !build/scripts/
 !build/scripts/docs/
 !build/scripts/docs/*.py
+!build/scripts/docs/*.sh
+!build/scripts/install/
+!build/scripts/install/*.sh
+!build/scripts/hooks/
+!build/scripts/hooks/*.sh
 bld/
 
 # Publish output
 # Why: Published binaries are deployment artifacts, not source code.
 # They should be regenerated via `dotnet publish` for each deployment.
-publish/
+/publish/
 
 # Roslyn compiler cache
 # Why: IDE/compiler cache files that speed up compilation but are
