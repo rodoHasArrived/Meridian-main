@@ -1312,6 +1312,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── SymbolId.cs
 │   │   │   └── VenueCode.cs
 │   │   ├── Etl
+│   │   │   ├── EtlAbstractions.cs
 │   │   │   └── EtlModels.cs
 │   │   ├── Export
 │   │   │   ├── AnalysisExportModels.cs
@@ -2568,6 +2569,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── NyseMarketDataClientTests.cs
 │   │   │   │   ├── NyseNationalTradesCsvParserTests.cs
 │   │   │   │   ├── NyseSharedLifecycleTests.cs
+│   │   │   │   ├── NyseTaqCollectorIntegrationTests.cs
 │   │   │   │   ├── PolygonMarketDataClientTests.cs
 │   │   │   │   ├── PolygonMessageParsingTests.cs
 │   │   │   │   ├── PolygonRecordedSessionReplayTests.cs
@@ -2779,6 +2781,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-381 directories, 2360 files
+381 directories, 2362 files
 ```
 <!-- readme-tree end -->

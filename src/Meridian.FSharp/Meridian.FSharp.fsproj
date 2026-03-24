@@ -70,6 +70,7 @@
   <Target Name="GenerateCSharpInterop" BeforeTargets="BeforeCompile">
     <PropertyGroup>
       <InteropOutput>$(MSBuildProjectDirectory)/Generated/Meridian.FSharp.Interop.g.cs</InteropOutput>
+      <GeneratorProject>$(MSBuildProjectDirectory)/../../build/dotnet/FSharpInteropGenerator/FSharpInteropGenerator.csproj</GeneratorProject>
     </PropertyGroup>
     <!-- Only regenerate when the output file is missing; skip if it already exists to avoid
          requiring the FSharpInteropGenerator tool during offline or CI-cached builds. -->
