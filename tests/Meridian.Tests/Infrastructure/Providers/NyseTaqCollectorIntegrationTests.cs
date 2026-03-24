@@ -83,7 +83,7 @@ public sealed class NyseTaqCollectorIntegrationTests
             SequenceNumber: trade.SequenceNumber ?? 0,
             StreamId: trade.SourceId,
             Venue: trade.Exchange,
-            RawConditions: trade.Conditions is not null
+            RawConditions: !string.IsNullOrWhiteSpace(trade.Conditions)
                 ? trade.Conditions.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
                 : null);
     }
