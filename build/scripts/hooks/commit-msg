@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+msg_file="$1"
+if [[ ! -s "$msg_file" ]]; then
+  echo "Commit message must not be empty." >&2
+  exit 1
+fi
