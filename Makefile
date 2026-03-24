@@ -611,7 +611,7 @@ test-desktop-services: ## Run desktop-focused regression tests
 	@echo "$(BLUE)Running desktop-focused tests...$(NC)"
 ifeq ($(OS),Windows_NT)
 	@echo "Running WPF service tests..."
-	dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj -c Release
+	dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj -c Release -p:EnableFullWpfBuild=true
 	@echo "Running UI service tests..."
 	dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj -c Release
 	@echo "Running integration tests..."
