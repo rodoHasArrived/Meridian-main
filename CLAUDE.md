@@ -386,8 +386,10 @@ Meridian-main
 │       │   ├── commit-msg
 │       │   ├── install-hooks.sh
 │       │   └── pre-commit
-│       └── install
-│           └── install.sh
+│       ├── install
+│       │   └── install.sh
+│       └── publish
+│           └── publish.sh
 ├── config
 │   ├── appsettings.sample.json
 │   ├── appsettings.schema.json
