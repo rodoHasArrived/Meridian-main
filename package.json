@@ -5,7 +5,7 @@
   "description": "Build tools for Meridian",
   "scripts": {
     "generate-icons": "node build/node/generate-icons.mjs",
-    "generate-diagrams": "node build/node/generate-diagrams.mjs",
+    "generate-diagrams": "node scripts/generate-diagrams.mjs",
     "ui:dashboard:install": "npm --prefix src/Meridian.Ui/dashboard install",
     "ui:dashboard:build": "npm --prefix src/Meridian.Ui/dashboard run build",
     "ui:dashboard:test": "npm --prefix src/Meridian.Ui/dashboard run test"
