@@ -386,8 +386,10 @@ Meridian-main
 │       │   ├── commit-msg
 │       │   ├── install-hooks.sh
 │       │   └── pre-commit
-│       └── install
-│           └── install.sh
+│       ├── install
+│       │   └── install.sh
+│       └── publish
+│           └── publish.sh
 ├── config
 │   ├── appsettings.sample.json
 │   ├── appsettings.schema.json
@@ -2048,6 +2050,8 @@ Meridian-main
 │   │   │   │   ├── screens
 │   │   │   │   │   ├── research-screen.test.tsx
 │   │   │   │   │   ├── research-screen.tsx
+│   │   │   │   │   ├── trading-screen.test.tsx
+│   │   │   │   │   ├── trading-screen.tsx
 │   │   │   │   │   └── workspace-placeholder.tsx
 │   │   │   │   ├── styles
 │   │   │   │   │   └── index.css

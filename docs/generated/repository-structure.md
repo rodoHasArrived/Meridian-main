@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-03-24 22:57:56 UTC. Do not edit manually.
+> Auto-generated on 2026-03-24 23:30:39 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -260,8 +260,10 @@ Meridian-main
 │       │   ├── commit-msg
 │       │   ├── install-hooks.sh
 │       │   └── pre-commit
-│       └── install
-│           └── install.sh
+│       ├── install
+│       │   └── install.sh
+│       └── publish
+│           └── publish.sh
 ├── config
 │   ├── appsettings.sample.json
 │   ├── appsettings.schema.json
@@ -1922,6 +1924,8 @@ Meridian-main
 │   │   │   │   ├── screens
 │   │   │   │   │   ├── research-screen.test.tsx
 │   │   │   │   │   ├── research-screen.tsx
+│   │   │   │   │   ├── trading-screen.test.tsx
+│   │   │   │   │   ├── trading-screen.tsx
 │   │   │   │   │   └── workspace-placeholder.tsx
 │   │   │   │   ├── styles
 │   │   │   │   │   └── index.css
