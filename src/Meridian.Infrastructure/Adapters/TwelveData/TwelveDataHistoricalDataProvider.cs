@@ -155,6 +155,9 @@ public sealed class TwelveDataHistoricalDataProvider : BaseHistoricalDataProvide
             if (!IsValidOhlc(open, high, low, close))
                 continue;
 
+            if (low > high)
+                continue;
+
             long volume = 0;
             if (!string.IsNullOrEmpty(value.Volume))
                 long.TryParse(value.Volume, NumberStyles.Any, CultureInfo.InvariantCulture, out volume);
