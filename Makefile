@@ -24,8 +24,7 @@
         verify-setup \
         collect-debug collect-debug-minimal build-profile build-binlog validate-data analyze-errors \
         build-graph fingerprint env-capture env-diff impact bisect metrics history app-metrics \
-        icons desktop desktop-publish install-hooks \
-        build-wpf test-desktop-services desktop-dev-bootstrap \
+        install-hooks \
         ai-audit ai-audit-code ai-audit-docs ai-audit-tests ai-audit-ai-docs ai-verify ai-report \
         ai-maintenance-light ai-maintenance-full \
         ai-arch-check ai-arch-check-summary ai-arch-check-json \
@@ -40,8 +39,6 @@
 # Project settings
 PROJECT := src/Meridian/Meridian.csproj
 UI_PROJECT := src/Meridian.Ui/Meridian.Ui.csproj
-WPF_PROJECT := src/Meridian.Wpf/Meridian.Wpf.csproj
-DESKTOP_PROJECT := $(WPF_PROJECT)
 TEST_PROJECT := tests/Meridian.Tests/Meridian.Tests.csproj
 BENCHMARK_PROJECT := benchmarks/Meridian.Benchmarks/Meridian.Benchmarks.csproj
 DOCGEN_PROJECT := build/dotnet/DocGenerator/DocGenerator.csproj
@@ -49,11 +46,6 @@ DOCKER_IMAGE := meridian:latest
 HTTP_PORT ?= 8080
 BUILDCTL := python3 build/python/cli/buildctl.py
 BUILD_VERBOSITY ?= normal
-APPINSTALLER_URI ?=
-SIGNING_CERT_PFX ?=
-SIGNING_CERT_PASSWORD ?=
-DESKTOP_PUBLISH_READYTORUN ?= false
-
 ifeq ($(V),0)
 	BUILD_VERBOSITY := quiet
 endif
@@ -62,18 +54,6 @@ ifeq ($(V),2)
 endif
 ifeq ($(V),3)
 	BUILD_VERBOSITY := debug
-endif
-
-MSIX_APPINSTALLER_FLAGS :=
-MSIX_SIGNING_FLAGS :=
-DESKTOP_READYTORUN_FLAGS := -p:PublishReadyToRun=$(DESKTOP_PUBLISH_READYTORUN)
-ifneq ($(strip $(APPINSTALLER_URI)),)
-	MSIX_APPINSTALLER_FLAGS := -p:GenerateAppInstallerFile=true -p:AppInstallerUri=$(APPINSTALLER_URI) -p:AppInstallerCheckForUpdateFrequency=OnApplicationRun -p:AppInstallerUpdateFrequency=1
-endif
-ifneq ($(strip $(SIGNING_CERT_PFX)),)
-	MSIX_SIGNING_FLAGS := -p:PackageCertificateKeyFile=$(SIGNING_CERT_PFX) -p:PackageCertificatePassword=$(SIGNING_CERT_PASSWORD)
-else
-	MSIX_SIGNING_FLAGS := -p:GenerateTemporaryStoreCertificate=true
 endif
 
 # Colors
@@ -106,9 +86,6 @@ help: ## Show this help message
 	@echo ""
 	@echo "$(BLUE)Publishing:$(NC)"
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | grep -E 'publish' | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(GREEN)%-18s$(NC) %s\n", $$1, $$2}'
-	@echo ""
-	@echo "$(BLUE)Desktop App:$(NC)"
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | grep -E 'icons|desktop' | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(GREEN)%-18s$(NC) %s\n", $$1, $$2}'
 	@echo ""
 	@echo "$(BLUE)Pre-PR & Quality:$(NC)"
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | grep -E 'pre-pr|ai-audit|ai-verify|ai-docs|ai-report|ai-arch|ai-maintenance' | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(GREEN)%-28s$(NC) %s\n", $$1, $$2}'
@@ -567,64 +544,12 @@ history: ## Show build history summary
 	@$(BUILDCTL) history
 
 # =============================================================================
-# Desktop App
+# =============================================================================
+# Tooling Validation
 # =============================================================================
 
 verify-tooling-metadata: ## Validate Makefile/package/dependabot path references
 	@python3 build/scripts/validate-tooling-metadata.py
-
-icons: ## Generate desktop app icons from SVG
-	@echo "$(BLUE)Generating desktop app icons...$(NC)"
-	@npm ci --silent
-	@npm run generate-icons
-	@echo "$(GREEN)Icons generated$(NC)"
-
-desktop: icons ## Build WPF desktop app (Windows only)
-	@echo "$(BLUE)Building WPF desktop app...$(NC)"
-ifeq ($(OS),Windows_NT)
-	dotnet build $(WPF_PROJECT) -c Release -r win-x64 -p:EnableFullWpfBuild=true
-else
-	@echo "$(YELLOW)Desktop app build requires Windows. Use GitHub Actions for CI builds.$(NC)"
-	@echo "Run on Windows: dotnet build $(WPF_PROJECT) -c Release -r win-x64 -p:EnableFullWpfBuild=true"
-endif
-
-desktop-publish: icons ## Publish WPF desktop app as MSIX (Windows only)
-	@echo "$(BLUE)Publishing WPF desktop app...$(NC)"
-ifeq ($(OS),Windows_NT)
-	dotnet publish $(WPF_PROJECT) -c Release -r win-x64 --self-contained true \
-		-p:EnableFullWpfBuild=true \
-		$(DESKTOP_READYTORUN_FLAGS) \
-		-p:WindowsPackageType=MSIX \
-		-p:AppxPackageDir=publish/desktop/ \
-		$(MSIX_APPINSTALLER_FLAGS) \
-		$(MSIX_SIGNING_FLAGS)
-	@echo "$(GREEN)Published MSIX to publish/desktop/$(NC)"
-else
-	@echo "$(YELLOW)Desktop app publish requires Windows.$(NC)"
-	@echo "Use GitHub Actions workflow 'Desktop App Build' for CI builds."
-endif
-
-build-wpf: ## Build WPF desktop app (alias for desktop)
-	@$(MAKE) desktop
-
-test-desktop-services: ## Run desktop-focused regression tests
-	@echo "$(BLUE)Running desktop-focused tests...$(NC)"
-ifeq ($(OS),Windows_NT)
-	@echo "Running WPF service tests..."
-	dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj -c Release
-	@echo "Running UI service tests..."
-	dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj -c Release
-	@echo "Running integration tests..."
-	dotnet test $(TEST_PROJECT) -c Release --filter "FullyQualifiedName~ConfigurationUnificationTests|FullyQualifiedName~CliModeResolverTests"
-else
-	@echo "$(YELLOW)Desktop service tests require Windows. Skipping WPF and UI tests.$(NC)"
-	@echo "Running available integration tests..."
-	dotnet test $(TEST_PROJECT) -c Release --filter "FullyQualifiedName~ConfigurationUnificationTests|FullyQualifiedName~CliModeResolverTests"
-endif
-
-desktop-dev-bootstrap: ## Run desktop development bootstrap checks (PowerShell)
-	@echo "$(BLUE)Running desktop development bootstrap checks...$(NC)"
-	pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/desktop-dev.ps1
 
 # =============================================================================
 # Pre-PR Validation

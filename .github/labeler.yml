@@ -57,7 +57,6 @@ storage:
 ui:
   - changed-files:
     - any-glob-to-any-file: 'src/Meridian.Ui/**/*'
-    - any-glob-to-any-file: 'src/Meridian.Wpf/**/*'
 
 # Configuration files
 configuration:

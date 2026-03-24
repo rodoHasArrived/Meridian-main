@@ -33,7 +33,7 @@ Quality) checks without warnings.
 |------|---------|
 | **xUnit** | Test runner — all test projects |
 | **FluentAssertions** | Assertion library — preferred over `Assert.*` |
-| **Moq** | Mocking — `Meridian.Tests`, `Meridian.Wpf.Tests` |
+| **Moq** | Mocking — `Meridian.Tests`, `Meridian.Ui.Tests` |
 | **NSubstitute** | Mocking — `Meridian.Ui.Tests` (check `.csproj` first) |
 | **coverlet** | Code coverage — `dotnet test --collect:"XPlat Code Coverage"` |
 
@@ -58,7 +58,7 @@ Before writing any code, identify the component type. The component type determi
 | `IStorageSink` / WAL | C | `Meridian.Tests` | Temp dir, FlushAsync, DisposeAsync, line count |
 | `EventPipeline` | D | `Meridian.Tests` | FlushAsync before assert, DisposeAsync flushes |
 | Application service (pure) | E | `Meridian.Tests` | `[Theory]` + `[InlineData]` for inputs |
-| WPF / Ui.Services | F | `Meridian.Wpf.Tests` or `Ui.Tests` | API mock (Moq or NSubstitute), null on error |
+| Ui.Services | F | `Meridian.Ui.Tests` | API mock (Moq or NSubstitute), null on error |
 | F# modules | G | `Meridian.FSharp.Tests` | F# module style, `Result` type assertions |
 | Endpoint integration | H | `Meridian.Tests` | `WebApplicationFactory`, JSON snapshots |
 

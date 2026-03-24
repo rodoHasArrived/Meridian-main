@@ -14,12 +14,6 @@ on:
     paths:
       - 'docs/diagrams/*.dot'
       - 'docs/diagrams/uml/*.puml'
-      - 'src/Meridian.Wpf/App.xaml.cs'
-      - 'src/Meridian.Wpf/MainWindow.xaml.cs'
-      - 'src/Meridian.Wpf/Services/NavigationService.cs'
-      - 'src/Meridian.Wpf/Views/MainPage.xaml'
-      - 'src/Meridian.Wpf/Views/MainPage.xaml.cs'
-      - 'src/Meridian.Wpf/Views/Pages.cs'
       - 'scripts/generate-diagrams.mjs'
       - 'scripts/lib/ui-diagram-generator.mjs'
   workflow_dispatch:

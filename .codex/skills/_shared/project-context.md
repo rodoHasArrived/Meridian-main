@@ -7,7 +7,7 @@ Use this file as the common source of truth for Meridian-specific terminology, c
 - Meridian is a self-hosted trading platform built on .NET 9, C# 13, and F# 8.
 - The platform spans four connected pillars: data collection, backtesting, execution, and strategy lifecycle management.
 - The active product direction is a workflow-centric trading workstation that unifies research, trading, data operations, and governance surfaces.
-- The repository currently includes the WPF desktop client, the web UI, provider adapters, the backtesting engine, execution/paper trading, ledger support, MCP server layers, and shared UI services.
+- The repository includes the web UI, provider adapters, the backtesting engine, execution/paper trading, ledger support, MCP server layers, and shared UI services.
 
 ## Useful Commands
 
@@ -16,7 +16,6 @@ dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
 dotnet build Meridian.sln -c Release --no-restore /p:EnableWindowsTargeting=true
 dotnet test tests/Meridian.Tests -c Release /p:EnableWindowsTargeting=true
 dotnet test tests/Meridian.FSharp.Tests -c Release /p:EnableWindowsTargeting=true
-dotnet test tests/Meridian.Wpf.Tests -c Release /p:EnableWindowsTargeting=true
 make test
 make ai-verify
 python3 build/scripts/ai-repo-updater.py known-errors
@@ -41,8 +40,7 @@ Prefer the narrowest validation command that matches the files being changed.
 - `src/Meridian.Risk/`: pre-trade risk validation
 - `src/Meridian.Strategies/`: strategy lifecycle and run storage
 - `src/Meridian.Ui/`, `src/Meridian.Ui.Services/`, `src/Meridian.Ui.Shared/`: web UI and shared UI services
-- `src/Meridian.Wpf/`: Windows desktop client
-- `tests/`: cross-platform, F#, WPF, and UI-service test projects
+- `tests/`: cross-platform, F#, and UI-service test projects
 
 ## Key Abstractions
 
@@ -53,7 +51,6 @@ Prefer the narrowest validation command that matches the files being changed.
 - `src/Meridian.Storage/Archival/WriteAheadLog.cs`: WAL durability
 - `src/Meridian.Storage/Archival/AtomicFileWriter.cs`: crash-safe file writes
 - `src/Meridian.Core/Serialization/MarketDataJsonContext.cs`: source-generated JSON context
-- `src/Meridian.Wpf/ViewModels/BindableBase.cs`: MVVM base type
 - `src/Meridian.Execution/Interfaces/IOrderGateway.cs`: order routing abstraction
 - `src/Meridian.Risk/IRiskRule.cs`: pre-trade rule contract
 - `src/Meridian.Strategies/Interfaces/IStrategyLifecycle.cs`: run lifecycle contract
@@ -66,7 +63,6 @@ Prefer the narrowest validation command that matches the files being changed.
 - Use ADR-014 source-generated JSON serialization.
 - Use `EventPipelinePolicy.*.CreateChannel<T>()`, not ad hoc unbounded channels.
 - Route durable storage through WAL or `AtomicFileWriter`, not direct file writes.
-- Keep WPF code-behind thin and push business logic into view models or services.
 - Do not add package versions directly to project files; central package management lives in `Directory.Packages.props`.
 
 ## Migration Context

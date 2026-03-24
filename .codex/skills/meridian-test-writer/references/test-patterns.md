@@ -6,7 +6,6 @@ Use this file to pick the right destination and test style quickly.
 
 - `tests/Meridian.Tests/`: general backend, storage, providers, application services, endpoint coverage
 - `tests/Meridian.FSharp.Tests/`: F# modules and interop-focused coverage
-- `tests/Meridian.Wpf.Tests/`: WPF-specific behavior
 - `tests/Meridian.Ui.Tests/`: shared UI-service behavior
 
 ## Component Routing
@@ -16,7 +15,7 @@ Use this file to pick the right destination and test style quickly.
 - Storage sink / WAL / `AtomicFileWriter` -> `tests/Meridian.Tests/Storage/`
 - Pipeline component -> `tests/Meridian.Tests/Application/Pipeline/`
 - Pure application service -> `tests/Meridian.Tests/Application/Services/`
-- WPF view model or navigation/config/status service -> `tests/Meridian.Wpf.Tests/` or `tests/Meridian.Ui.Tests/`
+- UI service or config/status service -> `tests/Meridian.Ui.Tests/`
 - F# module or interop boundary -> `tests/Meridian.FSharp.Tests/`
 - Endpoint integration -> `tests/Meridian.Tests/` integration areas
 
