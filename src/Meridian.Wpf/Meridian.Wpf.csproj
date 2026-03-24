@@ -8,7 +8,6 @@
     <IsWindows Condition="'$(IsWindows)' != 'true' AND '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))' == 'True'">true</IsWindows>
     <!-- Default to false if all checks fail -->
     <IsWindows Condition="'$(IsWindows)' == ''">false</IsWindows>
-    <IsWindows Condition="'$(EnableFullWpfBuild)' != 'true'">false</IsWindows>
   </PropertyGroup>
 
   <!-- Non-Windows: Create a minimal stub that compiles but produces nothing -->
