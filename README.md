@@ -1458,9 +1458,11 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── OrderStatus.cs
 │   │   │   └── OrderStatusUpdate.cs
 │   │   ├── OrderManagementSystem.cs
+│   │   ├── PaperExecutionContext.cs
 │   │   ├── PaperTradingGateway.cs
 │   │   └── Services
-│   │       └── OrderLifecycleManager.cs
+│   │       ├── OrderLifecycleManager.cs
+│   │       └── PaperTradingPortfolio.cs
 │   ├── Meridian.Execution.Sdk
 │   │   ├── IExecutionGateway.cs
 │   │   ├── IOrderManager.cs
@@ -2531,7 +2533,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   └── TradeModelTests.cs
 │   │   │   └── StrongDomainTypeTests.cs
 │   │   ├── Execution
-│   │   │   └── PaperTradingGatewayTests.cs
+│   │   │   ├── PaperTradingGatewayTests.cs
+│   │   │   └── PaperTradingPortfolioTests.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── Infrastructure
 │   │   │   ├── CppTrader
@@ -2781,6 +2784,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-381 directories, 2362 files
+381 directories, 2365 files
 ```
 <!-- readme-tree end -->
