@@ -36,7 +36,7 @@ check_dotnet() {
     ver=$(dotnet --version)
     info "  .NET SDK ${ver} found"
     if [[ "${ver%%.*}" -lt 9 ]]; then
-        warn ".NET 9 or later is recommended (found ${ver})"
+        error ".NET SDK 9.0.100 or later is required by global.json (found ${ver}). Please install .NET 9 from https://dot.net/download"
     fi
 }
 
