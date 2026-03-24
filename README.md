@@ -1227,13 +1227,6 @@ Use these documents together when planning or implementing new work:
 │   │   ├── GlobalUsings.cs
 │   │   ├── IBacktestContext.cs
 │   │   ├── IBacktestStrategy.cs
-│   │   ├── Ledger
-│   │   │   ├── BacktestLedger.cs
-│   │   │   ├── JournalEntry.cs
-│   │   │   ├── LedgerAccount.cs
-│   │   │   ├── LedgerAccountType.cs
-│   │   │   ├── LedgerAccounts.cs
-│   │   │   └── LedgerEntry.cs
 │   │   ├── Meridian.Backtesting.Sdk.csproj
 │   │   ├── Order.cs
 │   │   ├── PortfolioSnapshot.cs
@@ -2818,6 +2811,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-388 directories, 2392 files
+387 directories, 2386 files
 ```
 <!-- readme-tree end -->
