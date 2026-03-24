@@ -6,27 +6,30 @@ Repo-local Codex skills live under `.codex/skills/`. Use them for Meridian-speci
 
 **Meridian** is a high-performance .NET 9.0 / C# 13 / F# 8.0 integrated trading platform. It collects real-time and historical market microstructure data from multiple providers, executes trading strategies in real-time, backtests strategies on historical data, and tracks portfolio performance across all runs.
 
-**Version:** 1.7.x | **Status:** Development / Pilot Ready | **Files:** 704 source files | **Tests:** ~4,135
+**Version:** 1.7.2 | **Status:** Development / Pilot Ready | **Files:** 1,118 source files (1,073 C# + 45 F#) | **Tests:** ~4,424
 
 ### Platform Pillars
 - **📡 Data Collection** - Real-time streaming (90+ sources) + historical backfill (10+ providers) with data quality monitoring
 - **🔬 Backtesting** - Tick-level strategy replay with fill models, portfolio metrics (Sharpe, drawdown, XIRR), and full audit trail
-- **⚡ Real-Time Execution** - Paper trading gateway for zero-risk strategy validation; designed for live order execution integration
+- **⚡ Real-Time Execution** - Paper trading gateway + brokerage gateway framework (Alpaca, IB, StockSharp) for strategy validation and live integration
 - **🗂️ Portfolio Tracking** - Performance metrics, strategy lifecycle management, and multi-run comparison
 
 ### Key Capabilities
 - Real-time streaming: Interactive Brokers, Alpaca, NYSE, Polygon, StockSharp (90+ sources)
 - Historical backfill: 10+ providers with automatic fallback chain
 - Symbol search: 5 providers (Alpaca, Finnhub, Polygon, OpenFIGI, StockSharp)
-- Current provider implementation inventory documented below for audit parity (streaming, historical, symbol-search, base, and template classes)
+- Brokerage gateway framework: Alpaca, IB, StockSharp adapters for order routing
+- Current provider implementation inventory documented below for audit parity (streaming, historical, symbol-search, brokerage, base, and template classes)
 - Data quality monitoring with SLA enforcement
 - WAL + tiered JSONL/Parquet storage
 - Backtesting engine with tick-by-tick replay and fill models
-- Paper trading and strategy execution framework
+- Paper trading gateway with risk rules (position limits, drawdown stops, order rate throttle)
 - Portfolio performance tracking and multi-run analysis
-- Web dashboard
+- Direct lending module with PostgreSQL persistence
+- Web dashboard (300 API routes, 0 stubs)
 - WPF desktop app (Windows) — **code present in `src/Meridian.Wpf/`, not included in active solution build; delayed implementation**
 - QuantConnect Lean Engine integration
+- CppTrader native matching engine integration
 
 ---
 
@@ -3123,6 +3126,16 @@ The following provider-related classes are the current canonical inventory used 
 | `PolygonSymbolSearchProvider` | Polygon symbol search |
 | `StockSharpSymbolSearchProvider` | StockSharp symbol search |
 
+### Brokerage gateway implementations
+| Provider Class | Role |
+|----------------|------|
+| `BaseBrokerageGateway` | Abstract brokerage adapter base class |
+| `BrokerageGatewayAdapter` | Order routing wrapper for `IBrokerageGateway` |
+| `AlpacaBrokerageGateway` | Alpaca order routing with fractional quantity support |
+| `IBBrokerageGateway` | Interactive Brokers order routing (conditional on IBAPI) |
+| `StockSharpBrokerageGateway` | StockSharp connector-based order routing |
+| `TemplateBrokerageGateway` | Brokerage adapter scaffold |
+
 ### Shared base and template provider classes
 | Provider Class | Role |
 |----------------|------|
@@ -3162,6 +3175,8 @@ The following provider-related classes are the current canonical inventory used 
 | `CompositeHistoricalDataProvider` | `Infrastructure/Adapters/Core/` | Multi-provider backfill with fallback |
 | `BacktestEngine` | `Backtesting/` | Tick-by-tick strategy replay with fill models |
 | `PaperTradingGateway` | `Execution/` | Paper trading for real-time strategy testing |
+| `BaseBrokerageGateway` | `Execution/Adapters/` | Abstract brokerage adapter base class |
+| `AlpacaBrokerageGateway` | `Infrastructure/Adapters/Alpaca/` | Alpaca order routing |
 | `PortfolioTracker` | `Strategies/` | Multi-run performance metrics and lifecycle |
 
 *All locations relative to `src/Meridian/`*
@@ -3228,4 +3243,4 @@ Load these on-demand when working in the relevant area — do not read all of th
 
 ---
 
-*Last Updated: 2026-03-19*
+*Last Updated: 2026-03-24*
