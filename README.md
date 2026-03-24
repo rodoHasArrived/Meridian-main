@@ -1595,7 +1595,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── NYSEDataSource.cs
 │   │   │   │   ├── NYSEOptions.cs
 │   │   │   │   ├── NYSEServiceExtensions.cs
-│   │   │   │   └── NyseMarketDataClient.cs
+│   │   │   │   ├── NyseMarketDataClient.cs
+│   │   │   │   └── NyseNationalTradesCsvParser.cs
 │   │   │   ├── NasdaqDataLink
 │   │   │   │   └── NasdaqDataLinkHistoricalDataProvider.cs
 │   │   │   ├── OpenFigi
@@ -2357,6 +2358,7 @@ Use these documents together when planning or implementing new work:
 │   ├── Directory.Build.props
 │   ├── Meridian.Backtesting.Tests
 │   │   ├── BracketOrderTests.cs
+│   │   ├── FillModelExpansionTests.cs
 │   │   ├── FillModelTests.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── LedgerQueryTests.cs
@@ -2398,7 +2400,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── ParallelBackfillServiceTests.cs
 │   │   │   │   ├── PriorityBackfillQueueTests.cs
 │   │   │   │   ├── RateLimiterTests.cs
-│   │   │   │   └── ScheduledBackfillTests.cs
+│   │   │   │   ├── ScheduledBackfillTests.cs
+│   │   │   │   └── TwelveDataNasdaqProviderContractTests.cs
 │   │   │   ├── Canonicalization
 │   │   │   │   ├── CanonicalizationFixtureDriftTests.cs
 │   │   │   │   ├── CanonicalizationGoldenFixtureTests.cs
@@ -2552,7 +2555,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   │   └── ib_order_stop_buy_ioc.json
 │   │   │   │   │   └── Polygon
 │   │   │   │   │       ├── polygon-recorded-session-aapl.json
-│   │   │   │   │       └── polygon-recorded-session-msft-edge.json
+│   │   │   │   │       ├── polygon-recorded-session-msft-edge.json
+│   │   │   │   │       └── polygon-recorded-session-spy-etf.json
 │   │   │   │   ├── FreeProviderContractTests.cs
 │   │   │   │   ├── HistoricalDataProviderContractTests.cs
 │   │   │   │   ├── IBOrderSampleTests.cs
@@ -2562,6 +2566,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── MarketDataClientContractTests.cs
 │   │   │   │   ├── NYSEMessageParsingTests.cs
 │   │   │   │   ├── NyseMarketDataClientTests.cs
+│   │   │   │   ├── NyseNationalTradesCsvParserTests.cs
+│   │   │   │   ├── NyseSharedLifecycleTests.cs
 │   │   │   │   ├── PolygonMarketDataClientTests.cs
 │   │   │   │   ├── PolygonMessageParsingTests.cs
 │   │   │   │   ├── PolygonRecordedSessionReplayTests.cs
@@ -2773,6 +2779,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-381 directories, 2354 files
+381 directories, 2360 files
 ```
 <!-- readme-tree end -->
