@@ -32,16 +32,15 @@ public abstract class BaseBrokerageGateway : IBrokerageGateway
         Logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         // ADR-013: Use bounded channels for execution event pipeline
-        var policy = new EventPipelinePolicy(
-            Capacity: 500,
-            FullMode: BoundedChannelFullMode.Wait,
-            EnableMetrics: false);
-        _reportChannel = policy.CreateChannel<ExecutionReport>(
+        _reportChannel = EventPipelinePolicy.Default.CreateChannel<ExecutionReport>(
             singleReader: false, singleWriter: false);
     }
 
     // ── IExecutionGateway ──────────────────────────────────────────────
 
+    }
+
+    // ── IExecutionGateway ──────────────────────────────────────────────
     /// <inheritdoc />
     public abstract string GatewayId { get; }
 
