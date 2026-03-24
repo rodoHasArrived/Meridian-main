@@ -35,6 +35,10 @@ This folder contains architecture diagrams for the Meridian system, updated to r
 | **Domain Event Model** | MarketEvent hierarchy: all payload types, event type enum, and tier classification | `domain-event-model.dot` |
 | **F# Domain Library** | Railway-oriented validation, type-safe calculations, and C# interop layer | `fsharp-domain.dot` |
 | **Data Quality & Monitoring** | Quality scoring, SLA enforcement, outlier detection, and observability stack | `data-quality-monitoring.dot` |
+| **Backfill Workflow** | CLI/REST/scheduled backfill → CompositeProvider → rate limiting → gap detection → WAL + storage | `backfill-workflow.dot` |
+| **MCP Server** | Model Context Protocol server tools, resources, prompts, and Meridian backend integration | `mcp-server.dot` |
+| **Configuration Management** | appsettings.json hierarchy, environment variable overrides, IOptionsMonitor hot-reload | `configuration-management.dot` |
+| **Symbol Search & Resolution** | Search query → 5 providers → OpenFIGI canonical ID → SymbolMapper → provider-specific formats | `symbol-search-resolution.dot` |
 
 ---
 
@@ -262,6 +266,51 @@ Shows data quality scoring and the observability stack:
 - **Retention & Catalog** — RetentionComplianceReporter (policy audit), StorageCatalogService (symbol×date×type inventory)
 - **Observability** — Prometheus metrics (12 counters/gauges), Grafana dashboards, OpenTelemetry traces, `/health` + `/metrics` HTTP endpoints
 
+### Backfill Workflow
+
+Shows the end-to-end historical data backfill pipeline:
+
+1. **Entry Points** — CLI (`--backfill`), REST API, and automatic scheduled/gap-repair triggers
+2. **BackfillCoordinator** — Validates request, checks StorageCatalogService for existing coverage, partitions date range, enqueues work items
+3. **CompositeHistoricalDataProvider** — Priority-ordered failover across 13 providers, circuit breaker per provider, rate-limit rotation, health-based exclusion
+4. **Rate Limiting** — ProviderRateLimitTracker (token bucket), exponential backoff on 429 responses, per-provider limits documented
+5. **Provider Execution** — IAsyncEnumerable streaming, JSON source-generated parsing, OHLCV normalization, UTC canonicalization
+6. **Gap Detection & Validation** — Missing interval detection, F# railway-oriented validation (price/volume/timestamp checks)
+7. **Storage** — WAL → JSONL Sink → Parquet Sink → Tiered Storage Manager (hot/warm/cold)
+8. **Observability** — BackfillProgressTracker, Prometheus metrics, BackfillRunResult with coverage map
+
+### MCP Server
+
+Shows the Model Context Protocol server architecture:
+
+- **MCP Clients** — Claude Desktop, Claude.ai, and other MCP-compatible hosts connect via stdio JSON-RPC 2.0
+- **Tools** — `RunBackfill` (BackfillTools), `AddSymbol` / `RemoveSymbol` (SymbolTools), `ListBackfillProviders` / `GetLastBackfillResult` (ProviderTools), `QueryStoredData` (StorageTools)
+- **Resources** — `GetProviderCatalog` (provider health + capabilities), `GetStorageCatalog` (symbol×date inventory), `GetActiveConfiguration` (masked config snapshot)
+- **Prompts** — `BackfillSetup` (guided backfill workflow), `ProviderConfiguration` (API key setup instructions)
+- **Backend wiring** — DI injects BackfillCoordinator, StorageCatalogService, ProviderRegistry, IOptionsMonitor into all tool/resource classes
+
+### Configuration Management
+
+Shows the configuration hierarchy and hot-reload mechanism:
+
+- **Sources (lowest → highest priority)**: Built-in defaults → `appsettings.sample.json` → `appsettings.json` → Environment variables → CLI args
+- **Credentials**: Environment variables only — never in JSON files or source control (ADR-011)
+- **Options Pattern** — `IOptionsMonitor<T>` preferred for all runtime-mutable config; `IOptions<T>` only for static settings
+- **Hot-Reload** — `--watch-config` flag enables `FileSystemWatcher` on `appsettings.json`; `IOptionsMonitor.OnChange` callbacks propagate to streaming providers, storage, pipeline, and SLA monitor
+- **Typed Options** — `DataSourceOptions`, `SymbolsOptions`, `StorageOptions`, `BackfillOptions`, `DataQualityOptions`
+- **Diagnostics** — `--show-config` prints merged config with masked credentials; startup validation fails fast on bad config with friendly error codes
+
+### Symbol Search & Resolution
+
+Shows the full symbol search and canonical ID resolution flow:
+
+1. **Entry** — Free-text, ticker, ISIN, CUSIP, or SEDOL query via CLI or REST API
+2. **Fanout** — Query dispatched to all 5 search providers (Alpaca, Finnhub, Polygon, StockSharp) in parallel
+3. **Aggregation** — Results deduplicated by ticker+exchange, ranked by confidence (exact match, provider priority, active status, FIGI confirmation)
+4. **OpenFIGI Resolution** — Top candidate resolved to global FIGI ID via `OpenFigiClient`; result cached in `SecurityMasterEventStore` (event-sourced, snapshot + projection cache)
+5. **SymbolMapper** — Canonical FIGI → exchange-qualified ticker in each provider's format (e.g. `AAPL.US` for Stooq, `AAPL [SMART/USD]` for IB); `ContractFactory` for IB contract resolution
+6. **Output** — `CanonicalSymbol` with FIGI, ticker, asset class, currency, and pre-computed provider format cache; registered to `Symbol Registry`
+
 ### UI Navigation Map _(auto-generated)_
 
 Shows the current WPF sidebar implementation as it exists in source control:
@@ -429,4 +478,4 @@ See [uml/README.md](uml/README.md) for the full inventory and rendering instruct
 
 _Graphviz diagrams generated with DOT language. UML diagrams generated with PlantUML._
 
-_Last Updated: 2026-03-23_
+_Last Updated: 2026-03-24_

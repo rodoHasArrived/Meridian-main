@@ -1,6 +1,6 @@
 // Onboarding & Diagnostics Flow Diagram
-// Meridian v1.6.1
-// Last Updated: 2026-02-21
+// Meridian v1.7.x
+// Last Updated: 2026-03-24
 //
 // This diagram shows the user journey from first-run through setup to operational,
 // including all diagnostic and configuration options.
@@ -16,7 +16,7 @@ digraph OnboardingFlow {
 
   // Title
   labelloc="t";
-  label="Meridian - Onboarding & Diagnostics Flow\nUser Journey from Installation to Operation | v1.6.1";
+  label="Meridian - Onboarding & Diagnostics Flow\nUser Journey from Installation to Operation | v1.7.x";
 
   // Entry Point
   START [shape=oval, fillcolor="#38a169", fontcolor="white",
@@ -156,6 +156,7 @@ digraph OnboardingFlow {
 
   WELCOME -> WIZARD_OPT [style=dashed];
   WELCOME -> AUTO_OPT [style=dashed];
+  WELCOME -> GENERATE_OPT [style=dashed];
   WELCOME -> DETECT_OPT [style=dashed];
 
   // Setup options flow
