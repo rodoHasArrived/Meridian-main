@@ -1,3 +1,7 @@
+> **Note:** WPF desktop app references in this document reflect a delayed implementation. `src/Meridian.Wpf/` is preserved but not in the active solution build.
+
+---
+
 # Readability refactor baseline
 
 _Date: 2026-03-20_

@@ -17,7 +17,7 @@ Use this document with:
 
 ## Summary
 
-Meridian already has the foundations of a serious local-first trading platform: collection, storage, replay, backtesting, paper-trading primitives, ledger infrastructure, Security Master foundations, and a large WPF and web surface area. The main gap is not "can the platform do things?" but "does the product feel like one coherent operator workflow?"
+Meridian already has the foundations of a serious local-first trading platform: collection, storage, replay, backtesting, paper-trading primitives, ledger infrastructure, Security Master foundations, and a web surface area. The main gap is not "can the platform do things?" but "does the product feel like one coherent operator workflow?"
 
 The roadmap now centers on four outcomes:
 
@@ -33,7 +33,7 @@ The roadmap now centers on four outcomes:
 - Core improvement themes A-G are closed in [`IMPROVEMENTS.md`](IMPROVEMENTS.md).
 - Data canonicalization theme J is closed through deterministic mappings, metrics, drift reporting, and golden fixtures.
 - Provider registration, DI composition, route coverage, API auth/rate limiting, observability baseline, and deployment assets are in place.
-- WPF workspace/session persistence is live and already aligned around `Research`, `Trading`, `Data Operations`, and `Governance`.
+- WPF workspace/session persistence code exists in `src/Meridian.Wpf/Services/WorkspaceService.cs` (delayed implementation — not in active build).
 - Shared workstation contracts and read services exist for runs, portfolio, and ledger baselines.
 - Coordination primitives for future multi-instance ownership already exist in `src/Meridian.Application/Coordination/`.
 - Security Master services, storage, and domain modules already exist as a platform foundation.
@@ -64,8 +64,8 @@ The roadmap now centers on four outcomes:
 The following repo-grounded claims are safe to treat as complete as of 2026-03-22:
 
 - The old platform-hardening backlog is no longer the main blocker. `ROADMAP`, `FEATURE_INVENTORY`, and `FULL_IMPLEMENTATION_TODO_2026_03_20` all agree that the remaining work is productization, not basic platform survival.
-- The workstation vocabulary is established in code, including persisted workspace/session behavior in [`../src/Meridian.Wpf/Services/WorkspaceService.cs`](../src/Meridian.Wpf/Services/WorkspaceService.cs).
-- Shared run and drill-in foundations are present through `StrategyRunReadService`, `PortfolioReadService`, `LedgerReadService`, workstation contracts, and WPF browser/detail/portfolio/ledger view models.
+- The workstation vocabulary is established in code, including persisted workspace/session behavior in `src/Meridian.Wpf/Services/WorkspaceService.cs` (delayed implementation — not in active build).
+- Shared run and drill-in foundations are present through `StrategyRunReadService`, `PortfolioReadService`, `LedgerReadService`, and workstation contracts.
 - Governance and Security Master are no longer greenfield concepts. The repo already contains `Meridian.Application/SecurityMaster`, `Meridian.Contracts/Workstation/ReconciliationDtos.cs`, and run-scoped reconciliation services/endpoints.
 - The UFL planning layer has expanded beyond a single note: the asset package index and direct-lending implementation roadmap are now checked in on 2026-03-22.
 
@@ -80,7 +80,7 @@ Remaining work:
 - make workspace landing shells feel intentional and durable
 - align command palette, navigation hierarchy, and quick actions
 - remove or re-scope orphan and placeholder-only surfaces
-- keep web and WPF workstation seams aligned where practical
+- keep web workstation shells aligned with future WPF parity (delayed)
 
 ### Phase 12: Shared Run / Portfolio / Ledger Model
 
@@ -131,13 +131,13 @@ Remaining work:
 
 | Category | Opportunity | Gap | Value | Unlocks | Track |
 |---|---|---|---|---|---|
-| Workflow completion | Finish workspace-first shells | Workspaces exist in name and persistence, but not yet as the clear primary UX | Meridian starts feeling like one product instead of a toolkit | cleaner run browsing, governance adoption, web/WPF alignment | Critical path |
+| Workflow completion | Finish workspace-first shells | Workspaces exist in name and persistence, but not yet as the clear primary UX | Meridian starts feeling like one product instead of a toolkit | cleaner run browsing, governance adoption, web UI alignment | Critical path |
 | Operator UX | Promote run/portfolio/ledger/reconciliation into one operator flow | Shared read models exist, but paper/live and governance continuity are incomplete | users get one recognizable mental model from research through audit | promotion workflow, cockpit UX, report packs | Critical path |
 | Provider readiness | Close the remaining trust gaps in replay/runtime evidence | Some provider claims still rely too heavily on docs or narrow coverage | lowers rollout risk and demo/operator friction | paper/live workflow credibility, execution realism | Critical path |
 | Reliability and observability | Turn reconciliation and governance seams into auditable operational workflows | Reconciliation DTOs and services exist, but the product surface is still early | stronger operator trust and post-incident explainability | governed exports, exception queues, audit trails | Critical path |
 | Flagship product capabilities | Use direct lending as the first deep UFL vertical | The repo now has a real direct-lending slice and roadmap, but it is not yet a complete governed workflow | proves Meridian can host asset-specific middle/back-office workflows | broader UFL package execution, differentiated governance story | Later wave |
 | Architecture simplification | Keep query/orchestration seams ahead of UI sprawl | Page-local logic and broad composition areas still slow safe iteration | reduces future delivery cost and drift | faster workstation, governance, and flagship delivery | Later wave |
-| Testing and validation | Expand focused validation where new product seams are landing | Workstation, governance, and direct-lending seams need stronger regression evidence as they deepen | keeps roadmap claims conservative and supportable | safer iteration across WPF, API, and F# kernels | Continuous |
+| Testing and validation | Expand focused validation where new product seams are landing | Workstation, governance, and direct-lending seams need stronger regression evidence as they deepen | keeps roadmap claims conservative and supportable | safer iteration across web UI, API, and F# kernels | Continuous |
 | Flagship product capabilities | Land QuantScript and L3 simulation on the stabilized shell | Both remain blueprint-only | differentiates the Research workspace once the core operator loop is coherent | stronger strategy lifecycle story | After critical path |
 
 ## Target End Product

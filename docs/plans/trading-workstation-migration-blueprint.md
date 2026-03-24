@@ -1,3 +1,7 @@
+> **Note:** WPF desktop app references in this document reflect a delayed implementation. `src/Meridian.Wpf/` is preserved but not in the active solution build.
+
+---
+
 # Trading Workstation Migration Blueprint
 
 **Owner:** Core Team  

@@ -35,7 +35,9 @@ explicitly**.
 
 ---
 
-### WPF / MVVM Instructions
+### WPF / MVVM Instructions *(Delayed Implementation)*
+
+> WPF is not in the active solution build. These instructions apply when WPF development resumes.
 
 **File:** [`.github/instructions/wpf.instructions.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/instructions/wpf.instructions.md)
 **Applies to:** `src/Meridian.Wpf/**`

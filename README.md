@@ -1,6 +1,8 @@
 # Meridian
 
-Meridian is a comprehensive fund management platform in active delivery. The current platform already includes market-data ingestion, storage, backfill, replay, backtesting, paper-trading foundations, portfolio and ledger read models, Security Master foundations, a first run-scoped reconciliation seam, direct-lending services and endpoints, and a WPF desktop shell. The next major delivery wave expands that baseline into a connected front-, middle-, and back-office product covering shared run workflows, Security Master productization, multi-ledger governance, cash-flow modeling, deeper reconciliation, reporting, and trade-management operations.
+Meridian is a comprehensive fund management platform in active delivery. The current platform already includes market-data ingestion, storage, backfill, replay, backtesting, paper-trading foundations, portfolio and ledger read models, Security Master foundations, a first run-scoped reconciliation seam, and direct-lending services and endpoints. The next major delivery wave expands that baseline into a connected front-, middle-, and back-office product covering shared run workflows, Security Master productization, multi-ledger governance, cash-flow modeling, deeper reconciliation, reporting, and trade-management operations.
+
+> **WPF Desktop App:** Code is present in `src/Meridian.Wpf/` but is not included in the active solution build. The web dashboard (`make run-ui`) is the current UI surface. WPF is a delayed implementation retained for future resumption.
 
 ## Start Here
 
@@ -2147,7 +2149,7 @@ Use these documents together when planning or implementing new work:
 │   │       ├── BackfillCoordinator.cs
 │   │       ├── ConfigStore.cs
 │   │       └── SecurityMasterSecurityReferenceLookup.cs
-│   └── Meridian.Wpf
+│   └── Meridian.Wpf  ← DELAYED IMPLEMENTATION (not in active solution build)
 │       ├── App.xaml
 │       ├── App.xaml.cs
 │       ├── AssemblyInfo.cs
