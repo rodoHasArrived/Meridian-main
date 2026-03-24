@@ -67,20 +67,20 @@ classDef store fill:#fff5f5,stroke:#c53030,stroke-width:1px;
 
 ```mermaid
 flowchart TB
-    subgraph C[Meridian (Process)]
-        APP[Application Layer\nComposition/ConfigWatcher/StatusWriter/BackfillService/Scheduling]:::container
-        DOM[Domain Layer\nCollectors + Models]:::container
-        PIPE[Event Pipeline\nEventPipeline/DualPathEventPipeline/IngestionJobService]:::container
-        STOR[Storage\nJsonl/Parquet/CatalogSync Sinks]:::container
-        INFRA[Infrastructure\nStreaming + Historical Providers]:::container
+    subgraph C["Meridian (Process)"]
+        APP["Application Layer<br/>Composition/ConfigWatcher/StatusWriter/BackfillService/Scheduling"]:::container
+        DOM["Domain Layer<br/>Collectors + Models"]:::container
+        PIPE["Event Pipeline<br/>EventPipeline/DualPathEventPipeline/IngestionJobService"]:::container
+        STOR["Storage<br/>Jsonl/Parquet/CatalogSync Sinks"]:::container
+        INFRA["Infrastructure<br/>Streaming + Historical Providers"]:::container
     end
 
-    IB[Interactive Brokers\nTWS/Gateway]:::ext
-    ALP[Alpaca\nWebSocket + REST]:::ext
-    HIST[Historical APIs\nYahoo/Stooq/Nasdaq]:::ext
-    DISK[(Filesystem\n./data)]:::store
-    UI[Web Dashboard\nMeridian.Ui]:::container
-    WPF[Desktop App\nMeridian.Wpf]:::container
+    IB["Interactive Brokers<br/>TWS/Gateway"]:::ext
+    ALP["Alpaca<br/>WebSocket + REST"]:::ext
+    HIST["Historical APIs<br/>Yahoo/Stooq/Nasdaq"]:::ext
+    DISK[("Filesystem<br/>./data")]:::store
+    UI["Web Dashboard<br/>Meridian.Ui"]:::container
+    WPF["Desktop App<br/>Meridian.Wpf"]:::container
     OPR[Operator]:::person
 
     OPR --> UI
@@ -113,28 +113,28 @@ classDef store fill:#fff5f5,stroke:#c53030,stroke-width:1px;
 
 ```mermaid
 flowchart LR
-    subgraph INF[Infrastructure/Providers]
-        CONN[EnhancedIBConnectionManager\n(EWrapper)]:::component
+    subgraph INF["Infrastructure/Providers"]
+        CONN["EnhancedIBConnectionManager<br/>(EWrapper)"]:::component
         ROUTE[IBCallbackRouter]:::component
         FACT[ContractFactory]:::component
-        CLIENT[IMarketDataClient\nIBMarketDataClient/AlpacaMarketDataClient/NoOp]:::component
+        CLIENT["IMarketDataClient<br/>IBMarketDataClient/AlpacaMarketDataClient/NoOp"]:::component
     end
 
-    subgraph DOM[Domain]
+    subgraph DOM["Domain"]
         TD[TradeDataCollector]:::component
         MD[MarketDepthCollector]:::component
-        QC[QuoteCollector\n(BBO cache/emitter)]:::component
-        MODELS[Models\nTrade/LOBSnapshot/BboQuotePayload/Integrity]:::component
+        QC["QuoteCollector<br/>(BBO cache/emitter)"]:::component
+        MODELS["Models<br/>Trade/LOBSnapshot/BboQuotePayload/Integrity"]:::component
     end
 
-    subgraph APP[Application]
+    subgraph APP["Application"]
         CW[ConfigWatcher]:::component
         SW[StatusWriter]:::component
         MET[Metrics]:::component
     end
 
-    subgraph PIPE[Pipeline/Storage]
-        EP[EventPipeline\nBounded Channel]:::component
+    subgraph PIPE["Pipeline/Storage"]
+        EP["EventPipeline<br/>Bounded Channel"]:::component
         SINK[JsonlStorageSink]:::component
         POL[JsonlStoragePolicy]:::component
         FS[(Filesystem)]:::store
