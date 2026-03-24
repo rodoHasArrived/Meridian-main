@@ -1,6 +1,6 @@
 # Meridian
 
-Meridian is a comprehensive fund management platform in active delivery. The current platform already includes market-data ingestion, storage, backfill, replay, backtesting, paper-trading foundations, portfolio and ledger read models, Security Master foundations, a first run-scoped reconciliation seam, and direct-lending services and endpoints. The next major delivery wave expands that baseline into a connected front-, middle-, and back-office product covering shared run workflows, Security Master productization, multi-ledger governance, cash-flow modeling, deeper reconciliation, reporting, and trade-management operations.
+Meridian is a comprehensive fund management platform in active delivery. The current platform includes market-data ingestion (90+ streaming sources, 10+ backfill providers), tiered storage (WAL + JSONL/Parquet), backtesting (tick-level replay with fill models), a brokerage gateway framework (Alpaca, IB, StockSharp adapters), paper-trading with risk rules, portfolio and ledger read models, Security Master foundations, direct-lending services, and a web dashboard with 300 API routes. The next delivery wave focuses on wiring brokerage gateways into a paper-trading cockpit, provider confidence hardening, Security Master productization, and governance/fund-operations product slices.
 
 > **WPF Desktop App:** Code is present in `src/Meridian.Wpf/` but is not included in the active solution build. The web dashboard (`make run-ui`) is the current UI surface. WPF is a delayed implementation retained for future resumption.
 

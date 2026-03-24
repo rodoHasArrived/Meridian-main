@@ -2,7 +2,7 @@
 
 **Last Updated:** 2026-03-24
 **Status:** Refocused on core platform functionality
-**Repository Snapshot (2026-03-24):** solution projects: 29 | `src/` projects: 21 | test projects: 5 | workflow files: 37
+**Repository Snapshot (2026-03-24):** solution projects: 35 | `src/` projects: 27 | test projects: 7 | workflow files: 35 | source files: 1,118 (1,073 C# + 45 F#) | test files: 335 (326 C# + 9 F#) | tests: ~4,424
 
 Meridian is a self-hosted trading platform. The active delivery focus is the four core platform pillars: **data collection**, **backtesting**, **real-time execution**, and **portfolio/strategy tracking**. The web dashboard is the current UI surface. The WPF desktop app code is preserved but not in the active build (see `src/Meridian.Wpf/`).
 
@@ -61,15 +61,21 @@ Paper trading is the primary execution surface. It validates strategies under re
 **Current state:**
 - Paper trading gateway (`Meridian.Execution`) for zero-risk strategy validation
 - Order routing abstraction (`IOrderGateway`) designed for live broker integration
-- Pre-trade risk rules via `IRiskRule`
+- Pre-trade risk rules via `IRiskRule` (position limits, drawdown circuit breaker, order rate throttle)
 - Position and fill tracking
+- **Brokerage gateway framework** (`BaseBrokerageGateway`, `BrokerageGatewayAdapter`, `IBrokerageGateway`) with provider-specific implementations:
+  - `AlpacaBrokerageGateway` — Alpaca order routing with fractional quantity support
+  - `IBBrokerageGateway` — Interactive Brokers order routing (conditional on IBAPI build flag)
+  - `StockSharpBrokerageGateway` — StockSharp connector-based order routing
+  - `TemplateBrokerageGateway` — scaffold for new brokerage adapters
+- Brokerage DI registration via `BrokerageServiceRegistration` and `BrokerageConfiguration`
 
 **Remaining work:**
 - Build a full paper-trading cockpit: live positions, open orders, fills, P&L, and controls exposed via the web dashboard
 - Complete the `Backtest → Paper` promotion workflow with safety gating and audit trail
-- Harden risk rule coverage (position limits, drawdown stops, order rate limits)
 - Add paper-trading session persistence and replay support
-- Design the `Paper → Live` integration point for future broker connectivity
+- Wire brokerage gateways into the paper-trading cockpit for order routing validation
+- Define the `Paper → Live` promotion gate leveraging the brokerage gateway framework
 
 ---
 
@@ -103,29 +109,35 @@ Multi-run comparison, performance attribution, and strategy lifecycle management
 - 90+ streaming sources with data quality monitoring
 - Backtesting engine with tick replay and fill models
 - Paper trading gateway with risk rules
+- **Brokerage gateway framework** with Alpaca, IB, and StockSharp adapters
 - Strategy SDK, lifecycle management, and portfolio tracking
 - Ledger infrastructure and double-entry accounting foundation
+- Direct lending module (PostgreSQL-backed services, workflows, API endpoints)
+- Security Master foundations (contracts, services, storage, F# domain)
 - Symbol search across 5 providers
-- Web dashboard serving all core workflows via REST API
+- Web dashboard serving all core workflows via REST API (300 route constants, 0 stubs)
 - Provider registration, DI composition, route coverage, and observability baseline
 - Deployment assets (Docker, k8s, systemd)
+- CppTrader integration (host management, order gateway, replay, ITCH ingestion)
 
 ### Partial
 
 - Provider confidence: Polygon replay breadth, IB runtime, NYSE shared-lifecycle, and StockSharp breadth need validation depth
 - Backfill checkpoint reliability across longer runs and provider-specific edge cases
-- Paper trading cockpit surfaces in the web UI (gateway is implemented; dashboard exposure is incomplete)
+- Paper trading cockpit surfaces in the web UI (gateway and brokerage adapters are implemented; dashboard exposure is incomplete)
 - `Backtest → Paper` promotion workflow (read services exist; explicit lifecycle flow is not yet wired)
 - Portfolio drill-ins and multi-run comparison depth
 - Ledger reconciliation exposed through the web dashboard
+- Security Master productization (code foundations exist; operator-facing surfaces pending)
+- Brokerage gateway live-order integration (adapters exist; live-validated runtime paths pending)
 
 ### Planned
 
-- Full paper-trading cockpit via the web dashboard
+- Full paper-trading cockpit via the web dashboard (wiring brokerage gateways into cockpit panels)
 - `Backtest → Paper → Live` promotion workflow with audit trail
 - Unified Backtest Studio across native and Lean engines
 - Strategy comparison and run-diff tooling
-- Live broker integration point (post paper-trading validation)
+- Live broker integration validation (brokerage gateway framework is in place; live-validated runtime paths remain)
 
 ### Optional / Later
 
@@ -158,13 +170,13 @@ The platform's downstream value depends on trustworthy data. Operator confidence
 
 ### Wave 2: Paper trading cockpit and promotion workflow
 
-The paper trading gateway exists. The gap is making it visible and usable through the web dashboard with a clear path from backtest to paper.
+The paper trading gateway and brokerage adapter framework both exist. The gap is making them visible and usable through the web dashboard with a clear path from backtest to paper.
 
 **Focus:**
-- Web dashboard: live positions, open orders, fills, P&L, risk state panels
+- Web dashboard: live positions, open orders, fills, P&L, risk state panels — wired to brokerage gateways
 - `Backtest → Paper` promotion: explicit lifecycle step, audit trail, safety gate
 - Paper session persistence and replay
-- Risk rule coverage (position limits, drawdown stops, rate limits)
+- Brokerage gateway integration into cockpit panels (Alpaca, IB, StockSharp adapters are implemented)
 
 **Exit signal:** A strategy can be researched in backtest and promoted to paper trading through one connected workflow in the web dashboard.
 
@@ -200,14 +212,15 @@ Consolidate the native and Lean backtest experiences into one coherent workflow.
 
 ### Wave 5: Live integration readiness
 
-Define and implement the `Paper → Live` integration point so broker connectivity can be added without restructuring the execution model.
+The brokerage gateway framework (`IBrokerageGateway`, `BaseBrokerageGateway`) and provider-specific adapters (Alpaca, IB, StockSharp) are now implemented. The remaining work is validating these adapters against live vendor surfaces and adding execution audit trail.
 
 **Focus:**
-- Finalize `IOrderGateway` contracts for live broker adapters
+- Validate brokerage gateway adapters against real vendor APIs (Alpaca, IB, StockSharp)
 - Add execution audit trail sufficient for live operations
 - Define operator controls (circuit breakers, position limits, manual overrides)
+- Wire `Paper → Live` promotion gate using the existing brokerage gateway framework
 
-**Exit signal:** The execution architecture is ready for a live broker adapter with minimal structural change.
+**Exit signal:** At least one brokerage adapter is validated against a live vendor surface with audit trail.
 
 ---
 
