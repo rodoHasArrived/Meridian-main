@@ -1,7 +1,8 @@
 import { BookCheck, Landmark, ShieldCheck, WalletCards } from "lucide-react";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { MetricCard } from "@/components/meridian/metric-card";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { GovernanceWorkspaceResponse } from "@/types";
@@ -46,6 +47,16 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
 
     return "ledger";
   }, [pathname]);
+  const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
+  const selectedReconciliation = data?.reconciliationQueue.find((item) => item.runId === selectedRunId) ?? data?.reconciliationQueue[0] ?? null;
+
+  useEffect(() => {
+    if (!data || selectedRunId || data.reconciliationQueue.length === 0) {
+      return;
+    }
+
+    setSelectedRunId(data.reconciliationQueue[0].runId);
+  }, [data, selectedRunId]);
 
   if (!data) {
     return (
@@ -113,6 +124,73 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
           </CardContent>
         </Card>
       </section>
+
+      {workstream === "reconciliation" && selectedReconciliation ? (
+        <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <BookCheck className="h-4 w-4 text-primary" />
+                Reconciliation detail queue
+              </CardTitle>
+              <CardDescription>Select a run to inspect its active reconciliation detail panel.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {data.reconciliationQueue.map((item) => (
+                <button
+                  key={item.runId}
+                  type="button"
+                  onClick={() => setSelectedRunId(item.runId)}
+                  className={cn(
+                    "w-full rounded-xl border px-4 py-4 text-left transition-colors",
+                    item.runId === selectedReconciliation.runId
+                      ? "border-primary/50 bg-primary/10"
+                      : "border-border/70 bg-secondary/30 hover:bg-secondary/45"
+                  )}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="font-semibold">{item.strategyName}</div>
+                    <div className={cn("font-mono text-xs uppercase tracking-[0.16em]", statusTone[item.reconciliationStatus])}>
+                      {item.reconciliationStatus}
+                    </div>
+                  </div>
+                  <div className="mt-2 font-mono text-sm text-muted-foreground">{item.runId}</div>
+                  <div className="mt-3 flex items-center justify-between gap-4 text-sm">
+                    <span className="text-muted-foreground">{item.status}</span>
+                    <span className="font-mono">{item.openBreakCount} open</span>
+                  </div>
+                </button>
+              ))}
+            </CardContent>
+          </Card>
+
+          <Card className="bg-panel-strong text-slate-50">
+            <CardHeader>
+              <div className="eyebrow-label">Reconciliation Detail</div>
+              <CardTitle>{selectedReconciliation.strategyName}</CardTitle>
+              <CardDescription className="text-slate-300">
+                {selectedReconciliation.runId} is currently {selectedReconciliation.reconciliationStatus}.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4 text-sm">
+              <GovernanceValue label="Mode" value={selectedReconciliation.mode.toUpperCase()} />
+              <GovernanceValue label="Run status" value={selectedReconciliation.status} />
+              <GovernanceValue label="Break count" value={String(selectedReconciliation.breakCount)} />
+              <GovernanceValue label="Open breaks" value={String(selectedReconciliation.openBreakCount)} tone={selectedReconciliation.openBreakCount === 0 ? "text-success" : "text-warning"} />
+              <GovernanceValue label="Last updated" value={selectedReconciliation.lastUpdated} />
+              <div className="rounded-xl bg-white/10 p-4 text-slate-200">
+                {buildReconciliationNarrative(selectedReconciliation)}
+              </div>
+              <div className="flex gap-3">
+                <Button variant="secondary">Open break checklist</Button>
+                <Button variant="outline" className="border-white/20 bg-transparent text-slate-50 hover:bg-white/10">
+                  Review audit packet
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+      ) : null}
 
       <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
         <Card>
@@ -212,4 +290,24 @@ function GovernanceValue({ label, value, tone }: { label: string; value: string;
 function formatCurrency(value: number) {
   const prefix = value >= 0 ? "$" : "-$";
   return `${prefix}${Math.abs(value).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+}
+
+function buildReconciliationNarrative(item: GovernanceWorkspaceResponse["reconciliationQueue"][number]) {
+  if (item.reconciliationStatus === "Balanced") {
+    return "This run is currently balanced. Audit review should focus on evidence completeness and timing freshness rather than open break remediation.";
+  }
+
+  if (item.reconciliationStatus === "SecurityCoverageOpen") {
+    return "Break counts are secondary here. The main task is resolving Security Master coverage so downstream ledger and reporting workflows are trustworthy.";
+  }
+
+  if (item.reconciliationStatus === "Resolved") {
+    return "Historical breaks have been worked through, but the run still needs operator review before it can be treated as fully balanced.";
+  }
+
+  if (item.reconciliationStatus === "NotStarted") {
+    return "No reconciliation pass has been recorded yet. This run should be queued behind currently active governance review work.";
+  }
+
+  return "Open reconciliation breaks remain on this run. Prioritize amount mismatches, timing drift, and unresolved references before moving on.";
 }

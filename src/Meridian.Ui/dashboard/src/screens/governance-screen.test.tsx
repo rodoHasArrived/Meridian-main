@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { GovernanceScreen } from "@/screens/governance-screen";
 import type { GovernanceWorkspaceResponse } from "@/types";
@@ -20,6 +21,16 @@ const data: GovernanceWorkspaceResponse = {
       breakCount: 2,
       openBreakCount: 1,
       reconciliationStatus: "BreaksOpen"
+    },
+    {
+      runId: "run-57",
+      strategyName: "Intraday Vol Carry",
+      mode: "paper",
+      status: "Paused",
+      lastUpdated: "7m ago",
+      breakCount: 1,
+      openBreakCount: 0,
+      reconciliationStatus: "Resolved"
     }
   ],
   cashFlow: {
@@ -73,5 +84,22 @@ describe("GovernanceScreen", () => {
     );
 
     expect(screen.getByText("Security coverage")).toBeInTheDocument();
+  });
+
+  it("renders reconciliation detail on deep-link routes and updates selection", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={["/governance/reconciliation"]}>
+        <GovernanceScreen data={data} />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByText("Reconciliation Detail")).toBeInTheDocument();
+    expect(screen.getByText(/Open reconciliation breaks remain on this run/)).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /Intraday Vol Carry/i }));
+
+    expect(screen.getByText(/Historical breaks have been worked through/)).toBeInTheDocument();
   });
 });

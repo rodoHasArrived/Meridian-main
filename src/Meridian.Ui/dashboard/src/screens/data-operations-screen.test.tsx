@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { DataOperationsScreen } from "@/screens/data-operations-screen";
 import type { DataOperationsWorkspaceResponse } from "@/types";
@@ -27,6 +28,14 @@ const data: DataOperationsWorkspaceResponse = {
       status: "Running",
       progress: "62%",
       updatedAt: "2m ago"
+    },
+    {
+      jobId: "BF-1044",
+      scope: "Options chains / 7d",
+      provider: "Databento",
+      status: "Review",
+      progress: "95%",
+      updatedAt: "5m ago"
     }
   ],
   exports: [
@@ -63,5 +72,22 @@ describe("DataOperationsScreen", () => {
     );
 
     expect(screen.getByText("Backfill queue focus")).toBeInTheDocument();
+    expect(screen.getByText("Backfill Detail")).toBeInTheDocument();
+    expect(screen.getByText(/Replay is currently advancing/)).toBeInTheDocument();
+  });
+
+  it("switches the detail panel when a backfill row is selected", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={["/data-operations/backfills"]}>
+        <DataOperationsScreen data={data} />
+      </MemoryRouter>
+    );
+
+    await user.click(screen.getByRole("button", { name: /BF-1044/i }));
+
+    expect(screen.getAllByText("Options chains / 7d").length).toBeGreaterThan(0);
+    expect(screen.getByText(/waiting on operator review/i)).toBeInTheDocument();
   });
 });

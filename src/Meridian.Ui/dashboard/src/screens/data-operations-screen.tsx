@@ -1,7 +1,8 @@
 import { DatabaseZap, Download, RadioTower, RefreshCcw } from "lucide-react";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { MetricCard } from "@/components/meridian/metric-card";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { DataOperationsWorkspaceResponse } from "@/types";
@@ -48,6 +49,16 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
 
     return "providers";
   }, [pathname]);
+  const [selectedBackfillJobId, setSelectedBackfillJobId] = useState<string | null>(null);
+  const selectedBackfill = data?.backfills.find((item) => item.jobId === selectedBackfillJobId) ?? data?.backfills[0] ?? null;
+
+  useEffect(() => {
+    if (!data || selectedBackfillJobId || data.backfills.length === 0) {
+      return;
+    }
+
+    setSelectedBackfillJobId(data.backfills[0].jobId);
+  }, [data, selectedBackfillJobId]);
 
   if (!data) {
     return (
@@ -114,6 +125,68 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
           </CardContent>
         </Card>
       </section>
+
+      {workstream === "backfills" && selectedBackfill ? (
+        <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <DatabaseZap className="h-4 w-4 text-primary" />
+                Backfill queue detail
+              </CardTitle>
+              <CardDescription>Select a queued job to inspect its operational detail panel.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {data.backfills.map((backfill) => (
+                <button
+                  key={backfill.jobId}
+                  type="button"
+                  onClick={() => setSelectedBackfillJobId(backfill.jobId)}
+                  className={cn(
+                    "w-full rounded-xl border px-4 py-4 text-left transition-colors",
+                    backfill.jobId === selectedBackfill.jobId
+                      ? "border-primary/50 bg-primary/10"
+                      : "border-border/70 bg-secondary/30 hover:bg-secondary/45"
+                  )}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="font-semibold">{backfill.jobId}</div>
+                    <div className="font-mono text-xs uppercase tracking-[0.16em] text-primary">{backfill.status}</div>
+                  </div>
+                  <div className="mt-2 text-sm text-muted-foreground">{backfill.scope}</div>
+                  <div className="mt-3 flex items-center justify-between gap-4 text-sm">
+                    <span className="text-muted-foreground">{backfill.provider}</span>
+                    <span className="font-mono">{backfill.progress}</span>
+                  </div>
+                </button>
+              ))}
+            </CardContent>
+          </Card>
+
+          <Card className="bg-panel-strong text-slate-50">
+            <CardHeader>
+              <div className="eyebrow-label">Backfill Detail</div>
+              <CardTitle>{selectedBackfill.jobId}</CardTitle>
+              <CardDescription className="text-slate-300">{selectedBackfill.scope}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4 text-sm">
+              <DetailRow label="Provider" value={selectedBackfill.provider} />
+              <DetailRow label="Status" value={selectedBackfill.status} />
+              <DetailRow label="Progress" value={selectedBackfill.progress} />
+              <DetailRow label="Last updated" value={selectedBackfill.updatedAt} />
+              <div className="rounded-xl bg-white/10 p-4 text-slate-200">
+                {buildBackfillNarrative(selectedBackfill)}
+              </div>
+              <div className="flex gap-3">
+                <Button variant="secondary">Inspect checkpoints</Button>
+                <Button variant="outline" className="border-white/20 bg-transparent text-slate-50 hover:bg-white/10">
+                  Review queue prerequisites
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+      ) : null}
 
       <section className="grid gap-4 xl:grid-cols-3">
         <Card className="xl:col-span-1">
@@ -214,6 +287,27 @@ function ContextRow({ label, value }: { label: string; value: string }) {
       <span className="font-mono text-slate-50">{value}</span>
     </div>
   );
+}
+
+function DetailRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between gap-4 rounded-lg bg-white/10 px-3 py-2">
+      <span className="text-slate-300">{label}</span>
+      <span className="font-mono text-slate-50">{value}</span>
+    </div>
+  );
+}
+
+function buildBackfillNarrative(backfill: DataOperationsWorkspaceResponse["backfills"][number]) {
+  if (backfill.status === "Running") {
+    return `Replay is currently advancing for ${backfill.scope}. Keep provider latency and downstream export pressure in view until the queue clears.`;
+  }
+
+  if (backfill.status === "Review") {
+    return `This job is waiting on operator review before it can be promoted as complete. Check the final checkpoint, symbol coverage, and export dependencies.`;
+  }
+
+  return `This job is queued behind currently active operational work. Confirm provider readiness and symbol coverage before it becomes the next replay candidate.`;
 }
 
 function CompactTable({ columns, rows }: { columns: string[]; rows: string[][] }) {
