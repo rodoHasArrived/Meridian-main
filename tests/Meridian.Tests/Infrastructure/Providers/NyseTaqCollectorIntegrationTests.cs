@@ -234,25 +234,19 @@ public sealed class NyseTaqCollectorIntegrationTests
         var record2 = NyseNationalTradesCsvParser.ParseTradeLine(AaplEarlyPreMarket, SessionDate)!;
 
         // Both trades on the same logical stream so their state is accumulated together.
-        var update1 = new MarketTradeUpdate(
-            Timestamp: record1.Timestamp,
-            Symbol: record1.Symbol,
-            Price: record1.Price,
-            Size: record1.Volume,
-            Aggressor: AggressorSide.Unknown,
-            SequenceNumber: record1.GlobalSequenceNumber,
-            StreamId: "nyse-taq",
-            Venue: "NYSE");
+        MarketTradeUpdate CreateVwapTestUpdate(NyseTaqTradeRecord record) =>
+            new(
+                Timestamp: record.Timestamp,
+                Symbol: record.Symbol,
+                Price: record.Price,
+                Size: record.Volume,
+                Aggressor: AggressorSide.Unknown,
+                SequenceNumber: record.GlobalSequenceNumber,
+                StreamId: "nyse-taq",
+                Venue: "NYSE");
 
-        var update2 = new MarketTradeUpdate(
-            Timestamp: record2.Timestamp,
-            Symbol: record2.Symbol,
-            Price: record2.Price,
-            Size: record2.Volume,
-            Aggressor: AggressorSide.Unknown,
-            SequenceNumber: record2.GlobalSequenceNumber,
-            StreamId: "nyse-taq",
-            Venue: "NYSE");
+        var update1 = CreateVwapTestUpdate(record1);
+        var update2 = CreateVwapTestUpdate(record2);
 
         _collector.OnTrade(update1);
         _collector.OnTrade(update2);
