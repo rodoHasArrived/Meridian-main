@@ -294,6 +294,7 @@ Use these documents together when planning or implementing new work:
 ├── build
 │   └── scripts
 │       └── docs
+│           ├── generate-prompts.py
 │           └── generate-structure-docs.py
 ├── config
 │   ├── appsettings.sample.json
@@ -2796,6 +2797,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-384 directories, 2374 files
+384 directories, 2375 files
 ```
 <!-- readme-tree end -->
