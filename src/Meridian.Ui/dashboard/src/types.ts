@@ -41,3 +41,67 @@ export interface ResearchWorkspaceResponse {
   metrics: MetricSnapshot[];
   runs: ResearchRunRecord[];
 }
+
+export interface TradingPosition {
+  symbol: string;
+  side: "Long" | "Short";
+  quantity: string;
+  averagePrice: string;
+  markPrice: string;
+  dayPnl: string;
+  unrealizedPnl: string;
+  exposure: string;
+}
+
+export interface TradingOrder {
+  orderId: string;
+  symbol: string;
+  side: "Buy" | "Sell";
+  type: "Market" | "Limit" | "Stop";
+  quantity: string;
+  limitPrice: string;
+  status: "Working" | "Partially Filled" | "Pending Routing";
+  submittedAt: string;
+}
+
+export interface TradingFill {
+  fillId: string;
+  orderId: string;
+  symbol: string;
+  side: "Buy" | "Sell";
+  quantity: string;
+  price: string;
+  venue: string;
+  timestamp: string;
+}
+
+export interface TradingRiskState {
+  state: "Healthy" | "Observe" | "Constrained";
+  summary: string;
+  netExposure: string;
+  grossExposure: string;
+  var95: string;
+  maxDrawdown: string;
+  buyingPowerUsed: string;
+  activeGuardrails: string[];
+}
+
+export interface BrokerageWiringStatus {
+  provider: string;
+  account: string;
+  environment: "paper" | "live";
+  connection: "Connected" | "Degraded" | "Disconnected";
+  lastHeartbeat: string;
+  orderIngress: string;
+  fillFeed: string;
+  notes: string;
+}
+
+export interface TradingWorkspaceResponse {
+  metrics: MetricSnapshot[];
+  positions: TradingPosition[];
+  openOrders: TradingOrder[];
+  fills: TradingFill[];
+  risk: TradingRiskState;
+  brokerage: BrokerageWiringStatus;
+}
