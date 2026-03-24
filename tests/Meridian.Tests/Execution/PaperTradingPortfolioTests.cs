@@ -155,7 +155,8 @@ public sealed class PaperTradingPortfolioTests
         portfolio.Positions.Should().NotContainKey("AAPL");
 
         var coverEntry = ledger.Journal.Single(e => e.Description.Contains("Cover"));
-        coverEntry.Lines.Should().Contain(l => l.Account == LedgerAccounts.ShortSecuritiesPayable("AAPL", null) && l.Debit == 2_000m);
+        var shortPayable = LedgerAccounts.ShortSecuritiesPayable("AAPL", financialAccountId: null);
+        coverEntry.Lines.Should().Contain(l => l.Account == shortPayable && l.Debit == 2_000m);
         coverEntry.Lines.Should().Contain(l => l.Account == LedgerAccounts.Cash && l.Credit == 1_800m);
         coverEntry.Lines.Should().Contain(l => l.Account == LedgerAccounts.RealizedGain && l.Credit == 200m);
     }
@@ -172,7 +173,8 @@ public sealed class PaperTradingPortfolioTests
         portfolio.RealisedPnl.Should().Be(-200m);
 
         var coverEntry = ledger.Journal.Single(e => e.Description.Contains("Cover"));
-        coverEntry.Lines.Should().Contain(l => l.Account == LedgerAccounts.ShortSecuritiesPayable("AAPL", null) && l.Debit == 2_000m);
+        var shortPayable = LedgerAccounts.ShortSecuritiesPayable("AAPL", financialAccountId: null);
+        coverEntry.Lines.Should().Contain(l => l.Account == shortPayable && l.Debit == 2_000m);
         coverEntry.Lines.Should().Contain(l => l.Account == LedgerAccounts.Cash && l.Credit == 2_200m);
         coverEntry.Lines.Should().Contain(l => l.Account == LedgerAccounts.RealizedLoss && l.Debit == 200m);
     }
