@@ -58,10 +58,13 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         if (string.IsNullOrWhiteSpace(_options.KeyId) || string.IsNullOrWhiteSpace(_options.SecretKey))
+        {
             _logger.LogWarning(
                 "Alpaca brokerage credentials are missing or incomplete; gateway will remain unavailable until valid credentials are provided.");
+        }
 
-        _reportChannel = EventPipelinePolicy.Default.CreateChannel<ExecutionReport>();
+        _reportChannel = EventPipelinePolicy.Default.CreateChannel<ExecutionReport>(
+            singleReader: false, singleWriter: false);
     }
 
     /// <inheritdoc />
@@ -150,6 +153,7 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway
                 Side = request.Side,
                 OrderStatus = OrderStatus.Rejected,
                 RejectReason = $"Alpaca API error: {response.StatusCode} — {errorBody}",
+                ClientOrderId = request.ClientOrderId,
                 Timestamp = DateTimeOffset.UtcNow,
             };
             await _reportChannel.Writer.WriteAsync(rejectReport, ct).ConfigureAwait(false);
@@ -169,6 +173,7 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway
             OrderStatus = MapAlpacaStatus(order?.Status),
             OrderQuantity = request.Quantity,
             GatewayOrderId = order?.Id,
+            ClientOrderId = request.ClientOrderId,
             Timestamp = order?.CreatedAt ?? DateTimeOffset.UtcNow,
         };
         await _reportChannel.Writer.WriteAsync(report, ct).ConfigureAwait(false);
@@ -430,7 +435,8 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway
     };
 
     private static decimal ParseDecimal(string? value) =>
-        decimal.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var result) ? result : 0m;
+        decimal.TryParse(value, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign,
+            CultureInfo.InvariantCulture, out var result) ? result : 0m;
 
     // ── JSON DTOs (ADR-014: source generators) ─────────────────────────
 

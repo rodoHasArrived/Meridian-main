@@ -48,7 +48,8 @@ public sealed class TemplateBrokerageGateway : IBrokerageGateway
         ILogger<TemplateBrokerageGateway> logger)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _reportChannel = EventPipelinePolicy.Default.CreateChannel<ExecutionReport>();
+        _reportChannel = EventPipelinePolicy.Default.CreateChannel<ExecutionReport>(
+            singleReader: false, singleWriter: false);
     }
 
     // TODO: Change to your broker's ID (lowercase, no spaces)

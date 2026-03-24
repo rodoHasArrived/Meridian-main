@@ -138,10 +138,7 @@ public sealed class BrokerageGatewayAdapter : IOrderGateway
             if (filledQuantity != truncatedFilledQuantity)
             {
                 throw new MeridianException(
-                    $"Execution report for order '{report.OrderId}' contains fractional FilledQuantity " +
-                    $"'{filledQuantity}' which cannot be represented in OrderStatusUpdate. " +
-                    "Enable fractional share support in the consuming strategy or ensure the gateway " +
-                    "rounds filled quantities to whole shares.");
+                    $"Execution report for order '{report.OrderId}' contains fractional FilledQuantity '{filledQuantity}' which cannot be represented in OrderStatusUpdate.");
             }
 
             yield return new OrderStatusUpdate(
