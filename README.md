@@ -1312,7 +1312,6 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── SymbolId.cs
 │   │   │   └── VenueCode.cs
 │   │   ├── Etl
-│   │   │   ├── EtlAbstractions.cs
 │   │   │   └── EtlModels.cs
 │   │   ├── Export
 │   │   │   ├── AnalysisExportModels.cs
@@ -2784,6 +2783,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-381 directories, 2365 files
+381 directories, 2364 files
 ```
 <!-- readme-tree end -->
