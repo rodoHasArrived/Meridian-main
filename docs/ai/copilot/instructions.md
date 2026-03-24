@@ -1273,13 +1273,6 @@ Meridian-main
 │   │   ├── GlobalUsings.cs
 │   │   └── Meridian.Backtesting.csproj
 │   ├── Meridian.Backtesting.Sdk
-│   │   ├── Ledger
-│   │   │   ├── BacktestLedger.cs
-│   │   │   ├── JournalEntry.cs
-│   │   │   ├── LedgerAccount.cs
-│   │   │   ├── LedgerAccounts.cs
-│   │   │   ├── LedgerAccountType.cs
-│   │   │   └── LedgerEntry.cs
 │   │   ├── AssetEvent.cs
 │   │   ├── BacktestEngineMode.cs
 │   │   ├── BacktestProgressEvent.cs

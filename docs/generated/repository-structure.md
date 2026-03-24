@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-03-24 22:15:32 UTC. Do not edit manually.
+> Auto-generated on 2026-03-24 22:33:32 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -1162,13 +1162,6 @@ Meridian-main
 │   │   ├── GlobalUsings.cs
 │   │   └── Meridian.Backtesting.csproj
 │   ├── Meridian.Backtesting.Sdk
-│   │   ├── Ledger
-│   │   │   ├── BacktestLedger.cs
-│   │   │   ├── JournalEntry.cs
-│   │   │   ├── LedgerAccount.cs
-│   │   │   ├── LedgerAccounts.cs
-│   │   │   ├── LedgerAccountType.cs
-│   │   │   └── LedgerEntry.cs
 │   │   ├── AssetEvent.cs
 │   │   ├── BacktestEngineMode.cs
 │   │   ├── BacktestProgressEvent.cs
