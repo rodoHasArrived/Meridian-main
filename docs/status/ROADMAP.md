@@ -1,6 +1,6 @@
 # Meridian - Project Roadmap
 
-**Last Updated:** 2026-03-24
+**Last Updated:** 2026-03-25
 **Status:** Refocused on core platform functionality
 **Repository Snapshot (2026-03-24):** solution projects: 35 | `src/` projects: 27 | test projects: 7 | workflow files: 35 | source files: 1,118 (1,073 C# + 45 F#) | test files: 335 (326 C# + 9 F#) | tests: ~4,424
 
@@ -70,12 +70,19 @@ Paper trading is the primary execution surface. It validates strategies under re
   - `TemplateBrokerageGateway` — scaffold for new brokerage adapters
 - Brokerage DI registration via `BrokerageServiceRegistration` and `BrokerageConfiguration`
 
+**Completed (2026-03-25):**
+- Paper-trading cockpit REST endpoints wired: `/api/execution/account`, `/api/execution/positions`, `/api/execution/portfolio`, `/api/execution/orders`, `/api/execution/health`, `/api/execution/capabilities`
+- Paper-trading session management endpoints: `/api/execution/sessions` (create, list, detail, close)
+- `Backtest → Paper → Live` promotion workflow: `/api/promotion/evaluate/{runId}`, `/api/promotion/approve`, `/api/promotion/reject`, `/api/promotion/history`
+- Strategy lifecycle control endpoints: `/api/strategies/status`, `/api/strategies/{id}/status`, `/api/strategies/{id}/pause`, `/api/strategies/{id}/stop`
+- `PaperSessionPersistenceService`, `IPortfolioState`, `IOrderGateway`, `IOrderManager`, `StrategyLifecycleManager` fully wired in DI
+- Test coverage added for `PromotionService` and `PaperSessionPersistenceService`
+
 **Remaining work:**
-- Build a full paper-trading cockpit: live positions, open orders, fills, P&L, and controls exposed via the web dashboard
-- Complete the `Backtest → Paper` promotion workflow with safety gating and audit trail
-- Add paper-trading session persistence and replay support
-- Wire brokerage gateways into the paper-trading cockpit for order routing validation
-- Define the `Paper → Live` promotion gate leveraging the brokerage gateway framework
+- Wire brokerage gateways into live order routing (currently paper-only)
+- Define the `Paper → Live` promotion gate with additional human-approval controls
+- Add paper-trading session replay from persisted order history
+- Improve paper-trading cockpit UI in the React dashboard
 
 ---
 
