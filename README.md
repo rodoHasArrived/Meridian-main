@@ -2038,6 +2038,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── StatusEndpoints.cs
 │   │   │   ├── StorageEndpoints.cs
 │   │   │   ├── StorageQualityEndpoints.cs
+│   │   │   ├── StrategyLifecycleEndpoints.cs
 │   │   │   ├── SubscriptionEndpoints.cs
 │   │   │   ├── SymbolEndpoints.cs
 │   │   │   ├── SymbolMappingEndpoints.cs
@@ -2443,6 +2444,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── StrongDomainTypeTests.cs
 │   │   ├── Execution
 │   │   │   ├── BrokerageGatewayAdapterTests.cs
+│   │   │   ├── PaperSessionPersistenceServiceTests.cs
 │   │   │   ├── PaperTradingGatewayTests.cs
 │   │   │   └── PaperTradingPortfolioTests.cs
 │   │   ├── GlobalUsings.cs
@@ -2582,6 +2584,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── WriteAheadLogFuzzTests.cs
 │   │   │   └── WriteAheadLogTests.cs
 │   │   ├── Strategies
+│   │   │   ├── PromotionServiceTests.cs
 │   │   │   ├── StrategyLifecycleManagerTests.cs
 │   │   │   └── StrategyRunReadServiceTests.cs
 │   │   ├── SymbolSearch
@@ -2696,6 +2699,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-403 directories, 2255 files
+403 directories, 2258 files
 ```
 <!-- readme-tree end -->
