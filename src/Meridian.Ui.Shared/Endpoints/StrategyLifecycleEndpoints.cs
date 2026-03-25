@@ -100,7 +100,6 @@ public static class StrategyLifecycleEndpoints
         .WithName("StopStrategy")
         .Produces<StrategyActionResult>(200)
         .Produces<StrategyActionResult>(409)
-        .Produces(404)
         .Produces(503);
     }
 }
