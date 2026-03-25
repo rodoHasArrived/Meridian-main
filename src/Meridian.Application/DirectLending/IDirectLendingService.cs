@@ -83,4 +83,33 @@ public interface IDirectLendingService
     Task<IReadOnlyList<RebuildCheckpointDto>> GetRebuildCheckpointsAsync(CancellationToken ct = default);
 
     Task<IReadOnlyList<LoanAggregateSnapshotDto>> RebuildAllAsync(CancellationToken ct = default);
+
+    // -----------------------------------------------------------------------
+    // Payment initiation & approval workflow
+    // -----------------------------------------------------------------------
+
+    /// <summary>Submit a payment for review. Returns the pending payment record.</summary>
+    Task<PendingPaymentDto> InitiatePaymentAsync(Guid loanId, InitiatePaymentRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);
+
+    /// <summary>Approve a pending payment and apply it to the loan servicing state.</summary>
+    Task<LoanServicingStateDto?> ApprovePaymentAsync(Guid pendingPaymentId, ApprovePaymentRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);
+
+    /// <summary>Reject a pending payment without applying it.</summary>
+    Task<PendingPaymentDto?> RejectPaymentAsync(Guid pendingPaymentId, RejectPaymentRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);
+
+    /// <summary>
+    /// Get all pending payments. When <paramref name="loanId"/> is provided, results are
+    /// scoped to that loan; otherwise all pending payments across loans are returned.
+    /// </summary>
+    Task<IReadOnlyList<PendingPaymentDto>> GetPendingPaymentsAsync(Guid? loanId = null, CancellationToken ct = default);
+
+    // -----------------------------------------------------------------------
+    // Bank transaction seeding
+    // -----------------------------------------------------------------------
+
+    /// <summary>
+    /// Seed representative bank transactions for one or more loans.
+    /// Useful for development, demos, and integration test setup.
+    /// </summary>
+    Task<BankTransactionSeedResultDto> SeedBankTransactionsAsync(BankTransactionSeedRequest request, CancellationToken ct = default);
 }

@@ -319,3 +319,68 @@ public sealed record ReplayDirectLendingResultDto(
     int LoansProcessed,
     int EventsProcessed,
     DateTimeOffset CompletedAt);
+
+// ---------------------------------------------------------------------------
+// Payment initiation & approval workflow
+// ---------------------------------------------------------------------------
+
+public enum PaymentApprovalStatus : byte
+{
+    Pending = 0,
+    Approved = 1,
+    Rejected = 2,
+    Cancelled = 3
+}
+
+/// <summary>Request body to submit a payment for approval before it is applied.</summary>
+public sealed record InitiatePaymentRequest(
+    decimal Amount,
+    DateOnly EffectiveDate,
+    PaymentBreakdownDto? Breakdown,
+    string? ExternalRef,
+    string? Notes);
+
+/// <summary>A payment that is awaiting an approval decision.</summary>
+public sealed record PendingPaymentDto(
+    Guid PendingPaymentId,
+    Guid LoanId,
+    decimal Amount,
+    DateOnly EffectiveDate,
+    PaymentBreakdownDto? RequestedBreakdown,
+    string? ExternalRef,
+    string? Notes,
+    PaymentApprovalStatus Status,
+    string? ReviewedBy,
+    string? ReviewNotes,
+    DateTimeOffset InitiatedAt,
+    DateTimeOffset? ReviewedAt);
+
+/// <summary>Approve a pending payment request.</summary>
+public sealed record ApprovePaymentRequest(
+    string? ReviewNotes,
+    string? ReviewedBy);
+
+/// <summary>Reject a pending payment request.</summary>
+public sealed record RejectPaymentRequest(
+    string Reason,
+    string? ReviewedBy);
+
+// ---------------------------------------------------------------------------
+// Bank transaction seeding
+// ---------------------------------------------------------------------------
+
+/// <summary>
+/// Request to seed representative bank transactions for one or more loans.
+/// When <see cref="LoanIds"/> is null or empty, all known loans are seeded.
+/// </summary>
+public sealed record BankTransactionSeedRequest(
+    IReadOnlyList<Guid>? LoanIds,
+    int CountPerLoan,
+    DateOnly? FromDate,
+    DateOnly? ToDate);
+
+/// <summary>Result returned after seeding bank transactions.</summary>
+public sealed record BankTransactionSeedResultDto(
+    int LoansProcessed,
+    int TransactionsSeeded,
+    IReadOnlyList<Guid> ProcessedLoanIds);

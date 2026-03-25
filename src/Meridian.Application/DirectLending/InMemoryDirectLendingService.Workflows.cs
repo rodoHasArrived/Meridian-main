@@ -356,4 +356,293 @@ public sealed partial class InMemoryDirectLendingService
 
         return flows;
     }
+
+    // -----------------------------------------------------------------------
+    // Payment initiation & approval workflow
+    // -----------------------------------------------------------------------
+
+    private readonly Dictionary<Guid, PendingPaymentDto> _pendingPayments = new();
+
+    public Task<PendingPaymentDto> InitiatePaymentAsync(
+        Guid loanId,
+        InitiatePaymentRequest request,
+        DirectLendingCommandMetadataDto? metadata = null,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        if (request.Amount <= 0m)
+        {
+            throw new DirectLendingCommandException(new DirectLendingCommandError(
+                DirectLendingErrorCode.Validation, "Payment amount must be positive."));
+        }
+
+        lock (_gate)
+        {
+            if (!_loans.ContainsKey(loanId))
+            {
+                throw new DirectLendingCommandException(new DirectLendingCommandError(
+                    DirectLendingErrorCode.NotFound, $"Loan '{loanId}' not found."));
+            }
+
+            var pending = new PendingPaymentDto(
+                PendingPaymentId: Guid.NewGuid(),
+                LoanId: loanId,
+                Amount: request.Amount,
+                EffectiveDate: request.EffectiveDate,
+                RequestedBreakdown: request.Breakdown,
+                ExternalRef: request.ExternalRef,
+                Notes: request.Notes,
+                Status: PaymentApprovalStatus.Pending,
+                ReviewedBy: null,
+                ReviewNotes: null,
+                InitiatedAt: DateTimeOffset.UtcNow,
+                ReviewedAt: null);
+
+            _pendingPayments[pending.PendingPaymentId] = pending;
+            return Task.FromResult(pending);
+        }
+    }
+
+    public Task<LoanServicingStateDto?> ApprovePaymentAsync(
+        Guid pendingPaymentId,
+        ApprovePaymentRequest request,
+        DirectLendingCommandMetadataDto? metadata = null,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        lock (_gate)
+        {
+            if (!_pendingPayments.TryGetValue(pendingPaymentId, out var pending))
+            {
+                return Task.FromResult<LoanServicingStateDto?>(null);
+            }
+
+            if (pending.Status != PaymentApprovalStatus.Pending)
+            {
+                throw new DirectLendingCommandException(new DirectLendingCommandError(
+                    DirectLendingErrorCode.Validation,
+                    $"Payment '{pendingPaymentId}' is not in Pending status (current: {pending.Status})."));
+            }
+
+            if (!_loans.TryGetValue(pending.LoanId, out var stored))
+            {
+                return Task.FromResult<LoanServicingStateDto?>(null);
+            }
+
+            // Mark as approved
+            _pendingPayments[pendingPaymentId] = pending with
+            {
+                Status = PaymentApprovalStatus.Approved,
+                ReviewedBy = request.ReviewedBy,
+                ReviewNotes = request.ReviewNotes,
+                ReviewedAt = DateTimeOffset.UtcNow
+            };
+
+            // Apply the payment via the mixed-payment path
+            var mixedRequest = new ApplyMixedPaymentRequest(
+                pending.Amount,
+                pending.EffectiveDate,
+                pending.RequestedBreakdown,
+                pending.ExternalRef);
+
+            var resolution = DirectLendingServiceSupport.ResolveMixedPayment(
+                ToServicingState(stored), pending.Amount, mixedRequest.Breakdown);
+            var breakdown = resolution.Breakdown;
+
+            ApplyPaymentToLots(stored.Servicing.DrawdownLots, breakdown.ToPrincipal);
+            stored.Servicing = stored.Servicing with
+            {
+                TotalDrawn = Math.Max(0m, stored.Servicing.TotalDrawn - breakdown.ToPrincipal),
+                AvailableToDraw = Meridian.FSharp.DirectLendingInterop.DirectLendingInterop.CalculateAvailableToDraw(
+                    stored.Servicing.CurrentCommitment,
+                    Math.Max(0m, stored.Servicing.TotalDrawn - breakdown.ToPrincipal)),
+                Balances = stored.Servicing.Balances with
+                {
+                    PrincipalOutstanding = Math.Max(0m, stored.Servicing.Balances.PrincipalOutstanding - breakdown.ToPrincipal),
+                    InterestAccruedUnpaid = Math.Max(0m, stored.Servicing.Balances.InterestAccruedUnpaid - breakdown.ToInterest),
+                    CommitmentFeeAccruedUnpaid = Math.Max(0m, stored.Servicing.Balances.CommitmentFeeAccruedUnpaid - breakdown.ToCommitmentFee),
+                    FeesAccruedUnpaid = Math.Max(0m, stored.Servicing.Balances.FeesAccruedUnpaid - breakdown.ToFees),
+                    PenaltyAccruedUnpaid = Math.Max(0m, stored.Servicing.Balances.PenaltyAccruedUnpaid - breakdown.ToPenalty)
+                },
+                LastPaymentDate = pending.EffectiveDate
+            };
+
+            AppendRevision(stored, "PaymentApproval", pending.EffectiveDate,
+                $"Approved payment {pending.Amount:0.00} (pending id: {pendingPaymentId}).");
+            AppendEvent(stored, "loan.payment-approved", pending.EffectiveDate, new
+            {
+                loanId = pending.LoanId,
+                pendingPaymentId,
+                pending.Amount,
+                pending.EffectiveDate,
+                pending.ExternalRef,
+                resolution
+            }, metadata);
+
+            var cashTxn = new CashTransactionDto(
+                Guid.NewGuid(), stored.LoanId, "ApprovedPayment",
+                pending.EffectiveDate, pending.EffectiveDate, pending.EffectiveDate,
+                pending.Amount, stored.TermsVersions[^1].Terms.BaseCurrency,
+                pending.ExternalRef, stored.History[^1].EventId,
+                DateTimeOffset.UtcNow, false);
+            GetList(_cashTransactions, stored.LoanId).Add(cashTxn);
+
+            var allocations = GetList(_paymentAllocations, stored.LoanId);
+            var seq = allocations.Count + 1;
+            AddAllocation(breakdown.ToInterest, "InterestAccrued");
+            AddAllocation(breakdown.ToCommitmentFee, "CommitmentFeeAccrued");
+            AddAllocation(breakdown.ToFees, "FeeBalance");
+            AddAllocation(breakdown.ToPenalty, "PenaltyAccrued");
+            AddAllocation(breakdown.ToPrincipal, "PrincipalOutstanding");
+
+            return Task.FromResult<LoanServicingStateDto?>(ToServicingState(stored));
+
+            void AddAllocation(decimal amount, string targetType)
+            {
+                if (amount <= 0m) return;
+                allocations.Add(new PaymentAllocationDto(
+                    Guid.NewGuid(), stored.LoanId, cashTxn.CashTransactionId,
+                    seq++, targetType, Guid.NewGuid().ToString("D"),
+                    amount, "Waterfall", stored.History[^1].EventId, DateTimeOffset.UtcNow));
+            }
+        }
+    }
+
+    public Task<PendingPaymentDto?> RejectPaymentAsync(
+        Guid pendingPaymentId,
+        RejectPaymentRequest request,
+        DirectLendingCommandMetadataDto? metadata = null,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        if (string.IsNullOrWhiteSpace(request.Reason))
+        {
+            throw new DirectLendingCommandException(new DirectLendingCommandError(
+                DirectLendingErrorCode.Validation, "Rejection reason is required."));
+        }
+
+        lock (_gate)
+        {
+            if (!_pendingPayments.TryGetValue(pendingPaymentId, out var pending))
+            {
+                return Task.FromResult<PendingPaymentDto?>(null);
+            }
+
+            if (pending.Status != PaymentApprovalStatus.Pending)
+            {
+                throw new DirectLendingCommandException(new DirectLendingCommandError(
+                    DirectLendingErrorCode.Validation,
+                    $"Payment '{pendingPaymentId}' is not in Pending status (current: {pending.Status})."));
+            }
+
+            var rejected = pending with
+            {
+                Status = PaymentApprovalStatus.Rejected,
+                ReviewedBy = request.ReviewedBy,
+                ReviewNotes = request.Reason,
+                ReviewedAt = DateTimeOffset.UtcNow
+            };
+            _pendingPayments[pendingPaymentId] = rejected;
+            return Task.FromResult<PendingPaymentDto?>(rejected);
+        }
+    }
+
+    public Task<IReadOnlyList<PendingPaymentDto>> GetPendingPaymentsAsync(
+        Guid? loanId = null,
+        CancellationToken ct = default)
+    {
+        lock (_gate)
+        {
+            IEnumerable<PendingPaymentDto> all = _pendingPayments.Values
+                .Where(static p => p.Status == PaymentApprovalStatus.Pending);
+
+            if (loanId.HasValue)
+            {
+                all = all.Where(p => p.LoanId == loanId.Value);
+            }
+
+            IReadOnlyList<PendingPaymentDto> result = all
+                .OrderByDescending(static p => p.InitiatedAt)
+                .ToArray();
+            return Task.FromResult(result);
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Bank transaction seeding
+    // -----------------------------------------------------------------------
+
+    private static readonly string[] SeedTransactionTypes =
+        ["InterestPayment", "PrincipalPayment", "FeePayment", "MixedPayment", "Drawdown"];
+
+    public Task<BankTransactionSeedResultDto> SeedBankTransactionsAsync(
+        BankTransactionSeedRequest request,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        if (request.CountPerLoan <= 0)
+        {
+            throw new DirectLendingCommandException(new DirectLendingCommandError(
+                DirectLendingErrorCode.Validation, "CountPerLoan must be positive."));
+        }
+
+        var rng = new Random(42); // deterministic seed for reproducibility
+        var seeded = 0;
+        var processedLoanIds = new List<Guid>();
+
+        lock (_gate)
+        {
+            var targetLoans = (request.LoanIds is { Count: > 0 }
+                    ? request.LoanIds.Where(id => _loans.ContainsKey(id))
+                    : _loans.Keys)
+                .ToArray();
+
+            var fromDate = request.FromDate ?? DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(-6));
+            var toDate = request.ToDate ?? DateOnly.FromDateTime(DateTime.UtcNow);
+            var totalDays = Math.Max(1, toDate.DayNumber - fromDate.DayNumber);
+
+            foreach (var loanId in targetLoans)
+            {
+                var stored = _loans[loanId];
+                var currency = stored.TermsVersions[^1].Terms.BaseCurrency;
+                var list = GetList(_cashTransactions, loanId);
+
+                for (var i = 0; i < request.CountPerLoan; i++)
+                {
+                    var txDate = fromDate.AddDays(rng.Next(totalDays));
+                    var txType = SeedTransactionTypes[rng.Next(SeedTransactionTypes.Length)];
+
+                    // Generate a plausible amount based on commitment size
+                    var commitment = stored.TermsVersions[^1].Terms.CommitmentAmount;
+                    var amount = decimal.Round(
+                        (decimal)(rng.NextDouble() * (double)(commitment * 0.05m)) + 100m,
+                        2,
+                        MidpointRounding.AwayFromZero);
+
+                    list.Add(new CashTransactionDto(
+                        CashTransactionId: Guid.NewGuid(),
+                        LoanId: loanId,
+                        TransactionType: txType,
+                        EffectiveDate: txDate,
+                        TransactionDate: txDate,
+                        SettlementDate: txDate.AddDays(2),
+                        Amount: amount,
+                        Currency: currency,
+                        ExternalRef: $"SEED-{i + 1:D4}-{loanId.ToString("N")[..8]}",
+                        SourceEventId: Guid.NewGuid(),
+                        RecordedAt: DateTimeOffset.UtcNow,
+                        IsVoided: false));
+                    seeded++;
+                }
+
+                processedLoanIds.Add(loanId);
+            }
+        }
+
+        return Task.FromResult(new BankTransactionSeedResultDto(
+            LoansProcessed: processedLoanIds.Count,
+            TransactionsSeeded: seeded,
+            ProcessedLoanIds: processedLoanIds));
+    }
 }

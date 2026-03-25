@@ -652,6 +652,145 @@ public static class DirectLendingEndpoints
                 return ToProblem(ex);
             }
         });
+
+        // -------------------------------------------------------------------
+        // Payment initiation & approval workflow
+        // -------------------------------------------------------------------
+
+        group.MapPost("/{loanId:guid}/payments/initiate", async (Guid loanId, JsonElement body, HttpContext context) =>
+        {
+            var service = ResolveService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            if (!TryBindCommand<InitiatePaymentRequest>(body, jsonOptions, context, out var request, out var metadata, out var error))
+            {
+                return Results.Problem(error, statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            try
+            {
+                var pending = await service.InitiatePaymentAsync(loanId, request!, metadata, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(pending, jsonOptions, statusCode: StatusCodes.Status201Created);
+            }
+            catch (DirectLendingCommandException ex)
+            {
+                return ToProblem(ex);
+            }
+        })
+        .WithName("InitiateLoanPayment")
+        .Produces<PendingPaymentDto>(StatusCodes.Status201Created)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status404NotFound);
+
+        group.MapGet("/{loanId:guid}/payments/pending", async (Guid loanId, HttpContext context) =>
+        {
+            var service = ResolveService(context);
+            return service is null
+                ? ServiceUnavailable()
+                : Results.Json(await service.GetPendingPaymentsAsync(loanId, context.RequestAborted).ConfigureAwait(false), jsonOptions);
+        })
+        .WithName("GetLoanPendingPayments")
+        .Produces<IReadOnlyList<PendingPaymentDto>>(StatusCodes.Status200OK);
+
+        app.MapGet("/api/payments/pending", async (HttpContext context) =>
+        {
+            var service = ResolveService(context);
+            return service is null
+                ? ServiceUnavailable()
+                : Results.Json(await service.GetPendingPaymentsAsync(loanId: null, context.RequestAborted).ConfigureAwait(false), jsonOptions);
+        })
+        .WithName("GetAllPendingPayments")
+        .Produces<IReadOnlyList<PendingPaymentDto>>(StatusCodes.Status200OK);
+
+        app.MapPost("/api/payments/{pendingPaymentId:guid}/approve", async (Guid pendingPaymentId, JsonElement body, HttpContext context) =>
+        {
+            var service = ResolveService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            var request = JsonSerializer.Deserialize<ApprovePaymentRequest>(body.GetRawText(), jsonOptions)
+                          ?? new ApprovePaymentRequest(ReviewNotes: null, ReviewedBy: null);
+
+            try
+            {
+                var servicing = await service.ApprovePaymentAsync(pendingPaymentId, request, metadata: null, context.RequestAborted).ConfigureAwait(false);
+                return servicing is null ? Results.NotFound() : Results.Json(servicing, jsonOptions);
+            }
+            catch (DirectLendingCommandException ex)
+            {
+                return ToProblem(ex);
+            }
+        })
+        .WithName("ApprovePayment")
+        .Produces<LoanServicingStateDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status404NotFound);
+
+        app.MapPost("/api/payments/{pendingPaymentId:guid}/reject", async (Guid pendingPaymentId, JsonElement body, HttpContext context) =>
+        {
+            var service = ResolveService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            var request = JsonSerializer.Deserialize<RejectPaymentRequest>(body.GetRawText(), jsonOptions);
+            if (request is null)
+            {
+                return Results.Problem("Rejection request body is required.", statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            try
+            {
+                var result = await service.RejectPaymentAsync(pendingPaymentId, request, metadata: null, context.RequestAborted).ConfigureAwait(false);
+                return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
+            }
+            catch (DirectLendingCommandException ex)
+            {
+                return ToProblem(ex);
+            }
+        })
+        .WithName("RejectPayment")
+        .Produces<PendingPaymentDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status404NotFound);
+
+        // -------------------------------------------------------------------
+        // Bank transaction seeding (development / demo use)
+        // -------------------------------------------------------------------
+
+        app.MapPost("/api/dev/seed/bank-transactions", async (JsonElement body, HttpContext context) =>
+        {
+            var service = ResolveService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            var request = JsonSerializer.Deserialize<BankTransactionSeedRequest>(body.GetRawText(), jsonOptions);
+            if (request is null)
+            {
+                return Results.Problem("Seed request body is required.", statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            try
+            {
+                var result = await service.SeedBankTransactionsAsync(request, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
+            }
+            catch (DirectLendingCommandException ex)
+            {
+                return ToProblem(ex);
+            }
+        })
+        .WithName("SeedBankTransactions")
+        .Produces<BankTransactionSeedResultDto>(StatusCodes.Status201Created)
+        .Produces(StatusCodes.Status400BadRequest);
     }
 
     private static IDirectLendingService? ResolveService(HttpContext context) =>
