@@ -1,49 +1,12 @@
 using FluentAssertions;
-using Meridian.Application.DirectLending;
-using Meridian.Contracts.DirectLending;
+using Meridian.Application.Banking;
+using Meridian.Contracts.Banking;
 
 namespace Meridian.DirectLending.Tests;
 
 public sealed class PaymentApprovalTests
 {
-    // ------------------------------------------------------------------
-    // Helpers
-    // ------------------------------------------------------------------
-
-    private static CreateLoanRequest BuildCreateRequest() =>
-        new(
-            LoanId: Guid.NewGuid(),
-            FacilityName: "Apex Senior Term Loan",
-            Borrower: new BorrowerInfoDto(Guid.NewGuid(), "Apex Capital", Guid.NewGuid()),
-            EffectiveDate: new DateOnly(2026, 1, 1),
-            Terms: new DirectLendingTermsDto(
-                OriginationDate: new DateOnly(2026, 1, 1),
-                MaturityDate: new DateOnly(2029, 1, 1),
-                CommitmentAmount: 500_000m,
-                BaseCurrency: CurrencyCode.USD,
-                RateTypeKind: RateTypeKind.Fixed,
-                FixedAnnualRate: 0.07m,
-                InterestIndexName: null,
-                SpreadBps: null,
-                FloorRate: null,
-                CapRate: null,
-                DayCountBasis: DayCountBasis.Act365F,
-                PaymentFrequency: PaymentFrequency.Monthly,
-                AmortizationType: AmortizationType.InterestOnly,
-                CommitmentFeeRate: 0.02m,
-                DefaultRateSpreadBps: 200m,
-                PrepaymentAllowed: true,
-                CovenantsJson: null));
-
-    private static async Task<InMemoryDirectLendingService> BuildActiveLoanService(decimal drawdownAmount = 100_000m)
-    {
-        var service = new InMemoryDirectLendingService();
-        var loan = await service.CreateLoanAsync(BuildCreateRequest());
-        await service.ActivateLoanAsync(loan.LoanId, new ActivateLoanRequest(new DateOnly(2026, 1, 2)));
-        await service.BookDrawdownAsync(loan.LoanId, new BookDrawdownRequest(drawdownAmount, new DateOnly(2026, 1, 2), new DateOnly(2026, 1, 2), "wire-100"));
-        await service.PostDailyAccrualAsync(loan.LoanId, new PostDailyAccrualRequest(new DateOnly(2026, 1, 3)));
-        return service;
-    }
+    private static InMemoryBankingService BuildService() => new();
 
     // ------------------------------------------------------------------
     // InitiatePaymentAsync tests
@@ -52,15 +15,15 @@ public sealed class PaymentApprovalTests
     [Fact]
     public async Task InitiatePaymentAsync_ShouldCreatePendingPaymentRecord()
     {
-        var service = new InMemoryDirectLendingService();
-        var loan = await service.CreateLoanAsync(BuildCreateRequest());
+        var service = BuildService();
+        var entityId = Guid.NewGuid();
 
         var pending = await service.InitiatePaymentAsync(
-            loan.LoanId,
-            new InitiatePaymentRequest(5_000m, new DateOnly(2026, 2, 1), Breakdown: null, ExternalRef: "ext-001", Notes: "Q1 interest"));
+            entityId,
+            new InitiatePaymentRequest(5_000m, new DateOnly(2026, 2, 1), ExternalRef: "ext-001", Notes: "Q1 interest"));
 
         pending.Should().NotBeNull();
-        pending.LoanId.Should().Be(loan.LoanId);
+        pending.EntityId.Should().Be(entityId);
         pending.Amount.Should().Be(5_000m);
         pending.Status.Should().Be(PaymentApprovalStatus.Pending);
         pending.ReviewedAt.Should().BeNull();
@@ -72,29 +35,13 @@ public sealed class PaymentApprovalTests
     [Fact]
     public async Task InitiatePaymentAsync_ShouldThrow_WhenAmountIsZero()
     {
-        var service = new InMemoryDirectLendingService();
-        var loan = await service.CreateLoanAsync(BuildCreateRequest());
-
-        var act = () => service.InitiatePaymentAsync(
-            loan.LoanId,
-            new InitiatePaymentRequest(0m, new DateOnly(2026, 2, 1), null, null, null));
-
-        var ex = await Assert.ThrowsAsync<DirectLendingCommandException>(act);
-        ex.Error.Code.Should().Be(DirectLendingErrorCode.Validation);
-        ex.Error.Message.Should().Contain("positive");
-    }
-
-    [Fact]
-    public async Task InitiatePaymentAsync_ShouldThrow_WhenLoanDoesNotExist()
-    {
-        var service = new InMemoryDirectLendingService();
+        var service = BuildService();
 
         var act = () => service.InitiatePaymentAsync(
             Guid.NewGuid(),
-            new InitiatePaymentRequest(1_000m, new DateOnly(2026, 2, 1), null, null, null));
+            new InitiatePaymentRequest(0m, new DateOnly(2026, 2, 1), null, null));
 
-        var ex = await Assert.ThrowsAsync<DirectLendingCommandException>(act);
-        ex.Error.Code.Should().Be(DirectLendingErrorCode.NotFound);
+        await Assert.ThrowsAsync<BankingException>(act);
     }
 
     // ------------------------------------------------------------------
@@ -102,15 +49,15 @@ public sealed class PaymentApprovalTests
     // ------------------------------------------------------------------
 
     [Fact]
-    public async Task GetPendingPaymentsAsync_ShouldReturnAllPendingForLoan()
+    public async Task GetPendingPaymentsAsync_ShouldReturnAllPendingForEntity()
     {
-        var service = new InMemoryDirectLendingService();
-        var loan = await service.CreateLoanAsync(BuildCreateRequest());
+        var service = BuildService();
+        var entityId = Guid.NewGuid();
 
-        await service.InitiatePaymentAsync(loan.LoanId, new InitiatePaymentRequest(1_000m, new DateOnly(2026, 2, 1), null, null, null));
-        await service.InitiatePaymentAsync(loan.LoanId, new InitiatePaymentRequest(2_000m, new DateOnly(2026, 2, 2), null, null, null));
+        await service.InitiatePaymentAsync(entityId, new InitiatePaymentRequest(1_000m, new DateOnly(2026, 2, 1), null, null));
+        await service.InitiatePaymentAsync(entityId, new InitiatePaymentRequest(2_000m, new DateOnly(2026, 2, 2), null, null));
 
-        var pending = await service.GetPendingPaymentsAsync(loan.LoanId);
+        var pending = await service.GetPendingPaymentsAsync(entityId);
 
         pending.Should().HaveCount(2);
         pending.Should().OnlyContain(p => p.Status == PaymentApprovalStatus.Pending);
@@ -119,15 +66,15 @@ public sealed class PaymentApprovalTests
     [Fact]
     public async Task GetPendingPaymentsAsync_ShouldExcludeApprovedAndRejected()
     {
-        var service = new InMemoryDirectLendingService();
-        var newLoan = await service.CreateLoanAsync(BuildCreateRequest());
+        var service = BuildService();
+        var entityId = Guid.NewGuid();
 
-        var p1 = await service.InitiatePaymentAsync(newLoan.LoanId, new InitiatePaymentRequest(1_000m, new DateOnly(2026, 2, 1), null, null, null));
-        var p2 = await service.InitiatePaymentAsync(newLoan.LoanId, new InitiatePaymentRequest(500m, new DateOnly(2026, 2, 2), null, null, null));
+        var p1 = await service.InitiatePaymentAsync(entityId, new InitiatePaymentRequest(1_000m, new DateOnly(2026, 2, 1), null, null));
+        var p2 = await service.InitiatePaymentAsync(entityId, new InitiatePaymentRequest(500m, new DateOnly(2026, 2, 2), null, null));
 
         await service.RejectPaymentAsync(p2.PendingPaymentId, new RejectPaymentRequest("Duplicate", null));
 
-        var pending = await service.GetPendingPaymentsAsync(newLoan.LoanId);
+        var pending = await service.GetPendingPaymentsAsync(entityId);
 
         pending.Should().ContainSingle();
         pending[0].PendingPaymentId.Should().Be(p1.PendingPaymentId);
@@ -138,75 +85,57 @@ public sealed class PaymentApprovalTests
     // ------------------------------------------------------------------
 
     [Fact]
-    public async Task ApprovePaymentAsync_ShouldApplyPaymentAndReturnUpdatedServicingState()
+    public async Task ApprovePaymentAsync_ShouldMarkApprovedAndRecordBankTransaction()
     {
-        var service = await BuildActiveLoanService(drawdownAmount: 100_000m);
-
-        // Retrieve the known loan id by looking at servicing
-        // We know there is exactly one loan in the service; get its id from cash transactions
-        // Simpler: create another loan explicitly
-        var loan = await service.CreateLoanAsync(BuildCreateRequest());
-        await service.ActivateLoanAsync(loan.LoanId, new ActivateLoanRequest(new DateOnly(2026, 1, 2)));
-        await service.BookDrawdownAsync(loan.LoanId, new BookDrawdownRequest(50_000m, new DateOnly(2026, 1, 2), new DateOnly(2026, 1, 2), "wire-200"));
-        await service.PostDailyAccrualAsync(loan.LoanId, new PostDailyAccrualRequest(new DateOnly(2026, 1, 3)));
+        var service = BuildService();
+        var entityId = Guid.NewGuid();
 
         var pending = await service.InitiatePaymentAsync(
-            loan.LoanId,
-            new InitiatePaymentRequest(10_000m, new DateOnly(2026, 1, 10), null, "ext-approve-1", null));
+            entityId,
+            new InitiatePaymentRequest(10_000m, new DateOnly(2026, 1, 10), ExternalRef: "ext-approve-1", Notes: null));
 
-        var servicingBefore = await service.GetServicingStateAsync(loan.LoanId);
-        var principalBefore = servicingBefore!.Balances.PrincipalOutstanding;
-
-        var servicingAfter = await service.ApprovePaymentAsync(
+        var approved = await service.ApprovePaymentAsync(
             pending.PendingPaymentId,
             new ApprovePaymentRequest(ReviewNotes: "Approved by treasurer", ReviewedBy: "treasurer@example.com"));
 
-        servicingAfter.Should().NotBeNull();
-        servicingAfter!.LastPaymentDate.Should().Be(new DateOnly(2026, 1, 10));
+        approved.Should().NotBeNull();
+        approved!.Status.Should().Be(PaymentApprovalStatus.Approved);
+        approved.ReviewedBy.Should().Be("treasurer@example.com");
+        approved.ReviewNotes.Should().Be("Approved by treasurer");
+        approved.ReviewedAt.Should().NotBeNull();
 
-        // The approved payment should no longer appear in pending list
-        var stillPending = await service.GetPendingPaymentsAsync(loan.LoanId);
+        // Should no longer appear in pending list
+        var stillPending = await service.GetPendingPaymentsAsync(entityId);
         stillPending.Should().BeEmpty();
 
-        // A cash transaction should have been recorded
-        var cash = await service.GetCashTransactionsAsync(loan.LoanId);
-        cash.Should().Contain(t => t.TransactionType == "ApprovedPayment" && t.Amount == 10_000m);
-
-        // Principal should have decreased
-        servicingAfter.Balances.PrincipalOutstanding.Should().BeLessThan(principalBefore);
+        // A bank transaction should be recorded
+        var txns = await service.GetBankTransactionsAsync(entityId);
+        txns.Should().ContainSingle(t => t.TransactionType == "ApprovedPayment" && t.Amount == 10_000m);
     }
 
     [Fact]
-    public async Task ApprovePaymentAsync_ShouldReturnNull_WhenPendingPaymentIdNotFound()
+    public async Task ApprovePaymentAsync_ShouldReturnNull_WhenIdNotFound()
     {
-        var service = new InMemoryDirectLendingService();
-
-        var result = await service.ApprovePaymentAsync(
-            Guid.NewGuid(),
-            new ApprovePaymentRequest(null, null));
-
+        var service = BuildService();
+        var result = await service.ApprovePaymentAsync(Guid.NewGuid(), new ApprovePaymentRequest(null, null));
         result.Should().BeNull();
     }
 
     [Fact]
     public async Task ApprovePaymentAsync_ShouldThrow_WhenPaymentAlreadyRejected()
     {
-        var service = new InMemoryDirectLendingService();
-        var loan = await service.CreateLoanAsync(BuildCreateRequest());
+        var service = BuildService();
+        var entityId = Guid.NewGuid();
 
         var pending = await service.InitiatePaymentAsync(
-            loan.LoanId,
-            new InitiatePaymentRequest(1_000m, new DateOnly(2026, 2, 1), null, null, null));
+            entityId, new InitiatePaymentRequest(1_000m, new DateOnly(2026, 2, 1), null, null));
 
         await service.RejectPaymentAsync(pending.PendingPaymentId, new RejectPaymentRequest("Wrong amount", null));
 
-        var act = () => service.ApprovePaymentAsync(
-            pending.PendingPaymentId,
-            new ApprovePaymentRequest(null, null));
+        var act = () => service.ApprovePaymentAsync(pending.PendingPaymentId, new ApprovePaymentRequest(null, null));
 
-        var ex = await Assert.ThrowsAsync<DirectLendingCommandException>(act);
-        ex.Error.Code.Should().Be(DirectLendingErrorCode.Validation);
-        ex.Error.Message.Should().Contain("not in Pending status");
+        var ex = await Assert.ThrowsAsync<BankingException>(act);
+        ex.Message.Should().Contain("not in Pending status");
     }
 
     // ------------------------------------------------------------------
@@ -214,14 +143,13 @@ public sealed class PaymentApprovalTests
     // ------------------------------------------------------------------
 
     [Fact]
-    public async Task RejectPaymentAsync_ShouldMarkPaymentRejected_WithReason()
+    public async Task RejectPaymentAsync_ShouldMarkRejected_WithReason()
     {
-        var service = new InMemoryDirectLendingService();
-        var loan = await service.CreateLoanAsync(BuildCreateRequest());
+        var service = BuildService();
+        var entityId = Guid.NewGuid();
 
         var pending = await service.InitiatePaymentAsync(
-            loan.LoanId,
-            new InitiatePaymentRequest(3_000m, new DateOnly(2026, 2, 15), null, null, null));
+            entityId, new InitiatePaymentRequest(3_000m, new DateOnly(2026, 2, 15), null, null));
 
         var rejected = await service.RejectPaymentAsync(
             pending.PendingPaymentId,
@@ -235,55 +163,44 @@ public sealed class PaymentApprovalTests
     }
 
     [Fact]
-    public async Task RejectPaymentAsync_ShouldReturnNull_WhenPaymentIdNotFound()
+    public async Task RejectPaymentAsync_ShouldReturnNull_WhenIdNotFound()
     {
-        var service = new InMemoryDirectLendingService();
-
-        var result = await service.RejectPaymentAsync(
-            Guid.NewGuid(),
-            new RejectPaymentRequest("No such payment", null));
-
+        var service = BuildService();
+        var result = await service.RejectPaymentAsync(Guid.NewGuid(), new RejectPaymentRequest("No such payment", null));
         result.Should().BeNull();
     }
 
     [Fact]
     public async Task RejectPaymentAsync_ShouldThrow_WhenReasonIsEmpty()
     {
-        var service = new InMemoryDirectLendingService();
-        var loan = await service.CreateLoanAsync(BuildCreateRequest());
+        var service = BuildService();
+        var entityId = Guid.NewGuid();
 
         var pending = await service.InitiatePaymentAsync(
-            loan.LoanId,
-            new InitiatePaymentRequest(500m, new DateOnly(2026, 2, 1), null, null, null));
+            entityId, new InitiatePaymentRequest(500m, new DateOnly(2026, 2, 1), null, null));
 
         var act = () => service.RejectPaymentAsync(
-            pending.PendingPaymentId,
-            new RejectPaymentRequest(Reason: "   ", null));
+            pending.PendingPaymentId, new RejectPaymentRequest(Reason: "   ", null));
 
-        var ex = await Assert.ThrowsAsync<DirectLendingCommandException>(act);
-        ex.Error.Code.Should().Be(DirectLendingErrorCode.Validation);
-        ex.Error.Message.Should().Contain("Rejection reason");
+        var ex = await Assert.ThrowsAsync<BankingException>(act);
+        ex.Message.Should().Contain("Rejection reason");
     }
 
     [Fact]
     public async Task RejectPaymentAsync_ShouldThrow_WhenPaymentAlreadyApproved()
     {
-        var service = await BuildActiveLoanService(100_000m);
-        var loan = await service.CreateLoanAsync(BuildCreateRequest());
-        await service.ActivateLoanAsync(loan.LoanId, new ActivateLoanRequest(new DateOnly(2026, 1, 2)));
-        await service.BookDrawdownAsync(loan.LoanId, new BookDrawdownRequest(50_000m, new DateOnly(2026, 1, 2), new DateOnly(2026, 1, 2), "wire-300"));
+        var service = BuildService();
+        var entityId = Guid.NewGuid();
 
         var pending = await service.InitiatePaymentAsync(
-            loan.LoanId,
-            new InitiatePaymentRequest(1_000m, new DateOnly(2026, 1, 10), null, null, null));
+            entityId, new InitiatePaymentRequest(1_000m, new DateOnly(2026, 1, 10), null, null));
 
         await service.ApprovePaymentAsync(pending.PendingPaymentId, new ApprovePaymentRequest(null, null));
 
         var act = () => service.RejectPaymentAsync(
-            pending.PendingPaymentId,
-            new RejectPaymentRequest("Trying to reject after approval", null));
+            pending.PendingPaymentId, new RejectPaymentRequest("Too late", null));
 
-        var ex = await Assert.ThrowsAsync<DirectLendingCommandException>(act);
-        ex.Error.Code.Should().Be(DirectLendingErrorCode.Validation);
+        var ex = await Assert.ThrowsAsync<BankingException>(act);
+        ex.Message.Should().Contain("not in Pending status");
     }
 }

@@ -6,7 +6,7 @@ using Meridian.FSharp.DirectLendingInterop;
 
 namespace Meridian.Application.DirectLending;
 
-public sealed partial class InMemoryDirectLendingService : IDirectLendingService, IBankTransactionSeedService
+public sealed partial class InMemoryDirectLendingService : IDirectLendingService
 {
     private static readonly JsonSerializerOptions HashJsonOptions = new()
     {
