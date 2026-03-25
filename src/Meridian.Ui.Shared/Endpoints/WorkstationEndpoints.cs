@@ -3,6 +3,8 @@ using System.Text.Json;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
+using Meridian.Execution.Models;
+using Meridian.Execution.Sdk;
 using Meridian.Storage.Export;
 using Meridian.Strategies.Services;
 using Microsoft.AspNetCore.Builder;
@@ -569,75 +571,151 @@ public static class WorkstationEndpoints
     private static async Task<object> BuildTradingPayloadAsync(HttpContext context)
     {
         var readService = context.RequestServices.GetService<StrategyRunReadService>();
-        if (readService is null)
+        var portfolio = context.RequestServices.GetService<IPortfolioState>();
+        var oms = context.RequestServices.GetService<IOrderManager>();
+
+        // When neither execution layer nor strategy run service is active, use fixture data
+        if (portfolio is null && oms is null && readService is null)
         {
             return BuildTradingFallbackPayload();
         }
 
-        var runs = (await readService.GetRunsAsync(ct: context.RequestAborted).ConfigureAwait(false)).ToArray();
-        var run = runs.FirstOrDefault(static candidate => candidate.Mode == StrategyRunMode.Paper) ?? runs.FirstOrDefault();
-        if (run is null)
+        // Resolve the most relevant paper run (for run-level metadata)
+        StrategyRunSummary? run = null;
+        if (readService is not null)
         {
-            return BuildTradingFallbackPayload();
+            var runs = (await readService.GetRunsAsync(ct: context.RequestAborted).ConfigureAwait(false)).ToArray();
+            run = runs.FirstOrDefault(static candidate => candidate.Mode == StrategyRunMode.Paper) ?? runs.FirstOrDefault();
         }
 
-        var netPnl = run.NetPnl ?? 0m;
-        var pnlTone = netPnl >= 0m ? "success" : "warning";
+        // --- Metrics (prefer live data, fall back to run-level metrics) ---
+        var realisedPnl = portfolio?.RealisedPnl ?? run?.NetPnl ?? 0m;
+        var unrealisedPnl = portfolio?.UnrealisedPnl ?? 0m;
+        var totalPnl = realisedPnl + unrealisedPnl;
+        var openOrderCount = oms?.GetOpenOrders().Count ?? 0;
+        var pnlTone = totalPnl >= 0m ? "success" : "warning";
+
+        // --- Positions (live execution layer when available) ---
+        object[] positions;
+        if (portfolio is not null && portfolio.Positions.Count > 0)
+        {
+            positions = portfolio.Positions.Values.Select(pos => (object)new
+            {
+                symbol = pos.Symbol,
+                side = pos.Quantity >= 0 ? "Long" : "Short",
+                quantity = Math.Abs(pos.Quantity).ToString(CultureInfo.InvariantCulture),
+                averagePrice = pos.AverageCostBasis.ToString("F2", CultureInfo.InvariantCulture),
+                markPrice = "—",
+                dayPnl = "—",
+                unrealizedPnl = FormatCurrency(pos.UnrealisedPnl),
+                exposure = "—"
+            }).ToArray();
+        }
+        else
+        {
+            // No live positions yet — show an informational placeholder row
+            positions =
+            [
+                new { symbol = "—", side = "—", quantity = "—", averagePrice = "—", markPrice = "—", dayPnl = "—", unrealizedPnl = "—", exposure = "No open positions" }
+            ];
+        }
+
+        // --- Open orders (live OMS when available) ---
+        object[] openOrders;
+        if (oms is not null)
+        {
+            openOrders = oms.GetOpenOrders().Select(static order => (object)new
+            {
+                orderId = order.OrderId,
+                symbol = order.Symbol,
+                side = order.Side.ToString(),
+                type = order.Type.ToString(),
+                quantity = order.Quantity.ToString(CultureInfo.InvariantCulture),
+                limitPrice = order.LimitPrice.HasValue ? order.LimitPrice.Value.ToString("F2", CultureInfo.InvariantCulture) : "—",
+                status = order.Status.ToString(),
+                submittedAt = order.CreatedAt.ToString("HH:mm:ss", CultureInfo.InvariantCulture) + " UTC"
+            }).ToArray();
+        }
+        else
+        {
+            openOrders = [];
+        }
+
+        // --- Risk state (derived from live portfolio when available) ---
+        var riskState = "Healthy";
+        var riskSummary = "Portfolio and order-book exposure are within configured paper thresholds.";
+        var grossExposure = 0m;
+        var netExposureValue = 0m;
+
+        if (portfolio is not null)
+        {
+            grossExposure = portfolio.Positions.Values.Sum(static pos => Math.Abs(pos.AverageCostBasis * pos.Quantity));
+            netExposureValue = portfolio.Positions.Values.Sum(pos => pos.AverageCostBasis * pos.Quantity);
+            var drawdownPct = portfolio.PortfolioValue > 0m
+                ? totalPnl / portfolio.PortfolioValue
+                : 0m;
+
+            if (drawdownPct < -0.05m)
+            {
+                riskState = "Constrained";
+                riskSummary = "Portfolio has breached the 5% drawdown threshold. Promotion to live is blocked.";
+            }
+            else if (drawdownPct < -0.02m)
+            {
+                riskState = "Observe";
+                riskSummary = "Exposure nearing guardrail limits. Monitoring intraday drawdown closely.";
+            }
+        }
+        else if (run is not null && run.NetPnl.HasValue && run.NetPnl < 0m)
+        {
+            riskState = "Observe";
+            riskSummary = "Strategy is running at a loss. Monitoring active.";
+        }
+
+        var maxDrawdownDisplay = portfolio is not null && portfolio.PortfolioValue > 0m
+            ? FormatPercent(totalPnl / portfolio.PortfolioValue)
+            : "—";
 
         return new
         {
             metrics = new[]
             {
-                new { id = "trading-net-pnl", label = "Net P&L", value = FormatCurrency(netPnl), delta = netPnl >= 0m ? "+session" : "-session", tone = pnlTone },
-                new { id = "trading-open-orders", label = "Open Orders", value = "3", delta = "+1", tone = "default" },
-                new { id = "trading-fills", label = "Fills Today", value = "18", delta = "+4", tone = "success" },
-                new { id = "trading-risk-state", label = "Risk State", value = "Observe", delta = "0%", tone = "warning" }
+                new { id = "trading-net-pnl", label = "Net P&L", value = FormatCurrency(totalPnl), delta = totalPnl >= 0m ? "+session" : "-session", tone = pnlTone },
+                new { id = "trading-open-orders", label = "Open Orders", value = openOrderCount.ToString(CultureInfo.InvariantCulture), delta = openOrderCount == 0 ? "0" : $"+{openOrderCount}", tone = "default" },
+                new { id = "trading-cash", label = "Cash", value = portfolio is not null ? FormatCurrency(portfolio.Cash) : "—", delta = "0%", tone = "default" },
+                new { id = "trading-portfolio-value", label = "Portfolio Value", value = portfolio is not null ? FormatCurrency(portfolio.PortfolioValue) : "—", delta = "0%", tone = "default" }
             },
-            positions = new[]
-            {
-                new { symbol = "AAPL", side = "Long", quantity = "400", averagePrice = "188.14", markPrice = "189.42", dayPnl = "+$512", unrealizedPnl = "+$2,904", exposure = "$75,768" },
-                new { symbol = "MSFT", side = "Long", quantity = "220", averagePrice = "417.06", markPrice = "414.82", dayPnl = "-$493", unrealizedPnl = "-$493", exposure = "$91,260" },
-                new { symbol = "NVDA", side = "Short", quantity = "120", averagePrice = "957.50", markPrice = "949.21", dayPnl = "+$995", unrealizedPnl = "+$995", exposure = "$113,905" }
-            },
-            openOrders = new[]
-            {
-                new { orderId = "PO-24831", symbol = "AMZN", side = "Buy", type = "Limit", quantity = "160", limitPrice = "184.20", status = "Working", submittedAt = "09:42:11 ET" },
-                new { orderId = "PO-24835", symbol = "META", side = "Sell", type = "Stop", quantity = "80", limitPrice = "466.50", status = "Pending Routing", submittedAt = "09:44:58 ET" },
-                new { orderId = "PO-24839", symbol = "TSLA", side = "Buy", type = "Limit", quantity = "60", limitPrice = "171.10", status = "Partially Filled", submittedAt = "09:46:19 ET" }
-            },
-            fills = new[]
-            {
-                new { fillId = "FL-90114", orderId = "PO-24828", symbol = "AMD", side = "Buy", quantity = "100", price = "174.26", venue = "ARCA", timestamp = "09:40:23 ET" },
-                new { fillId = "FL-90120", orderId = "PO-24832", symbol = "AAPL", side = "Sell", quantity = "150", price = "189.44", venue = "IEX", timestamp = "09:43:06 ET" },
-                new { fillId = "FL-90126", orderId = "PO-24837", symbol = "NVDA", side = "Sell", quantity = "40", price = "949.30", venue = "NASDAQ", timestamp = "09:46:52 ET" },
-                new { fillId = "FL-90131", orderId = "PO-24838", symbol = "SPY", side = "Buy", quantity = "75", price = "513.08", venue = "BATS", timestamp = "09:48:11 ET" }
-            },
+            positions,
+            openOrders,
+            fills = Array.Empty<object>(),
             risk = new
             {
-                state = "Observe",
-                summary = "Exposure remains within paper limits but concentration and intraday drawdown guardrails are active.",
-                netExposure = "$166,128",
-                grossExposure = "$280,933",
-                var95 = "$14,920",
-                maxDrawdown = "-1.8%",
-                buyingPowerUsed = "62%",
+                state = riskState,
+                summary = riskSummary,
+                netExposure = portfolio is not null ? FormatCurrency(netExposureValue) : "—",
+                grossExposure = portfolio is not null ? FormatCurrency(grossExposure) : "—",
+                var95 = "—",
+                maxDrawdown = maxDrawdownDisplay,
+                buyingPowerUsed = "—",
                 activeGuardrails = new[]
                 {
                     "Single-name concentration cap set at 30% notional.",
                     "Auto-throttle activates above 70% intraday buying power.",
-                    "Strategy promotion to live blocked while state is Observe."
+                    "Strategy promotion to live blocked while state is Observe or Constrained."
                 }
             },
             brokerage = new
             {
                 provider = "Interactive Brokers",
-                account = string.IsNullOrWhiteSpace(run.PortfolioId) ? "DU1009034" : run.PortfolioId,
+                account = run is not null && !string.IsNullOrWhiteSpace(run.PortfolioId) ? run.PortfolioId : "—",
                 environment = "paper",
-                connection = "Connected",
-                lastHeartbeat = "2s ago",
-                orderIngress = "healthy (p50 23ms)",
-                fillFeed = "healthy (p50 38ms)",
-                notes = "Paper gateway and execution adapter are wired through BrokerageGatewayAdapter telemetry."
+                connection = portfolio is not null ? "Connected" : "Disconnected",
+                lastHeartbeat = portfolio is not null ? "live" : "—",
+                orderIngress = oms is not null ? "healthy" : "—",
+                fillFeed = portfolio is not null ? "healthy" : "—",
+                notes = portfolio is not null
+                    ? "Live execution state from PaperTradingPortfolio and OrderManagementSystem."
+                    : "Paper gateway not active. Start a paper session to see live position and order data."
             }
         };
     }

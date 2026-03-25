@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Meridian.Execution.Services;
+using Meridian.Execution.Sdk;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Tests.Execution;
@@ -39,6 +40,18 @@ public sealed class PaperSessionPersistenceServiceTests
         s1.SessionId.Should().NotBe(s2.SessionId);
     }
 
+    [Fact]
+    public async Task CreateSessionAsync_WithNullSymbols_CreatesSessionWithEmptySymbolList()
+    {
+        var service = Build();
+        var dto = new CreatePaperSessionDto("strat-sym", null, 100_000m, Symbols: null);
+
+        var summary = await service.CreateSessionAsync(dto);
+
+        summary.Should().NotBeNull();
+        summary.SessionId.Should().StartWith("PAPER-");
+    }
+
     // ---- GetSessions ----
 
     [Fact]
@@ -54,13 +67,30 @@ public sealed class PaperSessionPersistenceServiceTests
     }
 
     [Fact]
-    public async Task GetSessions_WhenEmpty_ReturnsEmptyList()
+    public void GetSessions_WhenEmpty_ReturnsEmptyList()
     {
         var service = Build();
 
         var sessions = service.GetSessions();
 
         sessions.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetSessions_MultipleSessions_ReturnsAllOrderedByCreationTimeDescending()
+    {
+        var service = Build();
+        var dto = new CreatePaperSessionDto("strat-order", null, 100_000m);
+        var s1 = await service.CreateSessionAsync(dto);
+        await Task.Delay(5); // ensure distinct creation timestamps
+        var s2 = await service.CreateSessionAsync(dto);
+
+        var sessions = service.GetSessions();
+
+        sessions.Should().HaveCount(2);
+        // Most-recently created comes first
+        sessions[0].SessionId.Should().Be(s2.SessionId);
+        sessions[1].SessionId.Should().Be(s1.SessionId);
     }
 
     // ---- GetSession ----
@@ -118,6 +148,22 @@ public sealed class PaperSessionPersistenceServiceTests
     }
 
     [Fact]
+    public async Task CloseSessionAsync_WhenSessionExists_SetsClosedAt()
+    {
+        var service = Build();
+        var dto = new CreatePaperSessionDto("strat-5b", null, 100_000m);
+        var summary = await service.CreateSessionAsync(dto);
+        var before = DateTimeOffset.UtcNow;
+
+        await service.CloseSessionAsync(summary.SessionId);
+
+        var sessions = service.GetSessions();
+        var closed = sessions.Single(s => s.SessionId == summary.SessionId);
+        closed.ClosedAt.Should().NotBeNull();
+        closed.ClosedAt!.Value.Should().BeOnOrAfter(before);
+    }
+
+    [Fact]
     public async Task CloseSessionAsync_WhenSessionNotFound_ReturnsFalse()
     {
         var service = Build();
@@ -153,5 +199,98 @@ public sealed class PaperSessionPersistenceServiceTests
         var portfolio = service.GetActivePortfolio(summary.SessionId);
 
         portfolio.Should().BeNull();
+    }
+
+    [Fact]
+    public void GetActivePortfolio_WhenSessionNotFound_ReturnsNull()
+    {
+        var service = Build();
+
+        var portfolio = service.GetActivePortfolio("unknown-session");
+
+        portfolio.Should().BeNull();
+    }
+
+    // ---- RecordOrderUpdate ----
+
+    [Fact]
+    public async Task RecordOrderUpdate_WhenSessionActive_AppendsToOrderHistory()
+    {
+        var service = Build();
+        var dto = new CreatePaperSessionDto("strat-8", null, 100_000m);
+        var summary = await service.CreateSessionAsync(dto);
+        var orderState = new OrderState
+        {
+            OrderId = "order-1",
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 100m,
+            Status = OrderStatus.Accepted,
+            CreatedAt = DateTimeOffset.UtcNow
+        };
+
+        service.RecordOrderUpdate(summary.SessionId, orderState);
+
+        var detail = service.GetSession(summary.SessionId);
+        detail!.OrderHistory.Should().ContainSingle(o => o.OrderId == "order-1");
+    }
+
+    [Fact]
+    public async Task RecordOrderUpdate_MultipleUpdates_AppendsAllInOrder()
+    {
+        var service = Build();
+        var dto = new CreatePaperSessionDto("strat-9", null, 100_000m);
+        var summary = await service.CreateSessionAsync(dto);
+        var order1 = new OrderState
+        {
+            OrderId = "order-A",
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 100m,
+            Status = OrderStatus.Accepted,
+            CreatedAt = DateTimeOffset.UtcNow
+        };
+        var order2 = new OrderState
+        {
+            OrderId = "order-B",
+            Symbol = "MSFT",
+            Side = OrderSide.Sell,
+            Type = OrderType.Limit,
+            Quantity = 50m,
+            LimitPrice = 350m,
+            Status = OrderStatus.Accepted,
+            CreatedAt = DateTimeOffset.UtcNow
+        };
+
+        service.RecordOrderUpdate(summary.SessionId, order1);
+        service.RecordOrderUpdate(summary.SessionId, order2);
+
+        var detail = service.GetSession(summary.SessionId);
+        detail!.OrderHistory.Should().HaveCount(2);
+        detail.OrderHistory[0].OrderId.Should().Be("order-A");
+        detail.OrderHistory[1].OrderId.Should().Be("order-B");
+    }
+
+    [Fact]
+    public void RecordOrderUpdate_WhenSessionNotFound_DoesNotThrow()
+    {
+        var service = Build();
+        var orderState = new OrderState
+        {
+            OrderId = "order-x",
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 100m,
+            Status = OrderStatus.Accepted,
+            CreatedAt = DateTimeOffset.UtcNow
+        };
+
+        // Should silently ignore unknown session IDs
+        var action = () => service.RecordOrderUpdate("nonexistent-session", orderState);
+
+        action.Should().NotThrow();
     }
 }
