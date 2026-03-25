@@ -168,6 +168,86 @@ public sealed class StrategyRunReadServiceTests
     }
 
     [Fact]
+    public async Task GetRunsAsync_FailedRun_ReportsStatusAsFailed()
+    {
+        var store = new StrategyRunStore();
+        var run = new StrategyRunEntry(
+            RunId: "run-failed",
+            StrategyId: "momentum-1",
+            StrategyName: "Momentum",
+            RunType: RunType.Backtest,
+            StartedAt: new DateTimeOffset(2026, 3, 21, 9, 0, 0, TimeSpan.Zero),
+            EndedAt: new DateTimeOffset(2026, 3, 21, 9, 30, 0, TimeSpan.Zero),
+            Metrics: null,
+            TerminalStatus: StrategyRunStatus.Failed);
+
+        await store.RecordRunAsync(run);
+
+        var service = new StrategyRunReadService(
+            store,
+            new PortfolioReadService(),
+            new LedgerReadService());
+
+        var runs = await service.GetRunsAsync("momentum-1");
+
+        runs.Should().ContainSingle();
+        runs[0].Status.Should().Be(StrategyRunStatus.Failed);
+    }
+
+    [Fact]
+    public async Task GetRunsAsync_CancelledRun_ReportsStatusAsCancelled()
+    {
+        var store = new StrategyRunStore();
+        var run = new StrategyRunEntry(
+            RunId: "run-cancelled",
+            StrategyId: "momentum-1",
+            StrategyName: "Momentum",
+            RunType: RunType.Paper,
+            StartedAt: new DateTimeOffset(2026, 3, 21, 9, 0, 0, TimeSpan.Zero),
+            EndedAt: new DateTimeOffset(2026, 3, 21, 9, 15, 0, TimeSpan.Zero),
+            Metrics: null,
+            TerminalStatus: StrategyRunStatus.Cancelled);
+
+        await store.RecordRunAsync(run);
+
+        var service = new StrategyRunReadService(
+            store,
+            new PortfolioReadService(),
+            new LedgerReadService());
+
+        var runs = await service.GetRunsAsync("momentum-1");
+
+        runs.Should().ContainSingle();
+        runs[0].Status.Should().Be(StrategyRunStatus.Cancelled);
+    }
+
+    [Fact]
+    public void StrategyRunEntry_Fail_SetsTerminalStatusToFailedAndEndedAt()
+    {
+        var before = DateTimeOffset.UtcNow;
+        var entry = StrategyRunEntry.Start("strat-1", "Test", RunType.Backtest);
+
+        var failed = entry.Fail();
+
+        failed.TerminalStatus.Should().Be(StrategyRunStatus.Failed);
+        failed.EndedAt.Should().NotBeNull();
+        failed.EndedAt!.Value.Should().BeOnOrAfter(before);
+    }
+
+    [Fact]
+    public void StrategyRunEntry_Cancel_SetsTerminalStatusToCancelledAndEndedAt()
+    {
+        var before = DateTimeOffset.UtcNow;
+        var entry = StrategyRunEntry.Start("strat-1", "Test", RunType.Paper);
+
+        var cancelled = entry.Cancel();
+
+        cancelled.TerminalStatus.Should().Be(StrategyRunStatus.Cancelled);
+        cancelled.EndedAt.Should().NotBeNull();
+        cancelled.EndedAt!.Value.Should().BeOnOrAfter(before);
+    }
+
+    [Fact]
     public async Task GetRunsAsync_InProgressPaperRun_ReportsPromotionAsRequiresCompletion()
     {
         var store = new StrategyRunStore();

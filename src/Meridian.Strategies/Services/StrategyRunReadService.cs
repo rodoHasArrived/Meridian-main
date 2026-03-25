@@ -266,10 +266,11 @@ public sealed class StrategyRunReadService
 
     private static StrategyRunStatus MapStatus(StrategyRunEntry run)
     {
+        if (run.TerminalStatus.HasValue)
+            return run.TerminalStatus.Value;
+
         if (run.EndedAt.HasValue)
-        {
             return StrategyRunStatus.Completed;
-        }
 
         return StrategyRunStatus.Running;
     }
