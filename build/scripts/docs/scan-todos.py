@@ -17,6 +17,12 @@ TEXT_EXTENSIONS = {
     ".ts", ".tsx", ".js", ".jsx", ".sh", ".sql", ".xml", ".ps1", ".cmd", ".bat", ".txt", ".toml", ".ini",
 }
 SKIP_DIRS = {".git", "node_modules", "bin", "obj", ".vs", ".idea", ".vscode", "packages"}
+# Files/dirs whose content is meta (they process or report TODOs rather than contain them).
+# Scanning them produces thousands of self-referential false positives.
+SKIP_PATH_PREFIXES = (
+    "docs/status/TODO",        # the output file itself
+    "build/scripts/docs/",     # scripts that process TODO scan results
+)
 TAG_PATTERN = re.compile(r"\b(TODO|FIXME|NOTE)\b", re.IGNORECASE)
 ISSUE_PATTERN = re.compile(r"(?:#\d+|issues?/\d+)")
 
@@ -37,6 +43,9 @@ def iter_files(root: Path) -> Iterable[Path]:
         if any(part in SKIP_DIRS for part in path.parts):
             continue
         if path.suffix.lower() not in TEXT_EXTENSIONS:
+            continue
+        rel = str(path.relative_to(root)).replace("\\", "/")
+        if any(rel.startswith(prefix) for prefix in SKIP_PATH_PREFIXES):
             continue
         yield path
 
