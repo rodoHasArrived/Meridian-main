@@ -320,7 +320,7 @@ For subclass events, include additionally:
 - index issuer ladder by `(IssuerNormalized, MaturityBucket)`.
 - index subclass lookups by `(Subclass, Maturity, IssuerNormalized)` for screening APIs.
 - store event lineage columns (`EventId`, `EventSequence`, `SourceSystem`) on projection rows.
-- add optimistic concurrency token (`RowVersion`) to all mutable projection tables.
+- add optimistic concurrency token (for Postgres: `version bigint` and/or `updated_at` with compare-and-swap in upserts) to all mutable projection tables.
 
 ### Schema abstraction pattern
 
