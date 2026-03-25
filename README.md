@@ -724,6 +724,14 @@ Use these documents together when planning or implementing new work:
 │   └── toc.yml
 ├── environment.yml
 ├── global.json
+├── make
+│   ├── ai.mk
+│   ├── build.mk
+│   ├── desktop.mk
+│   ├── diagnostics.mk
+│   ├── docs.mk
+│   ├── install.mk
+│   └── test.mk
 ├── native
 │   └── cpptrader-host
 │       ├── CMakeLists.txt
@@ -2688,6 +2696,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-402 directories, 2248 files
+403 directories, 2255 files
 ```
 <!-- readme-tree end -->
