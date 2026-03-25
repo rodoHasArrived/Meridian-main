@@ -237,6 +237,10 @@ public sealed class CommandPaletteService
         RegisterNavigationCommand("nav-time-series", "Navigate to Time Series Alignment", "TimeSeriesAlignment", "time series alignment sync", "\uE916", "");
         RegisterNavigationCommand("nav-index-subscription", "Navigate to Index Subscription", "IndexSubscription", "index subscription sp500 nasdaq", "\uE71B", "");
         RegisterNavigationCommand("nav-symbol-storage", "Navigate to Symbol Storage", "SymbolStorage", "symbol storage files size", "\uEDA2", "");
+        RegisterNavigationCommand("nav-options", "Navigate to Options / Derivatives", "Options", "options derivatives contracts puts calls configuration", "\uE945", "");
+        RegisterNavigationCommand("nav-analysis-export-wizard", "Open Analysis Export Wizard", "AnalysisExportWizard", "analysis export wizard pandas python arrow parquet", "\uE9D9", "");
+        RegisterNavigationCommand("nav-research-shell", "Open Research Workspace", "ResearchShell", "research workspace shell home strategy runs backtest overview", "\uE9D9", "");
+        RegisterNavigationCommand("nav-trading-shell", "Open Trading Workspace", "TradingShell", "trading workspace shell live positions portfolio risk rail overview", "\uE9F5", "");
 
         // Action commands
         RegisterActionCommand("action-start-collector", "Start Data Collector", "StartCollector", "start collect begin run", "\uE768", "Ctrl+Shift+S");
@@ -268,15 +272,34 @@ public sealed class CommandPaletteService
     {
         return pageTag switch
         {
-            "Dashboard" or "Backtest" or "LeanIntegration" or "RunMat" or "Charts" or "Watchlist" or "OrderBook" or "StrategyRuns"
-                => $"Research workspace - {pageTag} page",
+            // Research workspace: analysis, strategy runs, charting, quant tooling
+            "Dashboard" or "Backtest" or "LeanIntegration" or "RunMat" or "Charts"
+                or "Watchlist" or "OrderBook" or "StrategyRuns" or "RunDetail" or "AdvancedAnalytics"
+                or "ResearchShell"
+                => $"Research workspace — {pageTag}",
+
+            // Trading workspace: live execution, portfolio management, positions, hours
             "LiveData" or "PortfolioImport" or "TradingHours" or "RunPortfolio"
-                => $"Trading workspace - {pageTag} page",
-            "Provider" or "DataSources" or "Symbols" or "Backfill" or "Storage" or "DataExport" or "PackageManager" or "Schedules" or "DataBrowser" or "DataCalendar" or "EventReplay"
-                => $"Data Operations workspace - {pageTag} page",
-            "DataQuality" or "ProviderHealth" or "SystemHealth" or "Diagnostics" or "Settings" or "AdminMaintenance" or "RetentionAssurance" or "NotificationCenter" or "Help" or "RunLedger" or "RunDetail"
-                => $"Governance workspace - {pageTag} page",
-            _ => $"Navigate to {pageTag} page"
+                or "TradingShell"
+                => $"Trading workspace — {pageTag}",
+
+            // Data Operations workspace: ingest, symbols, storage, tools
+            "Provider" or "DataSources" or "Symbols" or "Backfill" or "Storage"
+                or "DataExport" or "PackageManager" or "Schedules" or "DataBrowser"
+                or "DataCalendar" or "EventReplay" or "DataSampling" or "TimeSeriesAlignment"
+                or "AnalysisExport" or "AnalysisExportWizard" or "ExportPresets"
+                or "IndexSubscription" or "SymbolMapping" or "SymbolStorage" or "Options"
+                => $"Data Operations workspace — {pageTag}",
+
+            // Governance workspace: quality, audit, ledger, health, admin
+            "DataQuality" or "ProviderHealth" or "SystemHealth" or "Diagnostics"
+                or "Settings" or "AdminMaintenance" or "RetentionAssurance"
+                or "NotificationCenter" or "Help" or "RunLedger" or "ArchiveHealth"
+                or "ServiceManager" or "CollectionSessions" or "StorageOptimization"
+                or "ActivityLog" or "MessagingHub"
+                => $"Governance workspace — {pageTag}",
+
+            _ => $"Navigate to {pageTag}"
         };
     }
 

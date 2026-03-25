@@ -1,0 +1,262 @@
+<Page x:Class="Meridian.Wpf.Views.ResearchWorkspaceShellPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      mc:Ignorable="d"
+      d:DesignHeight="900" d:DesignWidth="1400"
+      Background="{DynamicResource ConsoleBackgroundDarkBrush}"
+      Loaded="OnPageLoaded"
+      Unloaded="OnPageUnloaded"
+      AutomationProperties.Name="Research Workspace"
+      AutomationProperties.AutomationId="ResearchWorkspaceShellPage">
+
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+    </Page.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
+        <StackPanel MaxWidth="1400">
+
+            <!-- ── Header ────────────────────────────────────────────────── -->
+            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Orientation="Horizontal">
+                        <Border Width="44" Height="44" CornerRadius="14"
+                                Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                                BorderBrush="{StaticResource InfoColorBrush}" BorderThickness="1">
+                            <TextBlock Text="&#xE9D9;" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                       FontSize="24" Foreground="{StaticResource InfoColorBrush}"
+                                       VerticalAlignment="Center" HorizontalAlignment="Center" />
+                        </Border>
+                        <StackPanel Margin="12,0,0,0">
+                            <TextBlock Text="Research" Style="{StaticResource PageTitleStyle}" />
+                            <TextBlock Text="Strategy analysis, backtesting, and performance review"
+                                       Style="{StaticResource CardDescriptionStyle}" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- KPI strip -->
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,4,0">
+                        <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                                CornerRadius="10" Padding="16,10" Margin="0,0,12,0"
+                                ToolTip="Completed backtest runs">
+                            <StackPanel>
+                                <TextBlock x:Name="TotalRunsText" Text="—" FontSize="20" FontWeight="Bold"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                           HorizontalAlignment="Center" />
+                                <TextBlock Text="Runs" FontSize="11"
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                           HorizontalAlignment="Center" />
+                            </StackPanel>
+                        </Border>
+                        <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                                CornerRadius="10" Padding="16,10" Margin="0,0,12,0"
+                                ToolTip="Strategies promoted to paper or live">
+                            <StackPanel>
+                                <TextBlock x:Name="PromotedText" Text="—" FontSize="20" FontWeight="Bold"
+                                           Foreground="{StaticResource SuccessColorBrush}"
+                                           HorizontalAlignment="Center" />
+                                <TextBlock Text="Promoted" FontSize="11"
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                           HorizontalAlignment="Center" />
+                            </StackPanel>
+                        </Border>
+                        <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                                CornerRadius="10" Padding="16,10"
+                                ToolTip="Strategies awaiting promotion review">
+                            <StackPanel>
+                                <TextBlock x:Name="PendingReviewText" Text="—" FontSize="20" FontWeight="Bold"
+                                           Foreground="{StaticResource WarningColorBrush}"
+                                           HorizontalAlignment="Center" />
+                                <TextBlock Text="Pending Review" FontSize="11"
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                           HorizontalAlignment="Center" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- ── Quick Actions ─────────────────────────────────────────── -->
+            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
+                <StackPanel>
+                    <TextBlock Text="Quick Actions" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,16" />
+                    <WrapPanel Orientation="Horizontal">
+                        <Button Content="&#xE9D9;  New Backtest"
+                                Click="NewBacktest_Click"
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                Margin="0,0,12,8"
+                                AutomationProperties.Name="New Backtest" />
+                        <Button Content="&#xE943;  Open RunMat"
+                                Click="OpenRunMat_Click"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Margin="0,0,12,8"
+                                AutomationProperties.Name="Open RunMat" />
+                        <Button Content="&#xE9D9;  Open Charts"
+                                Click="OpenCharts_Click"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Margin="0,0,12,8"
+                                AutomationProperties.Name="Open Charts" />
+                        <Button Content="&#xE8FD;  Browse Strategy Runs"
+                                Click="OpenStrategyRuns_Click"
+                                Style="{StaticResource GhostButtonStyle}"
+                                Margin="0,0,12,8"
+                                AutomationProperties.Name="Browse Strategy Runs" />
+                        <Button Content="&#xE943;  Lean Integration"
+                                Click="OpenLean_Click"
+                                Style="{StaticResource GhostButtonStyle}"
+                                Margin="0,0,0,8"
+                                AutomationProperties.Name="Lean Integration" />
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- ── Recent Runs ───────────────────────────────────────────── -->
+            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
+                <StackPanel>
+                    <Grid Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Recent Strategy Runs" Style="{StaticResource CardHeaderStyle}" />
+                        <Button Grid.Column="1" Content="View All" Click="OpenStrategyRuns_Click"
+                                Style="{StaticResource LinkButtonStyle}" />
+                    </Grid>
+
+                    <!-- Populated at runtime by code-behind -->
+                    <ItemsControl x:Name="RecentRunsList"
+                                  AutomationProperties.AutomationId="RecentRunsList"
+                                  AutomationProperties.Name="Recent Strategy Runs">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="{StaticResource ConsoleBackgroundLightBrush}"
+                                        CornerRadius="10" Padding="16,12" Margin="0,0,0,8">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="110" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Strategy name + mode badge -->
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Text="{Binding StrategyName}"
+                                                       FontSize="14" FontWeight="SemiBold"
+                                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                            <TextBlock Text="{Binding RunId}"
+                                                       FontSize="11"
+                                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                       Margin="0,2,0,0" />
+                                        </StackPanel>
+
+                                        <!-- P&L -->
+                                        <StackPanel Grid.Column="1" HorizontalAlignment="Right"
+                                                    VerticalAlignment="Center" Margin="0,0,20,0">
+                                            <TextBlock Text="{Binding NetPnlFormatted}"
+                                                       FontSize="15" FontWeight="Bold"
+                                                       Foreground="{Binding NetPnlBrush}" />
+                                            <TextBlock Text="{Binding TotalReturnFormatted}"
+                                                       FontSize="11"
+                                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                       HorizontalAlignment="Right" />
+                                        </StackPanel>
+
+                                        <!-- Status badge -->
+                                        <Border Grid.Column="2"
+                                                Background="{Binding StatusBadgeBackground}"
+                                                CornerRadius="6" Padding="10,4"
+                                                VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding StatusLabel}"
+                                                       FontSize="11" FontWeight="SemiBold"
+                                                       Foreground="White"
+                                                       HorizontalAlignment="Center" />
+                                        </Border>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- Empty state -->
+                    <TextBlock x:Name="NoRunsText"
+                               Text="No strategy runs yet. Start a new backtest to see results here."
+                               FontSize="13"
+                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                               Visibility="Collapsed"
+                               Margin="0,8,0,0" />
+                </StackPanel>
+            </Border>
+
+            <!-- ── Promotion Pipeline ────────────────────────────────────── -->
+            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,0">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                        <TextBlock Text="Promotion Pipeline" Style="{StaticResource CardHeaderStyle}" />
+                        <Border Background="{StaticResource ConsoleAccentBlueAlpha10Brush}"
+                                CornerRadius="999" Padding="8,3" Margin="10,0,0,0" VerticalAlignment="Center">
+                            <TextBlock x:Name="PromotionCountBadge" Text="0"
+                                       FontSize="11" FontWeight="SemiBold"
+                                       Foreground="{StaticResource InfoColorBrush}" />
+                        </Border>
+                    </StackPanel>
+                    <TextBlock Text="Strategies that have completed backtesting and are candidates for paper or live promotion."
+                               Style="{StaticResource CardDescriptionStyle}" Margin="0,0,0,12" />
+
+                    <ItemsControl x:Name="PromotionCandidatesList"
+                                  AutomationProperties.AutomationId="PromotionCandidatesList"
+                                  AutomationProperties.Name="Promotion Candidates">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="{StaticResource ConsoleBackgroundLightBrush}"
+                                        CornerRadius="10" Padding="16,12" Margin="0,0,0,8">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Text="{Binding StrategyName}"
+                                                       FontSize="14" FontWeight="SemiBold"
+                                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                            <TextBlock Text="{Binding PromotionReason}"
+                                                       FontSize="11"
+                                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                       Margin="0,2,0,0" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Border Background="{StaticResource SuccessColorAlpha20Brush}"
+                                                    CornerRadius="6" Padding="10,4" Margin="0,0,8,0">
+                                                <TextBlock Text="{Binding NextModeLabel}"
+                                                           FontSize="11" FontWeight="SemiBold"
+                                                           Foreground="{StaticResource SuccessColorBrush}" />
+                                            </Border>
+                                            <Button Content="Review"
+                                                    Tag="{Binding RunId}"
+                                                    Click="ReviewPromotion_Click"
+                                                    Style="{StaticResource SecondaryButtonStyle}" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <TextBlock x:Name="NoPromotionsText"
+                               Text="No promotion candidates. Complete a backtest run to see it here."
+                               FontSize="13"
+                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                               Visibility="Collapsed"
+                               Margin="0,4,0,0" />
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
+    </ScrollViewer>
+</Page>

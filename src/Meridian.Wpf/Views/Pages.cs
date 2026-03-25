@@ -61,6 +61,19 @@ public partial class MessagingHubPage : Page { }
 // Backtesting pages
 public partial class BacktestPage : Page { }
 
+// Strategy Run workstation pages (browser, detail drill-ins, portfolio, ledger)
+public partial class StrategyRunsPage : Page { }
+public partial class RunDetailPage : Page { }
+public partial class RunPortfolioPage : Page { }
+public partial class RunLedgerPage : Page { }
+
+// Data Browser page
+public partial class DataBrowserPage : Page { }
+
+// Workspace shell landing pages
+public partial class ResearchWorkspaceShellPage : Page { }
+public partial class TradingWorkspaceShellPage : Page { }
+
 // Workspaces & Notifications pages
 public partial class WorkspacePage : Page { }
 public partial class NotificationCenterPage : Page { }
