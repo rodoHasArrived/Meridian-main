@@ -48,9 +48,12 @@ public sealed class EventReplayService
         CancellationToken ct = default)
     {
         var queryParams = new List<string>();
-        if (!string.IsNullOrEmpty(symbol)) queryParams.Add($"symbol={symbol}");
-        if (fromDate.HasValue) queryParams.Add($"from={fromDate:yyyy-MM-dd}");
-        if (toDate.HasValue) queryParams.Add($"to={toDate:yyyy-MM-dd}");
+        if (!string.IsNullOrEmpty(symbol))
+            queryParams.Add($"symbol={symbol}");
+        if (fromDate.HasValue)
+            queryParams.Add($"from={fromDate:yyyy-MM-dd}");
+        if (toDate.HasValue)
+            queryParams.Add($"to={toDate:yyyy-MM-dd}");
 
         var query = queryParams.Count > 0 ? "?" + string.Join("&", queryParams) : "";
         var response = await _apiClient.GetWithResponseAsync<ReplayFilesResponse>(

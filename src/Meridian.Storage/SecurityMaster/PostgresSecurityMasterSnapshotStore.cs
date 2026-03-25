@@ -1,7 +1,7 @@
+using System.Text.Json;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Core.Serialization;
 using Npgsql;
-using System.Text.Json;
 
 namespace Meridian.Storage.SecurityMaster;
 

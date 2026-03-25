@@ -1272,8 +1272,10 @@ public sealed class ExportEstimate
 
     private static string FormatDuration(int seconds)
     {
-        if (seconds < 60) return $"{seconds}s";
-        if (seconds < 3600) return $"{seconds / 60}m {seconds % 60}s";
+        if (seconds < 60)
+            return $"{seconds}s";
+        if (seconds < 3600)
+            return $"{seconds / 60}m {seconds % 60}s";
         return $"{seconds / 3600}h {seconds % 3600 / 60}m";
     }
 }

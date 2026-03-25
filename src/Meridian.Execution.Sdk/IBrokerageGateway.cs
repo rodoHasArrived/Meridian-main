@@ -73,27 +73,27 @@ public sealed record BrokerageCapabilities
         bool shortSelling = true,
         bool fractional = false,
         bool extendedHours = false) => new()
-    {
-        SupportedOrderTypes = new HashSet<OrderType>
+        {
+            SupportedOrderTypes = new HashSet<OrderType>
         {
             OrderType.Market,
             OrderType.Limit,
             OrderType.StopMarket,
             OrderType.StopLimit
         },
-        SupportedTimeInForce = new HashSet<TimeInForce>
+            SupportedTimeInForce = new HashSet<TimeInForce>
         {
             TimeInForce.Day,
             TimeInForce.GoodTilCancelled,
             TimeInForce.ImmediateOrCancel,
             TimeInForce.FillOrKill
         },
-        SupportsOrderModification = modification,
-        SupportsPartialFills = partialFills,
-        SupportsShortSelling = shortSelling,
-        SupportsFractionalShares = fractional,
-        SupportsExtendedHours = extendedHours,
-    };
+            SupportsOrderModification = modification,
+            SupportsPartialFills = partialFills,
+            SupportsShortSelling = shortSelling,
+            SupportsFractionalShares = fractional,
+            SupportsExtendedHours = extendedHours,
+        };
 }
 
 /// <summary>

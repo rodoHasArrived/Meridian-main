@@ -571,10 +571,12 @@ public sealed class MaintenanceTask
     /// </summary>
     public bool ShouldRunNow(DateTime now)
     {
-        if (!IsEnabled || IsRunning) return false;
+        if (!IsEnabled || IsRunning)
+            return false;
 
         var nextRun = GetNextRunTime();
-        if (!nextRun.HasValue) return false;
+        if (!nextRun.HasValue)
+            return false;
 
         // Check if we're within the execution window (within 1 minute of scheduled time)
         return now >= nextRun.Value && now < nextRun.Value.AddMinutes(1);
@@ -730,10 +732,13 @@ public sealed class MaintenanceExecutionLog
     {
         get
         {
-            if (!Duration.HasValue) return "N/A";
+            if (!Duration.HasValue)
+                return "N/A";
             var d = Duration.Value;
-            if (d.TotalHours >= 1) return $"{(int)d.TotalHours}h {d.Minutes}m";
-            if (d.TotalMinutes >= 1) return $"{d.Minutes}m {d.Seconds}s";
+            if (d.TotalHours >= 1)
+                return $"{(int)d.TotalHours}h {d.Minutes}m";
+            if (d.TotalMinutes >= 1)
+                return $"{d.Minutes}m {d.Seconds}s";
             return $"{d.Seconds}s";
         }
     }

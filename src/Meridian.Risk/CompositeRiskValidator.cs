@@ -1,7 +1,7 @@
 using Meridian.Execution;
 using Meridian.Execution.Sdk;
-using Interop = Meridian.FSharp.Interop;
 using Microsoft.Extensions.Logging;
+using Interop = Meridian.FSharp.Interop;
 
 namespace Meridian.Risk;
 

@@ -1,6 +1,6 @@
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
 using Microsoft.Extensions.Logging;
-using Meridian.Contracts.SecurityMaster;
 
 namespace Meridian.Application.SecurityMaster;
 

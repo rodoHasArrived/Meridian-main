@@ -81,8 +81,10 @@ public sealed class OnboardingTourService
     /// </summary>
     public bool StartTour(string tourId)
     {
-        if (_activeSession != null) return false;
-        if (!_tours.TryGetValue(tourId, out var tour)) return false;
+        if (_activeSession != null)
+            return false;
+        if (!_tours.TryGetValue(tourId, out var tour))
+            return false;
 
         _activeSession = new TourSession
         {
@@ -111,7 +113,8 @@ public sealed class OnboardingTourService
     /// </summary>
     public bool NextStep()
     {
-        if (_activeSession == null) return false;
+        if (_activeSession == null)
+            return false;
 
         var nextIndex = _activeSession.CurrentStepIndex + 1;
         if (nextIndex >= _activeSession.Tour.Steps.Count)
@@ -141,8 +144,10 @@ public sealed class OnboardingTourService
     /// </summary>
     public bool PreviousStep()
     {
-        if (_activeSession == null) return false;
-        if (_activeSession.CurrentStepIndex <= 0) return false;
+        if (_activeSession == null)
+            return false;
+        if (_activeSession.CurrentStepIndex <= 0)
+            return false;
 
         var prevIndex = _activeSession.CurrentStepIndex - 1;
         _activeSession.CurrentStepIndex = prevIndex;
@@ -166,7 +171,8 @@ public sealed class OnboardingTourService
     /// </summary>
     public void DismissTour()
     {
-        if (_activeSession == null) return;
+        if (_activeSession == null)
+            return;
 
         _dismissedTours.Add(_activeSession.TourId);
         _activeSession = null;
@@ -195,7 +201,8 @@ public sealed class OnboardingTourService
 
     private void CompleteTour()
     {
-        if (_activeSession == null) return;
+        if (_activeSession == null)
+            return;
 
         _completedTours.Add(_activeSession.TourId);
 
@@ -214,11 +221,13 @@ public sealed class OnboardingTourService
     {
         try
         {
-            if (!File.Exists(ProgressFilePath)) return;
+            if (!File.Exists(ProgressFilePath))
+                return;
 
             var json = await File.ReadAllTextAsync(ProgressFilePath);
             var progress = JsonSerializer.Deserialize<OnboardingProgress>(json);
-            if (progress == null) return;
+            if (progress == null)
+                return;
 
             foreach (var id in progress.CompletedTours)
             {

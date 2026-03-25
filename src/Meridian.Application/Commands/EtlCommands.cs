@@ -28,7 +28,8 @@ internal sealed class EtlCommands : ICliCommand
         if (CliArguments.HasFlag(args, "--etl-resume"))
         {
             var jobId = CliArguments.RequireValue(args, "--etl-resume", "--etl-resume <job-id>");
-            if (jobId is null) return CliResult.Fail(ErrorCode.RequiredFieldMissing);
+            if (jobId is null)
+                return CliResult.Fail(ErrorCode.RequiredFieldMissing);
             var result = await svc.RunAsync(jobId, ct).ConfigureAwait(false);
             return result.Success ? CliResult.Ok() : CliResult.Fail(ErrorCode.Unknown);
         }

@@ -4,8 +4,8 @@ using Meridian.Application.Pipeline;
 using Meridian.Execution.Sdk;
 using Microsoft.Extensions.Logging;
 using OrderSide = Meridian.Execution.Sdk.OrderSide;
-using OrderType = Meridian.Execution.Sdk.OrderType;
 using OrderStatus = Meridian.Execution.Sdk.OrderStatus;
+using OrderType = Meridian.Execution.Sdk.OrderType;
 using TimeInForce = Meridian.Execution.Sdk.TimeInForce;
 
 namespace Meridian.Infrastructure.Adapters.Templates;
@@ -72,7 +72,8 @@ public sealed class TemplateBrokerageGateway : IBrokerageGateway
     public async Task ConnectAsync(CancellationToken ct = default)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        if (_connected) return;
+        if (_connected)
+            return;
 
         // TODO: Authenticate with your broker's API
         // - Validate credentials
@@ -217,7 +218,8 @@ public sealed class TemplateBrokerageGateway : IBrokerageGateway
     {
         try
         {
-            if (!_connected) return BrokerHealthStatus.Unhealthy("Not connected");
+            if (!_connected)
+                return BrokerHealthStatus.Unhealthy("Not connected");
             var account = await GetAccountInfoAsync(ct).ConfigureAwait(false);
             return BrokerHealthStatus.Healthy($"Account {account.AccountId}");
         }
@@ -229,7 +231,8 @@ public sealed class TemplateBrokerageGateway : IBrokerageGateway
 
     public ValueTask DisposeAsync()
     {
-        if (_disposed) return ValueTask.CompletedTask;
+        if (_disposed)
+            return ValueTask.CompletedTask;
         _disposed = true;
         _connected = false;
         _reportChannel.Writer.TryComplete();

@@ -58,26 +58,26 @@ public sealed class SetupWizardService
         {
             result.StartTime = DateTime.UtcNow;
 
-        switch (provider.ToUpperInvariant())
-        {
-            case "ALPACA":
-                result = await TestAlpacaAsync(credentials, ct);
-                break;
-            case "POLYGON":
-                result = await TestPolygonAsync(credentials, ct);
-                break;
-            case "IB":
-            case "INTERACTIVEBROKERS":
-                result = await TestInteractiveBrokersAsync(credentials, ct);
-                break;
-            case "STOCKSHARP":
-                result = await TestStockSharpAsync(credentials, ct);
-                break;
-            case "TIINGO":
-                result = await TestTiingoAsync(credentials, ct);
-                break;
-            case "FINNHUB":
-                result = await TestFinnhubAsync(credentials, ct);
+            switch (provider.ToUpperInvariant())
+            {
+                case "ALPACA":
+                    result = await TestAlpacaAsync(credentials, ct);
+                    break;
+                case "POLYGON":
+                    result = await TestPolygonAsync(credentials, ct);
+                    break;
+                case "IB":
+                case "INTERACTIVEBROKERS":
+                    result = await TestInteractiveBrokersAsync(credentials, ct);
+                    break;
+                case "STOCKSHARP":
+                    result = await TestStockSharpAsync(credentials, ct);
+                    break;
+                case "TIINGO":
+                    result = await TestTiingoAsync(credentials, ct);
+                    break;
+                case "FINNHUB":
+                    result = await TestFinnhubAsync(credentials, ct);
                     break;
                 case "ALPHAVANTAGE":
                     result = await TestAlphaVantageAsync(credentials, ct);

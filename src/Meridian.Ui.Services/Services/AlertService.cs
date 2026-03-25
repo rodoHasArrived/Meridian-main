@@ -129,7 +129,8 @@ public sealed class AlertService
         lock (_alertLock)
         {
             var alert = _activeAlerts.FirstOrDefault(a => a.Id == alertId);
-            if (alert == null) return;
+            if (alert == null)
+                return;
 
             alert.IsResolved = true;
             alert.ResolvedAt = DateTime.UtcNow;
@@ -155,7 +156,8 @@ public sealed class AlertService
         lock (_alertLock)
         {
             var alert = _activeAlerts.FirstOrDefault(a => a.Id == alertId);
-            if (alert == null) return;
+            if (alert == null)
+                return;
 
             alert.IsSnoozed = true;
             alert.SnoozedUntil = DateTime.UtcNow + duration;
@@ -278,7 +280,8 @@ public sealed class AlertService
     private bool ShouldSuppress(string title, string category, AlertSeverity severity, BusinessImpact impact)
     {
         // Never suppress critical or emergency alerts
-        if (severity >= AlertSeverity.Critical) return false;
+        if (severity >= AlertSeverity.Critical)
+            return false;
 
         // Check user-defined suppression rules
         var now = DateTime.UtcNow;
@@ -299,7 +302,8 @@ public sealed class AlertService
             a.ResolvedAt.HasValue &&
             a.ResolvedAt.Value > now - FlappingWindow);
 
-        if (flappingCount >= FlappingThreshold) return true;
+        if (flappingCount >= FlappingThreshold)
+            return true;
 
         // Suppress transient low-impact alerts
         if (impact == BusinessImpact.None)
@@ -310,7 +314,8 @@ public sealed class AlertService
                 a.ResolvedAt.HasValue &&
                 a.ResolvedAt.Value > now - TransientThreshold);
 
-            if (recentSame != null) return true;
+            if (recentSame != null)
+                return true;
         }
 
         return false;

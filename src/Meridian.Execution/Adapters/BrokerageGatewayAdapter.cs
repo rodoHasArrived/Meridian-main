@@ -6,8 +6,8 @@ using Meridian.Execution.Sdk;
 using Microsoft.Extensions.Logging;
 using GatewayExecutionMode = Meridian.Execution.Models.ExecutionMode;
 using GatewayOrderStatus = Meridian.Execution.Models.OrderStatus;
-using SdkOrderType = Meridian.Execution.Sdk.OrderType;
 using SdkOrderStatus = Meridian.Execution.Sdk.OrderStatus;
+using SdkOrderType = Meridian.Execution.Sdk.OrderType;
 
 namespace Meridian.Execution.Adapters;
 
@@ -156,7 +156,8 @@ public sealed class BrokerageGatewayAdapter : IOrderGateway
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
-        if (_disposed) return;
+        if (_disposed)
+            return;
         _disposed = true;
         await _inner.DisposeAsync().ConfigureAwait(false);
     }

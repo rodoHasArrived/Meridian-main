@@ -77,7 +77,7 @@ public sealed class FixtureDataService
     {
         var basePrice = 450.00m + (symbol.GetHashCode() % 100);
         var spread = 0.10m;
-        
+
         return new(
             Symbol: symbol,
             Timestamp: DateTimeOffset.UtcNow,
@@ -128,10 +128,10 @@ public sealed class FixtureDataService
     /// <summary>
     /// Gets a collection of mock symbols for testing.
     /// </summary>
-    public string[] GetMockSymbols() => new[] 
-    { 
-        "SPY", "AAPL", "MSFT", "TSLA", "GOOGL", 
-        "AMZN", "META", "NVDA", "AMD", "NFLX" 
+    public string[] GetMockSymbols() => new[]
+    {
+        "SPY", "AAPL", "MSFT", "TSLA", "GOOGL",
+        "AMZN", "META", "NVDA", "AMD", "NFLX"
     };
 
     /// <summary>
@@ -141,7 +141,7 @@ public sealed class FixtureDataService
     {
         var trades = new List<TradeDataResponse>();
         var baseTime = DateTimeOffset.UtcNow.AddMinutes(-5);
-        
+
         for (int i = 0; i < count; i++)
         {
             trades.Add(new TradeDataResponse(

@@ -222,7 +222,8 @@ public static class CircularBufferExtensions
     /// </summary>
     public static double Average(this CircularBuffer<double> buffer)
     {
-        if (buffer.Count == 0) return 0.0;
+        if (buffer.Count == 0)
+            return 0.0;
         return buffer.Sum() / buffer.Count;
     }
 
@@ -231,12 +232,14 @@ public static class CircularBufferExtensions
     /// </summary>
     public static double Max(this CircularBuffer<double> buffer)
     {
-        if (buffer.Count == 0) return 0.0;
+        if (buffer.Count == 0)
+            return 0.0;
 
         var max = double.MinValue;
         for (var i = 0; i < buffer.Count; i++)
         {
-            if (buffer[i] > max) max = buffer[i];
+            if (buffer[i] > max)
+                max = buffer[i];
         }
         return max;
     }
@@ -246,12 +249,14 @@ public static class CircularBufferExtensions
     /// </summary>
     public static double Min(this CircularBuffer<double> buffer)
     {
-        if (buffer.Count == 0) return 0.0;
+        if (buffer.Count == 0)
+            return 0.0;
 
         var min = double.MaxValue;
         for (var i = 0; i < buffer.Count; i++)
         {
-            if (buffer[i] < min) min = buffer[i];
+            if (buffer[i] < min)
+                min = buffer[i];
         }
         return min;
     }
@@ -264,7 +269,8 @@ public static class CircularBufferExtensions
     /// <returns>The rate of change per second, or 0 if insufficient data.</returns>
     public static double CalculateRate(this CircularBuffer<double> buffer, double intervalSeconds = 1.0)
     {
-        if (buffer.Count < 2 || intervalSeconds <= 0) return 0.0;
+        if (buffer.Count < 2 || intervalSeconds <= 0)
+            return 0.0;
 
         var newest = buffer[buffer.Count - 1];
         var previous = buffer[buffer.Count - 2];
@@ -285,7 +291,7 @@ public static class CircularBufferExtensions
     public static double? CalculatePercentageChange(this CircularBuffer<double> buffer, int fromOffset, int toOffset)
     {
         // Using standard Try pattern with out var - no nullable inference issues
-        if (!buffer.TryGetFromNewest(fromOffset, out var fromValue) || 
+        if (!buffer.TryGetFromNewest(fromOffset, out var fromValue) ||
             !buffer.TryGetFromNewest(toOffset, out var toValue))
         {
             return null;

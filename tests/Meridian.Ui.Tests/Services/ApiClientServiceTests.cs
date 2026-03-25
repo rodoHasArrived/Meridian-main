@@ -1,10 +1,10 @@
+using System.Net;
+using System.Net.Http;
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Ui.Services;
 using Moq;
 using Moq.Protected;
-using System.Net;
-using System.Net.Http;
-using System.Text.Json;
 using UiAppSettings = Meridian.Ui.Services.AppSettings;
 
 namespace Meridian.Ui.Tests.Services;
@@ -105,7 +105,7 @@ public sealed class ApiClientServiceTests
         var service = ApiClientService.Instance;
         var eventRaised = false;
         service.ServiceUrlChanged += (sender, args) => eventRaised = true;
-        
+
         var settings = new AppSettings { ServiceUrl = "http://newhost:8080" };
 
         // Act
@@ -124,10 +124,10 @@ public sealed class ApiClientServiceTests
     {
         // Arrange
         var service = ApiClientService.Instance;
-        var settings = new AppSettings 
-        { 
+        var settings = new AppSettings
+        {
             ServiceUrl = "http://localhost:8080",
-            ServiceTimeoutSeconds = inputTimeout 
+            ServiceTimeoutSeconds = inputTimeout
         };
 
         // Act
@@ -223,8 +223,8 @@ public sealed class ApiClientServiceTests
     {
         // Arrange
         var service = ApiClientService.Instance;
-        var settings = new UiAppSettings 
-        { 
+        var settings = new UiAppSettings
+        {
             ServiceUrl = "http://localhost:8080",
             BackfillTimeoutMinutes = backfillTimeoutMinutes
         };

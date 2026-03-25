@@ -60,7 +60,8 @@ public sealed class CommandPaletteService
     public void Execute(string commandId)
     {
         var command = _commands.FirstOrDefault(c => c.Id == commandId);
-        if (command == null) return;
+        if (command == null)
+            return;
 
         // Track recent usage
         _recentCommands.Remove(commandId);
@@ -138,19 +139,24 @@ public sealed class CommandPaletteService
         var description = command.Description.ToLowerInvariant();
 
         // Exact title match
-        if (title == query) return 1000;
+        if (title == query)
+            return 1000;
 
         // Title starts with query
-        if (title.StartsWith(query, StringComparison.Ordinal)) score += 100;
+        if (title.StartsWith(query, StringComparison.Ordinal))
+            score += 100;
 
         // Title contains query
-        if (title.Contains(query, StringComparison.Ordinal)) score += 50;
+        if (title.Contains(query, StringComparison.Ordinal))
+            score += 50;
 
         // Keywords match
-        if (keywords.Contains(query, StringComparison.Ordinal)) score += 40;
+        if (keywords.Contains(query, StringComparison.Ordinal))
+            score += 40;
 
         // Description match
-        if (description.Contains(query, StringComparison.Ordinal)) score += 20;
+        if (description.Contains(query, StringComparison.Ordinal))
+            score += 20;
 
         // Fuzzy matching: check if all query characters appear in order
         if (score == 0 && FuzzyMatch(title, query))

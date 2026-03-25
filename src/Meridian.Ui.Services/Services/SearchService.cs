@@ -75,7 +75,8 @@ public sealed class SearchService
     public async Task<List<SearchSuggestion>> GetSuggestionsAsync(string query, CancellationToken ct = default)
     {
         var suggestions = new List<SearchSuggestion>();
-        if (string.IsNullOrWhiteSpace(query)) return suggestions;
+        if (string.IsNullOrWhiteSpace(query))
+            return suggestions;
 
         var normalizedQuery = query.Trim().ToUpperInvariant();
 
@@ -334,15 +335,18 @@ public sealed class SearchService
 
     private static bool MatchesQuery(string? text, string query)
     {
-        if (string.IsNullOrEmpty(text)) return false;
+        if (string.IsNullOrEmpty(text))
+            return false;
         return text.ToUpperInvariant().Contains(query);
     }
 
     private static string GetSubscriptionDescription(SymbolConfig symbol)
     {
         var parts = new List<string>();
-        if (symbol.SubscribeTrades) parts.Add("Trades");
-        if (symbol.SubscribeDepth) parts.Add($"Depth L{symbol.DepthLevels}");
+        if (symbol.SubscribeTrades)
+            parts.Add("Trades");
+        if (symbol.SubscribeDepth)
+            parts.Add($"Depth L{symbol.DepthLevels}");
         return string.Join(", ", parts);
     }
 }

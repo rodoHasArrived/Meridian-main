@@ -1,5 +1,5 @@
-using System.Timers;
 using System.Threading;
+using System.Timers;
 
 namespace Meridian.Ui.Services;
 
@@ -67,7 +67,8 @@ public sealed class OAuthRefreshService : IDisposable
     /// </summary>
     public void Start()
     {
-        if (_isRunning) return;
+        if (_isRunning)
+            return;
 
         _isRunning = true;
         _refreshTimer.Start();
@@ -100,8 +101,8 @@ public sealed class OAuthRefreshService : IDisposable
             var providerId = cred.Resource.Replace($"{CredentialService.OAuthTokenResource}.", "");
             var now = DateTime.UtcNow;
             var isExpired = cred.ExpiresAt.HasValue && cred.ExpiresAt.Value <= now;
-            var isExpiringSoon = cred.ExpiresAt.HasValue && 
-                                 cred.ExpiresAt.Value > now && 
+            var isExpiringSoon = cred.ExpiresAt.HasValue &&
+                                 cred.ExpiresAt.Value > now &&
                                  (cred.ExpiresAt.Value - now).TotalHours < 24;
 
             var status = new OAuthTokenStatus
@@ -273,7 +274,8 @@ public sealed class OAuthRefreshService : IDisposable
 
     public void Dispose()
     {
-        if (_disposed) return;
+        if (_disposed)
+            return;
 
         _disposed = true;
         Stop();
