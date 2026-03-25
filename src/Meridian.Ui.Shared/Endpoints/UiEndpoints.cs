@@ -296,6 +296,9 @@ public static class UiEndpoints
         // Promotion workflow endpoints (Backtest → Paper → Live)
         app.MapPromotionEndpoints(jsonOptions);
 
+        // Strategy lifecycle control endpoints (pause/stop/status)
+        app.MapStrategyLifecycleEndpoints(jsonOptions);
+
         return app;
     }
 
@@ -399,6 +402,9 @@ public static class UiEndpoints
 
         // Promotion workflow endpoints (Backtest → Paper → Live)
         app.MapPromotionEndpoints(jsonOptions);
+
+        // Strategy lifecycle control endpoints (pause/stop/status)
+        app.MapStrategyLifecycleEndpoints(jsonOptions);
 
         return app;
     }

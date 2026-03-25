@@ -1,5 +1,4 @@
 using System.Text.Json;
-using Meridian.Execution;
 using Meridian.Execution.Interfaces;
 using Meridian.Execution.Models;
 using Meridian.Execution.Services;
@@ -79,7 +78,7 @@ public static class ExecutionEndpoints
 
         group.MapGet("/orders", (HttpContext context) =>
         {
-            var oms = context.RequestServices.GetService<OrderManagementSystem>();
+            var oms = context.RequestServices.GetService<IOrderManager>();
             if (oms is null)
                 return Results.Problem("Order management system is not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
 
@@ -92,7 +91,7 @@ public static class ExecutionEndpoints
 
         group.MapGet("/orders/{orderId}", (string orderId, HttpContext context) =>
         {
-            var oms = context.RequestServices.GetService<OrderManagementSystem>();
+            var oms = context.RequestServices.GetService<IOrderManager>();
             if (oms is null)
                 return Results.Problem("Order management system is not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
 
@@ -108,7 +107,7 @@ public static class ExecutionEndpoints
 
         group.MapPost("/orders/submit", async (OrderRequest request, HttpContext context) =>
         {
-            var oms = context.RequestServices.GetService<OrderManagementSystem>();
+            var oms = context.RequestServices.GetService<IOrderManager>();
             if (oms is null)
                 return Results.Problem("Order management system is not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
 
@@ -125,7 +124,7 @@ public static class ExecutionEndpoints
 
         group.MapPost("/orders/{orderId}/cancel", async (string orderId, HttpContext context) =>
         {
-            var oms = context.RequestServices.GetService<OrderManagementSystem>();
+            var oms = context.RequestServices.GetService<IOrderManager>();
             if (oms is null)
                 return Results.Problem("Order management system is not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
 
@@ -177,13 +176,13 @@ public static class ExecutionEndpoints
         {
             var persistence = context.RequestServices.GetService<PaperSessionPersistenceService>();
             if (persistence is null)
-                return Results.Json(Array.Empty<PaperSessionSummary>(), jsonOptions);
+                return Results.Json(Array.Empty<PaperSessionSummaryDto>(), jsonOptions);
 
             var sessions = persistence.GetSessions();
             return Results.Json(sessions, jsonOptions);
         })
         .WithName("GetExecutionSessions")
-        .Produces<IReadOnlyList<PaperSessionSummary>>(200);
+        .Produces<IReadOnlyList<PaperSessionSummaryDto>>(200);
 
         group.MapGet("/sessions/{sessionId}", (string sessionId, HttpContext context) =>
         {
@@ -195,7 +194,7 @@ public static class ExecutionEndpoints
             return session is null ? Results.NotFound() : Results.Json(session, jsonOptions);
         })
         .WithName("GetExecutionSessionById")
-        .Produces<PaperSessionDetail>(200)
+        .Produces<PaperSessionDetailDto>(200)
         .Produces(404);
 
         group.MapPost("/sessions/create", async (CreatePaperSessionRequest request, HttpContext context) =>
@@ -209,7 +208,7 @@ public static class ExecutionEndpoints
             return Results.Json(session, jsonOptions, statusCode: StatusCodes.Status201Created);
         })
         .WithName("CreateExecutionSession")
-        .Produces<PaperSessionSummary>(201)
+        .Produces<PaperSessionSummaryDto>(201)
         .Produces(503);
 
         group.MapPost("/sessions/{sessionId}/close", async (string sessionId, HttpContext context) =>
@@ -261,19 +260,3 @@ public sealed record CreatePaperSessionRequest(
     string? StrategyName,
     decimal InitialCash = 100_000m,
     IReadOnlyList<string>? Symbols = null);
-
-/// <summary>Summary of a paper trading session.</summary>
-public sealed record PaperSessionSummary(
-    string SessionId,
-    string StrategyId,
-    string? StrategyName,
-    decimal InitialCash,
-    DateTimeOffset CreatedAt,
-    DateTimeOffset? ClosedAt,
-    bool IsActive);
-
-/// <summary>Detailed view of a paper session including final portfolio state.</summary>
-public sealed record PaperSessionDetail(
-    PaperSessionSummary Summary,
-    ExecutionPortfolioSnapshot? Portfolio,
-    IReadOnlyList<OrderState>? OrderHistory);
