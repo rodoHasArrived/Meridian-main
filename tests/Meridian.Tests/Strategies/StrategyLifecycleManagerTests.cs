@@ -50,6 +50,187 @@ public sealed class StrategyLifecycleManagerTests
         repository.RecordedRuns[0].StrategyId.Should().Be("strategy-1");
     }
 
+    // ------------------------------------------------------------------ //
+    // StopAsync                                                            //
+    // ------------------------------------------------------------------ //
+
+    [Fact]
+    public async Task StopAsync_WhenStrategyIsRunning_RecordsCompletedRun()
+    {
+        var repository = new InMemoryStrategyRepository();
+        var manager = new StrategyLifecycleManager(repository, NullLogger<StrategyLifecycleManager>.Instance);
+        manager.Register(new StubLiveStrategy("strategy-1", StrategyStatus.Registered));
+        await manager.StartAsync("strategy-1", new StubExecutionContext(), RunType.Paper);
+
+        await manager.StopAsync("strategy-1");
+
+        // One for Start, one for Stop (completion)
+        repository.RecordedRuns.Should().HaveCount(2);
+        repository.RecordedRuns[^1].StrategyId.Should().Be("strategy-1");
+        repository.RecordedRuns[^1].EndedAt.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task StopAsync_WhenStrategyNotRegistered_ThrowsInvalidOperationException()
+    {
+        var repository = new InMemoryStrategyRepository();
+        var manager = new StrategyLifecycleManager(repository, NullLogger<StrategyLifecycleManager>.Instance);
+
+        var action = () => manager.StopAsync("unknown-strategy");
+
+        await action.Should().ThrowAsync<InvalidOperationException>();
+    }
+
+    [Fact]
+    public async Task StopAsync_WhenStrategyIsRegisteredButNotStarted_ThrowsInvalidOperationException()
+    {
+        // A registered-but-not-started strategy cannot be stopped (invalid lifecycle transition)
+        var repository = new InMemoryStrategyRepository();
+        var manager = new StrategyLifecycleManager(repository, NullLogger<StrategyLifecycleManager>.Instance);
+        manager.Register(new StubLiveStrategy("strategy-1", StrategyStatus.Registered));
+
+        var action = () => manager.StopAsync("strategy-1");
+
+        await action.Should().ThrowAsync<InvalidOperationException>();
+    }
+
+    // ------------------------------------------------------------------ //
+    // PauseAsync                                                           //
+    // ------------------------------------------------------------------ //
+
+    [Fact]
+    public async Task PauseAsync_WhenStrategyIsRunning_DoesNotThrow()
+    {
+        var repository = new InMemoryStrategyRepository();
+        var manager = new StrategyLifecycleManager(repository, NullLogger<StrategyLifecycleManager>.Instance);
+        manager.Register(new StubLiveStrategy("strategy-1", StrategyStatus.Registered));
+        await manager.StartAsync("strategy-1", new StubExecutionContext(), RunType.Paper);
+
+        var action = () => manager.PauseAsync("strategy-1");
+
+        await action.Should().NotThrowAsync();
+    }
+
+    [Fact]
+    public async Task PauseAsync_WhenStrategyNotRegistered_ThrowsInvalidOperationException()
+    {
+        var repository = new InMemoryStrategyRepository();
+        var manager = new StrategyLifecycleManager(repository, NullLogger<StrategyLifecycleManager>.Instance);
+
+        var action = () => manager.PauseAsync("unknown-strategy");
+
+        await action.Should().ThrowAsync<InvalidOperationException>();
+    }
+
+    // ------------------------------------------------------------------ //
+    // GetStatuses                                                          //
+    // ------------------------------------------------------------------ //
+
+    [Fact]
+    public void GetStatuses_WhenNoStrategiesRegistered_ReturnsEmptyDictionary()
+    {
+        var repository = new InMemoryStrategyRepository();
+        var manager = new StrategyLifecycleManager(repository, NullLogger<StrategyLifecycleManager>.Instance);
+
+        var statuses = manager.GetStatuses();
+
+        statuses.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void GetStatuses_WithMultipleRegisteredStrategies_ReturnsAllStatuses()
+    {
+        var repository = new InMemoryStrategyRepository();
+        var manager = new StrategyLifecycleManager(repository, NullLogger<StrategyLifecycleManager>.Instance);
+        manager.Register(new StubLiveStrategy("strategy-a", StrategyStatus.Registered));
+        manager.Register(new StubLiveStrategy("strategy-b", StrategyStatus.Registered));
+
+        var statuses = manager.GetStatuses();
+
+        statuses.Should().HaveCount(2);
+        statuses.Should().ContainKey("strategy-a");
+        statuses.Should().ContainKey("strategy-b");
+        statuses["strategy-a"].Should().Be(StrategyStatus.Registered);
+        statuses["strategy-b"].Should().Be(StrategyStatus.Registered);
+    }
+
+    [Fact]
+    public async Task GetStatuses_AfterStart_ReflectsRunningStatus()
+    {
+        var repository = new InMemoryStrategyRepository();
+        var manager = new StrategyLifecycleManager(repository, NullLogger<StrategyLifecycleManager>.Instance);
+        manager.Register(new StubLiveStrategy("strategy-1", StrategyStatus.Registered));
+
+        await manager.StartAsync("strategy-1", new StubExecutionContext(), RunType.Paper);
+
+        var statuses = manager.GetStatuses();
+        statuses["strategy-1"].Should().Be(StrategyStatus.Running);
+    }
+
+    // ------------------------------------------------------------------ //
+    // Register                                                             //
+    // ------------------------------------------------------------------ //
+
+    [Fact]
+    public async Task StartAsync_WhenStrategyNotRegistered_ThrowsInvalidOperationException()
+    {
+        var repository = new InMemoryStrategyRepository();
+        var manager = new StrategyLifecycleManager(repository, NullLogger<StrategyLifecycleManager>.Instance);
+
+        var action = () => manager.StartAsync("unknown-strategy", new StubExecutionContext(), RunType.Paper);
+
+        await action.Should().ThrowAsync<InvalidOperationException>();
+    }
+
+    [Fact]
+    public void Register_WhenCalledTwiceForSameId_ReplacesExistingEntry()
+    {
+        var repository = new InMemoryStrategyRepository();
+        var manager = new StrategyLifecycleManager(repository, NullLogger<StrategyLifecycleManager>.Instance);
+        manager.Register(new StubLiveStrategy("strategy-1", StrategyStatus.Registered));
+        manager.Register(new StubLiveStrategy("strategy-1", StrategyStatus.Registered));
+
+        var statuses = manager.GetStatuses();
+
+        // Re-registering keeps only one entry under the same ID
+        statuses.Should().HaveCount(1);
+    }
+
+    // ------------------------------------------------------------------ //
+    // DisposeAsync                                                          //
+    // ------------------------------------------------------------------ //
+
+    [Fact]
+    public async Task DisposeAsync_WhenRunningStrategyExists_StopsItGracefully()
+    {
+        var repository = new InMemoryStrategyRepository();
+        var manager = new StrategyLifecycleManager(repository, NullLogger<StrategyLifecycleManager>.Instance);
+        var strategy = new StubLiveStrategy("strategy-1", StrategyStatus.Registered);
+        manager.Register(strategy);
+        await manager.StartAsync("strategy-1", new StubExecutionContext(), RunType.Paper);
+
+        // Should not throw even when disposing with a running strategy
+        var action = () => manager.DisposeAsync().AsTask();
+
+        await action.Should().NotThrowAsync();
+        strategy.Status.Should().Be(StrategyStatus.Stopped);
+    }
+
+    [Fact]
+    public async Task DisposeAsync_WhenNoStrategiesRegistered_CompletesWithoutError()
+    {
+        var repository = new InMemoryStrategyRepository();
+        var manager = new StrategyLifecycleManager(repository, NullLogger<StrategyLifecycleManager>.Instance);
+
+        var action = () => manager.DisposeAsync().AsTask();
+
+        await action.Should().NotThrowAsync();
+    }
+
+    // ------------------------------------------------------------------ //
+    // Helpers                                                               //
+    // ------------------------------------------------------------------ //
+
     private sealed class InMemoryStrategyRepository : IStrategyRepository
     {
         public List<StrategyRunEntry> RecordedRuns { get; } = [];

@@ -1119,6 +1119,10 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── UiDashboardModels.cs
 │   │   ├── Archive
 │   │   │   └── ArchiveHealthModels.cs
+│   │   ├── Auth
+│   │   │   ├── RolePermissions.cs
+│   │   │   ├── UserPermission.cs
+│   │   │   └── UserRole.cs
 │   │   ├── Backfill
 │   │   │   └── BackfillProgress.cs
 │   │   ├── Catalog
@@ -2054,10 +2058,11 @@ Use these documents together when planning or implementing new work:
 │   │   ├── LeanSymbolMapper.cs
 │   │   ├── LoginSessionService.cs
 │   │   ├── Meridian.Ui.Shared.csproj
-│   │   └── Services
-│   │       ├── BackfillCoordinator.cs
-│   │       ├── ConfigStore.cs
-│   │       └── SecurityMasterSecurityReferenceLookup.cs
+│   │   ├── Services
+│   │   │   ├── BackfillCoordinator.cs
+│   │   │   ├── ConfigStore.cs
+│   │   │   └── SecurityMasterSecurityReferenceLookup.cs
+│   │   └── UserProfileRegistry.cs
 │   └── Meridian.Wpf
 │       ├── App.xaml
 │       ├── App.xaml.cs
@@ -2531,6 +2536,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── QualityEndpointContractTests.cs
 │   │   │   │   ├── ResponseSchemaSnapshotTests.cs
 │   │   │   │   ├── ResponseSchemaValidationTests.cs
+│   │   │   │   ├── RoleAuthorizationTests.cs
 │   │   │   │   ├── StatusEndpointTests.cs
 │   │   │   │   ├── StorageEndpointTests.cs
 │   │   │   │   └── SymbolEndpointTests.cs
@@ -2701,6 +2707,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-403 directories, 2260 files
+404 directories, 2265 files
 ```
 <!-- readme-tree end -->

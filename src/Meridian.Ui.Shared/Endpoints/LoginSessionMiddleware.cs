@@ -1,3 +1,4 @@
+using Meridian.Contracts.Auth;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
@@ -17,6 +18,24 @@ public sealed class LoginSessionMiddleware
 {
     /// <summary>Name of the HTTP-only session cookie set after successful login.</summary>
     public const string SessionCookieName = "mdc-session";
+
+    /// <summary>
+    /// Key for the authenticated username stored in <see cref="Microsoft.AspNetCore.Http.HttpContext.Items"/>.
+    /// Set by the middleware after successful session validation.
+    /// </summary>
+    public const string CurrentUserKey = "CurrentUser";
+
+    /// <summary>
+    /// Key for the authenticated user's <see cref="Meridian.Contracts.Auth.UserRole"/> stored in
+    /// <see cref="Microsoft.AspNetCore.Http.HttpContext.Items"/>.
+    /// </summary>
+    public const string CurrentUserRoleKey = "CurrentUserRole";
+
+    /// <summary>
+    /// Key for the authenticated user's <see cref="Meridian.Contracts.Auth.UserPermission"/> flags
+    /// stored in <see cref="Microsoft.AspNetCore.Http.HttpContext.Items"/>.
+    /// </summary>
+    public const string CurrentUserPermissionsKey = "CurrentUserPermissions";
 
     private static readonly HashSet<string> ExemptPaths = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -62,12 +81,19 @@ public sealed class LoginSessionMiddleware
             return;
         }
 
-        // Validate session cookie
+        // Validate session cookie and attach the user profile to the request context
         var token = context.Request.Cookies[SessionCookieName];
-        if (!string.IsNullOrWhiteSpace(token) && sessionService.ValidateSession(token))
+        if (!string.IsNullOrWhiteSpace(token))
         {
-            await _next(context);
-            return;
+            var profile = sessionService.GetSessionProfile(token);
+            if (profile is not null)
+            {
+                context.Items[CurrentUserKey] = profile.Username;
+                context.Items[CurrentUserRoleKey] = profile.Role;
+                context.Items[CurrentUserPermissionsKey] = profile.Permissions;
+                await _next(context);
+                return;
+            }
         }
 
         // Unauthenticated request — differentiate API from browser

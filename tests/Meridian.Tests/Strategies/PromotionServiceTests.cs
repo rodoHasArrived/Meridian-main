@@ -1,11 +1,11 @@
 using FluentAssertions;
 using Meridian.Backtesting.Sdk;
-using Meridian.Ledger;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
 using Microsoft.Extensions.Logging.Abstractions;
+using MeridianLedger = Meridian.Ledger.Ledger;
 
 namespace Meridian.Tests.Strategies;
 
