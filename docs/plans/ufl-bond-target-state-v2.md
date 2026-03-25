@@ -257,8 +257,11 @@ This keeps subclass growth additive: new subclass = new policy implementation + 
 
 ### Lifecycle derivation rules
 
-- `Issued`: bond created but not yet active (optional activation gate).
-- `Active`: not deactivated and `AsOfDate < Maturity`.
+- `ActivationDateUtc` (derived): the instant the bond becomes eligible to trade/settle. For projections, this is:
+  - `EffectiveAtUtc` from `SecurityCreated` (or latest `TermsAmended`) if provided, otherwise
+  - `CreatedAtUtc` from `SecurityCreated`.
+- `Issued`: bond exists but `AsOfDate < ActivationDateUtc` (created but not yet active).
+- `Active`: `AsOfDate >= ActivationDateUtc`, not deactivated, and `AsOfDate < Maturity`.
 - `Matured`: not deactivated and `AsOfDate >= Maturity`.
 - `Inactive`: explicitly deactivated (terminal unless reactivation is introduced later).
 
