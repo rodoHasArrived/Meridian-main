@@ -1283,6 +1283,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── FillModels
 │   │   │   ├── BarMidpointFillModel.cs
 │   │   │   ├── IFillModel.cs
+│   │   │   ├── MarketImpactFillModel.cs
 │   │   │   ├── OrderBookFillModel.cs
 │   │   │   └── OrderFillResult.cs
 │   │   ├── GlobalUsings.cs
@@ -1559,6 +1560,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── PaperTradingGateway.cs
 │   │   └── Services
 │   │       ├── OrderLifecycleManager.cs
+│   │       ├── PaperSessionPersistenceService.cs
 │   │       └── PaperTradingPortfolio.cs
 │   ├── Meridian.Execution.Sdk
 │   │   ├── BrokerageConfiguration.cs
@@ -2015,6 +2017,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── InMemoryReconciliationRunRepository.cs
 │   │   │   ├── LedgerReadService.cs
 │   │   │   ├── PortfolioReadService.cs
+│   │   │   ├── PromotionService.cs
 │   │   │   ├── ReconciliationProjectionService.cs
 │   │   │   ├── ReconciliationRunService.cs
 │   │   │   ├── StrategyLifecycleManager.cs
@@ -2226,6 +2229,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── DiagnosticsEndpoints.cs
 │   │   │   ├── DirectLendingEndpoints.cs
 │   │   │   ├── EndpointHelpers.cs
+│   │   │   ├── ExecutionEndpoints.cs
 │   │   │   ├── ExportEndpoints.cs
 │   │   │   ├── FailoverEndpoints.cs
 │   │   │   ├── HealthEndpoints.cs
@@ -2239,6 +2243,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── MessagingEndpoints.cs
 │   │   │   ├── OptionsEndpoints.cs
 │   │   │   ├── PathValidation.cs
+│   │   │   ├── PromotionEndpoints.cs
 │   │   │   ├── ProviderEndpoints.cs
 │   │   │   ├── ProviderExtendedEndpoints.cs
 │   │   │   ├── ReplayEndpoints.cs
@@ -2900,6 +2905,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-403 directories, 2459 files
+403 directories, 2464 files
 ```
 <!-- readme-tree end -->
