@@ -2,108 +2,147 @@
 
 **Owner:** Core Team  
 **Audience:** Product, architecture, domain, storage, and application contributors  
-**Last Updated:** 2026-03-22  
+**Last Updated:** 2026-03-24  
 **Status:** active  
-**Reviewed:** 2026-03-22
+**Reviewed:** 2026-03-24
 
 ## Summary
 
-This document captures the target-state V2 package for `UFL` bond assets inside Meridian's broader security-master, fixed-income, and governance expansion.
+This package defines the **implementation-ready target state** for `UFL` bond assets in Meridian’s security-master and fixed-income stack.
 
-It assumes:
+The outcome is a canonical bond reference surface with:
 
-- a modular monolith
-- canonical bond definitions stored in security master
-- fixed-income lifecycle and accrual reference views modeled as projections
-- issuer and identifier lineage preserved independently from pricing or portfolio state
-- replay-safe rebuilds for bond terms, lifecycle, and accrual conventions
+- issuer lineage and identifier provenance,
+- deterministic lifecycle projection,
+- accrual-convention reference views,
+- replay-safe rebuild semantics,
+- API contracts for governance, ledger, and reporting consumers.
 
-This package turns the existing modeled bond support into a concrete build plan for reference data, lifecycle tracking, accrual conventions, and fixed-income APIs.
+This intentionally does **not** introduce pricing engines, risk analytics, or portfolio-state logic.
 
 ## Repo Fit
 
 ### Verified Meridian constraints
 
-- Meridian already models `SecurityKind.Bond` and `BondTerms` in `src/Meridian.FSharp/Domain/SecurityMaster.fs`.
+- `SecurityKind.Bond` and `BondTerms` already exist in `src/Meridian.FSharp/Domain/SecurityMaster.fs`.
 - `SecurityMasterMapping` already maps the `"Bond"` asset class.
-- current validation already enforces nonnegative coupon rates when present.
-- ledger, reconciliation, and governance planning already make bond lifecycle and accrual reference data valuable downstream.
+- Bond validation already rejects negative coupon values when a coupon is provided.
+- Ledger/reconciliation/gov workflows can already consume projected reference data.
 
-### Proposed UFL-specific additions
+### UFL additions in this package
 
-- bond lifecycle and accrual-convention projections
-- issuer and maturity-ladder read models
-- bond reference and lifecycle endpoints
-- additive convention storage for future callable or amortizing extensions
+- bond lifecycle projection (`Issued`, `Active`, `Matured`, `Inactive`)
+- bond accrual-convention projection (day count, coupon, maturity)
+- issuer + maturity-ladder read models
+- deterministic rebuild + checkpoint orchestration
+- fixed-income read APIs for bond reference and lifecycle
+- extensible bond subclass model for treasury, corporate, municipal, and securitized variants
 
-### Suggested Meridian mapping if implemented in-place
+### Suggested implementation locations
 
-- F# domain support in `src/Meridian.FSharp/Domain/`
-- application services in `src/Meridian.Application/FixedIncome/`
-- contracts in `src/Meridian.Contracts/FixedIncome/`
-- storage in `src/Meridian.Storage/SecurityMaster/`
-- endpoints in `src/Meridian.Ui.Shared/Endpoints/`
+- F# domain: `src/Meridian.FSharp/Domain/`
+- application services: `src/Meridian.Application/FixedIncome/`
+- contracts/DTOs: `src/Meridian.Contracts/FixedIncome/`
+- storage/projections: `src/Meridian.Storage/SecurityMaster/`
+- HTTP endpoints: `src/Meridian.Ui.Shared/Endpoints/`
 
 ## Scope
 
-**In Scope:** canonical bond identity, issuer lineage, maturity metadata, coupon and day-count conventions, lifecycle state, replay-safe rebuilds, and bond reference/query APIs.
+### In scope
 
-**Out of Scope:** structured products, mortgage-backed securities, full pricing engines, and complete callable/amortizing schedule models.
+- canonical bond identity + common identifiers
+- subclass-aware bond contracts and extension points
+- issuer linkage and maturity-ladder projection
+- maturity lifecycle state model
+- coupon/day-count conventions as reference data
+- replay-safe projection rebuilds from authoritative events
+- query APIs for bond, lifecycle, and accrual conventions
 
-## Knowledge Graph
+### Out of scope
+
+- callable/puttable schedule engines
+- amortizing principal schedule modeling (beyond extension hooks)
+- fixed-income pricing/yield analytics
+- MBS/ABS/structured products
+- portfolio positions, PnL, or execution workflows
+
+## Architecture Blueprint
+
+### Knowledge graph
 
 ```mermaid
 flowchart TD
-    Bond["Bond Aggregate"] --> BondEvents["Security Master Events"]
-    BondEvents --> Outbox["Transactional Outbox"]
-    BondEvents --> BondRM["Bond Snapshot Projection"]
+    BondAggregate["Security Master Bond Aggregate"] --> CoreEvents["Core Bond Events"]
+    CoreEvents --> Outbox["Transactional Outbox"]
+    CoreEvents --> BaseProjection["bond_projection (base)"]
 
-    BondRM --> LifecycleRM["Lifecycle Projection"]
-    BondRM --> AccrualRM["Accrual Convention Projection"]
-    BondRM --> IssuerRM["Issuer / Ladder Projection"]
+    SubclassDef["Bond Subclass Definition"] --> SubclassProjection["bond_subclass_projection"]
+    BaseProjection --> SubclassProjection
+    BaseProjection --> LifecycleProjection["bond_lifecycle_projection"]
+    BaseProjection --> AccrualProjection["bond_accrual_convention_projection"]
+    BaseProjection --> IssuerProjection["bond_issuer_projection"]
 
-    LifecycleRM --> Governance["Governance UI"]
-    AccrualRM --> Ledger["Ledger / Accrual Services"]
-    IssuerRM --> Reporting["Reporting / Exposure Views"]
+    SubclassProjection --> ReferenceApi["Reference APIs"]
+    LifecycleProjection --> GovernanceUi["Governance Workspace"]
+    AccrualProjection --> LedgerServices["Ledger / Accrual Services"]
+    IssuerProjection --> Reporting["Reporting / Exposure Views"]
     Outbox --> Rebuild["Projection Rebuild Orchestration"]
 ```
 
-## 1. Architecture Blueprint
+### Abstraction layers (authoritative)
 
-### 1.1 System shape
+The design is intentionally split into four abstraction layers to reduce coupling:
+
+1. **Canonical Bond Core**  
+   Owns immutable identity and base terms (`SecurityId`, maturity, coupon, day count).
+2. **Subclass Capability Layer**  
+   Owns additive features by subtype (convertible, floating-rate, inflation-linked, etc.).
+3. **Projection + Query Layer**  
+   Owns denormalized read models and stable query contracts for downstream consumers.
+4. **Orchestration Layer**  
+   Owns replay, checkpointing, sweep scheduling, and transactional outbox dispatch.
+
+Consumer systems (ledger/reporting/governance) may depend on layers 3-4 only, never provider payloads directly.
+
+### System shape
 
 **Write side**
 
-- canonical bond aggregate via security master
-- issuer enrichment boundary
-- accrual-convention enrichment boundary
+- canonical security-master aggregate for bond definitions
+- issuer enrichment boundary (external + normalized internal mappings)
+- accrual-convention enrichment boundary (normalization + provenance)
 
 **Read side**
 
-- current bond snapshot
-- bond lifecycle snapshot
-- bond accrual-convention snapshot
-- issuer and maturity-ladder snapshot
+- `bond_projection` (current canonical bond snapshot)
+- `bond_subclass_projection` (base bond + subclass attributes)
+- `bond_lifecycle_projection` (state + transition metadata)
+- `bond_accrual_convention_projection` (day count/coupon metadata)
+- `bond_issuer_projection` (issuer lineage + maturity bucket)
 
 **Processing**
 
 - security create/amend/deactivate handlers
 - issuer enrichment worker
-- lifecycle-state worker
-- accrual-convention projection worker
-- rebuild orchestration
+- maturity lifecycle worker (scheduled sweep + event-driven updates)
+- accrual-convention projector
+- rebuild orchestrator + checkpoint manager
 
-### 1.2 Design principles
+### Design principles
 
-1. Canonical bond identity is separate from pricing, positions, and analytics.
-2. Coupon, maturity, and day-count data are versioned facts with provenance.
-3. Lifecycle state should be projected rather than inferred ad hoc in every consumer.
-4. Future callable or amortizing extensions should layer on top of the existing bond base shape.
-5. Ledger and accrual consumers should rely on canonical projections, not provider-native payloads.
+1. Bond identity is canonical and independent of pricing/positions.
+2. Terms and conventions are immutable versioned facts with effective timestamps.
+3. Lifecycle is projected once and consumed consistently (no per-consumer inference drift).
+4. Projection rebuild must be deterministic from ordered event streams.
+5. Future callable/amortizing support extends via additive contracts and tables.
+6. Subclass-specific behavior is additive and never mutates base bond invariants.
+7. Unknown subclass payloads are retained as opaque extension data to preserve forward compatibility.
+8. Subclass policies are composed through explicit interfaces, not `if/else` logic in shared services.
+9. Every read model is derivable from events + enrichments without hidden side effects.
 
-## 2. F# Aggregate and Domain Shapes
+## Domain and Projection Shapes
 
-### 2.1 Shared kernel
+### Shared kernel
 
 ```fsharp
 type BondId = SecurityId
@@ -115,9 +154,7 @@ type BondLifecycleState =
     | Inactive
 ```
 
-### 2.2 Bond aggregate
-
-The canonical bond definition remains:
+### Existing canonical bond terms
 
 ```fsharp
 type BondTerms = {
@@ -127,164 +164,339 @@ type BondTerms = {
 }
 ```
 
-Proposed additive projection shapes:
+### Subclass taxonomy (target)
 
 ```fsharp
+type BondSubclass =
+    | Sovereign
+    | Corporate
+    | Municipal
+    | Agency
+    | Convertible
+    | InflationLinked
+    | ZeroCoupon
+    | FloatingRate
+    | AssetBacked
+    | Other of string
+```
+
+`Other` allows provider/issuer-specific types without blocking ingestion while governance validates a canonical mapping.
+
+### Proposed additive read models
+
+```fsharp
+type BondSubclassProjection = {
+    SecurityId: SecurityId
+    Subclass: BondSubclass
+    ExtensionJson: string option
+    EffectiveAtUtc: DateTime
+    Source: string
+}
+
 type BondAccrualConventionProjection = {
     SecurityId: SecurityId
     DayCount: string option
     CouponRate: decimal option
     Maturity: DateOnly
+    EffectiveAtUtc: DateTime
+    Source: string
 }
 
 type BondLifecycleProjection = {
     SecurityId: SecurityId
     State: BondLifecycleState
     Maturity: DateOnly
+    AsOfDate: DateOnly
+    ChangedAtUtc: DateTime
 }
 ```
 
-### 2.3 Projection lineage model
+### Subclass extension contracts
 
-- security-master events rebuild canonical bond state
-- issuer enrichment rebuilds issuer and ladder views
-- maturity evaluation rebuilds lifecycle projections
+Implement subclass fields using additive DTO contracts keyed by `BondSubclass`:
 
-## 3. Event Catalog
+- `FloatingRate`: `ReferenceIndex`, `SpreadBps`, `ResetFrequency`, `Cap`, `Floor`
+- `Convertible`: `ConversionRatio`, `ConversionWindowStart`, `ConversionWindowEnd`
+- `InflationLinked`: `InflationIndex`, `BaseCpi`, `LagMonths`
+- `AssetBacked`: `CollateralType`, `Tranche`, `CreditEnhancementType`
 
-### 3.1 Domain events
+Store subclass payloads in normalized extension tables when the shape stabilizes; until then persist validated JSON in `ExtensionJson`.
+
+### Subclass abstraction contract
+
+Define per-subclass policy handlers so extension logic is modular and testable:
+
+```csharp
+public interface IBondSubclassPolicy
+{
+    BondSubclass Subclass { get; }
+    ValidationResult Validate(BondSubclassPayload payload);
+    BondSubclassProjection Project(SecurityId securityId, BondSubclassPayload payload, DateTime effectiveAtUtc, string source);
+    IEnumerable<IDomainEvent> DeriveEvents(BondSnapshot previous, BondSnapshot current, BondSubclassPayload payload);
+}
+```
+
+Resolver contract:
+
+```csharp
+public interface IBondSubclassPolicyResolver
+{
+    bool TryResolve(BondSubclass subclass, out IBondSubclassPolicy policy);
+}
+```
+
+This keeps subclass growth additive: new subclass = new policy implementation + DTO contract, no core service rewrite.
+
+### Core invariants (must hold across all subclasses)
+
+- `SecurityId` uniqueness remains global and subtype-agnostic.
+- `Maturity` remains mandatory for all bond subclasses.
+- `CouponRate` may be null, but if present must be `>= 0`.
+- lifecycle state machine is shared by all subclasses.
+- subclass payload may add fields but cannot redefine base semantics (`Maturity`, `DayCount`, identifiers).
+
+### Lifecycle derivation rules
+
+- `Issued`: bond created but not yet active (optional activation gate).
+- `Active`: not deactivated and `AsOfDate < Maturity`.
+- `Matured`: not deactivated and `AsOfDate >= Maturity`.
+- `Inactive`: explicitly deactivated (terminal unless reactivation is introduced later).
+
+If maturity and deactivation conflict on same as-of boundary, `Inactive` wins.
+
+## Event Catalog
+
+### Domain events
 
 - `SecurityCreated`
 - `TermsAmended`
 - `SecurityDeactivated`
+- `BondSubclassAssigned`
 - `BondLifecycleStateChanged`
 - `BondIssuerLinked`
 - `BondAccrualConventionProjected`
 
-### 3.2 Process events
+### Process events
 
 - `BondProjectionRebuildCompleted`
 - `BondMaturitySweepCompleted`
 - `BondIssuerRefreshCompleted`
+- `BondSubclassBackfillCompleted`
 
-### 3.3 Event naming and versioning policy
+### Event metadata requirements
 
-- keep canonical bond-definition events aligned with security master
-- version issuer and convention projection payloads as additive metadata evolves
-- include source system and effective timestamp in all enrichment records
+Every enrichment/process event must include:
 
-## 4. SQL DDL Design
+- `SourceSystem`
+- `EffectiveAtUtc`
+- `ObservedAtUtc`
+- `CorrelationId`
+- `SchemaVersion`
 
-### 4.1 Core table groups
+For subclass events, include additionally:
+
+- `Subclass`
+- `SubclassSchemaVersion`
+- `PolicyVersion`
+
+## SQL DDL Design
+
+### Core table groups
 
 - `security_master_projection`
 - `bond_projection`
+- `bond_subclass_projection`
 - `bond_lifecycle_projection`
 - `bond_accrual_convention_projection`
 - `bond_issuer_projection`
 - `bond_projection_checkpoint`
 
-### 4.2 Implementation notes
+### Key constraints and indexing
 
-- index lifecycle by maturity and current state
-- issuer and ladder projections should index issuer name and maturity bucket
-- accrual-convention tables should preserve the event lineage used for rebuild
+- `bond_projection(SecurityId)` unique.
+- `bond_subclass_projection(SecurityId)` unique current row + optional history table.
+- `bond_lifecycle_projection(SecurityId)` unique current row + optional history table.
+- index lifecycle by `(State, Maturity)` for sweeps and governance dashboards.
+- index issuer ladder by `(IssuerNormalized, MaturityBucket)`.
+- index subclass lookups by `(Subclass, Maturity, IssuerNormalized)` for screening APIs.
+- store event lineage columns (`EventId`, `EventSequence`, `SourceSystem`) on projection rows.
+- add optimistic concurrency token (`RowVersion`) to all mutable projection tables.
 
-## 5. Service Boundaries
+### Schema abstraction pattern
 
-### 5.1 Bond Reference module
+Use a **base + extension** schema strategy:
 
-- owns bond identity, issuer, and current terms query APIs
+- `bond_projection`: canonical columns common to all bonds
+- `bond_subclass_projection`: subtype discriminator + schema/version fields + extension payload pointer
+- optional stabilized subtype tables (example: `bond_floating_rate_projection`) for high-frequency query paths
 
-### 5.2 Lifecycle module
+This avoids schema churn in base tables while enabling performant subtype queries where needed.
 
-- owns active, matured, and inactive state projections
+## Service Boundaries
 
-### 5.3 Accrual Convention module
+### Bond Reference module
 
-- owns day-count and coupon reference views for ledger and accrual consumers
+Owns canonical bond read APIs (identity, terms, issuer summary, identifiers, subclass profile).
 
-### 5.4 Platform module
+### Lifecycle module
 
-- owns rebuild orchestration and outbox dispatch
+Owns lifecycle transitions, maturity sweep logic, and lifecycle query APIs.
 
-## 6. Core Workflows
+### Accrual Convention module
 
-### 6.1 Create bond
+Owns day-count/coupon convention normalization and read APIs for ledger consumers.
 
-1. create canonical bond via security master
-2. persist `SecurityCreated`
-3. rebuild bond snapshot
-4. materialize lifecycle and convention projections
+### Bond Subclass module
 
-### 6.2 Amend bond terms
+Owns subclass assignment, subclass schema validation, and extension payload normalization.
 
-1. amend common or bond-specific terms
-2. persist `TermsAmended`
-3. rebuild bond snapshot and accrual convention views
+#### Dependency rule
 
-### 6.3 Evaluate maturity lifecycle
+`BondSubclass` module can depend on Bond Reference contracts, but Bond Reference cannot depend on concrete subclass policy implementations.
 
-1. compare maturity to as-of date
-2. update lifecycle projection
-3. publish maturity-state event if changed
+### Platform module
 
-### 6.4 Refresh issuer and ladder views
+Owns outbox dispatch, projection replay orchestration, and checkpoint persistence.
 
-1. normalize issuer metadata
-2. attach issuer grouping to canonical bond
-3. rebuild maturity-ladder views
+## Core Workflows
 
-### 6.5 Read-model rebuild
+### 1) Create bond
 
-1. replay canonical security events
-2. replay issuer enrichments
-3. replay lifecycle-state transitions
-4. checkpoint rebuilt projections
+1. Persist canonical bond in security master.
+2. Emit `SecurityCreated`.
+3. Resolve subclass mapping from provider payload.
+4. Build `bond_projection` + `bond_subclass_projection` snapshots.
+5. Build lifecycle + accrual-convention projections.
+6. Emit projection completion process event.
 
-## 7. Phase Sequence
+### 2) Amend bond terms
 
-### 7.1 Phase 1 goal
+1. Persist amendment in security master.
+2. Emit `TermsAmended` with new effective timestamp.
+3. Re-validate subclass payload if subclass fields changed.
+4. Re-project bond and accrual-convention snapshots.
+5. Re-evaluate lifecycle if maturity changed.
 
-Deliver canonical bond identity, lifecycle projections, accrual-convention read models, and reference APIs.
+### 3) Maturity lifecycle evaluation
 
-### 7.2 Phase 1 implementation order
+1. Worker compares `AsOfDate` and `Maturity`.
+2. If state changed, update projection and emit `BondLifecycleStateChanged`.
+3. Emit sweep completion telemetry for observability.
 
-1. add bond DTOs and query contracts
-2. add lifecycle and accrual-convention projection tables
-3. implement bond reference service
-4. implement maturity lifecycle service
-5. expose bond reference endpoints
-6. add rebuild and maturity tests
+### 4) Issuer + ladder refresh
 
-### 7.3 Phase 1 exit criteria
+1. Normalize issuer aliases to canonical issuer key.
+2. Update issuer projection lineage.
+3. Recompute maturity bucket (`0-1Y`, `1-3Y`, `3-5Y`, `5-10Y`, `10Y+`).
 
-- bonds can be queried through canonical read APIs
-- lifecycle and convention data rebuild deterministically
-- issuer and maturity views support governance and reporting consumers
+### 5) Read-model rebuild
 
-### 7.4 Phase 2 goals
+1. Replay security-master events in deterministic order.
+2. Replay subclass assignment events by sequence.
+3. Replay enrichment streams by sequence.
+4. Recompute projections idempotently.
+5. Persist `bond_projection_checkpoint`.
+6. Emit `BondProjectionRebuildCompleted`.
 
-- callable and amortizing extensions
-- richer fixed-income governance views
-- deeper ledger integration for accrual scheduling
+### 6) Introduce new subclass (operational workflow)
 
-## 8. Target API Surface
+1. Add subclass enum member + DTO contract.
+2. Implement `IBondSubclassPolicy`.
+3. Register policy in resolver with feature flag.
+4. Run replay on golden fixtures and confirm deterministic projections.
+5. Enable subclass ingestion for selected providers.
+6. Remove feature flag after governance sign-off.
 
-### 8.1 Reference
+## API Surface (Target)
+
+### Reference
 
 - `GET /api/security-master/bonds/{securityId}`
-- `GET /api/security-master/bonds/search`
+- `GET /api/security-master/bonds/search?issuer=&subclass=&state=&maturityFrom=&maturityTo=&page=&pageSize=`
+- `GET /api/security-master/bonds/subclasses`
+- `GET /api/security-master/bonds/{securityId}/subclass`
 
-### 8.2 Lifecycle
+### Lifecycle
 
 - `GET /api/security-master/bonds/{securityId}/lifecycle`
 
-### 8.3 Conventions
+### Accrual conventions
 
 - `GET /api/security-master/bonds/{securityId}/accrual-conventions`
 
-## 9. Proposed Repo Structure
+### Response requirements
+
+- include `asOfDate` in lifecycle responses
+- include `sourceSystem` and `effectiveAtUtc` in accrual convention responses
+- include `subclass`, `subclassVersion`, and `extensionSchema` in bond reference payloads
+- use stable error codes (`BondNotFound`, `InvalidQueryRange`, `InvalidSecurityKind`, `InvalidBondSubclass`)
+
+## Delivery Plan
+
+### Phase 1 (target)
+
+Deliver canonical bond identity, lifecycle projections, accrual read models, and APIs.
+
+**Implementation order**
+
+1. Add contracts/DTOs for bond reference + lifecycle + conventions.
+2. Add subclass contracts and validation rules.
+3. Add projection tables and indexes.
+4. Implement reference/lifecycle services.
+5. Implement maturity sweep worker.
+6. Expose endpoints.
+7. Add rebuild + lifecycle transition tests.
+
+**Exit criteria**
+
+- bond reference APIs serve deterministic canonical views,
+- lifecycle and conventions rebuild deterministically from replay,
+- issuer/maturity-ladder queries support governance/reporting use cases,
+- subclass filters and subclass payload contracts are stable across replay.
+
+### Phase 2 (extensions)
+
+- callable/amortizing extensions via additive models,
+- expanded governance views and breach alerts,
+- deeper ledger integration for accrual scheduling orchestration,
+- subclass-specific accrual and lifecycle policy modules.
+
+### Phase 3 (abstraction hardening)
+
+- migrate high-volume subclasses from JSON extension payloads to stabilized projection tables,
+- introduce policy conformance tests shared across all `IBondSubclassPolicy` implementations,
+- add policy-version compatibility checks in rebuild pipelines.
+
+## Testing Strategy
+
+- domain unit tests for lifecycle derivation edge cases (maturity boundary, deactivated bonds)
+- domain tests for subclass validation and fallback behavior (`Other of string`)
+- storage tests for idempotent projection upserts and checkpoint recovery
+- API tests for query filtering, pagination, and error contracts
+- rebuild tests validating deterministic outputs from identical event streams
+- compatibility tests for unknown subclass extension payload persistence
+- contract tests ensuring each subclass policy satisfies shared invariants
+- golden master tests proving new subclass registration does not change existing subclass projections
+
+Suggested commands:
+
+- `dotnet test tests/Meridian.FSharp.Tests -c Release /p:EnableWindowsTargeting=true`
+- `dotnet test tests/Meridian.Tests -c Release /p:EnableWindowsTargeting=true --filter Bond`
+
+## Risks and Mitigations
+
+- **Risk:** lifecycle drift between event-driven updates and scheduled sweeps.  
+  **Mitigation:** single lifecycle projector with deterministic transition function.
+- **Risk:** issuer normalization inconsistency across providers.  
+  **Mitigation:** canonical issuer key + alias table with provenance.
+- **Risk:** rebuild regressions after schema evolution.  
+  **Mitigation:** schema-versioned events + golden replay fixtures.
+- **Risk:** subclass explosion causing contract sprawl and inconsistent consumer logic.  
+  **Mitigation:** strict subclass registry + additive schema versioning + bounded extension ownership.
+- **Risk:** policy implementation drift between teams.  
+  **Mitigation:** shared `IBondSubclassPolicy` conformance suite + versioned policy registry.
+
+## Proposed Repo Structure
 
 ```text
 src/
@@ -294,37 +506,50 @@ src/
       BondReferenceService.cs
       IBondLifecycleService.cs
       BondLifecycleService.cs
+      BondAccrualConventionService.cs
+      IBondSubclassService.cs
+      BondSubclassService.cs
   Meridian.Contracts/
     FixedIncome/
       BondReferenceDtos.cs
+      BondLifecycleDtos.cs
+      BondAccrualConventionDtos.cs
+      BondSubclassDtos.cs
   Meridian.Storage/
     SecurityMaster/
       BondProjectionStore.cs
+      BondSubclassProjectionStore.cs
+      BondLifecycleProjectionStore.cs
+      BondAccrualConventionProjectionStore.cs
   Meridian.Ui.Shared/
     Endpoints/
       BondReferenceEndpoints.cs
+      BondLifecycleEndpoints.cs
+      BondSubclassEndpoints.cs
 tests/
   Meridian.Tests/
     FixedIncome/
     SecurityMaster/
+  Meridian.FSharp.Tests/
+    SecurityMaster/
 ```
 
-## 10. Recommended First Ten Implementation Tickets
+## Recommended First Ten Implementation Tickets
 
-1. Add bond DTOs and query contracts.
-2. Add bond lifecycle projection records.
-3. Add bond accrual-convention projection records.
-4. Implement bond reference service.
-5. Implement maturity lifecycle service.
-6. Expose bond reference endpoints.
-7. Add maturity-state sweep tests.
-8. Add issuer grouping and ladder projections.
-9. Add rebuild orchestration coverage.
-10. Add governance views for bond lifecycle and maturity ladders.
+1. Add bond subclass enum + DTO contracts.
+2. Add subclass validation policy and registry.
+3. Introduce lifecycle projection table + indexes.
+4. Introduce accrual projection table + lineage columns.
+5. Introduce subclass projection table + schema versioning.
+6. Implement `IBondReferenceService` and query handlers.
+7. Implement lifecycle derivation service + transition event emission.
+8. Add lifecycle/convention/subclass endpoints.
+9. Add maturity sweep worker + telemetry.
+10. Add issuer normalization + ladder projection + replay coverage.
 
-## 11. Final Target State
+## Final Target State
 
-Meridian treats a bond as a canonical fixed-income identity with explainable issuer lineage, maturity lifecycle, and accrual conventions. Reporting, governance, and ledger consumers all use the same rebuilt reference surface rather than reinterpreting provider payloads independently.
+Meridian treats every bond as a canonical fixed-income identity with auditable issuer lineage, deterministic lifecycle state, explicit accrual conventions, and extensible subclass semantics. Governance, reporting, and ledger consumers read one rebuilt reference surface instead of reinterpreting provider payloads independently.
 
 ## Related Documents
 
