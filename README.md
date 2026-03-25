@@ -1194,7 +1194,9 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── SecurityEconomicDefinitionAdapter.cs
 │   │   │   ├── SecurityMasterAggregateRebuilder.cs
 │   │   │   ├── SecurityMasterMapping.cs
+│   │   │   ├── SecurityMasterOptionsValidator.cs
 │   │   │   ├── SecurityMasterProjectionService.cs
+│   │   │   ├── SecurityMasterProjectionWarmupService.cs
 │   │   │   ├── SecurityMasterQueryService.cs
 │   │   │   ├── SecurityMasterRebuildOrchestrator.cs
 │   │   │   ├── SecurityMasterService.cs
@@ -1954,7 +1956,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── ISecurityMasterSnapshotStore.cs
 │   │   │   ├── ISecurityMasterStore.cs
 │   │   │   ├── Migrations
-│   │   │   │   └── 001_security_master.sql
+│   │   │   │   ├── 001_security_master.sql
+│   │   │   │   └── 002_security_master_fts.sql
 │   │   │   ├── PostgresSecurityMasterEventStore.cs
 │   │   │   ├── PostgresSecurityMasterSnapshotStore.cs
 │   │   │   ├── PostgresSecurityMasterStore.cs
@@ -2897,6 +2900,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-403 directories, 2456 files
+403 directories, 2459 files
 ```
 <!-- readme-tree end -->
