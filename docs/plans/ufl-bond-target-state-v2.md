@@ -428,7 +428,7 @@ Owns outbox dispatch, projection replay orchestration, and checkpoint persistenc
 
 - include `asOfDate` in lifecycle responses
 - include `sourceSystem` and `effectiveAtUtc` in accrual convention responses
-- include `subclass`, `subclassVersion`, and `extensionSchema` in bond reference payloads
+- include `subclass`, `subclassSchemaVersion` (schema version), `policyVersion` (policy implementation version), and `extensionSchema` in bond reference payloads
 - use stable error codes (`BondNotFound`, `InvalidQueryRange`, `InvalidSecurityKind`, `InvalidBondSubclass`)
 
 ## Delivery Plan
