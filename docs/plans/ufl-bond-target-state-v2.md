@@ -318,7 +318,7 @@ For subclass events, include additionally:
 - `bond_lifecycle_projection(SecurityId)` unique current row + optional history table.
 - index lifecycle by `(State, Maturity)` for sweeps and governance dashboards.
 - index issuer ladder by `(IssuerNormalized, MaturityBucket)`.
-- index subclass lookups by `(Subclass, Maturity, IssuerNormalized)` for screening APIs.
+- index subclass lookups by `Subclass` on `bond_subclass_projection`; expose `(Subclass, Maturity, IssuerNormalized)` via a dedicated screening view/projection and index that view for screening APIs.
 - store event lineage columns (`EventId`, `EventSequence`, `SourceSystem`) on projection rows.
 - add optimistic concurrency token (for Postgres: `version bigint` and/or `updated_at` with compare-and-swap in upserts) to all mutable projection tables.
 
