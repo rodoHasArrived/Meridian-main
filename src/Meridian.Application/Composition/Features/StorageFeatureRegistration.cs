@@ -14,6 +14,7 @@ using Meridian.Storage.Policies;
 using Meridian.Storage.SecurityMaster;
 using Meridian.Storage.Services;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Meridian.Application.Composition.Features;
 
@@ -91,6 +92,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             ReplayBatchSize = ParseInt("MERIDIAN_DIRECT_LENDING_REPLAY_BATCH_SIZE", 250)
         });
 
+        services.AddSingleton<IValidateOptions<SecurityMasterOptions>, SecurityMasterOptionsValidator>();
         services.AddSingleton<ISecurityMasterEventStore, PostgresSecurityMasterEventStore>();
         services.AddSingleton<ISecurityMasterSnapshotStore, PostgresSecurityMasterSnapshotStore>();
         services.AddSingleton<ISecurityMasterStore, PostgresSecurityMasterStore>();
@@ -102,6 +104,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.AddSingleton<ISecurityMasterService, SecurityMasterService>();
         services.AddSingleton<ISecurityMasterQueryService, SecurityMasterQueryService>();
         services.AddSingleton<ISecurityResolver, SecurityResolver>();
+        services.AddHostedService<SecurityMasterProjectionWarmupService>();
         services.AddSingleton<DirectLendingEventRebuilder>();
         services.AddSingleton<IDirectLendingStateStore, PostgresDirectLendingStateStore>();
         services.AddSingleton<IDirectLendingOperationsStore>(sp => (PostgresDirectLendingStateStore)sp.GetRequiredService<IDirectLendingStateStore>());

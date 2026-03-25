@@ -10,6 +10,7 @@ public sealed record ResolveSecurityRequest(
 public sealed record SecuritySearchRequest(
     string Query,
     int Take = 50,
+    int Skip = 0,
     bool ActiveOnly = false);
 
 public sealed record SecurityHistoryRequest(

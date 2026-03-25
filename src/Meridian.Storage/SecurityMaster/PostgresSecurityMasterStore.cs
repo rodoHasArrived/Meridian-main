@@ -123,20 +123,41 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var command = connection.CreateCommand();
-        command.CommandText =
-            $"""
-            select security_id
-            from {Qualified("securities")}
-            where (
-                display_name ilike @pattern or
-                primary_identifier_value ilike @pattern)
-              and (@active_only = false or status = 'Active')
-            order by display_name
-            limit @take;
-            """;
-        command.Parameters.AddWithValue("pattern", $"%{request.Query}%");
+
+        var trimmedQuery = request.Query.Trim();
+        var useFts = trimmedQuery.Length >= 2;
+
+        // Use full-text search when the query is long enough for meaningful tokenisation.
+        // The ILIKE fallback catches short identifiers (e.g. "GE", "T") that tsvector skips.
+        command.CommandText = useFts
+            ? $"""
+               select security_id,
+                      ts_rank(search_vector, plainto_tsquery('simple', @query)) as rank
+               from {Qualified("securities")}
+               where (
+                   search_vector @@ plainto_tsquery('simple', @query)
+                   or display_name ilike @pattern
+                   or primary_identifier_value ilike @pattern)
+                 and (@active_only = false or status = 'Active')
+               order by rank desc, display_name
+               limit @take offset @skip;
+               """
+            : $"""
+               select security_id, 0::float4 as rank
+               from {Qualified("securities")}
+               where (
+                   display_name ilike @pattern
+                   or primary_identifier_value ilike @pattern)
+                 and (@active_only = false or status = 'Active')
+               order by display_name
+               limit @take offset @skip;
+               """;
+
+        command.Parameters.AddWithValue("query", trimmedQuery);
+        command.Parameters.AddWithValue("pattern", $"%{trimmedQuery}%");
         command.Parameters.AddWithValue("active_only", request.ActiveOnly);
         command.Parameters.AddWithValue("take", request.Take);
+        command.Parameters.AddWithValue("skip", request.Skip);
 
         var ids = new List<Guid>();
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
