@@ -283,7 +283,9 @@ Use these documents together when planning or implementing new work:
 ├── benchmarks
 │   ├── BOTTLENECK_REPORT.md
 │   ├── Meridian.Benchmarks
+│   │   ├── CanonicalizationBenchmarks.cs
 │   │   ├── CollectorBenchmarks.cs
+│   │   ├── CompositeSinkBenchmarks.cs
 │   │   ├── EndToEndPipelineBenchmarks.cs
 │   │   ├── EventPipelineBenchmarks.cs
 │   │   ├── IndicatorBenchmarks.cs
@@ -2699,6 +2701,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-403 directories, 2258 files
+403 directories, 2260 files
 ```
 <!-- readme-tree end -->
