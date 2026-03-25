@@ -20,8 +20,13 @@ SKIP_DIRS = {".git", "node_modules", "bin", "obj", ".vs", ".idea", ".vscode", "p
 # Files/dirs whose content is meta (they process or report TODOs rather than contain them).
 # Scanning them produces thousands of self-referential false positives.
 SKIP_PATH_PREFIXES = (
-    "docs/status/TODO",        # the output file itself
-    "build/scripts/docs/",     # scripts that process TODO scan results
+    "docs/status/TODO",                              # the output file itself
+    "build/scripts/docs/",                           # scripts that process TODO scan results
+    "docs/_site/",                                   # generated docfx site
+    "docs/generated/",                               # auto-generated documentation
+    "docs/examples/provider-template/",              # template examples (not work items)
+    "archive/",                                      # archived/historical documentation
+    ".github/workflows/documentation.yml",           # workflow script with many metadata TODOs
 )
 TAG_PATTERN = re.compile(r"\b(TODO|FIXME|NOTE)\b", re.IGNORECASE)
 ISSUE_PATTERN = re.compile(r"(?:#\d+|issues?/\d+)")
