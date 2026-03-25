@@ -60,6 +60,13 @@ while [[ $# -gt 0 ]]; do
             echo "  Indicators (IndicatorBenchmarks.cs):"
             echo "    IndicatorBenchmarks           - Technical indicator calculations"
             echo "    SingleIndicatorBenchmarks     - Per-indicator cost isolation"
+            echo ""
+            echo "  Canonicalization (CanonicalizationBenchmarks.cs):"
+            echo "    CanonicalizingPublisherBenchmarks          - Interlocked overhead per event"
+            echo "    CanonicalizingPublisherThroughputBenchmarks - Batch throughput canonical-only vs dual-write"
+            echo ""
+            echo "  Storage sink fan-out (CompositeSinkBenchmarks.cs):"
+            echo "    CompositeSinkBenchmarks       - 1/2/4-sink Task.WhenAll fan-out overhead"
             exit 0
             ;;
         *) echo "Unknown option: $1"; exit 1 ;;
@@ -171,6 +178,20 @@ else
     echo ""
     run_phase "*WalChecksum*"
     echo ""
+
+    # --- Phase 6: Canonicalization Overhead ---
+    echo "=== Phase 6: Canonicalization Overhead ==="
+    echo "  CanonicalizingPublisher Interlocked ops — canonical-only vs dual-write (BOTTLENECK_REPORT #8)"
+    echo ""
+    run_phase "*CanonicalizingPublisher*"
+    echo ""
+
+    # --- Phase 7: CompositeSink Fan-out ---
+    echo "=== Phase 7: CompositeSink Fan-out ==="
+    echo "  Task.WhenAll overhead for 1/2/4-sink configurations"
+    echo ""
+    run_phase "*CompositeSink*"
+    echo ""
 fi
 
 echo "============================================"
@@ -188,3 +209,5 @@ echo "  - Check Allocated column for GC pressure (record with-expressions, seria
 echo "  - BatchSerialization: if Parallel is faster at BatchSize=5000, lower the threshold"
 echo "  - TradeCollector: if SingleSymbol is much slower, per-symbol lock is the bottleneck"
 echo "  - WalChecksum: IncrementalHash path should be significantly faster than LegacyStringConcat"
+echo "  - CanonicalizingPublisher: delta DualWrite vs CanonicalOnly shows extra Interlocked cost"
+echo "  - CompositeSinkBenchmarks: TwoSinks_FixedDelay should be ~500us, not ~1000us (validates Task.WhenAll)"
