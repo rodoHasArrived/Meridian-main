@@ -111,7 +111,8 @@ public static class UiEndpoints
         var options = CompositionOptions.WebDashboard with { ConfigPath = configPath };
         services.AddMarketDataServices(options);
 
-        // Register session-based authentication service
+        // Register user profile registry (multi-user RBAC) and session-based auth service
+        services.AddSingleton<UserProfileRegistry>();
         services.AddSingleton<LoginSessionService>();
 
         // Replace core BackfillCoordinator with UI-extended version that includes PreviewAsync
@@ -146,7 +147,8 @@ public static class UiEndpoints
         var options = CompositionOptions.WebDashboard with { ConfigPath = configPath };
         services.AddMarketDataServices(options);
 
-        // Register session-based authentication service
+        // Register user profile registry (multi-user RBAC) and session-based auth service
+        services.AddSingleton<UserProfileRegistry>();
         services.AddSingleton<LoginSessionService>();
 
         // Replace core BackfillCoordinator with UI-extended version that includes PreviewAsync
