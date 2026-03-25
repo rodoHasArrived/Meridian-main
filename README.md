@@ -2295,7 +2295,8 @@ Use these documents together when planning or implementing new work:
 │       │   ├── OrderBookModels.cs
 │       │   ├── ProviderHealthModels.cs
 │       │   ├── StorageDisplayModels.cs
-│       │   └── SymbolsModels.cs
+│       │   ├── SymbolsModels.cs
+│       │   └── WorkspaceShellModels.cs
 │       ├── README.md
 │       ├── Services
 │       │   ├── ArchiveHealthService.cs
@@ -2910,6 +2911,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-403 directories, 2469 files
+403 directories, 2470 files
 ```
 <!-- readme-tree end -->
