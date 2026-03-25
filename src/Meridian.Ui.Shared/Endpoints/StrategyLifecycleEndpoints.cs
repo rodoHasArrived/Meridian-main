@@ -59,6 +59,9 @@ public static class StrategyLifecycleEndpoints
             if (manager is null)
                 return Results.Problem("Strategy lifecycle manager is not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
 
+            if (!manager.GetStatuses().ContainsKey(strategyId))
+                return Results.NotFound(new { strategyId, error = "Strategy not registered." });
+
             try
             {
                 await manager.PauseAsync(strategyId, context.RequestAborted).ConfigureAwait(false);
@@ -76,13 +79,17 @@ public static class StrategyLifecycleEndpoints
         .Produces<StrategyActionResult>(200)
         .Produces<StrategyActionResult>(409)
         .Produces(404)
-        .Produces(503);
+        .Produces(503)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         group.MapPost("/{strategyId}/stop", async (string strategyId, HttpContext context) =>
         {
             var manager = context.RequestServices.GetService<StrategyLifecycleManager>();
             if (manager is null)
                 return Results.Problem("Strategy lifecycle manager is not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
+
+            if (!manager.GetStatuses().ContainsKey(strategyId))
+                return Results.NotFound(new { strategyId, error = "Strategy not registered." });
 
             try
             {
@@ -100,7 +107,9 @@ public static class StrategyLifecycleEndpoints
         .WithName("StopStrategy")
         .Produces<StrategyActionResult>(200)
         .Produces<StrategyActionResult>(409)
-        .Produces(503);
+        .Produces(404)
+        .Produces(503)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
     }
 }
 
