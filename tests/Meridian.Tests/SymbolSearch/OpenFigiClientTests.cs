@@ -258,6 +258,315 @@ public class FigiLookupRequestTests
 }
 
 
+/// <summary>
+/// Contract tests for OpenFigiClient — verify JSON parsing logic with recorded API responses.
+/// </summary>
+public sealed class OpenFigiClientParsingTests
+{
+    #region LookupByTickerAsync — Parsing
+
+    [Fact]
+    public async Task LookupByTicker_ParsesValidMappingResponse_ReturnsFigiMappings()
+    {
+        using var handler = new StubHttpMessageHandler(_ =>
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(OpenFigiResponses.ValidAaplMappingResponse, Encoding.UTF8, "application/json")
+            });
+        using var httpClient = new HttpClient(handler);
+        using var client = new OpenFigiClient(httpClient: httpClient);
+
+        var results = await client.LookupByTickerAsync("AAPL");
+
+        results.Should().HaveCount(1);
+        results[0].Figi.Should().Be("BBG000B9XRY4");
+        results[0].CompositeFigi.Should().Be("BBG000B9Y5X2");
+        results[0].Ticker.Should().Be("AAPL");
+        results[0].Name.Should().Be("APPLE INC");
+        results[0].SecurityType.Should().Be("Common Stock");
+        results[0].MarketSector.Should().Be("Equity");
+        results[0].ExchangeCode.Should().Be("UW");
+    }
+
+    [Fact]
+    public async Task LookupByTicker_WhenApiReturnsErrorField_ReturnsEmptyList()
+    {
+        using var handler = new StubHttpMessageHandler(_ =>
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(OpenFigiResponses.TickerNotFoundResponse, Encoding.UTF8, "application/json")
+            });
+        using var httpClient = new HttpClient(handler);
+        using var client = new OpenFigiClient(httpClient: httpClient);
+
+        var results = await client.LookupByTickerAsync("BOGUS");
+
+        results.Should().BeEmpty("an error field in the mapping response means the ticker was not found");
+    }
+
+    [Fact]
+    public async Task LookupByTicker_WhenApiReturns429_ThrowsHttpRequestException()
+    {
+        using var handler = new StubHttpMessageHandler(_ =>
+            new HttpResponseMessage((HttpStatusCode)429)
+            {
+                Content = new StringContent("{\"error\":\"Too Many Requests\"}", Encoding.UTF8, "application/json")
+            });
+        using var httpClient = new HttpClient(handler);
+        using var client = new OpenFigiClient(httpClient: httpClient);
+
+        await Assert.ThrowsAsync<HttpRequestException>(() => client.LookupByTickerAsync("AAPL"));
+    }
+
+    [Fact]
+    public async Task LookupByTicker_WhenApiReturnsNonSuccessStatus_ReturnsEmptyList()
+    {
+        using var handler = new StubHttpMessageHandler(_ =>
+            new HttpResponseMessage(HttpStatusCode.InternalServerError)
+            {
+                Content = new StringContent("{\"message\":\"Internal error\"}", Encoding.UTF8, "application/json")
+            });
+        using var httpClient = new HttpClient(handler);
+        using var client = new OpenFigiClient(httpClient: httpClient);
+
+        var results = await client.LookupByTickerAsync("AAPL");
+
+        results.Should().BeEmpty("non-success HTTP responses other than 429 should return empty rather than throw");
+    }
+
+    [Fact]
+    public async Task LookupByTicker_WhenResponseContainsMultipleMappings_ReturnsAll()
+    {
+        using var handler = new StubHttpMessageHandler(_ =>
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(OpenFigiResponses.MultipleAaplMappingsResponse, Encoding.UTF8, "application/json")
+            });
+        using var httpClient = new HttpClient(handler);
+        using var client = new OpenFigiClient(httpClient: httpClient);
+
+        var results = await client.LookupByTickerAsync("AAPL");
+
+        results.Should().HaveCount(2);
+        results.Should().AllSatisfy(r => r.Ticker.Should().Be("AAPL"));
+    }
+
+    #endregion
+
+    #region SearchAsync — Parsing
+
+    [Fact]
+    public async Task SearchAsync_ParsesValidFilterResponse_ReturnsResults()
+    {
+        using var handler = new StubHttpMessageHandler(_ =>
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(OpenFigiResponses.ValidSearchResponse, Encoding.UTF8, "application/json")
+            });
+        using var httpClient = new HttpClient(handler);
+        using var client = new OpenFigiClient(httpClient: httpClient);
+
+        var results = await client.SearchAsync("Apple");
+
+        results.Should().HaveCount(2);
+        results[0].Figi.Should().Be("BBG000B9XRY4");
+        results[0].Name.Should().Be("APPLE INC");
+        results[1].Figi.Should().Be("BBG000B9Y5X2");
+    }
+
+    [Fact]
+    public async Task SearchAsync_WhenApiReturnsNonSuccess_ReturnsEmpty()
+    {
+        using var handler = new StubHttpMessageHandler(_ =>
+            new HttpResponseMessage(HttpStatusCode.BadRequest)
+            {
+                Content = new StringContent("{\"error\":\"Bad Request\"}", Encoding.UTF8, "application/json")
+            });
+        using var httpClient = new HttpClient(handler);
+        using var client = new OpenFigiClient(httpClient: httpClient);
+
+        var results = await client.SearchAsync("Apple");
+
+        results.Should().BeEmpty("non-success responses from the filter endpoint should return empty");
+    }
+
+    [Fact]
+    public async Task SearchAsync_WhenResponseHasEmptyData_ReturnsEmpty()
+    {
+        using var handler = new StubHttpMessageHandler(_ =>
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("{\"data\":[],\"total\":0}", Encoding.UTF8, "application/json")
+            });
+        using var httpClient = new HttpClient(handler);
+        using var client = new OpenFigiClient(httpClient: httpClient);
+
+        var results = await client.SearchAsync("xyzunknown");
+
+        results.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task SearchAsync_RespectsLimit_TruncatesResults()
+    {
+        using var handler = new StubHttpMessageHandler(_ =>
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(OpenFigiResponses.ValidSearchResponse, Encoding.UTF8, "application/json")
+            });
+        using var httpClient = new HttpClient(handler);
+        using var client = new OpenFigiClient(httpClient: httpClient);
+
+        // Response has 2 items; request only 1
+        var results = await client.SearchAsync("Apple", limit: 1);
+
+        results.Should().HaveCount(1);
+    }
+
+    #endregion
+
+    #region EnrichWithFigiAsync — Enrichment
+
+    [Fact]
+    public async Task EnrichWithFigiAsync_AddsCorrectFigiToMatchedSymbols()
+    {
+        using var handler = new StubHttpMessageHandler(_ =>
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(OpenFigiResponses.ValidAaplMappingResponse, Encoding.UTF8, "application/json")
+            });
+        using var httpClient = new HttpClient(handler);
+        using var client = new OpenFigiClient(httpClient: httpClient);
+
+        var searchResults = new[]
+        {
+            new SymbolSearchResult("AAPL", "Apple Inc.", "NASDAQ", "Equity", null, null, "alpaca")
+        };
+
+        var enriched = await client.EnrichWithFigiAsync(searchResults);
+
+        enriched.Should().HaveCount(1);
+        enriched[0].Figi.Should().Be("BBG000B9XRY4");
+        enriched[0].CompositeFigi.Should().Be("BBG000B9Y5X2");
+    }
+
+    [Fact]
+    public async Task EnrichWithFigiAsync_WhenNoFigiFound_LeavesOriginalResultUnchanged()
+    {
+        using var handler = new StubHttpMessageHandler(_ =>
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(OpenFigiResponses.TickerNotFoundResponse, Encoding.UTF8, "application/json")
+            });
+        using var httpClient = new HttpClient(handler);
+        using var client = new OpenFigiClient(httpClient: httpClient);
+
+        var searchResults = new[]
+        {
+            new SymbolSearchResult("BOGUS", "Unknown Corp", "NYSE", "Equity", null, null, "alpaca")
+        };
+
+        var enriched = await client.EnrichWithFigiAsync(searchResults);
+
+        enriched.Should().HaveCount(1);
+        enriched[0].Figi.Should().BeNull("symbol not found in OpenFIGI should leave Figi unset");
+        enriched[0].Symbol.Should().Be("BOGUS");
+    }
+
+    #endregion
+}
+
+/// <summary>
+/// Recorded OpenFIGI API responses for use in contract tests.
+/// </summary>
+internal static class OpenFigiResponses
+{
+    /// <summary>Single AAPL equity result from the /v3/mapping endpoint.</summary>
+    public const string ValidAaplMappingResponse = """
+        [
+          {
+            "data": [
+              {
+                "figi": "BBG000B9XRY4",
+                "compositeFIGI": "BBG000B9Y5X2",
+                "securityType": "Common Stock",
+                "marketSector": "Equity",
+                "ticker": "AAPL",
+                "name": "APPLE INC",
+                "exchCode": "UW",
+                "shareClassFIGI": "BBG001S5N8V8",
+                "securityDescription": "APPLE INC"
+              }
+            ]
+          }
+        ]
+        """;
+
+    /// <summary>Two AAPL mappings returned in a single response (e.g., different exchanges).</summary>
+    public const string MultipleAaplMappingsResponse = """
+        [
+          {
+            "data": [
+              {
+                "figi": "BBG000B9XRY4",
+                "compositeFIGI": "BBG000B9Y5X2",
+                "securityType": "Common Stock",
+                "marketSector": "Equity",
+                "ticker": "AAPL",
+                "name": "APPLE INC",
+                "exchCode": "UW"
+              },
+              {
+                "figi": "BBG000QNH748",
+                "compositeFIGI": "BBG000B9Y5X2",
+                "securityType": "Common Stock",
+                "marketSector": "Equity",
+                "ticker": "AAPL",
+                "name": "APPLE INC",
+                "exchCode": "US"
+              }
+            ]
+          }
+        ]
+        """;
+
+    /// <summary>Mapping response where the entry has an error (ticker not found).</summary>
+    public const string TickerNotFoundResponse = """
+        [
+          {
+            "error": "No identifier found."
+          }
+        ]
+        """;
+
+    /// <summary>Filter endpoint response with two Apple matches.</summary>
+    public const string ValidSearchResponse = """
+        {
+          "data": [
+            {
+              "figi": "BBG000B9XRY4",
+              "compositeFIGI": "BBG000B9Y5X2",
+              "securityType": "Common Stock",
+              "marketSector": "Equity",
+              "ticker": "AAPL",
+              "name": "APPLE INC",
+              "exchCode": "UW"
+            },
+            {
+              "figi": "BBG000B9Y5X2",
+              "compositeFIGI": "BBG000B9Y5X2",
+              "securityType": "Common Stock",
+              "marketSector": "Equity",
+              "ticker": "AAPL",
+              "name": "APPLE INC",
+              "exchCode": "US"
+            }
+          ],
+          "total": 2
+        }
+        """;
+}
+
 internal sealed class StubHttpMessageHandler : HttpMessageHandler
 {
     private readonly Func<HttpRequestMessage, HttpResponseMessage> _responder;
