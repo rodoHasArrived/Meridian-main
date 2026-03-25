@@ -1,3 +1,4 @@
+using Meridian.Contracts.Banking;
 using Meridian.Contracts.Workstation;
 using Meridian.FSharp.Ledger;
 
@@ -87,13 +88,15 @@ public sealed class ReconciliationProjectionService
         decimal expectedAmount,
         decimal actualAmount,
         DateTimeOffset? expectedAsOf,
-        DateTimeOffset? actualAsOf) =>
+        DateTimeOffset? actualAsOf,
+        string expectedSource = "portfolio",
+        string actualSource = "ledger") =>
         new()
         {
             CheckId = checkId,
             Label = label,
-            ExpectedSource = "portfolio",
-            ActualSource = "ledger",
+            ExpectedSource = expectedSource,
+            ActualSource = actualSource,
             ExpectedAmount = expectedAmount,
             ActualAmount = actualAmount,
             HasExpectedAmount = true,
@@ -139,4 +142,77 @@ public sealed class ReconciliationProjectionService
             MissingSourceHint = missingSourceHint,
             ActualKind = actualKind
         };
+
+    /// <summary>
+    /// Build reconciliation checks that compare bank-side transaction totals against
+    /// the internal ledger's cash balance.  Returns an empty list when both sides have
+    /// no data.
+    /// </summary>
+    public IReadOnlyList<PortfolioLedgerCheckDto> BuildBankingChecks(
+        IReadOnlyList<BankTransactionDto> bankTransactions,
+        LedgerSummary? ledger)
+    {
+        ArgumentNullException.ThrowIfNull(bankTransactions);
+
+        var activeTxns = bankTransactions.Where(static t => !t.IsVoided).ToArray();
+        var hasBankData = activeTxns.Length > 0;
+        var bankNetAmount = activeTxns.Sum(static t => t.Amount);
+
+        var hasLedgerData = ledger is not null;
+        var ledgerCash = ledger?.TrialBalance
+            .Where(static l => string.Equals(l.AccountName, "Cash", StringComparison.OrdinalIgnoreCase))
+            .Sum(static l => l.Balance) ?? 0m;
+
+        if (!hasBankData && !hasLedgerData)
+        {
+            return Array.Empty<PortfolioLedgerCheckDto>();
+        }
+
+        if (hasBankData && hasLedgerData)
+        {
+            return
+            [
+                CreateAmountCheck(
+                    "bank-net-vs-ledger-cash",
+                    "Bank net transactions vs ledger cash",
+                    bankNetAmount,
+                    ledgerCash,
+                    null,
+                    ledger!.AsOf,
+                    expectedSource: "bank",
+                    actualSource: "ledger")
+            ];
+        }
+
+        if (hasBankData)
+        {
+            // Bank has transactions but no internal ledger exists
+            return
+            [
+                CreateCoverageCheck(
+                    "bank-ledger-coverage-missing",
+                    "Ledger coverage for bank transactions",
+                    expectedPresent: true,
+                    actualPresent: false,
+                    null, null,
+                    categoryHint: "bank",
+                    missingSourceHint: "ledger",
+                    actualKind: "ledger")
+            ];
+        }
+
+        // Ledger exists but no bank transactions recorded for this entity
+        return
+        [
+            CreateCoverageCheck(
+                "bank-coverage-missing",
+                "Bank transaction coverage for ledger",
+                expectedPresent: false,
+                actualPresent: true,
+                null, ledger!.AsOf,
+                categoryHint: "bank",
+                missingSourceHint: "bank",
+                actualKind: "ledger")
+        ];
+    }
 }

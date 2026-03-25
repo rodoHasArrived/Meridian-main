@@ -218,7 +218,7 @@ public sealed class PromotionServiceTests
             CashFlows: [],
             Fills: [],
             Metrics: metrics,
-            Ledger: new Ledger(),
+            Ledger: new global::Meridian.Ledger.Ledger(),
             ElapsedTime: TimeSpan.FromMinutes(5),
             TotalEventsProcessed: 500);
     }

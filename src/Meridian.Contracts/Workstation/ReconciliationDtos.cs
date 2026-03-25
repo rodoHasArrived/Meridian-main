@@ -1,3 +1,5 @@
+using Meridian.Contracts.Banking;
+
 namespace Meridian.Contracts.Workstation;
 
 /// <summary>
@@ -7,7 +9,8 @@ public enum ReconciliationSourceKind : byte
 {
     Unknown = 0,
     Portfolio = 1,
-    Ledger = 2
+    Ledger = 2,
+    Bank = 3
 }
 
 /// <summary>
@@ -30,7 +33,8 @@ public enum ReconciliationBreakCategory : byte
     MissingLedgerCoverage = 1,
     MissingPortfolioCoverage = 2,
     ClassificationGap = 3,
-    TimingMismatch = 4
+    TimingMismatch = 4,
+    MissingBankCoverage = 5
 }
 
 /// <summary>
@@ -39,7 +43,13 @@ public enum ReconciliationBreakCategory : byte
 public sealed record ReconciliationRunRequest(
     string RunId,
     decimal AmountTolerance = 0.01m,
-    int MaxAsOfDriftMinutes = 5);
+    int MaxAsOfDriftMinutes = 5,
+    /// <summary>
+    /// Optional banking entity identifier.  When provided, bank transactions for this
+    /// entity are fetched and included as additional reconciliation checks alongside
+    /// the portfolio/ledger comparison.
+    /// </summary>
+    Guid? BankEntityId = null);
 
 /// <summary>
 /// Summary of a completed reconciliation run.
@@ -57,7 +67,9 @@ public sealed record ReconciliationRunSummary(
     decimal AmountTolerance,
     int MaxAsOfDriftMinutes,
     int SecurityIssueCount = 0,
-    bool HasSecurityCoverageIssues = false);
+    bool HasSecurityCoverageIssues = false,
+    int BankTransactionCount = 0,
+    int BankBreakCount = 0);
 
 /// <summary>
 /// Successful comparison row emitted by the reconciliation engine.
@@ -105,4 +117,5 @@ public sealed record ReconciliationRunDetail(
     ReconciliationRunSummary Summary,
     IReadOnlyList<ReconciliationMatchDto> Matches,
     IReadOnlyList<ReconciliationBreakDto> Breaks,
-    IReadOnlyList<ReconciliationSecurityCoverageIssueDto>? SecurityCoverageIssues = null);
+    IReadOnlyList<ReconciliationSecurityCoverageIssueDto>? SecurityCoverageIssues = null,
+    IReadOnlyList<BankTransactionDto>? BankTransactions = null);

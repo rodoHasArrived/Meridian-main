@@ -87,3 +87,23 @@ public sealed record BankTransactionSeedResultDto(
     int EntitiesProcessed,
     int TransactionsSeeded,
     IReadOnlyList<Guid> ProcessedEntityIds);
+
+// ---------------------------------------------------------------------------
+// Cross-domain read abstraction
+// ---------------------------------------------------------------------------
+
+/// <summary>
+/// Read-only banking data source for cross-domain integrations such as
+/// reconciliation.  Services outside the Banking module can depend on this
+/// narrow interface instead of the full <c>IBankingService</c>.
+/// </summary>
+public interface IBankTransactionSource
+{
+    /// <summary>
+    /// Return bank transactions.  When <paramref name="entityId"/> is provided
+    /// the result is scoped to that entity; otherwise all transactions are returned.
+    /// </summary>
+    Task<IReadOnlyList<BankTransactionDto>> GetBankTransactionsAsync(
+        Guid? entityId = null,
+        CancellationToken ct = default);
+}

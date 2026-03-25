@@ -8,7 +8,7 @@ namespace Meridian.Application.Banking;
 /// DirectLending module; the two domains may be integrated at the application
 /// composition layer or reconciled asynchronously.
 /// </summary>
-public interface IBankingService
+public interface IBankingService : IBankTransactionSource
 {
     // -----------------------------------------------------------------------
     // Payment initiation & approval workflow
@@ -30,14 +30,9 @@ public interface IBankingService
     Task<IReadOnlyList<PendingPaymentDto>> GetPendingPaymentsAsync(Guid? entityId = null, CancellationToken ct = default);
 
     // -----------------------------------------------------------------------
-    // Bank transaction records
+    // Bank transaction records — inherited from IBankTransactionSource
     // -----------------------------------------------------------------------
-
-    /// <summary>
-    /// Get bank transactions. When <paramref name="entityId"/> is provided, results are
-    /// scoped to that entity; otherwise all bank transactions are returned.
-    /// </summary>
-    Task<IReadOnlyList<BankTransactionDto>> GetBankTransactionsAsync(Guid? entityId = null, CancellationToken ct = default);
+    // Task<IReadOnlyList<BankTransactionDto>> GetBankTransactionsAsync(Guid? entityId = null, CancellationToken ct = default);
 
     // -----------------------------------------------------------------------
     // Bank transaction seeding (development / demo use)
