@@ -30,7 +30,7 @@ This rule set defines the non-negotiable standards for contributing to Meridian 
 - Do not block async work (`.Result`, `.Wait()`, sync-over-async).
 - Do not use `Task.Run` for I/O-bound operations.
 - Prefer `IAsyncEnumerable<T>` where streaming semantics are natural.
-- Use pipeline/channel abstractions approved by ADRs for producer-consumer flows (see [Async streaming policy ADR](../architecture/adr/async-streaming.md) and [Bounded channel policy ADR](../architecture/adr/bounded-channel-policy.md)).
+- Use pipeline/channel abstractions approved by ADRs for producer-consumer flows (see [ADR-004: Async Streaming Patterns](../adr/004-async-streaming-patterns.md) and [ADR-013: Bounded Channel Policy](../adr/013-bounded-channel-policy.md)).
 
 ### 3.2 Logging and diagnostics
 
@@ -101,6 +101,7 @@ If uncertain about impact, run full repository validation:
 - `dotnet build Meridian.sln -c Release --no-restore /p:EnableWindowsTargeting=true`
 - `dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release /p:EnableWindowsTargeting=true`
 - `dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj -c Release /p:EnableWindowsTargeting=true`
+
 ### 4.4 Documentation and traceability
 
 - Behavior changes must include doc updates in same PR.
