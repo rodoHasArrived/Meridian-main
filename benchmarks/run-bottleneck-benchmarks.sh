@@ -7,7 +7,7 @@ set -euo pipefail
 # Usage:
 #   ./benchmarks/run-bottleneck-benchmarks.sh              # Run all bottleneck benchmarks
 #   ./benchmarks/run-bottleneck-benchmarks.sh --quick       # Run a fast subset (short runs)
-#   ./benchmarks/run-bottleneck-benchmarks.sh --filter NAME # Run a specific benchmark class
+#   ./benchmarks/run-bottleneck-benchmarks.sh --filter NAME # Run benchmarks matching NAME
 #
 # Results are written to benchmarks/results/
 
@@ -27,30 +27,39 @@ while [[ $# -gt 0 ]]; do
         -h|--help)
             echo "Usage: $0 [--quick] [--filter NAME]"
             echo ""
+            echo "  --quick          Fewer iterations for a fast overview (less precise)"
+            echo "  --filter NAME    Run only benchmarks whose class or method name contains NAME"
+            echo ""
             echo "Benchmark classes available:"
-            echo "  Stage isolation:"
+            echo ""
+            echo "  Stage isolation (EndToEndPipelineBenchmarks.cs):"
             echo "    EndToEndPipelineBenchmarks    - Channel → drain → serialize → write (staged)"
+            echo "    DedupKeyBenchmarks            - SHA256 dedup key hashing"
+            echo "    MarketEventCreationBenchmarks - Record creation and with-expression cost"
             echo ""
-            echo "  Collector hot paths:"
-            echo "    TradeCollectorBenchmarks       - TradeDataCollector throughput"
-            echo "    DepthCollectorBenchmarks       - MarketDepthCollector throughput"
+            echo "  Collector hot paths (CollectorBenchmarks.cs):"
+            echo "    TradeCollectorBenchmarks      - TradeDataCollector throughput"
+            echo "    DepthCollectorBenchmarks      - MarketDepthCollector throughput"
             echo ""
-            echo "  Buffer & serialization:"
-            echo "    EventBufferBenchmarks          - Swap-buffer drain strategies"
-            echo "    EventBufferIngestionBenchmarks  - Single vs multi-producer contention"
-            echo "    BatchSerializationBenchmarks   - Sequential vs parallel, string vs UTF-8"
+            echo "  Buffer & serialization (StorageSinkBenchmarks.cs):"
+            echo "    EventBufferBenchmarks         - Swap-buffer drain strategies"
+            echo "    EventBufferIngestionBenchmarks - Single vs multi-producer contention"
+            echo "    BatchSerializationBenchmarks  - Sequential vs parallel, string vs UTF-8"
             echo ""
-            echo "  Object lifecycle:"
-            echo "    MarketEventCreationBenchmarks  - Record creation and with-expression cost"
-            echo "    DedupKeyBenchmarks             - SHA256 dedup key hashing"
+            echo "  WAL & checksum (WalChecksumBenchmarks.cs):"
+            echo "    WalChecksumBenchmarks         - Legacy string-concat vs IncrementalHash + stackalloc"
             echo ""
-            echo "  Existing benchmarks:"
-            echo "    EventPipelineBenchmarks        - Channel throughput at various capacities"
-            echo "    PublishLatencyBenchmarks        - Single-event publish latency"
-            echo "    JsonSerializationBenchmarks    - Reflection vs source-generated JSON"
-            echo "    JsonParsingBenchmarks           - Alpaca message parsing"
-            echo "    IndicatorBenchmarks             - Technical indicator calculations"
-            echo "    SingleIndicatorBenchmarks       - Per-indicator cost isolation"
+            echo "  Channel throughput & latency (EventPipelineBenchmarks.cs):"
+            echo "    EventPipelineBenchmarks       - Channel throughput at various capacities"
+            echo "    PublishLatencyBenchmarks      - Single-event publish latency"
+            echo ""
+            echo "  Serialization (JsonSerializationBenchmarks.cs):"
+            echo "    JsonSerializationBenchmarks   - Reflection vs source-generated JSON"
+            echo "    JsonParsingBenchmarks         - Alpaca message parsing"
+            echo ""
+            echo "  Indicators (IndicatorBenchmarks.cs):"
+            echo "    IndicatorBenchmarks           - Technical indicator calculations"
+            echo "    SingleIndicatorBenchmarks     - Per-indicator cost isolation"
             exit 0
             ;;
         *) echo "Unknown option: $1"; exit 1 ;;
@@ -72,20 +81,28 @@ if ! command -v dotnet &>/dev/null; then
     exit 1
 fi
 
+# Verify the project file exists
+if [[ ! -f "$PROJECT" ]]; then
+    echo "ERROR: Benchmark project not found: $PROJECT"
+    exit 1
+fi
+
 echo "dotnet version: $(dotnet --version)"
 echo "Results directory: $RESULTS_DIR"
 echo ""
 
 # Build first to avoid including build time in benchmarks
 echo "--- Building benchmarks (Release) ---"
-dotnet build "$PROJECT" -c Release --no-restore -v quiet 2>&1 || {
+dotnet build "$PROJECT" -c Release --no-restore -v quiet || {
     echo "Build failed. Running restore first..."
     dotnet restore "$PROJECT"
     dotnet build "$PROJECT" -c Release -v quiet
 }
 echo ""
 
-# Determine benchmark arguments
+# Base BenchmarkDotNet arguments.
+# Note: --filter is intentionally not added here; each phase below supplies its own
+# pattern so that BenchmarkDotNet never receives two conflicting --filter arguments.
 BDN_ARGS=("--artifacts" "$RESULTS_DIR/$TIMESTAMP")
 
 if $QUICK; then
@@ -97,50 +114,62 @@ else
 fi
 
 if [[ -n "$FILTER" ]]; then
-    BDN_ARGS+=("--filter" "*${FILTER}*")
     echo "Filter: $FILTER"
 fi
 
 echo ""
 
-# --- Phase 1: End-to-End Stage Isolation ---
-# This is the most important benchmark — it shows where time goes.
-if [[ -z "$FILTER" ]] || [[ "$FILTER" == *"EndToEnd"* ]]; then
+# run_phase PATTERN — invoke BenchmarkDotNet with a single filter pattern
+run_phase() {
+    local pattern="$1"
+    dotnet run --project "$PROJECT" -c Release --no-build -- \
+        --filter "$pattern" "${BDN_ARGS[@]}" || return $?
+}
+
+# When the user supplies --filter, run a single targeted pass rather than iterating
+# through every phase.  Running phases individually would either duplicate the filter
+# (causing BenchmarkDotNet to receive two --filter arguments) or silently skip all
+# phases when the filter value doesn't match any phase-name check.
+if [[ -n "$FILTER" ]]; then
+    echo "=== Running benchmarks matching: $FILTER ==="
+    echo ""
+    run_phase "*${FILTER}*"
+    echo ""
+else
+    # --- Phase 1: End-to-End Stage Isolation ---
+    # This is the most important benchmark — it shows where time goes.
     echo "=== Phase 1: End-to-End Pipeline Stage Isolation ==="
     echo "  Isolates channel / batch-drain / serialization / write costs"
     echo ""
-    dotnet run --project "$PROJECT" -c Release --no-build -- \
-        --filter "*EndToEndPipelineBenchmarks*" "${BDN_ARGS[@]}" 2>&1
+    run_phase "*EndToEndPipelineBenchmarks*"
     echo ""
-fi
 
-# --- Phase 2: Collector Hot Paths ---
-if [[ -z "$FILTER" ]] || [[ "$FILTER" == *"Collector"* ]]; then
+    # --- Phase 2: Collector Hot Paths ---
     echo "=== Phase 2: Collector Hot Paths ==="
     echo "  TradeDataCollector + MarketDepthCollector throughput"
     echo ""
-    dotnet run --project "$PROJECT" -c Release --no-build -- \
-        --filter "*CollectorBenchmarks*" "${BDN_ARGS[@]}" 2>&1
+    run_phase "*CollectorBenchmarks*"
     echo ""
-fi
 
-# --- Phase 3: Buffer & Serialization ---
-if [[ -z "$FILTER" ]] || [[ "$FILTER" == *"Buffer"* ]] || [[ "$FILTER" == *"Batch"* ]]; then
+    # --- Phase 3: Buffer & Serialization ---
     echo "=== Phase 3: Buffer & Serialization ==="
     echo "  EventBuffer drain strategies + batch serialization"
     echo ""
-    dotnet run --project "$PROJECT" -c Release --no-build -- \
-        --filter "*EventBuffer*|*BatchSerialization*" "${BDN_ARGS[@]}" 2>&1
+    run_phase "*EventBuffer*|*BatchSerialization*"
     echo ""
-fi
 
-# --- Phase 4: Object Lifecycle ---
-if [[ -z "$FILTER" ]] || [[ "$FILTER" == *"Creation"* ]] || [[ "$FILTER" == *"Dedup"* ]]; then
+    # --- Phase 4: Object Lifecycle ---
     echo "=== Phase 4: Object Lifecycle ==="
     echo "  MarketEvent creation + dedup key hashing"
     echo ""
-    dotnet run --project "$PROJECT" -c Release --no-build -- \
-        --filter "*MarketEventCreation*|*DedupKey*" "${BDN_ARGS[@]}" 2>&1
+    run_phase "*MarketEventCreation*|*DedupKey*"
+    echo ""
+
+    # --- Phase 5: WAL & Checksum Strategies ---
+    echo "=== Phase 5: WAL & Checksum Strategies ==="
+    echo "  Legacy string-concat vs IncrementalHash + stackalloc (see BOTTLENECK_REPORT #2)"
+    echo ""
+    run_phase "*WalChecksum*"
     echo ""
 fi
 
@@ -158,3 +187,4 @@ echo "  - Compare Mean columns across EndToEndPipeline stages to find the domina
 echo "  - Check Allocated column for GC pressure (record with-expressions, serialization)"
 echo "  - BatchSerialization: if Parallel is faster at BatchSize=5000, lower the threshold"
 echo "  - TradeCollector: if SingleSymbol is much slower, per-symbol lock is the bottleneck"
+echo "  - WalChecksum: IncrementalHash path should be significantly faster than LegacyStringConcat"
