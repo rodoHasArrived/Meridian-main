@@ -165,7 +165,8 @@ public sealed class PortablePackagerService
     /// </summary>
     public async Task<PackageInfo?> GetPackageInfoAsync(string packagePath, CancellationToken ct = default)
     {
-        if (!File.Exists(packagePath)) return null;
+        if (!File.Exists(packagePath))
+            return null;
 
         var tempDir = Path.Combine(Path.GetTempPath(), $"mdc_info_{Guid.NewGuid():N}");
         try
@@ -174,13 +175,15 @@ public sealed class PortablePackagerService
             using var archive = ZipFile.OpenRead(packagePath);
             var manifestEntry = archive.Entries.FirstOrDefault(e => e.Name == "manifest.json");
 
-            if (manifestEntry == null) return null;
+            if (manifestEntry == null)
+                return null;
 
             manifestEntry.ExtractToFile(Path.Combine(tempDir, "manifest.json"));
             var manifestJson = await File.ReadAllTextAsync(Path.Combine(tempDir, "manifest.json"));
             var manifest = JsonSerializer.Deserialize<PackageManifest>(manifestJson);
 
-            if (manifest == null) return null;
+            if (manifest == null)
+                return null;
 
             return new PackageInfo
             {
@@ -207,17 +210,23 @@ public sealed class PortablePackagerService
         }
         finally
         {
-            try { if (Directory.Exists(tempDir)) Directory.Delete(tempDir, true); } catch (IOException) { }
+            try
+            { if (Directory.Exists(tempDir)) Directory.Delete(tempDir, true); }
+            catch (IOException) { }
         }
     }
 
     private static string[] BuildEventTypes(PackageCreationOptions options)
     {
         var types = new List<string>();
-        if (options.IncludeTrades) types.Add("Trade");
-        if (options.IncludeQuotes) types.Add("Quote");
-        if (options.IncludeBars) types.Add("Bar");
-        if (options.IncludeLOB) types.Add("LOB");
+        if (options.IncludeTrades)
+            types.Add("Trade");
+        if (options.IncludeQuotes)
+            types.Add("Quote");
+        if (options.IncludeBars)
+            types.Add("Bar");
+        if (options.IncludeLOB)
+            types.Add("LOB");
         return types.ToArray();
     }
 
@@ -314,7 +323,9 @@ public sealed class PortablePackagerService
         finally
         {
             // Cleanup temp directory
-            try { Directory.Delete(tempDir, true); } catch (IOException) { }
+            try
+            { Directory.Delete(tempDir, true); }
+            catch (IOException) { }
         }
     }
 
@@ -365,7 +376,9 @@ public sealed class PortablePackagerService
         }
         finally
         {
-            try { Directory.Delete(tempDir, true); } catch (IOException) { }
+            try
+            { Directory.Delete(tempDir, true); }
+            catch (IOException) { }
         }
     }
 
@@ -473,8 +486,10 @@ public sealed class PortablePackagerService
         var fileName = Path.GetFileNameWithoutExtension(filePath);
         if (DateOnly.TryParse(fileName.Split('.')[0], out var fileDate))
         {
-            if (start.HasValue && fileDate < start.Value) return false;
-            if (end.HasValue && fileDate > end.Value) return false;
+            if (start.HasValue && fileDate < start.Value)
+                return false;
+            if (end.HasValue && fileDate > end.Value)
+                return false;
         }
         return true;
     }
@@ -525,9 +540,11 @@ public sealed class PortablePackagerService
 
         foreach (var line in lines)
         {
-            if (string.IsNullOrWhiteSpace(line)) continue;
+            if (string.IsNullOrWhiteSpace(line))
+                continue;
             var parts = line.Split("  ", 2);
-            if (parts.Length != 2) continue;
+            if (parts.Length != 2)
+                continue;
 
             var expectedChecksum = parts[0];
             var relativePath = parts[1];

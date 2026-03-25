@@ -1,5 +1,5 @@
-using Meridian.Strategies.Models;
 using Meridian.FSharp.Trading;
+using Meridian.Strategies.Models;
 
 namespace Meridian.Strategies.Services;
 

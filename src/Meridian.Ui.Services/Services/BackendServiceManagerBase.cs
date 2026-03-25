@@ -249,7 +249,8 @@ public abstract class BackendServiceManagerBase
     public async Task<BackendServiceOperationResult> RestartAsync(CancellationToken ct = default)
     {
         var stopResult = await StopAsync(ct);
-        if (!stopResult.Success) return stopResult;
+        if (!stopResult.Success)
+            return stopResult;
         return await StartAsync(ct);
     }
 
@@ -296,7 +297,8 @@ public abstract class BackendServiceManagerBase
         var start = DateTime.UtcNow;
         while (DateTime.UtcNow - start < timeout)
         {
-            if (await IsHealthyAsync(ct)) return true;
+            if (await IsHealthyAsync(ct))
+                return true;
             await Task.Delay(400, ct);
         }
         return false;
@@ -304,29 +306,36 @@ public abstract class BackendServiceManagerBase
 
     private async Task<BackendInstallationInfo?> ReadInstallationInfoAsync(CancellationToken ct)
     {
-        if (!File.Exists(_installationFilePath)) return null;
+        if (!File.Exists(_installationFilePath))
+            return null;
         var json = await File.ReadAllTextAsync(_installationFilePath, ct);
         return JsonSerializer.Deserialize<BackendInstallationInfo>(json, SerializerOptions);
     }
 
     private async Task<BackendRuntimeInfo?> ReadRuntimeInfoAsync(CancellationToken ct)
     {
-        if (!File.Exists(_runtimeFilePath)) return null;
+        if (!File.Exists(_runtimeFilePath))
+            return null;
         var json = await File.ReadAllTextAsync(_runtimeFilePath, ct);
         return JsonSerializer.Deserialize<BackendRuntimeInfo>(json, SerializerOptions);
     }
 
     private static void DeleteFileIfExists(string path)
     {
-        if (File.Exists(path)) File.Delete(path);
+        if (File.Exists(path))
+            File.Delete(path);
     }
 
     private static string BuildStatusMessage(bool installed, bool processRunning, bool healthy)
     {
-        if (!installed) return "Backend is not installed for lifecycle management yet.";
-        if (processRunning && healthy) return "Backend is running and healthy.";
-        if (processRunning) return "Backend process is running, waiting for healthy response.";
-        if (healthy) return "Backend is reachable (managed externally).";
+        if (!installed)
+            return "Backend is not installed for lifecycle management yet.";
+        if (processRunning && healthy)
+            return "Backend is running and healthy.";
+        if (processRunning)
+            return "Backend process is running, waiting for healthy response.";
+        if (healthy)
+            return "Backend is reachable (managed externally).";
         return "Backend is stopped.";
     }
 }

@@ -75,7 +75,8 @@ public sealed class BackfillService
     {
         get
         {
-            if (_currentProgress == null || !IsRunning) return 0;
+            if (_currentProgress == null || !IsRunning)
+                return 0;
             var elapsed = DateTime.UtcNow - _startTime;
             return elapsed.TotalSeconds > 0
                 ? _totalBarsDownloaded / elapsed.TotalSeconds
@@ -90,9 +91,11 @@ public sealed class BackfillService
     {
         get
         {
-            if (_currentProgress == null || !IsRunning) return null;
+            if (_currentProgress == null || !IsRunning)
+                return null;
             var speed = BarsPerSecond;
-            if (speed <= 0) return null;
+            if (speed <= 0)
+                return null;
 
             var remainingBars = _currentProgress.TotalBars - _currentProgress.DownloadedBars;
             return TimeSpan.FromSeconds(remainingBars / speed);
@@ -458,13 +461,16 @@ public sealed class BackfillService
     /// </summary>
     public void ReorderQueue(int oldIndex, int newIndex)
     {
-        if (_currentProgress?.SymbolProgress == null) return;
+        if (_currentProgress?.SymbolProgress == null)
+            return;
 
         var symbols = _currentProgress.SymbolProgress.ToList();
-        if (oldIndex < 0 || oldIndex >= symbols.Count || newIndex < 0 || newIndex >= symbols.Count) return;
+        if (oldIndex < 0 || oldIndex >= symbols.Count || newIndex < 0 || newIndex >= symbols.Count)
+            return;
 
         // Only reorder pending symbols
-        if (symbols[oldIndex].Status != "Pending") return;
+        if (symbols[oldIndex].Status != "Pending")
+            return;
 
         var item = symbols[oldIndex];
         symbols.RemoveAt(oldIndex);
@@ -480,7 +486,8 @@ public sealed class BackfillService
     public string GetFormattedEta()
     {
         var eta = EstimatedTimeRemaining;
-        if (!eta.HasValue) return "Calculating...";
+        if (!eta.HasValue)
+            return "Calculating...";
 
         if (eta.Value.TotalHours >= 1)
             return $"{(int)eta.Value.TotalHours}h {eta.Value.Minutes}m remaining";
@@ -753,7 +760,8 @@ public sealed class BackfillService
         try
         {
             var backendStatus = await _backfillApiService.GetLastStatusAsync(ct);
-            if (backendStatus == null) return null;
+            if (backendStatus == null)
+                return null;
 
             // Sync backend status with local progress if a job is running
             if (_currentProgress != null && _currentProgress.Status == "Running")

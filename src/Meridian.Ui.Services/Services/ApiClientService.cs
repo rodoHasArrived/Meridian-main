@@ -66,7 +66,8 @@ public sealed class ApiClientService : IDisposable
     /// </summary>
     public void Configure(AppSettings? settings)
     {
-        if (settings == null) return;
+        if (settings == null)
+            return;
 
         var newUrl = settings.ServiceUrl ?? "http://localhost:8080";
         var newTimeout = settings.ServiceTimeoutSeconds > 0 ? settings.ServiceTimeoutSeconds : 30;

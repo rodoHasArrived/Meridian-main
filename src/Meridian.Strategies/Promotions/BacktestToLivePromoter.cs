@@ -1,6 +1,6 @@
 using Meridian.Backtesting.Sdk;
-using Interop = Meridian.FSharp.Interop;
 using Meridian.Strategies.Models;
+using Interop = Meridian.FSharp.Interop;
 
 namespace Meridian.Strategies.Promotions;
 

@@ -67,7 +67,7 @@ public class OrderBookVisualizationServiceTests
         // Assert
         var orderBook1 = service.GetOrderBook(symbol1);
         var orderBook2 = service.GetOrderBook(symbol2);
-        
+
         orderBook1.Should().NotBeNull();
         orderBook2.Should().NotBeNull();
         orderBook1!.Symbol.Should().Be(symbol1);

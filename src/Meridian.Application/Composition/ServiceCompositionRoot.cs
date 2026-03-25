@@ -1,10 +1,10 @@
+using System.Reflection;
 using Meridian.Application.Composition.Features;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
 using Meridian.Domain.Events;
 using Meridian.Infrastructure.Contracts;
 using Microsoft.Extensions.DependencyInjection;
-using System.Reflection;
 
 namespace Meridian.Application.Composition;
 
