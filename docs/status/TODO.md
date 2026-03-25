@@ -141,7 +141,7 @@ Total items: **233**
 | `docs/reference/data-dictionary.md` | 724 | `NOTE` | ❌ | **Note:** Aligns with Interactive Brokers conventions. |
 | `docs/reference/data-uniformity.md` | 5 | `NOTE` | ❌ | This note expands on the data-quality goals for the collector so downstream users receive a uniform, analysis-ready tape regardless of provider quirks. |
 | `docs/status/EVALUATIONS_AND_AUDITS.md` | 394 | `NOTE` | ❌ | - Historical note: the original audit flagged generated docs as stale, but `docs/generated/` has since been refreshed and expanded |
-| `docs/status/FULL_IMPLEMENTATION_TODO_2026_03_20.md` | 1 | `NOTE` | ❌ | > **Note:** WPF desktop app references in this document reflect a delayed implementation. `src/Meridian.Wpf/` is preserved but not in the active solution build. |
+| `docs/status/FULL_IMPLEMENTATION_TODO_2026_03_20.md` | 1 | `NOTE` | ❌ | > **Note:** WPF desktop app references in this document reflect a delayed implementation. `src/Meridian.Wpf/` is preserved but not in the active solution build. The **web dashboard** is the current primary UI surface. |
 | `docs/status/IMPROVEMENTS.md` | 1275 | `NOTE` | ❌ | - **Large PR (exception):** Theme K or readability-level refactors; require design note and staged rollout plan. |
 | `docs/status/IMPROVEMENTS.md` | 1314 | `TODO` | ❌ | - [ ] No new TODO/FIXME left without linked backlog issue. |
 | `docs/status/IMPROVEMENTS.md` | 1344 | `TODO` | ❌ | - **[TODO.md](TODO.md)** — Auto-generated TODO tracking from code comments |
@@ -210,12 +210,12 @@ Total items: **233**
 | `src/Meridian.Ui.Services/Services/ProviderHealthService.cs` | 516 | `NOTE` | ❌ | // NOTE: ProviderComparison is defined in AdvancedAnalyticsModels.cs for cross-provider comparison |
 | `src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs` | 806 | `NOTE` | ❌ | // Fallback: Note that tier migration requires storage configuration |
 | `src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs` | 1043 | `NOTE` | ❌ | // Fallback: Note that tier migration requires storage configuration |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 724 | `NOTE` | ❌ | new { provider = "Interactive Brokers", status = "Healthy", capability = "Execution + fills", latency = "23ms p50", note = "Paper session heartbeat and ingress are healthy." }, |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 725 | `NOTE` | ❌ | new { provider = "Polygon", status = "Healthy", capability = "Streaming equities", latency = "18ms p50", note = "Quote and trade subscriptions are within expected envelope." }, |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 726 | `NOTE` | ❌ | new { provider = "Databento", status = "Warning", capability = "Historical replay", latency = "74ms p50", note = "Backfill queue is elevated for options symbols." } |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 754 | `NOTE` | ❌ | new { provider = "Interactive Brokers", status = "Healthy", capability = "Execution + fills", latency = "21ms p50", note = "Paper adapter routing is available." }, |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 755 | `NOTE` | ❌ | new { provider = "Polygon", status = "Healthy", capability = "Streaming equities", latency = "16ms p50", note = "Realtime subscriptions are steady." }, |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 756 | `NOTE` | ❌ | new { provider = "Databento", status = "Warning", capability = "Historical replay", latency = "69ms p50", note = "Replay queue is elevated but within tolerance." } |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 802 | `NOTE` | ❌ | new { provider = "Interactive Brokers", status = "Healthy", capability = "Execution + fills", latency = "23ms p50", note = "Paper session heartbeat and ingress are healthy." }, |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 803 | `NOTE` | ❌ | new { provider = "Polygon", status = "Healthy", capability = "Streaming equities", latency = "18ms p50", note = "Quote and trade subscriptions are within expected envelope." }, |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 804 | `NOTE` | ❌ | new { provider = "Databento", status = "Warning", capability = "Historical replay", latency = "74ms p50", note = "Backfill queue is elevated for options symbols." } |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 832 | `NOTE` | ❌ | new { provider = "Interactive Brokers", status = "Healthy", capability = "Execution + fills", latency = "21ms p50", note = "Paper adapter routing is available." }, |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 833 | `NOTE` | ❌ | new { provider = "Polygon", status = "Healthy", capability = "Streaming equities", latency = "16ms p50", note = "Realtime subscriptions are steady." }, |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 834 | `NOTE` | ❌ | new { provider = "Databento", status = "Warning", capability = "Historical replay", latency = "69ms p50", note = "Replay queue is elevated but within tolerance." } |
 | `src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs` | 55 | `NOTE` | ❌ | /// <para><b>Migration Note:</b> This class wraps the core implementation from |
 | `src/Meridian.Ui/dashboard/src/screens/data-operations-screen.test.tsx` | 20 | `NOTE` | ❌ | note: "Realtime subscriptions are stable." |
 | `src/Meridian.Ui/dashboard/src/screens/data-operations-screen.tsx` | 211 | `NOTE` | ❌ | <div className="mt-3 text-sm leading-6 text-foreground">{provider.note}</div> |
