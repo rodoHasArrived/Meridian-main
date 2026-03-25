@@ -1,248 +1,359 @@
-> **⚠️ DELAYED IMPLEMENTATION** — The WPF desktop app (`src/Meridian.Wpf/`) is not included in the active solution build. Code is preserved for future use. This document is retained as a reference for when WPF development resumes.
+> **⚠️ DELAYED BUILD** — `src/Meridian.Wpf/` is not included in the active solution build target. Code is fully authored and preserved; delayed per ADR-016. Build separately with `dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj /p:EnableWindowsTargeting=true`.
 
 ---
 
-# WPF Desktop Application Implementation Notes
+# WPF Desktop Application — Implementation Notes
+
+**Version**: 1.7.x | **Last updated**: 2026-03-25 | **Status**: Authored / Build-delayed
 
 ## Overview
 
-This document describes the WPF desktop application implementation, which is the sole desktop UI for Meridian.
+Meridian's WPF desktop application (`src/Meridian.Wpf/`) is the sole native Windows desktop surface for the platform. It exposes the full Meridian capability set through a workspace-based shell with a command palette, four canonical workspaces (Research, Trading, Data Operations, Governance), and deep drill-in pages for strategy runs, portfolios, and ledger governance.
 
-## Implementation Scope
+## Architecture
 
-### Core Application Structure
-- **Project**: `Meridian.Wpf` (located in `src/Meridian.Wpf/`)
-- **Framework**: .NET 9.0 with WPF (Windows Presentation Foundation)
-- **Target**: Windows-only desktop deployment
-- **Architecture**: MVVM pattern with singleton services
+### Stack
+- **.NET 9.0 + WPF** — Windows-only, `.csproj` targets `net9.0-windows`
+- **MVVM** — `BindableBase` (from `Meridian.Ui.Services.Services`) + `INotifyPropertyChanged`
+- **DI** — `Microsoft.Extensions.Hosting`; singleton services resolved via `IServiceProvider`
+- **Shared services** — `Meridian.Ui.Services` and `Meridian.Ui.Shared` for cross-surface logic
 
-### Key Components
-
-#### Services Layer (10 Core Services)
-1. **NavigationService** - Centralized page navigation with history tracking
-2. **ConfigService** - Application configuration management
-3. **StatusService** - Real-time status tracking and API communication
-4. **ConnectionService** - Provider connection state management
-5. **ThemeService** - Dark/Light theme management
-6. **NotificationService** - Toast notifications and alerts
-7. **LoggingService** - Structured logging
-8. **KeyboardShortcutService** - Global keyboard shortcuts (20+ shortcuts)
-9. **MessagingService** - Inter-component messaging
-10. **FirstRunService** - First-run setup wizard
-
-#### Background Services (3 Services)
-1. **BackgroundTaskSchedulerService** - Scheduled task execution
-2. **OfflineTrackingPersistenceService** - Offline data tracking
-3. **PendingOperationsQueueService** - Offline operation queue
-
-#### View Pages (40+ Pages)
-Organized into categories:
-- **Primary Navigation**: Dashboard, Watchlist
-- **Data Sources**: Provider configuration, health monitoring
-- **Data Management**: Live data viewer, browser, symbols, backfill, storage
-- **Monitoring**: Data quality, collection sessions, archive health, system health
-- **Tools**: Data export, sampling, analysis, event replay
-- **Settings**: Configuration, credentials, notifications
-
-### Architecture Patterns
-
-#### Dependency Injection
-- Uses Microsoft.Extensions.Hosting for service registration
-- Singleton pattern for stateful services
-- IServiceProvider for service resolution
-
-#### Navigation
-- Frame-based navigation with System.Windows.Controls.Frame
-- Page registry for tag-based navigation
-- Navigation history with breadcrumb support
-- Back navigation support
-
-#### Event Management
-- Proper event subscription/unsubscription in page lifecycle
-- OnPageLoaded and OnPageUnloaded handlers
-- Prevents memory leaks through proper cleanup
-
-#### Configuration Management
-- Singleton ConfigService with ConfigPath property
-- Integration with FirstRunService for initial setup
-- Validation support with ConfigValidationResult
-
-#### Connection Management
-- Async connect/disconnect operations
-- Connection state change events
-- Latency tracking
-- Provider-agnostic interface
-
-### Key Features
-
-#### Keyboard Shortcuts (20+ Shortcuts)
-- **Navigation**: Ctrl+D (Dashboard), Ctrl+B (Backfill), Ctrl+S (Settings)
-- **Collector Control**: Ctrl+Shift+S (Start), Ctrl+Shift+Q (Stop)
-- **Symbol Management**: Ctrl+N (Add), Ctrl+F (Search), Delete (Remove)
-- **Backfill**: Ctrl+R (Run), Ctrl+Shift+P (Pause), Esc (Cancel)
-- **View**: Ctrl+T (Toggle Theme), F5 (Refresh)
-
-#### Real-Time Updates
-- HTTP polling-based status updates (2-second intervals)
-- WebSocket support planned for future enhancement
-- StatusService provides GetStatusAsync() for API integration
-
-#### Theme Support
-- Dark and Light themes
-- Theme persistence
-- Windows system theme integration
-- Dynamic theme switching (Ctrl+T)
-
-#### Graceful Shutdown
-- Coordinated service shutdown with timeout (5 seconds)
-- Parallel shutdown of background services
-- Proper exception handling during shutdown
-
-### Technical Decisions
-
-#### Why WPF over WinUI 3?
-1. **No XAML Compiler Restrictions** - Can use standard ProjectReference patterns
-2. **Mature Framework** - Stable API with extensive community support
-3. **Better Integration** - Easier integration with existing .NET libraries
-4. **Simpler Build** - No Windows App SDK complications
-
-#### Service Singleton Pattern
-All services use singleton pattern for application-wide state:
-```csharp
-public static ServiceName Instance => _instance.Value;
-```
-
-Benefits:
-- Single source of truth for application state
-- Thread-safe initialization with Lazy<T>
-- Easy access from any component
-
-#### Namespace Alias for Navigation
-To avoid ambiguity between `System.Windows.Navigation` and `Meridian.Wpf.Services.NavigationService`:
-```csharp
-using SysNavigation = System.Windows.Navigation;
-```
-
-### Build Verification
-
-#### Current Status
-✅ **Build**: Successful with 0 warnings, 0 errors
-✅ **Dependencies**: All NuGet packages resolved
-✅ **Solution Integration**: Properly integrated in Meridian.sln
-✅ **Project GUID**: Valid GUID `{6F8D3A55-3E95-4F9D-9C8F-DBA9A6230B1E}`
-
-#### Build Command
-```bash
-dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release
-```
-
-### Code Review Findings - All Resolved
-
-All critical issues identified in the code review have been addressed:
-
-1. ✅ **Solution File GUID** - Replaced invalid GUID with valid one
-2. ✅ **ConfigService.ConfigPath** - Property implemented
-3. ✅ **DataBrowser Navigation** - Tag registered in NavigationService
-4. ✅ **Event Cleanup** - OnPageUnloaded handlers added
-5. ✅ **NavigationService Ambiguity** - Resolved with namespace alias
-6. ✅ **StatusService.GetStatusAsync()** - Method implemented
-7. ✅ **Navigation History** - Only pushed after successful navigation
-8. ✅ **CanGoBack Property** - Based on Frame.CanGoBack
-
-### Future Enhancements
-
-#### Near-Term
-1. Replace HTTP polling with WebSocket/SignalR for real-time updates
-2. Implement connection to backend Meridian service
-3. Implement actual configuration persistence (currently stub)
-
-#### Long-Term
-1. Consider Blazor Hybrid for cross-platform compatibility
-2. Add mobile companion app for monitoring
-3. Implement offline-first architecture with sync
-4. Add multi-user collaboration features
-
-### Documentation
-
-Related documentation:
-- **Evaluation**: `docs/evaluations/desktop-ui-alternatives-evaluation.md`
-- **Migration History**: [UWP to WPF Migration](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/migrations/uwp-to-wpf-migration.md) (archived)
-
-### Testing
-
-#### Unit Tests (272 tests)
-
-Desktop services have comprehensive unit test coverage across two projects:
-
-- **Meridian.Wpf.Tests** (101 tests): NavigationService, ConfigService, StatusService, ConnectionService, WpfDataQualityService
-- **Meridian.Ui.Tests** (171 tests): ApiClient, Backfill, Charting, FixtureData, FormValidation, SystemHealth, Watchlist, collections, and more
-
-Run tests with `make test-desktop-services`. See [Desktop Testing Guide](./desktop-testing-guide.md) for details.
-
-#### Manual Testing Checklist
-- [ ] Application launches successfully
-- [ ] Navigation between pages works
-- [ ] Keyboard shortcuts respond correctly
-- [ ] Theme switching works
-- [ ] Status updates display correctly
-- [ ] Settings page shows configuration path
-- [ ] Graceful shutdown completes within timeout
-- [ ] Background services start and stop correctly
-
-### Contributing
-
-When modifying the WPF application:
-
-1. **Follow Existing Patterns**
-   - Use singleton pattern for services
-   - Implement OnPageLoaded and OnPageUnloaded handlers
-   - Use async/await for I/O operations
-   - Add proper exception handling
-
-2. **Event Management**
-   - Always unsubscribe in OnPageUnloaded
-   - Use weak references for long-lived subscriptions
-   - Avoid circular references
-
-3. **Navigation**
-   - Register new pages in NavigationService.RegisterPages()
-   - Use tag-based navigation (e.g., "Dashboard")
-   - Handle navigation parameters correctly
-
-4. **Testing**
-   - Test keyboard shortcuts
-   - Verify memory cleanup (no leaks)
-   - Check graceful shutdown
-   - Validate configuration persistence
-
-### License
-
-MIT License - Same as parent project
-
-### Authors
-
-- Architecture Review Team
-- Meridian Contributors
+### Project references
+| Project | Role |
+|---------|------|
+| `Meridian.Wpf` | Views, code-behind, WPF-specific services |
+| `Meridian.Wpf.Tests` | 101 unit tests for WPF-specific services |
+| `Meridian.Ui.Services` | Shared service layer (CommandPaletteService, WorkspaceService, NavigationServiceBase, etc.) |
+| `Meridian.Ui.Tests` | 171 tests for shared UI services |
+| `Meridian.Ui.Shared` | Endpoint helpers, DTO extensions, HTML template generator |
+| `Meridian.Contracts` | Shared domain contracts, including `Workstation/StrategyRunReadModels.cs` |
 
 ---
 
-**Last Updated**: 2026-02-13
-**Status**: Implementation Complete, Documentation Expanded
+## Shell Architecture
+
+### MainPage — four-section sidebar + command palette
+
+```
+Left Sidebar (288 px)
+├── Header: logo, app title, version badge
+├── RESEARCH section  (7 items)
+├── TRADING section   (5 items)
+├── DATA OPS section  (6 items)
+├── GOVERNANCE section(6 items)
+└── Footer: Ctrl+K command palette button, Help button
+
+Top Header Bar (74 px)
+├── Left: Back button, breadcrumb page title + description
+└── Right: Connection status badge, Refresh, Notifications
+
+Content Frame
+├── Fixture Mode Banner (orange, conditional on non-live mode)
+└── WPF Frame → page navigation
+```
+
+**Workspace-aware navigation** — `ResolveWorkspaceIdForPage()` maps a page tag to its home workspace so that clicking a sidebar item or executing a command palette entry also activates the correct workspace session state.
+
+**Selection suppression** — `_suppressNavSelection` prevents feedback loops when the NavigationService drives sidebar selection changes programmatically.
+
+### Workspace system (`WorkspaceService`, `WorkspacePage`)
+
+Four built-in workspace templates:
+
+| Workspace ID | Pages |
+|---|---|
+| `research` | Dashboard, LiveData, Charts, RunMat, StrategyRuns, OrderBook, Watchlist |
+| `trading` | Backtest, StrategyRuns, LeanIntegration, PortfolioImport, TradingHours |
+| `data-operations` | Provider, Symbols, Backfill, Storage, DataExport, PackageManager, Schedules |
+| `governance` | DataQuality, ProviderHealth, SystemHealth, Diagnostics, Settings, AdminMaintenance |
+
+Each workspace persists:
+- `ActivePageTag` — last active page within the workspace
+- `OpenPages` — MRU list (max 8)
+- `WidgetLayout`, `ActiveFilters`, `WorkspaceContext` — per-workspace state
+- `WindowBounds` — restored on session resume
+
+### Command Palette (`CommandPaletteService`, `Ctrl+K`)
+
+- **~55 navigation commands** — one per registered page, each labelled with its workspace context
+- **8 action commands** — Start/Stop collector, Run backfill, Refresh, Add symbol, Toggle theme, Save, Search
+- **Fuzzy search** — exact → prefix → contains → character-sequence fuzzy, top-15 results
+- **Recency tracking** — LRU 10, shown when palette opens empty
+- **Workspace labels** in descriptions: `Research workspace — Dashboard`, `Trading workspace — LiveData`, etc.
+
+---
+
+## Page Registry
+
+All pages registered in `NavigationService.RegisterAllPages()` and declared in `Views/Pages.cs`.
+
+### Research workspace pages
+| Tag | Class | Notes |
+|-----|-------|-------|
+| `Dashboard` | `DashboardPage` | Default landing page |
+| `Watchlist` | `WatchlistPage` | |
+| `RunMat` | `RunMatPage` | Quant / script lab |
+| `Charts` | `ChartingPage` | Candlestick / time-series |
+| `OrderBook` | `OrderBookPage` | Live L2 depth |
+| `StrategyRuns` | `StrategyRunsPage` | Strategy run browser |
+| `RunDetail` | `RunDetailPage` | Run execution summary drill-in |
+| `AdvancedAnalytics` | `AdvancedAnalyticsPage` | |
+
+### Trading workspace pages
+| Tag | Class | Notes |
+|-----|-------|-------|
+| `Backtest` | `BacktestPage` | |
+| `LiveData` | `LiveDataViewerPage` | Real-time feed viewer |
+| `RunPortfolio` | `RunPortfolioPage` | Positions, exposure, P&L drill-in |
+| `LeanIntegration` | `LeanIntegrationPage` | QuantConnect Lean engine |
+| `PortfolioImport` | `PortfolioImportPage` | CSV/bulk import |
+| `TradingHours` | `TradingHoursPage` | Market calendar |
+
+### Data Operations workspace pages
+| Tag | Class |
+|-----|-------|
+| `Provider` | `ProviderPage` |
+| `DataSources` | `DataSourcesPage` |
+| `Symbols` | `SymbolsPage` |
+| `SymbolMapping` | `SymbolMappingPage` |
+| `SymbolStorage` | `SymbolStoragePage` |
+| `IndexSubscription` | `IndexSubscriptionPage` |
+| `Options` | `OptionsPage` |
+| `Backfill` | `BackfillPage` |
+| `Storage` | `StoragePage` |
+| `DataBrowser` | `DataBrowserPage` |
+| `DataCalendar` | `DataCalendarPage` |
+| `DataExport` | `DataExportPage` |
+| `DataSampling` | `DataSamplingPage` |
+| `TimeSeriesAlignment` | `TimeSeriesAlignmentPage` |
+| `AnalysisExport` | `AnalysisExportPage` |
+| `AnalysisExportWizard` | `AnalysisExportWizardPage` |
+| `ExportPresets` | `ExportPresetsPage` |
+| `EventReplay` | `EventReplayPage` |
+| `PackageManager` | `PackageManagerPage` |
+| `Schedules` | `ScheduleManagerPage` |
+
+### Governance workspace pages
+| Tag | Class |
+|-----|-------|
+| `DataQuality` | `DataQualityPage` |
+| `ProviderHealth` | `ProviderHealthPage` |
+| `CollectionSessions` | `CollectionSessionPage` |
+| `ArchiveHealth` | `ArchiveHealthPage` |
+| `ServiceManager` | `ServiceManagerPage` |
+| `SystemHealth` | `SystemHealthPage` |
+| `Diagnostics` | `DiagnosticsPage` |
+| `StorageOptimization` | `StorageOptimizationPage` |
+| `RetentionAssurance` | `RetentionAssurancePage` |
+| `AdminMaintenance` | `AdminMaintenancePage` |
+| `RunLedger` | `RunLedgerPage` |
+| `ActivityLog` | `ActivityLogPage` |
+| `MessagingHub` | `MessagingHubPage` |
+| `NotificationCenter` | `NotificationCenterPage` |
+
+### Support / cross-workspace pages
+| Tag | Class |
+|-----|-------|
+| `Help` | `HelpPage` |
+| `Welcome` | `WelcomePage` |
+| `Settings` | `SettingsPage` |
+| `KeyboardShortcuts` | `KeyboardShortcutsPage` |
+| `SetupWizard` | `SetupWizardPage` |
+| `AddProviderWizard` | `AddProviderWizardPage` |
+| `Workspaces` | `WorkspacePage` |
+
+---
+
+## Shared Workstation Contracts
+
+All workstation-facing read models live in `src/Meridian.Contracts/Workstation/`.
+
+### `StrategyRunReadModels.cs`
+
+```
+StrategyRunMode           — Backtest | Paper | Live
+StrategyRunEngine         — MeridianNative | Lean | BrokerPaper | BrokerLive
+StrategyRunStatus         — Pending | Running | Paused | Completed | Failed | Cancelled | Stopped
+StrategyRunPromotionState — None → CandidateForPaper → CandidateForLive → LiveManaged
+
+StrategyRunSummary        — summary row for browser / recent-run list
+StrategyRunDetail         — expanded detail; embeds Portfolio + Ledger summaries
+StrategyRunExecutionSummary — fills, commissions, margin, audit flags
+StrategyRunPromotionSummary — promotion state + reasoning
+StrategyRunGovernanceSummary — parameter/portfolio/ledger/audit coverage flags
+StrategyRunComparison     — side-by-side multi-run comparison row (Sharpe, drawdown, XIRR)
+
+PortfolioSummary          — equity, cash, gross/net exposure, realized/unrealized P&L, positions
+PortfolioPositionSummary  — per-symbol: quantity, cost-basis, P&L, security ref
+LedgerSummary             — asset/liability/equity/revenue/expense balances, trial-balance, journal
+LedgerTrialBalanceLine    — account row with symbol and security resolution
+LedgerJournalLine         — journal entry row (debits, credits, description)
+WorkstationSecurityReference — lightweight Security Master ref used by portfolio + ledger surfaces
+```
+
+### `ReconciliationDtos.cs`
+
+```
+ReconciliationRunRequest  — RunId, tolerance thresholds
+ReconciliationBreakDto    — check ID, category, status, variance, source metadata
+ReconciliationBreakCategory — AmountMismatch | MissingLedgerCoverage | MissingPortfolioCoverage | ...
+```
+
+---
+
+## Strategy Run Workstation — ViewModel Layer
+
+| ViewModel | Key properties | Commands |
+|-----------|----------------|----------|
+| `StrategyRunBrowserViewModel` | `Runs`, `SearchText`, `SelectedModeFilter` | `RefreshCommand`, `OpenDetailCommand`, `OpenPortfolioCommand`, `OpenLedgerCommand` |
+| `StrategyRunDetailViewModel` | Execution summary, mode, timing, P&L, parameters | Cross-nav to Browser / Portfolio / Ledger |
+| `StrategyRunPortfolioViewModel` | `TotalEquity`, `Cash`, exposure, `Positions` | Security Master resolve count |
+| `StrategyRunLedgerViewModel` | `TrialBalance`, `Journal`, account balances | Security resolve count |
+
+Parameter passing follows the standard MVVM drill-in pattern: `NavigationService.NavigateTo(tag, runId)` → `page.DataContext.Parameter = runId` → `LoadFromParameterAsync()`.
+
+---
+
+## Services Layer
+
+### WPF-specific services (`Meridian.Wpf.Services`)
+| Service | Responsibility |
+|---------|----------------|
+| `NavigationService` | Frame-based navigation; 50+ pages; history, breadcrumb, onboarding tour hooks |
+| `ConnectionService` | Provider connection state; latency tracking |
+| `ConfigService` | App configuration with `ConfigPath` |
+| `ThemeService` | Dark/Light; persisted; Windows accent integration |
+| `NotificationService` | Toast notifications and alert routing |
+| `LoggingService` | Structured log sink |
+| `KeyboardShortcutService` | 20+ global shortcuts |
+| `MessagingService` | Inter-component messaging bus |
+| `FirstRunService` | Setup wizard gating |
+| `WorkspaceService` | Workspace + session state persistence (re-export of shared base) |
+| `BackgroundTaskSchedulerService` | Scheduled background execution |
+| `OfflineTrackingPersistenceService` | Offline mode data tracking |
+| `PendingOperationsQueueService` | Offline operation queue |
+
+### Shared services (from `Meridian.Ui.Services`)
+`CommandPaletteService`, `NavigationServiceBase`, `WorkspaceService` base, `SearchService`, `FixtureModeDetector`, `OnboardingTourService`, `ActivityFeedService`, `AlertService`, `DataQualityPresentationService`, and 40+ additional services used by both the WPF app and the web dashboard.
+
+---
+
+## Keyboard Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl+K` | Open command palette |
+| `Ctrl+D` | Dashboard |
+| `Ctrl+B` | Backfill |
+| `Ctrl+W` | Watchlist |
+| `Ctrl+Y` | Symbols |
+| `Ctrl+Q` | Data Quality |
+| `Ctrl+0` | Settings |
+| `Ctrl+Shift+B` | Backtest |
+| `Ctrl+Shift+S` | Start collector |
+| `Ctrl+Shift+Q` | Stop collector |
+| `Ctrl+Shift+T` | Toggle theme |
+| `Ctrl+R` | Run backfill |
+| `Ctrl+N` | Add symbol |
+| `Ctrl+F` | Search symbols |
+| `Ctrl+S` | Save |
+| `F1` | Help |
+| `F5` | Refresh |
+
+---
+
+## XAML Style System
+
+Style resources in `Meridian.Wpf/Styles/`:
+
+| File | Contains |
+|------|----------|
+| `ThemeTokens.xaml` | Semantic color tokens (`ConsoleTextPrimaryBrush`, `InfoColorBrush`, etc.) |
+| `ThemeSurfaces.xaml` | Surface-level brushes (`ShellWindowBackgroundBrush`, `ShellRailBackgroundBrush`) |
+| `ThemeControls.xaml` | Control styles (`NavItemStyle`, `CardStyle`, `PrimaryButtonStyle`, etc.) |
+| `ThemeTypography.xaml` | Text styles (`PageTitleStyle`, `CardHeaderStyle`, `CardDescriptionStyle`) |
+| `AppStyles.xaml` | Root merge dictionary |
+| `Animations.xaml` | Shared transition animations |
+| `IconResources.xaml` | Segoe Fluent Icons aliases |
+
+---
+
+## Research and Trading Workspace Shells
+
+Two dedicated workspace shell pages provide the initial entry point into each primary workflow. They are lightweight presenter pages — no deep data logic — that surface the workspace's key metrics and provide quick navigation entry points to drill-in pages.
+
+### `ResearchWorkspaceShellPage` (`Views/ResearchWorkspaceShellPage.xaml`)
+
+**Purpose**: Single-page landing for the Research workspace. Shows recent strategy runs, performance at a glance, and quick-links to Backtest, RunMat, Charts, and the run browser.
+
+**Design zones**:
+1. **Header** — Active strategy count, cumulative P&L across completed runs, last-run timestamp
+2. **Recent Runs strip** — Horizontal scroll, `StrategyRunSummary` cards (mode badge, status, net P&L, return %)
+3. **Quick Actions** — New Backtest, Open RunMat, Open Charts, Open Run Browser
+4. **Promotion Pipeline** — Candidates for paper promotion (sourced from `StrategyRunPromotionState`)
+
+### `TradingWorkspaceShellPage` (`Views/TradingWorkspaceShellPage.xaml`)
+
+**Purpose**: Single-page landing for the Trading workspace. Shows live execution state, active paper/live positions, and key risk metrics.
+
+**Design zones**:
+1. **Header** — Active run count (paper + live), total equity under management, connection status
+2. **Live Positions strip** — `PortfolioPositionSummary` rows for active paper/live runs; gross/net exposure
+3. **Quick Actions** — Open Live Data, Open Portfolio, Import Positions, View Trading Hours
+4. **Risk Rail** — Drawdown gauge, position-limit utilization, order-rate throttle status (from `CompositeRiskValidator`)
+
+---
+
+## Build
+
+```bash
+# Standalone WPF build (Windows or cross-platform with Windows targeting)
+dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj /p:EnableWindowsTargeting=true -c Release
+
+# WPF + shared UI services tests
+dotnet test tests/Meridian.Wpf.Tests /p:EnableWindowsTargeting=true
+dotnet test tests/Meridian.Ui.Tests /p:EnableWindowsTargeting=true
+```
+
+### Common errors
+
+| Error | Fix |
+|-------|-----|
+| NETSDK1100 | Add `/p:EnableWindowsTargeting=true` on non-Windows hosts |
+| `NU1008` | Remove `Version="..."` from any `<PackageReference>` — versions live in `Directory.Packages.props` |
+| Page not found at runtime | Ensure page is declared in `Views/Pages.cs` **and** registered in `NavigationService.RegisterAllPages()` |
+
+---
+
+## Testing
+
+| Test project | Count | Covers |
+|---|---|---|
+| `Meridian.Wpf.Tests` | 101 | WPF-specific services: Navigation, Config, Connection, InfoBar, Keyboard, RunMat, etc. |
+| `Meridian.Ui.Tests` | 171 | Shared services: ApiClient, Backfill, Charting, Watchlist, DataQuality, StrategyRun drill-ins |
+
+Run with:
+```bash
+make test-desktop-services
+```
+
+---
+
+## Contributing
+
+1. **Register new pages** in both `Views/Pages.cs` (partial class) and `NavigationService.RegisterAllPages()`
+2. **Add command palette entry** in `CommandPaletteService.RegisterDefaultCommands()` — include workspace label in the `pageTag` argument so `BuildNavigationDescription` resolves correctly
+3. **Follow MVVM patterns** — all data logic in ViewModels; code-behind restricted to UI event wiring
+4. **Event cleanup** — always unsubscribe in `OnPageUnloaded` / `OnNavigatedFrom`
+5. **Use shared contracts** — workstation read models live in `Meridian.Contracts.Workstation`; never duplicate DTO types in the WPF project
 
 ---
 
 ## Related Documentation
 
-- **Desktop Development:**
-  - [Desktop Testing Guide](./desktop-testing-guide.md) - Comprehensive testing procedures
-  - [Desktop Platform Improvements](../evaluations/desktop-platform-improvements-implementation-guide.md) - Full improvement roadmap
-  - [Desktop Improvements - Executive Summary](../evaluations/desktop-improvements-executive-summary.md) - Impact analysis
-  - [Desktop Support Policy](./policies/desktop-support-policy.md) - Contribution requirements
-
-- **Architecture:**
-  - [Desktop Architecture Layers](../architecture/desktop-layers.md) - Layer boundaries
-  - [UI Fixture Mode Guide](./ui-fixture-mode-guide.md) - Offline development
-  - [Repository Organization Guide](./repository-organization-guide.md) - Code structure
-
-- **Planning:**
-  - [Project Roadmap](../status/ROADMAP.md) - Desktop roadmap items
+- [`docs/architecture/desktop-layers.md`](../architecture/desktop-layers.md) — Layer boundaries
+- [`docs/development/desktop-testing-guide.md`](./desktop-testing-guide.md) — Testing procedures
+- [`docs/evaluations/desktop-improvements-executive-summary.md`](../evaluations/desktop-improvements-executive-summary.md) — Platform improvement roadmap
+- [`docs/development/ui-fixture-mode-guide.md`](./ui-fixture-mode-guide.md) — Offline / fixture mode development
+- [`docs/status/ROADMAP.md`](../status/ROADMAP.md) — Desktop items in the project roadmap
+- [`docs/development/policies/desktop-support-policy.md`](./policies/desktop-support-policy.md) — Contribution requirements

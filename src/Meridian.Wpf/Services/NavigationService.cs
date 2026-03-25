@@ -122,6 +122,10 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         RegisterPage("LeanIntegration", typeof(LeanIntegrationPage));
         RegisterPage("MessagingHub", typeof(MessagingHubPage));
 
+        // Workspace shell landing pages
+        RegisterPage("ResearchShell", typeof(ResearchWorkspaceShellPage));
+        RegisterPage("TradingShell", typeof(TradingWorkspaceShellPage));
+
         // Workspaces & Notifications (2 pages)
         RegisterPage("Workspaces", typeof(WorkspacePage));
         RegisterPage("NotificationCenter", typeof(NotificationCenterPage));
