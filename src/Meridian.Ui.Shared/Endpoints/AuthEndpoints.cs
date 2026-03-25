@@ -1,3 +1,4 @@
+using Meridian.Contracts.Auth;
 using Meridian.Contracts.Api;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -10,11 +11,12 @@ namespace Meridian.Ui.Shared.Endpoints;
 public static class AuthEndpoints
 {
     /// <summary>
-    /// Maps the login page, login API, and logout API endpoints.
+    /// Maps the login page, login API, logout API, and current-user info endpoints.
     /// <list type="bullet">
     ///   <item>GET  /login            – returns the login page HTML.</item>
     ///   <item>POST /api/auth/login   – validates credentials, sets a session cookie.</item>
     ///   <item>POST /api/auth/logout  – invalidates the session cookie.</item>
+    ///   <item>GET  /api/auth/me      – returns the current user's username, role, and permissions.</item>
     /// </list>
     /// </summary>
     public static void MapAuthEndpoints(this WebApplication app)
@@ -98,7 +100,16 @@ public static class AuthEndpoints
                 });
 
             if (context.Request.HasJsonContentType())
-                return Results.Ok(new { success = true });
+            {
+                var profile = sessionService.GetSessionProfile(token);
+                return Results.Ok(new
+                {
+                    success = true,
+                    username = profile?.Username,
+                    role = profile?.Role.ToString(),
+                    permissions = profile?.Permissions.ToString()
+                });
+            }
 
             var redirect = string.IsNullOrWhiteSpace(returnUrl) ? "/" : returnUrl;
             return Results.Redirect(redirect);
@@ -114,6 +125,24 @@ public static class AuthEndpoints
             context.Response.Cookies.Delete(LoginSessionMiddleware.SessionCookieName);
             return Results.Redirect(UiApiRoutes.AuthLoginPage);
         }).ExcludeFromDescription();
+
+        // GET /api/auth/me – return the current user's identity and role
+        app.MapGet(UiApiRoutes.AuthApiMe, (HttpContext context, LoginSessionService sessionService) =>
+        {
+            var profile = ResolveCurrentProfile(context, sessionService);
+            if (profile is null)
+                return Results.Json(new { error = "Not authenticated." }, statusCode: StatusCodes.Status401Unauthorized);
+
+            return Results.Ok(new
+            {
+                username = profile.Username,
+                role = profile.Role.ToString(),
+                permissions = profile.Permissions.ToString()
+            });
+        }).WithName("GetCurrentUser")
+          .WithSummary("Returns the currently authenticated user's profile, role, and permissions.")
+          .Produces(StatusCodes.Status200OK)
+          .Produces(StatusCodes.Status401Unauthorized);
     }
 
     private static string BuildLoginRedirect(string? returnUrl, bool error)
@@ -124,6 +153,32 @@ public static class AuthEndpoints
         if (!string.IsNullOrWhiteSpace(returnUrl))
             url += $"{(error ? "&" : "?")}returnUrl={Uri.EscapeDataString(returnUrl)}";
         return url;
+    }
+
+    /// <summary>
+    /// Resolves the <see cref="UserProfile"/> for the current request by first checking the session
+    /// cookie and falling back to values placed in <see cref="HttpContext.Items"/> by the middleware.
+    /// Returns <see langword="null"/> when the request is unauthenticated.
+    /// </summary>
+    private static UserProfile? ResolveCurrentProfile(HttpContext context, LoginSessionService sessionService)
+    {
+        var token = context.Request.Cookies[LoginSessionMiddleware.SessionCookieName];
+        if (!string.IsNullOrWhiteSpace(token))
+            return sessionService.GetSessionProfile(token);
+
+        // Fall back to items populated by LoginSessionMiddleware during the current request
+        var ctxUser = context.Items[LoginSessionMiddleware.CurrentUserKey] as string;
+        var ctxRole = context.Items[LoginSessionMiddleware.CurrentUserRoleKey] as UserRole?;
+        var ctxPerms = context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] as UserPermission?;
+
+        if (ctxUser is null || ctxRole is null)
+            return null;
+
+        return new UserProfile(ctxUser, ctxRole.Value)
+        {
+            // Permissions are already computed from Role, but we can cross-check with stored items
+            // if they differ due to future customisation; for now they match the role exactly.
+        };
     }
 }
 
