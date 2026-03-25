@@ -1,5 +1,5 @@
 name: Explain Architecture
-description: In-depth architecture explanation for Meridian
+description: In-depth architecture explanation for Meridian — layers, subsystems, patterns, and design rationale
 # Model-agnostic prompt - works with any capable LLM
 messages:
   - role: system
@@ -12,124 +12,312 @@ messages:
       capturing high-fidelity market microstructure data, backtesting strategies at tick resolution,
       executing strategies via paper trading and brokerage gateways, and tracking portfolio performance.
 
+      Version: 1.7.2 | ~1,118 source files (1,073 C# + 45 F#) | ~4,424 tests
+
+      ---
+
       ### Architecture Layers
 
       ```
       ┌─────────────────────────────────────────────────────────────┐
       │                    Presentation Layer                        │
-      │  (Web Dashboard 300+ REST routes, WPF Desktop, CLI)     │
+      │  Web Dashboard (Meridian.Ui — React + 300+ REST routes)     │
+      │  WPF Desktop   (Meridian.Wpf — Windows, MVVM)               │
+      │  CLI            (Meridian — commands, DI composition root)   │
       └─────────────────────────────────────────────────────────────┘
                                     │
       ┌─────────────────────────────────────────────────────────────┐
       │                    Application Layer                         │
-      │  (EventPipeline, BackfillService, StatusWriter,             │
-      │   ScheduledBackfillService, DataQualityMonitoring)          │
+      │  EventPipeline, BackfillService, ScheduledBackfillService   │
+      │  DataQualityMonitoring, CanonicalSymbolRegistry             │
+      │  SecurityMaster (aggregate-rebuild, projection service)     │
+      │  DirectLending workflows, Coordination/LeaseManager         │
       └─────────────────────────────────────────────────────────────┘
                                     │
       ┌─────────────────────────────────────────────────────────────┐
       │                      Domain Layer                            │
-      │  (TradeDataCollector, MarketDepthCollector, QuoteCollector) │
-      │  (Domain Events: Trade, LOBSnapshot, BboQuote, OrderFlow)   │
-      │  (F# validation, risk rules, strategy lifecycle types)      │
+      │  Collectors: TradeDataCollector, MarketDepthCollector,      │
+      │    QuoteCollector, L3OrderBookCollector, OptionDataCollector│
+      │  Events: Trade, LOBSnapshot, BboQuote, OrderFlow, IntegrityEvent│
+      │  F# modules: validation pipeline, risk rules, DU types,     │
+      │    SecurityMaster commands/events, DirectLending aggregates  │
       └─────────────────────────────────────────────────────────────┘
                                     │
       ┌─────────────────────────────────────────────────────────────┐
       │                   Infrastructure Layer                       │
-      │  Streaming: IBMarketDataClient, AlpacaMarketDataClient,     │
-      │    PolygonMarketDataClient, NyseMarketDataClient,           │
-      │    StockSharpMarketDataClient (90+ sources)                 │
-      │  Historical: AlpacaHistorical, Yahoo, Polygon, Tiingo,      │
-      │    Finnhub, Stooq, AlphaVantage, FRED, Nasdaq (10+)        │
-      │  Resilience: CircuitBreaker, RateLimiter, WAL               │
-      │  Brokerage: AlpacaGateway, IBGateway, StockSharpGateway     │
+      │  Streaming (IMarketDataClient): IB, Alpaca, Polygon, NYSE,  │
+      │    StockSharp, Synthetic, CppTrader (90+ sources)           │
+      │  Historical (IHistoricalDataProvider): Alpaca, Yahoo,       │
+      │    Polygon, Tiingo, Finnhub, Stooq, AlphaVantage, FRED,     │
+      │    Nasdaq, StockSharp, Synthetic (10+)                      │
+      │  Symbol Search: Alpaca, Finnhub, Polygon, OpenFIGI,         │
+      │    StockSharp, Synthetic                                     │
+      │  Resilience: CircuitBreaker, RateLimiter, WAL, Failover     │
       └─────────────────────────────────────────────────────────────┘
                                     │
       ┌─────────────────────────────────────────────────────────────┐
       │          Backtesting & Execution Layer                       │
-      │  (BacktestEngine: tick-by-tick replay, fill models,         │
-      │   SimulatedPortfolio, XirrCalculator)                       │
-      │  (PaperTradingGateway, OrderManagementSystem,               │
-      │   CompositeRiskValidator: position limits, drawdown,        │
-      │   order rate throttle)                                      │
+      │  BacktestEngine: tick-by-tick replay, fill models           │
+      │    (BarMidpointFillModel, OrderBookFillModel)                │
+      │  SimulatedPortfolio, XirrCalculator, StrategyPluginLoader   │
+      │  PaperTradingGateway, OrderManagementSystem                 │
+      │  CompositeRiskValidator: position limits, drawdown stop,    │
+      │    order rate throttle (ADR-015)                            │
+      │  Brokerage Gateways: AlpacaGateway, IBGateway,             │
+      │    StockSharpGateway (BaseBrokerageGateway)                 │
       └─────────────────────────────────────────────────────────────┘
                                     │
       ┌─────────────────────────────────────────────────────────────┐
       │                      Storage Layer                           │
-      │  (JsonlStorageSink, ParquetStorageSink, WAL)                │
-      │  (AnalysisExportService, CompressionProfileManager)         │
-      │  (SecurityMaster + Postgres, DirectLending persistence)     │
+      │  Sinks: JsonlStorageSink, ParquetStorageSink, CompositeSink │
+      │  WAL: WriteAheadLog (SHA256 checksums, crash recovery)      │
+      │  Export: AnalysisExportService (JSONL/Parquet/CSV/XLSX/Arrow)│
+      │  SecurityMaster: Postgres event store + snapshot store      │
+      │  DirectLending: Postgres persistence + migration runner     │
+      │  Lifecycle: tiered retention (hot → warm → cold → archive) │
       └─────────────────────────────────────────────────────────────┘
       ```
 
-      ### Event Flow
+      ---
+
+      ### Project Map
+
+      | Project | Role |
+      |---------|------|
+      | `Meridian` | Entry point, CLI commands, DI composition root, HTTP host |
+      | `Meridian.Application` | Application services, pipeline, backfill, monitoring, scheduling |
+      | `Meridian.Domain` | Domain collectors, market events, domain models |
+      | `Meridian.FSharp` | F# type-safe domain: validation, risk, SecurityMaster, DU types |
+      | `Meridian.FSharp.Trading` | Strategy lifecycle FSM, strategy run types |
+      | `Meridian.FSharp.Ledger` | Double-entry ledger (journal entries, reconciliation) |
+      | `Meridian.FSharp.DirectLending.Aggregates` | DL aggregate root types and state transitions |
+      | `Meridian.Infrastructure` | Provider adapters: streaming, historical, symbol search, brokerage |
+      | `Meridian.Infrastructure.CppTrader` | Native CppTrader matching engine integration |
+      | `Meridian.Storage` | JSONL/Parquet sinks, WAL, export, SecurityMaster/DL persistence |
+      | `Meridian.Contracts` | Shared interfaces and DTOs — leaf project, zero project references |
+      | `Meridian.Core` | Config, exceptions, serialization, scheduling, performance primitives |
+      | `Meridian.ProviderSdk` | `IMarketDataClient`, `IHistoricalDataProvider`, `[DataSource]` |
+      | `Meridian.Backtesting` | BacktestEngine, fill models, SimulatedPortfolio |
+      | `Meridian.Backtesting.Sdk` | Public SDK for strategy authors: `IBacktestStrategy`, `IBacktestContext` |
+      | `Meridian.Execution` | PaperTradingGateway, OMS, brokerage adapters, risk validator |
+      | `Meridian.Execution.Sdk` | Public SDK: `IBrokerageGateway`, `IOrderManager`, `IPositionTracker` |
+      | `Meridian.Strategies` | Strategy lifecycle, run management, promotions, reconciliation |
+      | `Meridian.Ledger` | In-memory double-entry ledger with validation |
+      | `Meridian.Risk` | Composable risk rules: position limits, drawdown, order rate throttle |
+      | `Meridian.Ui` | Web dashboard host (React SPA + ASP.NET minimal API) |
+      | `Meridian.Ui.Shared` | 300+ shared REST endpoint implementations |
+      | `Meridian.Ui.Services` | Platform-independent UI service layer |
+      | `Meridian.Wpf` | WPF desktop app (Windows-only, net9.0-windows, MVVM) |
+      | `Meridian.Mcp` | Internal MCP server (ADR tools, audit, convention tools) |
+      | `Meridian.McpServer` | Market-data MCP server (backfill, storage, symbol, provider tools) |
+
+      ---
+
+      ### Real-Time Event Flow
 
       ```
-      Provider (WebSocket/REST/FIX)
-        → IMarketDataClient normalization
+      Provider (WebSocket/REST/FIX/native)
+        → IMarketDataClient.StreamEventsAsync() — normalization at the boundary
         → Domain Collectors (TradeDataCollector, MarketDepthCollector…)
-        → MarketEvent emission (sealed record wrapper + static factories)
+        → MarketEvent (sealed record wrapper with static factories — ADR-006)
         → EventPipeline (System.Threading.Channels, bounded, ADR-013)
-        → Storage Sinks (JSONL + Parquet simultaneous, ADR-008) + WAL (ADR-007)
-        → OpenTelemetry spans (ADR-004)
+            ├─ CanonicalizingPublisher (condition codes, venue MIC — ADR-011)
+            ├─ FSharpEventValidator (structural + business rule checks — ADR-009)
+            ├─ HotPathBatchSerializer (batch assembly — ADR-014)
+            └─ StorageSinks: JsonlStorageSink + ParquetStorageSink (ADR-008)
+                └─ WriteAheadLog (SHA256, crash recovery — ADR-007)
+        → OpenTelemetry activity spans (ADR-004)
       ```
+
+      ### Backfill Flow
+
+      ```
+      HistoricalBackfillService.RunBackfillAsync()
+        → PriorityBackfillQueue (symbol / date-range work items)
+        → BackfillWorkerService (N concurrent workers)
+        → CompositeHistoricalDataProvider (fallback chain)
+            ├─ Primary provider (e.g., Alpaca)
+            └─ Fallback chain (Yahoo → Polygon → Tiingo → …)
+        → BaseHistoricalDataProvider.WaitForRateLimitSlotAsync()
+        → IHistoricalBarWriter → JsonlStorageSink / ParquetStorageSink
+        → BackfillProgressTracker → BackfillStatusStore
+      ```
+
+      ### Strategy Execution Flow
+
+      ```
+      BacktestRequest → BacktestEngine.RunAsync()
+        → UniverseDiscovery (symbols from historical store)
+        → MultiSymbolMergeEnumerator (chronological tick replay)
+        → IBacktestStrategy.OnMarketEvent() — user strategy code
+        → IFillModel (BarMidpointFillModel or OrderBookFillModel)
+        → SimulatedPortfolio (positions, cash, P&L, commissions)
+        → BacktestMetricsEngine (Sharpe, drawdown, XIRR)
+        → BacktestResult → StrategyRunStore → StrategyRunReadService
+
+      PaperTradingGateway (live strategy validation):
+        → IOrderGateway.SubmitOrderAsync()
+        → CompositeRiskValidator (position limits, drawdown, rate throttle)
+        → PaperTradingPortfolio (simulated fills from live ticks)
+        → OrderLifecycleManager → status updates via CompletionQueue channel
+      ```
+
+      ---
 
       ### Key Design Patterns
 
-      1. **Provider-Agnostic Architecture (ADR-001)**
-         - Abstract interfaces: `IMarketDataClient`, `IHistoricalDataProvider`, `ISymbolSearchProvider`
-         - Attribute-based discovery: `[DataSource]` attribute (ADR-005)
-         - Normalized domain events regardless of provider
-         - Swap providers without changing consumers
+      #### 1. Provider-Agnostic Architecture (ADR-001, ADR-005)
+      - Abstract interfaces: `IMarketDataClient`, `IHistoricalDataProvider`, `ISymbolSearchProvider`
+      - `[DataSource]` attribute on every provider; discovered at startup via `DataSourceRegistry`
+      - `[ImplementsAdr("ADR-001", "...")]` traces which classes implement ADR contracts
+      - Normalized `MarketEvent` regardless of provider; swap providers without changing consumers
+      ```csharp
+      [DataSource("alpaca", DisplayName = "Alpaca Markets")]
+      [ImplementsAdr("ADR-001", "IMarketDataClient streaming implementation")]
+      public sealed class AlpacaMarketDataClient : IMarketDataClient { ... }
+      ```
 
-      2. **Event-Driven Processing (ADR-013)**
-         - `System.Threading.Channels` with `EventPipelinePolicy` presets for consistent backpressure
-         - `BoundedChannelFullMode.DropOldest` on hot paths
-         - `BoundedChannelFullMode.Wait` (no-drop) for terminal events (order fills, completion signals)
-         - Async/await throughout; never `.Result` or `.Wait()`
+      #### 2. Event-Driven Pipeline (ADR-013)
+      - `System.Threading.Channels` with `EventPipelinePolicy` presets (never raw `Channel.CreateBounded`)
+      - Hot paths: `BoundedChannelFullMode.DropOldest` (trades, quotes)
+      - Terminal events: `BoundedChannelFullMode.Wait` via `EventPipelinePolicy.CompletionQueue` (fills, shutdown)
+      - Async/await throughout; never `.Result` or `.Wait()`
+      ```csharp
+      // Correct — use policy preset
+      var channel = EventPipelinePolicy.Default.CreateChannel<MarketEvent>();
+      // Terminal events that must not be dropped
+      var completionChannel = EventPipelinePolicy.CompletionQueue.CreateChannel<OrderStatusUpdate>();
+      ```
 
-      3. **Write-Ahead Logging (WAL — ADR-007)**
-         - Crash-safe persistence before sink writes
-         - SHA256 checksums for integrity
-         - Recovery and replay on startup
+      #### 3. Write-Ahead Logging (ADR-007)
+      - `WriteAheadLog` persists entries before sink writes (crash-safe)
+      - SHA256 checksums on each entry; validated on recovery
+      - On startup, unprocessed WAL entries are replayed to sinks
 
-      4. **Multi-Format Tiered Storage (ADR-002, ADR-008)**
-         - JSONL (hot) + Parquet (warm/cold) written simultaneously
-         - Tiered retention: hot → warm → cold → archive lifecycle
-         - AtomicFileWriter for safe in-place updates
+      #### 4. Multi-Format Tiered Storage (ADR-002, ADR-008)
+      - JSONL (hot tier) + Parquet (warm/cold) written **simultaneously** per event batch
+      - `AtomicFileWriter` for safe in-place updates (rename-on-close)
+      - Lifecycle: hot → warm (Parquet conversion) → cold → archive (ZIP/cloud)
+      - `CompressionProfileManager`: LZ4 for real-time, ZSTD for archive
 
-      5. **Circuit Breaker & Failover**
-         - Automatic failover via `FailoverAwareMarketDataClient`
-         - Health monitoring and recovery scoring
-         - Prevents cascade failures across providers
+      #### 5. Circuit Breaker & Failover
+      - `FailoverAwareMarketDataClient` wraps primary + fallback provider list
+      - `CircuitBreakerStatusService` / `ProviderDegradationScorer` track health per provider
+      - `StreamingFailoverService` promotes the next healthy provider automatically
 
-      6. **Hot Configuration Reload (ADR-011)**
-         - `IOptionsMonitor<T>` for runtime-mutable settings
-         - Add/remove symbols without restart
-         - Graceful subscription management
+      #### 6. Hot Configuration Reload (ADR-011)
+      - `IOptionsMonitor<T>` (never `IOptions<T>`) for settings that change at runtime
+      - Add/remove symbols, change rate limits, update thresholds — all without restart
+      - `ConfigWatcher` detects file changes and triggers `IOptionsMonitor` change tokens
 
-      7. **ADR-014 JSON Source Generators**
-         - Zero-reflection serialization via `[JsonSerializable]` contexts
-         - Required for all serialization paths; never use reflection overload
+      #### 7. JSON Source Generators (ADR-014)
+      - Zero-reflection serialization via `[JsonSerializable]` context classes
+      - `MarketDataJsonContext`, `SecurityMasterJsonContext` in `Meridian.Core`
+      - Never use the reflection overload: `JsonSerializer.Serialize<T>(value)` without a context
 
-      8. **F# Domain Library (ADR-009)**
-         - Type-safe discriminated unions for market events, risk rules, validation pipeline
-         - Railway-Oriented validation (Result types)
-         - Pure functional calculations (spread, imbalance, aggregations)
-         - C# interop wrappers at the boundary
+      #### 8. F# Domain Library (ADR-009)
+      - Discriminated unions (DUs) for market events, risk outcomes, validation results
+      - Railway-Oriented Programming: `Result<'T, 'E>` chains for validation pipeline
+      - Pure functional calculations: spread, imbalance, VWAP aggregations
+      - C# interop via generated `Meridian.FSharp.Interop.g.cs` and `Interop.fs` wrappers
 
-      ### WPF Desktop Architecture
-      - Project: `src/Meridian.Wpf/` (Windows-only, net9.0-windows)
-      - MVVM via `BindableBase` with `SetProperty<T>`
-      - Views are thin XAML + `InitializeComponent()` only; all logic in ViewModels
-      - Services injected into ViewModels, never into Pages directly
-      - Dependency rule: WPF host → Ui.Services → Contracts (never reversed)
+      ---
 
-      ### Backtesting Architecture
-      - `BacktestEngine` replays ticks from `IHistoricalDataProvider` in chronological order
-      - `IFillModel` implementations: `BarMidpointFillModel`, `OrderBookFillModel`
-      - `SimulatedPortfolio` tracks positions, cash, P&L, and commissions
-      - `XirrCalculator` computes XIRR for performance benchmarking
-      - Strategy plugins loaded via `StrategyPluginLoader` (assembly isolation)
+      ### Subsystem Deep-Dives
+
+      #### Composition Root & Dependency Injection
+      - Entry point: `src/Meridian/Program.cs` → `ServiceCompositionRoot`
+      - Feature registrations in `src/Meridian.Application/Composition/Features/`:
+        - `CollectorFeatureRegistration`, `PipelineFeatureRegistration`
+        - `BackfillFeatureRegistration`, `StorageFeatureRegistration`
+        - `ProviderFeatureRegistration` (discovers `[DataSource]` types)
+        - `CanonicalizationFeatureRegistration`, `MonitoringFeatureRegistration`
+      - `SharedStartupBootstrapper` wires all feature registrations in the correct order
+      - `HostStartup` configures the HTTP host and middleware pipeline
+
+      #### SecurityMaster
+      - Event-sourced aggregate with Postgres persistence (`PostgresSecurityMasterEventStore`)
+      - Snapshots for fast projection rebuilds (`PostgresSecurityMasterSnapshotStore`)
+      - `SecurityMasterRebuildOrchestrator` replays all events to rebuild projections
+      - Projection checkpointing: `projection_checkpoint` table (last_global_sequence per projection)
+      - F# domain types: `SecurityMaster.fs`, `SecurityMasterCommands.fs`, `SecurityMasterEvents.fs`
+      - C# application services: `SecurityMasterService`, `SecurityMasterProjectionService`
+
+      #### Direct Lending Module
+      - Postgres-backed with migration runner (`DirectLendingMigrationRunner`)
+      - F# aggregate roots: `ContractAggregate.fs`, `ServicingAggregate.fs`
+      - Dual service implementations: `InMemoryDirectLendingService` (testing) and `PostgresDirectLendingService`
+      - Outbox pattern: `DirectLendingOutboxDispatcher` for reliable event delivery
+      - Workflow orchestration: `DirectLendingWorkflowSupport`
+
+      #### CppTrader Native Integration
+      - `CppTraderHostManager` manages the native CppTrader process lifecycle
+      - `LengthPrefixedProtocolStream` for framed binary communication
+      - `CppTraderMarketDataClient` feeds live L3 order book data into the pipeline
+      - `CppTraderOrderGateway` routes orders to the native matching engine
+      - `CppTraderItchIngestionService` parses ITCH protocol feeds
+
+      #### MCP Servers
+      - `Meridian.Mcp`: Internal tooling server — ADR lookup, audit tools, convention checks, known-error registry
+      - `Meridian.McpServer`: Market-data server — backfill tools, storage query, symbol management, provider status
+      - Both use the Model Context Protocol (MCP) SDK with ASP.NET minimal API hosting
+
+      #### WPF Desktop Architecture
+      - Project: `src/Meridian.Wpf/` (Windows-only, `net9.0-windows`)
+      - MVVM via `BindableBase` (`SetProperty<T>`, no direct `INotifyPropertyChanged` wiring)
+      - Views are thin XAML + `InitializeComponent()` only; zero business logic in code-behind
+      - Services injected into ViewModels — never into Pages/Windows directly
+      - Dependency rule: `Meridian.Wpf` → `Meridian.Ui.Services` → `Meridian.Contracts` (never reversed)
+      - Brushes/styles resolved once via `static readonly` `FindResource()` fields (never in per-event paths)
+
+      #### Backtesting Architecture
+      - `BacktestEngine` merges tick streams from multiple symbols in chronological order
+      - `IFillModel`: `BarMidpointFillModel` (OHLCV bars) and `OrderBookFillModel` (L2 book simulation)
+      - `ContingentOrderManager` handles bracket orders and stop/take-profit chains
+      - `SimulatedPortfolio` tracks positions, cash, P&L, commissions, and cash flows
+      - `BacktestMetricsEngine` computes Sharpe ratio, max drawdown, and XIRR
+      - Strategy plugins isolated per assembly via `StrategyPluginLoader`
+
+      ---
+
+      ### Dependency Rules (Critical)
+
+      ```
+      ✅ Meridian (host) → Application, Infrastructure, Storage, Ui.Shared
+      ✅ Application → Domain, Core, ProviderSdk, Contracts
+      ✅ Infrastructure → ProviderSdk, Core, Contracts
+      ✅ Storage → Contracts, Core
+      ✅ Domain → Contracts, Core
+      ✅ Ui.Shared → Application, Storage, Ui.Services
+      ✅ Ui.Services → Contracts, Core
+      ✅ Wpf → Ui.Services, Contracts
+      ❌ Contracts → (anything) — leaf project, zero ProjectReferences
+      ❌ Ui.Services → Wpf — reverse dependency
+      ❌ ProviderSdk → Application/Domain/Infrastructure — must stay a leaf SDK
+      ```
+
+      ---
+
+      ### Key Source Locations
+
+      | Concern | Files to look at |
+      |---------|-----------------|
+      | DI wiring | `src/Meridian.Application/Composition/Features/` |
+      | Event pipeline | `src/Meridian.Application/Pipeline/EventPipeline.cs` |
+      | Channel policy | `src/Meridian.Core/Pipeline/EventPipelinePolicy.cs` |
+      | Provider base | `src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs` |
+      | Provider factory | `src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs` |
+      | Storage sinks | `src/Meridian.Storage/Sinks/` |
+      | WAL | `src/Meridian.Storage/Archival/WriteAheadLog.cs` |
+      | F# validation | `src/Meridian.FSharp/Validation/ValidationPipeline.fs` |
+      | F# risk rules | `src/Meridian.FSharp/Risk/RiskRules.fs` |
+      | SecurityMaster app | `src/Meridian.Application/SecurityMaster/` |
+      | SecurityMaster store | `src/Meridian.Storage/SecurityMaster/` |
+      | Direct Lending | `src/Meridian.Application/DirectLending/` |
+      | Backtest engine | `src/Meridian.Backtesting/Engine/BacktestEngine.cs` |
+      | Paper trading | `src/Meridian.Execution/Adapters/PaperTradingGateway.cs` |
+      | MCP tools | `src/Meridian.Mcp/Tools/` and `src/Meridian.McpServer/Tools/` |
+      | ADRs | `docs/adr/` |
 
   - role: user
     content: |
@@ -137,12 +325,14 @@ messages:
 
       Context: {{context}}
 
-      I want to understand:
+      Specific questions:
       {{questions}}
 
-      Please provide:
-      1. Conceptual explanation
-      2. How it fits in the overall architecture
-      3. Design rationale and trade-offs
-      4. Code examples demonstrating the pattern
-      5. Best practices for working with this component
+      Please structure your response as follows:
+      1. **Conceptual Overview** — what it is and why it exists
+      2. **How it fits** — where it sits in the layer diagram and which projects are involved
+      3. **Data / control flow** — step-by-step walk-through with class names
+      4. **Design rationale & ADRs** — which ADRs govern this area and why those choices were made
+      5. **Code examples** — concrete snippets from the actual codebase (or idiomatic examples)
+      6. **Common pitfalls** — mistakes to avoid and how the architecture prevents them
+      7. **Where to look** — exact file paths for the most important implementation files
