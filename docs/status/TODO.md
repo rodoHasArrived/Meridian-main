@@ -1,6 +1,6 @@
 # TODO / FIXME / NOTE Scan
 
-Total items: **232**
+Total items: **233**
 
 | File | Line | Tag | Linked Issue | Text |
 |---|---:|---|:---:|---|
@@ -49,6 +49,7 @@ Total items: **232**
 | `CLAUDE.md` | 950 | `TODO` | ❌ | │   │   └── TODO.md |
 | `README.md` | 345 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
 | `README.md` | 712 | `TODO` | ❌ | │   │   ├── TODO.md |
+| `benchmarks/run-bottleneck-benchmarks.sh` | 104 | `NOTE` | ❌ | # Note: --filter is intentionally not added here; each phase below supplies its own |
 | `build/scripts/run/start-collector.ps1` | 109 | `NOTE` | ❌ | if ($depth -gt 0) { Write-Host "[NOTE] L2 depth requires provider depth entitlements for venues." } |
 | `build/scripts/run/start-collector.sh` | 114 | `NOTE` | ❌ | print("[NOTE] L2 depth requires provider depth subscription for venues.") |
 | `config/appsettings.sample.json` | 364 | `NOTE` | ❌ | // NOTE: Credentials are resolved from environment variables - do NOT add them here. |
@@ -68,7 +69,7 @@ Total items: **232**
 | `docs/ai/copilot/instructions.md` | 935 | `TODO` | ❌ | │   │   └── TODO.md |
 | `docs/ai/copilot/instructions.md` | 2915 | `TODO` | ❌ | - `documentation.yml` — Doc generation, TODO scanning, AI error intake |
 | `docs/architecture/deterministic-canonicalization.md` | 365 | `NOTE` | ❌ | Note: Polygon does not define buyer-initiated codes. Only ~5% of trades carry definitive aggressor inference. The canonicalization layer preserves `Unknown` as a valid canonical value rather than attempting inference. |
-| `docs/architecture/domains.md` | 91 | `NOTE` | ❌ | > Note: not every enum member is currently emitted by the three core collectors (`TradeDataCollector`, `MarketDepthCollector`, `QuoteCollector`); several are used by adapters/backfill paths. |
+| `docs/architecture/domains.md` | 111 | `NOTE` | ❌ | > Note: not every enum member is currently emitted by the three core collectors (`TradeDataCollector`, `MarketDepthCollector`, `QuoteCollector`); several are used by adapters, backfill paths, or the `L3OrderBookCollector`. |
 | `docs/architecture/ui-redesign.md` | 1 | `NOTE` | ❌ | > **Note:** WPF desktop app references in this document reflect a delayed implementation. `src/Meridian.Wpf/` is preserved but not in the active solution build. |
 | `docs/development/documentation-automation.md` | 19 | `TODO` | ❌ | \| **TODO Scanning** \| Finds TODO/FIXME/HACK comments and generates tracking docs \| |
 | `docs/development/documentation-automation.md` | 26 | `TODO` | ❌ | \| **Automatic TODO Issue Creation** \| Converts untracked TODO/FIXME items into GitHub issues automatically \| |
