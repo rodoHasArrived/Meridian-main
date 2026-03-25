@@ -302,7 +302,7 @@ public sealed class DiagnosticBundleService
         {
             // Directory structure
             info.AppendLine("=== DIRECTORY STRUCTURE ===");
-            await ListDirectoryAsync(_dataRoot, info, "", 3);
+            await ListDirectoryAsync(_dataRoot, info, "", 3, ct);
             info.AppendLine();
 
             // Disk space
@@ -355,22 +355,25 @@ public sealed class DiagnosticBundleService
         {
             foreach (var dir in Directory.GetDirectories(path))
             {
+                ct.ThrowIfCancellationRequested();
                 var dirName = Path.GetFileName(dir);
                 if (dirName.StartsWith("."))
                     continue;
 
                 sb.AppendLine($"{indent}[DIR] {dirName}/");
 
-                await ListDirectoryAsync(dir, sb, indent + "  ", maxDepth - 1);
+                await ListDirectoryAsync(dir, sb, indent + "  ", maxDepth - 1, ct);
             }
 
             foreach (var file in Directory.GetFiles(path))
             {
+                ct.ThrowIfCancellationRequested();
                 var fileName = Path.GetFileName(file);
                 var fileInfo = new FileInfo(file);
                 sb.AppendLine($"{indent}{fileName} ({FormatSize(fileInfo.Length)})");
             }
         }
+        catch (OperationCanceledException) { throw; }
         catch (UnauthorizedAccessException) { /* Access denied */ }
         catch (IOException) { /* Directory access error */ }
     }
