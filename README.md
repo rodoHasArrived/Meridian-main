@@ -2432,6 +2432,8 @@ Use these documents together when planning or implementing new work:
 │           ├── ProviderHealthPage.xaml.cs
 │           ├── ProviderPage.xaml
 │           ├── ProviderPage.xaml.cs
+│           ├── ResearchWorkspaceShellPage.xaml
+│           ├── ResearchWorkspaceShellPage.xaml.cs
 │           ├── RetentionAssurancePage.xaml
 │           ├── RetentionAssurancePage.xaml.cs
 │           ├── RunDetailPage.xaml
@@ -2468,6 +2470,8 @@ Use these documents together when planning or implementing new work:
 │           ├── TimeSeriesAlignmentPage.xaml.cs
 │           ├── TradingHoursPage.xaml
 │           ├── TradingHoursPage.xaml.cs
+│           ├── TradingWorkspaceShellPage.xaml
+│           ├── TradingWorkspaceShellPage.xaml.cs
 │           ├── WatchlistPage.xaml
 │           ├── WatchlistPage.xaml.cs
 │           ├── WelcomePage.xaml
@@ -2905,6 +2909,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-403 directories, 2464 files
+403 directories, 2468 files
 ```
 <!-- readme-tree end -->
