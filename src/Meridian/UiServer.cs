@@ -85,6 +85,9 @@ public sealed class UiServer : IAsyncDisposable
         builder.Services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
         builder.Services.AddSingleton<ReconciliationProjectionService>();
         builder.Services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        builder.Services.AddSingleton<Meridian.Strategies.Promotions.BacktestToLivePromoter>();
+        builder.Services.AddSingleton<Meridian.Strategies.Services.PromotionService>();
+        builder.Services.AddSingleton<Meridian.Execution.Services.PaperSessionPersistenceService>();
 
         // Register OpenAPI/Swagger services
         builder.Services.AddEndpointsApiExplorer();

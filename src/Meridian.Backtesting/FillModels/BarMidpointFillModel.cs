@@ -8,11 +8,14 @@ namespace Meridian.Backtesting.FillModels;
 /// <summary>
 /// Fallback fill model used when only OHLCV bar data is available.
 /// Supports market, limit, stop-market, and stop-limit semantics with a
-/// configurable midpoint slippage assumption.
+/// configurable midpoint slippage assumption. When <paramref name="spreadAware"/>
+/// is enabled, slippage is scaled by the bar's intrabar volatility (range / midpoint),
+/// simulating wider spreads in volatile conditions.
 /// </summary>
 internal sealed class BarMidpointFillModel(
     ICommissionModel commissionModel,
-    decimal slippageBasisPoints = 5m) : IFillModel
+    decimal slippageBasisPoints = 5m,
+    bool spreadAware = false) : IFillModel
 {
     public OrderFillResult TryFill(Order order, MarketEvent evt)
     {
@@ -79,7 +82,20 @@ internal sealed class BarMidpointFillModel(
         {
             case OrderType.Market:
                 var mid = (bar.Open + bar.Close) / 2m;
-                var slip = mid * (slippageBasisPoints / 10_000m);
+                var effectiveSlippage = slippageBasisPoints;
+
+                // When spread-aware mode is enabled, scale slippage by intrabar volatility.
+                // Higher bar range relative to midpoint implies wider real-world spreads.
+                if (spreadAware && mid > 0m)
+                {
+                    var range = bar.High - bar.Low;
+                    var volatilityFactor = range / mid; // e.g., 0.02 for a 2% bar range
+                    // Scale: base slippage * (1 + volatility multiplier)
+                    // A 1% bar range adds ~50% more slippage; a 3% range adds ~150%
+                    effectiveSlippage = slippageBasisPoints * (1m + volatilityFactor * 50m);
+                }
+
+                var slip = mid * (effectiveSlippage / 10_000m);
                 fillPrice = isBuy ? mid + slip : mid - slip;
                 return true;
 

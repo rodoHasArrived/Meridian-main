@@ -57,7 +57,8 @@ public sealed class BacktestEngine(
         var portfolio = new SimulatedPortfolio(accounts, request.DefaultBrokerageAccountId, commissionModel, ledger, startTimestamp);
         var ctx = new BacktestContext(portfolio, universe, ledger, request.DefaultBrokerageAccountId);
         var orderBookFillModel = new OrderBookFillModel(commissionModel);
-        var barFillModel = new BarMidpointFillModel(commissionModel);
+        var barFillModel = new BarMidpointFillModel(commissionModel, spreadAware: true);
+        var marketImpactFillModel = new MarketImpactFillModel(commissionModel);
 
         var pendingOrders = new List<Order>();
         var allSnapshots = new List<PortfolioSnapshot>();
@@ -107,7 +108,7 @@ public sealed class BacktestEngine(
             pendingOrders.AddRange(newOrders);
 
             // Try to fill pending orders against current event
-            ProcessPendingOrders(pendingOrders, evt, orderBookFillModel, barFillModel, portfolio, strategy, ctx, allFills);
+            ProcessPendingOrders(pendingOrders, evt, orderBookFillModel, barFillModel, marketImpactFillModel, portfolio, strategy, ctx, allFills);
         }
 
         // Final day-end for the last processed day and any remaining asset-event-only dates.
@@ -277,6 +278,7 @@ public sealed class BacktestEngine(
         MarketEvent evt,
         IFillModel lobModel,
         IFillModel barModel,
+        IFillModel marketImpactModel,
         SimulatedPortfolio portfolio,
         IBacktestStrategy strategy,
         BacktestContext ctx,
@@ -289,7 +291,7 @@ public sealed class BacktestEngine(
             if (!order.Symbol.Equals(evt.EffectiveSymbol, StringComparison.OrdinalIgnoreCase))
                 continue;
 
-            var model = SelectFillModel(order, evt, lobModel, barModel);
+            var model = SelectFillModel(order, evt, lobModel, barModel, marketImpactModel);
             var result = model.TryFill(order, evt);
 
             foreach (var fill in result.Fills)
@@ -358,12 +360,14 @@ public sealed class BacktestEngine(
         Order order,
         MarketEvent evt,
         IFillModel lobModel,
-        IFillModel barModel)
+        IFillModel barModel,
+        IFillModel marketImpactModel)
     {
         return order.ExecutionModel switch
         {
             ExecutionModel.OrderBook => lobModel,
             ExecutionModel.BarMidpoint => barModel,
+            ExecutionModel.MarketImpact => marketImpactModel,
             _ => evt.Payload is LOBSnapshot ? lobModel : barModel
         };
     }
