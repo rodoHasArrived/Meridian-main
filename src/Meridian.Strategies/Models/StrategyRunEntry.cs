@@ -1,4 +1,5 @@
 using Meridian.Backtesting.Sdk;
+using Meridian.Contracts.Workstation;
 
 namespace Meridian.Strategies.Models;
 
@@ -20,7 +21,8 @@ public sealed record StrategyRunEntry(
     string? LedgerReference = null,
     string? AuditReference = null,
     string? Engine = null,
-    IReadOnlyDictionary<string, string>? ParameterSet = null)
+    IReadOnlyDictionary<string, string>? ParameterSet = null,
+    StrategyRunStatus? TerminalStatus = null)
 {
     /// <summary>Creates a new run entry with a generated run ID and current timestamp.</summary>
     public static StrategyRunEntry Start(string strategyId, string strategyName, RunType runType) =>
@@ -45,4 +47,12 @@ public sealed record StrategyRunEntry(
     /// <summary>Returns a copy of this entry marked as ended with the provided metrics.</summary>
     public StrategyRunEntry Complete(BacktestResult? metrics) =>
         this with { EndedAt = DateTimeOffset.UtcNow, Metrics = metrics };
+
+    /// <summary>Returns a copy of this entry marked as failed at the current time.</summary>
+    public StrategyRunEntry Fail() =>
+        this with { EndedAt = DateTimeOffset.UtcNow, TerminalStatus = StrategyRunStatus.Failed };
+
+    /// <summary>Returns a copy of this entry marked as cancelled at the current time.</summary>
+    public StrategyRunEntry Cancel() =>
+        this with { EndedAt = DateTimeOffset.UtcNow, TerminalStatus = StrategyRunStatus.Cancelled };
 }
