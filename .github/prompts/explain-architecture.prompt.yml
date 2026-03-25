@@ -1,5 +1,5 @@
 name: Explain Architecture
-description: Understand and explain Meridian architecture and design decisions
+description: In-depth architecture explanation for Meridian
 # Model-agnostic prompt - works with any capable LLM
 messages:
   - role: system
@@ -8,82 +8,128 @@ messages:
 
       ## System Overview
 
-      Meridian is a production-ready system for capturing and managing
-      high-fidelity market microstructure data. It follows these key principles:
+      Meridian is a production-ready .NET 9.0 / C# 13 / F# 8.0 integrated trading platform for
+      capturing high-fidelity market microstructure data, backtesting strategies at tick resolution,
+      executing strategies via paper trading and brokerage gateways, and tracking portfolio performance.
 
       ### Architecture Layers
 
       ```
       ┌─────────────────────────────────────────────────────────────┐
       │                    Presentation Layer                        │
-      │  (Web Dashboard, UWP Desktop, CLI, REST API)                │
+      │  (Web Dashboard 300+ REST routes, WPF Desktop, CLI)     │
       └─────────────────────────────────────────────────────────────┘
                                     │
       ┌─────────────────────────────────────────────────────────────┐
       │                    Application Layer                         │
-      │  (Program, EventPipeline, BackfillService, StatusWriter)    │
+      │  (EventPipeline, BackfillService, StatusWriter,             │
+      │   ScheduledBackfillService, DataQualityMonitoring)          │
       └─────────────────────────────────────────────────────────────┘
                                     │
       ┌─────────────────────────────────────────────────────────────┐
       │                      Domain Layer                            │
       │  (TradeDataCollector, MarketDepthCollector, QuoteCollector) │
       │  (Domain Events: Trade, LOBSnapshot, BboQuote, OrderFlow)   │
+      │  (F# validation, risk rules, strategy lifecycle types)      │
       └─────────────────────────────────────────────────────────────┘
                                     │
       ┌─────────────────────────────────────────────────────────────┐
       │                   Infrastructure Layer                       │
-      │  (IBClient, AlpacaClient, PolygonClient)                    │
-      │  (Historical Providers: Yahoo, Stooq, Nasdaq)               │
-      │  (Resilience: CircuitBreaker, RateLimiter)                  │
+      │  Streaming: IBMarketDataClient, AlpacaMarketDataClient,     │
+      │    PolygonMarketDataClient, NyseMarketDataClient,           │
+      │    StockSharpMarketDataClient (90+ sources)                 │
+      │  Historical: AlpacaHistorical, Yahoo, Polygon, Tiingo,      │
+      │    Finnhub, Stooq, AlphaVantage, FRED, Nasdaq (10+)        │
+      │  Resilience: CircuitBreaker, RateLimiter, WAL               │
+      │  Brokerage: AlpacaGateway, IBGateway, StockSharpGateway     │
+      └─────────────────────────────────────────────────────────────┘
+                                    │
+      ┌─────────────────────────────────────────────────────────────┐
+      │          Backtesting & Execution Layer                       │
+      │  (BacktestEngine: tick-by-tick replay, fill models,         │
+      │   SimulatedPortfolio, XirrCalculator)                       │
+      │  (PaperTradingGateway, OrderManagementSystem,               │
+      │   CompositeRiskValidator: position limits, drawdown,        │
+      │   order rate throttle)                                      │
       └─────────────────────────────────────────────────────────────┘
                                     │
       ┌─────────────────────────────────────────────────────────────┐
       │                      Storage Layer                           │
-      │  (JsonlStorageSink, ParquetSink, WAL)                       │
+      │  (JsonlStorageSink, ParquetStorageSink, WAL)                │
       │  (AnalysisExportService, CompressionProfileManager)         │
+      │  (SecurityMaster + Postgres, DirectLending persistence)     │
       └─────────────────────────────────────────────────────────────┘
       ```
 
       ### Event Flow
 
       ```
-      Provider → Client Normalization → Domain Collectors →
-      MarketEvent Emission → EventPipeline (Channel<T>) →
-      Storage Sink / Message Bus
+      Provider (WebSocket/REST/FIX)
+        → IMarketDataClient normalization
+        → Domain Collectors (TradeDataCollector, MarketDepthCollector…)
+        → MarketEvent emission (sealed record wrapper + static factories)
+        → EventPipeline (System.Threading.Channels, bounded, ADR-013)
+        → Storage Sinks (JSONL + Parquet simultaneous, ADR-008) + WAL (ADR-007)
+        → OpenTelemetry spans (ADR-004)
       ```
 
       ### Key Design Patterns
 
-      1. **Provider-Agnostic Architecture**
-         - Abstract interfaces (IDataSource, IRealtimeDataSource)
-         - Normalized domain events regardless of source
-         - Swap providers without code changes
+      1. **Provider-Agnostic Architecture (ADR-001)**
+         - Abstract interfaces: `IMarketDataClient`, `IHistoricalDataProvider`, `ISymbolSearchProvider`
+         - Attribute-based discovery: `[DataSource]` attribute (ADR-005)
+         - Normalized domain events regardless of provider
+         - Swap providers without changing consumers
 
-      2. **Event-Driven Processing**
-         - System.Threading.Channels for backpressure
-         - Async/await throughout
-         - Bounded buffers prevent memory exhaustion
+      2. **Event-Driven Processing (ADR-013)**
+         - `System.Threading.Channels` with `EventPipelinePolicy` presets for consistent backpressure
+         - `BoundedChannelFullMode.DropOldest` on hot paths
+         - `BoundedChannelFullMode.Wait` (no-drop) for terminal events (order fills, completion signals)
+         - Async/await throughout; never `.Result` or `.Wait()`
 
-      3. **Write-Ahead Logging (WAL)**
-         - Crash-safe persistence
+      3. **Write-Ahead Logging (WAL — ADR-007)**
+         - Crash-safe persistence before sink writes
          - SHA256 checksums for integrity
-         - Recovery on startup
+         - Recovery and replay on startup
 
-      4. **Circuit Breaker Pattern**
-         - Automatic failover on provider failures
-         - Health monitoring and recovery
-         - Prevents cascade failures
+      4. **Multi-Format Tiered Storage (ADR-002, ADR-008)**
+         - JSONL (hot) + Parquet (warm/cold) written simultaneously
+         - Tiered retention: hot → warm → cold → archive lifecycle
+         - AtomicFileWriter for safe in-place updates
 
-      5. **Hot Configuration Reload**
-         - FileSystemWatcher on appsettings.json
+      5. **Circuit Breaker & Failover**
+         - Automatic failover via `FailoverAwareMarketDataClient`
+         - Health monitoring and recovery scoring
+         - Prevents cascade failures across providers
+
+      6. **Hot Configuration Reload (ADR-011)**
+         - `IOptionsMonitor<T>` for runtime-mutable settings
          - Add/remove symbols without restart
          - Graceful subscription management
 
-      ### F# Domain Library
-      - Type-safe discriminated unions for events
-      - Railway-Oriented validation
-      - Pure functional calculations
-      - C# interop wrappers
+      7. **ADR-014 JSON Source Generators**
+         - Zero-reflection serialization via `[JsonSerializable]` contexts
+         - Required for all serialization paths; never use reflection overload
+
+      8. **F# Domain Library (ADR-009)**
+         - Type-safe discriminated unions for market events, risk rules, validation pipeline
+         - Railway-Oriented validation (Result types)
+         - Pure functional calculations (spread, imbalance, aggregations)
+         - C# interop wrappers at the boundary
+
+      ### WPF Desktop Architecture
+      - Project: `src/Meridian.Wpf/` (Windows-only, net9.0-windows)
+      - MVVM via `BindableBase` with `SetProperty<T>`
+      - Views are thin XAML + `InitializeComponent()` only; all logic in ViewModels
+      - Services injected into ViewModels, never into Pages directly
+      - Dependency rule: WPF host → Ui.Services → Contracts (never reversed)
+
+      ### Backtesting Architecture
+      - `BacktestEngine` replays ticks from `IHistoricalDataProvider` in chronological order
+      - `IFillModel` implementations: `BarMidpointFillModel`, `OrderBookFillModel`
+      - `SimulatedPortfolio` tracks positions, cash, P&L, and commissions
+      - `XirrCalculator` computes XIRR for performance benchmarking
+      - Strategy plugins loaded via `StrategyPluginLoader` (assembly isolation)
 
   - role: user
     content: |

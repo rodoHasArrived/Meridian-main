@@ -6,13 +6,13 @@ This directory contains reusable prompt templates for AI assistants (Claude, Cop
 
 | Prompt | Description | Use When |
 |--------|-------------|----------|
-| [project-context.prompt.yml](project-context.prompt.yml) | Project overview and coding conventions | Starting any task, need project context |
+| [project-context.prompt.yml](project-context.prompt.yml) | Project overview, conventions, and architecture | Starting any task, need project context |
 | [code-review.prompt.yml](code-review.prompt.yml) | Comprehensive code review guidelines | Reviewing PRs or code changes |
 | [add-data-provider.prompt.yml](add-data-provider.prompt.yml) | Guide for adding new data providers | Implementing new market data integrations |
 | [provider-implementation-guide.prompt.yml](provider-implementation-guide.prompt.yml) | Detailed IMarketDataClient patterns | Implementing streaming providers |
 | [write-unit-tests.prompt.yml](write-unit-tests.prompt.yml) | Unit test generation guidelines | Writing tests for components |
-| [explain-architecture.prompt.yml](explain-architecture.prompt.yml) | Architecture explanation guide | Understanding system design |
-| [troubleshoot-issue.prompt.yml](troubleshoot-issue.prompt.yml) | Issue diagnosis and resolution | Debugging problems |
+| [explain-architecture.prompt.yml](explain-architecture.prompt.yml) | In-depth architecture explanation | Understanding system design |
+| [troubleshoot-issue.prompt.yml](troubleshoot-issue.prompt.yml) | Diagnose and resolve an issue | Debugging problems |
 | [optimize-performance.prompt.yml](optimize-performance.prompt.yml) | Performance optimization guidance | Improving hot paths |
 | [configure-deployment.prompt.yml](configure-deployment.prompt.yml) | Deployment configuration help | Setting up environments |
 | [add-export-format.prompt.yml](add-export-format.prompt.yml) | Export format implementation | Adding new export types |
@@ -150,4 +150,4 @@ Auto-generated prompts are created via the Prompt Generation workflow. To add su
 
 ---
 
-**Last Updated**: 2026-02-10
+**Last Updated**: 2026-03-25
