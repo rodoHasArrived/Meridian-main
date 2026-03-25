@@ -309,7 +309,7 @@ For subclass events, include additionally:
 - `bond_lifecycle_projection`
 - `bond_accrual_convention_projection`
 - `bond_issuer_projection`
-- `bond_projection_checkpoint`
+- `projection_checkpoint` (shared; use `projection_name = 'bond_projection'` for bonds)
 
 ### Key constraints and indexing
 
