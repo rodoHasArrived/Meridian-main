@@ -1647,7 +1647,7 @@ jobs:
         if: steps.configure-pages.outcome == 'success'
         uses: actions/upload-pages-artifact@v4
         with:
-          path: _site
+          path: docs/_site
         continue-on-error: true
 
   # ─── Deploy to GitHub Pages ──────────────────────────────────────────

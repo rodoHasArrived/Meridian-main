@@ -1,6 +1,6 @@
 # DocFX API Documentation
 
-DocFX generates browsable API documentation from XML doc comments in the C# and F# source code, combined with the markdown guides in `docs/`.
+DocFX generates browsable API documentation from XML doc comments in the C# source code, combined with the markdown guides in `docs/`.
 
 ## Prerequisites
 
@@ -16,6 +16,9 @@ dotnet tool update -g docfx
 From repository root:
 
 ```bash
+# Build the project first so DocFX can extract XML documentation
+dotnet build Meridian.sln -c Release /p:EnableWindowsTargeting=true /p:GenerateDocumentationFile=true
+
 # Full build (API docs + conceptual docs)
 docfx docs/docfx/docfx.json
 
@@ -23,20 +26,48 @@ docfx docs/docfx/docfx.json
 docfx docs/docfx/docfx.json --serve
 ```
 
-Output is generated to `docs/docfx/_site/`.
+Output is generated to `docs/_site/` (gitignored — rebuild each time).
 
 ## Project Structure
 
 ```
 docs/docfx/
 ├── docfx.json          # DocFX configuration (source paths, templates, metadata)
+├── filterConfig.yml    # API filter rules (exclude private/generated types)
+├── api/
+│   └── index.md        # API reference landing page
 └── README.md           # This file
 ```
 
 The `docfx.json` configuration pulls from:
-- **API metadata**: All `.csproj` files under `src/` — generates API reference from XML doc comments
+- **API metadata**: All public `.csproj` files under `src/` — generates API reference from XML doc comments
 - **Conceptual docs**: Markdown files under `docs/` — architecture, guides, operations, etc.
 - **Table of contents**: `docs/toc.yml` — top-level navigation structure
+
+### Projects included in API reference
+
+| Assembly | Purpose |
+|----------|---------|
+| `Meridian` | Main entry point and host |
+| `Meridian.Application` | Application services (pipeline, backfill, monitoring) |
+| `Meridian.Contracts` | Shared DTOs, domain events, and interface contracts |
+| `Meridian.Core` | Core abstractions (config, exceptions, logging) |
+| `Meridian.Domain` | Domain model (collectors, market events, publishers) |
+| `Meridian.ProviderSdk` | Provider SDK interfaces |
+| `Meridian.Infrastructure` | Concrete provider adapters |
+| `Meridian.Infrastructure.CppTrader` | CppTrader integration |
+| `Meridian.Storage` | Storage sinks, WAL, archival, and export |
+| `Meridian.Execution` | OMS, paper trading, and brokerage adapters |
+| `Meridian.Execution.Sdk` | Brokerage gateway SDK |
+| `Meridian.Backtesting` | Backtesting engine |
+| `Meridian.Backtesting.Sdk` | Strategy SDK |
+| `Meridian.Strategies` | Strategy lifecycle and portfolio tracking |
+| `Meridian.Risk` | Risk validation rules |
+| `Meridian.Ledger` | Double-entry ledger |
+| `Meridian.Ui.Services` | UI service abstractions |
+| `Meridian.Ui.Shared` | Shared HTTP endpoints and UI services |
+| `Meridian.Mcp` | MCP server tools |
+| `Meridian.McpServer` | Standalone MCP server |
 
 ## Adding New Documentation
 
@@ -57,7 +88,7 @@ New namespaces are discovered automatically from source code. Ensure classes hav
 | Missing API pages | Ensure the project builds successfully first (`dotnet build`) — DocFX needs compiled assemblies |
 | Broken cross-references | Use `<see cref="ClassName"/>` in XML docs; DocFX resolves these to hyperlinks |
 | Mermaid diagrams not rendered | Export to SVG/PNG and reference from markdown — Mermaid support depends on template |
-| Stale output | Delete `docs/docfx/_site/` and rebuild |
+| Stale output | Delete `docs/_site/` and rebuild |
 
 ## CI Integration
 

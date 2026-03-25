@@ -6,6 +6,7 @@
           "src": "../..",
           "files": [
             "src/Meridian/Meridian.csproj",
+            "src/Meridian.Application/Meridian.Application.csproj",
             "src/Meridian.Contracts/Meridian.Contracts.csproj",
             "src/Meridian.Core/Meridian.Core.csproj",
             "src/Meridian.Domain/Meridian.Domain.csproj",
@@ -21,14 +22,18 @@
             "src/Meridian.Infrastructure/Meridian.Infrastructure.csproj",
             "src/Meridian.Infrastructure.CppTrader/Meridian.Infrastructure.CppTrader.csproj",
             "src/Meridian.Mcp/Meridian.Mcp.csproj",
-            "src/Meridian.McpServer/Meridian.McpServer.csproj"
+            "src/Meridian.McpServer/Meridian.McpServer.csproj",
+            "src/Meridian.Ui.Services/Meridian.Ui.Services.csproj",
+            "src/Meridian.Ui.Shared/Meridian.Ui.Shared.csproj"
           ]
         }
       ],
       "dest": "api",
+      "allowCompilationErrors": true,
       "properties": {
         "IsWindows": "true"
-      }
+      },
+      "filter": "filterConfig.yml"
     }
   ],
   "build": {
@@ -42,8 +47,10 @@
     "output": "../_site",
     "template": [ "default", "modern" ],
     "globalMetadata": {
-      "_appTitle": "IB Data Collector",
-      "_enableSearch": true
+      "_appTitle": "Meridian",
+      "_appFooter": "Meridian — High-Performance .NET Trading Platform",
+      "_enableSearch": true,
+      "_disableContribution": false
     }
   }
 }
