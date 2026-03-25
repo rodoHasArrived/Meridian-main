@@ -31,14 +31,22 @@ public sealed class BankTransactionSeedTests
                 PrepaymentAllowed: true,
                 CovenantsJson: null));
 
+    private static (IDirectLendingService LendingService, IBankTransactionSeedService SeedService) CreateServices()
+    {
+        // InMemoryDirectLendingService implements both interfaces; both variables
+        // reference the same instance so they share the same in-memory loan store.
+        var svc = new InMemoryDirectLendingService();
+        return (svc, svc);
+    }
+
     [Fact]
     public async Task SeedBankTransactionsAsync_ShouldSeedTransactionsForAllLoans()
     {
-        var service = new InMemoryDirectLendingService();
-        var loan1 = await service.CreateLoanAsync(BuildCreateRequest("Loan-A"));
-        var loan2 = await service.CreateLoanAsync(BuildCreateRequest("Loan-B"));
+        var (lendingService, seedService) = CreateServices();
+        var loan1 = await lendingService.CreateLoanAsync(BuildCreateRequest("Loan-A"));
+        var loan2 = await lendingService.CreateLoanAsync(BuildCreateRequest("Loan-B"));
 
-        var result = await service.SeedBankTransactionsAsync(
+        var result = await seedService.SeedBankTransactionsAsync(
             new BankTransactionSeedRequest(
                 LoanIds: null,
                 CountPerLoan: 3,
@@ -50,8 +58,8 @@ public sealed class BankTransactionSeedTests
         result.ProcessedLoanIds.Should().Contain(loan1.LoanId);
         result.ProcessedLoanIds.Should().Contain(loan2.LoanId);
 
-        var cash1 = await service.GetCashTransactionsAsync(loan1.LoanId);
-        var cash2 = await service.GetCashTransactionsAsync(loan2.LoanId);
+        var cash1 = await lendingService.GetCashTransactionsAsync(loan1.LoanId);
+        var cash2 = await lendingService.GetCashTransactionsAsync(loan2.LoanId);
         cash1.Should().HaveCount(3);
         cash2.Should().HaveCount(3);
     }
@@ -59,11 +67,11 @@ public sealed class BankTransactionSeedTests
     [Fact]
     public async Task SeedBankTransactionsAsync_ShouldSeedOnlySpecifiedLoans()
     {
-        var service = new InMemoryDirectLendingService();
-        var loan1 = await service.CreateLoanAsync(BuildCreateRequest("Loan-A"));
-        var loan2 = await service.CreateLoanAsync(BuildCreateRequest("Loan-B"));
+        var (lendingService, seedService) = CreateServices();
+        var loan1 = await lendingService.CreateLoanAsync(BuildCreateRequest("Loan-A"));
+        var loan2 = await lendingService.CreateLoanAsync(BuildCreateRequest("Loan-B"));
 
-        var result = await service.SeedBankTransactionsAsync(
+        var result = await seedService.SeedBankTransactionsAsync(
             new BankTransactionSeedRequest(
                 LoanIds: [loan1.LoanId],
                 CountPerLoan: 5,
@@ -74,8 +82,8 @@ public sealed class BankTransactionSeedTests
         result.TransactionsSeeded.Should().Be(5);
         result.ProcessedLoanIds.Should().ContainSingle().Which.Should().Be(loan1.LoanId);
 
-        var cash1 = await service.GetCashTransactionsAsync(loan1.LoanId);
-        var cash2 = await service.GetCashTransactionsAsync(loan2.LoanId);
+        var cash1 = await lendingService.GetCashTransactionsAsync(loan1.LoanId);
+        var cash2 = await lendingService.GetCashTransactionsAsync(loan2.LoanId);
         cash1.Should().HaveCount(5);
         cash2.Should().BeEmpty();
     }
@@ -83,12 +91,12 @@ public sealed class BankTransactionSeedTests
     [Fact]
     public async Task SeedBankTransactionsAsync_ShouldProduceDeterministicResults_WhenCalledTwice()
     {
-        var service1 = new InMemoryDirectLendingService();
+        var svc1 = new InMemoryDirectLendingService();
         var loanId = Guid.NewGuid();
-        await service1.CreateLoanAsync(BuildCreateRequest() with { LoanId = loanId });
+        await svc1.CreateLoanAsync(BuildCreateRequest() with { LoanId = loanId });
 
-        var service2 = new InMemoryDirectLendingService();
-        await service2.CreateLoanAsync(BuildCreateRequest() with { LoanId = loanId });
+        var svc2 = new InMemoryDirectLendingService();
+        await svc2.CreateLoanAsync(BuildCreateRequest() with { LoanId = loanId });
 
         var seedRequest = new BankTransactionSeedRequest(
             LoanIds: [loanId],
@@ -96,11 +104,14 @@ public sealed class BankTransactionSeedTests
             FromDate: new DateOnly(2025, 1, 1),
             ToDate: new DateOnly(2025, 12, 31));
 
-        await service1.SeedBankTransactionsAsync(seedRequest);
-        await service2.SeedBankTransactionsAsync(seedRequest);
+        IBankTransactionSeedService seed1 = svc1;
+        IBankTransactionSeedService seed2 = svc2;
 
-        var cash1 = await service1.GetCashTransactionsAsync(loanId);
-        var cash2 = await service2.GetCashTransactionsAsync(loanId);
+        await seed1.SeedBankTransactionsAsync(seedRequest);
+        await seed2.SeedBankTransactionsAsync(seedRequest);
+
+        var cash1 = await svc1.GetCashTransactionsAsync(loanId);
+        var cash2 = await svc2.GetCashTransactionsAsync(loanId);
 
         cash1.Should().HaveCount(4);
         cash2.Should().HaveCount(4);
@@ -116,9 +127,9 @@ public sealed class BankTransactionSeedTests
     [Fact]
     public async Task SeedBankTransactionsAsync_ShouldThrow_WhenCountPerLoanIsZero()
     {
-        var service = new InMemoryDirectLendingService();
+        var (_, seedService) = CreateServices();
 
-        var act = () => service.SeedBankTransactionsAsync(
+        var act = () => seedService.SeedBankTransactionsAsync(
             new BankTransactionSeedRequest(null, 0, null, null));
 
         var ex = await Assert.ThrowsAsync<DirectLendingCommandException>(act);
@@ -129,13 +140,13 @@ public sealed class BankTransactionSeedTests
     [Fact]
     public async Task SeedBankTransactionsAsync_ShouldSetAllTransactionAmountsToPositiveValues()
     {
-        var service = new InMemoryDirectLendingService();
-        var loan = await service.CreateLoanAsync(BuildCreateRequest());
+        var (lendingService, seedService) = CreateServices();
+        var loan = await lendingService.CreateLoanAsync(BuildCreateRequest());
 
-        await service.SeedBankTransactionsAsync(
+        await seedService.SeedBankTransactionsAsync(
             new BankTransactionSeedRequest(null, 10, new DateOnly(2025, 1, 1), new DateOnly(2025, 12, 31)));
 
-        var cash = await service.GetCashTransactionsAsync(loan.LoanId);
+        var cash = await lendingService.GetCashTransactionsAsync(loan.LoanId);
 
         cash.Should().HaveCount(10);
         cash.Should().OnlyContain(t => t.Amount > 0m);
@@ -147,13 +158,13 @@ public sealed class BankTransactionSeedTests
     [Fact]
     public async Task SeedBankTransactionsAsync_ShouldOnlyUseSeedTransactionTypes()
     {
-        var service = new InMemoryDirectLendingService();
-        var loan = await service.CreateLoanAsync(BuildCreateRequest());
+        var (lendingService, seedService) = CreateServices();
+        var loan = await lendingService.CreateLoanAsync(BuildCreateRequest());
 
-        await service.SeedBankTransactionsAsync(
+        await seedService.SeedBankTransactionsAsync(
             new BankTransactionSeedRequest([loan.LoanId], 50, new DateOnly(2025, 1, 1), new DateOnly(2025, 12, 31)));
 
-        var cash = await service.GetCashTransactionsAsync(loan.LoanId);
+        var cash = await lendingService.GetCashTransactionsAsync(loan.LoanId);
 
         string[] expectedTypes = ["InterestPayment", "PrincipalPayment", "FeePayment", "MixedPayment", "Drawdown"];
         cash.Should().HaveCount(50);
@@ -163,9 +174,9 @@ public sealed class BankTransactionSeedTests
     [Fact]
     public async Task SeedBankTransactionsAsync_ShouldReturnEmptyResult_WhenNoLoansExist()
     {
-        var service = new InMemoryDirectLendingService();
+        var (_, seedService) = CreateServices();
 
-        var result = await service.SeedBankTransactionsAsync(
+        var result = await seedService.SeedBankTransactionsAsync(
             new BankTransactionSeedRequest(null, 5, null, null));
 
         result.LoansProcessed.Should().Be(0);

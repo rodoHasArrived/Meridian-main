@@ -761,13 +761,14 @@ public static class DirectLendingEndpoints
         .Produces(StatusCodes.Status404NotFound);
 
         // -------------------------------------------------------------------
-        // Bank transaction seeding (development / demo use)
+        // Bank transaction seeding — for development / demo / integration-test
+        // use only. Not intended for production environments.
         // -------------------------------------------------------------------
 
         app.MapPost("/api/dev/seed/bank-transactions", async (JsonElement body, HttpContext context) =>
         {
-            var service = ResolveService(context);
-            if (service is null)
+            var seedService = context.RequestServices.GetService<IBankTransactionSeedService>();
+            if (seedService is null)
             {
                 return ServiceUnavailable();
             }
@@ -780,7 +781,7 @@ public static class DirectLendingEndpoints
 
             try
             {
-                var result = await service.SeedBankTransactionsAsync(request, context.RequestAborted).ConfigureAwait(false);
+                var result = await seedService.SeedBankTransactionsAsync(request, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
             }
             catch (DirectLendingCommandException ex)

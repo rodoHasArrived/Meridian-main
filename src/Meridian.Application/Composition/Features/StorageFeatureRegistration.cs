@@ -112,6 +112,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.AddSingleton<IDirectLendingQueryService, PostgresDirectLendingQueryService>();
         services.AddSingleton<IDirectLendingCommandService, PostgresDirectLendingCommandService>();
         services.AddSingleton<IDirectLendingService, PostgresDirectLendingService>();
+        services.AddSingleton<IBankTransactionSeedService>(sp => (PostgresDirectLendingService)sp.GetRequiredService<IDirectLendingService>());
         services.AddHostedService<DirectLendingOutboxDispatcher>();
 
         return services;

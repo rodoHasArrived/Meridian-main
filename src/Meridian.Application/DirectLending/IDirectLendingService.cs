@@ -103,13 +103,4 @@ public interface IDirectLendingService
     /// </summary>
     Task<IReadOnlyList<PendingPaymentDto>> GetPendingPaymentsAsync(Guid? loanId = null, CancellationToken ct = default);
 
-    // -----------------------------------------------------------------------
-    // Bank transaction seeding
-    // -----------------------------------------------------------------------
-
-    /// <summary>
-    /// Seed representative bank transactions for one or more loans.
-    /// Useful for development, demos, and integration test setup.
-    /// </summary>
-    Task<BankTransactionSeedResultDto> SeedBankTransactionsAsync(BankTransactionSeedRequest request, CancellationToken ct = default);
 }

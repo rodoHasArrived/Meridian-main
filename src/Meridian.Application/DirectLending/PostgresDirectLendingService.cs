@@ -2,7 +2,7 @@ using Meridian.Contracts.DirectLending;
 
 namespace Meridian.Application.DirectLending;
 
-public sealed partial class PostgresDirectLendingService : IDirectLendingService
+public sealed partial class PostgresDirectLendingService : IDirectLendingService, IBankTransactionSeedService
 {
     private readonly IDirectLendingCommandService _commandService;
     private readonly IDirectLendingQueryService _queryService;
