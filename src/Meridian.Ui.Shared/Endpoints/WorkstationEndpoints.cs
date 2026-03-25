@@ -282,6 +282,53 @@ public static class WorkstationEndpoints
         .Produces(404)
         .Produces(501);
 
+        // --- Multi-run comparison and diff ---
+
+        group.MapPost("/runs/compare", async (RunComparisonRequest request, HttpContext context) =>
+        {
+            var readService = context.RequestServices.GetService<StrategyRunReadService>();
+            if (readService is null)
+            {
+                return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            if (request.RunIds is not { Count: >= 2 })
+            {
+                return Results.BadRequest(new { error = "At least two run IDs are required for comparison." });
+            }
+
+            var comparison = await readService.CompareRunsAsync(request.RunIds, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(comparison, jsonOptions);
+        })
+        .WithName("CompareRuns")
+        .Produces<IReadOnlyList<StrategyRunComparison>>(200)
+        .Produces(400)
+        .Produces(501);
+
+        group.MapPost("/runs/diff", async (RunDiffRequest request, HttpContext context) =>
+        {
+            var readService = context.RequestServices.GetService<StrategyRunReadService>();
+            if (readService is null)
+            {
+                return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var baseDetail = await readService.GetRunDetailAsync(request.BaseRunId, context.RequestAborted).ConfigureAwait(false);
+            var targetDetail = await readService.GetRunDetailAsync(request.TargetRunId, context.RequestAborted).ConfigureAwait(false);
+
+            if (baseDetail is null || targetDetail is null)
+            {
+                return Results.NotFound(new { error = "One or both run IDs not found." });
+            }
+
+            var diff = BuildRunDiff(baseDetail, targetDetail);
+            return Results.Json(diff, jsonOptions);
+        })
+        .WithName("DiffRuns")
+        .Produces<StrategyRunDiff>(200)
+        .Produces(404)
+        .Produces(501);
+
         app.MapGet("/workstation", (IWebHostEnvironment environment) => ServeWorkstationIndex(environment))
             .ExcludeFromDescription();
 
@@ -290,6 +337,86 @@ public static class WorkstationEndpoints
                 ? ServeWorkstationIndex(environment)
                 : Results.NotFound())
             .ExcludeFromDescription();
+    }
+
+    private static StrategyRunDiff BuildRunDiff(StrategyRunDetail baseRun, StrategyRunDetail targetRun)
+    {
+        var basePositions = baseRun.Portfolio?.Positions ?? [];
+        var targetPositions = targetRun.Portfolio?.Positions ?? [];
+
+        var baseSymbols = new HashSet<string>(basePositions.Select(static p => p.Symbol), StringComparer.OrdinalIgnoreCase);
+        var targetSymbols = new HashSet<string>(targetPositions.Select(static p => p.Symbol), StringComparer.OrdinalIgnoreCase);
+
+        var added = targetPositions
+            .Where(p => !baseSymbols.Contains(p.Symbol))
+            .Select(static p => new PositionDiffEntry(p.Symbol, 0, p.Quantity, 0m, p.RealizedPnl + p.UnrealizedPnl, "Added"))
+            .ToList();
+
+        var removed = basePositions
+            .Where(p => !targetSymbols.Contains(p.Symbol))
+            .Select(static p => new PositionDiffEntry(p.Symbol, p.Quantity, 0, p.RealizedPnl + p.UnrealizedPnl, 0m, "Removed"))
+            .ToList();
+
+        var modified = new List<PositionDiffEntry>();
+        foreach (var basePos in basePositions.Where(p => targetSymbols.Contains(p.Symbol)))
+        {
+            var targetPos = targetPositions.First(p =>
+                string.Equals(p.Symbol, basePos.Symbol, StringComparison.OrdinalIgnoreCase));
+            if (basePos.Quantity != targetPos.Quantity ||
+                basePos.AverageCostBasis != targetPos.AverageCostBasis)
+            {
+                modified.Add(new PositionDiffEntry(
+                    basePos.Symbol,
+                    basePos.Quantity,
+                    targetPos.Quantity,
+                    basePos.RealizedPnl + basePos.UnrealizedPnl,
+                    targetPos.RealizedPnl + targetPos.UnrealizedPnl,
+                    "Modified"));
+            }
+        }
+
+        var paramDiffs = BuildParameterDiff(baseRun.Parameters, targetRun.Parameters);
+
+        var metricsDiff = new MetricsDiff(
+            NetPnlDelta: (targetRun.Summary.NetPnl ?? 0m) - (baseRun.Summary.NetPnl ?? 0m),
+            TotalReturnDelta: (targetRun.Summary.TotalReturn ?? 0m) - (baseRun.Summary.TotalReturn ?? 0m),
+            FillCountDelta: targetRun.Summary.FillCount - baseRun.Summary.FillCount,
+            BaseNetPnl: baseRun.Summary.NetPnl,
+            TargetNetPnl: targetRun.Summary.NetPnl,
+            BaseTotalReturn: baseRun.Summary.TotalReturn,
+            TargetTotalReturn: targetRun.Summary.TotalReturn);
+
+        return new StrategyRunDiff(
+            BaseRunId: baseRun.Summary.RunId,
+            TargetRunId: targetRun.Summary.RunId,
+            BaseStrategyName: baseRun.Summary.StrategyName,
+            TargetStrategyName: targetRun.Summary.StrategyName,
+            AddedPositions: added,
+            RemovedPositions: removed,
+            ModifiedPositions: modified,
+            ParameterChanges: paramDiffs,
+            Metrics: metricsDiff);
+    }
+
+    private static IReadOnlyList<ParameterDiff> BuildParameterDiff(
+        IReadOnlyDictionary<string, string> baseParams,
+        IReadOnlyDictionary<string, string> targetParams)
+    {
+        var diffs = new List<ParameterDiff>();
+        var allKeys = new HashSet<string>(baseParams.Keys.Concat(targetParams.Keys), StringComparer.Ordinal);
+
+        foreach (var key in allKeys.Order())
+        {
+            baseParams.TryGetValue(key, out var baseVal);
+            targetParams.TryGetValue(key, out var targetVal);
+
+            if (!string.Equals(baseVal, targetVal, StringComparison.Ordinal))
+            {
+                diffs.Add(new ParameterDiff(key, baseVal, targetVal));
+            }
+        }
+
+        return diffs;
     }
 
     private static async Task<object> BuildSessionPayloadAsync(HttpContext context)
@@ -1399,3 +1526,46 @@ public static class WorkstationEndpoints
         bool LoaderScript,
         bool DataDictionary);
 }
+
+/// <summary>Request to compare multiple strategy runs side by side.</summary>
+public sealed record RunComparisonRequest(IReadOnlyList<string> RunIds);
+
+/// <summary>Request to diff two strategy runs.</summary>
+public sealed record RunDiffRequest(string BaseRunId, string TargetRunId);
+
+/// <summary>Result of a run-vs-run diff showing position, parameter, and metric changes.</summary>
+public sealed record StrategyRunDiff(
+    string BaseRunId,
+    string TargetRunId,
+    string BaseStrategyName,
+    string TargetStrategyName,
+    IReadOnlyList<PositionDiffEntry> AddedPositions,
+    IReadOnlyList<PositionDiffEntry> RemovedPositions,
+    IReadOnlyList<PositionDiffEntry> ModifiedPositions,
+    IReadOnlyList<ParameterDiff> ParameterChanges,
+    MetricsDiff Metrics);
+
+/// <summary>A single position change between two runs.</summary>
+public sealed record PositionDiffEntry(
+    string Symbol,
+    long BaseQuantity,
+    long TargetQuantity,
+    decimal BasePnl,
+    decimal TargetPnl,
+    string ChangeType);
+
+/// <summary>A single parameter change between two runs.</summary>
+public sealed record ParameterDiff(
+    string Key,
+    string? BaseValue,
+    string? TargetValue);
+
+/// <summary>High-level metrics delta between two runs.</summary>
+public sealed record MetricsDiff(
+    decimal NetPnlDelta,
+    decimal TotalReturnDelta,
+    int FillCountDelta,
+    decimal? BaseNetPnl,
+    decimal? TargetNetPnl,
+    decimal? BaseTotalReturn,
+    decimal? TargetTotalReturn);

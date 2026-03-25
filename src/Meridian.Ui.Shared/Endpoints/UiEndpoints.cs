@@ -290,6 +290,12 @@ public static class UiEndpoints
         // React workstation shell and bootstrap data
         app.MapWorkstationEndpoints(jsonOptions);
 
+        // Paper trading cockpit endpoints
+        app.MapExecutionEndpoints(jsonOptions);
+
+        // Promotion workflow endpoints (Backtest → Paper → Live)
+        app.MapPromotionEndpoints(jsonOptions);
+
         return app;
     }
 
@@ -387,6 +393,12 @@ public static class UiEndpoints
 
         // React workstation shell and bootstrap data
         app.MapWorkstationEndpoints(jsonOptions);
+
+        // Paper trading cockpit endpoints
+        app.MapExecutionEndpoints(jsonOptions);
+
+        // Promotion workflow endpoints (Backtest → Paper → Live)
+        app.MapPromotionEndpoints(jsonOptions);
 
         return app;
     }

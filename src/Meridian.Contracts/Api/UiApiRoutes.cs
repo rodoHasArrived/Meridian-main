@@ -404,6 +404,33 @@ public static class UiApiRoutes
     public const string AuthApiLogin = "/api/auth/login";
     public const string AuthApiLogout = "/api/auth/logout";
 
+    // Execution / Paper Trading Cockpit endpoints
+    public const string ExecutionAccount = "/api/execution/account";
+    public const string ExecutionPositions = "/api/execution/positions";
+    public const string ExecutionOrders = "/api/execution/orders";
+    public const string ExecutionOrderById = "/api/execution/orders/{orderId}";
+    public const string ExecutionOrderSubmit = "/api/execution/orders/submit";
+    public const string ExecutionOrderCancel = "/api/execution/orders/{orderId}/cancel";
+    public const string ExecutionPortfolio = "/api/execution/portfolio";
+    public const string ExecutionHealth = "/api/execution/health";
+    public const string ExecutionCapabilities = "/api/execution/capabilities";
+    public const string ExecutionSessions = "/api/execution/sessions";
+    public const string ExecutionSessionById = "/api/execution/sessions/{sessionId}";
+    public const string ExecutionSessionCreate = "/api/execution/sessions/create";
+    public const string ExecutionSessionClose = "/api/execution/sessions/{sessionId}/close";
+
+    // Promotion workflow endpoints (Backtest → Paper → Live)
+    public const string PromotionEvaluate = "/api/promotion/evaluate/{runId}";
+    public const string PromotionApprove = "/api/promotion/approve";
+    public const string PromotionReject = "/api/promotion/reject";
+    public const string PromotionHistory = "/api/promotion/history";
+
+    // Strategy run comparison and diff endpoints
+    public const string RunsCompare = "/api/workstation/runs/compare";
+    public const string RunsDiff = "/api/workstation/runs/diff";
+    public const string RunsReconciliation = "/api/workstation/runs/{runId}/reconciliation";
+    public const string RunsLedger = "/api/workstation/runs/{runId}/ledger";
+
     // Resilience endpoints
     public const string ResilienceCircuitBreakers = "/api/resilience/circuit-breakers";
 

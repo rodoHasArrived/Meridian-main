@@ -27,7 +27,12 @@ public enum ExecutionModel
 {
     Auto,
     BarMidpoint,
-    OrderBook
+    OrderBook,
+    /// <summary>
+    /// Uses volume-dependent market impact with partial fills and spread-aware slippage.
+    /// More realistic for large orders where participation rate matters.
+    /// </summary>
+    MarketImpact
 }
 
 /// <summary>Lifecycle state of a simulated order.</summary>
