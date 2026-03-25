@@ -792,6 +792,10 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── BackfillStatusStore.cs
 │   │   │   ├── GapBackfillService.cs
 │   │   │   └── HistoricalBackfillService.cs
+│   │   ├── Banking
+│   │   │   ├── BankingException.cs
+│   │   │   ├── IBankingService.cs
+│   │   │   └── InMemoryBankingService.cs
 │   │   ├── Canonicalization
 │   │   │   ├── CanonicalizationMetrics.cs
 │   │   │   ├── CanonicalizingPublisher.cs
@@ -1125,6 +1129,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── UserRole.cs
 │   │   ├── Backfill
 │   │   │   └── BackfillProgress.cs
+│   │   ├── Banking
+│   │   │   └── BankingModels.cs
 │   │   ├── Catalog
 │   │   │   ├── DirectoryIndex.cs
 │   │   │   ├── ICanonicalSymbolRegistry.cs
@@ -2010,6 +2016,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── AuthenticationMode.cs
 │   │   │   ├── BackfillEndpoints.cs
 │   │   │   ├── BackfillScheduleEndpoints.cs
+│   │   │   ├── BankingEndpoints.cs
 │   │   │   ├── CalendarEndpoints.cs
 │   │   │   ├── CanonicalizationEndpoints.cs
 │   │   │   ├── CatalogEndpoints.cs
@@ -2285,12 +2292,14 @@ Use these documents together when planning or implementing new work:
 │   │   ├── SimulatedPortfolioTests.cs
 │   │   └── XirrCalculatorTests.cs
 │   ├── Meridian.DirectLending.Tests
+│   │   ├── BankTransactionSeedTests.cs
 │   │   ├── DirectLendingPostgresIntegrationTests.cs
 │   │   ├── DirectLendingPostgresTestDatabase.cs
 │   │   ├── DirectLendingServiceTests.cs
 │   │   ├── DirectLendingWorkflowTests.cs
 │   │   ├── GlobalUsings.cs
-│   │   └── Meridian.DirectLending.Tests.csproj
+│   │   ├── Meridian.DirectLending.Tests.csproj
+│   │   └── PaymentApprovalTests.cs
 │   ├── Meridian.FSharp.Tests
 │   │   ├── CalculationTests.fs
 │   │   ├── CanonicalizationTests.fs
@@ -2707,6 +2716,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-404 directories, 2265 files
+406 directories, 2272 files
 ```
 <!-- readme-tree end -->
