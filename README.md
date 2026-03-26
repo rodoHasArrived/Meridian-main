@@ -2738,6 +2738,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Risk
 │   │   │   └── CompositeRiskValidatorTests.cs
 │   │   ├── SecurityMaster
+│   │   │   ├── SecurityEnrichmentTests.cs
 │   │   │   ├── SecurityMasterAssetClassSupportTests.cs
 │   │   │   ├── SecurityMasterDatabaseFactAttribute.cs
 │   │   │   ├── SecurityMasterDatabaseFixture.cs
@@ -2745,6 +2746,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── SecurityMasterPostgresRoundTripTests.cs
 │   │   │   ├── SecurityMasterProjectionServiceSnapshotTests.cs
 │   │   │   ├── SecurityMasterRebuildOrchestratorTests.cs
+│   │   │   ├── SecurityMasterReferenceLookupTests.cs
 │   │   │   ├── SecurityMasterServiceSnapshotTests.cs
 │   │   │   └── SecurityMasterSnapshotStoreTests.cs
 │   │   ├── Serialization
@@ -2894,6 +2896,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-451 directories, 2405 files
+451 directories, 2407 files
 ```
 <!-- readme-tree end -->
