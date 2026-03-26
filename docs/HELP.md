@@ -273,6 +273,8 @@ Access the dashboard at `http://localhost:8080`.
 
 ### Windows Installation
 
+> **WSL 2 prerequisite (Docker mode):** The Docker-based installation requires Windows Subsystem for Linux 2. Run `wsl --status` to verify WSL 2 is active. If WSL is not installed or needs updating, see [Troubleshooting Issue #10](#10-catastrophic-failure-when-updating-wsl-on-windows) for setup steps and fixes.
+
 The PowerShell installer mirrors the same workflow on Windows.
 
 ```powershell
@@ -1938,6 +1940,74 @@ grep -i "warning" restore-diag.log
    ```
 2. Enable garbage collection logging
 3. Reduce concurrent subscriptions
+
+#### 10. "Catastrophic failure" when updating WSL on Windows
+
+**Context:** The Docker-based DevContainer and `install.ps1 -Mode Docker` workflows require
+Windows Subsystem for Linux 2 (WSL 2). Attempting to install or update WSL may fail with:
+
+```
+Downloading: Windows Subsystem for Linux 2.6.3
+Installing: Windows Subsystem for Linux 2.6.3
+Catastrophic failure
+```
+
+**Causes:**
+- Command was not run as Administrator (elevation is required)
+- Windows Update is pending a reboot
+- Corrupted WSL installation state
+- Virtual Machine Platform Windows feature not enabled
+
+**Resolution — try in order:**
+
+1. **Run as Administrator**
+
+   Open PowerShell as Administrator and retry:
+   ```powershell
+   wsl.exe --update
+   ```
+
+2. **Install or update from the Microsoft Store**
+
+   Search for "Windows Subsystem for Linux" in the Microsoft Store and click **Update** or **Install**.
+
+3. **Install from GitHub releases (offline / behind firewall)**
+
+   Download the latest `.msixbundle` from the [WSL releases page](https://github.com/microsoft/WSL/releases)
+   and double-click to install, or install from an elevated PowerShell:
+   ```powershell
+   Add-AppxPackage .\Microsoft.WSL_<version>_x64_ARM64.msixbundle
+   ```
+
+4. **Enable required Windows features first, then update**
+
+   ```powershell
+   # Run as Administrator
+   dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart
+   dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
+   Restart-Computer
+   # After reboot, from an elevated PowerShell:
+   wsl --set-default-version 2
+   wsl --update
+   ```
+
+5. **Reinstall WSL from scratch**
+
+   ```powershell
+   # Run as Administrator — replaces the existing WSL installation
+   wsl --install
+   ```
+
+**Verify WSL 2 is active after fixing:**
+```powershell
+wsl --status          # Should report WSL version 2
+wsl --list --verbose  # Lists installed distros with their WSL version
+```
+
+Once WSL 2 is working, Docker Desktop will use it automatically. Re-run the installer:
+```powershell
+.\build\scripts\install\install.ps1 -Mode Docker
+```
 
 ### Logging
 
