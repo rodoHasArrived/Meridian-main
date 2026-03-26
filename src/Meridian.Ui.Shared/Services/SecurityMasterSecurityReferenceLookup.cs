@@ -42,6 +42,28 @@ public sealed class SecurityMasterSecurityReferenceLookup : ISecurityReferenceLo
             AssetClass: detail.AssetClass,
             Currency: detail.Currency,
             Status: detail.Status,
-            PrimaryIdentifier: primaryIdentifier);
+            PrimaryIdentifier: primaryIdentifier,
+            SubType: DeriveSubType(detail.AssetClass));
     }
+
+    /// <summary>
+    /// Derives the most likely sub-type from the asset class string without requiring a full
+    /// aggregate rebuild. Returns null for asset classes that do not have a unique sub-type
+    /// (e.g. Equity, which can be CommonShare, Adr, or ReitShare).
+    /// </summary>
+    internal static string? DeriveSubType(string? assetClass) => assetClass switch
+    {
+        "Bond" => "Bond",
+        "TreasuryBill" => "TreasuryBill",
+        "Option" => "OptionContract",
+        "Future" => "FutureContract",
+        "Swap" => "SwapContract",
+        "DirectLoan" => "DirectLoan",
+        "Deposit" => "Deposit",
+        "MoneyMarketFund" => "MoneyMarket",
+        "CertificateOfDeposit" => "CertificateOfDeposit",
+        "CommercialPaper" => "CommercialPaper",
+        "Repo" => "Repo",
+        _ => null
+    };
 }

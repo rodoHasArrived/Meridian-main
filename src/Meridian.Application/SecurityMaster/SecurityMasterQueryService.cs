@@ -7,13 +7,16 @@ public sealed class SecurityMasterQueryService : ISecurityMasterQueryService
 {
     private readonly ISecurityMasterEventStore _eventStore;
     private readonly ISecurityMasterStore _store;
+    private readonly SecurityMasterAggregateRebuilder _rebuilder;
 
     public SecurityMasterQueryService(
         ISecurityMasterEventStore eventStore,
-        ISecurityMasterStore store)
+        ISecurityMasterStore store,
+        SecurityMasterAggregateRebuilder rebuilder)
     {
         _eventStore = eventStore;
         _store = store;
+        _rebuilder = rebuilder ?? throw new ArgumentNullException(nameof(rebuilder));
     }
 
     public Task<SecurityDetailDto?> GetByIdAsync(Guid securityId, CancellationToken ct = default)
@@ -39,5 +42,11 @@ public sealed class SecurityMasterQueryService : ISecurityMasterQueryService
     {
         var history = await _eventStore.LoadAsync(request.SecurityId, ct).ConfigureAwait(false);
         return history.Count <= request.Take ? history : history.Take(request.Take).ToArray();
+    }
+
+    public async Task<SecurityEconomicDefinitionRecord?> GetEconomicDefinitionByIdAsync(Guid securityId, CancellationToken ct = default)
+    {
+        var projection = await _store.GetProjectionAsync(securityId, ct).ConfigureAwait(false);
+        return await _rebuilder.RebuildEconomicDefinitionAsync(securityId, projection, ct).ConfigureAwait(false);
     }
 }

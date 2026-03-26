@@ -13,12 +13,16 @@ public sealed record SecurityClassificationSummaryDto(
 
 /// <summary>
 /// Workstation-facing Security Master economic definition summary.
+/// Includes optional classification fields populated when the full economic definition has been rebuilt.
 /// </summary>
 public sealed record SecurityEconomicDefinitionSummaryDto(
     string Currency,
     long Version,
     DateTimeOffset? EffectiveFrom,
-    DateTimeOffset? EffectiveTo);
+    DateTimeOffset? EffectiveTo,
+    string? SubType = null,
+    string? AssetFamily = null,
+    string? IssuerType = null);
 
 /// <summary>
 /// Workstation-facing Security Master row used by governance and search surfaces.
@@ -29,3 +33,18 @@ public sealed record SecurityMasterWorkstationDto(
     SecurityStatusDto Status,
     SecurityClassificationSummaryDto Classification,
     SecurityEconomicDefinitionSummaryDto EconomicDefinition);
+
+/// <summary>
+/// Governance drill-in showing the complete identifier and alias picture for a single security.
+/// Built from the full <see cref="SecurityDetailDto"/> so it can be fetched in a single query.
+/// </summary>
+public sealed record SecurityIdentityDrillInDto(
+    Guid SecurityId,
+    string DisplayName,
+    string AssetClass,
+    SecurityStatusDto Status,
+    long Version,
+    DateTimeOffset EffectiveFrom,
+    DateTimeOffset? EffectiveTo,
+    IReadOnlyList<SecurityIdentifierDto> Identifiers,
+    IReadOnlyList<SecurityAliasDto> Aliases);

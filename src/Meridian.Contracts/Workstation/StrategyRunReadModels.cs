@@ -128,6 +128,9 @@ public sealed record StrategyRunDetail(
 
 /// <summary>
 /// Lightweight Security Master reference used by workstation portfolio and ledger surfaces.
+/// <para><see cref="SubType"/> is the most specific classification available at query time
+/// (e.g. "CommonShare", "Bond", "OptionContract"). It is derived from the security's asset
+/// class and is null when the asset class does not map to a unique sub-type.</para>
 /// </summary>
 public sealed record WorkstationSecurityReference(
     Guid SecurityId,
@@ -135,7 +138,8 @@ public sealed record WorkstationSecurityReference(
     string AssetClass,
     string Currency,
     SecurityStatusDto Status,
-    string? PrimaryIdentifier);
+    string? PrimaryIdentifier,
+    string? SubType = null);
 
 /// <summary>
 /// Shared portfolio rollup for workstation research and trading surfaces.

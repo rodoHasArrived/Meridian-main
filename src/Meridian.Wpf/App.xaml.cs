@@ -284,7 +284,9 @@ public partial class App : System.Windows.Application
                 ResolveInactiveByDefault = ParseBool("MERIDIAN_SECURITY_MASTER_RESOLVE_INACTIVE", true)
             });
             services.AddSingleton<ISecurityMasterEventStore, PostgresSecurityMasterEventStore>();
+            services.AddSingleton<ISecurityMasterSnapshotStore, PostgresSecurityMasterSnapshotStore>();
             services.AddSingleton<ISecurityMasterStore, PostgresSecurityMasterStore>();
+            services.AddSingleton<SecurityMasterAggregateRebuilder>();
             services.AddSingleton<ISecurityMasterQueryService, SecurityMasterQueryService>();
             services.AddSingleton<ISecurityReferenceLookup, SecurityMasterSecurityReferenceLookup>();
         }
