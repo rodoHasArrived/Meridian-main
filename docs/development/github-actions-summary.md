@@ -40,7 +40,7 @@ This document provides a quick reference for all GitHub Actions workflows in the
 
 | Workflow | File | Trigger | Purpose |
 |----------|------|---------|---------|
-| Documentation | `documentation.yml` | Push/PRs (docs/source), weekly (Mon 3 AM UTC), `ai-known-error` issues, manual | Doc generation, linting, link checks, AI instruction sync, TODO scan |
+| Documentation | `documentation.yml` | Push/PRs (docs/source), weekly (Mon 3 AM UTC), `ai-known-error` issues, manual | Doc generation, linting, link checks, AI instruction sync, task marker scan |
 | Labeling | `labeling.yml` | PR opened/edited/reopened, manual | Auto-label by file paths and PR size |
 | Stale Management | `stale.yml` | Daily (midnight UTC), manual | Mark/close stale issues (60d) and PRs (30d) |
 | Scheduled Maintenance | `scheduled-maintenance.yml` | Weekly (Sun 8 AM UTC), manual | Tests, dependency health, cache cleanup, AI recommendations |
@@ -54,7 +54,7 @@ The workflow surface has continued to evolve after the 2026-02-05 consolidation 
 
 | Consolidated Workflow | Replaced |
 |----------------------|----------|
-| `documentation.yml` | `docs-comprehensive.yml`, `docs-auto-update.yml`, `docs-structure-sync.yml`, `ai-instructions-sync.yml`, `todo-automation.yml` |
+| `documentation.yml` | `docs-comprehensive.yml`, `docs-auto-update.yml`, `docs-structure-sync.yml`, `ai-instructions-sync.yml`, `task-automation.yml` |
 | `desktop-builds.yml` | `desktop-app.yml`, `wpf-desktop.yml`, `wpf-commands.yml` |
 | `security.yml` | absorbed `dependency-review.yml` |
 | `scheduled-maintenance.yml` | absorbed `cache-management.yml` |
@@ -72,7 +72,7 @@ All AI features use `actions/ai-inference@v1` with `continue-on-error: true` (ne
 | `security.yml` | Vulnerability assessment and remediation |
 | `nightly.yml` | Failure diagnosis with root cause analysis |
 | `desktop-builds.yml` | Build failure diagnosis |
-| `documentation.yml` | Doc quality review, TODO triage |
+| `documentation.yml` | Doc quality review, task marker triage |
 | `scheduled-maintenance.yml` | Dependency upgrade recommendations |
 
 ---

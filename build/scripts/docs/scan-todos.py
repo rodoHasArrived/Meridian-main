@@ -27,6 +27,8 @@ SKIP_PATH_PREFIXES = (
     "docs/examples/provider-template/",              # template examples (not work items)
     "archive/",                                      # archived/historical documentation
     ".github/workflows/documentation.yml",           # workflow script with many metadata TODOs
+    "src/Meridian.Infrastructure/Adapters/Templates/",  # scaffold template with intentional developer instructions (not work items)
+    "docs/development/documentation-automation.md",  # meta-doc describing the TODO scanning system itself
 )
 TAG_PATTERN = re.compile(r"\b(TODO|FIXME|NOTE)\b", re.IGNORECASE)
 ISSUE_PATTERN = re.compile(r"(?:#\d+|issues?/\d+)")
