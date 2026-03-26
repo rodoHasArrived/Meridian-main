@@ -1,0 +1,2956 @@
+{
+  "format": 1,
+  "restore": {
+    "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Risk\\Meridian.Risk.csproj": {}
+  },
+  "projects": {
+    "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Application\\Meridian.Application.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Application\\Meridian.Application.csproj",
+        "projectName": "Meridian.Application",
+        "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Application\\Meridian.Application.csproj",
+        "packagesPath": "C:\\Users\\Andrew James Rowden\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Application\\obj-codex/",
+        "projectStyle": "PackageReference",
+        "centralPackageVersionsManagementEnabled": true,
+        "CentralPackageTransitivePinningEnabled": true,
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\Andrew James Rowden\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {
+              "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Contracts\\Meridian.Contracts.csproj": {
+                "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Contracts\\Meridian.Contracts.csproj"
+              },
+              "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Core\\Meridian.Core.csproj": {
+                "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Core\\Meridian.Core.csproj"
+              },
+              "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Domain\\Meridian.Domain.csproj": {
+                "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Domain\\Meridian.Domain.csproj"
+              },
+              "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.FSharp\\Meridian.FSharp.fsproj": {
+                "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.FSharp\\Meridian.FSharp.fsproj"
+              },
+              "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Infrastructure\\Meridian.Infrastructure.csproj": {
+                "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Infrastructure\\Meridian.Infrastructure.csproj"
+              },
+              "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.ProviderSdk\\Meridian.ProviderSdk.csproj": {
+                "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.ProviderSdk\\Meridian.ProviderSdk.csproj"
+              },
+              "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Storage\\Meridian.Storage.csproj": {
+                "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Storage\\Meridian.Storage.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "noWarn": [
+            "NU1608"
+          ],
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "dependencies": {
+            "FluentValidation": {
+              "target": "Package",
+              "version": "[12.1.1, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Configuration": {
+              "target": "Package",
+              "version": "[10.0.5, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Configuration.Binder": {
+              "target": "Package",
+              "version": "[10.0.5, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Configuration.CommandLine": {
+              "target": "Package",
+              "version": "[10.0.5, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Configuration.EnvironmentVariables": {
+              "target": "Package",
+              "version": "[10.0.5, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Configuration.Json": {
+              "target": "Package",
+              "version": "[10.0.5, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.DependencyInjection": {
+              "target": "Package",
+              "version": "[10.0.5, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.DependencyInjection.Abstractions": {
+              "target": "Package",
+              "version": "[10.0.5, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Hosting": {
+              "target": "Package",
+              "version": "[10.0.5, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Http": {
+              "target": "Package",
+              "version": "[10.0.5, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Http.Polly": {
+              "target": "Package",
+              "version": "[10.0.5, )",
+              "versionCentrallyManaged": true
+            },
+            "OpenTelemetry": {
+              "target": "Package",
+              "version": "[1.15.0, )",
+              "versionCentrallyManaged": true
+            },
+            "OpenTelemetry.Api": {
+              "target": "Package",
+              "version": "[1.15.0, )",
+              "versionCentrallyManaged": true
+            },
+            "OpenTelemetry.Exporter.Console": {
+              "target": "Package",
+              "version": "[1.15.0, )",
+              "versionCentrallyManaged": true
+            },
+            "OpenTelemetry.Exporter.OpenTelemetryProtocol": {
+              "target": "Package",
+              "version": "[1.15.0, )",
+              "versionCentrallyManaged": true
+            },
+            "OpenTelemetry.Exporter.Prometheus.AspNetCore": {
+              "target": "Package",
+              "version": "[1.14.0-beta.1, )",
+              "versionCentrallyManaged": true
+            },
+            "OpenTelemetry.Extensions.Hosting": {
+              "target": "Package",
+              "version": "[1.15.0, )",
+              "versionCentrallyManaged": true
+            },
+            "OpenTelemetry.Instrumentation.AspNetCore": {
+              "target": "Package",
+              "version": "[1.15.1, )",
+              "versionCentrallyManaged": true
+            },
+            "OpenTelemetry.Instrumentation.Http": {
+              "target": "Package",
+              "version": "[1.15.0, )",
+              "versionCentrallyManaged": true
+            },
+            "Polly": {
+              "target": "Package",
+              "version": "[8.6.6, )",
+              "versionCentrallyManaged": true
+            },
+            "Polly.Extensions": {
+              "target": "Package",
+              "version": "[8.6.6, )",
+              "versionCentrallyManaged": true
+            },
+            "Serilog": {
+              "target": "Package",
+              "version": "[4.3.1, )",
+              "versionCentrallyManaged": true
+            },
+            "Serilog.Extensions.Logging": {
+              "target": "Package",
+              "version": "[10.0.0, )",
+              "versionCentrallyManaged": true
+            },
+            "Serilog.Settings.Configuration": {
+              "target": "Package",
+              "version": "[10.0.0, )",
+              "versionCentrallyManaged": true
+            },
+            "Serilog.Sinks.Console": {
+              "target": "Package",
+              "version": "[6.1.1, )",
+              "versionCentrallyManaged": true
+            },
+            "Serilog.Sinks.File": {
+              "target": "Package",
+              "version": "[7.0.0, )",
+              "versionCentrallyManaged": true
+            },
+            "Skender.Stock.Indicators": {
+              "target": "Package",
+              "version": "[2.7.1, )",
+              "versionCentrallyManaged": true
+            },
+            "System.IO.Pipelines": {
+              "target": "Package",
+              "version": "[10.0.5, )",
+              "versionCentrallyManaged": true
+            },
+            "System.Net.Http.Json": {
+              "target": "Package",
+              "version": "[10.0.5, )",
+              "versionCentrallyManaged": true
+            },
+            "System.Text.Json": {
+              "target": "Package",
+              "version": "[10.0.5, )",
+              "versionCentrallyManaged": true
+            },
+            "System.Threading.Channels": {
+              "target": "Package",
+              "version": "[10.0.5, )",
+              "versionCentrallyManaged": true
+            },
+            "prometheus-net": {
+              "target": "Package",
+              "version": "[8.2.1, )",
+              "versionCentrallyManaged": true
+            },
+            "prometheus-net.AspNetCore": {
+              "target": "Package",
+              "version": "[8.2.1, )",
+              "versionCentrallyManaged": true
+            }
+          },
+          "centralPackageVersions": {
+            "Apache.Arrow": "22.1.0",
+            "AspNetCoreRateLimit": "5.0.0",
+            "BenchmarkDotNet": "0.15.8",
+            "BenchmarkDotNet.Diagnostics.Windows": "0.15.8",
+            "CommunityToolkit.Mvvm": "8.2.2",
+            "CommunityToolkit.WinUI.Controls.Primitives": "8.2.251219",
+            "CommunityToolkit.WinUI.Controls.Sizers": "8.2.250402",
+            "coverlet.collector": "8.0.1",
+            "Extended.Wpf.Toolkit": "4.6.1",
+            "FluentAssertions": "8.9.0",
+            "FluentValidation": "12.1.1",
+            "FluentValidation.AspNetCore": "11.3.1",
+            "FSharp.Core": "11.0.100",
+            "FsUnit.xUnit": "5.6.1",
+            "K4os.Compression.LZ4.Streams": "1.3.8",
+            "MaterialDesignColors": "5.2.0",
+            "MaterialDesignThemes": "5.2.0",
+            "Microsoft.AspNetCore.Mvc.Testing": "9.0.12",
+            "Microsoft.AspNetCore.OpenApi": "9.0.14",
+            "Microsoft.CodeAnalysis.CSharp": "5.3.0",
+            "Microsoft.Extensions.Configuration": "10.0.5",
+            "Microsoft.Extensions.Configuration.Binder": "10.0.5",
+            "Microsoft.Extensions.Configuration.CommandLine": "10.0.5",
+            "Microsoft.Extensions.Configuration.EnvironmentVariables": "10.0.5",
+            "Microsoft.Extensions.Configuration.Json": "10.0.5",
+            "Microsoft.Extensions.DependencyInjection": "10.0.5",
+            "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.5",
+            "Microsoft.Extensions.Hosting": "10.0.5",
+            "Microsoft.Extensions.Hosting.Abstractions": "10.0.5",
+            "Microsoft.Extensions.Http": "10.0.5",
+            "Microsoft.Extensions.Http.Polly": "10.0.5",
+            "Microsoft.Extensions.Logging": "10.0.5",
+            "Microsoft.Extensions.Logging.Abstractions": "10.0.5",
+            "Microsoft.Extensions.Logging.Debug": "10.0.5",
+            "Microsoft.Extensions.ObjectPool": "10.0.5",
+            "Microsoft.Extensions.Options": "10.0.5",
+            "Microsoft.Extensions.Options.ConfigurationExtensions": "10.0.5",
+            "Microsoft.NET.Test.Sdk": "18.3.0",
+            "Microsoft.Windows.SDK.BuildTools": "10.0.26100.1",
+            "Microsoft.WindowsAppSDK": "1.7.251107005",
+            "ModelContextProtocol": "1.1.0",
+            "ModelContextProtocol.AspNetCore": "1.1.0",
+            "Moq": "4.20.72",
+            "Newtonsoft.Json": "13.0.4",
+            "Npgsql": "9.0.3",
+            "NSubstitute": "5.3.0",
+            "OpenTelemetry": "1.15.0",
+            "OpenTelemetry.Api": "1.15.0",
+            "OpenTelemetry.Exporter.Console": "1.15.0",
+            "OpenTelemetry.Exporter.OpenTelemetryProtocol": "1.15.0",
+            "OpenTelemetry.Exporter.Prometheus.AspNetCore": "1.14.0-beta.1",
+            "OpenTelemetry.Extensions.Hosting": "1.15.0",
+            "OpenTelemetry.Instrumentation.AspNetCore": "1.15.1",
+            "OpenTelemetry.Instrumentation.Http": "1.15.0",
+            "Parquet.Net": "5.5.0",
+            "Polly": "8.6.6",
+            "Polly.Extensions": "8.6.6",
+            "prometheus-net": "8.2.1",
+            "prometheus-net.AspNetCore": "8.2.1",
+            "QuantConnect.Common": "2.5.17414",
+            "QuantConnect.Indicators": "2.5.17414",
+            "QuantConnect.Lean": "2.5.17414",
+            "QuantConnect.Lean.Engine": "2.5.17414",
+            "Serilog": "4.3.1",
+            "Serilog.AspNetCore": "8.0.3",
+            "Serilog.Extensions.Logging": "10.0.0",
+            "Serilog.Settings.Configuration": "10.0.0",
+            "Serilog.Sinks.Console": "6.1.1",
+            "Serilog.Sinks.File": "7.0.0",
+            "Skender.Stock.Indicators": "2.7.1",
+            "StockSharp.Algo": "5.0.229",
+            "StockSharp.BusinessEntities": "5.0.216",
+            "StockSharp.Cqg.Com": "5.0.128",
+            "StockSharp.InteractiveBrokers": "5.0.129",
+            "StockSharp.IQFeed": "5.0.93",
+            "StockSharp.Messages": "5.0.223",
+            "StockSharp.Rithmic": "5.0.110",
+            "Swashbuckle.AspNetCore": "10.1.5",
+            "System.CommandLine": "2.0.0-beta4.22272.1",
+            "System.Drawing.Common": "8.0.11",
+            "System.Formats.Asn1": "8.0.1",
+            "System.IO.Compression": "4.3.0",
+            "System.IO.Pipelines": "10.0.5",
+            "System.Net.Http.Json": "10.0.5",
+            "System.Net.Http.WinHttpHandler": "8.0.0",
+            "System.Net.Security": "4.3.2",
+            "System.Net.WebSockets.Client": "4.3.2",
+            "System.Private.ServiceModel": "4.10.3",
+            "System.Reactive": "6.1.0",
+            "System.Security.Cryptography.Pkcs": "8.0.1",
+            "System.Security.Cryptography.ProtectedData": "9.0.2",
+            "System.ServiceModel.Primitives": "4.10.3",
+            "System.Text.Json": "10.0.5",
+            "System.Threading.Channels": "10.0.5",
+            "TngTech.ArchUnitNET": "0.13.3",
+            "TngTech.ArchUnitNET.xUnit": "0.13.3",
+            "Websocket.Client": "5.3.0",
+            "xunit": "2.9.3",
+            "xunit.runner.visualstudio": "3.1.5",
+            "ZstdSharp.Port": "0.8.7"
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.AspNetCore.App": {
+              "privateAssets": "none"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.308/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Backtesting.Sdk\\Meridian.Backtesting.Sdk.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Backtesting.Sdk\\Meridian.Backtesting.Sdk.csproj",
+        "projectName": "Meridian.Backtesting.Sdk",
+        "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Backtesting.Sdk\\Meridian.Backtesting.Sdk.csproj",
+        "packagesPath": "C:\\Users\\Andrew James Rowden\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Backtesting.Sdk\\obj-codex/",
+        "projectStyle": "PackageReference",
+        "centralPackageVersionsManagementEnabled": true,
+        "CentralPackageTransitivePinningEnabled": true,
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\Andrew James Rowden\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {
+              "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Contracts\\Meridian.Contracts.csproj": {
+                "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Contracts\\Meridian.Contracts.csproj"
+              },
+              "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Ledger\\Meridian.Ledger.csproj": {
+                "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Ledger\\Meridian.Ledger.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "noWarn": [
+            "NU1608"
+          ],
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "centralPackageVersions": {
+            "Apache.Arrow": "22.1.0",
+            "AspNetCoreRateLimit": "5.0.0",
+            "BenchmarkDotNet": "0.15.8",
+            "BenchmarkDotNet.Diagnostics.Windows": "0.15.8",
+            "CommunityToolkit.Mvvm": "8.2.2",
+            "CommunityToolkit.WinUI.Controls.Primitives": "8.2.251219",
+            "CommunityToolkit.WinUI.Controls.Sizers": "8.2.250402",
+            "coverlet.collector": "8.0.1",
+            "Extended.Wpf.Toolkit": "4.6.1",
+            "FluentAssertions": "8.9.0",
+            "FluentValidation": "12.1.1",
+            "FluentValidation.AspNetCore": "11.3.1",
+            "FSharp.Core": "11.0.100",
+            "FsUnit.xUnit": "5.6.1",
+            "K4os.Compression.LZ4.Streams": "1.3.8",
+            "MaterialDesignColors": "5.2.0",
+            "MaterialDesignThemes": "5.2.0",
+            "Microsoft.AspNetCore.Mvc.Testing": "9.0.12",
+            "Microsoft.AspNetCore.OpenApi": "9.0.14",
+            "Microsoft.CodeAnalysis.CSharp": "5.3.0",
+            "Microsoft.Extensions.Configuration": "10.0.5",
+            "Microsoft.Extensions.Configuration.Binder": "10.0.5",
+            "Microsoft.Extensions.Configuration.CommandLine": "10.0.5",
+            "Microsoft.Extensions.Configuration.EnvironmentVariables": "10.0.5",
+            "Microsoft.Extensions.Configuration.Json": "10.0.5",
+            "Microsoft.Extensions.DependencyInjection": "10.0.5",
+            "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.5",
+            "Microsoft.Extensions.Hosting": "10.0.5",
+            "Microsoft.Extensions.Hosting.Abstractions": "10.0.5",
+            "Microsoft.Extensions.Http": "10.0.5",
+            "Microsoft.Extensions.Http.Polly": "10.0.5",
+            "Microsoft.Extensions.Logging": "10.0.5",
+            "Microsoft.Extensions.Logging.Abstractions": "10.0.5",
+            "Microsoft.Extensions.Logging.Debug": "10.0.5",
+            "Microsoft.Extensions.ObjectPool": "10.0.5",
+            "Microsoft.Extensions.Options": "10.0.5",
+            "Microsoft.Extensions.Options.ConfigurationExtensions": "10.0.5",
+            "Microsoft.NET.Test.Sdk": "18.3.0",
+            "Microsoft.Windows.SDK.BuildTools": "10.0.26100.1",
+            "Microsoft.WindowsAppSDK": "1.7.251107005",
+            "ModelContextProtocol": "1.1.0",
+            "ModelContextProtocol.AspNetCore": "1.1.0",
+            "Moq": "4.20.72",
+            "Newtonsoft.Json": "13.0.4",
+            "Npgsql": "9.0.3",
+            "NSubstitute": "5.3.0",
+            "OpenTelemetry": "1.15.0",
+            "OpenTelemetry.Api": "1.15.0",
+            "OpenTelemetry.Exporter.Console": "1.15.0",
+            "OpenTelemetry.Exporter.OpenTelemetryProtocol": "1.15.0",
+            "OpenTelemetry.Exporter.Prometheus.AspNetCore": "1.14.0-beta.1",
+            "OpenTelemetry.Extensions.Hosting": "1.15.0",
+            "OpenTelemetry.Instrumentation.AspNetCore": "1.15.1",
+            "OpenTelemetry.Instrumentation.Http": "1.15.0",
+            "Parquet.Net": "5.5.0",
+            "Polly": "8.6.6",
+            "Polly.Extensions": "8.6.6",
+            "prometheus-net": "8.2.1",
+            "prometheus-net.AspNetCore": "8.2.1",
+            "QuantConnect.Common": "2.5.17414",
+            "QuantConnect.Indicators": "2.5.17414",
+            "QuantConnect.Lean": "2.5.17414",
+            "QuantConnect.Lean.Engine": "2.5.17414",
+            "Serilog": "4.3.1",
+            "Serilog.AspNetCore": "8.0.3",
+            "Serilog.Extensions.Logging": "10.0.0",
+            "Serilog.Settings.Configuration": "10.0.0",
+            "Serilog.Sinks.Console": "6.1.1",
+            "Serilog.Sinks.File": "7.0.0",
+            "Skender.Stock.Indicators": "2.7.1",
+            "StockSharp.Algo": "5.0.229",
+            "StockSharp.BusinessEntities": "5.0.216",
+            "StockSharp.Cqg.Com": "5.0.128",
+            "StockSharp.InteractiveBrokers": "5.0.129",
+            "StockSharp.IQFeed": "5.0.93",
+            "StockSharp.Messages": "5.0.223",
+            "StockSharp.Rithmic": "5.0.110",
+            "Swashbuckle.AspNetCore": "10.1.5",
+            "System.CommandLine": "2.0.0-beta4.22272.1",
+            "System.Drawing.Common": "8.0.11",
+            "System.Formats.Asn1": "8.0.1",
+            "System.IO.Compression": "4.3.0",
+            "System.IO.Pipelines": "10.0.5",
+            "System.Net.Http.Json": "10.0.5",
+            "System.Net.Http.WinHttpHandler": "8.0.0",
+            "System.Net.Security": "4.3.2",
+            "System.Net.WebSockets.Client": "4.3.2",
+            "System.Private.ServiceModel": "4.10.3",
+            "System.Reactive": "6.1.0",
+            "System.Security.Cryptography.Pkcs": "8.0.1",
+            "System.Security.Cryptography.ProtectedData": "9.0.2",
+            "System.ServiceModel.Primitives": "4.10.3",
+            "System.Text.Json": "10.0.5",
+            "System.Threading.Channels": "10.0.5",
+            "TngTech.ArchUnitNET": "0.13.3",
+            "TngTech.ArchUnitNET.xUnit": "0.13.3",
+            "Websocket.Client": "5.3.0",
+            "xunit": "2.9.3",
+            "xunit.runner.visualstudio": "3.1.5",
+            "ZstdSharp.Port": "0.8.7"
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.308/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Contracts\\Meridian.Contracts.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Contracts\\Meridian.Contracts.csproj",
+        "projectName": "Meridian.Contracts",
+        "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Contracts\\Meridian.Contracts.csproj",
+        "packagesPath": "C:\\Users\\Andrew James Rowden\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Contracts\\obj-codex/",
+        "projectStyle": "PackageReference",
+        "centralPackageVersionsManagementEnabled": true,
+        "CentralPackageTransitivePinningEnabled": true,
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\Andrew James Rowden\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "noWarn": [
+            "NU1608"
+          ],
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "dependencies": {
+            "System.Text.Json": {
+              "target": "Package",
+              "version": "[10.0.5, )",
+              "versionCentrallyManaged": true
+            }
+          },
+          "centralPackageVersions": {
+            "Apache.Arrow": "22.1.0",
+            "AspNetCoreRateLimit": "5.0.0",
+            "BenchmarkDotNet": "0.15.8",
+            "BenchmarkDotNet.Diagnostics.Windows": "0.15.8",
+            "CommunityToolkit.Mvvm": "8.2.2",
+            "CommunityToolkit.WinUI.Controls.Primitives": "8.2.251219",
+            "CommunityToolkit.WinUI.Controls.Sizers": "8.2.250402",
+            "coverlet.collector": "8.0.1",
+            "Extended.Wpf.Toolkit": "4.6.1",
+            "FluentAssertions": "8.9.0",
+            "FluentValidation": "12.1.1",
+            "FluentValidation.AspNetCore": "11.3.1",
+            "FSharp.Core": "11.0.100",
+            "FsUnit.xUnit": "5.6.1",
+            "K4os.Compression.LZ4.Streams": "1.3.8",
+            "MaterialDesignColors": "5.2.0",
+            "MaterialDesignThemes": "5.2.0",
+            "Microsoft.AspNetCore.Mvc.Testing": "9.0.12",
+            "Microsoft.AspNetCore.OpenApi": "9.0.14",
+            "Microsoft.CodeAnalysis.CSharp": "5.3.0",
+            "Microsoft.Extensions.Configuration": "10.0.5",
+            "Microsoft.Extensions.Configuration.Binder": "10.0.5",
+            "Microsoft.Extensions.Configuration.CommandLine": "10.0.5",
+            "Microsoft.Extensions.Configuration.EnvironmentVariables": "10.0.5",
+            "Microsoft.Extensions.Configuration.Json": "10.0.5",
+            "Microsoft.Extensions.DependencyInjection": "10.0.5",
+            "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.5",
+            "Microsoft.Extensions.Hosting": "10.0.5",
+            "Microsoft.Extensions.Hosting.Abstractions": "10.0.5",
+            "Microsoft.Extensions.Http": "10.0.5",
+            "Microsoft.Extensions.Http.Polly": "10.0.5",
+            "Microsoft.Extensions.Logging": "10.0.5",
+            "Microsoft.Extensions.Logging.Abstractions": "10.0.5",
+            "Microsoft.Extensions.Logging.Debug": "10.0.5",
+            "Microsoft.Extensions.ObjectPool": "10.0.5",
+            "Microsoft.Extensions.Options": "10.0.5",
+            "Microsoft.Extensions.Options.ConfigurationExtensions": "10.0.5",
+            "Microsoft.NET.Test.Sdk": "18.3.0",
+            "Microsoft.Windows.SDK.BuildTools": "10.0.26100.1",
+            "Microsoft.WindowsAppSDK": "1.7.251107005",
+            "ModelContextProtocol": "1.1.0",
+            "ModelContextProtocol.AspNetCore": "1.1.0",
+            "Moq": "4.20.72",
+            "Newtonsoft.Json": "13.0.4",
+            "Npgsql": "9.0.3",
+            "NSubstitute": "5.3.0",
+            "OpenTelemetry": "1.15.0",
+            "OpenTelemetry.Api": "1.15.0",
+            "OpenTelemetry.Exporter.Console": "1.15.0",
+            "OpenTelemetry.Exporter.OpenTelemetryProtocol": "1.15.0",
+            "OpenTelemetry.Exporter.Prometheus.AspNetCore": "1.14.0-beta.1",
+            "OpenTelemetry.Extensions.Hosting": "1.15.0",
+            "OpenTelemetry.Instrumentation.AspNetCore": "1.15.1",
+            "OpenTelemetry.Instrumentation.Http": "1.15.0",
+            "Parquet.Net": "5.5.0",
+            "Polly": "8.6.6",
+            "Polly.Extensions": "8.6.6",
+            "prometheus-net": "8.2.1",
+            "prometheus-net.AspNetCore": "8.2.1",
+            "QuantConnect.Common": "2.5.17414",
+            "QuantConnect.Indicators": "2.5.17414",
+            "QuantConnect.Lean": "2.5.17414",
+            "QuantConnect.Lean.Engine": "2.5.17414",
+            "Serilog": "4.3.1",
+            "Serilog.AspNetCore": "8.0.3",
+            "Serilog.Extensions.Logging": "10.0.0",
+            "Serilog.Settings.Configuration": "10.0.0",
+            "Serilog.Sinks.Console": "6.1.1",
+            "Serilog.Sinks.File": "7.0.0",
+            "Skender.Stock.Indicators": "2.7.1",
+            "StockSharp.Algo": "5.0.229",
+            "StockSharp.BusinessEntities": "5.0.216",
+            "StockSharp.Cqg.Com": "5.0.128",
+            "StockSharp.InteractiveBrokers": "5.0.129",
+            "StockSharp.IQFeed": "5.0.93",
+            "StockSharp.Messages": "5.0.223",
+            "StockSharp.Rithmic": "5.0.110",
+            "Swashbuckle.AspNetCore": "10.1.5",
+            "System.CommandLine": "2.0.0-beta4.22272.1",
+            "System.Drawing.Common": "8.0.11",
+            "System.Formats.Asn1": "8.0.1",
+            "System.IO.Compression": "4.3.0",
+            "System.IO.Pipelines": "10.0.5",
+            "System.Net.Http.Json": "10.0.5",
+            "System.Net.Http.WinHttpHandler": "8.0.0",
+            "System.Net.Security": "4.3.2",
+            "System.Net.WebSockets.Client": "4.3.2",
+            "System.Private.ServiceModel": "4.10.3",
+            "System.Reactive": "6.1.0",
+            "System.Security.Cryptography.Pkcs": "8.0.1",
+            "System.Security.Cryptography.ProtectedData": "9.0.2",
+            "System.ServiceModel.Primitives": "4.10.3",
+            "System.Text.Json": "10.0.5",
+            "System.Threading.Channels": "10.0.5",
+            "TngTech.ArchUnitNET": "0.13.3",
+            "TngTech.ArchUnitNET.xUnit": "0.13.3",
+            "Websocket.Client": "5.3.0",
+            "xunit": "2.9.3",
+            "xunit.runner.visualstudio": "3.1.5",
+            "ZstdSharp.Port": "0.8.7"
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.308/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Core\\Meridian.Core.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Core\\Meridian.Core.csproj",
+        "projectName": "Meridian.Core",
+        "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Core\\Meridian.Core.csproj",
+        "packagesPath": "C:\\Users\\Andrew James Rowden\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Core\\obj-codex/",
+        "projectStyle": "PackageReference",
+        "centralPackageVersionsManagementEnabled": true,
+        "CentralPackageTransitivePinningEnabled": true,
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\Andrew James Rowden\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {
+              "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Contracts\\Meridian.Contracts.csproj": {
+                "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Contracts\\Meridian.Contracts.csproj"
+              },
+              "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Domain\\Meridian.Domain.csproj": {
+                "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Domain\\Meridian.Domain.csproj"
+              },
+              "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.ProviderSdk\\Meridian.ProviderSdk.csproj": {
+                "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.ProviderSdk\\Meridian.ProviderSdk.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "noWarn": [
+            "NU1608"
+          ],
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "dependencies": {
+            "Microsoft.Extensions.Configuration": {
+              "target": "Package",
+              "version": "[10.0.5, )",
+              "versionCentrallyManaged": true
+            },
+            "Serilog": {
+              "target": "Package",
+              "version": "[4.3.1, )",
+              "versionCentrallyManaged": true
+            },
+            "Serilog.Settings.Configuration": {
+              "target": "Package",
+              "version": "[10.0.0, )",
+              "versionCentrallyManaged": true
+            },
+            "Serilog.Sinks.Console": {
+              "target": "Package",
+              "version": "[6.1.1, )",
+              "versionCentrallyManaged": true
+            },
+            "Serilog.Sinks.File": {
+              "target": "Package",
+              "version": "[7.0.0, )",
+              "versionCentrallyManaged": true
+            },
+            "System.Text.Json": {
+              "target": "Package",
+              "version": "[10.0.5, )",
+              "versionCentrallyManaged": true
+            },
+            "System.Threading.Channels": {
+              "target": "Package",
+              "version": "[10.0.5, )",
+              "versionCentrallyManaged": true
+            }
+          },
+          "centralPackageVersions": {
+            "Apache.Arrow": "22.1.0",
+            "AspNetCoreRateLimit": "5.0.0",
+            "BenchmarkDotNet": "0.15.8",
+            "BenchmarkDotNet.Diagnostics.Windows": "0.15.8",
+            "CommunityToolkit.Mvvm": "8.2.2",
+            "CommunityToolkit.WinUI.Controls.Primitives": "8.2.251219",
+            "CommunityToolkit.WinUI.Controls.Sizers": "8.2.250402",
+            "coverlet.collector": "8.0.1",
+            "Extended.Wpf.Toolkit": "4.6.1",
+            "FluentAssertions": "8.9.0",
+            "FluentValidation": "12.1.1",
+            "FluentValidation.AspNetCore": "11.3.1",
+            "FSharp.Core": "11.0.100",
+            "FsUnit.xUnit": "5.6.1",
+            "K4os.Compression.LZ4.Streams": "1.3.8",
+            "MaterialDesignColors": "5.2.0",
+            "MaterialDesignThemes": "5.2.0",
+            "Microsoft.AspNetCore.Mvc.Testing": "9.0.12",
+            "Microsoft.AspNetCore.OpenApi": "9.0.14",
+            "Microsoft.CodeAnalysis.CSharp": "5.3.0",
+            "Microsoft.Extensions.Configuration": "10.0.5",
+            "Microsoft.Extensions.Configuration.Binder": "10.0.5",
+            "Microsoft.Extensions.Configuration.CommandLine": "10.0.5",
+            "Microsoft.Extensions.Configuration.EnvironmentVariables": "10.0.5",
+            "Microsoft.Extensions.Configuration.Json": "10.0.5",
+            "Microsoft.Extensions.DependencyInjection": "10.0.5",
+            "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.5",
+            "Microsoft.Extensions.Hosting": "10.0.5",
+            "Microsoft.Extensions.Hosting.Abstractions": "10.0.5",
+            "Microsoft.Extensions.Http": "10.0.5",
+            "Microsoft.Extensions.Http.Polly": "10.0.5",
+            "Microsoft.Extensions.Logging": "10.0.5",
+            "Microsoft.Extensions.Logging.Abstractions": "10.0.5",
+            "Microsoft.Extensions.Logging.Debug": "10.0.5",
+            "Microsoft.Extensions.ObjectPool": "10.0.5",
+            "Microsoft.Extensions.Options": "10.0.5",
+            "Microsoft.Extensions.Options.ConfigurationExtensions": "10.0.5",
+            "Microsoft.NET.Test.Sdk": "18.3.0",
+            "Microsoft.Windows.SDK.BuildTools": "10.0.26100.1",
+            "Microsoft.WindowsAppSDK": "1.7.251107005",
+            "ModelContextProtocol": "1.1.0",
+            "ModelContextProtocol.AspNetCore": "1.1.0",
+            "Moq": "4.20.72",
+            "Newtonsoft.Json": "13.0.4",
+            "Npgsql": "9.0.3",
+            "NSubstitute": "5.3.0",
+            "OpenTelemetry": "1.15.0",
+            "OpenTelemetry.Api": "1.15.0",
+            "OpenTelemetry.Exporter.Console": "1.15.0",
+            "OpenTelemetry.Exporter.OpenTelemetryProtocol": "1.15.0",
+            "OpenTelemetry.Exporter.Prometheus.AspNetCore": "1.14.0-beta.1",
+            "OpenTelemetry.Extensions.Hosting": "1.15.0",
+            "OpenTelemetry.Instrumentation.AspNetCore": "1.15.1",
+            "OpenTelemetry.Instrumentation.Http": "1.15.0",
+            "Parquet.Net": "5.5.0",
+            "Polly": "8.6.6",
+            "Polly.Extensions": "8.6.6",
+            "prometheus-net": "8.2.1",
+            "prometheus-net.AspNetCore": "8.2.1",
+            "QuantConnect.Common": "2.5.17414",
+            "QuantConnect.Indicators": "2.5.17414",
+            "QuantConnect.Lean": "2.5.17414",
+            "QuantConnect.Lean.Engine": "2.5.17414",
+            "Serilog": "4.3.1",
+            "Serilog.AspNetCore": "8.0.3",
+            "Serilog.Extensions.Logging": "10.0.0",
+            "Serilog.Settings.Configuration": "10.0.0",
+            "Serilog.Sinks.Console": "6.1.1",
+            "Serilog.Sinks.File": "7.0.0",
+            "Skender.Stock.Indicators": "2.7.1",
+            "StockSharp.Algo": "5.0.229",
+            "StockSharp.BusinessEntities": "5.0.216",
+            "StockSharp.Cqg.Com": "5.0.128",
+            "StockSharp.InteractiveBrokers": "5.0.129",
+            "StockSharp.IQFeed": "5.0.93",
+            "StockSharp.Messages": "5.0.223",
+            "StockSharp.Rithmic": "5.0.110",
+            "Swashbuckle.AspNetCore": "10.1.5",
+            "System.CommandLine": "2.0.0-beta4.22272.1",
+            "System.Drawing.Common": "8.0.11",
+            "System.Formats.Asn1": "8.0.1",
+            "System.IO.Compression": "4.3.0",
+            "System.IO.Pipelines": "10.0.5",
+            "System.Net.Http.Json": "10.0.5",
+            "System.Net.Http.WinHttpHandler": "8.0.0",
+            "System.Net.Security": "4.3.2",
+            "System.Net.WebSockets.Client": "4.3.2",
+            "System.Private.ServiceModel": "4.10.3",
+            "System.Reactive": "6.1.0",
+            "System.Security.Cryptography.Pkcs": "8.0.1",
+            "System.Security.Cryptography.ProtectedData": "9.0.2",
+            "System.ServiceModel.Primitives": "4.10.3",
+            "System.Text.Json": "10.0.5",
+            "System.Threading.Channels": "10.0.5",
+            "TngTech.ArchUnitNET": "0.13.3",
+            "TngTech.ArchUnitNET.xUnit": "0.13.3",
+            "Websocket.Client": "5.3.0",
+            "xunit": "2.9.3",
+            "xunit.runner.visualstudio": "3.1.5",
+            "ZstdSharp.Port": "0.8.7"
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.308/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Domain\\Meridian.Domain.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Domain\\Meridian.Domain.csproj",
+        "projectName": "Meridian.Domain",
+        "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Domain\\Meridian.Domain.csproj",
+        "packagesPath": "C:\\Users\\Andrew James Rowden\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Domain\\obj-codex/",
+        "projectStyle": "PackageReference",
+        "centralPackageVersionsManagementEnabled": true,
+        "CentralPackageTransitivePinningEnabled": true,
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\Andrew James Rowden\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {
+              "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Contracts\\Meridian.Contracts.csproj": {
+                "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Contracts\\Meridian.Contracts.csproj"
+              },
+              "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.ProviderSdk\\Meridian.ProviderSdk.csproj": {
+                "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.ProviderSdk\\Meridian.ProviderSdk.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "noWarn": [
+            "NU1608"
+          ],
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "centralPackageVersions": {
+            "Apache.Arrow": "22.1.0",
+            "AspNetCoreRateLimit": "5.0.0",
+            "BenchmarkDotNet": "0.15.8",
+            "BenchmarkDotNet.Diagnostics.Windows": "0.15.8",
+            "CommunityToolkit.Mvvm": "8.2.2",
+            "CommunityToolkit.WinUI.Controls.Primitives": "8.2.251219",
+            "CommunityToolkit.WinUI.Controls.Sizers": "8.2.250402",
+            "coverlet.collector": "8.0.1",
+            "Extended.Wpf.Toolkit": "4.6.1",
+            "FluentAssertions": "8.9.0",
+            "FluentValidation": "12.1.1",
+            "FluentValidation.AspNetCore": "11.3.1",
+            "FSharp.Core": "11.0.100",
+            "FsUnit.xUnit": "5.6.1",
+            "K4os.Compression.LZ4.Streams": "1.3.8",
+            "MaterialDesignColors": "5.2.0",
+            "MaterialDesignThemes": "5.2.0",
+            "Microsoft.AspNetCore.Mvc.Testing": "9.0.12",
+            "Microsoft.AspNetCore.OpenApi": "9.0.14",
+            "Microsoft.CodeAnalysis.CSharp": "5.3.0",
+            "Microsoft.Extensions.Configuration": "10.0.5",
+            "Microsoft.Extensions.Configuration.Binder": "10.0.5",
+            "Microsoft.Extensions.Configuration.CommandLine": "10.0.5",
+            "Microsoft.Extensions.Configuration.EnvironmentVariables": "10.0.5",
+            "Microsoft.Extensions.Configuration.Json": "10.0.5",
+            "Microsoft.Extensions.DependencyInjection": "10.0.5",
+            "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.5",
+            "Microsoft.Extensions.Hosting": "10.0.5",
+            "Microsoft.Extensions.Hosting.Abstractions": "10.0.5",
+            "Microsoft.Extensions.Http": "10.0.5",
+            "Microsoft.Extensions.Http.Polly": "10.0.5",
+            "Microsoft.Extensions.Logging": "10.0.5",
+            "Microsoft.Extensions.Logging.Abstractions": "10.0.5",
+            "Microsoft.Extensions.Logging.Debug": "10.0.5",
+            "Microsoft.Extensions.ObjectPool": "10.0.5",
+            "Microsoft.Extensions.Options": "10.0.5",
+            "Microsoft.Extensions.Options.ConfigurationExtensions": "10.0.5",
+            "Microsoft.NET.Test.Sdk": "18.3.0",
+            "Microsoft.Windows.SDK.BuildTools": "10.0.26100.1",
+            "Microsoft.WindowsAppSDK": "1.7.251107005",
+            "ModelContextProtocol": "1.1.0",
+            "ModelContextProtocol.AspNetCore": "1.1.0",
+            "Moq": "4.20.72",
+            "Newtonsoft.Json": "13.0.4",
+            "Npgsql": "9.0.3",
+            "NSubstitute": "5.3.0",
+            "OpenTelemetry": "1.15.0",
+            "OpenTelemetry.Api": "1.15.0",
+            "OpenTelemetry.Exporter.Console": "1.15.0",
+            "OpenTelemetry.Exporter.OpenTelemetryProtocol": "1.15.0",
+            "OpenTelemetry.Exporter.Prometheus.AspNetCore": "1.14.0-beta.1",
+            "OpenTelemetry.Extensions.Hosting": "1.15.0",
+            "OpenTelemetry.Instrumentation.AspNetCore": "1.15.1",
+            "OpenTelemetry.Instrumentation.Http": "1.15.0",
+            "Parquet.Net": "5.5.0",
+            "Polly": "8.6.6",
+            "Polly.Extensions": "8.6.6",
+            "prometheus-net": "8.2.1",
+            "prometheus-net.AspNetCore": "8.2.1",
+            "QuantConnect.Common": "2.5.17414",
+            "QuantConnect.Indicators": "2.5.17414",
+            "QuantConnect.Lean": "2.5.17414",
+            "QuantConnect.Lean.Engine": "2.5.17414",
+            "Serilog": "4.3.1",
+            "Serilog.AspNetCore": "8.0.3",
+            "Serilog.Extensions.Logging": "10.0.0",
+            "Serilog.Settings.Configuration": "10.0.0",
+            "Serilog.Sinks.Console": "6.1.1",
+            "Serilog.Sinks.File": "7.0.0",
+            "Skender.Stock.Indicators": "2.7.1",
+            "StockSharp.Algo": "5.0.229",
+            "StockSharp.BusinessEntities": "5.0.216",
+            "StockSharp.Cqg.Com": "5.0.128",
+            "StockSharp.InteractiveBrokers": "5.0.129",
+            "StockSharp.IQFeed": "5.0.93",
+            "StockSharp.Messages": "5.0.223",
+            "StockSharp.Rithmic": "5.0.110",
+            "Swashbuckle.AspNetCore": "10.1.5",
+            "System.CommandLine": "2.0.0-beta4.22272.1",
+            "System.Drawing.Common": "8.0.11",
+            "System.Formats.Asn1": "8.0.1",
+            "System.IO.Compression": "4.3.0",
+            "System.IO.Pipelines": "10.0.5",
+            "System.Net.Http.Json": "10.0.5",
+            "System.Net.Http.WinHttpHandler": "8.0.0",
+            "System.Net.Security": "4.3.2",
+            "System.Net.WebSockets.Client": "4.3.2",
+            "System.Private.ServiceModel": "4.10.3",
+            "System.Reactive": "6.1.0",
+            "System.Security.Cryptography.Pkcs": "8.0.1",
+            "System.Security.Cryptography.ProtectedData": "9.0.2",
+            "System.ServiceModel.Primitives": "4.10.3",
+            "System.Text.Json": "10.0.5",
+            "System.Threading.Channels": "10.0.5",
+            "TngTech.ArchUnitNET": "0.13.3",
+            "TngTech.ArchUnitNET.xUnit": "0.13.3",
+            "Websocket.Client": "5.3.0",
+            "xunit": "2.9.3",
+            "xunit.runner.visualstudio": "3.1.5",
+            "ZstdSharp.Port": "0.8.7"
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.308/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Execution.Sdk\\Meridian.Execution.Sdk.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Execution.Sdk\\Meridian.Execution.Sdk.csproj",
+        "projectName": "Meridian.Execution.Sdk",
+        "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Execution.Sdk\\Meridian.Execution.Sdk.csproj",
+        "packagesPath": "C:\\Users\\Andrew James Rowden\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Execution.Sdk\\obj-codex/",
+        "projectStyle": "PackageReference",
+        "centralPackageVersionsManagementEnabled": true,
+        "CentralPackageTransitivePinningEnabled": true,
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\Andrew James Rowden\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {
+              "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Contracts\\Meridian.Contracts.csproj": {
+                "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Contracts\\Meridian.Contracts.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "noWarn": [
+            "NU1608"
+          ],
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "centralPackageVersions": {
+            "Apache.Arrow": "22.1.0",
+            "AspNetCoreRateLimit": "5.0.0",
+            "BenchmarkDotNet": "0.15.8",
+            "BenchmarkDotNet.Diagnostics.Windows": "0.15.8",
+            "CommunityToolkit.Mvvm": "8.2.2",
+            "CommunityToolkit.WinUI.Controls.Primitives": "8.2.251219",
+            "CommunityToolkit.WinUI.Controls.Sizers": "8.2.250402",
+            "coverlet.collector": "8.0.1",
+            "Extended.Wpf.Toolkit": "4.6.1",
+            "FluentAssertions": "8.9.0",
+            "FluentValidation": "12.1.1",
+            "FluentValidation.AspNetCore": "11.3.1",
+            "FSharp.Core": "11.0.100",
+            "FsUnit.xUnit": "5.6.1",
+            "K4os.Compression.LZ4.Streams": "1.3.8",
+            "MaterialDesignColors": "5.2.0",
+            "MaterialDesignThemes": "5.2.0",
+            "Microsoft.AspNetCore.Mvc.Testing": "9.0.12",
+            "Microsoft.AspNetCore.OpenApi": "9.0.14",
+            "Microsoft.CodeAnalysis.CSharp": "5.3.0",
+            "Microsoft.Extensions.Configuration": "10.0.5",
+            "Microsoft.Extensions.Configuration.Binder": "10.0.5",
+            "Microsoft.Extensions.Configuration.CommandLine": "10.0.5",
+            "Microsoft.Extensions.Configuration.EnvironmentVariables": "10.0.5",
+            "Microsoft.Extensions.Configuration.Json": "10.0.5",
+            "Microsoft.Extensions.DependencyInjection": "10.0.5",
+            "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.5",
+            "Microsoft.Extensions.Hosting": "10.0.5",
+            "Microsoft.Extensions.Hosting.Abstractions": "10.0.5",
+            "Microsoft.Extensions.Http": "10.0.5",
+            "Microsoft.Extensions.Http.Polly": "10.0.5",
+            "Microsoft.Extensions.Logging": "10.0.5",
+            "Microsoft.Extensions.Logging.Abstractions": "10.0.5",
+            "Microsoft.Extensions.Logging.Debug": "10.0.5",
+            "Microsoft.Extensions.ObjectPool": "10.0.5",
+            "Microsoft.Extensions.Options": "10.0.5",
+            "Microsoft.Extensions.Options.ConfigurationExtensions": "10.0.5",
+            "Microsoft.NET.Test.Sdk": "18.3.0",
+            "Microsoft.Windows.SDK.BuildTools": "10.0.26100.1",
+            "Microsoft.WindowsAppSDK": "1.7.251107005",
+            "ModelContextProtocol": "1.1.0",
+            "ModelContextProtocol.AspNetCore": "1.1.0",
+            "Moq": "4.20.72",
+            "Newtonsoft.Json": "13.0.4",
+            "Npgsql": "9.0.3",
+            "NSubstitute": "5.3.0",
+            "OpenTelemetry": "1.15.0",
+            "OpenTelemetry.Api": "1.15.0",
+            "OpenTelemetry.Exporter.Console": "1.15.0",
+            "OpenTelemetry.Exporter.OpenTelemetryProtocol": "1.15.0",
+            "OpenTelemetry.Exporter.Prometheus.AspNetCore": "1.14.0-beta.1",
+            "OpenTelemetry.Extensions.Hosting": "1.15.0",
+            "OpenTelemetry.Instrumentation.AspNetCore": "1.15.1",
+            "OpenTelemetry.Instrumentation.Http": "1.15.0",
+            "Parquet.Net": "5.5.0",
+            "Polly": "8.6.6",
+            "Polly.Extensions": "8.6.6",
+            "prometheus-net": "8.2.1",
+            "prometheus-net.AspNetCore": "8.2.1",
+            "QuantConnect.Common": "2.5.17414",
+            "QuantConnect.Indicators": "2.5.17414",
+            "QuantConnect.Lean": "2.5.17414",
+            "QuantConnect.Lean.Engine": "2.5.17414",
+            "Serilog": "4.3.1",
+            "Serilog.AspNetCore": "8.0.3",
+            "Serilog.Extensions.Logging": "10.0.0",
+            "Serilog.Settings.Configuration": "10.0.0",
+            "Serilog.Sinks.Console": "6.1.1",
+            "Serilog.Sinks.File": "7.0.0",
+            "Skender.Stock.Indicators": "2.7.1",
+            "StockSharp.Algo": "5.0.229",
+            "StockSharp.BusinessEntities": "5.0.216",
+            "StockSharp.Cqg.Com": "5.0.128",
+            "StockSharp.InteractiveBrokers": "5.0.129",
+            "StockSharp.IQFeed": "5.0.93",
+            "StockSharp.Messages": "5.0.223",
+            "StockSharp.Rithmic": "5.0.110",
+            "Swashbuckle.AspNetCore": "10.1.5",
+            "System.CommandLine": "2.0.0-beta4.22272.1",
+            "System.Drawing.Common": "8.0.11",
+            "System.Formats.Asn1": "8.0.1",
+            "System.IO.Compression": "4.3.0",
+            "System.IO.Pipelines": "10.0.5",
+            "System.Net.Http.Json": "10.0.5",
+            "System.Net.Http.WinHttpHandler": "8.0.0",
+            "System.Net.Security": "4.3.2",
+            "System.Net.WebSockets.Client": "4.3.2",
+            "System.Private.ServiceModel": "4.10.3",
+            "System.Reactive": "6.1.0",
+            "System.Security.Cryptography.Pkcs": "8.0.1",
+            "System.Security.Cryptography.ProtectedData": "9.0.2",
+            "System.ServiceModel.Primitives": "4.10.3",
+            "System.Text.Json": "10.0.5",
+            "System.Threading.Channels": "10.0.5",
+            "TngTech.ArchUnitNET": "0.13.3",
+            "TngTech.ArchUnitNET.xUnit": "0.13.3",
+            "Websocket.Client": "5.3.0",
+            "xunit": "2.9.3",
+            "xunit.runner.visualstudio": "3.1.5",
+            "ZstdSharp.Port": "0.8.7"
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.308/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Execution\\Meridian.Execution.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Execution\\Meridian.Execution.csproj",
+        "projectName": "Meridian.Execution",
+        "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Execution\\Meridian.Execution.csproj",
+        "packagesPath": "C:\\Users\\Andrew James Rowden\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Execution\\obj-codex/",
+        "projectStyle": "PackageReference",
+        "centralPackageVersionsManagementEnabled": true,
+        "CentralPackageTransitivePinningEnabled": true,
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\Andrew James Rowden\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {
+              "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Application\\Meridian.Application.csproj": {
+                "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Application\\Meridian.Application.csproj"
+              },
+              "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Contracts\\Meridian.Contracts.csproj": {
+                "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Contracts\\Meridian.Contracts.csproj"
+              },
+              "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Core\\Meridian.Core.csproj": {
+                "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Core\\Meridian.Core.csproj"
+              },
+              "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Execution.Sdk\\Meridian.Execution.Sdk.csproj": {
+                "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Execution.Sdk\\Meridian.Execution.Sdk.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "noWarn": [
+            "NU1608"
+          ],
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "dependencies": {
+            "Microsoft.Extensions.DependencyInjection.Abstractions": {
+              "target": "Package",
+              "version": "[10.0.5, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Logging.Abstractions": {
+              "target": "Package",
+              "version": "[10.0.5, )",
+              "versionCentrallyManaged": true
+            },
+            "System.Threading.Channels": {
+              "target": "Package",
+              "version": "[10.0.5, )",
+              "versionCentrallyManaged": true
+            }
+          },
+          "centralPackageVersions": {
+            "Apache.Arrow": "22.1.0",
+            "AspNetCoreRateLimit": "5.0.0",
+            "BenchmarkDotNet": "0.15.8",
+            "BenchmarkDotNet.Diagnostics.Windows": "0.15.8",
+            "CommunityToolkit.Mvvm": "8.2.2",
+            "CommunityToolkit.WinUI.Controls.Primitives": "8.2.251219",
+            "CommunityToolkit.WinUI.Controls.Sizers": "8.2.250402",
+            "coverlet.collector": "8.0.1",
+            "Extended.Wpf.Toolkit": "4.6.1",
+            "FluentAssertions": "8.9.0",
+            "FluentValidation": "12.1.1",
+            "FluentValidation.AspNetCore": "11.3.1",
+            "FSharp.Core": "11.0.100",
+            "FsUnit.xUnit": "5.6.1",
+            "K4os.Compression.LZ4.Streams": "1.3.8",
+            "MaterialDesignColors": "5.2.0",
+            "MaterialDesignThemes": "5.2.0",
+            "Microsoft.AspNetCore.Mvc.Testing": "9.0.12",
+            "Microsoft.AspNetCore.OpenApi": "9.0.14",
+            "Microsoft.CodeAnalysis.CSharp": "5.3.0",
+            "Microsoft.Extensions.Configuration": "10.0.5",
+            "Microsoft.Extensions.Configuration.Binder": "10.0.5",
+            "Microsoft.Extensions.Configuration.CommandLine": "10.0.5",
+            "Microsoft.Extensions.Configuration.EnvironmentVariables": "10.0.5",
+            "Microsoft.Extensions.Configuration.Json": "10.0.5",
+            "Microsoft.Extensions.DependencyInjection": "10.0.5",
+            "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.5",
+            "Microsoft.Extensions.Hosting": "10.0.5",
+            "Microsoft.Extensions.Hosting.Abstractions": "10.0.5",
+            "Microsoft.Extensions.Http": "10.0.5",
+            "Microsoft.Extensions.Http.Polly": "10.0.5",
+            "Microsoft.Extensions.Logging": "10.0.5",
+            "Microsoft.Extensions.Logging.Abstractions": "10.0.5",
+            "Microsoft.Extensions.Logging.Debug": "10.0.5",
+            "Microsoft.Extensions.ObjectPool": "10.0.5",
+            "Microsoft.Extensions.Options": "10.0.5",
+            "Microsoft.Extensions.Options.ConfigurationExtensions": "10.0.5",
+            "Microsoft.NET.Test.Sdk": "18.3.0",
+            "Microsoft.Windows.SDK.BuildTools": "10.0.26100.1",
+            "Microsoft.WindowsAppSDK": "1.7.251107005",
+            "ModelContextProtocol": "1.1.0",
+            "ModelContextProtocol.AspNetCore": "1.1.0",
+            "Moq": "4.20.72",
+            "Newtonsoft.Json": "13.0.4",
+            "Npgsql": "9.0.3",
+            "NSubstitute": "5.3.0",
+            "OpenTelemetry": "1.15.0",
+            "OpenTelemetry.Api": "1.15.0",
+            "OpenTelemetry.Exporter.Console": "1.15.0",
+            "OpenTelemetry.Exporter.OpenTelemetryProtocol": "1.15.0",
+            "OpenTelemetry.Exporter.Prometheus.AspNetCore": "1.14.0-beta.1",
+            "OpenTelemetry.Extensions.Hosting": "1.15.0",
+            "OpenTelemetry.Instrumentation.AspNetCore": "1.15.1",
+            "OpenTelemetry.Instrumentation.Http": "1.15.0",
+            "Parquet.Net": "5.5.0",
+            "Polly": "8.6.6",
+            "Polly.Extensions": "8.6.6",
+            "prometheus-net": "8.2.1",
+            "prometheus-net.AspNetCore": "8.2.1",
+            "QuantConnect.Common": "2.5.17414",
+            "QuantConnect.Indicators": "2.5.17414",
+            "QuantConnect.Lean": "2.5.17414",
+            "QuantConnect.Lean.Engine": "2.5.17414",
+            "Serilog": "4.3.1",
+            "Serilog.AspNetCore": "8.0.3",
+            "Serilog.Extensions.Logging": "10.0.0",
+            "Serilog.Settings.Configuration": "10.0.0",
+            "Serilog.Sinks.Console": "6.1.1",
+            "Serilog.Sinks.File": "7.0.0",
+            "Skender.Stock.Indicators": "2.7.1",
+            "StockSharp.Algo": "5.0.229",
+            "StockSharp.BusinessEntities": "5.0.216",
+            "StockSharp.Cqg.Com": "5.0.128",
+            "StockSharp.InteractiveBrokers": "5.0.129",
+            "StockSharp.IQFeed": "5.0.93",
+            "StockSharp.Messages": "5.0.223",
+            "StockSharp.Rithmic": "5.0.110",
+            "Swashbuckle.AspNetCore": "10.1.5",
+            "System.CommandLine": "2.0.0-beta4.22272.1",
+            "System.Drawing.Common": "8.0.11",
+            "System.Formats.Asn1": "8.0.1",
+            "System.IO.Compression": "4.3.0",
+            "System.IO.Pipelines": "10.0.5",
+            "System.Net.Http.Json": "10.0.5",
+            "System.Net.Http.WinHttpHandler": "8.0.0",
+            "System.Net.Security": "4.3.2",
+            "System.Net.WebSockets.Client": "4.3.2",
+            "System.Private.ServiceModel": "4.10.3",
+            "System.Reactive": "6.1.0",
+            "System.Security.Cryptography.Pkcs": "8.0.1",
+            "System.Security.Cryptography.ProtectedData": "9.0.2",
+            "System.ServiceModel.Primitives": "4.10.3",
+            "System.Text.Json": "10.0.5",
+            "System.Threading.Channels": "10.0.5",
+            "TngTech.ArchUnitNET": "0.13.3",
+            "TngTech.ArchUnitNET.xUnit": "0.13.3",
+            "Websocket.Client": "5.3.0",
+            "xunit": "2.9.3",
+            "xunit.runner.visualstudio": "3.1.5",
+            "ZstdSharp.Port": "0.8.7"
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.308/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.FSharp.Ledger\\Meridian.FSharp.Ledger.fsproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.FSharp.Ledger\\Meridian.FSharp.Ledger.fsproj",
+        "projectName": "Meridian.FSharp.Ledger",
+        "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.FSharp.Ledger\\Meridian.FSharp.Ledger.fsproj",
+        "packagesPath": "C:\\Users\\Andrew James Rowden\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.FSharp.Ledger\\obj-codex/",
+        "projectStyle": "PackageReference",
+        "centralPackageVersionsManagementEnabled": true,
+        "CentralPackageTransitivePinningEnabled": true,
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\Andrew James Rowden\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
+          "C:\\Program Files\\dotnet\\sdk\\9.0.308\\FSharp\\library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "noWarn": [
+            "NU1608"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "dependencies": {
+            "FSharp.Core": {
+              "target": "Package",
+              "version": "[11.0.100, )",
+              "generatePathProperty": true,
+              "versionCentrallyManaged": true
+            }
+          },
+          "centralPackageVersions": {
+            "Apache.Arrow": "22.1.0",
+            "AspNetCoreRateLimit": "5.0.0",
+            "BenchmarkDotNet": "0.15.8",
+            "BenchmarkDotNet.Diagnostics.Windows": "0.15.8",
+            "CommunityToolkit.Mvvm": "8.2.2",
+            "CommunityToolkit.WinUI.Controls.Primitives": "8.2.251219",
+            "CommunityToolkit.WinUI.Controls.Sizers": "8.2.250402",
+            "coverlet.collector": "8.0.1",
+            "Extended.Wpf.Toolkit": "4.6.1",
+            "FluentAssertions": "8.9.0",
+            "FluentValidation": "12.1.1",
+            "FluentValidation.AspNetCore": "11.3.1",
+            "FSharp.Core": "11.0.100",
+            "FsUnit.xUnit": "5.6.1",
+            "K4os.Compression.LZ4.Streams": "1.3.8",
+            "MaterialDesignColors": "5.2.0",
+            "MaterialDesignThemes": "5.2.0",
+            "Microsoft.AspNetCore.Mvc.Testing": "9.0.12",
+            "Microsoft.AspNetCore.OpenApi": "9.0.14",
+            "Microsoft.CodeAnalysis.CSharp": "5.3.0",
+            "Microsoft.Extensions.Configuration": "10.0.5",
+            "Microsoft.Extensions.Configuration.Binder": "10.0.5",
+            "Microsoft.Extensions.Configuration.CommandLine": "10.0.5",
+            "Microsoft.Extensions.Configuration.EnvironmentVariables": "10.0.5",
+            "Microsoft.Extensions.Configuration.Json": "10.0.5",
+            "Microsoft.Extensions.DependencyInjection": "10.0.5",
+            "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.5",
+            "Microsoft.Extensions.Hosting": "10.0.5",
+            "Microsoft.Extensions.Hosting.Abstractions": "10.0.5",
+            "Microsoft.Extensions.Http": "10.0.5",
+            "Microsoft.Extensions.Http.Polly": "10.0.5",
+            "Microsoft.Extensions.Logging": "10.0.5",
+            "Microsoft.Extensions.Logging.Abstractions": "10.0.5",
+            "Microsoft.Extensions.Logging.Debug": "10.0.5",
+            "Microsoft.Extensions.ObjectPool": "10.0.5",
+            "Microsoft.Extensions.Options": "10.0.5",
+            "Microsoft.Extensions.Options.ConfigurationExtensions": "10.0.5",
+            "Microsoft.NET.Test.Sdk": "18.3.0",
+            "Microsoft.Windows.SDK.BuildTools": "10.0.26100.1",
+            "Microsoft.WindowsAppSDK": "1.7.251107005",
+            "ModelContextProtocol": "1.1.0",
+            "ModelContextProtocol.AspNetCore": "1.1.0",
+            "Moq": "4.20.72",
+            "Newtonsoft.Json": "13.0.4",
+            "Npgsql": "9.0.3",
+            "NSubstitute": "5.3.0",
+            "OpenTelemetry": "1.15.0",
+            "OpenTelemetry.Api": "1.15.0",
+            "OpenTelemetry.Exporter.Console": "1.15.0",
+            "OpenTelemetry.Exporter.OpenTelemetryProtocol": "1.15.0",
+            "OpenTelemetry.Exporter.Prometheus.AspNetCore": "1.14.0-beta.1",
+            "OpenTelemetry.Extensions.Hosting": "1.15.0",
+            "OpenTelemetry.Instrumentation.AspNetCore": "1.15.1",
+            "OpenTelemetry.Instrumentation.Http": "1.15.0",
+            "Parquet.Net": "5.5.0",
+            "Polly": "8.6.6",
+            "Polly.Extensions": "8.6.6",
+            "prometheus-net": "8.2.1",
+            "prometheus-net.AspNetCore": "8.2.1",
+            "QuantConnect.Common": "2.5.17414",
+            "QuantConnect.Indicators": "2.5.17414",
+            "QuantConnect.Lean": "2.5.17414",
+            "QuantConnect.Lean.Engine": "2.5.17414",
+            "Serilog": "4.3.1",
+            "Serilog.AspNetCore": "8.0.3",
+            "Serilog.Extensions.Logging": "10.0.0",
+            "Serilog.Settings.Configuration": "10.0.0",
+            "Serilog.Sinks.Console": "6.1.1",
+            "Serilog.Sinks.File": "7.0.0",
+            "Skender.Stock.Indicators": "2.7.1",
+            "StockSharp.Algo": "5.0.229",
+            "StockSharp.BusinessEntities": "5.0.216",
+            "StockSharp.Cqg.Com": "5.0.128",
+            "StockSharp.InteractiveBrokers": "5.0.129",
+            "StockSharp.IQFeed": "5.0.93",
+            "StockSharp.Messages": "5.0.223",
+            "StockSharp.Rithmic": "5.0.110",
+            "Swashbuckle.AspNetCore": "10.1.5",
+            "System.CommandLine": "2.0.0-beta4.22272.1",
+            "System.Drawing.Common": "8.0.11",
+            "System.Formats.Asn1": "8.0.1",
+            "System.IO.Compression": "4.3.0",
+            "System.IO.Pipelines": "10.0.5",
+            "System.Net.Http.Json": "10.0.5",
+            "System.Net.Http.WinHttpHandler": "8.0.0",
+            "System.Net.Security": "4.3.2",
+            "System.Net.WebSockets.Client": "4.3.2",
+            "System.Private.ServiceModel": "4.10.3",
+            "System.Reactive": "6.1.0",
+            "System.Security.Cryptography.Pkcs": "8.0.1",
+            "System.Security.Cryptography.ProtectedData": "9.0.2",
+            "System.ServiceModel.Primitives": "4.10.3",
+            "System.Text.Json": "10.0.5",
+            "System.Threading.Channels": "10.0.5",
+            "TngTech.ArchUnitNET": "0.13.3",
+            "TngTech.ArchUnitNET.xUnit": "0.13.3",
+            "Websocket.Client": "5.3.0",
+            "xunit": "2.9.3",
+            "xunit.runner.visualstudio": "3.1.5",
+            "ZstdSharp.Port": "0.8.7"
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.308/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.FSharp\\Meridian.FSharp.fsproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.FSharp\\Meridian.FSharp.fsproj",
+        "projectName": "Meridian.FSharp",
+        "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.FSharp\\Meridian.FSharp.fsproj",
+        "packagesPath": "C:\\Users\\Andrew James Rowden\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.FSharp\\obj-codex/",
+        "projectStyle": "PackageReference",
+        "centralPackageVersionsManagementEnabled": true,
+        "CentralPackageTransitivePinningEnabled": true,
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\Andrew James Rowden\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
+          "C:\\Program Files\\dotnet\\sdk\\9.0.308\\FSharp\\library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {
+              "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Backtesting.Sdk\\Meridian.Backtesting.Sdk.csproj": {
+                "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Backtesting.Sdk\\Meridian.Backtesting.Sdk.csproj"
+              },
+              "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Contracts\\Meridian.Contracts.csproj": {
+                "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Contracts\\Meridian.Contracts.csproj"
+              },
+              "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Execution.Sdk\\Meridian.Execution.Sdk.csproj": {
+                "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Execution.Sdk\\Meridian.Execution.Sdk.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "noWarn": [
+            "NU1608"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "dependencies": {
+            "FSharp.Core": {
+              "target": "Package",
+              "version": "[11.0.100, )",
+              "generatePathProperty": true,
+              "versionCentrallyManaged": true
+            }
+          },
+          "centralPackageVersions": {
+            "Apache.Arrow": "22.1.0",
+            "AspNetCoreRateLimit": "5.0.0",
+            "BenchmarkDotNet": "0.15.8",
+            "BenchmarkDotNet.Diagnostics.Windows": "0.15.8",
+            "CommunityToolkit.Mvvm": "8.2.2",
+            "CommunityToolkit.WinUI.Controls.Primitives": "8.2.251219",
+            "CommunityToolkit.WinUI.Controls.Sizers": "8.2.250402",
+            "coverlet.collector": "8.0.1",
+            "Extended.Wpf.Toolkit": "4.6.1",
+            "FluentAssertions": "8.9.0",
+            "FluentValidation": "12.1.1",
+            "FluentValidation.AspNetCore": "11.3.1",
+            "FSharp.Core": "11.0.100",
+            "FsUnit.xUnit": "5.6.1",
+            "K4os.Compression.LZ4.Streams": "1.3.8",
+            "MaterialDesignColors": "5.2.0",
+            "MaterialDesignThemes": "5.2.0",
+            "Microsoft.AspNetCore.Mvc.Testing": "9.0.12",
+            "Microsoft.AspNetCore.OpenApi": "9.0.14",
+            "Microsoft.CodeAnalysis.CSharp": "5.3.0",
+            "Microsoft.Extensions.Configuration": "10.0.5",
+            "Microsoft.Extensions.Configuration.Binder": "10.0.5",
+            "Microsoft.Extensions.Configuration.CommandLine": "10.0.5",
+            "Microsoft.Extensions.Configuration.EnvironmentVariables": "10.0.5",
+            "Microsoft.Extensions.Configuration.Json": "10.0.5",
+            "Microsoft.Extensions.DependencyInjection": "10.0.5",
+            "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.5",
+            "Microsoft.Extensions.Hosting": "10.0.5",
+            "Microsoft.Extensions.Hosting.Abstractions": "10.0.5",
+            "Microsoft.Extensions.Http": "10.0.5",
+            "Microsoft.Extensions.Http.Polly": "10.0.5",
+            "Microsoft.Extensions.Logging": "10.0.5",
+            "Microsoft.Extensions.Logging.Abstractions": "10.0.5",
+            "Microsoft.Extensions.Logging.Debug": "10.0.5",
+            "Microsoft.Extensions.ObjectPool": "10.0.5",
+            "Microsoft.Extensions.Options": "10.0.5",
+            "Microsoft.Extensions.Options.ConfigurationExtensions": "10.0.5",
+            "Microsoft.NET.Test.Sdk": "18.3.0",
+            "Microsoft.Windows.SDK.BuildTools": "10.0.26100.1",
+            "Microsoft.WindowsAppSDK": "1.7.251107005",
+            "ModelContextProtocol": "1.1.0",
+            "ModelContextProtocol.AspNetCore": "1.1.0",
+            "Moq": "4.20.72",
+            "Newtonsoft.Json": "13.0.4",
+            "Npgsql": "9.0.3",
+            "NSubstitute": "5.3.0",
+            "OpenTelemetry": "1.15.0",
+            "OpenTelemetry.Api": "1.15.0",
+            "OpenTelemetry.Exporter.Console": "1.15.0",
+            "OpenTelemetry.Exporter.OpenTelemetryProtocol": "1.15.0",
+            "OpenTelemetry.Exporter.Prometheus.AspNetCore": "1.14.0-beta.1",
+            "OpenTelemetry.Extensions.Hosting": "1.15.0",
+            "OpenTelemetry.Instrumentation.AspNetCore": "1.15.1",
+            "OpenTelemetry.Instrumentation.Http": "1.15.0",
+            "Parquet.Net": "5.5.0",
+            "Polly": "8.6.6",
+            "Polly.Extensions": "8.6.6",
+            "prometheus-net": "8.2.1",
+            "prometheus-net.AspNetCore": "8.2.1",
+            "QuantConnect.Common": "2.5.17414",
+            "QuantConnect.Indicators": "2.5.17414",
+            "QuantConnect.Lean": "2.5.17414",
+            "QuantConnect.Lean.Engine": "2.5.17414",
+            "Serilog": "4.3.1",
+            "Serilog.AspNetCore": "8.0.3",
+            "Serilog.Extensions.Logging": "10.0.0",
+            "Serilog.Settings.Configuration": "10.0.0",
+            "Serilog.Sinks.Console": "6.1.1",
+            "Serilog.Sinks.File": "7.0.0",
+            "Skender.Stock.Indicators": "2.7.1",
+            "StockSharp.Algo": "5.0.229",
+            "StockSharp.BusinessEntities": "5.0.216",
+            "StockSharp.Cqg.Com": "5.0.128",
+            "StockSharp.InteractiveBrokers": "5.0.129",
+            "StockSharp.IQFeed": "5.0.93",
+            "StockSharp.Messages": "5.0.223",
+            "StockSharp.Rithmic": "5.0.110",
+            "Swashbuckle.AspNetCore": "10.1.5",
+            "System.CommandLine": "2.0.0-beta4.22272.1",
+            "System.Drawing.Common": "8.0.11",
+            "System.Formats.Asn1": "8.0.1",
+            "System.IO.Compression": "4.3.0",
+            "System.IO.Pipelines": "10.0.5",
+            "System.Net.Http.Json": "10.0.5",
+            "System.Net.Http.WinHttpHandler": "8.0.0",
+            "System.Net.Security": "4.3.2",
+            "System.Net.WebSockets.Client": "4.3.2",
+            "System.Private.ServiceModel": "4.10.3",
+            "System.Reactive": "6.1.0",
+            "System.Security.Cryptography.Pkcs": "8.0.1",
+            "System.Security.Cryptography.ProtectedData": "9.0.2",
+            "System.ServiceModel.Primitives": "4.10.3",
+            "System.Text.Json": "10.0.5",
+            "System.Threading.Channels": "10.0.5",
+            "TngTech.ArchUnitNET": "0.13.3",
+            "TngTech.ArchUnitNET.xUnit": "0.13.3",
+            "Websocket.Client": "5.3.0",
+            "xunit": "2.9.3",
+            "xunit.runner.visualstudio": "3.1.5",
+            "ZstdSharp.Port": "0.8.7"
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.308/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Infrastructure\\Meridian.Infrastructure.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Infrastructure\\Meridian.Infrastructure.csproj",
+        "projectName": "Meridian.Infrastructure",
+        "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Infrastructure\\Meridian.Infrastructure.csproj",
+        "packagesPath": "C:\\Users\\Andrew James Rowden\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Infrastructure\\obj-codex/",
+        "projectStyle": "PackageReference",
+        "centralPackageVersionsManagementEnabled": true,
+        "CentralPackageTransitivePinningEnabled": true,
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\Andrew James Rowden\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {
+              "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Contracts\\Meridian.Contracts.csproj": {
+                "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Contracts\\Meridian.Contracts.csproj"
+              },
+              "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Core\\Meridian.Core.csproj": {
+                "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Core\\Meridian.Core.csproj"
+              },
+              "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Domain\\Meridian.Domain.csproj": {
+                "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Domain\\Meridian.Domain.csproj"
+              },
+              "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.ProviderSdk\\Meridian.ProviderSdk.csproj": {
+                "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.ProviderSdk\\Meridian.ProviderSdk.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "noWarn": [
+            "NU1608"
+          ],
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "dependencies": {
+            "FluentValidation": {
+              "target": "Package",
+              "version": "[12.1.1, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.DependencyInjection.Abstractions": {
+              "target": "Package",
+              "version": "[10.0.5, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Hosting": {
+              "target": "Package",
+              "version": "[10.0.5, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Http": {
+              "target": "Package",
+              "version": "[10.0.5, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Http.Polly": {
+              "target": "Package",
+              "version": "[10.0.5, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.ObjectPool": {
+              "target": "Package",
+              "version": "[10.0.5, )",
+              "versionCentrallyManaged": true
+            },
+            "Polly": {
+              "target": "Package",
+              "version": "[8.6.6, )",
+              "versionCentrallyManaged": true
+            },
+            "Polly.Extensions": {
+              "target": "Package",
+              "version": "[8.6.6, )",
+              "versionCentrallyManaged": true
+            },
+            "Serilog": {
+              "target": "Package",
+              "version": "[4.3.1, )",
+              "versionCentrallyManaged": true
+            },
+            "System.Net.Http.Json": {
+              "target": "Package",
+              "version": "[10.0.5, )",
+              "versionCentrallyManaged": true
+            },
+            "System.Net.WebSockets.Client": {
+              "target": "Package",
+              "version": "[4.3.2, )",
+              "versionCentrallyManaged": true
+            },
+            "System.Reactive": {
+              "target": "Package",
+              "version": "[6.1.0, )",
+              "versionCentrallyManaged": true
+            },
+            "System.Text.Json": {
+              "target": "Package",
+              "version": "[10.0.5, )",
+              "versionCentrallyManaged": true
+            },
+            "System.Threading.Channels": {
+              "target": "Package",
+              "version": "[10.0.5, )",
+              "versionCentrallyManaged": true
+            },
+            "Websocket.Client": {
+              "target": "Package",
+              "version": "[5.3.0, )",
+              "versionCentrallyManaged": true
+            }
+          },
+          "centralPackageVersions": {
+            "Apache.Arrow": "22.1.0",
+            "AspNetCoreRateLimit": "5.0.0",
+            "BenchmarkDotNet": "0.15.8",
+            "BenchmarkDotNet.Diagnostics.Windows": "0.15.8",
+            "CommunityToolkit.Mvvm": "8.2.2",
+            "CommunityToolkit.WinUI.Controls.Primitives": "8.2.251219",
+            "CommunityToolkit.WinUI.Controls.Sizers": "8.2.250402",
+            "coverlet.collector": "8.0.1",
+            "Extended.Wpf.Toolkit": "4.6.1",
+            "FluentAssertions": "8.9.0",
+            "FluentValidation": "12.1.1",
+            "FluentValidation.AspNetCore": "11.3.1",
+            "FSharp.Core": "11.0.100",
+            "FsUnit.xUnit": "5.6.1",
+            "K4os.Compression.LZ4.Streams": "1.3.8",
+            "MaterialDesignColors": "5.2.0",
+            "MaterialDesignThemes": "5.2.0",
+            "Microsoft.AspNetCore.Mvc.Testing": "9.0.12",
+            "Microsoft.AspNetCore.OpenApi": "9.0.14",
+            "Microsoft.CodeAnalysis.CSharp": "5.3.0",
+            "Microsoft.Extensions.Configuration": "10.0.5",
+            "Microsoft.Extensions.Configuration.Binder": "10.0.5",
+            "Microsoft.Extensions.Configuration.CommandLine": "10.0.5",
+            "Microsoft.Extensions.Configuration.EnvironmentVariables": "10.0.5",
+            "Microsoft.Extensions.Configuration.Json": "10.0.5",
+            "Microsoft.Extensions.DependencyInjection": "10.0.5",
+            "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.5",
+            "Microsoft.Extensions.Hosting": "10.0.5",
+            "Microsoft.Extensions.Hosting.Abstractions": "10.0.5",
+            "Microsoft.Extensions.Http": "10.0.5",
+            "Microsoft.Extensions.Http.Polly": "10.0.5",
+            "Microsoft.Extensions.Logging": "10.0.5",
+            "Microsoft.Extensions.Logging.Abstractions": "10.0.5",
+            "Microsoft.Extensions.Logging.Debug": "10.0.5",
+            "Microsoft.Extensions.ObjectPool": "10.0.5",
+            "Microsoft.Extensions.Options": "10.0.5",
+            "Microsoft.Extensions.Options.ConfigurationExtensions": "10.0.5",
+            "Microsoft.NET.Test.Sdk": "18.3.0",
+            "Microsoft.Windows.SDK.BuildTools": "10.0.26100.1",
+            "Microsoft.WindowsAppSDK": "1.7.251107005",
+            "ModelContextProtocol": "1.1.0",
+            "ModelContextProtocol.AspNetCore": "1.1.0",
+            "Moq": "4.20.72",
+            "Newtonsoft.Json": "13.0.4",
+            "Npgsql": "9.0.3",
+            "NSubstitute": "5.3.0",
+            "OpenTelemetry": "1.15.0",
+            "OpenTelemetry.Api": "1.15.0",
+            "OpenTelemetry.Exporter.Console": "1.15.0",
+            "OpenTelemetry.Exporter.OpenTelemetryProtocol": "1.15.0",
+            "OpenTelemetry.Exporter.Prometheus.AspNetCore": "1.14.0-beta.1",
+            "OpenTelemetry.Extensions.Hosting": "1.15.0",
+            "OpenTelemetry.Instrumentation.AspNetCore": "1.15.1",
+            "OpenTelemetry.Instrumentation.Http": "1.15.0",
+            "Parquet.Net": "5.5.0",
+            "Polly": "8.6.6",
+            "Polly.Extensions": "8.6.6",
+            "prometheus-net": "8.2.1",
+            "prometheus-net.AspNetCore": "8.2.1",
+            "QuantConnect.Common": "2.5.17414",
+            "QuantConnect.Indicators": "2.5.17414",
+            "QuantConnect.Lean": "2.5.17414",
+            "QuantConnect.Lean.Engine": "2.5.17414",
+            "Serilog": "4.3.1",
+            "Serilog.AspNetCore": "8.0.3",
+            "Serilog.Extensions.Logging": "10.0.0",
+            "Serilog.Settings.Configuration": "10.0.0",
+            "Serilog.Sinks.Console": "6.1.1",
+            "Serilog.Sinks.File": "7.0.0",
+            "Skender.Stock.Indicators": "2.7.1",
+            "StockSharp.Algo": "5.0.229",
+            "StockSharp.BusinessEntities": "5.0.216",
+            "StockSharp.Cqg.Com": "5.0.128",
+            "StockSharp.InteractiveBrokers": "5.0.129",
+            "StockSharp.IQFeed": "5.0.93",
+            "StockSharp.Messages": "5.0.223",
+            "StockSharp.Rithmic": "5.0.110",
+            "Swashbuckle.AspNetCore": "10.1.5",
+            "System.CommandLine": "2.0.0-beta4.22272.1",
+            "System.Drawing.Common": "8.0.11",
+            "System.Formats.Asn1": "8.0.1",
+            "System.IO.Compression": "4.3.0",
+            "System.IO.Pipelines": "10.0.5",
+            "System.Net.Http.Json": "10.0.5",
+            "System.Net.Http.WinHttpHandler": "8.0.0",
+            "System.Net.Security": "4.3.2",
+            "System.Net.WebSockets.Client": "4.3.2",
+            "System.Private.ServiceModel": "4.10.3",
+            "System.Reactive": "6.1.0",
+            "System.Security.Cryptography.Pkcs": "8.0.1",
+            "System.Security.Cryptography.ProtectedData": "9.0.2",
+            "System.ServiceModel.Primitives": "4.10.3",
+            "System.Text.Json": "10.0.5",
+            "System.Threading.Channels": "10.0.5",
+            "TngTech.ArchUnitNET": "0.13.3",
+            "TngTech.ArchUnitNET.xUnit": "0.13.3",
+            "Websocket.Client": "5.3.0",
+            "xunit": "2.9.3",
+            "xunit.runner.visualstudio": "3.1.5",
+            "ZstdSharp.Port": "0.8.7"
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.308/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Ledger\\Meridian.Ledger.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Ledger\\Meridian.Ledger.csproj",
+        "projectName": "Meridian.Ledger",
+        "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Ledger\\Meridian.Ledger.csproj",
+        "packagesPath": "C:\\Users\\Andrew James Rowden\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Ledger\\obj-codex/",
+        "projectStyle": "PackageReference",
+        "centralPackageVersionsManagementEnabled": true,
+        "CentralPackageTransitivePinningEnabled": true,
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\Andrew James Rowden\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {
+              "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.FSharp.Ledger\\Meridian.FSharp.Ledger.fsproj": {
+                "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.FSharp.Ledger\\Meridian.FSharp.Ledger.fsproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "noWarn": [
+            "NU1608"
+          ],
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "centralPackageVersions": {
+            "Apache.Arrow": "22.1.0",
+            "AspNetCoreRateLimit": "5.0.0",
+            "BenchmarkDotNet": "0.15.8",
+            "BenchmarkDotNet.Diagnostics.Windows": "0.15.8",
+            "CommunityToolkit.Mvvm": "8.2.2",
+            "CommunityToolkit.WinUI.Controls.Primitives": "8.2.251219",
+            "CommunityToolkit.WinUI.Controls.Sizers": "8.2.250402",
+            "coverlet.collector": "8.0.1",
+            "Extended.Wpf.Toolkit": "4.6.1",
+            "FluentAssertions": "8.9.0",
+            "FluentValidation": "12.1.1",
+            "FluentValidation.AspNetCore": "11.3.1",
+            "FSharp.Core": "11.0.100",
+            "FsUnit.xUnit": "5.6.1",
+            "K4os.Compression.LZ4.Streams": "1.3.8",
+            "MaterialDesignColors": "5.2.0",
+            "MaterialDesignThemes": "5.2.0",
+            "Microsoft.AspNetCore.Mvc.Testing": "9.0.12",
+            "Microsoft.AspNetCore.OpenApi": "9.0.14",
+            "Microsoft.CodeAnalysis.CSharp": "5.3.0",
+            "Microsoft.Extensions.Configuration": "10.0.5",
+            "Microsoft.Extensions.Configuration.Binder": "10.0.5",
+            "Microsoft.Extensions.Configuration.CommandLine": "10.0.5",
+            "Microsoft.Extensions.Configuration.EnvironmentVariables": "10.0.5",
+            "Microsoft.Extensions.Configuration.Json": "10.0.5",
+            "Microsoft.Extensions.DependencyInjection": "10.0.5",
+            "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.5",
+            "Microsoft.Extensions.Hosting": "10.0.5",
+            "Microsoft.Extensions.Hosting.Abstractions": "10.0.5",
+            "Microsoft.Extensions.Http": "10.0.5",
+            "Microsoft.Extensions.Http.Polly": "10.0.5",
+            "Microsoft.Extensions.Logging": "10.0.5",
+            "Microsoft.Extensions.Logging.Abstractions": "10.0.5",
+            "Microsoft.Extensions.Logging.Debug": "10.0.5",
+            "Microsoft.Extensions.ObjectPool": "10.0.5",
+            "Microsoft.Extensions.Options": "10.0.5",
+            "Microsoft.Extensions.Options.ConfigurationExtensions": "10.0.5",
+            "Microsoft.NET.Test.Sdk": "18.3.0",
+            "Microsoft.Windows.SDK.BuildTools": "10.0.26100.1",
+            "Microsoft.WindowsAppSDK": "1.7.251107005",
+            "ModelContextProtocol": "1.1.0",
+            "ModelContextProtocol.AspNetCore": "1.1.0",
+            "Moq": "4.20.72",
+            "Newtonsoft.Json": "13.0.4",
+            "Npgsql": "9.0.3",
+            "NSubstitute": "5.3.0",
+            "OpenTelemetry": "1.15.0",
+            "OpenTelemetry.Api": "1.15.0",
+            "OpenTelemetry.Exporter.Console": "1.15.0",
+            "OpenTelemetry.Exporter.OpenTelemetryProtocol": "1.15.0",
+            "OpenTelemetry.Exporter.Prometheus.AspNetCore": "1.14.0-beta.1",
+            "OpenTelemetry.Extensions.Hosting": "1.15.0",
+            "OpenTelemetry.Instrumentation.AspNetCore": "1.15.1",
+            "OpenTelemetry.Instrumentation.Http": "1.15.0",
+            "Parquet.Net": "5.5.0",
+            "Polly": "8.6.6",
+            "Polly.Extensions": "8.6.6",
+            "prometheus-net": "8.2.1",
+            "prometheus-net.AspNetCore": "8.2.1",
+            "QuantConnect.Common": "2.5.17414",
+            "QuantConnect.Indicators": "2.5.17414",
+            "QuantConnect.Lean": "2.5.17414",
+            "QuantConnect.Lean.Engine": "2.5.17414",
+            "Serilog": "4.3.1",
+            "Serilog.AspNetCore": "8.0.3",
+            "Serilog.Extensions.Logging": "10.0.0",
+            "Serilog.Settings.Configuration": "10.0.0",
+            "Serilog.Sinks.Console": "6.1.1",
+            "Serilog.Sinks.File": "7.0.0",
+            "Skender.Stock.Indicators": "2.7.1",
+            "StockSharp.Algo": "5.0.229",
+            "StockSharp.BusinessEntities": "5.0.216",
+            "StockSharp.Cqg.Com": "5.0.128",
+            "StockSharp.InteractiveBrokers": "5.0.129",
+            "StockSharp.IQFeed": "5.0.93",
+            "StockSharp.Messages": "5.0.223",
+            "StockSharp.Rithmic": "5.0.110",
+            "Swashbuckle.AspNetCore": "10.1.5",
+            "System.CommandLine": "2.0.0-beta4.22272.1",
+            "System.Drawing.Common": "8.0.11",
+            "System.Formats.Asn1": "8.0.1",
+            "System.IO.Compression": "4.3.0",
+            "System.IO.Pipelines": "10.0.5",
+            "System.Net.Http.Json": "10.0.5",
+            "System.Net.Http.WinHttpHandler": "8.0.0",
+            "System.Net.Security": "4.3.2",
+            "System.Net.WebSockets.Client": "4.3.2",
+            "System.Private.ServiceModel": "4.10.3",
+            "System.Reactive": "6.1.0",
+            "System.Security.Cryptography.Pkcs": "8.0.1",
+            "System.Security.Cryptography.ProtectedData": "9.0.2",
+            "System.ServiceModel.Primitives": "4.10.3",
+            "System.Text.Json": "10.0.5",
+            "System.Threading.Channels": "10.0.5",
+            "TngTech.ArchUnitNET": "0.13.3",
+            "TngTech.ArchUnitNET.xUnit": "0.13.3",
+            "Websocket.Client": "5.3.0",
+            "xunit": "2.9.3",
+            "xunit.runner.visualstudio": "3.1.5",
+            "ZstdSharp.Port": "0.8.7"
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.308/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.ProviderSdk\\Meridian.ProviderSdk.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.ProviderSdk\\Meridian.ProviderSdk.csproj",
+        "projectName": "Meridian.ProviderSdk",
+        "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.ProviderSdk\\Meridian.ProviderSdk.csproj",
+        "packagesPath": "C:\\Users\\Andrew James Rowden\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.ProviderSdk\\obj-codex/",
+        "projectStyle": "PackageReference",
+        "centralPackageVersionsManagementEnabled": true,
+        "CentralPackageTransitivePinningEnabled": true,
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\Andrew James Rowden\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {
+              "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Contracts\\Meridian.Contracts.csproj": {
+                "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Contracts\\Meridian.Contracts.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "noWarn": [
+            "NU1608"
+          ],
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "dependencies": {
+            "Microsoft.Extensions.DependencyInjection.Abstractions": {
+              "target": "Package",
+              "version": "[10.0.5, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Logging.Abstractions": {
+              "target": "Package",
+              "version": "[10.0.5, )",
+              "versionCentrallyManaged": true
+            }
+          },
+          "centralPackageVersions": {
+            "Apache.Arrow": "22.1.0",
+            "AspNetCoreRateLimit": "5.0.0",
+            "BenchmarkDotNet": "0.15.8",
+            "BenchmarkDotNet.Diagnostics.Windows": "0.15.8",
+            "CommunityToolkit.Mvvm": "8.2.2",
+            "CommunityToolkit.WinUI.Controls.Primitives": "8.2.251219",
+            "CommunityToolkit.WinUI.Controls.Sizers": "8.2.250402",
+            "coverlet.collector": "8.0.1",
+            "Extended.Wpf.Toolkit": "4.6.1",
+            "FluentAssertions": "8.9.0",
+            "FluentValidation": "12.1.1",
+            "FluentValidation.AspNetCore": "11.3.1",
+            "FSharp.Core": "11.0.100",
+            "FsUnit.xUnit": "5.6.1",
+            "K4os.Compression.LZ4.Streams": "1.3.8",
+            "MaterialDesignColors": "5.2.0",
+            "MaterialDesignThemes": "5.2.0",
+            "Microsoft.AspNetCore.Mvc.Testing": "9.0.12",
+            "Microsoft.AspNetCore.OpenApi": "9.0.14",
+            "Microsoft.CodeAnalysis.CSharp": "5.3.0",
+            "Microsoft.Extensions.Configuration": "10.0.5",
+            "Microsoft.Extensions.Configuration.Binder": "10.0.5",
+            "Microsoft.Extensions.Configuration.CommandLine": "10.0.5",
+            "Microsoft.Extensions.Configuration.EnvironmentVariables": "10.0.5",
+            "Microsoft.Extensions.Configuration.Json": "10.0.5",
+            "Microsoft.Extensions.DependencyInjection": "10.0.5",
+            "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.5",
+            "Microsoft.Extensions.Hosting": "10.0.5",
+            "Microsoft.Extensions.Hosting.Abstractions": "10.0.5",
+            "Microsoft.Extensions.Http": "10.0.5",
+            "Microsoft.Extensions.Http.Polly": "10.0.5",
+            "Microsoft.Extensions.Logging": "10.0.5",
+            "Microsoft.Extensions.Logging.Abstractions": "10.0.5",
+            "Microsoft.Extensions.Logging.Debug": "10.0.5",
+            "Microsoft.Extensions.ObjectPool": "10.0.5",
+            "Microsoft.Extensions.Options": "10.0.5",
+            "Microsoft.Extensions.Options.ConfigurationExtensions": "10.0.5",
+            "Microsoft.NET.Test.Sdk": "18.3.0",
+            "Microsoft.Windows.SDK.BuildTools": "10.0.26100.1",
+            "Microsoft.WindowsAppSDK": "1.7.251107005",
+            "ModelContextProtocol": "1.1.0",
+            "ModelContextProtocol.AspNetCore": "1.1.0",
+            "Moq": "4.20.72",
+            "Newtonsoft.Json": "13.0.4",
+            "Npgsql": "9.0.3",
+            "NSubstitute": "5.3.0",
+            "OpenTelemetry": "1.15.0",
+            "OpenTelemetry.Api": "1.15.0",
+            "OpenTelemetry.Exporter.Console": "1.15.0",
+            "OpenTelemetry.Exporter.OpenTelemetryProtocol": "1.15.0",
+            "OpenTelemetry.Exporter.Prometheus.AspNetCore": "1.14.0-beta.1",
+            "OpenTelemetry.Extensions.Hosting": "1.15.0",
+            "OpenTelemetry.Instrumentation.AspNetCore": "1.15.1",
+            "OpenTelemetry.Instrumentation.Http": "1.15.0",
+            "Parquet.Net": "5.5.0",
+            "Polly": "8.6.6",
+            "Polly.Extensions": "8.6.6",
+            "prometheus-net": "8.2.1",
+            "prometheus-net.AspNetCore": "8.2.1",
+            "QuantConnect.Common": "2.5.17414",
+            "QuantConnect.Indicators": "2.5.17414",
+            "QuantConnect.Lean": "2.5.17414",
+            "QuantConnect.Lean.Engine": "2.5.17414",
+            "Serilog": "4.3.1",
+            "Serilog.AspNetCore": "8.0.3",
+            "Serilog.Extensions.Logging": "10.0.0",
+            "Serilog.Settings.Configuration": "10.0.0",
+            "Serilog.Sinks.Console": "6.1.1",
+            "Serilog.Sinks.File": "7.0.0",
+            "Skender.Stock.Indicators": "2.7.1",
+            "StockSharp.Algo": "5.0.229",
+            "StockSharp.BusinessEntities": "5.0.216",
+            "StockSharp.Cqg.Com": "5.0.128",
+            "StockSharp.InteractiveBrokers": "5.0.129",
+            "StockSharp.IQFeed": "5.0.93",
+            "StockSharp.Messages": "5.0.223",
+            "StockSharp.Rithmic": "5.0.110",
+            "Swashbuckle.AspNetCore": "10.1.5",
+            "System.CommandLine": "2.0.0-beta4.22272.1",
+            "System.Drawing.Common": "8.0.11",
+            "System.Formats.Asn1": "8.0.1",
+            "System.IO.Compression": "4.3.0",
+            "System.IO.Pipelines": "10.0.5",
+            "System.Net.Http.Json": "10.0.5",
+            "System.Net.Http.WinHttpHandler": "8.0.0",
+            "System.Net.Security": "4.3.2",
+            "System.Net.WebSockets.Client": "4.3.2",
+            "System.Private.ServiceModel": "4.10.3",
+            "System.Reactive": "6.1.0",
+            "System.Security.Cryptography.Pkcs": "8.0.1",
+            "System.Security.Cryptography.ProtectedData": "9.0.2",
+            "System.ServiceModel.Primitives": "4.10.3",
+            "System.Text.Json": "10.0.5",
+            "System.Threading.Channels": "10.0.5",
+            "TngTech.ArchUnitNET": "0.13.3",
+            "TngTech.ArchUnitNET.xUnit": "0.13.3",
+            "Websocket.Client": "5.3.0",
+            "xunit": "2.9.3",
+            "xunit.runner.visualstudio": "3.1.5",
+            "ZstdSharp.Port": "0.8.7"
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.308/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Risk\\Meridian.Risk.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Risk\\Meridian.Risk.csproj",
+        "projectName": "Meridian.Risk",
+        "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Risk\\Meridian.Risk.csproj",
+        "packagesPath": "C:\\Users\\Andrew James Rowden\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Risk\\obj-codex/",
+        "projectStyle": "PackageReference",
+        "centralPackageVersionsManagementEnabled": true,
+        "CentralPackageTransitivePinningEnabled": true,
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\Andrew James Rowden\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {
+              "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Contracts\\Meridian.Contracts.csproj": {
+                "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Contracts\\Meridian.Contracts.csproj"
+              },
+              "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Execution.Sdk\\Meridian.Execution.Sdk.csproj": {
+                "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Execution.Sdk\\Meridian.Execution.Sdk.csproj"
+              },
+              "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Execution\\Meridian.Execution.csproj": {
+                "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Execution\\Meridian.Execution.csproj"
+              },
+              "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.FSharp\\Meridian.FSharp.fsproj": {
+                "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.FSharp\\Meridian.FSharp.fsproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "noWarn": [
+            "NU1608"
+          ],
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "dependencies": {
+            "Microsoft.Extensions.DependencyInjection.Abstractions": {
+              "target": "Package",
+              "version": "[10.0.5, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Logging.Abstractions": {
+              "target": "Package",
+              "version": "[10.0.5, )",
+              "versionCentrallyManaged": true
+            }
+          },
+          "centralPackageVersions": {
+            "Apache.Arrow": "22.1.0",
+            "AspNetCoreRateLimit": "5.0.0",
+            "BenchmarkDotNet": "0.15.8",
+            "BenchmarkDotNet.Diagnostics.Windows": "0.15.8",
+            "CommunityToolkit.Mvvm": "8.2.2",
+            "CommunityToolkit.WinUI.Controls.Primitives": "8.2.251219",
+            "CommunityToolkit.WinUI.Controls.Sizers": "8.2.250402",
+            "coverlet.collector": "8.0.1",
+            "Extended.Wpf.Toolkit": "4.6.1",
+            "FluentAssertions": "8.9.0",
+            "FluentValidation": "12.1.1",
+            "FluentValidation.AspNetCore": "11.3.1",
+            "FSharp.Core": "11.0.100",
+            "FsUnit.xUnit": "5.6.1",
+            "K4os.Compression.LZ4.Streams": "1.3.8",
+            "MaterialDesignColors": "5.2.0",
+            "MaterialDesignThemes": "5.2.0",
+            "Microsoft.AspNetCore.Mvc.Testing": "9.0.12",
+            "Microsoft.AspNetCore.OpenApi": "9.0.14",
+            "Microsoft.CodeAnalysis.CSharp": "5.3.0",
+            "Microsoft.Extensions.Configuration": "10.0.5",
+            "Microsoft.Extensions.Configuration.Binder": "10.0.5",
+            "Microsoft.Extensions.Configuration.CommandLine": "10.0.5",
+            "Microsoft.Extensions.Configuration.EnvironmentVariables": "10.0.5",
+            "Microsoft.Extensions.Configuration.Json": "10.0.5",
+            "Microsoft.Extensions.DependencyInjection": "10.0.5",
+            "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.5",
+            "Microsoft.Extensions.Hosting": "10.0.5",
+            "Microsoft.Extensions.Hosting.Abstractions": "10.0.5",
+            "Microsoft.Extensions.Http": "10.0.5",
+            "Microsoft.Extensions.Http.Polly": "10.0.5",
+            "Microsoft.Extensions.Logging": "10.0.5",
+            "Microsoft.Extensions.Logging.Abstractions": "10.0.5",
+            "Microsoft.Extensions.Logging.Debug": "10.0.5",
+            "Microsoft.Extensions.ObjectPool": "10.0.5",
+            "Microsoft.Extensions.Options": "10.0.5",
+            "Microsoft.Extensions.Options.ConfigurationExtensions": "10.0.5",
+            "Microsoft.NET.Test.Sdk": "18.3.0",
+            "Microsoft.Windows.SDK.BuildTools": "10.0.26100.1",
+            "Microsoft.WindowsAppSDK": "1.7.251107005",
+            "ModelContextProtocol": "1.1.0",
+            "ModelContextProtocol.AspNetCore": "1.1.0",
+            "Moq": "4.20.72",
+            "Newtonsoft.Json": "13.0.4",
+            "Npgsql": "9.0.3",
+            "NSubstitute": "5.3.0",
+            "OpenTelemetry": "1.15.0",
+            "OpenTelemetry.Api": "1.15.0",
+            "OpenTelemetry.Exporter.Console": "1.15.0",
+            "OpenTelemetry.Exporter.OpenTelemetryProtocol": "1.15.0",
+            "OpenTelemetry.Exporter.Prometheus.AspNetCore": "1.14.0-beta.1",
+            "OpenTelemetry.Extensions.Hosting": "1.15.0",
+            "OpenTelemetry.Instrumentation.AspNetCore": "1.15.1",
+            "OpenTelemetry.Instrumentation.Http": "1.15.0",
+            "Parquet.Net": "5.5.0",
+            "Polly": "8.6.6",
+            "Polly.Extensions": "8.6.6",
+            "prometheus-net": "8.2.1",
+            "prometheus-net.AspNetCore": "8.2.1",
+            "QuantConnect.Common": "2.5.17414",
+            "QuantConnect.Indicators": "2.5.17414",
+            "QuantConnect.Lean": "2.5.17414",
+            "QuantConnect.Lean.Engine": "2.5.17414",
+            "Serilog": "4.3.1",
+            "Serilog.AspNetCore": "8.0.3",
+            "Serilog.Extensions.Logging": "10.0.0",
+            "Serilog.Settings.Configuration": "10.0.0",
+            "Serilog.Sinks.Console": "6.1.1",
+            "Serilog.Sinks.File": "7.0.0",
+            "Skender.Stock.Indicators": "2.7.1",
+            "StockSharp.Algo": "5.0.229",
+            "StockSharp.BusinessEntities": "5.0.216",
+            "StockSharp.Cqg.Com": "5.0.128",
+            "StockSharp.InteractiveBrokers": "5.0.129",
+            "StockSharp.IQFeed": "5.0.93",
+            "StockSharp.Messages": "5.0.223",
+            "StockSharp.Rithmic": "5.0.110",
+            "Swashbuckle.AspNetCore": "10.1.5",
+            "System.CommandLine": "2.0.0-beta4.22272.1",
+            "System.Drawing.Common": "8.0.11",
+            "System.Formats.Asn1": "8.0.1",
+            "System.IO.Compression": "4.3.0",
+            "System.IO.Pipelines": "10.0.5",
+            "System.Net.Http.Json": "10.0.5",
+            "System.Net.Http.WinHttpHandler": "8.0.0",
+            "System.Net.Security": "4.3.2",
+            "System.Net.WebSockets.Client": "4.3.2",
+            "System.Private.ServiceModel": "4.10.3",
+            "System.Reactive": "6.1.0",
+            "System.Security.Cryptography.Pkcs": "8.0.1",
+            "System.Security.Cryptography.ProtectedData": "9.0.2",
+            "System.ServiceModel.Primitives": "4.10.3",
+            "System.Text.Json": "10.0.5",
+            "System.Threading.Channels": "10.0.5",
+            "TngTech.ArchUnitNET": "0.13.3",
+            "TngTech.ArchUnitNET.xUnit": "0.13.3",
+            "Websocket.Client": "5.3.0",
+            "xunit": "2.9.3",
+            "xunit.runner.visualstudio": "3.1.5",
+            "ZstdSharp.Port": "0.8.7"
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.308/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Storage\\Meridian.Storage.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Storage\\Meridian.Storage.csproj",
+        "projectName": "Meridian.Storage",
+        "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Storage\\Meridian.Storage.csproj",
+        "packagesPath": "C:\\Users\\Andrew James Rowden\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Storage\\obj-codex/",
+        "projectStyle": "PackageReference",
+        "centralPackageVersionsManagementEnabled": true,
+        "CentralPackageTransitivePinningEnabled": true,
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\Andrew James Rowden\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {
+              "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Contracts\\Meridian.Contracts.csproj": {
+                "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Contracts\\Meridian.Contracts.csproj"
+              },
+              "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Core\\Meridian.Core.csproj": {
+                "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Core\\Meridian.Core.csproj"
+              },
+              "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Domain\\Meridian.Domain.csproj": {
+                "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Domain\\Meridian.Domain.csproj"
+              },
+              "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.ProviderSdk\\Meridian.ProviderSdk.csproj": {
+                "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.ProviderSdk\\Meridian.ProviderSdk.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "noWarn": [
+            "NU1608"
+          ],
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "dependencies": {
+            "Apache.Arrow": {
+              "target": "Package",
+              "version": "[22.1.0, )",
+              "versionCentrallyManaged": true
+            },
+            "K4os.Compression.LZ4.Streams": {
+              "target": "Package",
+              "version": "[1.3.8, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.DependencyInjection.Abstractions": {
+              "target": "Package",
+              "version": "[10.0.5, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Hosting": {
+              "target": "Package",
+              "version": "[10.0.5, )",
+              "versionCentrallyManaged": true
+            },
+            "Npgsql": {
+              "target": "Package",
+              "version": "[9.0.3, )",
+              "versionCentrallyManaged": true
+            },
+            "Parquet.Net": {
+              "target": "Package",
+              "version": "[5.5.0, )",
+              "versionCentrallyManaged": true
+            },
+            "Serilog": {
+              "target": "Package",
+              "version": "[4.3.1, )",
+              "versionCentrallyManaged": true
+            },
+            "System.IO.Compression": {
+              "target": "Package",
+              "version": "[4.3.0, )",
+              "versionCentrallyManaged": true
+            },
+            "System.Text.Json": {
+              "target": "Package",
+              "version": "[10.0.5, )",
+              "versionCentrallyManaged": true
+            },
+            "System.Threading.Channels": {
+              "target": "Package",
+              "version": "[10.0.5, )",
+              "versionCentrallyManaged": true
+            },
+            "ZstdSharp.Port": {
+              "target": "Package",
+              "version": "[0.8.7, )",
+              "versionCentrallyManaged": true
+            },
+            "prometheus-net": {
+              "target": "Package",
+              "version": "[8.2.1, )",
+              "versionCentrallyManaged": true
+            }
+          },
+          "centralPackageVersions": {
+            "Apache.Arrow": "22.1.0",
+            "AspNetCoreRateLimit": "5.0.0",
+            "BenchmarkDotNet": "0.15.8",
+            "BenchmarkDotNet.Diagnostics.Windows": "0.15.8",
+            "CommunityToolkit.Mvvm": "8.2.2",
+            "CommunityToolkit.WinUI.Controls.Primitives": "8.2.251219",
+            "CommunityToolkit.WinUI.Controls.Sizers": "8.2.250402",
+            "coverlet.collector": "8.0.1",
+            "Extended.Wpf.Toolkit": "4.6.1",
+            "FluentAssertions": "8.9.0",
+            "FluentValidation": "12.1.1",
+            "FluentValidation.AspNetCore": "11.3.1",
+            "FSharp.Core": "11.0.100",
+            "FsUnit.xUnit": "5.6.1",
+            "K4os.Compression.LZ4.Streams": "1.3.8",
+            "MaterialDesignColors": "5.2.0",
+            "MaterialDesignThemes": "5.2.0",
+            "Microsoft.AspNetCore.Mvc.Testing": "9.0.12",
+            "Microsoft.AspNetCore.OpenApi": "9.0.14",
+            "Microsoft.CodeAnalysis.CSharp": "5.3.0",
+            "Microsoft.Extensions.Configuration": "10.0.5",
+            "Microsoft.Extensions.Configuration.Binder": "10.0.5",
+            "Microsoft.Extensions.Configuration.CommandLine": "10.0.5",
+            "Microsoft.Extensions.Configuration.EnvironmentVariables": "10.0.5",
+            "Microsoft.Extensions.Configuration.Json": "10.0.5",
+            "Microsoft.Extensions.DependencyInjection": "10.0.5",
+            "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.5",
+            "Microsoft.Extensions.Hosting": "10.0.5",
+            "Microsoft.Extensions.Hosting.Abstractions": "10.0.5",
+            "Microsoft.Extensions.Http": "10.0.5",
+            "Microsoft.Extensions.Http.Polly": "10.0.5",
+            "Microsoft.Extensions.Logging": "10.0.5",
+            "Microsoft.Extensions.Logging.Abstractions": "10.0.5",
+            "Microsoft.Extensions.Logging.Debug": "10.0.5",
+            "Microsoft.Extensions.ObjectPool": "10.0.5",
+            "Microsoft.Extensions.Options": "10.0.5",
+            "Microsoft.Extensions.Options.ConfigurationExtensions": "10.0.5",
+            "Microsoft.NET.Test.Sdk": "18.3.0",
+            "Microsoft.Windows.SDK.BuildTools": "10.0.26100.1",
+            "Microsoft.WindowsAppSDK": "1.7.251107005",
+            "ModelContextProtocol": "1.1.0",
+            "ModelContextProtocol.AspNetCore": "1.1.0",
+            "Moq": "4.20.72",
+            "Newtonsoft.Json": "13.0.4",
+            "Npgsql": "9.0.3",
+            "NSubstitute": "5.3.0",
+            "OpenTelemetry": "1.15.0",
+            "OpenTelemetry.Api": "1.15.0",
+            "OpenTelemetry.Exporter.Console": "1.15.0",
+            "OpenTelemetry.Exporter.OpenTelemetryProtocol": "1.15.0",
+            "OpenTelemetry.Exporter.Prometheus.AspNetCore": "1.14.0-beta.1",
+            "OpenTelemetry.Extensions.Hosting": "1.15.0",
+            "OpenTelemetry.Instrumentation.AspNetCore": "1.15.1",
+            "OpenTelemetry.Instrumentation.Http": "1.15.0",
+            "Parquet.Net": "5.5.0",
+            "Polly": "8.6.6",
+            "Polly.Extensions": "8.6.6",
+            "prometheus-net": "8.2.1",
+            "prometheus-net.AspNetCore": "8.2.1",
+            "QuantConnect.Common": "2.5.17414",
+            "QuantConnect.Indicators": "2.5.17414",
+            "QuantConnect.Lean": "2.5.17414",
+            "QuantConnect.Lean.Engine": "2.5.17414",
+            "Serilog": "4.3.1",
+            "Serilog.AspNetCore": "8.0.3",
+            "Serilog.Extensions.Logging": "10.0.0",
+            "Serilog.Settings.Configuration": "10.0.0",
+            "Serilog.Sinks.Console": "6.1.1",
+            "Serilog.Sinks.File": "7.0.0",
+            "Skender.Stock.Indicators": "2.7.1",
+            "StockSharp.Algo": "5.0.229",
+            "StockSharp.BusinessEntities": "5.0.216",
+            "StockSharp.Cqg.Com": "5.0.128",
+            "StockSharp.InteractiveBrokers": "5.0.129",
+            "StockSharp.IQFeed": "5.0.93",
+            "StockSharp.Messages": "5.0.223",
+            "StockSharp.Rithmic": "5.0.110",
+            "Swashbuckle.AspNetCore": "10.1.5",
+            "System.CommandLine": "2.0.0-beta4.22272.1",
+            "System.Drawing.Common": "8.0.11",
+            "System.Formats.Asn1": "8.0.1",
+            "System.IO.Compression": "4.3.0",
+            "System.IO.Pipelines": "10.0.5",
+            "System.Net.Http.Json": "10.0.5",
+            "System.Net.Http.WinHttpHandler": "8.0.0",
+            "System.Net.Security": "4.3.2",
+            "System.Net.WebSockets.Client": "4.3.2",
+            "System.Private.ServiceModel": "4.10.3",
+            "System.Reactive": "6.1.0",
+            "System.Security.Cryptography.Pkcs": "8.0.1",
+            "System.Security.Cryptography.ProtectedData": "9.0.2",
+            "System.ServiceModel.Primitives": "4.10.3",
+            "System.Text.Json": "10.0.5",
+            "System.Threading.Channels": "10.0.5",
+            "TngTech.ArchUnitNET": "0.13.3",
+            "TngTech.ArchUnitNET.xUnit": "0.13.3",
+            "Websocket.Client": "5.3.0",
+            "xunit": "2.9.3",
+            "xunit.runner.visualstudio": "3.1.5",
+            "ZstdSharp.Port": "0.8.7"
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.308/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}

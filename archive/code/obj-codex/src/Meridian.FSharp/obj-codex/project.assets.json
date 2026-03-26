@@ -1,0 +1,609 @@
+{
+  "version": 3,
+  "targets": {
+    "net9.0": {
+      "FSharp.Core/11.0.100": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.1/FSharp.Core.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/netstandard2.1/FSharp.Core.dll": {
+            "related": ".xml"
+          }
+        },
+        "resource": {
+          "lib/netstandard2.1/cs/FSharp.Core.resources.dll": {
+            "locale": "cs"
+          },
+          "lib/netstandard2.1/de/FSharp.Core.resources.dll": {
+            "locale": "de"
+          },
+          "lib/netstandard2.1/es/FSharp.Core.resources.dll": {
+            "locale": "es"
+          },
+          "lib/netstandard2.1/fr/FSharp.Core.resources.dll": {
+            "locale": "fr"
+          },
+          "lib/netstandard2.1/it/FSharp.Core.resources.dll": {
+            "locale": "it"
+          },
+          "lib/netstandard2.1/ja/FSharp.Core.resources.dll": {
+            "locale": "ja"
+          },
+          "lib/netstandard2.1/ko/FSharp.Core.resources.dll": {
+            "locale": "ko"
+          },
+          "lib/netstandard2.1/pl/FSharp.Core.resources.dll": {
+            "locale": "pl"
+          },
+          "lib/netstandard2.1/pt-BR/FSharp.Core.resources.dll": {
+            "locale": "pt-BR"
+          },
+          "lib/netstandard2.1/ru/FSharp.Core.resources.dll": {
+            "locale": "ru"
+          },
+          "lib/netstandard2.1/tr/FSharp.Core.resources.dll": {
+            "locale": "tr"
+          },
+          "lib/netstandard2.1/zh-Hans/FSharp.Core.resources.dll": {
+            "locale": "zh-Hans"
+          },
+          "lib/netstandard2.1/zh-Hant/FSharp.Core.resources.dll": {
+            "locale": "zh-Hant"
+          }
+        }
+      },
+      "System.IO.Pipelines/10.0.5": {
+        "type": "package",
+        "compile": {
+          "lib/net9.0/System.IO.Pipelines.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/System.IO.Pipelines.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net8.0/_._": {}
+        }
+      },
+      "System.Text.Encodings.Web/10.0.5": {
+        "type": "package",
+        "compile": {
+          "lib/net9.0/System.Text.Encodings.Web.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/System.Text.Encodings.Web.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net8.0/_._": {}
+        },
+        "runtimeTargets": {
+          "runtimes/browser/lib/net8.0/System.Text.Encodings.Web.dll": {
+            "assetType": "runtime",
+            "rid": "browser"
+          },
+          "runtimes/win/lib/net9.0/System.Text.Encodings.Web.dll": {
+            "assetType": "runtime",
+            "rid": "win"
+          }
+        }
+      },
+      "System.Text.Json/10.0.5": {
+        "type": "package",
+        "dependencies": {
+          "System.IO.Pipelines": "10.0.5",
+          "System.Text.Encodings.Web": "10.0.5"
+        },
+        "compile": {
+          "lib/net9.0/System.Text.Json.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/System.Text.Json.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net8.0/System.Text.Json.targets": {}
+        }
+      },
+      "Meridian.Backtesting.Sdk/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "dependencies": {
+          "Meridian.Contracts": "1.0.0",
+          "Meridian.Ledger": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Meridian.Backtesting.Sdk.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Meridian.Backtesting.Sdk.dll": {}
+        }
+      },
+      "Meridian.Contracts/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "dependencies": {
+          "System.Text.Json": "10.0.5"
+        },
+        "compile": {
+          "bin/placeholder/Meridian.Contracts.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Meridian.Contracts.dll": {}
+        }
+      },
+      "Meridian.Execution.Sdk/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "dependencies": {
+          "Meridian.Contracts": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Meridian.Execution.Sdk.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Meridian.Execution.Sdk.dll": {}
+        }
+      },
+      "Meridian.FSharp.Ledger/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "dependencies": {
+          "FSharp.Core": "11.0.100"
+        },
+        "compile": {
+          "bin/placeholder/Meridian.FSharp.Ledger.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Meridian.FSharp.Ledger.dll": {}
+        }
+      },
+      "Meridian.Ledger/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "dependencies": {
+          "Meridian.FSharp.Ledger": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Meridian.Ledger.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Meridian.Ledger.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "FSharp.Core/11.0.100": {
+      "sha512": "ijfOz8ihqkFNdKUY57l8YTrbJNfQW/6tFYAUU57ByZzmTxxf1o12cQaCqDOjNqAz4h86AKS7IwQkNhYcrjLeCQ==",
+      "type": "package",
+      "path": "fsharp.core/11.0.100",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "fsharp.core.11.0.100.nupkg.sha512",
+        "fsharp.core.nuspec",
+        "lib/netstandard2.0/FSharp.Core.dll",
+        "lib/netstandard2.0/FSharp.Core.xml",
+        "lib/netstandard2.0/cs/FSharp.Core.resources.dll",
+        "lib/netstandard2.0/de/FSharp.Core.resources.dll",
+        "lib/netstandard2.0/es/FSharp.Core.resources.dll",
+        "lib/netstandard2.0/fr/FSharp.Core.resources.dll",
+        "lib/netstandard2.0/it/FSharp.Core.resources.dll",
+        "lib/netstandard2.0/ja/FSharp.Core.resources.dll",
+        "lib/netstandard2.0/ko/FSharp.Core.resources.dll",
+        "lib/netstandard2.0/pl/FSharp.Core.resources.dll",
+        "lib/netstandard2.0/pt-BR/FSharp.Core.resources.dll",
+        "lib/netstandard2.0/ru/FSharp.Core.resources.dll",
+        "lib/netstandard2.0/tr/FSharp.Core.resources.dll",
+        "lib/netstandard2.0/zh-Hans/FSharp.Core.resources.dll",
+        "lib/netstandard2.0/zh-Hant/FSharp.Core.resources.dll",
+        "lib/netstandard2.1/FSharp.Core.dll",
+        "lib/netstandard2.1/FSharp.Core.xml",
+        "lib/netstandard2.1/cs/FSharp.Core.resources.dll",
+        "lib/netstandard2.1/de/FSharp.Core.resources.dll",
+        "lib/netstandard2.1/es/FSharp.Core.resources.dll",
+        "lib/netstandard2.1/fr/FSharp.Core.resources.dll",
+        "lib/netstandard2.1/it/FSharp.Core.resources.dll",
+        "lib/netstandard2.1/ja/FSharp.Core.resources.dll",
+        "lib/netstandard2.1/ko/FSharp.Core.resources.dll",
+        "lib/netstandard2.1/pl/FSharp.Core.resources.dll",
+        "lib/netstandard2.1/pt-BR/FSharp.Core.resources.dll",
+        "lib/netstandard2.1/ru/FSharp.Core.resources.dll",
+        "lib/netstandard2.1/tr/FSharp.Core.resources.dll",
+        "lib/netstandard2.1/zh-Hans/FSharp.Core.resources.dll",
+        "lib/netstandard2.1/zh-Hant/FSharp.Core.resources.dll"
+      ]
+    },
+    "System.IO.Pipelines/10.0.5": {
+      "sha512": "8/ZHN/j2y1t+7McdCf1wXku2/c7wtrGLz3WQabIoPuLAn3bHDWT6YOJYreJq8sCMPSo6c8iVYXUdLlFGX5PEqw==",
+      "type": "package",
+      "path": "system.io.pipelines/10.0.5",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "PACKAGE.md",
+        "THIRD-PARTY-NOTICES.TXT",
+        "buildTransitive/net461/System.IO.Pipelines.targets",
+        "buildTransitive/net462/_._",
+        "buildTransitive/net8.0/_._",
+        "buildTransitive/netcoreapp2.0/System.IO.Pipelines.targets",
+        "lib/net10.0/System.IO.Pipelines.dll",
+        "lib/net10.0/System.IO.Pipelines.xml",
+        "lib/net462/System.IO.Pipelines.dll",
+        "lib/net462/System.IO.Pipelines.xml",
+        "lib/net8.0/System.IO.Pipelines.dll",
+        "lib/net8.0/System.IO.Pipelines.xml",
+        "lib/net9.0/System.IO.Pipelines.dll",
+        "lib/net9.0/System.IO.Pipelines.xml",
+        "lib/netstandard2.0/System.IO.Pipelines.dll",
+        "lib/netstandard2.0/System.IO.Pipelines.xml",
+        "system.io.pipelines.10.0.5.nupkg.sha512",
+        "system.io.pipelines.nuspec",
+        "useSharedDesignerContext.txt"
+      ]
+    },
+    "System.Text.Encodings.Web/10.0.5": {
+      "sha512": "opvD/nKTzGKA7GVntZ9L823kN6IxgHQfuxY+VI9gv8VE1Y7CSKoi/QS1EYDQiA63MqtZsD7X6zkISd2ZQJohTQ==",
+      "type": "package",
+      "path": "system.text.encodings.web/10.0.5",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "PACKAGE.md",
+        "THIRD-PARTY-NOTICES.TXT",
+        "buildTransitive/net461/System.Text.Encodings.Web.targets",
+        "buildTransitive/net462/_._",
+        "buildTransitive/net8.0/_._",
+        "buildTransitive/netcoreapp2.0/System.Text.Encodings.Web.targets",
+        "lib/net10.0/System.Text.Encodings.Web.dll",
+        "lib/net10.0/System.Text.Encodings.Web.xml",
+        "lib/net462/System.Text.Encodings.Web.dll",
+        "lib/net462/System.Text.Encodings.Web.xml",
+        "lib/net8.0/System.Text.Encodings.Web.dll",
+        "lib/net8.0/System.Text.Encodings.Web.xml",
+        "lib/net9.0/System.Text.Encodings.Web.dll",
+        "lib/net9.0/System.Text.Encodings.Web.xml",
+        "lib/netstandard2.0/System.Text.Encodings.Web.dll",
+        "lib/netstandard2.0/System.Text.Encodings.Web.xml",
+        "runtimes/browser/lib/net10.0/System.Text.Encodings.Web.dll",
+        "runtimes/browser/lib/net10.0/System.Text.Encodings.Web.xml",
+        "runtimes/browser/lib/net8.0/System.Text.Encodings.Web.dll",
+        "runtimes/browser/lib/net8.0/System.Text.Encodings.Web.xml",
+        "runtimes/wasi/lib/net10.0/System.Text.Encodings.Web.dll",
+        "runtimes/wasi/lib/net10.0/System.Text.Encodings.Web.xml",
+        "runtimes/win/lib/net9.0/System.Text.Encodings.Web.dll",
+        "runtimes/win/lib/net9.0/System.Text.Encodings.Web.xml",
+        "system.text.encodings.web.10.0.5.nupkg.sha512",
+        "system.text.encodings.web.nuspec",
+        "useSharedDesignerContext.txt"
+      ]
+    },
+    "System.Text.Json/10.0.5": {
+      "sha512": "vW2zhkWziyfhoSXNf42mTWyilw+vfwBGOsODDsHSFtOIY6LCgfRVUyaAilLEL4Kc1fzhaxcep5pS0VWYPSDW0w==",
+      "type": "package",
+      "path": "system.text.json/10.0.5",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "PACKAGE.md",
+        "THIRD-PARTY-NOTICES.TXT",
+        "analyzers/dotnet/roslyn3.11/cs/System.Text.Json.SourceGeneration.dll",
+        "analyzers/dotnet/roslyn3.11/cs/cs/System.Text.Json.SourceGeneration.resources.dll",
+        "analyzers/dotnet/roslyn3.11/cs/de/System.Text.Json.SourceGeneration.resources.dll",
+        "analyzers/dotnet/roslyn3.11/cs/es/System.Text.Json.SourceGeneration.resources.dll",
+        "analyzers/dotnet/roslyn3.11/cs/fr/System.Text.Json.SourceGeneration.resources.dll",
+        "analyzers/dotnet/roslyn3.11/cs/it/System.Text.Json.SourceGeneration.resources.dll",
+        "analyzers/dotnet/roslyn3.11/cs/ja/System.Text.Json.SourceGeneration.resources.dll",
+        "analyzers/dotnet/roslyn3.11/cs/ko/System.Text.Json.SourceGeneration.resources.dll",
+        "analyzers/dotnet/roslyn3.11/cs/pl/System.Text.Json.SourceGeneration.resources.dll",
+        "analyzers/dotnet/roslyn3.11/cs/pt-BR/System.Text.Json.SourceGeneration.resources.dll",
+        "analyzers/dotnet/roslyn3.11/cs/ru/System.Text.Json.SourceGeneration.resources.dll",
+        "analyzers/dotnet/roslyn3.11/cs/tr/System.Text.Json.SourceGeneration.resources.dll",
+        "analyzers/dotnet/roslyn3.11/cs/zh-Hans/System.Text.Json.SourceGeneration.resources.dll",
+        "analyzers/dotnet/roslyn3.11/cs/zh-Hant/System.Text.Json.SourceGeneration.resources.dll",
+        "analyzers/dotnet/roslyn4.0/cs/System.Text.Json.SourceGeneration.dll",
+        "analyzers/dotnet/roslyn4.0/cs/cs/System.Text.Json.SourceGeneration.resources.dll",
+        "analyzers/dotnet/roslyn4.0/cs/de/System.Text.Json.SourceGeneration.resources.dll",
+        "analyzers/dotnet/roslyn4.0/cs/es/System.Text.Json.SourceGeneration.resources.dll",
+        "analyzers/dotnet/roslyn4.0/cs/fr/System.Text.Json.SourceGeneration.resources.dll",
+        "analyzers/dotnet/roslyn4.0/cs/it/System.Text.Json.SourceGeneration.resources.dll",
+        "analyzers/dotnet/roslyn4.0/cs/ja/System.Text.Json.SourceGeneration.resources.dll",
+        "analyzers/dotnet/roslyn4.0/cs/ko/System.Text.Json.SourceGeneration.resources.dll",
+        "analyzers/dotnet/roslyn4.0/cs/pl/System.Text.Json.SourceGeneration.resources.dll",
+        "analyzers/dotnet/roslyn4.0/cs/pt-BR/System.Text.Json.SourceGeneration.resources.dll",
+        "analyzers/dotnet/roslyn4.0/cs/ru/System.Text.Json.SourceGeneration.resources.dll",
+        "analyzers/dotnet/roslyn4.0/cs/tr/System.Text.Json.SourceGeneration.resources.dll",
+        "analyzers/dotnet/roslyn4.0/cs/zh-Hans/System.Text.Json.SourceGeneration.resources.dll",
+        "analyzers/dotnet/roslyn4.0/cs/zh-Hant/System.Text.Json.SourceGeneration.resources.dll",
+        "analyzers/dotnet/roslyn4.4/cs/System.Text.Json.SourceGeneration.dll",
+        "analyzers/dotnet/roslyn4.4/cs/cs/System.Text.Json.SourceGeneration.resources.dll",
+        "analyzers/dotnet/roslyn4.4/cs/de/System.Text.Json.SourceGeneration.resources.dll",
+        "analyzers/dotnet/roslyn4.4/cs/es/System.Text.Json.SourceGeneration.resources.dll",
+        "analyzers/dotnet/roslyn4.4/cs/fr/System.Text.Json.SourceGeneration.resources.dll",
+        "analyzers/dotnet/roslyn4.4/cs/it/System.Text.Json.SourceGeneration.resources.dll",
+        "analyzers/dotnet/roslyn4.4/cs/ja/System.Text.Json.SourceGeneration.resources.dll",
+        "analyzers/dotnet/roslyn4.4/cs/ko/System.Text.Json.SourceGeneration.resources.dll",
+        "analyzers/dotnet/roslyn4.4/cs/pl/System.Text.Json.SourceGeneration.resources.dll",
+        "analyzers/dotnet/roslyn4.4/cs/pt-BR/System.Text.Json.SourceGeneration.resources.dll",
+        "analyzers/dotnet/roslyn4.4/cs/ru/System.Text.Json.SourceGeneration.resources.dll",
+        "analyzers/dotnet/roslyn4.4/cs/tr/System.Text.Json.SourceGeneration.resources.dll",
+        "analyzers/dotnet/roslyn4.4/cs/zh-Hans/System.Text.Json.SourceGeneration.resources.dll",
+        "analyzers/dotnet/roslyn4.4/cs/zh-Hant/System.Text.Json.SourceGeneration.resources.dll",
+        "buildTransitive/net461/System.Text.Json.targets",
+        "buildTransitive/net462/System.Text.Json.targets",
+        "buildTransitive/net8.0/System.Text.Json.targets",
+        "buildTransitive/netcoreapp2.0/System.Text.Json.targets",
+        "buildTransitive/netstandard2.0/System.Text.Json.targets",
+        "lib/net10.0/System.Text.Json.dll",
+        "lib/net10.0/System.Text.Json.xml",
+        "lib/net462/System.Text.Json.dll",
+        "lib/net462/System.Text.Json.xml",
+        "lib/net8.0/System.Text.Json.dll",
+        "lib/net8.0/System.Text.Json.xml",
+        "lib/net9.0/System.Text.Json.dll",
+        "lib/net9.0/System.Text.Json.xml",
+        "lib/netstandard2.0/System.Text.Json.dll",
+        "lib/netstandard2.0/System.Text.Json.xml",
+        "system.text.json.10.0.5.nupkg.sha512",
+        "system.text.json.nuspec",
+        "useSharedDesignerContext.txt"
+      ]
+    },
+    "Meridian.Backtesting.Sdk/1.0.0": {
+      "type": "project",
+      "path": "../Meridian.Backtesting.Sdk/Meridian.Backtesting.Sdk.csproj",
+      "msbuildProject": "../Meridian.Backtesting.Sdk/Meridian.Backtesting.Sdk.csproj"
+    },
+    "Meridian.Contracts/1.0.0": {
+      "type": "project",
+      "path": "../Meridian.Contracts/Meridian.Contracts.csproj",
+      "msbuildProject": "../Meridian.Contracts/Meridian.Contracts.csproj"
+    },
+    "Meridian.Execution.Sdk/1.0.0": {
+      "type": "project",
+      "path": "../Meridian.Execution.Sdk/Meridian.Execution.Sdk.csproj",
+      "msbuildProject": "../Meridian.Execution.Sdk/Meridian.Execution.Sdk.csproj"
+    },
+    "Meridian.FSharp.Ledger/1.0.0": {
+      "type": "project",
+      "path": "../Meridian.FSharp.Ledger/Meridian.FSharp.Ledger.fsproj",
+      "msbuildProject": "../Meridian.FSharp.Ledger/Meridian.FSharp.Ledger.fsproj"
+    },
+    "Meridian.Ledger/1.0.0": {
+      "type": "project",
+      "path": "../Meridian.Ledger/Meridian.Ledger.csproj",
+      "msbuildProject": "../Meridian.Ledger/Meridian.Ledger.csproj"
+    }
+  },
+  "projectFileDependencyGroups": {
+    "net9.0": [
+      "FSharp.Core >= 11.0.100",
+      "Meridian.Backtesting.Sdk >= 1.0.0",
+      "Meridian.Contracts >= 1.0.0",
+      "Meridian.Execution.Sdk >= 1.0.0"
+    ]
+  },
+  "packageFolders": {
+    "C:\\Users\\Andrew James Rowden\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+  },
+  "project": {
+    "version": "1.0.0",
+    "restore": {
+      "projectUniqueName": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.FSharp\\Meridian.FSharp.fsproj",
+      "projectName": "Meridian.FSharp",
+      "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.FSharp\\Meridian.FSharp.fsproj",
+      "packagesPath": "C:\\Users\\Andrew James Rowden\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.FSharp\\obj-codex/",
+      "projectStyle": "PackageReference",
+      "centralPackageVersionsManagementEnabled": true,
+      "CentralPackageTransitivePinningEnabled": true,
+      "fallbackFolders": [
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+      ],
+      "configFilePaths": [
+        "C:\\Users\\Andrew James Rowden\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+      ],
+      "originalTargetFrameworks": [
+        "net9.0"
+      ],
+      "sources": {
+        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+        "C:\\Program Files\\dotnet\\library-packs": {},
+        "C:\\Program Files\\dotnet\\sdk\\9.0.308\\FSharp\\library-packs": {},
+        "https://api.nuget.org/v3/index.json": {}
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "projectReferences": {
+            "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Backtesting.Sdk\\Meridian.Backtesting.Sdk.csproj": {
+              "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Backtesting.Sdk\\Meridian.Backtesting.Sdk.csproj"
+            },
+            "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Contracts\\Meridian.Contracts.csproj": {
+              "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Contracts\\Meridian.Contracts.csproj"
+            },
+            "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Execution.Sdk\\Meridian.Execution.Sdk.csproj": {
+              "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Execution.Sdk\\Meridian.Execution.Sdk.csproj"
+            }
+          }
+        }
+      },
+      "warningProperties": {
+        "noWarn": [
+          "NU1608"
+        ]
+      },
+      "restoreAuditProperties": {
+        "enableAudit": "true",
+        "auditLevel": "low",
+        "auditMode": "direct"
+      },
+      "SdkAnalysisLevel": "9.0.300"
+    },
+    "frameworks": {
+      "net9.0": {
+        "targetAlias": "net9.0",
+        "dependencies": {
+          "FSharp.Core": {
+            "target": "Package",
+            "version": "[11.0.100, )",
+            "generatePathProperty": true,
+            "versionCentrallyManaged": true
+          }
+        },
+        "centralPackageVersions": {
+          "Apache.Arrow": "22.1.0",
+          "AspNetCoreRateLimit": "5.0.0",
+          "BenchmarkDotNet": "0.15.8",
+          "BenchmarkDotNet.Diagnostics.Windows": "0.15.8",
+          "CommunityToolkit.Mvvm": "8.2.2",
+          "CommunityToolkit.WinUI.Controls.Primitives": "8.2.251219",
+          "CommunityToolkit.WinUI.Controls.Sizers": "8.2.250402",
+          "coverlet.collector": "8.0.1",
+          "Extended.Wpf.Toolkit": "4.6.1",
+          "FluentAssertions": "8.9.0",
+          "FluentValidation": "12.1.1",
+          "FluentValidation.AspNetCore": "11.3.1",
+          "FSharp.Core": "11.0.100",
+          "FsUnit.xUnit": "5.6.1",
+          "K4os.Compression.LZ4.Streams": "1.3.8",
+          "MaterialDesignColors": "5.2.0",
+          "MaterialDesignThemes": "5.2.0",
+          "Microsoft.AspNetCore.Mvc.Testing": "9.0.12",
+          "Microsoft.AspNetCore.OpenApi": "9.0.14",
+          "Microsoft.CodeAnalysis.CSharp": "5.3.0",
+          "Microsoft.Extensions.Configuration": "10.0.5",
+          "Microsoft.Extensions.Configuration.Binder": "10.0.5",
+          "Microsoft.Extensions.Configuration.CommandLine": "10.0.5",
+          "Microsoft.Extensions.Configuration.EnvironmentVariables": "10.0.5",
+          "Microsoft.Extensions.Configuration.Json": "10.0.5",
+          "Microsoft.Extensions.DependencyInjection": "10.0.5",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.5",
+          "Microsoft.Extensions.Hosting": "10.0.5",
+          "Microsoft.Extensions.Hosting.Abstractions": "10.0.5",
+          "Microsoft.Extensions.Http": "10.0.5",
+          "Microsoft.Extensions.Http.Polly": "10.0.5",
+          "Microsoft.Extensions.Logging": "10.0.5",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.5",
+          "Microsoft.Extensions.Logging.Debug": "10.0.5",
+          "Microsoft.Extensions.ObjectPool": "10.0.5",
+          "Microsoft.Extensions.Options": "10.0.5",
+          "Microsoft.Extensions.Options.ConfigurationExtensions": "10.0.5",
+          "Microsoft.NET.Test.Sdk": "18.3.0",
+          "Microsoft.Windows.SDK.BuildTools": "10.0.26100.1",
+          "Microsoft.WindowsAppSDK": "1.7.251107005",
+          "ModelContextProtocol": "1.1.0",
+          "ModelContextProtocol.AspNetCore": "1.1.0",
+          "Moq": "4.20.72",
+          "Newtonsoft.Json": "13.0.4",
+          "Npgsql": "9.0.3",
+          "NSubstitute": "5.3.0",
+          "OpenTelemetry": "1.15.0",
+          "OpenTelemetry.Api": "1.15.0",
+          "OpenTelemetry.Exporter.Console": "1.15.0",
+          "OpenTelemetry.Exporter.OpenTelemetryProtocol": "1.15.0",
+          "OpenTelemetry.Exporter.Prometheus.AspNetCore": "1.14.0-beta.1",
+          "OpenTelemetry.Extensions.Hosting": "1.15.0",
+          "OpenTelemetry.Instrumentation.AspNetCore": "1.15.1",
+          "OpenTelemetry.Instrumentation.Http": "1.15.0",
+          "Parquet.Net": "5.5.0",
+          "Polly": "8.6.6",
+          "Polly.Extensions": "8.6.6",
+          "prometheus-net": "8.2.1",
+          "prometheus-net.AspNetCore": "8.2.1",
+          "QuantConnect.Common": "2.5.17414",
+          "QuantConnect.Indicators": "2.5.17414",
+          "QuantConnect.Lean": "2.5.17414",
+          "QuantConnect.Lean.Engine": "2.5.17414",
+          "Serilog": "4.3.1",
+          "Serilog.AspNetCore": "8.0.3",
+          "Serilog.Extensions.Logging": "10.0.0",
+          "Serilog.Settings.Configuration": "10.0.0",
+          "Serilog.Sinks.Console": "6.1.1",
+          "Serilog.Sinks.File": "7.0.0",
+          "Skender.Stock.Indicators": "2.7.1",
+          "StockSharp.Algo": "5.0.229",
+          "StockSharp.BusinessEntities": "5.0.216",
+          "StockSharp.Cqg.Com": "5.0.128",
+          "StockSharp.InteractiveBrokers": "5.0.129",
+          "StockSharp.IQFeed": "5.0.93",
+          "StockSharp.Messages": "5.0.223",
+          "StockSharp.Rithmic": "5.0.110",
+          "Swashbuckle.AspNetCore": "10.1.5",
+          "System.CommandLine": "2.0.0-beta4.22272.1",
+          "System.Drawing.Common": "8.0.11",
+          "System.Formats.Asn1": "8.0.1",
+          "System.IO.Compression": "4.3.0",
+          "System.IO.Pipelines": "10.0.5",
+          "System.Net.Http.Json": "10.0.5",
+          "System.Net.Http.WinHttpHandler": "8.0.0",
+          "System.Net.Security": "4.3.2",
+          "System.Net.WebSockets.Client": "4.3.2",
+          "System.Private.ServiceModel": "4.10.3",
+          "System.Reactive": "6.1.0",
+          "System.Security.Cryptography.Pkcs": "8.0.1",
+          "System.Security.Cryptography.ProtectedData": "9.0.2",
+          "System.ServiceModel.Primitives": "4.10.3",
+          "System.Text.Json": "10.0.5",
+          "System.Threading.Channels": "10.0.5",
+          "TngTech.ArchUnitNET": "0.13.3",
+          "TngTech.ArchUnitNET.xUnit": "0.13.3",
+          "Websocket.Client": "5.3.0",
+          "xunit": "2.9.3",
+          "xunit.runner.visualstudio": "3.1.5",
+          "ZstdSharp.Port": "0.8.7"
+        },
+        "imports": [
+          "net461",
+          "net462",
+          "net47",
+          "net471",
+          "net472",
+          "net48",
+          "net481"
+        ],
+        "assetTargetFallback": true,
+        "warn": true,
+        "frameworkReferences": {
+          "Microsoft.NETCore.App": {
+            "privateAssets": "all"
+          }
+        },
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.308/PortableRuntimeIdentifierGraph.json"
+      }
+    }
+  },
+  "centralTransitiveDependencyGroups": {
+    "net9.0": {
+      "System.IO.Pipelines": {
+        "include": "Runtime, Compile, Native, BuildTransitive",
+        "version": "[10.0.5, )"
+      },
+      "System.Text.Json": {
+        "include": "Runtime, Compile, Native, BuildTransitive",
+        "version": "[10.0.5, )"
+      }
+    }
+  }
+}

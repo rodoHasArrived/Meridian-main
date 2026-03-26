@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "dgSpecHash": "e6nz/joN+1M=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Execution.Sdk\\Meridian.Execution.Sdk.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Andrew James Rowden\\.nuget\\packages\\system.io.pipelines\\10.0.5\\system.io.pipelines.10.0.5.nupkg.sha512",
+    "C:\\Users\\Andrew James Rowden\\.nuget\\packages\\system.text.encodings.web\\10.0.5\\system.text.encodings.web.10.0.5.nupkg.sha512",
+    "C:\\Users\\Andrew James Rowden\\.nuget\\packages\\system.text.json\\10.0.5\\system.text.json.10.0.5.nupkg.sha512"
+  ],
+  "logs": []
+}
