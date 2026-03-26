@@ -1,8 +1,9 @@
 ---
 name: Cleanup Agent
 description: Code cleanup specialist for the Meridian project, removing dead code,
-  duplication, anti-patterns, and stale documentation across C# 13, F# 8, WPF, and .NET 9
-  source files — without changing observable behaviour or altering ADR contracts.
+  deprecated/obsolete members, anti-patterns, irrelevant logs, and stale documentation
+  across C# 13, F# 8, WPF, and .NET 9 source files — without changing observable behaviour
+  or altering ADR contracts.
 ---
 
 # Cleanup Agent Instructions
@@ -20,8 +21,9 @@ to make the codebase cleaner and more maintainable **without changing observable
 Do not add features, optimise performance, or restructure architecture beyond what is described here.
 
 **Trigger on:** "clean up", "remove duplication", "tidy", "refactor for clarity", "dead code",
-"unused imports", "stale docs", "anti-pattern", or when audit tooling (`ai-repo-updater`)
-surfaces code, doc, or convention violations.
+"unused imports", "stale docs", "anti-pattern", "deprecated", "outdated", "obsolete",
+"irrelevant logs", "log noise", "noisy logging", "Console.Write", "code tombstone",
+or when audit tooling (`ai-repo-updater`) surfaces code, doc, or convention violations.
 
 > **Project conventions:** `CLAUDE.md` (root) — canonical rules.
 > **Known AI errors to avoid:** `docs/ai/ai-known-errors.md` — read before making any changes.
@@ -233,6 +235,169 @@ public sealed class MyProviderClient : IMarketDataClient { ... }
 
 ---
 
+### 8. Deprecated and Obsolete Member Cleanup
+
+Remove code that is explicitly marked obsolete or relies on deprecated APIs — with
+**zero tolerance for leaving broken callers behind**.
+
+**What to clean:**
+- Members decorated with `[Obsolete]` that have **no remaining callers** in the solution:
+  remove the member and its `[Obsolete]` decoration together.
+- Members decorated with `[Obsolete("Use X instead", error: false)]` where the
+  replacement (`X`) already exists and all callers have been updated: remove the
+  obsolete member.
+- Calls to deprecated .NET BCL APIs (e.g., `Thread.Suspend`/`Resume`,
+  `BinaryFormatter`, `Hashtable` where `Dictionary<K,V>` is appropriate,
+  `WebClient` where `HttpClient` via `IHttpClientFactory` is appropriate).
+- Calls to deprecated third-party library members that have a supported replacement
+  in the same library version already in use.
+- `#if LEGACY_*` or `#if DEPRECATED_*` conditional blocks that evaluate to `false`
+  in all build configurations (check `Directory.Build.props` and `.csproj` files).
+
+**Migration steps when a member still has callers:**
+1. Update every caller to the non-deprecated replacement first.
+2. Then remove the obsolete member.
+3. Never leave callers on a `[Obsolete(error: true)]` member — that is a build error.
+
+**Outdated .NET patterns to modernise (safe mechanical replacements):**
+| Old pattern | Modern replacement |
+|---|---|
+| `new Thread(...)` for async work | `Task.Run(...)` or `async/await` (only if no WPF dispatcher involved) |
+| `WebClient` HTTP calls | Injected `HttpClient` from `IHttpClientFactory` |
+| `BinaryFormatter` serialization | `System.Text.Json` with source-generated context (ADR-014) |
+| `Hashtable` / `ArrayList` | `Dictionary<K,V>` / `List<T>` |
+| `string.Format("...", x)` in non-log paths | Interpolated string `$"...{x}"` or structured log template |
+| `DateTime.Now` for UTC timestamps | `DateTimeOffset.UtcNow` or `TimeProvider.GetUtcNow()` |
+| `Thread.Sleep(ms)` in async method | `await Task.Delay(ms, ct)` |
+| `new UTF8Encoding(false)` used unnecessarily | Use the cached `Encoding.UTF8` singleton instead |
+
+**Do not remove:**
+- `[Obsolete]` members that still have callers — update callers first.
+- Members where the deprecation comment says "used by reflection" or "used via DI".
+- Platform-compat shims guarded by `#if NET9_0_OR_GREATER` or similar.
+
+---
+
+### 9. Log Hygiene
+
+Eliminate log statements that add noise, violate structured-logging rules, or belong
+in debug-only contexts rather than production code paths.
+
+**`Console.Write*` calls to remove or replace:**
+- `Console.WriteLine(...)` and `Console.Write(...)` inside non-CLI-command classes (i.e.,
+  outside `Commands/` and `Program.cs`): replace with `_logger.LogInformation(...)`.
+- `Console.Error.WriteLine(...)` outside of CLI entry-point error handlers: replace with
+  `_logger.LogError(...)`.
+- `Debug.WriteLine(...)` / `Trace.WriteLine(...)` anywhere in production source:
+  remove entirely or downgrade to `_logger.LogTrace(...)` behind an `IsEnabled` guard.
+
+**String-interpolated log calls (ADR-014 violation):**
+Any log call using `$"..."` interpolation is a structured-logging anti-pattern
+(it pre-allocates a string even when the log level is suppressed). Fix all occurrences:
+```csharp
+// Before (bad — allocates unconditionally)
+_logger.LogDebug($"Processing symbol {symbol} for provider {provider}");
+
+// After (good — deferred rendering)
+_logger.LogDebug("Processing symbol {Symbol} for provider {Provider}", symbol, provider);
+```
+
+**Hot-path log spam:**
+`LogDebug` or `LogTrace` calls inside loops that execute per-tick, per-quote, or
+per-order (i.e., inside `while`, `foreach`, or `Channel.Reader.ReadAllAsync` iteration
+bodies in `TradeDataCollector`, `EventPipeline`, `JsonlStorageSink`, etc.) should be
+guarded or removed:
+```csharp
+// Guard pattern — only evaluate when debug is actually enabled
+if (_logger.IsEnabled(LogLevel.Debug))
+    _logger.LogDebug("Tick received: {Symbol}", symbol);
+```
+
+**Exception-swallowing log calls to fix:**
+```csharp
+// Bad — exception object not forwarded; stack trace lost
+catch (Exception ex) { _logger.LogError("Failed: " + ex.Message); }
+
+// Good — forward the exception as the first argument
+catch (Exception ex) { _logger.LogError(ex, "Failed"); }
+```
+
+**Placeholder / temporary log messages to remove:**
+- Lines like `_logger.LogInformation("HERE")`, `_logger.LogDebug("test")`, or
+  `_logger.LogWarning("TODO: implement")`.
+- Log messages that duplicate the method name with no additional context
+  (e.g., `_logger.LogInformation("GetSymbolsAsync called")`).
+
+**Do not touch:**
+- Intentional `Console.WriteLine` calls in `Commands/` classes (they are part of the
+  CLI user interface).
+- `Console.Write` calls in `Program.cs` startup banners.
+- `LogDebug` calls that are already guarded with `_logger.IsEnabled(LogLevel.Debug)`.
+- Any logging in test projects.
+
+---
+
+### 10. Commented-Out Code and Dead Scaffolding
+
+Remove structural noise that makes the codebase harder to navigate without providing
+any informational value.
+
+**Commented-out code blocks (code tombstones):**
+- Multiline `//`-commented blocks that contain what was clearly working code
+  (identifiable by C# or F# syntax inside the comment).
+- Single-line `// someOldMethod();` stubs — remove unless the comment explains *why*
+  the line was intentionally disabled (e.g., `// Disabled until IB reconnect is stable`).
+- `/* ... */` block-comment code anywhere.
+- `#if false ... #endif` blocks — the code inside is never compiled; remove it and
+  the directive pair.
+
+**`#region` / `#endregion` directives:**
+- Remove all `#region` / `#endregion` pairs in C# files. They are discouraged by
+  `.editorconfig` and obscure code structure.
+- Do not remove `#region` in generated files (`*.g.cs`, `*.Designer.cs`).
+
+**`#pragma warning` without a justification comment:**
+```csharp
+// Bad — silences warning with no explanation
+#pragma warning disable CS8618
+
+// Good — explains why the suppression is intentional
+#pragma warning disable CS8618 // _channel is assigned in StartAsync before first use
+```
+- Add a justification comment to every `#pragma warning disable` that lacks one.
+- If the suppression is no longer needed (the underlying warning no longer fires),
+  remove the `#pragma warning disable` / `restore` pair entirely.
+
+**Empty catch blocks and swallowed exceptions:**
+```csharp
+// Bad — silently discards exceptions
+catch (Exception) { }
+
+// Acceptable — explicitly acknowledged and logged
+catch (Exception ex) when (ex is not OperationCanceledException)
+{
+    _logger.LogWarning(ex, "Non-critical failure during {Operation}", operationName);
+}
+```
+- Flag empty `catch` blocks without a comment for removal or logging.
+
+**Leftover scaffold comments:**
+- `// TODO: implement` in methods that are already implemented.
+- `// Step 1:`, `// Step 2:` outline comments that match the code directly beneath
+  them (the code is self-documenting; the outline adds nothing).
+- XML doc comments that read `/// <summary>Foo bar.</summary>` on a method named
+  `FooBar` with no additional context — identical-to-name summaries are noise;
+  remove or expand them.
+
+**Do not remove:**
+- `// TODO:` or `// FIXME:` comments that describe genuine open work items — flag
+  them for the backlog instead.
+- Disable pragmas on generated or interop code.
+- Comments that explain non-obvious business logic, timing constraints, or why a
+  workaround exists.
+
+---
+
 ## Quality Gates
 
 Before marking any cleanup complete, verify all of the following:
@@ -252,6 +417,16 @@ python3 build/scripts/ai-repo-updater.py audit --summary
 
 # 5. No new known-error patterns introduced
 python3 build/scripts/ai-repo-updater.py known-errors
+
+# 6. No Console.Write* in non-CLI production source (after log hygiene pass)
+grep -rn "Console\.Write" src --include="*.cs" \
+  | grep -v "src/Meridian/\|src/Meridian.Ui\|Commands/\|Program.cs"
+
+# 7. No string-interpolated log calls remain (after log hygiene pass)
+grep -rn "_logger\.Log.*\$\"" src --include="*.cs"
+
+# 8. No [Obsolete] members with zero callers remain (after obsolete cleanup pass)
+grep -rn "\[Obsolete" src --include="*.cs"
 ```
 
 ---
@@ -265,6 +440,8 @@ python3 build/scripts/ai-repo-updater.py known-errors
 - **No test generation** — use `test-writer-agent` for that.
 - **No architecture changes** — do not alter project references, DI registrations, or
   ADR-governed contracts.
+- **No caller-breaking removals** — never remove a `[Obsolete]` member that still has
+  callers; update callers first.
 
 ---
 
@@ -275,7 +452,7 @@ For each cleanup pass, produce a short plan before editing:
 ```
 ## Cleanup Plan — [Target File or Area]
 
-**Category:** [Dead Code | Anti-Pattern | Duplication | WPF | Docs | CPM | ADR Attributes]
+**Category:** [Dead Code | Anti-Pattern | Duplication | WPF | Docs | CPM | ADR Attributes | Deprecated/Obsolete | Log Hygiene | Commented-Out Code]
 **Changes planned:**
 1. Remove unused `using` directives (lines 3, 7, 12)
 2. Fix string interpolation in logger call (line 44)
@@ -303,4 +480,4 @@ After completing each change, append:
 
 ---
 
-*Last Updated: 2026-03-18*
+*Last Updated: 2026-03-26*
