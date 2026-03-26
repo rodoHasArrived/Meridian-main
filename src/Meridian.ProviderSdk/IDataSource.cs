@@ -10,7 +10,6 @@ namespace Meridian.Infrastructure.DataSources;
 /// </summary>
 public interface IDataSource : IAsyncDisposable
 {
-    #region Identity
 
     /// <summary>
     /// Unique identifier for this data source (e.g., "alpaca", "yahoo", "ib").
@@ -27,9 +26,7 @@ public interface IDataSource : IAsyncDisposable
     /// </summary>
     string Description { get; }
 
-    #endregion
 
-    #region Classification
 
     /// <summary>
     /// Type of data provided: Realtime, Historical, or Hybrid.
@@ -46,9 +43,7 @@ public interface IDataSource : IAsyncDisposable
     /// </summary>
     int Priority { get; }
 
-    #endregion
 
-    #region Capabilities
 
     /// <summary>
     /// Bitwise capabilities supported by this source.
@@ -70,9 +65,7 @@ public interface IDataSource : IAsyncDisposable
     /// </summary>
     IReadOnlySet<AssetClass> SupportedAssetClasses { get; }
 
-    #endregion
 
-    #region Operational State
 
     /// <summary>
     /// Current health status including score and recent errors.
@@ -94,9 +87,7 @@ public interface IDataSource : IAsyncDisposable
     /// </summary>
     IObservable<DataSourceHealthChanged> HealthChanges { get; }
 
-    #endregion
 
-    #region Lifecycle
 
     /// <summary>
     /// Initializes the data source, validates credentials, and tests connectivity.
@@ -114,7 +105,6 @@ public interface IDataSource : IAsyncDisposable
     /// </summary>
     Task<bool> TestConnectivityAsync(CancellationToken ct = default);
 
-    #endregion
 }
 
 /// <summary>
@@ -178,7 +168,6 @@ public enum DataSourceCapabilities : long
 {
     None = 0,
 
-    #region Real-time Capabilities (bits 0-9)
 
     /// <summary>Real-time trade prints.</summary>
     RealtimeTrades = 1L << 0,
@@ -198,9 +187,7 @@ public enum DataSourceCapabilities : long
     /// <summary>Real-time aggregate bars.</summary>
     RealtimeAggregateBars = 1L << 5,
 
-    #endregion
 
-    #region Historical Capabilities (bits 10-19)
 
     /// <summary>Historical daily bars.</summary>
     HistoricalDailyBars = 1L << 10,
@@ -226,9 +213,7 @@ public enum DataSourceCapabilities : long
     /// <summary>Historical earnings data.</summary>
     HistoricalEarnings = 1L << 17,
 
-    #endregion
 
-    #region Operational Capabilities (bits 20-29)
 
     /// <summary>Supports historical data backfill.</summary>
     SupportsBackfill = 1L << 20,
@@ -251,9 +236,7 @@ public enum DataSourceCapabilities : long
     /// <summary>Supports multiple simultaneous subscriptions.</summary>
     SupportsMultiSubscription = 1L << 26,
 
-    #endregion
 
-    #region Quality Indicators (bits 30-39)
 
     /// <summary>Provides exchange-level timestamps.</summary>
     ExchangeTimestamps = 1L << 30,
@@ -270,7 +253,6 @@ public enum DataSourceCapabilities : long
     /// <summary>Provides consolidated tape.</summary>
     ConsolidatedTape = 1L << 34,
 
-    #endregion
 }
 
 /// <summary>

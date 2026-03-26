@@ -2,7 +2,6 @@ using System.Text.Json.Serialization;
 
 namespace Meridian.Contracts.Export;
 
-#region Export Event Args
 
 public sealed class ExportProgressEventArgs : EventArgs
 {
@@ -12,9 +11,7 @@ public sealed class ExportProgressEventArgs : EventArgs
     public TimeSpan Elapsed { get; set; }
 }
 
-#endregion
 
-#region Export Options
 
 public sealed class AnalysisExportOptions
 {
@@ -87,9 +84,7 @@ public sealed class DataTypeInclusion
     public bool OrderFlow { get; set; }
 }
 
-#endregion
 
-#region Export Results
 
 public sealed class AnalysisExportResult
 {
@@ -161,9 +156,7 @@ public sealed class ExportTemplate
     public bool IncludeMetadata { get; set; }
 }
 
-#endregion
 
-#region API Response Classes
 
 public sealed class AnalysisExportResponse
 {
@@ -194,9 +187,7 @@ public sealed class ResearchPackageResponse
     public long SizeBytes { get; set; }
 }
 
-#endregion
 
-#region Enums
 
 public enum AnalysisExportFormat : byte
 {
@@ -232,4 +223,3 @@ public enum CompressionType : byte
     ZSTD
 }
 
-#endregion

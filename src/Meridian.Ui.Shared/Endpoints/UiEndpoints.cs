@@ -26,7 +26,6 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// </summary>
 public static class UiEndpoints
 {
-    #region Consolidated Host Setup
 
     /// <summary>
     /// Configures the application with all UI services and endpoints.
@@ -95,9 +94,7 @@ public static class UiEndpoints
         return app;
     }
 
-    #endregion
 
-    #region Service Registration
 
     /// <summary>
     /// Registers all shared services required by UI endpoints using the centralized composition root.
@@ -183,9 +180,7 @@ public static class UiEndpoints
         services.TryAddSingleton<StrategyRunReadService>();
     }
 
-    #endregion
 
-    #region Endpoint Mapping
 
     /// <summary>
     /// Maps all UI API endpoints using default JSON serializer options.
@@ -436,9 +431,7 @@ public static class UiEndpoints
         return app;
     }
 
-    #endregion
 
-    #region Rate Limiting
 
     /// <summary>
     /// Rate limiting policy name applied to mutation (POST/PUT/DELETE) endpoints.
@@ -469,5 +462,4 @@ public static class UiEndpoints
         return services;
     }
 
-    #endregion
 }

@@ -37,7 +37,6 @@ public interface IMarketDataClient : IProviderMetadata, IAsyncDisposable
     /// <summary>Unsubscribe a previously returned trade subscription id.</summary>
     void UnsubscribeTrades(int subscriptionId);
 
-    #region IProviderMetadata Default Implementations
 
     /// <inheritdoc/>
     string IProviderMetadata.ProviderId => GetType().Name.Replace("MarketDataClient", "").ToLowerInvariant();
@@ -54,5 +53,4 @@ public interface IMarketDataClient : IProviderMetadata, IAsyncDisposable
     /// <inheritdoc/>
     ProviderCapabilities IProviderMetadata.ProviderCapabilities => ProviderCapabilities.Streaming();
 
-    #endregion
 }

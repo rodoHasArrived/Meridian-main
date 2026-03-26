@@ -73,7 +73,7 @@ public sealed class StrategyRunStore : IStrategyRepository
     }
 
     /// <inheritdoc/>
-#pragma warning disable CS1998
+#pragma warning disable CS1998 // Intentionally synchronous: in-memory store has no I/O operations to await
     public async IAsyncEnumerable<StrategyRunEntry> GetAllRunsAsync(
         [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
     {
