@@ -2,9 +2,15 @@
 
 **Owner:** Core Team  
 **Audience:** Product, architecture, domain, storage, and application contributors  
-**Last Updated:** 2026-03-24  
+**Last Updated:** 2026-03-26  
 **Status:** active  
-**Reviewed:** 2026-03-24
+**Reviewed:** 2026-03-26
+
+> **Naming standard:** All new F# types and DTOs in this package must follow the
+> [Domain Naming Standard](../ai/claude/CLAUDE.domain-naming.md).
+> For bonds: top-level definition record → `BondDef`; issuer join → `SecIssLnk`;
+> callable flag → `IsCallable: bool`; maturity field → `MaturityDt: DateOnly option`;
+> coupon rate → `CpnRate: decimal option`; bond status union → `BondStat`.
 
 ## Summary
 

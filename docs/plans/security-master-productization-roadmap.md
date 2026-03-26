@@ -7,6 +7,27 @@
 
 ---
 
+## Naming Standard
+
+All new F# types and C# DTOs introduced by this roadmap must follow the
+[Meridian Domain Naming Standard](../ai/claude/CLAUDE.domain-naming.md).
+
+**Quick reference for types proposed in this roadmap:**
+
+| New concept | Required name form |
+|---|---|
+| Corporate Action identifier | `CorpActId = CorpActId of Guid` |
+| Corporate Action domain event DU | `CorpActEvent` (not `CorporateActionEvent`) |
+| Bond term-sheet record | `BondDef` (not `BondTerms` for top-level; sub-records like `CouponTerms` remain as-is) |
+| Status union for corp actions | `CorpActStat = Announced \| Confirmed \| Settled \| Cancelled` |
+| Security–issuer join record | `SecIssLnk` |
+| Dividend trait record | `IncTr = { IsIncomeProducing: bool; DivRate: decimal option; PayFreq: string option }` |
+| Convertible trait record | `ConvTr = { IsConvertible: bool; ConvRatio: decimal option; ConvPx: decimal option }` |
+| Callable flag on bond | `IsCallable: bool` (not `Callable: bool`) |
+| Maturity date field | `MaturityDt: DateOnly option` (new F# code uses `Dt` suffix) |
+
+---
+
 ## Summary
 
 Meridian's Security Master already has contracts, Postgres-backed services, F# domain modules, and REST endpoints. What it lacks is a productized, operator-facing surface that makes it the authoritative instrument-definition layer for research, portfolio tracking, governance, and ledger workflows.

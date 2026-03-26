@@ -331,6 +331,8 @@ data/
 
 ## Naming & Coding Conventions
 
+### General C# / Cross-Layer Rules
+
 | Rule | Good | Bad |
 |------|------|-----|
 | Async suffix | `LoadDataAsync` | `LoadData` |
@@ -342,6 +344,36 @@ data/
 | JSON serialization | `JsonSerializer.Serialize(obj, MyContext.Default.MyType)` | `JsonSerializer.Serialize(obj)` |
 | IOptions for hot config | `IOptionsMonitor<T>` for runtime-changeable | `IOptions<T>` only for truly static settings |
 | Central packages | No `Version=` in `<PackageReference>` | `<PackageReference Include="Foo" Version="1.0" />` |
+
+### Domain Model Naming Standard (F# + Contracts layer)
+
+> **Full spec:** [`docs/ai/claude/CLAUDE.domain-naming.md`](../../../docs/ai/claude/CLAUDE.domain-naming.md)
+
+The financial domain model and security-master layers follow a stricter naming standard to ensure
+names are predictable, stable, and mappable to storage/API contracts. Key rules:
+
+| Concept Class | Required Pattern | Examples |
+|---|---|---|
+| Identifier types | End in `Id` | `SecurityId`, `CorpActId`, `OptChainId` |
+| Entity types | Short singular noun | `Security`, `Issuer`, `CorpAct`, `OptChain` |
+| Definition records (term sheets) | End in `Def` | `BondDef`, `EquityDef`, `OptDef`, `FutDef` |
+| Classification unions | `Class`, `Family`, `Kind`, `Cat`, `Stat` suffix | `AssetClass`, `IdentifierKind`, `CorpActStat` |
+| Trait records (cross-cutting economics) | End in `Tr` | `OwnTr`, `IncTr`, `ConvTr`, `RedTr` |
+| Link / join records | End in `Lnk` | `SecIssLnk`, `SecExchLnk`, `CorpActSecLnk` |
+| Boolean fields | Begin with `Is` or `Has` | `IsCallable`, `HasVoting`, `IsPrimary` |
+| Date fields (new F# code) | End with `Dt` | `MaturityDt`, `IssueDt`, `ExpiryDt` |
+| Amount fields | End with `Amt` | `NotionalAmt`, `FaceAmt`, `GrossAmt` |
+| Rate fields | End with `Rate` | `CpnRate`, `DivRate`, `FloorRate` |
+| Price fields | End with `Px` | `CallPx`, `ConvPx`, `RedPx` |
+
+**Vocabulary roots (Meridian-specific):** Use full words for primary entity names (`Security`,
+`Identifier`, `AssetClass`) and abbreviated forms only in compound names that would exceed ~20
+characters (`CorpAct`, `OptChain`, `BondDef`). Never introduce an abbreviated synonym next to an
+established full-word type name.
+
+**Anti-patterns:** Reject `Data`, `Info`, `Object`, `Model`, `Manager`, `Container`, `Record` as
+decorative suffixes. Reject boolean fields without `Is`/`Has`. Reject `Db`, `Api`, `Json` prefixes
+on core domain types.
 
 ---
 

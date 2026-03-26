@@ -2,6 +2,12 @@
 
 This document provides guidance for AI assistants working with the F# domain library in Meridian.
 
+> **Domain naming standard:** All new F# types in `Meridian.FSharp.Domain` must conform to the
+> [Domain Naming Standard](CLAUDE.domain-naming.md). Key rules at a glance:
+> identifiers end in `Id`; definition records end in `Def`; trait records end in `Tr`;
+> link records end in `Lnk`; boolean fields begin with `Is` or `Has`; date fields end with `Dt` in
+> new code. See the full spec before creating any new domain types.
+
 ---
 
 ## Overview
@@ -33,6 +39,45 @@ src/Meridian.FSharp/
 ```
 
 **Important:** F# requires explicit file ordering in `.fsproj`. Files are compiled in order, and each file can only reference types defined in files listed above it.
+
+---
+
+## Domain Naming Quick Reference
+
+> **Full spec:** [CLAUDE.domain-naming.md](CLAUDE.domain-naming.md)
+
+When adding new types to `Meridian.FSharp.Domain`, apply these rules:
+
+### Type Role → Required Pattern
+
+| Role | Pattern | F# Example |
+|---|---|---|
+| Identifier | `XxxId` single-case DU | `type SecurityId = SecurityId of Guid` |
+| Entity | Short singular noun | `type CorpAct = { ... }` |
+| Definition record (term sheet) | `XxxDef` | `type BondDef = { Coupon: CouponTerms; ... }` |
+| Category union | `Class`/`Kind`/`Cat`/`Stat`/`Style`/`Right` suffix | `type CorpActStat = Announced \| Confirmed \| ...` |
+| Trait record (cross-cutting) | `XxxTr` | `type ConvTr = { IsConvertible: bool; ConvRatio: decimal option }` |
+| Link record (M:M relationship) | `LeftRightLnk` | `type SecExchLnk = { SecurityId: SecurityId; ExchId: ExchId; IsPrimary: bool }` |
+
+### Field naming
+
+| Field type | Convention | Examples |
+|---|---|---|
+| Boolean | `Is` or `Has` prefix | `IsCallable`, `HasVoting`, `IsPrimary`, `IsRestricted` |
+| Date | `Dt` suffix | `MaturityDt`, `IssueDt`, `ExpiryDt`, `FirstCallDt` |
+| Timestamp | `At` suffix | `RecordedAt`, `CreatedAt`, `AsOfUtc` |
+| Amount | `Amt` suffix | `NotionalAmt`, `FaceAmt`, `GrossAmt` |
+| Rate | `Rate` suffix | `CpnRate`, `DivRate`, `FloorRate`, `CapRate` |
+| Price | `Px` suffix | `CallPx`, `ConvPx`, `RedPx`, `IssuePx` |
+| Spread bps | `Bps` suffix | `SpreadBps`, `OasBps` |
+
+### Approved abbreviation roots (compound names only)
+
+`CorpAct`, `OptChain`, `OptDef`, `FutDef`, `FxDef`, `IssId`, `ExchId`, `CptyId`,
+`PrefShr`, `ConvPref`, `OwnTr`, `IncTr`, `ConvTr`, `RedTr`, `SenTr`, `ListTr`
+
+Never create an abbreviated synonym beside an established full-word type:
+`SecurityId` is established — never introduce `SecId` next to it.
 
 ---
 
