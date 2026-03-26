@@ -91,6 +91,7 @@ jobs:
       # Only attempt tests when the build succeeded; --no-build with a failed
       # build produces misleading errors that obscure the real root cause.
       - name: Run C# tests
+        id: csharp-tests
         if: steps.build.outcome == 'success'
         continue-on-error: true
         shell: bash
@@ -104,6 +105,7 @@ jobs:
             --blame-hang-timeout 60s
 
       - name: Run F# tests
+        id: fsharp-tests
         if: steps.build.outcome == 'success'
         continue-on-error: true
         shell: bash
@@ -116,8 +118,13 @@ jobs:
             --blame-hang-timeout 60s
 
       # ── Post-run ──────────────────────────────────────────────────────────
+      # Upload when any test step failed (continue-on-error absorbs the failure
+      # from the job's perspective, so failure() alone is not sufficient).
       - name: Upload test results on failure
-        if: failure()
+        if: >-
+          failure() ||
+          steps.csharp-tests.outcome == 'failure' ||
+          steps.fsharp-tests.outcome == 'failure'
         uses: actions/upload-artifact@v7
         with:
           name: copilot-test-results
@@ -132,9 +139,31 @@ jobs:
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "| Step | Status |" >> "$GITHUB_STEP_SUMMARY"
           echo "|------|--------|" >> "$GITHUB_STEP_SUMMARY"
-          BUILD_STATUS="${{ steps.build.outcome }}"
-          echo "| Build | ${BUILD_STATUS^} |" >> "$GITHUB_STEP_SUMMARY"
+          # Use explicit case to avoid bash version-specific parameter expansions.
+          case "${{ steps.build.outcome }}" in
+            success)   BUILD_LABEL="✅ success" ;;
+            failure)   BUILD_LABEL="❌ failure" ;;
+            cancelled) BUILD_LABEL="⚠️ cancelled" ;;
+            *)         BUILD_LABEL="${{ steps.build.outcome }}" ;;
+          esac
+          echo "| Build | $BUILD_LABEL |" >> "$GITHUB_STEP_SUMMARY"
+          case "${{ steps.csharp-tests.outcome }}" in
+            success)   CS_LABEL="✅ success" ;;
+            failure)   CS_LABEL="❌ failure" ;;
+            skipped)   CS_LABEL="— skipped" ;;
+            cancelled) CS_LABEL="⚠️ cancelled" ;;
+            *)         CS_LABEL="${{ steps.csharp-tests.outcome }}" ;;
+          esac
+          echo "| C# tests | $CS_LABEL |" >> "$GITHUB_STEP_SUMMARY"
+          case "${{ steps.fsharp-tests.outcome }}" in
+            success)   FS_LABEL="✅ success" ;;
+            failure)   FS_LABEL="❌ failure" ;;
+            skipped)   FS_LABEL="— skipped" ;;
+            cancelled) FS_LABEL="⚠️ cancelled" ;;
+            *)         FS_LABEL="${{ steps.fsharp-tests.outcome }}" ;;
+          esac
+          echo "| F# tests | $FS_LABEL |" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          if [[ "$BUILD_STATUS" != "success" ]]; then
+          if [[ "${{ steps.build.outcome }}" != "success" ]]; then
             echo "> ⚠️ Build did not succeed — tests were skipped." >> "$GITHUB_STEP_SUMMARY"
           fi
