@@ -142,16 +142,23 @@ public sealed partial class InMemoryDirectLendingService
     {
         lock (_gate)
         {
-            if (!_loans.TryGetValue(loanId, out var stored))
-            {
-                throw new DirectLendingCommandException(new DirectLendingCommandError(DirectLendingErrorCode.NotFound, $"Loan '{loanId}' was not found."));
-            }
-            var run = new ProjectionRunDto(Guid.NewGuid(), loanId, stored.TermsVersions[^1].VersionNumber, stored.Servicing.ServicingRevision, projectionAsOf ?? stored.TermsVersions[^1].Terms.MaturityDate, null, stored.History.LastOrDefault()?.EventId, "manual.request", ComputeTermsHash(stored.TermsVersions[^1].Terms), "in-memory", ProjectionRunStatus.Completed, GetList(_projectionRuns, loanId).LastOrDefault()?.ProjectionRunId, DateTimeOffset.UtcNow);
-            var flows = BuildFlows(stored, run);
-            GetList(_projectionRuns, loanId).Add(run);
-            _projectedCashFlows[run.ProjectionRunId] = flows.ToList();
-            return Task.FromResult(run);
+            return Task.FromResult(CreateProjectionLocked(loanId, projectionAsOf));
         }
+    }
+
+    // Requires _gate to be held by the caller.
+    private ProjectionRunDto CreateProjectionLocked(Guid loanId, DateOnly? projectionAsOf)
+    {
+        System.Diagnostics.Debug.Assert(Monitor.IsEntered(_gate), "CreateProjectionLocked must be called while holding _gate.");
+        if (!_loans.TryGetValue(loanId, out var stored))
+        {
+            throw new DirectLendingCommandException(new DirectLendingCommandError(DirectLendingErrorCode.NotFound, $"Loan '{loanId}' was not found."));
+        }
+        var run = new ProjectionRunDto(Guid.NewGuid(), loanId, stored.TermsVersions[^1].VersionNumber, stored.Servicing.ServicingRevision, projectionAsOf ?? stored.TermsVersions[^1].Terms.MaturityDate, null, stored.History.LastOrDefault()?.EventId, "manual.request", ComputeTermsHash(stored.TermsVersions[^1].Terms), "in-memory", ProjectionRunStatus.Completed, GetList(_projectionRuns, loanId).LastOrDefault()?.ProjectionRunId, DateTimeOffset.UtcNow);
+        var flows = BuildFlows(stored, run);
+        GetList(_projectionRuns, loanId).Add(run);
+        _projectedCashFlows[run.ProjectionRunId] = flows.ToList();
+        return run;
     }
 
     public Task<IReadOnlyList<ProjectionRunDto>> GetProjectionsAsync(Guid loanId, CancellationToken ct = default) => Task.FromResult<IReadOnlyList<ProjectionRunDto>>(GetList(_projectionRuns, loanId).OrderByDescending(static x => x.GeneratedAt).ToArray());
@@ -188,7 +195,7 @@ public sealed partial class InMemoryDirectLendingService
             var latestProjection = GetList(_projectionRuns, loanId).OrderByDescending(static x => x.GeneratedAt).FirstOrDefault();
             if (latestProjection is null)
             {
-                latestProjection = RequestProjectionAsync(loanId, null, ct).Result;
+                latestProjection = CreateProjectionLocked(loanId, null);
             }
 
             var runId = Guid.NewGuid();

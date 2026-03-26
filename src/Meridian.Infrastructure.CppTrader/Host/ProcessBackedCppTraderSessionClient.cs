@@ -1,3 +1,4 @@
+using Meridian.Application.Pipeline;
 using Meridian.Infrastructure.CppTrader.Options;
 using Meridian.Infrastructure.CppTrader.Protocol;
 
@@ -29,7 +30,7 @@ internal sealed class ProcessBackedCppTraderSessionClient : ICppTraderSessionCli
         SessionId = sessionId;
         SessionKind = sessionKind;
         _hostId = $"{Environment.MachineName}:{Environment.ProcessId}";
-        _events = Channel.CreateUnbounded<CppTraderEnvelope>();
+        _events = EventPipelinePolicy.HighThroughput.CreateChannel<CppTraderEnvelope>();
 
         var input = process.StandardOutput.BaseStream;
         var output = process.StandardInput.BaseStream;
