@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-03-26 17:57:02 UTC. Do not edit manually.
+> Auto-generated on 2026-03-26 18:07:29 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -377,14 +377,21 @@ Meridian-main
 │   └── README.md
 ├── benchmarks
 │   ├── Meridian.Benchmarks
+│   │   ├── Budget
+│   │   │   ├── BenchmarkResultStore.cs
+│   │   │   ├── IPerformanceBudget.cs
+│   │   │   ├── PerformanceBudget.cs
+│   │   │   └── PerformanceBudgetRegistry.cs
 │   │   ├── CanonicalizationBenchmarks.cs
 │   │   ├── CollectorBenchmarks.cs
 │   │   ├── CompositeSinkBenchmarks.cs
+│   │   ├── DeduplicationKeyBenchmarks.cs
 │   │   ├── EndToEndPipelineBenchmarks.cs
 │   │   ├── EventPipelineBenchmarks.cs
 │   │   ├── IndicatorBenchmarks.cs
 │   │   ├── JsonSerializationBenchmarks.cs
 │   │   ├── Meridian.Benchmarks.csproj
+│   │   ├── NewlineScanBenchmarks.cs
 │   │   ├── Program.cs
 │   │   ├── StorageSinkBenchmarks.cs
 │   │   └── WalChecksumBenchmarks.cs
@@ -474,9 +481,12 @@ Meridian-main
 │       │   ├── start-collector.sh
 │       │   ├── stop-collector.ps1
 │       │   └── stop-collector.sh
+│       ├── tests
+│       │   └── test_validate_budget.py
 │       ├── ai-architecture-check.py
 │       ├── ai-repo-updater.py
-│       └── validate-tooling-metadata.py
+│       ├── validate-tooling-metadata.py
+│       └── validate_budget.py
 ├── config
 │   ├── appsettings.sample.json
 │   ├── appsettings.schema.json
@@ -2174,6 +2184,7 @@ Meridian-main
 │   │   │   ├── ConfigStore.cs
 │   │   │   └── SecurityMasterSecurityReferenceLookup.cs
 │   │   ├── DtoExtensions.cs
+│   │   ├── GlobalUsings.cs
 │   │   ├── HtmlTemplateGenerator.cs
 │   │   ├── HtmlTemplateGenerator.Login.cs
 │   │   ├── HtmlTemplateGenerator.Scripts.cs
@@ -2674,6 +2685,8 @@ Meridian-main
 │   │   │   └── YahooFinancePcgPreferredIntegrationTests.cs
 │   │   ├── Ledger
 │   │   │   └── LedgerIntegrationTests.cs
+│   │   ├── Performance
+│   │   │   └── AllocationBudgetIntegrationTests.cs
 │   │   ├── ProviderSdk
 │   │   │   ├── CredentialValidatorTests.cs
 │   │   │   ├── DataSourceAttributeTests.cs

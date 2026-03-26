@@ -414,14 +414,21 @@ Meridian-main
 │   └── README.md
 ├── benchmarks
 │   ├── Meridian.Benchmarks
+│   │   ├── Budget
+│   │   │   ├── BenchmarkResultStore.cs
+│   │   │   ├── IPerformanceBudget.cs
+│   │   │   ├── PerformanceBudget.cs
+│   │   │   └── PerformanceBudgetRegistry.cs
 │   │   ├── CanonicalizationBenchmarks.cs
 │   │   ├── CollectorBenchmarks.cs
 │   │   ├── CompositeSinkBenchmarks.cs
+│   │   ├── DeduplicationKeyBenchmarks.cs
 │   │   ├── EndToEndPipelineBenchmarks.cs
 │   │   ├── EventPipelineBenchmarks.cs
 │   │   ├── IndicatorBenchmarks.cs
 │   │   ├── JsonSerializationBenchmarks.cs
 │   │   ├── Meridian.Benchmarks.csproj
+│   │   ├── NewlineScanBenchmarks.cs
 │   │   ├── Program.cs
 │   │   ├── StorageSinkBenchmarks.cs
 │   │   └── WalChecksumBenchmarks.cs
@@ -511,9 +518,12 @@ Meridian-main
 │       │   ├── start-collector.sh
 │       │   ├── stop-collector.ps1
 │       │   └── stop-collector.sh
+│       ├── tests
+│       │   └── test_validate_budget.py
 │       ├── ai-architecture-check.py
 │       ├── ai-repo-updater.py
-│       └── validate-tooling-metadata.py
+│       ├── validate-tooling-metadata.py
+│       └── validate_budget.py
 ├── config
 │   ├── appsettings.sample.json
 │   ├── appsettings.schema.json
@@ -2211,6 +2221,7 @@ Meridian-main
 │   │   │   ├── ConfigStore.cs
 │   │   │   └── SecurityMasterSecurityReferenceLookup.cs
 │   │   ├── DtoExtensions.cs
+│   │   ├── GlobalUsings.cs
 │   │   ├── HtmlTemplateGenerator.cs
 │   │   ├── HtmlTemplateGenerator.Login.cs
 │   │   ├── HtmlTemplateGenerator.Scripts.cs
@@ -2711,6 +2722,8 @@ Meridian-main
 │   │   │   └── YahooFinancePcgPreferredIntegrationTests.cs
 │   │   ├── Ledger
 │   │   │   └── LedgerIntegrationTests.cs
+│   │   ├── Performance
+│   │   │   └── AllocationBudgetIntegrationTests.cs
 │   │   ├── ProviderSdk
 │   │   │   ├── CredentialValidatorTests.cs
 │   │   │   ├── DataSourceAttributeTests.cs
