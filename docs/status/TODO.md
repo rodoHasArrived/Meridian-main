@@ -219,7 +219,7 @@ Total items: **233**
 | `src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs` | 55 | `NOTE` | ❌ | /// <para><b>Migration Note:</b> This class wraps the core implementation from |
 | `src/Meridian.Ui/dashboard/src/screens/data-operations-screen.test.tsx` | 20 | `NOTE` | ❌ | note: "Realtime subscriptions are stable." |
 | `src/Meridian.Ui/dashboard/src/screens/data-operations-screen.tsx` | 211 | `NOTE` | ❌ | <div className="mt-3 text-sm leading-6 text-foreground">{provider.note}</div> |
-| `src/Meridian.Ui/dashboard/src/types.ts` | 50 | `NOTE` | ❌ | note: string; |
+| `src/Meridian.Ui/dashboard/src/types.ts` | 115 | `NOTE` | ❌ | note: string; |
 | `src/Meridian.Wpf/GlobalUsings.cs` | 7 | `NOTE` | ❌ | // NOTE: Type aliases and Contracts namespaces are NOT re-defined here because |
 | `src/Meridian.Wpf/Services/ContextMenuService.cs` | 120 | `NOTE` | ❌ | "Add Note", "\uE70B", |
 | `tests/Meridian.Tests/Application/Backfill/AdditionalProviderContractTests.cs` | 637 | `NOTE` | ❌ | "Note": "Thank you for using Alpha Vantage! Our standard API call frequency is 5 calls per minute and 500 calls per day. Please visit https://www.alphavantage.co/premium/ if you would like to target a higher API call frequency." |
