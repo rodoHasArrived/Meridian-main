@@ -1,6 +1,6 @@
 # Meridian Project Context
 
-**Generated:** 2026-03-22 03:06:58 UTC
+**Generated:** 2026-03-26 17:57:05 UTC
 **Source:** Auto-generated from code annotations
 
 ## Key Interfaces
@@ -11,11 +11,11 @@
 
 | Type | Location | Description |
 |------|----------|-------------|
-| `UiServer` | `Meridian\UiServer.cs` | UiServer uses centralized composition root |
+| `UiServer` | `Meridian/UiServer.cs` | UiServer uses centralized composition root |
 
 ### ADR-004
 
 | Type | Location | Description |
 |------|----------|-------------|
-| `UiServer` | `Meridian\UiServer.cs` | Large file decomposition - endpoints extracted to dedicated modules |
+| `UiServer` | `Meridian/UiServer.cs` | Large file decomposition - endpoints extracted to dedicated modules |
 
