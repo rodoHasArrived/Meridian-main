@@ -1,10 +1,6 @@
-> **⚠️ DELAYED BUILD** — `src/Meridian.Wpf/` is not included in the active solution build target. Code is fully authored and preserved; delayed per ADR-016. Build separately with `dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj /p:EnableWindowsTargeting=true`.
-
----
-
 # WPF Desktop Application — Implementation Notes
 
-**Version**: 1.7.x | **Last updated**: 2026-03-25 | **Status**: Authored / Build-delayed
+**Version**: 1.7.x | **Last updated**: 2026-03-26 | **Status**: Authored / Included in solution build
 
 ## Overview
 

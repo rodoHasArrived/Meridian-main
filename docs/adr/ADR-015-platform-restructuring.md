@@ -1,7 +1,3 @@
-> **Note:** WPF desktop app references in this document reflect a delayed implementation. `src/Meridian.Wpf/` is preserved but not in the active solution build.
-
----
-
 # ADR-015: Platform Restructuring — Meridian → Meridian
 
 ## Status

@@ -1,7 +1,3 @@
-> **Note:** WPF desktop app references in this document reflect a delayed implementation. `src/Meridian.Wpf/` is preserved but not in the active solution build. The **web dashboard** is the current primary UI surface.
-
----
-
 # Full Implementation Backlog (Non-Assembly Scope)
 
 **Last Updated:** 2026-03-25

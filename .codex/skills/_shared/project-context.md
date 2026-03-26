@@ -40,8 +40,8 @@ Prefer the narrowest validation command that matches the files being changed.
 - `src/Meridian.Risk/`: pre-trade risk validation
 - `src/Meridian.Strategies/`: strategy lifecycle and run storage
 - `src/Meridian.Ui/`, `src/Meridian.Ui.Services/`, `src/Meridian.Ui.Shared/`: web UI and shared UI services
-- `src/Meridian.Wpf/`: WPF desktop app — **delayed implementation, directory present but not in active solution**
-- `tests/`: cross-platform, F#, UI-service, and WPF test projects (Meridian.Wpf.Tests excluded from active solution)
+- `src/Meridian.Wpf/`: WPF desktop app — included in solution build (full WPF on Windows, CI stub on Linux/macOS)
+- `tests/`: cross-platform, F#, UI-service, and WPF test projects (all included in solution; Meridian.Wpf.Tests builds full tests on Windows, empty stub on Linux/macOS)
 
 ## Key Abstractions
 

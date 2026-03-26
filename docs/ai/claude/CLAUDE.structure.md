@@ -1193,7 +1193,7 @@ Meridian/
 │   │   ├── LeanSymbolMapper.cs
 │   │   ├── LoginSessionService.cs
 │   │   └── Meridian.Ui.Shared.csproj
-│   └── Meridian.Wpf/  ← DELAYED IMPLEMENTATION (not in active solution build)
+│   └── Meridian.Wpf/
 │       ├── Contracts/
 │       │   ├── IConnectionService.cs
 │       │   └── INavigationService.cs
@@ -1533,7 +1533,7 @@ Meridian/
 │   │   │   └── WatchlistServiceTests.cs
 │   │   ├── Meridian.Ui.Tests.csproj
 │   │   └── README.md
-│   ├── Meridian.Wpf.Tests/  ← DELAYED (not in active solution build)
+│   ├── Meridian.Wpf.Tests/
 │   │   ├── Services/
 │   │   │   ├── AdminMaintenanceServiceTests.cs
 │   │   │   ├── BackgroundTaskSchedulerServiceTests.cs

@@ -135,7 +135,7 @@ Depth multipliers that require a stable platform foundation to deliver value. No
 - L3 inference and queue-aware execution simulation
 - Multi-instance collector coordination and horizontal scale-out
 - Phase 16 assembly-level performance optimizations
-- WPF desktop app (code in `src/Meridian.Wpf/` — delayed; see `docs/development/wpf-implementation-notes.md`)
+- WPF desktop app (code in `src/Meridian.Wpf/` — included in solution build; see `docs/development/wpf-implementation-notes.md`)
 
 ---
 

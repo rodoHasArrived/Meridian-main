@@ -141,7 +141,7 @@ observable behaviour. Covers 7 categories:
 | 1 | Dead code removal (C# / F#) |
 | 2 | Anti-pattern correction (Meridian-specific) |
 | 3 | Duplication consolidation |
-| 4 | WPF code-behind mechanical cleanup *(delayed — WPF not in active build)* |
+| 4 | WPF code-behind mechanical cleanup |
 | 5 | Documentation cleanup (stale refs, broken links) |
 | 6 | Central Package Management (CPM) compliance |
 | 7 | ADR attribute cleanup (`[DataSource]`, `[ImplementsAdr]`) |
@@ -209,7 +209,7 @@ and implementation checklists — grounded in Meridian's actual stack.
 Cleanup specialist for the Meridian repository. Removes dead code, duplication,
 anti-patterns, and stale documentation across C# 13, F# 8, and .NET 9 source files —
 without changing observable behaviour. Covers 7 categories: dead code, anti-pattern correction,
-duplication consolidation, WPF code-behind cleanup (delayed — code preserved), documentation cleanup, CPM compliance,
+duplication consolidation, WPF code-behind cleanup, documentation cleanup, CPM compliance,
 and ADR attribute cleanup.
 
 ---

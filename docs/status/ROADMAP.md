@@ -154,7 +154,7 @@ Multi-run comparison, performance attribution, and strategy lifecycle management
 - Security Master productization as a workstation-visible platform layer
 - Multi-instance collector coordination and horizontal scale-out
 - Phase 16 assembly-level performance optimizations
-- WPF desktop app (code in `src/Meridian.Wpf/` — delayed, see docs/development/wpf-implementation-notes.md)
+- WPF desktop app (code in `src/Meridian.Wpf/` — included in solution build, see docs/development/wpf-implementation-notes.md)
 
 ---
 

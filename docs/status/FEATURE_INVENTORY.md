@@ -231,9 +231,9 @@ Use this document alongside [`ROADMAP.md`](ROADMAP.md) (delivery waves and seque
 
 ---
 
-## 10. WPF Desktop Application *(Delayed Implementation)*
+## 10. WPF Desktop Application
 
-> **Status:** Code present in `src/Meridian.Wpf/` and `tests/Meridian.Wpf.Tests/` but not included in the active solution build. The inventory below reflects the state of the code at the time WPF was deactivated and is retained as a reference for when WPF development resumes.
+> **Status:** Code present in `src/Meridian.Wpf/` and `tests/Meridian.Wpf.Tests/`, both included in the solution build. Builds full WPF desktop app on Windows; produces a CI-compatible stub on Linux/macOS.
 
 ### Shell & Navigation (Complete baseline)
 
@@ -436,7 +436,7 @@ This migration is tracked in [`../plans/trading-workstation-migration-blueprint.
 | `Meridian.Tests` | 229 | ~3,100 | Core: backfill, storage, pipeline, monitoring, providers, credentials, serialization, domain, integration endpoints, execution |
 | `Meridian.FSharp.Tests` | 9 | ~120 | F# domain validation, calculations, transforms, trading transitions, ledger, risk, direct lending interop |
 | `Meridian.Ui.Tests` | 54 | ~900 | UI services (API client, backfill, fixtures, forms, health, watchlist) |
-| `Meridian.Wpf.Tests` | 27 | ~350 | WPF desktop services (navigation, config, status, connection) — *not in active solution build* |
+| `Meridian.Wpf.Tests` | 27 | ~350 | WPF desktop services (navigation, config, status, connection) |
 | `Meridian.Backtesting.Tests` | 8 | ~90 | Backtest engine, fill models, portfolio simulation, XIRR |
 | `Meridian.DirectLending.Tests` | 5 | ~50 | Direct lending services, workflows, PostgreSQL integration |
 | `Meridian.McpServer.Tests` | 3 | ~30 | MCP server tools (backfill, storage) |
@@ -493,7 +493,7 @@ This section inventories the workflow-centric product model that now sits above 
 | Reconciliation run baseline | Partial | Run-scoped reconciliation service, history, and Security Master coverage issue detection now exist; broader break queues and non-run workflows remain |
 | Security Master platform baseline | Partial | Contracts, services, storage, migrations, and F# domain modules exist; workstation-facing productization and shared metadata integration remain |
 | Direct lending vertical slice | Partial | Postgres-backed direct-lending services, migrations, workflow support, and `/api/loans/*` endpoints are live; broader governance/reporting integration remains |
-| WPF run browser/detail/portfolio/ledger surfaces | Delayed | Code present in `src/Meridian.Wpf/`; excluded from active build |
+| WPF run browser/detail/portfolio/ledger surfaces | In progress | Code present in `src/Meridian.Wpf/`; included in active build |
 | Backtest Studio unification | Planned | Native and Lean backtests are still distinct operator experiences |
 | Paper-trading cockpit | Partial | Execution primitives and brokerage gateway adapters (Alpaca, IB, StockSharp) exist; dedicated web dashboard cockpit wiring is still planned |
 | Promotion workflow (`Backtest -> Paper -> Live`) | Partial | Brokerage gateway framework provides the execution adapter layer; safety-gated lifecycle workflow remains planned |

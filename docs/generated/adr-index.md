@@ -19,8 +19,8 @@
 | [013-bounded-channel-policy.md](../adr/013-bounded-channel-policy.md) | ADR-013: Bounded Channel Pipeline Policy with Backpressure | Accepted |
 | [014-json-source-generators.md](../adr/014-json-source-generators.md) | ADR-014: High-Performance JSON Serialization via Source Generators | Accepted |
 | [015-strategy-execution-contract.md](../adr/015-strategy-execution-contract.md) | ADR-015: Strategy Execution Contract | Accepted |
-| [016-platform-architecture-migration.md](../adr/016-platform-architecture-migration.md) | > **Note:** WPF desktop app references in this document reflect a delayed implementation. `src/Meridian.Wpf/` is preserved but not in the active solution build. | Accepted |
-| [ADR-015-platform-restructuring.md](../adr/ADR-015-platform-restructuring.md) | > **Note:** WPF desktop app references in this document reflect a delayed implementation. `src/Meridian.Wpf/` is preserved but not in the active solution build. | Accepted |
+| [016-platform-architecture-migration.md](../adr/016-platform-architecture-migration.md) | ADR-016: Platform Architecture Migration Mandate | Accepted |
+| [ADR-015-platform-restructuring.md](../adr/ADR-015-platform-restructuring.md) | ADR-015: Platform Restructuring — Meridian → Meridian | Accepted |
 | [README.md](../adr/README.md) | Architectural Decision Records (ADRs) | Accepted |
 | [_template.md](../adr/_template.md) | ADR-XXX: [Title] | Superseded |
 
