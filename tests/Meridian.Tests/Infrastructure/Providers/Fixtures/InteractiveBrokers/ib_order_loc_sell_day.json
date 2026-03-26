@@ -1,0 +1,10 @@
+{
+  "description": "IB limit-on-close sell order for QQQ, day session.",
+  "orderId": 1008,
+  "symbol": "QQQ",
+  "orderType": "LOC",
+  "side": "SELL",
+  "quantity": 25,
+  "tif": "DAY",
+  "price": 443.00
+}

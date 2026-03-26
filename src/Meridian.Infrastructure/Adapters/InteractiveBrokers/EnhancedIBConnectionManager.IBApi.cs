@@ -159,6 +159,11 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
         Interlocked.Exchange(ref _connectionEstablishedTimestamp, Stopwatch.GetTimestamp());
         _reconnectBackoff.Reset();
 
+        // Validate the server version reported by TWS/Gateway before proceeding.
+        IBApiVersionValidator.ValidateServerVersion(
+            _clientSocket.ServerVersion,
+            IBApiVersionValidator.MinSupportedClientVersion);
+
         // Start heartbeat monitor if enabled
         if (EnableHeartbeat)
         {

@@ -24,6 +24,11 @@ public sealed class EClientSocket
 
     public bool IsConnected() => _connected;
 
+    /// <summary>
+    /// Server version returned after connection. Returns the maximum tested version in the smoke stub.
+    /// </summary>
+    public int ServerVersion => 178;
+
     public void reqCurrentTime() { }
 
     public void reqMktDepth(int tickerId, Contract contract, int depthLevels, bool isSmartDepth, IList<TagValue>? options) { }

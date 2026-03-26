@@ -201,7 +201,60 @@ Customize in `appsettings.json`:
 }
 ```
 
-## Troubleshooting
+## API Version Compatibility
+
+Meridian validates the IB server version immediately after each TCP connection is established
+(`IBApiVersionValidator.ValidateServerVersion`).
+
+| IB Server Version | TWS / Gateway | Meridian Support |
+|:-----------------:|:-------------:|:-----------------|
+| < 70              | < TWS 966     | ❌ Not supported — upgrade required |
+| 70 – 178          | TWS 966 – 10.19 | ✅ Supported and CI-tested |
+| > 178             | > TWS 10.19   | ⚠️ Accepted with warning — update `IBApiVersionValidator.MaxTestedServerVersion` after confirming |
+
+> **Note**: "Server version" is the integer exchanged during the TCP handshake
+> (`EClientSocket.ServerVersion`), **not** the human-readable TWS release number shown
+> in the TWS title bar.
+
+### Startup Version Validation
+
+When Meridian connects with the `IBAPI` flag, it calls
+`IBApiVersionValidator.ValidateServerVersion(serverVersion, clientVersion)` automatically.
+This check happens in `EnhancedIBConnectionManager.ConnectInternalAsync`.
+
+**If the server version is too old** (< 70):
+
+```
+ERROR IB API version mismatch: server=65 (min=70), client=178
+System.IBApiVersionMismatchException: IB server version 65 is below the minimum supported
+version 70. Upgrade TWS or IB Gateway to version 966 or later (API server version >= 70).
+See docs/providers/interactive-brokers-setup.md for installation guidance.
+```
+
+**Resolution**: Upgrade TWS or IB Gateway to at least version 966 (API server version ≥ 70).
+Download the latest installer from https://www.interactivebrokers.com/en/trading/tws.php.
+
+**If the server version is untested** (> 178):
+
+```
+WARN IB server version 185 exceeds the highest tested version 178. Meridian will continue,
+but some API behaviour may differ. Update MaxTestedServerVersion in IBApiVersionValidator
+after confirming compatibility.
+```
+
+**Resolution**: Run integration tests against the new TWS version and update
+`IBApiVersionValidator.MaxTestedServerVersion` in
+`src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs`.
+
+### Version Requirements Summary
+
+```
+Minimum IB API DLL version (IBApi client): 178  (TWS API installer 10.19+)
+Minimum IB server version at runtime:       70   (TWS/Gateway 966+)
+Maximum tested IB server version:          178   (TWS 10.19)
+```
+
+
 
 ### Build Errors
 
@@ -335,8 +388,8 @@ If IB API setup is too complex, consider:
 
 ---
 
-**Version:** 1.7.0
-**Last Updated:** 2026-03-21
-**TWS API Version:** 10.19+
+**Version:** 1.7.2
+**Last Updated:** 2026-03-26
+**TWS API Version:** 10.19+ (server version ≥ 70, tested up to 178)
 **Tested With:** .NET 9.0
 **See Also:** [Getting Started](../getting-started/README.md) | [Configuration](../HELP.md#configuration) | [Operator Runbook](../operations/operator-runbook.md)
