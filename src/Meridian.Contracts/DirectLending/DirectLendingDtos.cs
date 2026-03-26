@@ -83,7 +83,12 @@ public sealed record DirectLendingTermsDto(
     decimal? CommitmentFeeRate,
     decimal? DefaultRateSpreadBps,
     bool PrepaymentAllowed,
-    string? CovenantsJson);
+    string? CovenantsJson,
+    int InterestOnlyMonths = 0,
+    int? GracePeriodDays = null,
+    decimal? EffectiveRateFloor = null,
+    decimal? EffectiveRateCap = null,
+    decimal? PrepaymentPenaltyRate = null);
 
 public sealed record LoanTermsVersionDto(
     int VersionNumber,
@@ -212,3 +217,36 @@ public sealed record ApplyPrincipalPaymentRequest(
 
 public sealed record PostDailyAccrualRequest(
     DateOnly AccrualDate);
+
+public sealed record ChargePrepaymentPenaltyRequest(
+    decimal OutstandingPrincipal,
+    DateOnly EffectiveDate,
+    string? ExternalRef);
+
+public sealed record LoanSummaryDto(
+    Guid LoanId,
+    string FacilityName,
+    Guid BorrowerId,
+    string BorrowerName,
+    LoanStatus Status,
+    CurrencyCode BaseCurrency,
+    decimal CommitmentAmount,
+    decimal PrincipalOutstanding,
+    decimal InterestAccruedUnpaid,
+    decimal PenaltyAccruedUnpaid,
+    decimal AvailableToDraw,
+    DateOnly OriginationDate,
+    DateOnly MaturityDate,
+    DateOnly? LastAccrualDate,
+    DateOnly? LastPaymentDate);
+
+public sealed record LoanPortfolioSummaryDto(
+    int TotalLoans,
+    int ActiveLoans,
+    int DefaultedLoans,
+    decimal TotalCommitment,
+    decimal TotalPrincipalOutstanding,
+    decimal TotalInterestAccruedUnpaid,
+    decimal TotalPenaltyAccruedUnpaid,
+    decimal TotalAvailableToDraw,
+    IReadOnlyList<LoanSummaryDto> Loans);

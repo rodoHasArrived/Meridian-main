@@ -84,3 +84,4 @@ public interface IDirectLendingService
 
     Task<IReadOnlyList<LoanAggregateSnapshotDto>> RebuildAllAsync(CancellationToken ct = default);
 }
+
