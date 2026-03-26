@@ -38,11 +38,11 @@
   ],
   "build": {
     "content": [
-      { "files": [ "docs/**/*.md", "docs/**/toc.yml" ], "src": "../.." },
+      { "files": [ "docs/**/*.md", "docs/**/toc.yml" ], "exclude": [ "docs/docfx/**" ], "src": "../.." },
       { "files": [ "api/**.yml", "api/index.md" ] }
     ],
     "resource": [
-      { "files": [ "docs/**/*.png", "docs/**/*.svg", "docs/**/*.puml" ], "src": "../.." }
+      { "files": [ "docs/**/*.png", "docs/**/*.svg", "docs/**/*.puml" ], "exclude": [ "docs/docfx/**" ], "src": "../.." }
     ],
     "output": "../_site",
     "template": [ "default", "modern" ],
