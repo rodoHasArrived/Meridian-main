@@ -676,6 +676,29 @@ public static class WorkstationEndpoints
             ? FormatPercent(totalPnl / portfolio.PortfolioValue)
             : "—";
 
+        // --- Fills (completed orders from OMS) ---
+        object[] fills;
+        if (oms is not null)
+        {
+            fills = oms.GetCompletedOrders(20).Select(static order => (object)new
+            {
+                fillId = order.OrderId,
+                orderId = order.OrderId,
+                symbol = order.Symbol,
+                side = order.Side.ToString(),
+                quantity = order.FilledQuantity.ToString(CultureInfo.InvariantCulture),
+                price = order.AverageFillPrice.HasValue
+                    ? order.AverageFillPrice.Value.ToString("F2", CultureInfo.InvariantCulture)
+                    : "—",
+                venue = "Paper",
+                timestamp = (order.LastUpdatedAt ?? order.CreatedAt).ToString("HH:mm:ss", CultureInfo.InvariantCulture) + " UTC"
+            }).ToArray();
+        }
+        else
+        {
+            fills = Array.Empty<object>();
+        }
+
         return new
         {
             metrics = new[]
@@ -687,7 +710,7 @@ public static class WorkstationEndpoints
             },
             positions,
             openOrders,
-            fills = Array.Empty<object>(),
+            fills,
             risk = new
             {
                 state = riskState,

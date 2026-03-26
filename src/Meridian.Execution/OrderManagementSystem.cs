@@ -154,6 +154,22 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
     }
 
     /// <inheritdoc />
+    public IReadOnlyList<OrderState> GetCompletedOrders(int take = 20)
+    {
+        return _orders.Values
+            .Where(static o => o.Status is
+                OrderStatus.Filled or
+                OrderStatus.PartiallyFilled or
+                OrderStatus.Cancelled or
+                OrderStatus.Rejected or
+                OrderStatus.Expired)
+            .OrderByDescending(static o => o.LastUpdatedAt ?? o.CreatedAt)
+            .Take(take)
+            .ToList()
+            .AsReadOnly();
+    }
+
+    /// <inheritdoc />
     public OrderState? GetOrder(string orderId)
     {
         return _orders.TryGetValue(orderId, out var state) ? state : null;

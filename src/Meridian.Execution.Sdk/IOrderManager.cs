@@ -23,4 +23,10 @@ public interface IOrderManager
 
     /// <summary>Cancels all open orders.</summary>
     Task CancelAllAsync(CancellationToken ct = default);
+
+    /// <summary>
+    /// Gets the most recently completed orders (filled, cancelled, rejected, expired) for display
+    /// in the trading cockpit fills feed. Ordered by completion time, most recent first.
+    /// </summary>
+    IReadOnlyList<OrderState> GetCompletedOrders(int take = 20);
 }
