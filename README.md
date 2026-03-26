@@ -592,6 +592,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── claude
 │   │   │   ├── CLAUDE.actions.md
 │   │   │   ├── CLAUDE.api.md
+│   │   │   ├── CLAUDE.domain-naming.md
 │   │   │   ├── CLAUDE.fsharp.md
 │   │   │   ├── CLAUDE.providers.md
 │   │   │   ├── CLAUDE.repo-updater.md
@@ -2893,6 +2894,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-451 directories, 2404 files
+451 directories, 2405 files
 ```
 <!-- readme-tree end -->
