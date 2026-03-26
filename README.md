@@ -426,14 +426,21 @@ Use these documents together when planning or implementing new work:
 ├── benchmarks
 │   ├── BOTTLENECK_REPORT.md
 │   ├── Meridian.Benchmarks
+│   │   ├── Budget
+│   │   │   ├── BenchmarkResultStore.cs
+│   │   │   ├── IPerformanceBudget.cs
+│   │   │   ├── PerformanceBudget.cs
+│   │   │   └── PerformanceBudgetRegistry.cs
 │   │   ├── CanonicalizationBenchmarks.cs
 │   │   ├── CollectorBenchmarks.cs
 │   │   ├── CompositeSinkBenchmarks.cs
+│   │   ├── DeduplicationKeyBenchmarks.cs
 │   │   ├── EndToEndPipelineBenchmarks.cs
 │   │   ├── EventPipelineBenchmarks.cs
 │   │   ├── IndicatorBenchmarks.cs
 │   │   ├── JsonSerializationBenchmarks.cs
 │   │   ├── Meridian.Benchmarks.csproj
+│   │   ├── NewlineScanBenchmarks.cs
 │   │   ├── Program.cs
 │   │   ├── StorageSinkBenchmarks.cs
 │   │   └── WalChecksumBenchmarks.cs
@@ -524,7 +531,10 @@ Use these documents together when planning or implementing new work:
 │       │   ├── start-collector.sh
 │       │   ├── stop-collector.ps1
 │       │   └── stop-collector.sh
-│       └── validate-tooling-metadata.py
+│       ├── tests
+│       │   └── test_validate_budget.py
+│       ├── validate-tooling-metadata.py
+│       └── validate_budget.py
 ├── config
 │   ├── appsettings.sample.json
 │   ├── appsettings.schema.json
@@ -2731,6 +2741,8 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Ledger
 │   │   │   └── LedgerIntegrationTests.cs
 │   │   ├── Meridian.Tests.csproj
+│   │   ├── Performance
+│   │   │   └── AllocationBudgetIntegrationTests.cs
 │   │   ├── ProviderSdk
 │   │   │   ├── CredentialValidatorTests.cs
 │   │   │   ├── DataSourceAttributeTests.cs
@@ -2897,6 +2909,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-451 directories, 2408 files
+454 directories, 2417 files
 ```
 <!-- readme-tree end -->
