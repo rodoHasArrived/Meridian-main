@@ -37,6 +37,7 @@ namespace Meridian.Core.Serialization;
 [JsonSerializable(typeof(Dictionary<string, JsonElement>))]
 [JsonSerializable(typeof(SecurityClassificationSummaryDto))]
 [JsonSerializable(typeof(SecurityEconomicDefinitionSummaryDto))]
+[JsonSerializable(typeof(SecurityIdentityDrillInDto))]
 [JsonSerializable(typeof(SecurityMasterWorkstationDto))]
 [JsonSerializable(typeof(SecurityMasterWorkstationDto[]))]
 [JsonSerializable(typeof(List<SecurityMasterWorkstationDto>))]

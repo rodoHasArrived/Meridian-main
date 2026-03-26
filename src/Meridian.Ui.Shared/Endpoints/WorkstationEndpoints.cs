@@ -354,6 +354,42 @@ public static class WorkstationEndpoints
         .Produces(404)
         .Produces(501);
 
+        group.MapGet("/security-master/securities/{securityId:guid}/identity", async (Guid securityId, HttpContext context) =>
+        {
+            var queryService = context.RequestServices.GetService<ISecurityMasterQueryService>();
+            if (queryService is null)
+            {
+                return Results.Problem("Security Master query service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var detail = await queryService.GetByIdAsync(securityId, context.RequestAborted).ConfigureAwait(false);
+            return detail is null
+                ? Results.NotFound()
+                : Results.Json(MapToIdentityDrillIn(detail), jsonOptions);
+        })
+        .WithName("GetSecurityMasterWorkstationIdentityDrillIn")
+        .Produces<SecurityIdentityDrillInDto>(200)
+        .Produces(404)
+        .Produces(501);
+
+        group.MapGet("/security-master/securities/{securityId:guid}/economic-definition", async (Guid securityId, HttpContext context) =>
+        {
+            var queryService = context.RequestServices.GetService<ISecurityMasterQueryService>();
+            if (queryService is null)
+            {
+                return Results.Problem("Security Master query service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var record = await queryService.GetEconomicDefinitionByIdAsync(securityId, context.RequestAborted).ConfigureAwait(false);
+            return record is null
+                ? Results.NotFound()
+                : Results.Json(MapToEconomicDefinitionSummary(record), jsonOptions);
+        })
+        .WithName("GetSecurityMasterWorkstationEconomicDefinition")
+        .Produces<SecurityEconomicDefinitionSummaryDto>(200)
+        .Produces(404)
+        .Produces(501);
+
         // --- Multi-run comparison and diff ---
 
         group.MapPost("/runs/compare", async (RunComparisonRequest request, HttpContext context) =>
@@ -1626,7 +1662,7 @@ public static class WorkstationEndpoints
             Status: summary.Status,
             Classification: new SecurityClassificationSummaryDto(
                 AssetClass: summary.AssetClass,
-                SubType: null,
+                SubType: DeriveSubType(summary.AssetClass),
                 PrimaryIdentifierKind: null,
                 PrimaryIdentifierValue: summary.PrimaryIdentifier),
             EconomicDefinition: new SecurityEconomicDefinitionSummaryDto(
@@ -1647,7 +1683,7 @@ public static class WorkstationEndpoints
             Status: detail.Status,
             Classification: new SecurityClassificationSummaryDto(
                 AssetClass: detail.AssetClass,
-                SubType: null,
+                SubType: DeriveSubType(detail.AssetClass),
                 PrimaryIdentifierKind: primaryIdentifier?.Kind.ToString(),
                 PrimaryIdentifierValue: primaryIdentifier?.Value),
             EconomicDefinition: new SecurityEconomicDefinitionSummaryDto(
@@ -1656,6 +1692,48 @@ public static class WorkstationEndpoints
                 EffectiveFrom: detail.EffectiveFrom,
                 EffectiveTo: detail.EffectiveTo));
     }
+
+    private static SecurityIdentityDrillInDto MapToIdentityDrillIn(SecurityDetailDto detail)
+        => new(
+            SecurityId: detail.SecurityId,
+            DisplayName: detail.DisplayName,
+            AssetClass: detail.AssetClass,
+            Status: detail.Status,
+            Version: detail.Version,
+            EffectiveFrom: detail.EffectiveFrom,
+            EffectiveTo: detail.EffectiveTo,
+            Identifiers: detail.Identifiers,
+            Aliases: detail.Aliases);
+
+    private static SecurityEconomicDefinitionSummaryDto MapToEconomicDefinitionSummary(SecurityEconomicDefinitionRecord record)
+        => new(
+            Currency: record.Currency,
+            Version: record.Version,
+            EffectiveFrom: record.EffectiveFrom,
+            EffectiveTo: record.EffectiveTo,
+            SubType: record.SubType,
+            AssetFamily: record.AssetFamily,
+            IssuerType: record.IssuerType);
+
+    /// <summary>
+    /// Derives the most specific sub-type available from the asset-class string without requiring
+    /// a full aggregate rebuild. Returns null for asset classes that may map to multiple sub-types.
+    /// </summary>
+    private static string? DeriveSubType(string? assetClass) => assetClass switch
+    {
+        "Bond" => "Bond",
+        "TreasuryBill" => "TreasuryBill",
+        "Option" => "OptionContract",
+        "Future" => "FutureContract",
+        "Swap" => "SwapContract",
+        "DirectLoan" => "DirectLoan",
+        "Deposit" => "Deposit",
+        "MoneyMarketFund" => "MoneyMarket",
+        "CertificateOfDeposit" => "CertificateOfDeposit",
+        "CommercialPaper" => "CommercialPaper",
+        "Repo" => "Repo",
+        _ => null
+    };
 
     private static IResult ServeWorkstationIndex(IWebHostEnvironment environment)
     {
