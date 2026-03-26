@@ -147,6 +147,7 @@ let ``QuoteEvent with CLIMutable can be created`` () =
     quote.BidPrice |> should equal 140.00m
     quote.AskPrice |> should equal 140.05m
 
+open Meridian.FSharp.Domain
 
 [<Fact>]
 let ``BondTerms fixedRate factory sets coupon correctly`` () =
