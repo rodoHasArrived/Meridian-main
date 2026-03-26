@@ -60,8 +60,8 @@ Total items: **234**
 | `build/scripts/run/start-collector.sh` | 114 | `NOTE` | ❌ | print("[NOTE] L2 depth requires provider depth subscription for venues.") |
 | `config/appsettings.sample.json` | 364 | `NOTE` | ❌ | // NOTE: Credentials are resolved from environment variables - do NOT add them here. |
 | `config/appsettings.sample.json` | 484 | `NOTE` | ❌ | //   4. Note the port (default 7497 for TWS paper, 7496 for live) |
-| `docs/HELP.md` | 411 | `NOTE` | ❌ | **Note:** Environment variables override values in `appsettings.json`. |
-| `docs/HELP.md` | 437 | `NOTE` | ❌ | - Note the Socket Port (default: 7497 for TWS, 4001 for Gateway) |
+| `docs/HELP.md` | 413 | `NOTE` | ❌ | **Note:** Environment variables override values in `appsettings.json`. |
+| `docs/HELP.md` | 439 | `NOTE` | ❌ | - Note the Socket Port (default: 7497 for TWS, 4001 for Gateway) |
 | `docs/ai/ai-known-errors.md` | 239 | `NOTE` | ❌ | - **Note**: This issue regressed multiple times (1e2ea1d, 5756479, 1802ea9, bf67ed5, e920c34) when using workarounds. The structural fix eliminates the problem at the API design level. |
 | `docs/ai/claude/CLAUDE.actions.md` | 23 | `TODO` | ❌ | \| Documentation \| `documentation.yml` \| Push/PRs (docs/source), weekly, issues, manual \| Doc generation, structure sync, TODO scan \| |
 | `docs/ai/claude/CLAUDE.actions.md` | 92 | `TODO` | ❌ | - **Documentation** - AI documentation quality review, AI TODO triage |
