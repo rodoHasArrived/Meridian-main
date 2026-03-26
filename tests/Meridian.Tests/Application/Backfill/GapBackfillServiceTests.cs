@@ -9,26 +9,43 @@ namespace Meridian.Tests.Application.Backfill;
 /// <summary>
 /// Unit tests for <see cref="GapBackfillService"/>.
 ///
-/// Tests drive the service through the <see cref="WebSocketReconnectionHelper.Reconnected"/>
-/// event (fired via reflection, since the event can only be raised inside the helper class).
-/// The async backfill task is fire-and-forget inside the service; each test that expects
-/// the executor to be called uses a <see cref="TaskCompletionSource{T}"/> to await completion.
+/// <para>
+/// <b>Event injection strategy:</b> <see cref="WebSocketReconnectionHelper"/> is a sealed class
+/// and its <c>Reconnected</c> event can only be raised internally (inside
+/// <see cref="WebSocketReconnectionHelper.TryReconnectAsync"/>), which carries a multi-second
+/// built-in backoff delay unsuitable for unit tests.  The backing multicast delegate is therefore
+/// retrieved via reflection and invoked directly.  This is an intentional, pragmatic trade-off:
+/// the C# compiler guarantees that an auto-implemented event named <c>Reconnected</c> backs
+/// itself with a private field of the same name.  If the event is ever refactored the assertion
+/// inside <see cref="RaiseReconnected"/> will surface the problem immediately.
+/// </para>
+///
+/// <para>
+/// <b>Async synchronization strategy:</b>
+/// <list type="bullet">
+///   <item>Tests that expect the executor to be called use a
+///     <see cref="TaskCompletionSource{T}"/> and poll the counter with a bounded retry loop
+///     so counter increments that happen after the TCS fires are still observed correctly.</item>
+///   <item>Tests that expect the executor <em>not</em> to be called set a TCS inside the executor
+///     and verify it did not complete within a short timeout, avoiding fixed-delay sleeps.</item>
+/// </list>
+/// </para>
 /// </summary>
 public sealed class GapBackfillServiceTests
 {
     // ── infrastructure ────────────────────────────────────────────────────────
 
     /// <summary>
-    /// Raises <see cref="WebSocketReconnectionHelper.Reconnected"/> externally.
-    /// The event's backing multicast delegate is obtained via reflection and invoked
-    /// directly, bypassing the reconnect loop and its built-in delays.
+    /// Fires <see cref="WebSocketReconnectionHelper.Reconnected"/> from outside the class via
+    /// reflection.  The C# compiler generates a private backing field whose name matches the
+    /// event name for auto-implemented events; this is stable across .NET versions.
     /// </summary>
     private static void RaiseReconnected(WebSocketReconnectionHelper helper, ReconnectionEvent evt)
     {
         var field = typeof(WebSocketReconnectionHelper)
             .GetField("Reconnected", BindingFlags.NonPublic | BindingFlags.Instance);
-        field.Should().NotBeNull("WebSocketReconnectionHelper must have a 'Reconnected' backing field");
-
+        field.Should().NotBeNull(
+            "WebSocketReconnectionHelper must have an auto-implemented 'Reconnected' backing field");
         var handler = (Action<ReconnectionEvent>?)field!.GetValue(helper);
         handler?.Invoke(evt);
     }
@@ -36,8 +53,7 @@ public sealed class GapBackfillServiceTests
     private static ReconnectionEvent MakeEvent(TimeSpan gap, string provider = "test-provider")
     {
         var reconnectedAt = DateTimeOffset.UtcNow;
-        var disconnectedAt = reconnectedAt - gap;
-        return new ReconnectionEvent(provider, disconnectedAt, reconnectedAt, AttemptsUsed: 1);
+        return new ReconnectionEvent(provider, reconnectedAt - gap, reconnectedAt, AttemptsUsed: 1);
     }
 
     private static BackfillResult SuccessResult(BackfillRequest req) =>
@@ -48,26 +64,41 @@ public sealed class GapBackfillServiceTests
         new(false, req.Provider, req.Symbols.ToArray(), req.From, req.To,
             BarsWritten: 0, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, Error: "provider error");
 
+    /// <summary>
+    /// Polls <paramref name="condition"/> every 10 ms until it returns <c>true</c> or
+    /// <paramref name="timeout"/> elapses.  Used to avoid fixed-delay waits for async
+    /// counter increments that happen just after the executor returns.
+    /// </summary>
+    private static async Task WaitUntilAsync(Func<bool> condition, TimeSpan? timeout = null)
+    {
+        var deadline = DateTime.UtcNow + (timeout ?? TimeSpan.FromSeconds(5));
+        while (!condition() && DateTime.UtcNow < deadline)
+            await Task.Delay(10);
+    }
+
     // ── gap threshold ─────────────────────────────────────────────────────────
 
     [Fact]
     public async Task OnReconnected_GapBelowMinimum_DoesNotTriggerBackfill()
     {
-        var executorCalled = false;
+        // Use TCS so the test fails immediately if the executor is unexpectedly called.
+        var executorCalled = new TaskCompletionSource<bool>();
         var svc = new GapBackfillService(
-            (req, ct) => { executorCalled = true; return Task.FromResult(SuccessResult(req)); },
+            (req, ct) => { executorCalled.TrySetResult(true); return Task.FromResult(SuccessResult(req)); },
             subscribedSymbols: ["AAPL"],
             minimumGap: TimeSpan.FromSeconds(30));
 
         var helper = new WebSocketReconnectionHelper("test");
         svc.Subscribe(helper);
 
-        // 5 s gap is below the 30 s minimum — no executor call expected.
+        // 5 s gap is below the 30 s minimum — the early-return path fires; no async work is spawned.
         RaiseReconnected(helper, MakeEvent(TimeSpan.FromSeconds(5)));
-        await Task.Delay(50); // allow any unexpected async work to complete
+
+        var completedTask = await Task.WhenAny(executorCalled.Task, Task.Delay(100));
+        completedTask.Should().NotBeSameAs(executorCalled.Task,
+            "executor must not be called when gap is below minimum threshold");
 
         svc.GapBackfillsTriggered.Should().Be(0);
-        executorCalled.Should().BeFalse();
     }
 
     [Fact]
@@ -117,10 +148,9 @@ public sealed class GapBackfillServiceTests
         var svc = new GapBackfillService(
             async (req, ct) =>
             {
-                var result = SuccessResult(req);
                 await Task.Yield();
-                tcs.TrySetResult(true);
-                return result;
+                tcs.TrySetResult(true); // signal after executor body completes
+                return SuccessResult(req);
             },
             subscribedSymbols: ["SPY"],
             minimumGap: TimeSpan.FromSeconds(5));
@@ -130,8 +160,10 @@ public sealed class GapBackfillServiceTests
 
         RaiseReconnected(helper, MakeEvent(TimeSpan.FromSeconds(30)));
 
+        // Wait for executor body to complete, then poll until the post-return counter
+        // increment (GapBackfillsSucceeded++) has propagated.
         await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
-        await Task.Delay(50); // allow counter increment after executor returns
+        await WaitUntilAsync(() => svc.GapBackfillsSucceeded == 1);
 
         svc.GapBackfillsSucceeded.Should().Be(1);
     }
@@ -143,10 +175,9 @@ public sealed class GapBackfillServiceTests
         var svc = new GapBackfillService(
             async (req, ct) =>
             {
-                var result = FailureResult(req);
                 await Task.Yield();
                 tcs.TrySetResult(true);
-                return result;
+                return FailureResult(req);
             },
             subscribedSymbols: ["SPY"],
             minimumGap: TimeSpan.FromSeconds(5));
@@ -157,7 +188,8 @@ public sealed class GapBackfillServiceTests
         RaiseReconnected(helper, MakeEvent(TimeSpan.FromSeconds(30)));
 
         await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
-        await Task.Delay(50);
+        // Give the post-return path a moment to finish; succeeded must remain 0.
+        await WaitUntilAsync(() => svc.GapBackfillsTriggered == 1);
 
         svc.GapBackfillsTriggered.Should().Be(1);
         svc.GapBackfillsSucceeded.Should().Be(0);
@@ -185,7 +217,7 @@ public sealed class GapBackfillServiceTests
         act.Should().NotThrow();
 
         await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
-        await Task.Delay(50);
+        await WaitUntilAsync(() => svc.GapBackfillsTriggered == 1);
 
         svc.GapBackfillsTriggered.Should().Be(1);
         svc.GapBackfillsSucceeded.Should().Be(0);
@@ -196,22 +228,23 @@ public sealed class GapBackfillServiceTests
     [Fact]
     public async Task WhenDisabled_Subscribe_DoesNotRegisterHandler()
     {
-        var executorCalled = false;
+        var executorCalled = new TaskCompletionSource<bool>();
         var svc = new GapBackfillService(
-            (req, ct) => { executorCalled = true; return Task.FromResult(SuccessResult(req)); },
+            (req, ct) => { executorCalled.TrySetResult(true); return Task.FromResult(SuccessResult(req)); },
             subscribedSymbols: ["AAPL"],
             enabled: false,
             minimumGap: TimeSpan.FromSeconds(5));
 
         var helper = new WebSocketReconnectionHelper("test");
-        svc.Subscribe(helper); // should be a no-op when disabled
+        svc.Subscribe(helper); // must be a no-op when disabled
 
-        // Even a large gap should not trigger anything.
         RaiseReconnected(helper, MakeEvent(TimeSpan.FromSeconds(120)));
-        await Task.Delay(50);
+
+        var completedTask = await Task.WhenAny(executorCalled.Task, Task.Delay(100));
+        completedTask.Should().NotBeSameAs(executorCalled.Task,
+            "executor must not be called when service is disabled");
 
         svc.GapBackfillsTriggered.Should().Be(0);
-        executorCalled.Should().BeFalse();
     }
 
     // ── no subscribed symbols ─────────────────────────────────────────────────
@@ -219,9 +252,9 @@ public sealed class GapBackfillServiceTests
     [Fact]
     public async Task OnReconnected_NoSubscribedSymbols_DoesNotCallExecutor()
     {
-        var executorCalled = false;
+        var executorCalled = new TaskCompletionSource<bool>();
         var svc = new GapBackfillService(
-            (req, ct) => { executorCalled = true; return Task.FromResult(SuccessResult(req)); },
+            (req, ct) => { executorCalled.TrySetResult(true); return Task.FromResult(SuccessResult(req)); },
             subscribedSymbols: [],
             minimumGap: TimeSpan.FromSeconds(5));
 
@@ -229,10 +262,12 @@ public sealed class GapBackfillServiceTests
         svc.Subscribe(helper);
 
         RaiseReconnected(helper, MakeEvent(TimeSpan.FromSeconds(30)));
-        await Task.Delay(50);
+
+        var completedTask = await Task.WhenAny(executorCalled.Task, Task.Delay(100));
+        completedTask.Should().NotBeSameAs(executorCalled.Task,
+            "executor must not be called when no symbols are subscribed");
 
         svc.GapBackfillsTriggered.Should().Be(0);
-        executorCalled.Should().BeFalse();
     }
 
     // ── unsubscribe ───────────────────────────────────────────────────────────
@@ -240,9 +275,9 @@ public sealed class GapBackfillServiceTests
     [Fact]
     public async Task AfterUnsubscribe_ReconnectionEvent_DoesNotCallExecutor()
     {
-        var executorCalled = false;
+        var executorCalled = new TaskCompletionSource<bool>();
         var svc = new GapBackfillService(
-            (req, ct) => { executorCalled = true; return Task.FromResult(SuccessResult(req)); },
+            (req, ct) => { executorCalled.TrySetResult(true); return Task.FromResult(SuccessResult(req)); },
             subscribedSymbols: ["AAPL"],
             minimumGap: TimeSpan.FromSeconds(5));
 
@@ -251,10 +286,12 @@ public sealed class GapBackfillServiceTests
         svc.Unsubscribe(helper);
 
         RaiseReconnected(helper, MakeEvent(TimeSpan.FromSeconds(30)));
-        await Task.Delay(50);
+
+        var completedTask = await Task.WhenAny(executorCalled.Task, Task.Delay(100));
+        completedTask.Should().NotBeSameAs(executorCalled.Task,
+            "executor must not be called after Unsubscribe");
 
         svc.GapBackfillsTriggered.Should().Be(0);
-        executorCalled.Should().BeFalse();
     }
 
     // ── request shape ─────────────────────────────────────────────────────────
@@ -306,7 +343,7 @@ public sealed class GapBackfillServiceTests
     [Fact]
     public async Task OnReconnected_CalledTwice_CountersAccumulateCorrectly()
     {
-        var callCount = 0;
+        int callCount = 0;
         var tcs1 = new TaskCompletionSource<bool>();
         var tcs2 = new TaskCompletionSource<bool>();
 
@@ -331,7 +368,9 @@ public sealed class GapBackfillServiceTests
         await Task.WhenAll(
             tcs1.Task.WaitAsync(TimeSpan.FromSeconds(5)),
             tcs2.Task.WaitAsync(TimeSpan.FromSeconds(5)));
-        await Task.Delay(100); // allow both counter increments to finish
+
+        // Poll until both counter increments (which happen after executor returns) settle.
+        await WaitUntilAsync(() => svc.GapBackfillsSucceeded == 2);
 
         svc.GapBackfillsTriggered.Should().Be(2);
         svc.GapBackfillsSucceeded.Should().Be(2);
@@ -342,10 +381,10 @@ public sealed class GapBackfillServiceTests
     [Fact]
     public async Task DefaultMinimumGap_Is10Seconds_SmallGapIsIgnored()
     {
-        var executorCalled = false;
-        // No minimumGap specified — defaults to 10 s.
+        var executorCalled = new TaskCompletionSource<bool>();
+        // No minimumGap specified — defaults to 10 s inside GapBackfillService.
         var svc = new GapBackfillService(
-            (req, ct) => { executorCalled = true; return Task.FromResult(SuccessResult(req)); },
+            (req, ct) => { executorCalled.TrySetResult(true); return Task.FromResult(SuccessResult(req)); },
             subscribedSymbols: ["AAPL"]);
 
         var helper = new WebSocketReconnectionHelper("test");
@@ -353,9 +392,11 @@ public sealed class GapBackfillServiceTests
 
         // 9 s gap — just below the 10 s default minimum.
         RaiseReconnected(helper, MakeEvent(TimeSpan.FromSeconds(9)));
-        await Task.Delay(50);
 
-        executorCalled.Should().BeFalse();
+        var completedTask = await Task.WhenAny(executorCalled.Task, Task.Delay(100));
+        completedTask.Should().NotBeSameAs(executorCalled.Task,
+            "a 9 s gap should be below the 10 s default minimum");
+
         svc.GapBackfillsTriggered.Should().Be(0);
     }
 
