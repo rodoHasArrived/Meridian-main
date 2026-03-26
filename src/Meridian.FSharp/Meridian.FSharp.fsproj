@@ -24,6 +24,9 @@
     <Compile Include="Domain/SecurityTermModules.fs" />
     <Compile Include="Domain/SecurityMaster.fs" />
     <Compile Include="Domain/SecurityEconomicDefinition.fs" />
+    <!-- Cash-flow projection and break classification — depend on Security Master types above -->
+    <Compile Include="Domain/CashFlowProjection.fs" />
+    <Compile Include="Domain/CashFlowRules.fs" />
     <Compile Include="Domain/SecurityMasterLegacyUpgrade.fs" />
     <Compile Include="Domain/SecurityMasterEvents.fs" />
     <Compile Include="Domain/SecurityMasterCommands.fs" />
