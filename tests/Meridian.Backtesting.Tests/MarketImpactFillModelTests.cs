@@ -79,7 +79,7 @@ public sealed class MarketImpactFillModelTests
         result.Fills[0].FilledQuantity.Should().Be(-10L, "sell fills carry negative quantity");
         // With impact, sell fills should be at or below midpoint
         var mid = (400m + 405m) / 2m;
-        result.Fills.Average(f => f.FillPrice).Should().BeLessOrEqualTo(mid);
+        result.Fills.Average(f => f.FillPrice).Should().BeLessThanOrEqualTo(mid);
     }
 
     [Fact]
@@ -110,7 +110,7 @@ public sealed class MarketImpactFillModelTests
 
         result.Fills.Count.Should().BeGreaterThan(1);
         // Last fill should cost more than first fill for a buy
-        result.Fills.Last().FillPrice.Should().BeGreaterOrEqualTo(result.Fills.First().FillPrice,
+        result.Fills.Last().FillPrice.Should().BeGreaterThanOrEqualTo(result.Fills.First().FillPrice,
             "cumulative market impact makes each subsequent buy slice more expensive");
     }
 

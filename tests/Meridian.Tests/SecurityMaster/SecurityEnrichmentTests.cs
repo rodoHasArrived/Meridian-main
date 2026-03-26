@@ -3,6 +3,7 @@ using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
+using MeridianLedger = Meridian.Ledger.Ledger;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
 using Xunit;
@@ -208,7 +209,9 @@ public sealed class SecurityEnrichmentTests
         };
         var aliases = new[]
         {
-            new SecurityAliasDto(Guid.NewGuid(), securityId, "alias-ticker", "BOND1-OPS", "Operations", "ticker", "description", DateTimeOffset.UtcNow.AddDays(-1), null, true)
+            new SecurityAliasDto(Guid.NewGuid(), securityId, "alias-ticker", "BOND1-OPS", "Operations",
+                SecurityAliasScope.Operations, "description", "test",
+                DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddDays(-1), null, true)
         };
 
         var drillIn = new SecurityIdentityDrillInDto(
@@ -268,7 +271,7 @@ public sealed class SecurityEnrichmentTests
     private static StrategyRunEntry BuildRunWithLedger(string symbol)
     {
         var ts = new DateTimeOffset(2026, 2, 1, 10, 0, 0, TimeSpan.Zero);
-        var ledger = new Ledger();
+        var ledger = new MeridianLedger();
         var cash = new LedgerAccount("Cash", LedgerAccountType.Asset);
         var revenue = new LedgerAccount("Trading Revenue", LedgerAccountType.Revenue, Symbol: symbol);
 
@@ -325,7 +328,7 @@ public sealed class SecurityEnrichmentTests
             CashFlows: [],
             Fills: [],
             Metrics: metrics,
-            Ledger: new Ledger(),
+            Ledger: new MeridianLedger(),
             ElapsedTime: TimeSpan.FromSeconds(5),
             TotalEventsProcessed: 100);
 
@@ -339,7 +342,7 @@ public sealed class SecurityEnrichmentTests
             Metrics: result);
     }
 
-    private static BacktestResult BuildBacktestResultWithLedger(DateTimeOffset ts, Ledger ledger)
+    private static BacktestResult BuildBacktestResultWithLedger(DateTimeOffset ts, MeridianLedger ledger)
     {
         var metrics = new BacktestMetrics(
             InitialCapital: 100_000m, FinalEquity: 101_000m, GrossPnl: 1_100m, NetPnl: 1_000m,
