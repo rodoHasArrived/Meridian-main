@@ -34,3 +34,4 @@ public interface IDirectLendingCommandService
 
     Task<DirectLendingCommandResult<IReadOnlyList<LoanAggregateSnapshotDto>>> RebuildAllAsync(CancellationToken ct = default);
 }
+

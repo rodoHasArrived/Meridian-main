@@ -353,3 +353,43 @@ module internal ServicingAggregate =
                 accrualEntries)
 
         { Servicing = updated; Entry = entry }
+
+    let chargePrepaymentPenalty (servicing: LoanServicingStateDto) (terms: DirectLendingTermsDto) (outstandingPrincipal: decimal) (effectiveDate: DateOnly) =
+        if not terms.PrepaymentAllowed then
+            failwith "Prepayment is not permitted under the current loan terms."
+
+        let penaltyRate =
+            if terms.PrepaymentPenaltyRate.HasValue then terms.PrepaymentPenaltyRate.Value else 0m
+
+        let penaltyAmount =
+            if penaltyRate > 0m then
+                Math.Round(outstandingPrincipal * penaltyRate, 2, MidpointRounding.AwayFromZero)
+            else
+                0m
+
+        let nextRevision = servicing.ServicingRevision + 1L
+        let balances =
+            OutstandingBalancesDto(
+                servicing.Balances.PrincipalOutstanding,
+                servicing.Balances.InterestAccruedUnpaid,
+                servicing.Balances.CommitmentFeeAccruedUnpaid,
+                servicing.Balances.FeesAccruedUnpaid,
+                servicing.Balances.PenaltyAccruedUnpaid + penaltyAmount)
+
+        let updated =
+            LoanServicingStateDto(
+                servicing.LoanId,
+                servicing.Status,
+                servicing.CurrentCommitment,
+                servicing.TotalDrawn,
+                servicing.AvailableToDraw,
+                balances,
+                servicing.DrawdownLots,
+                servicing.CurrentRateReset,
+                servicing.LastAccrualDate,
+                servicing.LastPaymentDate,
+                nextRevision,
+                prependRevision nextRevision "InternalEvent" effectiveDate (sprintf "Prepayment penalty charged for %.2f." penaltyAmount) servicing.RevisionHistory,
+                servicing.AccrualEntries)
+
+        { Servicing = updated; PenaltyAmount = penaltyAmount }

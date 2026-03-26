@@ -33,3 +33,6 @@ module DirectLendingAggregateInterop =
 
     let PostDailyAccrual (servicing: LoanServicingStateDto) (terms: DirectLendingTermsDto) (request: PostDailyAccrualRequest) =
         ServicingAggregate.postDailyAccrual servicing terms request.AccrualDate
+
+    let ChargePrepaymentPenalty (servicing: LoanServicingStateDto) (terms: DirectLendingTermsDto) (request: ChargePrepaymentPenaltyRequest) =
+        ServicingAggregate.chargePrepaymentPenalty servicing terms request.OutstandingPrincipal request.EffectiveDate

@@ -37,3 +37,21 @@ type DirectLendingInterop private () =
 
     static member ApplyPrincipalPayment(principalOutstanding: decimal, paymentAmount: decimal) =
         DirectLending.applyPrincipalPayment principalOutstanding paymentAmount
+
+    static member IsInterestOnlyPeriod(originationDate: DateOnly, interestOnlyMonths: int, asOfDate: DateOnly) =
+        DirectLending.isInterestOnlyPeriod originationDate interestOnlyMonths asOfDate
+
+    static member IsWithinGracePeriod(dueDate: DateOnly, gracePeriodDays: Nullable<int>, asOfDate: DateOnly) =
+        let graceDays = if gracePeriodDays.HasValue then Some gracePeriodDays.Value else None
+        DirectLending.isWithinGracePeriod dueDate graceDays asOfDate
+
+    static member EstimatePrepaymentPenalty(prepaymentAllowed: bool, prepaymentPenaltyRate: Nullable<decimal>, outstandingPrincipal: decimal) =
+        let rateOption = if prepaymentPenaltyRate.HasValue then Some prepaymentPenaltyRate.Value else None
+        match DirectLending.estimatePrepaymentPenalty prepaymentAllowed rateOption outstandingPrincipal with
+        | Some v -> Nullable(v)
+        | None -> Nullable()
+
+    static member ApplyRateBounds(effectiveRateFloor: Nullable<decimal>, effectiveRateCap: Nullable<decimal>, rate: decimal) =
+        let floorOption = if effectiveRateFloor.HasValue then Some effectiveRateFloor.Value else None
+        let capOption = if effectiveRateCap.HasValue then Some effectiveRateCap.Value else None
+        DirectLending.applyRateBounds floorOption capOption rate
