@@ -1,8 +1,11 @@
-import { Activity, AlertTriangle, Cable, CandlestickChart, ClipboardList, Wallet } from "lucide-react";
+import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, PlusCircle, Wallet, XCircle } from "lucide-react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MetricCard } from "@/components/meridian/metric-card";
+import { cancelOrder, submitOrder } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import type { TradingWorkspaceResponse } from "@/types";
+import type { OrderSubmitRequest, TradingWorkspaceResponse } from "@/types";
 
 interface TradingScreenProps {
   data: TradingWorkspaceResponse | null;
@@ -20,7 +23,58 @@ const wiringTone: Record<TradingWorkspaceResponse["brokerage"]["connection"], st
   Disconnected: "text-danger"
 };
 
+type OrderPhase = "idle" | "submitting" | "submitted" | "error";
+
+interface OrderState {
+  phase: OrderPhase;
+  orderId: string | null;
+  error: string | null;
+}
+
 export function TradingScreen({ data }: TradingScreenProps) {
+  const [showOrderForm, setShowOrderForm] = useState(false);
+  const [orderForm, setOrderForm] = useState<OrderSubmitRequest>({
+    symbol: "",
+    side: "Buy",
+    type: "Market",
+    quantity: 0,
+    limitPrice: null
+  });
+  const [orderState, setOrderState] = useState<OrderState>({ phase: "idle", orderId: null, error: null });
+  const [cancelError, setCancelError] = useState<string | null>(null);
+
+  async function handleSubmitOrder(e: React.FormEvent) {
+    e.preventDefault();
+    setOrderState({ phase: "submitting", orderId: null, error: null });
+    try {
+      const result = await submitOrder(orderForm);
+      if (result.success) {
+        setOrderState({ phase: "submitted", orderId: result.orderId, error: null });
+        setShowOrderForm(false);
+        setOrderForm({ symbol: "", side: "Buy", type: "Market", quantity: 0, limitPrice: null });
+      } else {
+        setOrderState({ phase: "error", orderId: null, error: result.reason ?? "Order failed." });
+      }
+    } catch (err) {
+      setOrderState({
+        phase: "error",
+        orderId: null,
+        error: err instanceof Error ? err.message : "Order submission failed."
+      });
+    }
+  }
+
+  async function handleCancelOrder(orderId: string) {
+    setCancelError(null);
+    try {
+      await cancelOrder(orderId);
+    } catch (err) {
+      setCancelError(
+        `Cancel failed for ${orderId}: ${err instanceof Error ? err.message : "unknown error"}`
+      );
+    }
+  }
+
   if (!data) {
     return (
       <Card>
@@ -121,25 +175,165 @@ export function TradingScreen({ data }: TradingScreenProps) {
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <ClipboardList className="h-4 w-4 text-primary" />
-              Open orders
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <ClipboardList className="h-4 w-4 text-primary" />
+                Open orders
+              </CardTitle>
+              <Button size="sm" variant="outline" onClick={() => setShowOrderForm((prev) => !prev)}>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                New order
+              </Button>
+            </div>
           </CardHeader>
+          {cancelError && (
+            <CardContent className="pt-0 pb-2">
+              <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-center gap-2">
+                <XCircle className="h-4 w-4 shrink-0" />
+                {cancelError}
+              </div>
+            </CardContent>
+          )}
+          {showOrderForm && (
+            <CardContent className="border-b border-border/60 pb-6">
+              <form onSubmit={handleSubmitOrder} className="space-y-4">
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Symbol</label>
+                    <input
+                      type="text"
+                      placeholder="AAPL"
+                      value={orderForm.symbol}
+                      onChange={(e) => setOrderForm((prev) => ({ ...prev, symbol: e.target.value }))}
+                      onBlur={(e) => setOrderForm((prev) => ({ ...prev, symbol: e.target.value.toUpperCase() }))}
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Side</label>
+                    <select
+                      value={orderForm.side}
+                      onChange={(e) => setOrderForm((prev) => ({ ...prev, side: e.target.value as "Buy" | "Sell" }))}
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    >
+                      <option value="Buy">Buy</option>
+                      <option value="Sell">Sell</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Type</label>
+                    <select
+                      value={orderForm.type}
+                      onChange={(e) => setOrderForm((prev) => ({ ...prev, type: e.target.value as "Market" | "Limit" | "Stop" }))}
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    >
+                      <option value="Market">Market</option>
+                      <option value="Limit">Limit</option>
+                      <option value="Stop">Stop</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Quantity</label>
+                    <input
+                      type="number"
+                      min={1}
+                      step={1}
+                      value={orderForm.quantity || ""}
+                      onChange={(e) => setOrderForm((prev) => ({ ...prev, quantity: Number(e.target.value) }))}
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                      required
+                    />
+                  </div>
+                  {(orderForm.type === "Limit" || orderForm.type === "Stop") && (
+                    <div className="space-y-1">
+                      <label className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                        {orderForm.type} Price
+                      </label>
+                      <input
+                        type="number"
+                        min={0}
+                        step={0.01}
+                        value={orderForm.limitPrice ?? ""}
+                        onChange={(e) => setOrderForm((prev) => ({ ...prev, limitPrice: e.target.value ? Number(e.target.value) : null }))}
+                        className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                        required
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {orderState.error && (
+                  <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-center gap-2">
+                    <XCircle className="h-4 w-4 shrink-0" />
+                    {orderState.error}
+                  </div>
+                )}
+
+                {orderState.phase === "submitted" && (
+                  <div className="rounded-lg border border-success/30 bg-success/10 px-4 py-3 text-sm text-success flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 shrink-0" />
+                    Order submitted{orderState.orderId ? ` — ${orderState.orderId}` : ""}.
+                  </div>
+                )}
+
+                <div className="flex gap-3">
+                  <Button type="submit" size="sm" disabled={orderState.phase === "submitting"}>
+                    {orderState.phase === "submitting" ? "Submitting…" : "Submit order"}
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setShowOrderForm(false);
+                      setOrderState({ phase: "idle", orderId: null, error: null });
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          )}
           <CardContent>
-            <TradingTable
-              columns={["Order", "Symbol", "Side", "Type", "Qty", "Limit", "Status", "Submitted"]}
-              rows={data.openOrders.map((order) => [
-                order.orderId,
-                order.symbol,
-                order.side,
-                order.type,
-                order.quantity,
-                order.limitPrice,
-                order.status,
-                order.submittedAt
-              ])}
-            />
+            <div className="overflow-x-auto rounded-xl border border-border/70">
+              <table className="min-w-full divide-y divide-border/60 text-left text-xs sm:text-sm">
+                <thead className="bg-secondary/30">
+                  <tr>
+                    {["Order", "Symbol", "Side", "Type", "Qty", "Limit", "Status", "Submitted", ""].map((col) => (
+                      <th key={col} className="px-3 py-2 font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                        {col}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/50">
+                  {data.openOrders.map((order, i) => (
+                    <tr key={`order-${i}`} className="bg-background/20">
+                      <td className="px-3 py-2 font-mono text-foreground">{order.orderId}</td>
+                      <td className="px-3 py-2 font-mono text-foreground">{order.symbol}</td>
+                      <td className="px-3 py-2 font-mono text-foreground">{order.side}</td>
+                      <td className="px-3 py-2 font-mono text-foreground">{order.type}</td>
+                      <td className="px-3 py-2 font-mono text-foreground">{order.quantity}</td>
+                      <td className="px-3 py-2 font-mono text-foreground">{order.limitPrice}</td>
+                      <td className="px-3 py-2 font-mono text-foreground">{order.status}</td>
+                      <td className="px-3 py-2 font-mono text-foreground">{order.submittedAt}</td>
+                      <td className="px-3 py-2">
+                        <button
+                          type="button"
+                          onClick={() => handleCancelOrder(order.orderId)}
+                          className="rounded px-2 py-1 text-xs text-muted-foreground hover:text-danger hover:bg-danger/10 transition-colors"
+                          title="Cancel order"
+                        >
+                          Cancel
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </CardContent>
         </Card>
       </section>

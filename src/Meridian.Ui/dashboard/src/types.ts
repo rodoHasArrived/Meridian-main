@@ -35,6 +35,71 @@ export interface ResearchRunRecord {
   sharpe: string;
   lastUpdated: string;
   notes: string;
+  promotionState?: string | null;
+  netPnl?: number | null;
+  totalReturn?: number | null;
+  finalEquity?: number | null;
+}
+
+// --- Promotion workflow types ---
+
+export interface PromotionEvaluationResult {
+  runId: string;
+  strategyId: string | null;
+  strategyName: string | null;
+  sourceMode: string | null;
+  targetMode: string | null;
+  isEligible: boolean;
+  sharpeRatio: number;
+  maxDrawdownPercent: number;
+  totalReturn: number;
+  reason: string;
+  found: boolean;
+  ready: boolean;
+}
+
+export interface PromotionDecisionResult {
+  success: boolean;
+  promotionId: string | null;
+  newRunId: string | null;
+  reason: string;
+}
+
+export interface PromotionRecord {
+  promotionId: string;
+  strategyId: string;
+  strategyName: string;
+  sourceRunType: string;
+  targetRunType: string;
+  qualifyingSharpe: number;
+  qualifyingMaxDrawdownPercent: number;
+  qualifyingTotalReturn: number;
+  promotedAt: string;
+}
+
+// --- Execution / paper session types ---
+
+export interface PaperSessionSummary {
+  sessionId: string;
+  strategyId: string;
+  strategyName: string | null;
+  status: string;
+  initialCash: number;
+  createdAt: string;
+}
+
+export interface OrderSubmitRequest {
+  symbol: string;
+  side: "Buy" | "Sell";
+  type: "Market" | "Limit" | "Stop";
+  quantity: number;
+  limitPrice?: number | null;
+}
+
+export interface OrderResult {
+  success: boolean;
+  orderId: string | null;
+  reason: string | null;
 }
 
 export interface ResearchWorkspaceResponse {
