@@ -622,6 +622,7 @@ Use these documents together when planning or implementing new work:
 │   │   └── why-this-architecture.md
 │   ├── audits
 │   │   ├── AUDIT_REPORT.md
+│   │   ├── BACKTEST_ENGINE_CODE_REVIEW_2026_03_25.md
 │   │   ├── CODE_REVIEW_2026-03-16.md
 │   │   ├── FURTHER_SIMPLIFICATION_OPPORTUNITIES.md
 │   │   ├── README.md
@@ -854,6 +855,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── IMPROVEMENTS.md
 │   │   ├── README.md
 │   │   ├── ROADMAP.md
+│   │   ├── ROADMAP_NOW_NEXT_LATER_2026_03_25.md
 │   │   ├── TODO.md
 │   │   ├── api-docs-report.md
 │   │   ├── badge-sync-report.md
@@ -2870,6 +2872,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-451 directories, 2381 files
+451 directories, 2383 files
 ```
 <!-- readme-tree end -->
