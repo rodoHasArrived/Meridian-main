@@ -26,7 +26,7 @@ The wizard guides you through provider selection, symbol configuration, and stor
 You need at least one data provider. Choose based on your needs:
 
 | Provider | Free Tier | Setup Guide | Best For |
-|----------|-----------|-------------|----------|
+| ---------- | ----------- | ------------- | ---------- |
 | **Alpaca** | Yes (with account) | [Alpaca Setup](../providers/alpaca-setup.md) | Easiest to start, real-time US equities |
 | **Interactive Brokers** | Yes (with account) | [IB Setup](../providers/interactive-brokers-setup.md) | Full L2 depth, options, broad coverage |
 | **Polygon** | Limited | [Provider Comparison](../providers/provider-comparison.md) | High-quality aggregated data |
@@ -45,7 +45,7 @@ See [Environment Variables](../reference/environment-variables.md) for the full 
 ## Alternative Setup Methods
 
 | Method | Command | Best For |
-|--------|---------|----------|
+| -------- | --------- | ---------- |
 | **Configuration Wizard** | `--wizard` | New users, interactive setup |
 | **Auto-Configuration** | `--auto-config` | Users with env vars already set |
 | **Web Dashboard** | `--mode web` | Visual configuration via browser |

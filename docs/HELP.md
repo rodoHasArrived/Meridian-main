@@ -33,20 +33,20 @@ This guide covers everything from installation to advanced configuration.
   - [StockSharp](#stocksharp)
 - [Multi-Provider Support](#multi-provider-support)
   - [Simultaneous Connections](#simultaneous-connections)
-  - [Circuit Breaker Pattern](#circuit-breaker-pattern-v13)
-  - [Concurrent Provider Executor](#concurrent-provider-executor-v13)
+  - [Circuit Breaker Pattern](#circuit-breaker-pattern)
+  - [Concurrent Provider Executor](#concurrent-provider-executor)
 - [Historical Backfill](#historical-backfill)
   - [Backfill Providers](#backfill-providers)
-  - [Priority Backfill Queue](#priority-backfill-queue-v13)
-  - [Data Gap Detection & Repair](#data-gap-detection--repair-v13)
-  - [Data Quality Monitoring](#data-quality-monitoring-v13)
+  - [Priority Backfill Queue](#priority-backfill-queue)
+  - [Data Gap Detection & Repair](#data-gap-detection--repair)
+  - [Data Quality Monitoring](#data-quality-monitoring)
 - [Storage Settings](#storage-settings)
   - [Naming Conventions](#naming-conventions)
   - [Date Partitioning](#date-partitioning)
   - [Compression](#compression)
 - [Symbol Management](#symbol-management)
-- [Archival-First Storage](#archival-first-storage-v15)
-- [Analysis-Ready Exports](#analysis-ready-exports-v15)
+- [Archival-First Storage](#archival-first-storage)
+- [Analysis-Ready Exports](#analysis-ready-exports)
 - [QuantConnect Lean Integration](#quantconnect-lean-integration)
 - [Offline Storage & Archival](#offline-storage--archival)
 - [Web Dashboard](#web-dashboard)
@@ -68,7 +68,7 @@ This guide covers everything from installation to advanced configuration.
 ### What You Can Do
 
 | Task | How It Helps You |
-|------|------------------|
+| ------ | ------------------ |
 | **Stream real-time data** | Capture live trades, quotes, and order book depth from Interactive Brokers, Alpaca, NYSE, Polygon, or StockSharp |
 | **Download historical data** | Backfill years of price data from 10+ providers (Yahoo Finance, Tiingo, Polygon, etc.) with automatic failover |
 | **Store data locally** | Own your data in structured JSONL or Parquet files—no vendor lock-in, full offline access |
@@ -383,7 +383,7 @@ The application looks for `appsettings.json` in these locations (in order):
 ### Configuration Options
 
 | Option | Type | Default | Description |
-|--------|------|---------|-------------|
+| -------- | ------ | --------- | ------------- |
 | `DataRoot` | string | "data" | Directory where market data will be stored |
 | `Compress` | boolean | false | Enable gzip compression for storage files |
 | `DataSource` | string | "IB" | Data provider: "IB", "Alpaca", "Polygon", "NYSE", or "StockSharp" |
@@ -719,7 +719,7 @@ Connect to multiple providers at the same time to:
 Compare data quality metrics side-by-side across all connected providers:
 
 | Metric | Description |
-|--------|-------------|
+| -------- | ------------- |
 | Data Quality Score | Overall score (0-100%) based on connection stability, latency, and drop rate |
 | Trades Received | Total trade events received |
 | Depth Updates | Total order book updates |
@@ -820,7 +820,7 @@ Different providers may use different symbols for the same security. Configure m
 **Example Mappings:**
 
 | Canonical | IB | Alpaca | Polygon | FIGI |
-|-----------|-----|--------|---------|------|
+| ----------- | ----- | -------- | --------- | ------ |
 | BRK.B | BRK B | BRK.B | BRK.B | BBG000DWG505 |
 | PCG.PRA | PCG PRA | PCG-A | PCG/A | BBG00123ABC |
 
@@ -861,7 +861,7 @@ make run-backfill SYMBOLS=SPY,AAPL PROVIDER=tiingo FROM=2024-01-01 TO=2024-12-31
 Available historical data providers (in priority order):
 
 | Provider | Free Tier | Data Types | Rate Limits | Notes |
-|----------|-----------|------------|-------------|-------|
+| ---------- | ----------- | ------------ | ------------- | ------- |
 | **Alpaca** | Yes (with account) | Bars, trades, quotes | 200/min | Best for recent data |
 | **Polygon** | Limited | Bars, trades, quotes, aggregates | Varies | Comprehensive coverage |
 | **Tiingo** | Yes | Daily bars | 500/hour | Good for daily OHLCV |
@@ -896,7 +896,7 @@ Sophisticated job scheduling with priority levels and dependencies:
 **Priority Levels:**
 
 | Priority | Value | Use Case |
-|----------|-------|----------|
+| ---------- | ------- | ---------- |
 | Critical | 0 | System-critical gaps |
 | High | 10 | User-requested immediate |
 | Normal | 50 | Standard backfill |
@@ -930,7 +930,7 @@ Automatically detect and repair gaps in historical data:
 **Gap Types:**
 
 | Type | Severity | Description |
-|------|----------|-------------|
+| ------ | ---------- | ------------- |
 | Missing | Critical | No data for date |
 | Partial | Warning | Incomplete data |
 | Holiday | Info | Expected market closure |
@@ -942,7 +942,7 @@ Multi-dimensional quality scoring for all stored data:
 **Quality Dimensions:**
 
 | Dimension | Weight | Checks |
-|-----------|--------|--------|
+| ----------- | -------- | -------- |
 | Completeness | 30% | Gap coverage |
 | Accuracy | 25% | Price ranges, OHLCV validity |
 | Timeliness | 20% | Data freshness |
@@ -1068,7 +1068,7 @@ See [docs/architecture/storage-design.md](architecture/storage-design.md) for de
 ### Symbol Options
 
 | Option | Type | Description |
-|--------|------|-------------|
+| -------- | ------ | ------------- |
 | `Symbol` | string | Ticker symbol (e.g., "AAPL") |
 | `SubscribeTrades` | boolean | Collect trade/tick data |
 | `SubscribeDepth` | boolean | Collect Level 2 order book (IB only) |
@@ -1132,7 +1132,7 @@ Optimize storage based on access patterns with tier-specific compression:
 **Pre-built Profiles:**
 
 | Profile | Codec | Level | Speed | Ratio | Use Case |
-|---------|-------|-------|-------|-------|----------|
+| --------- | ------- | ------- | ------- | ------- | ---------- |
 | Real-Time Collection | LZ4 | 1 | ~500 MB/s | 2.5x | Live data capture |
 | Warm Archive | ZSTD | 6 | ~150 MB/s | 5x | Frequently accessed data |
 | Cold Archive | ZSTD | 19 | ~20 MB/s | 10x | Long-term storage |
@@ -1560,7 +1560,7 @@ The desktop app uses Windows CredentialPicker for secure API key management:
 ### Desktop App vs Web Dashboard
 
 | Feature | Desktop App | Web Dashboard |
-|---------|-------------|---------------|
+| --------- | ------------- | --------------- |
 | Platform | Windows only | Any browser |
 | Credential Storage | Windows Credential Manager | appsettings.json |
 | UI Framework | WPF/XAML | HTML/CSS/JavaScript |
@@ -1633,7 +1633,7 @@ Automatically configures the application based on environment variables.
 ### All Command Line Options
 
 | Option | Description |
-|--------|-------------|
+| -------- | ------------- |
 | `--wizard` | Interactive configuration wizard (recommended for new users) |
 | `--auto-config` | Quick auto-configuration from environment variables |
 | `--detect-providers` | Show available providers and their status |
@@ -1745,7 +1745,7 @@ make help         # Show all available commands
 When running with `--http-port` or `--ui`, the following endpoints are available:
 
 | Endpoint | Description |
-|----------|-------------|
+| ---------- | ------------- |
 | `/` | HTML dashboard (auto-refreshing) |
 | `/status` | JSON status with metrics |
 | `/metrics` | Prometheus metrics |
@@ -2380,7 +2380,7 @@ docker-compose up -d
 ### Documentation
 
 | Document | Description |
-|----------|-------------|
+| ---------- | ------------- |
 | [README.md](../README.md) | Project overview and quick start |
 | [HELP.md](HELP.md) | This comprehensive user guide |
 | [getting-started/README.md](getting-started/README.md) | Step-by-step setup guide |
@@ -2396,7 +2396,7 @@ docker-compose up -d
 ### Provider-Specific Guides
 
 | Guide | Provider |
-|-------|----------|
+| ------- | ---------- |
 | [providers/interactive-brokers-setup.md](providers/interactive-brokers-setup.md) | Interactive Brokers |
 | [providers/alpaca-setup.md](providers/alpaca-setup.md) | Alpaca |
 | [providers/provider-comparison.md](providers/provider-comparison.md) | Provider comparison |
