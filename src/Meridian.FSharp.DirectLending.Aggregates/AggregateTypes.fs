@@ -52,3 +52,7 @@ type WriteOffDecision =
 type DailyAccrualDecision =
     { Servicing: LoanServicingStateDto
       Entry: DailyAccrualEntryDto }
+
+type PrepaymentPenaltyDecision =
+    { Servicing: LoanServicingStateDto
+      PenaltyAmount: decimal }
