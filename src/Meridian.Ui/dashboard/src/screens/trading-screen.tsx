@@ -41,6 +41,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
     limitPrice: null
   });
   const [orderState, setOrderState] = useState<OrderState>({ phase: "idle", orderId: null, error: null });
+  const [cancelError, setCancelError] = useState<string | null>(null);
 
   async function handleSubmitOrder(e: React.FormEvent) {
     e.preventDefault();
@@ -64,10 +65,13 @@ export function TradingScreen({ data }: TradingScreenProps) {
   }
 
   async function handleCancelOrder(orderId: string) {
+    setCancelError(null);
     try {
       await cancelOrder(orderId);
-    } catch {
-      // best-effort; UI will refresh on next bootstrap
+    } catch (err) {
+      setCancelError(
+        `Cancel failed for ${orderId}: ${err instanceof Error ? err.message : "unknown error"}`
+      );
     }
   }
 
@@ -182,6 +186,14 @@ export function TradingScreen({ data }: TradingScreenProps) {
               </Button>
             </div>
           </CardHeader>
+          {cancelError && (
+            <CardContent className="pt-0 pb-2">
+              <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-center gap-2">
+                <XCircle className="h-4 w-4 shrink-0" />
+                {cancelError}
+              </div>
+            </CardContent>
+          )}
           {showOrderForm && (
             <CardContent className="border-b border-border/60 pb-6">
               <form onSubmit={handleSubmitOrder} className="space-y-4">
@@ -192,7 +204,8 @@ export function TradingScreen({ data }: TradingScreenProps) {
                       type="text"
                       placeholder="AAPL"
                       value={orderForm.symbol}
-                      onChange={(e) => setOrderForm((prev) => ({ ...prev, symbol: e.target.value.toUpperCase() }))}
+                      onChange={(e) => setOrderForm((prev) => ({ ...prev, symbol: e.target.value }))}
+                      onBlur={(e) => setOrderForm((prev) => ({ ...prev, symbol: e.target.value.toUpperCase() }))}
                       className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
                       required
                     />

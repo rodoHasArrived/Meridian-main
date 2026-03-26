@@ -37,6 +37,7 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
     decision: null,
     error: null
   });
+  const [rejectReason, setRejectReason] = useState("");
 
   const highlights = useMemo(
     () => [
@@ -61,12 +62,14 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
 
   function handleSelectRun(run: ResearchRunRecord) {
     setSelectedRun(run);
+    setRejectReason("");
     setPromotion({ phase: "idle", evaluation: null, decision: null, error: null });
   }
 
   function handleDialogClose(open: boolean) {
     if (!open) {
       setSelectedRun(null);
+      setRejectReason("");
       setPromotion({ phase: "idle", evaluation: null, decision: null, error: null });
     }
   }
@@ -103,9 +106,10 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
 
   async function handleRejectPromotion() {
     if (!selectedRun) return;
+    const reason = rejectReason.trim() || "Rejected by operator.";
     setPromotion((prev) => ({ ...prev, phase: "rejecting", error: null }));
     try {
-      const result = await rejectPromotion(selectedRun.id, "Rejected by operator.");
+      const result = await rejectPromotion(selectedRun.id, reason);
       setPromotion((prev) => ({ ...prev, phase: "rejected", decision: result }));
     } catch (err) {
       setPromotion((prev) => ({
