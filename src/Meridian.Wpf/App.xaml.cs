@@ -249,6 +249,8 @@ public partial class App : System.Windows.Application
         services.AddTransient<RunDetailPage>();
         services.AddTransient<RunPortfolioPage>();
         services.AddTransient<RunLedgerPage>();
+        services.AddTransient<SecurityMasterPage>();
+        services.AddTransient<Meridian.Wpf.ViewModels.SecurityMasterViewModel>();
 
         // ── Backtesting service ──────────────────────────────────────────────
         services.AddSingleton(_ => WpfServices.BacktestService.Instance);

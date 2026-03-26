@@ -67,6 +67,9 @@ public partial class RunDetailPage : Page { }
 public partial class RunPortfolioPage : Page { }
 public partial class RunLedgerPage : Page { }
 
+// Security Master workstation page
+public partial class SecurityMasterPage : Page { }
+
 // Data Browser page
 public partial class DataBrowserPage : Page { }
 
