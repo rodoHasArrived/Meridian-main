@@ -511,7 +511,7 @@ public sealed class BacktestEngine(
         if (securityMasterQueryService is null || universe.Count == 0)
             return new Dictionary<string, decimal>();
 
-        var result = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
+        var result = new Dictionary<string, decimal>(universe.Count, StringComparer.OrdinalIgnoreCase);
         var asOfOffset = new DateTimeOffset(asOf, TimeSpan.Zero);
 
         foreach (var symbol in universe)
