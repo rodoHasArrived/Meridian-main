@@ -1156,12 +1156,16 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── DryRunService.cs
 │   │   │   ├── ErrorTracker.cs
 │   │   │   ├── FriendlyErrorFormatter.cs
+│   │   │   ├── GovernanceExceptionService.cs
 │   │   │   ├── GracefulShutdownHandler.cs
 │   │   │   ├── GracefulShutdownService.cs
 │   │   │   ├── HistoricalDataQueryService.cs
+│   │   │   ├── NavAttributionService.cs
 │   │   │   ├── OptionsChainService.cs
 │   │   │   ├── PreflightChecker.cs
 │   │   │   ├── ProgressDisplayService.cs
+│   │   │   ├── ReconciliationEngineService.cs
+│   │   │   ├── ReportGenerationService.cs
 │   │   │   ├── SampleDataGenerator.cs
 │   │   │   ├── ServiceRegistry.cs
 │   │   │   ├── StartupSummary.cs
@@ -1529,6 +1533,8 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Canonicalization
 │   │   │   └── MappingRules.fs
 │   │   ├── Domain
+│   │   │   ├── CashFlowProjection.fs
+│   │   │   ├── CashFlowRules.fs
 │   │   │   ├── DirectLending.fs
 │   │   │   ├── FundStructure.fs
 │   │   │   ├── Integrity.fs
@@ -1575,7 +1581,9 @@ Use these documents together when planning or implementing new work:
 │   │   ├── LedgerTypes.fs
 │   │   ├── Meridian.FSharp.Ledger.fsproj
 │   │   ├── Posting.fs
-│   │   └── Reconciliation.fs
+│   │   ├── Reconciliation.fs
+│   │   ├── ReconciliationRules.fs
+│   │   └── ReconciliationTypes.fs
 │   ├── Meridian.FSharp.Trading
 │   │   ├── Interop.fs
 │   │   ├── Meridian.FSharp.Trading.fsproj
@@ -1761,6 +1769,7 @@ Use these documents together when planning or implementing new work:
 │   │       ├── ICppTraderExecutionTranslator.cs
 │   │       └── ICppTraderSnapshotTranslator.cs
 │   ├── Meridian.Ledger
+│   │   ├── FundLedgerBook.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── IReadOnlyLedger.cs
 │   │   ├── JournalEntry.cs
@@ -2874,6 +2883,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-451 directories, 2385 files
+451 directories, 2394 files
 ```
 <!-- readme-tree end -->
