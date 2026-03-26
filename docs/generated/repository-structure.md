@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-03-26 19:26:10 UTC. Do not edit manually.
+> Auto-generated on 2026-03-26 19:32:31 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -2242,8 +2242,6 @@ Meridian-main
 │   │   ├── Meridian.DirectLending.Tests.csproj
 │   │   └── PaymentApprovalTests.cs
 │   ├── Meridian.FSharp.Tests
-│   │   ├── TestResults
-│   │   │   └── e5284df0-69fd-4132-8154-95132c29eb32
 │   │   ├── CalculationTests.fs
 │   │   ├── CanonicalizationTests.fs
 │   │   ├── DirectLendingInteropTests.fs
@@ -2561,10 +2559,6 @@ Meridian-main
 │   │   ├── TestHelpers
 │   │   │   ├── PolygonStubClient.cs
 │   │   │   └── TestMarketEventPublisher.cs
-│   │   ├── TestResults
-│   │   │   └── d7c622f5-f599-4258-b8ca-c2a6e1d9e512
-│   │   │       ├── dotnet_3960_20260326T191953_hangdump.dmp
-│   │   │       └── Sequence_cf5f6365e12f4612bd6fe286e62ada18.xml
 │   │   ├── Ui
 │   │   │   ├── DirectLendingEndpointsTests.cs
 │   │   │   └── WorkstationEndpointsTests.cs
