@@ -1,15 +1,18 @@
 # TODO / FIXME / NOTE Scan
 
-Total items: **234**
+Total items: **233**
 
 | File | Line | Tag | Linked Issue | Text |
 |---|---:|---|:---:|---|
 | `.claude/agents/meridian-blueprint.md` | 194 | `NOTE` | ❌ | markup. If no UI surface, note "N/A — backend feature only." |
 | `.claude/agents/meridian-blueprint.md` | 321 | `NOTE` | ❌ | a one-line note. |
-| `.claude/agents/meridian-cleanup.md` | 178 | `TODO` | ❌ | - Remove commented-out `InitializeComponent()` calls and leftover TODO comments |
-| `.claude/agents/meridian-cleanup.md` | 191 | `NOTE` | ❌ | - Business logic in code-behind — flag it as a note but do not move it (that |
-| `.claude/agents/meridian-cleanup.md` | 301 | `NOTE` | ❌ | - **No new features** — cleanup only; if something is missing, note it but do |
-| `.claude/agents/meridian-cleanup.md` | 305 | `NOTE` | ❌ | note instead |
+| `.claude/agents/meridian-cleanup.md` | 180 | `TODO` | ❌ | - Remove commented-out `InitializeComponent()` calls and leftover TODO comments |
+| `.claude/agents/meridian-cleanup.md` | 193 | `NOTE` | ❌ | - Business logic in code-behind — flag it as a note but do not move it (that |
+| `.claude/agents/meridian-cleanup.md` | 365 | `TODO` | ❌ | `_logger.LogWarning("TODO: implement")`. |
+| `.claude/agents/meridian-cleanup.md` | 422 | `TODO` | ❌ | - `// TODO: implement` in methods that are already implemented. |
+| `.claude/agents/meridian-cleanup.md` | 429 | `TODO` | ❌ | - `// TODO:` or `// FIXME:` comments that describe genuine open work items — flag them |
+| `.claude/agents/meridian-cleanup.md` | 474 | `NOTE` | ❌ | - **No new features** — cleanup only; if something is missing, note it but do |
+| `.claude/agents/meridian-cleanup.md` | 478 | `NOTE` | ❌ | note instead |
 | `.claude/agents/meridian-docs.md` | 241 | `NOTE` | ❌ | - **No code changes** — documentation only; if code is wrong, note it but do not fix it |
 | `.claude/skills/meridian-blueprint/SKILL.md` | 283 | `NOTE` | ❌ | surface, note "N/A — backend feature only." |
 | `.claude/skills/meridian-blueprint/SKILL.md` | 422 | `NOTE` | ❌ | one-line note. |
@@ -19,10 +22,13 @@ Total items: **234**
 | `.claude/skills/meridian-code-review/scripts/aggregate_benchmark.py` | 332 | `NOTE` | ❌ | for note in benchmark["notes"]: |
 | `.claude/skills/meridian-code-review/scripts/aggregate_benchmark.py` | 333 | `NOTE` | ❌ | lines.append(f"- {note}") |
 | `.github/agents/adr-generator.agent.md` | 135 | `NOTE` | ❌ | - Note any migration steps required |
-| `.github/agents/cleanup-agent.md` | 160 | `TODO` | ❌ | - Remove commented-out `InitializeComponent()` calls and leftover TODO tombstones. |
-| `.github/agents/cleanup-agent.md` | 168 | `NOTE` | ❌ | - Business logic in code-behind — flag it as a note but do not move it. |
-| `.github/agents/cleanup-agent.md` | 261 | `NOTE` | ❌ | - **No new features** — cleanup only; if something is missing, note it but do not add it. |
-| `.github/agents/cleanup-agent.md` | 263 | `NOTE` | ❌ | - **No ViewModel extraction** — flag it as a note; full MVVM refactors belong in code review. |
+| `.github/agents/cleanup-agent.md` | 162 | `TODO` | ❌ | - Remove commented-out `InitializeComponent()` calls and leftover TODO tombstones. |
+| `.github/agents/cleanup-agent.md` | 170 | `NOTE` | ❌ | - Business logic in code-behind — flag it as a note but do not move it. |
+| `.github/agents/cleanup-agent.md` | 327 | `TODO` | ❌ | `_logger.LogWarning("TODO: implement")`. |
+| `.github/agents/cleanup-agent.md` | 385 | `TODO` | ❌ | - `// TODO: implement` in methods that are already implemented. |
+| `.github/agents/cleanup-agent.md` | 393 | `TODO` | ❌ | - `// TODO:` or `// FIXME:` comments that describe genuine open work items — flag |
+| `.github/agents/cleanup-agent.md` | 436 | `NOTE` | ❌ | - **No new features** — cleanup only; if something is missing, note it but do not add it. |
+| `.github/agents/cleanup-agent.md` | 438 | `NOTE` | ❌ | - **No ViewModel extraction** — flag it as a note; full MVVM refactors belong in code review. |
 | `.github/agents/documentation-agent.md` | 861 | `TODO` | ❌ | │   │   └── TODO.md |
 | `.github/agents/performance-agent.md` | 248 | `NOTE` | ❌ | - **No new features** — if a performance win requires a new feature, note it but defer it. |
 | `.github/workflows/README.md` | 11 | `TODO` | ❌ | \| `documentation.yml` \| `docs-comprehensive.yml`, `docs-auto-update.yml`, `docs-structure-sync.yml`, `ai-instructions-sync.yml`, `todo-automation.yml`, `docs-check.yml` \| AI documentation quality review, AI TODO triage \| |
@@ -54,10 +60,8 @@ Total items: **234**
 | `build/scripts/run/start-collector.sh` | 114 | `NOTE` | ❌ | print("[NOTE] L2 depth requires provider depth subscription for venues.") |
 | `config/appsettings.sample.json` | 364 | `NOTE` | ❌ | // NOTE: Credentials are resolved from environment variables - do NOT add them here. |
 | `config/appsettings.sample.json` | 484 | `NOTE` | ❌ | //   4. Note the port (default 7497 for TWS paper, 7496 for live) |
-| `docs/HELP.md` | 413 | `NOTE` | ❌ | **Note:** Environment variables override values in `appsettings.json`. |
-| `docs/HELP.md` | 439 | `NOTE` | ❌ | - Note the Socket Port (default: 7497 for TWS, 4001 for Gateway) |
-| `docs/adr/016-platform-architecture-migration.md` | 1 | `NOTE` | ❌ | > **Note:** WPF desktop app references in this document reflect a delayed implementation. `src/Meridian.Wpf/` is preserved but not in the active solution build. |
-| `docs/adr/ADR-015-platform-restructuring.md` | 1 | `NOTE` | ❌ | > **Note:** WPF desktop app references in this document reflect a delayed implementation. `src/Meridian.Wpf/` is preserved but not in the active solution build. |
+| `docs/HELP.md` | 411 | `NOTE` | ❌ | **Note:** Environment variables override values in `appsettings.json`. |
+| `docs/HELP.md` | 437 | `NOTE` | ❌ | - Note the Socket Port (default: 7497 for TWS, 4001 for Gateway) |
 | `docs/ai/ai-known-errors.md` | 239 | `NOTE` | ❌ | - **Note**: This issue regressed multiple times (1e2ea1d, 5756479, 1802ea9, bf67ed5, e920c34) when using workarounds. The structural fix eliminates the problem at the API design level. |
 | `docs/ai/claude/CLAUDE.actions.md` | 23 | `TODO` | ❌ | \| Documentation \| `documentation.yml` \| Push/PRs (docs/source), weekly, issues, manual \| Doc generation, structure sync, TODO scan \| |
 | `docs/ai/claude/CLAUDE.actions.md` | 92 | `TODO` | ❌ | - **Documentation** - AI documentation quality review, AI TODO triage |
@@ -70,7 +74,6 @@ Total items: **234**
 | `docs/ai/copilot/instructions.md` | 2915 | `TODO` | ❌ | - `documentation.yml` — Doc generation, TODO scanning, AI error intake |
 | `docs/architecture/deterministic-canonicalization.md` | 365 | `NOTE` | ❌ | Note: Polygon does not define buyer-initiated codes. Only ~5% of trades carry definitive aggressor inference. The canonicalization layer preserves `Unknown` as a valid canonical value rather than attempting inference. |
 | `docs/architecture/domains.md` | 111 | `NOTE` | ❌ | > Note: not every enum member is currently emitted by the three core collectors (`TradeDataCollector`, `MarketDepthCollector`, `QuoteCollector`); several are used by adapters, backfill paths, or the `L3OrderBookCollector`. |
-| `docs/architecture/ui-redesign.md` | 1 | `NOTE` | ❌ | > **Note:** WPF desktop app references in this document reflect a delayed implementation. `src/Meridian.Wpf/` is preserved but not in the active solution build. |
 | `docs/audits/BACKTEST_ENGINE_CODE_REVIEW_2026_03_25.md` | 150 | `NOTE` | ❌ | **Fix:** Add a note to the XML doc comment explaining the open/close midpoint convention and when to use `BarMidpointFillModel` vs. `OrderBookFillModel`. Consider offering `(bar.High + bar.Low) / 2m` as an alternative mode. |
 | `docs/development/documentation-automation.md` | 19 | `TODO` | ❌ | \| **TODO Scanning** \| Finds TODO/FIXME/HACK comments and generates tracking docs \| |
 | `docs/development/documentation-automation.md` | 26 | `TODO` | ❌ | \| **Automatic TODO Issue Creation** \| Converts untracked TODO/FIXME items into GitHub issues automatically \| |
@@ -119,10 +122,9 @@ Total items: **234**
 | `docs/development/repository-organization-guide.md` | 681 | `TODO` | ❌ | grep -r "TODO:" src/ tests/ |
 | `docs/docfx/api/index.md` | 62 | `NOTE` | ❌ | > **Note:** The source code must build successfully before DocFX can extract XML documentation. |
 | `docs/evaluations/high-impact-improvement-brainstorm-2026-03.md` | 76 | `NOTE` | ❌ | > **Note:** Ratings above reflect the initial assessment (2026-03-01). Follow-up |
-| `docs/evaluations/high-value-low-cost-improvements-brainstorm.md` | 1 | `NOTE` | ❌ | > **Note:** WPF desktop app references in this document reflect a delayed implementation. `src/Meridian.Wpf/` is preserved but not in the active solution build. |
-| `docs/evaluations/high-value-low-cost-improvements-brainstorm.md` | 62 | `NOTE` | ❌ | **Status (2026-03-15):** `ConfigurationPipeline.cs` detects when both `DataSource` and `DataSources` are set and logs: `"Both 'DataSource' and 'DataSources' are set. 'DataSources' takes precedence."` A note was also added to `appsettings.sample.json`. |
-| `docs/evaluations/high-value-low-cost-improvements-brainstorm.md` | 66 | `NOTE` | ❌ | **Improvement:** At config load time, if both `DataSource` and `DataSources` are populated, log a structured warning: `"Both 'DataSource' and 'DataSources' are set. 'DataSources' takes precedence. Remove 'DataSource' to silence this warning."` Add a note to `appsettings.sample.json`. |
-| `docs/evaluations/high-value-low-cost-improvements-brainstorm.md` | 674 | `NOTE` | ❌ | Note: IB would add L2 depth but requires TWS running |
+| `docs/evaluations/high-value-low-cost-improvements-brainstorm.md` | 58 | `NOTE` | ❌ | **Status (2026-03-15):** `ConfigurationPipeline.cs` detects when both `DataSource` and `DataSources` are set and logs: `"Both 'DataSource' and 'DataSources' are set. 'DataSources' takes precedence."` A note was also added to `appsettings.sample.json`. |
+| `docs/evaluations/high-value-low-cost-improvements-brainstorm.md` | 62 | `NOTE` | ❌ | **Improvement:** At config load time, if both `DataSource` and `DataSources` are populated, log a structured warning: `"Both 'DataSource' and 'DataSources' are set. 'DataSources' takes precedence. Remove 'DataSource' to silence this warning."` Add a note to `appsettings.sample.json`. |
+| `docs/evaluations/high-value-low-cost-improvements-brainstorm.md` | 670 | `NOTE` | ❌ | Note: IB would add L2 depth but requires TWS running |
 | `docs/evaluations/nautilus-inspired-restructuring-proposal.md` | 185 | `TODO` | ❌ | // TODO: Add provider-specific dependencies (HttpClient, config, etc.) |
 | `docs/evaluations/nautilus-inspired-restructuring-proposal.md` | 187 | `TODO` | ❌ | public bool IsEnabled => true; // TODO: Wire to configuration |
 | `docs/evaluations/nautilus-inspired-restructuring-proposal.md` | 190 | `TODO` | ❌ | => throw new NotImplementedException("TODO: Implement connection logic"); |
@@ -132,8 +134,6 @@ Total items: **234**
 | `docs/operations/portable-data-packager.md` | 303 | `NOTE` | ❌ | 2. **Document filters**: Note any symbols, dates, or types that were excluded |
 | `docs/plans/l3-inference-implementation-plan.md` | 180 | `NOTE` | ❌ | > **Note:** Providers that supply L2 depth data include Interactive Brokers, Polygon, NYSE, and StockSharp. Providers that supply only daily OHLCV bars (e.g. Stooq, Yahoo Finance) are **not sufficient** for queue inference — depth tick data is required. |
 | `docs/plans/quant-script-environment-blueprint.md` | 1193 | `TODO` | ❌ | - [ ] `Api/PortfolioBuilder.cs` + `PortfolioResult.cs` (`EfficientFrontier` returns equal-weight stub + `// TODO` comment) |
-| `docs/plans/readability-refactor-baseline.md` | 1 | `NOTE` | ❌ | > **Note:** WPF desktop app references in this document reflect a delayed implementation. `src/Meridian.Wpf/` is preserved but not in the active solution build. |
-| `docs/plans/trading-workstation-migration-blueprint.md` | 1 | `NOTE` | ❌ | > **Note:** WPF desktop app references in this document reflect a delayed implementation. `src/Meridian.Wpf/` is preserved but not in the active solution build. |
 | `docs/plans/ufl-direct-lending-target-state-v2.md` | 413 | `NOTE` | ❌ | \| AssessFee of feeType:FeeType * amount:decimal * effectiveDate:DateOnly * note:string option |
 | `docs/plans/ufl-direct-lending-target-state-v2.md` | 428 | `NOTE` | ❌ | \| FeeAssessed of feeType:FeeType * amount:decimal * effectiveDate:DateOnly * note:string option |
 | `docs/plans/ufl-treasury-bill-target-state-v2.md` | 101 | `NOTE` | ❌ | 5. Future note and bond packages should reuse the same government-security patterns where possible. |
@@ -142,7 +142,6 @@ Total items: **234**
 | `docs/reference/data-dictionary.md` | 724 | `NOTE` | ❌ | **Note:** Aligns with Interactive Brokers conventions. |
 | `docs/reference/data-uniformity.md` | 5 | `NOTE` | ❌ | This note expands on the data-quality goals for the collector so downstream users receive a uniform, analysis-ready tape regardless of provider quirks. |
 | `docs/status/EVALUATIONS_AND_AUDITS.md` | 394 | `NOTE` | ❌ | - Historical note: the original audit flagged generated docs as stale, but `docs/generated/` has since been refreshed and expanded |
-| `docs/status/FULL_IMPLEMENTATION_TODO_2026_03_20.md` | 1 | `NOTE` | ❌ | > **Note:** WPF desktop app references in this document reflect a delayed implementation. `src/Meridian.Wpf/` is preserved but not in the active solution build. The **web dashboard** is the current primary UI surface. |
 | `docs/status/IMPROVEMENTS.md` | 1275 | `NOTE` | ❌ | - **Large PR (exception):** Theme K or readability-level refactors; require design note and staged rollout plan. |
 | `docs/status/IMPROVEMENTS.md` | 1314 | `TODO` | ❌ | - [ ] No new TODO/FIXME left without linked backlog issue. |
 | `docs/status/IMPROVEMENTS.md` | 1344 | `TODO` | ❌ | - **[TODO.md](TODO.md)** — Auto-generated TODO tracking from code comments |
