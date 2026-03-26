@@ -1,6 +1,6 @@
 # TODO / FIXME / NOTE Scan
 
-Total items: **234**
+Total items: **235**
 
 | File | Line | Tag | Linked Issue | Text |
 |---|---:|---|:---:|---|
@@ -173,6 +173,7 @@ Total items: **234**
 | `src/Meridian.Core/Monitoring/MigrationDiagnostics.cs` | 17 | `NOTE` | ❌ | /// NOTE: This class lives in the Core project (not Application) so that |
 | `src/Meridian.Core/Serialization/MarketDataJsonContext.cs` | 178 | `NOTE` | ❌ | /// NOTE: Alpaca payloads use both "T" and "t" keys in the same object. |
 | `src/Meridian.Execution/BrokerageServiceRegistration.cs` | 138 | `NOTE` | ❌ | // NOTE: We intentionally use GetRequiredKeyedService here rather than |
+| `src/Meridian.FSharp/Domain/SecMasterDomain.fs` | 98 | `NOTE` | ❌ | \| Note |
 | `src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs` | 87 | `NOTE` | ❌ | return !json.Contains("Note") && !json.Contains("Thank you for using Alpha Vantage"); |
 | `src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs` | 241 | `NOTE` | ❌ | return json.Contains("\"Note\"") \|\| json.Contains("Thank you for using Alpha Vantage"); |
 | `src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs` | 21 | `TODO` | ❌ | /// 4. Implement all TODO methods with broker-specific API calls |
