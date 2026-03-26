@@ -57,7 +57,6 @@ public interface IProviderMetadata
     /// </summary>
     ProviderCapabilities ProviderCapabilities { get; }
 
-    #region UI-Specific Metadata (Default Implementations)
 
     /// <summary>
     /// Whether this provider requires credentials to operate.
@@ -120,7 +119,6 @@ public interface IProviderMetadata
         return types.ToArray();
     }
 
-    #endregion
 }
 
 /// <summary>
@@ -149,7 +147,6 @@ public sealed record ProviderCredentialField(
 /// </remarks>
 public sealed record ProviderCapabilities
 {
-    #region Provider Type Flags
 
     /// <summary>Supports real-time streaming data.</summary>
     public bool SupportsStreaming { get; init; }
@@ -166,9 +163,7 @@ public sealed record ProviderCapabilities
     /// <summary>Supports brokerage order execution (submit, cancel, modify orders).</summary>
     public bool SupportsBrokerage { get; init; }
 
-    #endregion
 
-    #region Streaming Capabilities
 
     /// <summary>Supports real-time trade data.</summary>
     public bool SupportsRealtimeTrades { get; init; }
@@ -185,9 +180,7 @@ public sealed record ProviderCapabilities
     /// <summary>Maximum symbols per subscription (null = unlimited).</summary>
     public int? MaxSymbolsPerSubscription { get; init; }
 
-    #endregion
 
-    #region Backfill Capabilities
 
     /// <summary>Returns split/dividend adjusted prices.</summary>
     public bool SupportsAdjustedPrices { get; init; }
@@ -216,9 +209,7 @@ public sealed record ProviderCapabilities
     /// <summary>Supported bar intervals (e.g., "1m", "5m", "1h", "1d").</summary>
     public IReadOnlyList<string>? SupportedBarIntervals { get; init; }
 
-    #endregion
 
-    #region Symbol Search Capabilities
 
     /// <summary>Supports filtering by asset type.</summary>
     public bool SupportsAssetTypeFilter { get; init; }
@@ -232,16 +223,12 @@ public sealed record ProviderCapabilities
     /// <summary>Supported exchanges for filtering.</summary>
     public IReadOnlyList<string>? SupportedExchanges { get; init; }
 
-    #endregion
 
-    #region Market Coverage
 
     /// <summary>Supported market regions (e.g., "US", "UK", "DE").</summary>
     public IReadOnlyList<string> SupportedMarkets { get; init; } = new[] { "US" };
 
-    #endregion
 
-    #region Rate Limiting
 
     /// <summary>Maximum requests per time window.</summary>
     public int? MaxRequestsPerWindow { get; init; }
@@ -252,9 +239,7 @@ public sealed record ProviderCapabilities
     /// <summary>Minimum delay between requests.</summary>
     public TimeSpan? MinRequestDelay { get; init; }
 
-    #endregion
 
-    #region Factory Methods
 
     /// <summary>Default empty capabilities.</summary>
     public static ProviderCapabilities None { get; } = new();
@@ -357,9 +342,7 @@ public sealed record ProviderCapabilities
             SupportsSplits = true
         };
 
-    #endregion
 
-    #region Conversion Helpers
 
     /// <summary>
     /// Creates capabilities from legacy HistoricalDataCapabilities.
@@ -456,9 +439,7 @@ public sealed record ProviderCapabilities
         return dict;
     }
 
-    #endregion
 
-    #region Computed Properties
 
     /// <summary>Determines the primary provider type based on capabilities.</summary>
     public ProviderType PrimaryType =>
@@ -478,5 +459,4 @@ public sealed record ProviderCapabilities
     public bool SupportsMarket(string market) =>
         SupportedMarkets.Contains(market, StringComparer.OrdinalIgnoreCase);
 
-    #endregion
 }

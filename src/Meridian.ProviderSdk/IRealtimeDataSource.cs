@@ -11,7 +11,6 @@ namespace Meridian.Infrastructure.DataSources;
 /// </summary>
 public interface IRealtimeDataSource : IDataSource
 {
-    #region Connection
 
     /// <summary>
     /// Connects to the real-time data stream.
@@ -28,9 +27,7 @@ public interface IRealtimeDataSource : IDataSource
     /// </summary>
     bool IsConnected { get; }
 
-    #endregion
 
-    #region Trade Subscriptions
 
     /// <summary>
     /// Subscribes to real-time trade prints for the specified symbol.
@@ -49,9 +46,7 @@ public interface IRealtimeDataSource : IDataSource
     /// </summary>
     IObservable<RealtimeTrade> Trades { get; }
 
-    #endregion
 
-    #region Quote Subscriptions
 
     /// <summary>
     /// Subscribes to real-time BBO quotes for the specified symbol.
@@ -70,9 +65,7 @@ public interface IRealtimeDataSource : IDataSource
     /// </summary>
     IObservable<RealtimeQuote> Quotes { get; }
 
-    #endregion
 
-    #region Depth Subscriptions
 
     /// <summary>
     /// Subscribes to market depth for the specified symbol.
@@ -91,9 +84,7 @@ public interface IRealtimeDataSource : IDataSource
     /// </summary>
     IObservable<RealtimeDepthUpdate> DepthUpdates { get; }
 
-    #endregion
 
-    #region Active Subscriptions
 
     /// <summary>
     /// Gets all active subscription IDs.
@@ -110,7 +101,6 @@ public interface IRealtimeDataSource : IDataSource
     /// </summary>
     void UnsubscribeAll();
 
-    #endregion
 }
 
 /// <summary>
@@ -181,7 +171,6 @@ public interface IDepthSource
     int MaxDepthLevels { get; }
 }
 
-#region Real-time Event Types
 
 /// <summary>
 /// Real-time trade event from a data source.
@@ -230,4 +219,3 @@ public sealed record RealtimeDepthUpdate(
     long? SequenceNumber = null
 );
 
-#endregion

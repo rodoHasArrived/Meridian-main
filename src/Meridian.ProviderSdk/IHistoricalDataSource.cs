@@ -9,7 +9,6 @@ namespace Meridian.Infrastructure.DataSources;
 /// </summary>
 public interface IHistoricalDataSource : IDataSource
 {
-    #region Daily Bars
 
     /// <summary>
     /// Gets historical daily OHLCV bars for a symbol.
@@ -34,9 +33,7 @@ public interface IHistoricalDataSource : IDataSource
         DateOnly? to = null,
         CancellationToken ct = default);
 
-    #endregion
 
-    #region Intraday Bars
 
     /// <summary>
     /// Whether this source supports intraday bar data.
@@ -64,9 +61,7 @@ public interface IHistoricalDataSource : IDataSource
         DateTimeOffset? to = null,
         CancellationToken ct = default);
 
-    #endregion
 
-    #region Corporate Actions
 
     /// <summary>
     /// Whether this source supports dividend data.
@@ -96,7 +91,6 @@ public interface IHistoricalDataSource : IDataSource
         DateOnly? to = null,
         CancellationToken ct = default);
 
-    #endregion
 }
 
 /// <summary>
@@ -159,7 +153,6 @@ public interface ICorporateActionSource
         CancellationToken ct = default);
 }
 
-#region Historical Data Types
 
 /// <summary>
 /// Intraday bar (OHLCV) for a specific time interval.
@@ -220,4 +213,3 @@ public enum DividendType : byte
     Liquidation
 }
 
-#endregion

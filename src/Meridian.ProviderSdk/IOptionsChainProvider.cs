@@ -67,7 +67,6 @@ public interface IOptionsChainProvider : IProviderMetadata
     /// </summary>
     OptionsChainCapabilities Capabilities { get; }
 
-    #region IProviderMetadata Default Implementations
 
     /// <inheritdoc/>
     string IProviderMetadata.ProviderId => GetType().Name.Replace("OptionsChainProvider", "").ToLowerInvariant();
@@ -84,7 +83,6 @@ public interface IOptionsChainProvider : IProviderMetadata
     /// <inheritdoc/>
     ProviderCapabilities IProviderMetadata.ProviderCapabilities => ProviderCapabilities.OptionsChain();
 
-    #endregion
 }
 
 /// <summary>

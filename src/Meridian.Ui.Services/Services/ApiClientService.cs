@@ -152,22 +152,6 @@ public sealed class ApiClientService : IDisposable
     }
 
     /// <summary>
-    /// Creates an HTTP client configured for long-running backfill operations.
-    /// </summary>
-    /// <remarks>
-    /// Prefer using <see cref="GetBackfillClient"/> instead to reuse the shared client.
-    /// Only use this method when you need a client with a custom timeout that will be properly disposed.
-    /// </remarks>
-    [Obsolete("Prefer GetBackfillClient() to avoid socket exhaustion. Only use when custom timeout is required.")]
-    public HttpClient CreateBackfillClient()
-    {
-        // TD-10: Use HttpClientFactory instead of creating new HttpClient instances
-        var client = HttpClientFactoryProvider.CreateClient(HttpClientNames.BackfillClient);
-        client.Timeout = TimeSpan.FromMinutes(_backfillTimeoutMinutes);
-        return client;
-    }
-
-    /// <summary>
     /// Performs a GET request to the specified endpoint.
     /// </summary>
     public async Task<T?> GetAsync<T>(string endpoint, CancellationToken ct = default) where T : class

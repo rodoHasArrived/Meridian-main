@@ -69,13 +69,12 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                    expiry = terms.Expiry
                    multiplier = terms.Multiplier |})
         | SecurityKind.Bond terms ->
-            JsonSerializer.Serialize(
             let couponType =
                 match terms.Coupon with
                 | BondCouponStructure.Fixed _ -> "Fixed"
                 | BondCouponStructure.Floating _ -> "Floating"
                 | BondCouponStructure.ZeroCoupon -> "ZeroCoupon"
-            "Bond", JsonSerializer.Serialize(
+            JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion
                    maturity = terms.Maturity
                    issueDate = terms.IssueDate
