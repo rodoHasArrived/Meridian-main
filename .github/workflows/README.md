@@ -10,7 +10,7 @@ Workflows have been consolidated from 37 to 33 files, reducing duplication and a
 |----------------------|----------|-------------|
 | `documentation.yml` | `docs-comprehensive.yml`, `docs-auto-update.yml`, `docs-structure-sync.yml`, `ai-instructions-sync.yml`, `todo-automation.yml`, `docs-check.yml` | AI documentation quality review, AI TODO triage |
 | `update-diagrams.yml` | absorbed `update-uml-diagrams.yml` | — |
-| `desktop-builds.yml` | `desktop-app.yml`, `wpf-desktop.yml`, `wpf-commands.yml` | AI build failure diagnosis — WPF build is a delayed implementation (code in `src/Meridian.Wpf/`, not in active solution) |
+| `desktop-builds.yml` | `desktop-app.yml`, `wpf-desktop.yml`, `wpf-commands.yml` | AI build failure diagnosis — WPF project included in solution (full app on Windows, CI stub on Linux/macOS) |
 | `security.yml` | absorbed `dependency-review.yml` | AI vulnerability assessment |
 | `scheduled-maintenance.yml` | absorbed `cache-management.yml` | AI dependency upgrade recommendations |
 | `pr-checks.yml` | (enhanced) | AI PR review summary |
@@ -66,8 +66,8 @@ Workflows have been consolidated from 37 to 33 files, reducing duplication and a
   - GitHub release creation
   - Triggers build workflow automatically
 
-#### 5. **Desktop Builds** (`desktop-builds.yml`) *(delayed implementation)*
-- **Status**: Code present in `src/Meridian.Wpf/` and `tests/Meridian.Wpf.Tests/`, but not included in the active solution build. Workflow retained for when WPF development resumes.
+#### 5. **Desktop Builds** (`desktop-builds.yml`)
+- **Status**: `src/Meridian.Wpf/` and `tests/Meridian.Wpf.Tests/` are included in the solution build. On Windows the full WPF application is built; on Linux/macOS a CI-compatible stub is produced automatically by the project file.
 - **Trigger**: Push/PRs touching desktop app paths, Manual dispatch with build target selector
 - **Purpose**: Builds WPF desktop application
 - **Replaces**: `desktop-app.yml`, `wpf-desktop.yml`, `wpf-commands.yml`
@@ -317,7 +317,7 @@ AI-powered features use `actions/ai-inference@v1` with `gpt-4o-mini` and are con
 | `nightly.yml` | Failure Diagnosis | Root cause analysis and triage priority |
 | `scheduled-maintenance.yml` | Dependency Analysis | Upgrade recommendations with risk assessment |
 | `documentation.yml` | Doc Quality Review, TODO Triage | Completeness/accuracy assessment, TODO prioritization |
-| `desktop-builds.yml` | Build Analysis | Common failure pattern diagnosis — delayed implementation |
+| `desktop-builds.yml` | Build Analysis | Common failure pattern diagnosis |
 | `prompt-generation.yml` | Prompt Quality Review | Improvement suggestions for auto-generated prompts |
 
 ## Workflow Dependencies

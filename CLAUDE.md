@@ -27,7 +27,7 @@ Repo-local Codex skills live under `.codex/skills/`. Use them for Meridian-speci
 - Portfolio performance tracking and multi-run analysis
 - Direct lending module with PostgreSQL persistence
 - Web dashboard (300 API routes, 0 stubs)
-- WPF desktop app (Windows) — **code present in `src/Meridian.Wpf/`, not included in active solution build; delayed implementation**
+- WPF desktop app (Windows) — **code present in `src/Meridian.Wpf/`, included in solution build; builds a stub on non-Windows for CI compatibility**
 - QuantConnect Lean Engine integration
 - CppTrader native matching engine integration
 
