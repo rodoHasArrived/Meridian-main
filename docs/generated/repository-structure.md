@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-03-26 19:32:31 UTC. Do not edit manually.
+> Auto-generated on 2026-03-26 19:41:52 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -1685,7 +1685,8 @@ Meridian-main
 │   │   ├── SecurityMaster
 │   │   │   ├── Migrations
 │   │   │   │   ├── 001_security_master.sql
-│   │   │   │   └── 002_security_master_fts.sql
+│   │   │   │   ├── 002_security_master_fts.sql
+│   │   │   │   └── 003_security_master_corp_actions.sql
 │   │   │   ├── ISecurityMasterEventStore.cs
 │   │   │   ├── ISecurityMasterSnapshotStore.cs
 │   │   │   ├── ISecurityMasterStore.cs

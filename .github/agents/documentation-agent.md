@@ -1722,7 +1722,8 @@ Meridian-main
 │   │   ├── SecurityMaster
 │   │   │   ├── Migrations
 │   │   │   │   ├── 001_security_master.sql
-│   │   │   │   └── 002_security_master_fts.sql
+│   │   │   │   ├── 002_security_master_fts.sql
+│   │   │   │   └── 003_security_master_corp_actions.sql
 │   │   │   ├── ISecurityMasterEventStore.cs
 │   │   │   ├── ISecurityMasterSnapshotStore.cs
 │   │   │   ├── ISecurityMasterStore.cs
