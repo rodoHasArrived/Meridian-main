@@ -55,8 +55,8 @@ Total items: **187**
 | `CLAUDE.md` | 100 | `NOTE` | ❌ | **Note:** Always use `/p:EnableWindowsTargeting=true` on non-Windows systems to avoid NETSDK1100 errors. |
 | `CLAUDE.md` | 565 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
 | `CLAUDE.md` | 946 | `TODO` | ❌ | │   │   └── TODO.md |
-| `README.md` | 490 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
-| `README.md` | 861 | `TODO` | ❌ | │   │   ├── TODO.md |
+| `README.md` | 497 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
+| `README.md` | 871 | `TODO` | ❌ | │   │   ├── TODO.md |
 | `benchmarks/run-bottleneck-benchmarks.sh` | 111 | `NOTE` | ❌ | # Note: --filter is intentionally not added here; each phase below supplies its own |
 | `build/scripts/run/start-collector.ps1` | 109 | `NOTE` | ❌ | if ($depth -gt 0) { Write-Host "[NOTE] L2 depth requires provider depth entitlements for venues." } |
 | `build/scripts/run/start-collector.sh` | 114 | `NOTE` | ❌ | print("[NOTE] L2 depth requires provider depth subscription for venues.") |
