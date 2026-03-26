@@ -2327,6 +2327,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── BackfillStatusStoreTests.cs
 │   │   │   │   ├── BackfillWorkerServiceTests.cs
 │   │   │   │   ├── CompositeHistoricalDataProviderTests.cs
+│   │   │   │   ├── GapBackfillServiceTests.cs
 │   │   │   │   ├── HistoricalProviderContractTests.cs
 │   │   │   │   ├── ParallelBackfillServiceTests.cs
 │   │   │   │   ├── PriorityBackfillQueueTests.cs
@@ -2718,6 +2719,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-407 directories, 2273 files
+407 directories, 2274 files
 ```
 <!-- readme-tree end -->
