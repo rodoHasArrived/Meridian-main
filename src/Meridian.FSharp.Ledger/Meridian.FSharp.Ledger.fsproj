@@ -14,7 +14,11 @@
     <Compile Include="LedgerTypes.fs" />
     <Compile Include="JournalValidation.fs" />
     <Compile Include="Posting.fs" />
+    <!-- Break and run metadata types — no dependencies on Reconciliation.fs -->
+    <Compile Include="ReconciliationTypes.fs" />
     <Compile Include="Reconciliation.fs" />
+    <!-- Configurable matching rules — depends on ReconciliationTypes.fs -->
+    <Compile Include="ReconciliationRules.fs" />
     <Compile Include="LedgerReadModels.fs" />
     <Compile Include="Interop.fs" />
   </ItemGroup>
