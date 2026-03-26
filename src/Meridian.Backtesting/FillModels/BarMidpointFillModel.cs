@@ -11,11 +11,14 @@ namespace Meridian.Backtesting.FillModels;
 /// configurable midpoint slippage assumption. When <paramref name="spreadAware"/>
 /// is enabled, slippage is scaled by the bar's intrabar volatility (range / midpoint),
 /// simulating wider spreads in volatile conditions.
+/// When <paramref name="tickSizes"/> is provided, fill prices are rounded to the
+/// instrument's tick grid before being returned.
 /// </summary>
 internal sealed class BarMidpointFillModel(
     ICommissionModel commissionModel,
     decimal slippageBasisPoints = 5m,
-    bool spreadAware = false) : IFillModel
+    bool spreadAware = false,
+    IReadOnlyDictionary<string, decimal>? tickSizes = null) : IFillModel
 {
     public OrderFillResult TryFill(Order order, MarketEvent evt)
     {
@@ -48,6 +51,8 @@ internal sealed class BarMidpointFillModel(
                 WasTriggered: triggered && !order.IsTriggered);
         }
 
+        fillPrice = SnapToTick(fillPrice, order.Symbol);
+
         var remainingQuantity = order.RemainingSignedQuantity;
         var commission = commissionModel.Calculate(order.Symbol, remainingQuantity, fillPrice);
         var fill = new FillEvent(
@@ -72,6 +77,13 @@ internal sealed class BarMidpointFillModel(
             [fill],
             RemoveOrder: true,
             WasTriggered: triggered && !order.IsTriggered);
+    }
+
+    private decimal SnapToTick(decimal price, string symbol)
+    {
+        if (tickSizes is null || !tickSizes.TryGetValue(symbol, out var tickSize) || tickSize <= 0m)
+            return price;
+        return Math.Round(price / tickSize, MidpointRounding.ToEven) * tickSize;
     }
 
     private bool TryResolveFillPrice(HistoricalBar bar, Order order, OrderType executableType, bool isBuy, out decimal fillPrice)

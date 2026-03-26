@@ -49,4 +49,30 @@ public sealed class SecurityMasterQueryService : ISecurityMasterQueryService
         var projection = await _store.GetProjectionAsync(securityId, ct).ConfigureAwait(false);
         return await _rebuilder.RebuildEconomicDefinitionAsync(securityId, projection, ct).ConfigureAwait(false);
     }
+
+    public async Task<TradingParametersDto?> GetTradingParametersAsync(Guid securityId, DateTimeOffset asOf, CancellationToken ct = default)
+    {
+        var detail = await _store.GetDetailAsync(securityId, ct).ConfigureAwait(false);
+        if (detail is null)
+            return null;
+
+        var common = detail.CommonTerms;
+        decimal? lotSize = common.TryGetProperty("lotSize", out var lotProp) && lotProp.ValueKind != System.Text.Json.JsonValueKind.Null
+            ? lotProp.GetDecimal() : null;
+        decimal? tickSize = common.TryGetProperty("tickSize", out var tickProp) && tickProp.ValueKind != System.Text.Json.JsonValueKind.Null
+            ? tickProp.GetDecimal() : null;
+
+        return new TradingParametersDto(
+            SecurityId: securityId,
+            LotSize: lotSize,
+            TickSize: tickSize,
+            ContractMultiplier: null,
+            MarginRequirementPct: null,
+            TradingHoursUtc: null,
+            CircuitBreakerThresholdPct: null,
+            AsOf: asOf);
+    }
+
+    public Task<IReadOnlyList<CorporateActionDto>> GetCorporateActionsAsync(Guid securityId, CancellationToken ct = default)
+        => _eventStore.LoadCorporateActionsAsync(securityId, ct);
 }

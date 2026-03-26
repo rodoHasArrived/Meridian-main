@@ -94,6 +94,15 @@ type FundTerms = {
     LiquidityFeeEligible: bool option
 }
 
+type TradingParams = {
+    LotSize: decimal option
+    TickSize: decimal option
+    ContractMultiplier: decimal option
+    MarginRequirementPct: decimal option
+    TradingHoursUtc: string option
+    CircuitBreakerThresholdPct: decimal option
+}
+
 type SecurityTermModules = {
     Maturity: MaturityTerms option
     Coupon: CouponTerms option
@@ -109,6 +118,7 @@ type SecurityTermModules = {
     Issuer: IssuerTerms option
     EquityBehavior: EquityBehaviorTerms option
     Fund: FundTerms option
+    TradingParameters: TradingParams option
 }
 
 [<RequireQualifiedAccess>]
@@ -128,4 +138,5 @@ module SecurityTermModules =
         Issuer = None
         EquityBehavior = None
         Fund = None
+        TradingParameters = None
     }

@@ -131,5 +131,34 @@ public static class SecurityMasterEndpoints
         })
         .WithName("UpsertSecurityMasterAlias")
         .Produces<SecurityAliasDto>(StatusCodes.Status200OK);
+
+        group.MapGet(UiApiRoutes.SecurityMasterTradingParameters, async (
+            Guid securityId,
+            ISecurityMasterQueryService queryService,
+            CancellationToken ct) =>
+        {
+            var parameters = await queryService
+                .GetTradingParametersAsync(securityId, DateTimeOffset.UtcNow, ct)
+                .ConfigureAwait(false);
+            return parameters is null
+                ? Results.NotFound()
+                : Results.Json(parameters, jsonOptions);
+        })
+        .WithName("GetSecurityMasterTradingParameters")
+        .Produces<TradingParametersDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound);
+
+        group.MapGet(UiApiRoutes.SecurityMasterCorporateActions, async (
+            Guid securityId,
+            ISecurityMasterQueryService queryService,
+            CancellationToken ct) =>
+        {
+            var actions = await queryService
+                .GetCorporateActionsAsync(securityId, ct)
+                .ConfigureAwait(false);
+            return Results.Json(actions, jsonOptions);
+        })
+        .WithName("GetSecurityMasterCorporateActions")
+        .Produces<IReadOnlyList<CorporateActionDto>>(StatusCodes.Status200OK);
     }
 }

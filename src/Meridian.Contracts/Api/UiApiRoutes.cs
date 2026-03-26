@@ -301,6 +301,8 @@ public static class UiApiRoutes
     public const string SecurityMasterAmend = "/api/security-master/amend";
     public const string SecurityMasterDeactivate = "/api/security-master/deactivate";
     public const string SecurityMasterAliasesUpsert = "/api/security-master/aliases/upsert";
+    public const string SecurityMasterTradingParameters = "/api/security-master/{securityId:guid}/trading-parameters";
+    public const string SecurityMasterCorporateActions = "/api/security-master/{securityId:guid}/corporate-actions";
 
     // Messaging endpoints
     public const string MessagingConfig = "/api/messaging/config";
