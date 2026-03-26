@@ -28,51 +28,51 @@
 
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                         <TextBlock Text="Status:" FontWeight="SemiBold" Margin="0,0,8,0" />
-                        <TextBlock x:Name="StatusText" Text="Unknown" />
+                        <TextBlock Text="{Binding StatusText}" />
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                         <TextBlock Text="Health:" FontWeight="SemiBold" Margin="0,0,8,0" />
-                        <TextBlock x:Name="HealthText" Text="Unknown" />
+                        <TextBlock Text="{Binding HealthText}" />
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                         <TextBlock Text="Process ID:" FontWeight="SemiBold" Margin="0,0,8,0" />
-                        <TextBlock x:Name="ProcessIdText" Text="-" />
+                        <TextBlock Text="{Binding ProcessIdText}" />
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
                         <TextBlock Text="Executable:" FontWeight="SemiBold" Margin="0,0,8,0" />
-                        <TextBlock x:Name="ExecutablePathText" Text="Not registered" TextWrapping="Wrap" Width="900" />
+                        <TextBlock Text="{Binding ExecutablePathText}" TextWrapping="Wrap" Width="900" />
                     </StackPanel>
 
-                    <TextBlock x:Name="OperationResultText" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,0,16" />
+                    <TextBlock Text="{Binding OperationResultText}" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,0,16" />
 
                     <WrapPanel>
-                        <Button x:Name="InstallButton"
-                                Content="Install"
+                        <Button Content="Install"
                                 Style="{StaticResource SecondaryButtonStyle}"
                                 Margin="0,0,12,0"
-                                Click="Install_Click" />
-                        <Button x:Name="StartButton"
-                                Content="Start"
+                                Command="{Binding InstallCommand}"
+                                IsEnabled="{Binding CanInstall}" />
+                        <Button Content="Start"
                                 Style="{StaticResource PrimaryButtonStyle}"
                                 Margin="0,0,12,0"
-                                Click="Start_Click" />
-                        <Button x:Name="StopButton"
-                                Content="Stop"
+                                Command="{Binding StartCommand}"
+                                IsEnabled="{Binding CanStart}" />
+                        <Button Content="Stop"
                                 Style="{StaticResource SecondaryButtonStyle}"
                                 Margin="0,0,12,0"
-                                Click="Stop_Click" />
-                        <Button x:Name="RestartButton"
-                                Content="Restart"
+                                Command="{Binding StopCommand}"
+                                IsEnabled="{Binding CanStop}" />
+                        <Button Content="Restart"
                                 Style="{StaticResource SecondaryButtonStyle}"
                                 Margin="0,0,12,0"
-                                Click="Restart_Click" />
-                        <Button x:Name="RefreshButton"
-                                Content="Refresh Status"
+                                Command="{Binding RestartCommand}"
+                                IsEnabled="{Binding CanRestart}" />
+                        <Button Content="Refresh Status"
                                 Style="{StaticResource SecondaryButtonStyle}"
-                                Click="Refresh_Click" />
+                                Command="{Binding RefreshCommand}"
+                                IsEnabled="{Binding CanRefresh}" />
                     </WrapPanel>
                 </StackPanel>
             </Border>
