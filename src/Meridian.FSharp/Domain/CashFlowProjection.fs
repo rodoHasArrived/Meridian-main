@@ -1,7 +1,6 @@
 namespace Meridian.FSharp.Domain
 
 open System
-open Meridian.FSharp.Domain.SecurityIdentifiers
 
 /// Kind of cash-flow event projected from a security's economic terms
 type CashFlowEventKind =

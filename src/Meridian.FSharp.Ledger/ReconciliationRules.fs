@@ -1,7 +1,6 @@
 namespace Meridian.FSharp.Ledger
 
 open System
-open ReconciliationTypes
 
 /// Configuration for a ledger matching rule
 type MatchingRule = {

@@ -1,7 +1,6 @@
 namespace Meridian.FSharp.Domain
 
 open System
-open Meridian.FSharp.Domain.CashFlowProjection
 
 /// Tolerance parameters for matching projected against actual cash events
 type MatchTolerance = {
