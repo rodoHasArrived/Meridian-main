@@ -189,10 +189,10 @@ module SecurityMasterLegacyUpgrade =
                         }
                     Coupon =
                         Some {
-                            CouponType = Some "Fixed"
-                            CouponRate = terms.CouponRate
+                            CouponType = Some (match terms.Coupon with BondCouponStructure.ZeroCoupon -> "ZeroCoupon" | BondCouponStructure.Floating _ -> "Floating" | _ -> "Fixed")
+                            CouponRate = BondTerms.couponRate terms
                             PaymentFrequency = None
-                            DayCount = terms.DayCount
+                            DayCount = BondTerms.dayCount terms
                         }
             }
         | SecurityKind.FxSpot _ ->

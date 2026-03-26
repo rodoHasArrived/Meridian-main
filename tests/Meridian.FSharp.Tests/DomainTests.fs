@@ -146,3 +146,61 @@ let ``QuoteEvent with CLIMutable can be created`` () =
     quote.Symbol |> should equal "GOOGL"
     quote.BidPrice |> should equal 140.00m
     quote.AskPrice |> should equal 140.05m
+
+open Meridian.FSharp.Domain
+
+[<Fact>]
+let ``BondTerms fixedRate factory sets coupon correctly`` () =
+    let maturity = DateOnly(2030, 6, 15)
+    let terms = BondTerms.fixedRate maturity 5.25m (Some "30/360") (Some "Acme Corp")
+    terms.Maturity |> should equal maturity
+    terms.IsCallable |> should equal false
+    terms.IssuerName |> should equal (Some "Acme Corp")
+    match terms.Coupon with
+    | BondCouponStructure.Fixed(rate, dc) ->
+        rate |> should equal 5.25m
+        dc |> should equal (Some "30/360")
+    | _ -> failwith "Expected Fixed coupon"
+
+[<Fact>]
+let ``BondTerms floatingRate factory sets coupon correctly`` () =
+    let maturity = DateOnly(2028, 3, 1)
+    let terms = BondTerms.floatingRate maturity "SOFR" (Some 150m) (Some "Issuer Inc")
+    terms.Maturity |> should equal maturity
+    match terms.Coupon with
+    | BondCouponStructure.Floating(index, spread, _, _, _) ->
+        index |> should equal "SOFR"
+        spread |> should equal (Some 150m)
+    | _ -> failwith "Expected Floating coupon"
+
+[<Fact>]
+let ``BondTerms zeroCoupon factory creates zero-coupon bond`` () =
+    let maturity = DateOnly(2025, 12, 31)
+    let terms = BondTerms.zeroCoupon maturity None
+    terms.Maturity |> should equal maturity
+    match terms.Coupon with
+    | BondCouponStructure.ZeroCoupon -> ()
+    | _ -> failwith "Expected ZeroCoupon"
+
+[<Fact>]
+let ``BondTerms couponRate returns Some for fixed and None for zero-coupon`` () =
+    let fixedBond = BondTerms.fixedRate (DateOnly(2030, 1, 1)) 3.5m None None
+    let zero = BondTerms.zeroCoupon (DateOnly(2030, 1, 1)) None
+    BondTerms.couponRate fixedBond |> should equal (Some 3.5m)
+    BondTerms.couponRate zero |> should equal None
+
+[<Fact>]
+let ``BondTerms callable bond preserves callDate`` () =
+    let maturity = DateOnly(2035, 6, 1)
+    let callDate = DateOnly(2028, 6, 1)
+    let terms = {
+        Maturity = maturity
+        IssueDate = Some (DateOnly(2020, 6, 1))
+        Coupon = BondCouponStructure.Fixed(4.0m, Some "Act/360")
+        IsCallable = true
+        CallDate = Some callDate
+        IssuerName = Some "Corp A"
+        Seniority = Some "Senior"
+    }
+    terms.IsCallable |> should equal true
+    terms.CallDate |> should equal (Some callDate)
