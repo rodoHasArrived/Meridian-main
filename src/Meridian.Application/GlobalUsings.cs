@@ -13,7 +13,8 @@ global using ContractsTrade = Meridian.Contracts.Domain.Models.Trade;
 // Type aliases - Domain.Events.MarketEvent is the primary type
 global using MarketEvent = Meridian.Domain.Events.MarketEvent;
 global using MarketEventPayload = Meridian.Domain.Events.MarketEventPayload;
-// Expose internal classes to test assembly and main entry point for unit testing
+// Expose internal classes to test assembly, benchmark project, and main entry point for unit testing
 using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Meridian.Tests")]
 [assembly: InternalsVisibleTo("Meridian")]
+[assembly: InternalsVisibleTo("Meridian.Benchmarks")]
