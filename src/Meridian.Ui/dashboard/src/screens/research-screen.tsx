@@ -220,6 +220,8 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
                 decision={promotion.decision}
                 error={promotion.error}
                 runStatus={selectedRun.status}
+                rejectReason={rejectReason}
+                onRejectReasonChange={setRejectReason}
                 onEvaluate={handleEvaluatePromotion}
                 onApprove={handleApprovePromotion}
                 onReject={handleRejectPromotion}
@@ -238,6 +240,8 @@ interface PromotionPanelProps {
   decision: PromotionDecisionResult | null;
   error: string | null;
   runStatus: ResearchRunRecord["status"];
+  rejectReason: string;
+  onRejectReasonChange: (value: string) => void;
   onEvaluate: () => void;
   onApprove: () => void;
   onReject: () => void;
@@ -249,10 +253,13 @@ function PromotionPanel({
   decision,
   error,
   runStatus,
+  rejectReason,
+  onRejectReasonChange,
   onEvaluate,
   onApprove,
   onReject
 }: PromotionPanelProps) {
+  const [showRejectForm, setShowRejectForm] = useState(false);
   const canEvaluate = runStatus === "Completed" && (phase === "idle" || phase === "error");
   const isLoading = phase === "evaluating" || phase === "approving" || phase === "rejecting";
 
@@ -319,10 +326,60 @@ function PromotionPanel({
                 <CheckCircle className="mr-2 h-4 w-4" />
                 Approve promotion
               </Button>
-              <Button size="sm" variant="outline" onClick={onReject} disabled={isLoading}>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setShowRejectForm((prev) => !prev)}
+                disabled={isLoading}
+              >
                 <XCircle className="mr-2 h-4 w-4" />
                 Reject
               </Button>
+            </div>
+          )}
+
+          {!evaluation.isEligible && phase === "evaluated" && (
+            <div className="flex gap-3 pt-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setShowRejectForm((prev) => !prev)}
+                disabled={isLoading}
+              >
+                <XCircle className="mr-2 h-4 w-4" />
+                Record rejection
+              </Button>
+            </div>
+          )}
+
+          {showRejectForm && (
+            <div className="mt-3 space-y-3 rounded-lg border border-border/60 bg-secondary/20 p-4">
+              <label className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                Rejection reason
+              </label>
+              <textarea
+                rows={2}
+                placeholder="Describe why this run is being rejected (optional)…"
+                value={rejectReason}
+                onChange={(e) => onRejectReasonChange(e.target.value)}
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none"
+              />
+              <div className="flex gap-3">
+                <Button size="sm" variant="outline" onClick={onReject} disabled={isLoading}>
+                  {isLoading ? "Recording…" : "Confirm rejection"}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setShowRejectForm(false);
+                    onRejectReasonChange("");
+                  }}
+                  disabled={isLoading}
+                >
+                  Cancel
+                </Button>
+              </div>
             </div>
           )}
         </div>

@@ -1,11 +1,11 @@
-import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, PlusCircle, Wallet, XCircle } from "lucide-react";
-import { useState } from "react";
+import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, Layers, PauseCircle, PlayCircle, PlusCircle, StopCircle, Wallet, XCircle } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MetricCard } from "@/components/meridian/metric-card";
-import { cancelOrder, submitOrder } from "@/lib/api";
+import { cancelOrder, closePaperSession, createPaperSession, getExecutionSessions, pauseStrategy, stopStrategy, submitOrder } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import type { OrderSubmitRequest, TradingWorkspaceResponse } from "@/types";
+import type { OrderSubmitRequest, PaperSessionSummary, TradingWorkspaceResponse } from "@/types";
 
 interface TradingScreenProps {
   data: TradingWorkspaceResponse | null;
@@ -43,6 +43,25 @@ export function TradingScreen({ data }: TradingScreenProps) {
   const [orderState, setOrderState] = useState<OrderState>({ phase: "idle", orderId: null, error: null });
   const [cancelError, setCancelError] = useState<string | null>(null);
 
+  // --- Paper session management ---
+  const [sessions, setSessions] = useState<PaperSessionSummary[]>([]);
+  const [sessionLoading, setSessionLoading] = useState(false);
+  const [sessionError, setSessionError] = useState<string | null>(null);
+  const [showSessionForm, setShowSessionForm] = useState(false);
+  const [newSessionStrategyId, setNewSessionStrategyId] = useState("");
+  const [newSessionCash, setNewSessionCash] = useState("100000");
+
+  // --- Strategy lifecycle ---
+  const [strategyId, setStrategyId] = useState("");
+  const [lifecycleResult, setLifecycleResult] = useState<{ action: string; success: boolean; reason: string | null } | null>(null);
+  const [lifecycleError, setLifecycleError] = useState<string | null>(null);
+
+  useEffect(() => {
+    getExecutionSessions()
+      .then(setSessions)
+      .catch(() => { /* sessions unavailable — silently skip */ });
+  }, []);
+
   async function handleSubmitOrder(e: React.FormEvent) {
     e.preventDefault();
     setOrderState({ phase: "submitting", orderId: null, error: null });
@@ -72,6 +91,61 @@ export function TradingScreen({ data }: TradingScreenProps) {
       setCancelError(
         `Cancel failed for ${orderId}: ${err instanceof Error ? err.message : "unknown error"}`
       );
+    }
+  }
+
+  async function handleCreateSession(e: React.FormEvent) {
+    e.preventDefault();
+    setSessionLoading(true);
+    setSessionError(null);
+    try {
+      const sid = newSessionStrategyId.trim() || `strat-${Date.now()}`;
+      const cash = parseFloat(newSessionCash) || 100_000;
+      const summary = await createPaperSession(sid, null, cash);
+      setSessions((prev) => [summary, ...prev]);
+      setShowSessionForm(false);
+      setNewSessionStrategyId("");
+      setNewSessionCash("100000");
+    } catch (err) {
+      setSessionError(err instanceof Error ? err.message : "Failed to create session.");
+    } finally {
+      setSessionLoading(false);
+    }
+  }
+
+  async function handleCloseSession(sessionId: string) {
+    setSessionError(null);
+    try {
+      await closePaperSession(sessionId);
+      setSessions((prev) => prev.map((s) => s.sessionId === sessionId ? { ...s, status: "Closed" } : s));
+    } catch (err) {
+      setSessionError(err instanceof Error ? err.message : "Failed to close session.");
+    }
+  }
+
+  async function handlePauseStrategy() {
+    const sid = strategyId.trim();
+    if (!sid) return;
+    setLifecycleError(null);
+    setLifecycleResult(null);
+    try {
+      const result = await pauseStrategy(sid);
+      setLifecycleResult(result);
+    } catch (err) {
+      setLifecycleError(err instanceof Error ? err.message : "Pause failed.");
+    }
+  }
+
+  async function handleStopStrategy() {
+    const sid = strategyId.trim();
+    if (!sid) return;
+    setLifecycleError(null);
+    setLifecycleResult(null);
+    try {
+      const result = await stopStrategy(sid);
+      setLifecycleResult(result);
+    } catch (err) {
+      setLifecycleError(err instanceof Error ? err.message : "Stop failed.");
     }
   }
 
@@ -361,6 +435,191 @@ export function TradingScreen({ data }: TradingScreenProps) {
           />
         </CardContent>
       </Card>
+
+      <section className="grid gap-4 xl:grid-cols-2">
+        {/* Paper session management */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Layers className="h-4 w-4 text-primary" />
+                Paper sessions
+              </CardTitle>
+              <Button size="sm" variant="outline" onClick={() => setShowSessionForm((prev) => !prev)}>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                New session
+              </Button>
+            </div>
+            <CardDescription>Manage paper trading sessions and initial capital allocation.</CardDescription>
+          </CardHeader>
+
+          {sessionError && (
+            <CardContent className="pt-0 pb-2">
+              <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-center gap-2">
+                <XCircle className="h-4 w-4 shrink-0" />
+                {sessionError}
+              </div>
+            </CardContent>
+          )}
+
+          {showSessionForm && (
+            <CardContent className="border-b border-border/60 pb-6">
+              <form onSubmit={handleCreateSession} className="space-y-4">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                      Strategy ID
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="my-strategy-01"
+                      value={newSessionStrategyId}
+                      onChange={(e) => setNewSessionStrategyId(e.target.value)}
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                      Initial cash ($)
+                    </label>
+                    <input
+                      type="number"
+                      min={1000}
+                      step={1000}
+                      value={newSessionCash}
+                      onChange={(e) => setNewSessionCash(e.target.value)}
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <Button type="submit" size="sm" disabled={sessionLoading}>
+                    {sessionLoading ? "Creating…" : "Create session"}
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setShowSessionForm(false)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          )}
+
+          <CardContent>
+            {sessions.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4 text-center">
+                No paper sessions active. Create one above to start tracking execution.
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {sessions.map((session) => (
+                  <div
+                    key={session.sessionId}
+                    className="flex items-center justify-between rounded-lg border border-border/70 bg-secondary/20 px-4 py-3"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="font-mono text-sm text-foreground truncate">{session.sessionId}</div>
+                      <div className="text-xs text-muted-foreground mt-0.5">
+                        {session.strategyId} · ${session.initialCash.toLocaleString()} · {session.status}
+                      </div>
+                    </div>
+                    {session.status !== "Closed" && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="ml-4 shrink-0"
+                        onClick={() => handleCloseSession(session.sessionId)}
+                      >
+                        Close
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Strategy lifecycle controls */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <PlayCircle className="h-4 w-4 text-primary" />
+              Strategy lifecycle
+            </CardTitle>
+            <CardDescription>
+              Pause or stop a running strategy by its registered ID. Changes take effect immediately.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-1">
+              <label className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                Strategy ID
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. mean-reversion-fx-01"
+                value={strategyId}
+                onChange={(e) => setStrategyId(e.target.value)}
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+              />
+            </div>
+            <div className="flex gap-3">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handlePauseStrategy}
+                disabled={!strategyId.trim()}
+              >
+                <PauseCircle className="mr-2 h-4 w-4" />
+                Pause
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleStopStrategy}
+                disabled={!strategyId.trim()}
+              >
+                <StopCircle className="mr-2 h-4 w-4" />
+                Stop
+              </Button>
+            </div>
+
+            {lifecycleError && (
+              <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-center gap-2">
+                <XCircle className="h-4 w-4 shrink-0" />
+                {lifecycleError}
+              </div>
+            )}
+
+            {lifecycleResult && (
+              <div
+                className={cn(
+                  "rounded-lg border px-4 py-3 text-sm flex items-center gap-2",
+                  lifecycleResult.success
+                    ? "border-success/30 bg-success/10 text-success"
+                    : "border-warning/30 bg-warning/10 text-warning"
+                )}
+              >
+                {lifecycleResult.success ? (
+                  <CheckCircle className="h-4 w-4 shrink-0" />
+                ) : (
+                  <AlertTriangle className="h-4 w-4 shrink-0" />
+                )}
+                <span>
+                  <span className="font-semibold capitalize">{lifecycleResult.action}</span>
+                  {lifecycleResult.reason ? ` — ${lifecycleResult.reason}` : ""}
+                </span>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </section>
     </div>
   );
 }
