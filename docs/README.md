@@ -22,7 +22,7 @@ This index is the main entry point for Meridian documentation. The current docum
 ## Documentation Zones
 
 | Zone | Folders | Audience |
-|------|---------|----------|
+| ------ | --------- | ---------- |
 | Product | `getting-started/`, `providers/`, `operations/` | Users and operators |
 | Engineering | `architecture/`, `adr/`, `development/`, `integrations/`, `reference/`, `diagrams/` | Developers |
 | Governance | `status/`, `plans/`, `evaluations/`, `audits/`, `security/` | Core team and stakeholders |
