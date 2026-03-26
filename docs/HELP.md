@@ -62,7 +62,7 @@ This guide covers everything from installation to advanced configuration.
 
 ## Overview
 
-**Version:** 1.6.1 | **Status:** Production Ready
+**Version:** 1.7.2 | **Status:** Development / Pilot Ready
 
 ### What You Can Do
 
@@ -2224,7 +2224,7 @@ docker-compose up -d
 
 | Document | Description |
 |----------|-------------|
-| [README.md](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/README.md) | Project overview and quick start |
+| [README.md](../README.md) | Project overview and quick start |
 | [HELP.md](HELP.md) | This comprehensive user guide |
 | [getting-started/README.md](getting-started/README.md) | Step-by-step setup guide |
 | [Configuration](#configuration) | Configuration reference |
@@ -2249,7 +2249,7 @@ docker-compose up -d
 1. **Check the logs**: Most issues are logged with detailed error messages
 2. **Run diagnostics**: `make doctor` for comprehensive system check
 3. **Review documentation**: Comprehensive docs cover most scenarios
-4. **GitHub Issues**: Report bugs or request features at https://github.com/your-org/Meridian/issues
+4. **GitHub Issues**: Report bugs or request features at https://github.com/rodoHasArrived/Meridian-main/issues
 
 ### Best Practices
 
@@ -2276,6 +2276,6 @@ Before contributing code:
 
 ---
 
-**Version:** 1.6.1
-**Last Updated:** 2026-01-30
+**Version:** 1.7.2
+**Last Updated:** 2026-03-26
 **License:** See LICENSE file

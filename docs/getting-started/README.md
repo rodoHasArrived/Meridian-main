@@ -11,7 +11,7 @@ Quick start guide for the Meridian. For comprehensive documentation, see [HELP.m
 
 ```bash
 # Clone and build
-git clone <repository-url>
+git clone https://github.com/rodoHasArrived/Meridian.git
 cd Meridian
 dotnet build
 
