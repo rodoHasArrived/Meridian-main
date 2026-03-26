@@ -1,6 +1,6 @@
 # TODO / FIXME / NOTE Scan
 
-Total items: **233**
+Total items: **234**
 
 | File | Line | Tag | Linked Issue | Text |
 |---|---:|---|:---:|---|
@@ -166,6 +166,7 @@ Total items: **233**
 | `src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs` | 420 | `NOTE` | ❌ | request.Note) |
 | `src/Meridian.Application/Http/HtmlTemplates.cs` | 149 | `NOTE` | ❌ | <p><strong>Note:</strong> External templates not found. Using minimal fallback UI.</p> |
 | `src/Meridian.Application/Http/HtmlTemplates.cs` | 242 | `NOTE` | ❌ | <p><strong>Note:</strong> External templates not found. Using minimal fallback UI.</p> |
+| `src/Meridian.Application/Services/GovernanceExceptionService.cs` | 111 | `NOTE` | ❌ | /// <summary>Marks an exception as resolved with an optional closing note.</summary> |
 | `src/Meridian.Application/Wizard/Steps/ConfigureDataSourceStep.cs` | 155 | `NOTE` | ❌ | _output.WriteLine("  Note: IB requires TWS or IB Gateway to be running.\n"); |
 | `src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs` | 29 | `NOTE` | ❌ | string? Note); |
 | `src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs` | 70 | `NOTE` | ❌ | string? Note, |
