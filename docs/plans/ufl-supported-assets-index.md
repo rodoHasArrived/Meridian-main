@@ -2,15 +2,32 @@
 
 **Owner:** Core Team  
 **Audience:** Product, architecture, domain, storage, and application contributors  
-**Last Updated:** 2026-03-22  
+**Last Updated:** 2026-03-26  
 **Status:** active  
-**Reviewed:** 2026-03-22
+**Reviewed:** 2026-03-26
 
 ## Summary
 
 This index groups the active UFL target-state packages for the security-master asset classes Meridian currently models in `src/Meridian.FSharp/Domain/SecurityMaster.fs` and maps in `src/Meridian.Application/SecurityMaster/SecurityMasterMapping.cs`.
 
 The existing direct-lending package remains the deepest vertical slice. The sibling packages below cover the other supported asset classes so architecture, storage, workflow, and validation decisions can be tracked consistently across the full security-master surface.
+
+## Naming Standard
+
+All new F# types and C# DTOs proposed in these packages must follow the
+[Meridian Domain Naming Standard](../ai/claude/CLAUDE.domain-naming.md).
+
+**Key rules for type names proposed in UFL packages:**
+
+| Concept | Required pattern | Examples |
+|---|---|---|
+| New identifier types | `XxxId` single-case DU | `CorpActId`, `OptChainId` |
+| Instrument definition records | `XxxDef` | `BondDef`, `EquityDef`, `OptDef`, `FutDef`, `FxDef` |
+| Trait records (cross-cutting) | `XxxTr` | `OwnTr`, `IncTr`, `ConvTr`, `RedTr`, `SenTr` |
+| Link / join records | `LeftRightLnk` | `SecIssLnk`, `SecExchLnk`, `CorpActSecLnk` |
+| Status discriminated unions | `XxxStat` | `CorpActStat`, `SecurityStat` |
+| Boolean fields | `Is`/`Has` prefix | `IsCallable`, `HasVoting`, `IsBullet` |
+| Date fields (new F# code) | `Dt` suffix | `MaturityDt`, `IssueDt`, `ExpiryDt` |
 
 ## Asset Packages
 
