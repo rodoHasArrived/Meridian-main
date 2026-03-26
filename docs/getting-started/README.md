@@ -82,7 +82,7 @@ dotnet run --project src/Meridian/Meridian.csproj -- --mode headless
 
 By default, collected data goes to the `data/` directory:
 
-```
+```text
 data/
 ├── live/           # Real-time streaming data (hot tier)
 ├── historical/     # Backfill data from historical providers
