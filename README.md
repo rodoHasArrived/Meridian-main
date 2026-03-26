@@ -2310,6 +2310,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── ChartingPageViewModel.cs
 │       │   ├── DashboardViewModel.cs
 │       │   ├── DataQualityViewModel.cs
+│       │   ├── ExportPresetsViewModel.cs
 │       │   ├── LeanIntegrationViewModel.cs
 │       │   ├── LiveDataViewerViewModel.cs
 │       │   ├── NotificationCenterViewModel.cs
@@ -2317,6 +2318,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── ProviderHealthViewModel.cs
 │       │   ├── ProviderPageModels.cs
 │       │   ├── RunMatViewModel.cs
+│       │   ├── ServiceManagerViewModel.cs
 │       │   ├── StrategyRunBrowserViewModel.cs
 │       │   ├── StrategyRunDetailViewModel.cs
 │       │   ├── StrategyRunLedgerViewModel.cs
@@ -2872,7 +2874,9 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── RunMatUiAutomationFacade.cs
 │   │   │   └── WpfTestThread.cs
 │   │   ├── ViewModels
-│   │   │   └── DataQualityViewModelCharacterizationTests.cs
+│   │   │   ├── DataQualityViewModelCharacterizationTests.cs
+│   │   │   ├── RunMatViewModelTests.cs
+│   │   │   └── StrategyRunBrowserViewModelTests.cs
 │   │   └── Views
 │   │       ├── RunMatUiSmokeTests.cs
 │   │       └── RunMatWorkflowSmokeTests.cs
@@ -2883,6 +2887,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-451 directories, 2394 files
+451 directories, 2398 files
 ```
 <!-- readme-tree end -->
