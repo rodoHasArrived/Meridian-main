@@ -1,4 +1,5 @@
 using System.Threading.Channels;
+using Meridian.Application.Pipeline;
 using Meridian.Infrastructure.CppTrader.Diagnostics;
 using Meridian.Infrastructure.CppTrader.Host;
 using Meridian.Infrastructure.CppTrader.Options;
@@ -28,7 +29,7 @@ public sealed class CppTraderOrderGateway : IOrderGateway
     private readonly IOptionsMonitor<CppTraderOptions> _optionsMonitor;
     private readonly ILogger<CppTraderOrderGateway> _logger;
     private readonly Channel<OrderStatusUpdate> _updates =
-        Channel.CreateUnbounded<OrderStatusUpdate>();
+        EventPipelinePolicy.CompletionQueue.CreateChannel<OrderStatusUpdate>();
     private readonly Lock _gate = new();
     private readonly HashSet<string> _registeredSymbols = new(StringComparer.OrdinalIgnoreCase);
     private ICppTraderSessionClient? _session;

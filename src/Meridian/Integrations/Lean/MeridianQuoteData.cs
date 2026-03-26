@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Meridian.Application.Serialization;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Events;
@@ -82,7 +83,7 @@ public sealed class MeridianQuoteData : BaseData
         try
         {
             // Parse the JSONL line as a MarketEvent
-            var marketEvent = JsonSerializer.Deserialize<MarketEvent>(line);
+            var marketEvent = JsonSerializer.Deserialize(line, MarketDataJsonContext.Default.MarketEvent);
 
             if (marketEvent == null || marketEvent.Type != MarketEventType.BboQuote)
                 return null!;
