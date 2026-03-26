@@ -2463,6 +2463,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── StrongDomainTypeTests.cs
 │   │   ├── Execution
 │   │   │   ├── BrokerageGatewayAdapterTests.cs
+│   │   │   ├── OrderManagementSystemTests.cs
 │   │   │   ├── PaperSessionPersistenceServiceTests.cs
 │   │   │   ├── PaperTradingGatewayTests.cs
 │   │   │   └── PaperTradingPortfolioTests.cs
@@ -2719,6 +2720,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-407 directories, 2274 files
+407 directories, 2275 files
 ```
 <!-- readme-tree end -->
