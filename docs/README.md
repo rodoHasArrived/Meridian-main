@@ -1,7 +1,7 @@
 # Meridian Documentation
 
-**Version:** 1.7.1
-**Last Updated:** 2026-03-22
+**Version:** 1.7.2
+**Last Updated:** 2026-03-26
 
 This index is the main entry point for Meridian documentation. The current documentation set is synchronized around two connected product tracks inside a broader comprehensive fund-management objective:
 
