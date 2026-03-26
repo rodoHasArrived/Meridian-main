@@ -1,6 +1,6 @@
 # TODO / FIXME / NOTE Scan
 
-Total items: **181**
+Total items: **182**
 
 | File | Line | Tag | Linked Issue | Text |
 |---|---:|---|:---:|---|
@@ -86,6 +86,7 @@ Total items: **181**
 | `docs/development/expanding-scripts.md` | 124 | `TODO` | ❌ | - **Assignee detection** - Recognizes @username in TODO comments |
 | `docs/development/expanding-scripts.md` | 131 | `TODO` | ❌ | python3 build/scripts/docs/scan-todos.py --output docs/status/TODO.md |
 | `docs/development/refactor-map.md` | 169 | `NOTE` | ❌ | > **Note:** The UWP desktop application has been fully removed from the codebase. WPF is the sole desktop client. |
+| `docs/development/repository-organization-guide.md` | 356 | `TODO` | ❌ | │   ├── TODO.md                 # auto-generated task marker tracking |
 | `docs/development/repository-organization-guide.md` | 681 | `FIXME` | ❌ | grep -rE "FIXME:\|HACK:" src/ tests/ |
 | `docs/docfx/api/index.md` | 62 | `NOTE` | ❌ | > **Note:** The source code must build successfully before DocFX can extract XML documentation. |
 | `docs/evaluations/high-impact-improvement-brainstorm-2026-03.md` | 76 | `NOTE` | ❌ | > **Note:** Ratings above reflect the initial assessment (2026-03-01). Follow-up |
@@ -109,7 +110,7 @@ Total items: **181**
 | `docs/reference/data-dictionary.md` | 724 | `NOTE` | ❌ | **Note:** Aligns with Interactive Brokers conventions. |
 | `docs/reference/data-uniformity.md` | 5 | `NOTE` | ❌ | This note expands on the data-quality goals for the collector so downstream users receive a uniform, analysis-ready tape regardless of provider quirks. |
 | `docs/status/EVALUATIONS_AND_AUDITS.md` | 394 | `NOTE` | ❌ | - Historical note: the original audit flagged generated docs as stale, but `docs/generated/` has since been refreshed and expanded |
-| `docs/status/IMPROVEMENTS.md` | 1344 | `TODO` | ❌ | - **[task-markers.md](TODO.md)** — Auto-generated task marker tracking from code comments |
+| `docs/status/IMPROVEMENTS.md` | 1344 | `TODO` | ❌ | - **[TODO.md](TODO.md)** — Auto-generated task marker tracking from code comments |
 | `docs/status/README.md` | 30 | `TODO` | ❌ | \| [TODO.md](TODO.md) \| Auto-generated TODO tracking from source comments \| |
 | `docs/status/docs-automation-summary.json` | 25 | `TODO` | ❌ | "docs/status/TODO.md", |
 | `docs/status/docs-automation-summary.json` | 27 | `TODO` | ❌ | "docs/status/todo-scan-results.json" |
