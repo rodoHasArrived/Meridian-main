@@ -140,6 +140,9 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
 
         // Activity Log (1 page)
         RegisterPage("ActivityLog", typeof(ActivityLogPage));
+
+        // Security Master workstation (1 page)
+        RegisterPage("SecurityMaster", typeof(SecurityMasterPage));
     }
 
     /// <inheritdoc />
