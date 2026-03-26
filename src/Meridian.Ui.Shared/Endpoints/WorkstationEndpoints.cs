@@ -150,6 +150,76 @@ public static class WorkstationEndpoints
         .Produces<LedgerSummary>(200)
         .Produces(404);
 
+        group.MapGet("/runs/{runId}/equity-curve", async (string runId, HttpContext context) =>
+        {
+            var readService = context.RequestServices.GetService<StrategyRunReadService>();
+            if (readService is null)
+            {
+                return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var curve = await readService.GetEquityCurveAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            return curve is null
+                ? Results.NotFound()
+                : Results.Json(curve, jsonOptions);
+        })
+        .WithName("GetRunEquityCurve")
+        .Produces<EquityCurveSummary>(200)
+        .Produces(404)
+        .Produces(501);
+
+        group.MapGet("/runs/{runId}/fills", async (string runId, string? symbol, HttpContext context) =>
+        {
+            var readService = context.RequestServices.GetService<StrategyRunReadService>();
+            if (readService is null)
+            {
+                return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var summary = await readService.GetFillsAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            if (summary is null)
+            {
+                return Results.NotFound();
+            }
+
+            if (!string.IsNullOrWhiteSpace(symbol))
+            {
+                var filtered = summary with
+                {
+                    Fills = summary.Fills
+                        .Where(f => string.Equals(f.Symbol, symbol, StringComparison.OrdinalIgnoreCase))
+                        .ToArray(),
+                    TotalFills = summary.Fills
+                        .Count(f => string.Equals(f.Symbol, symbol, StringComparison.OrdinalIgnoreCase))
+                };
+                return Results.Json(filtered, jsonOptions);
+            }
+
+            return Results.Json(summary, jsonOptions);
+        })
+        .WithName("GetRunFills")
+        .Produces<RunFillSummary>(200)
+        .Produces(404)
+        .Produces(501);
+
+        group.MapGet("/runs/{runId}/attribution", async (string runId, HttpContext context) =>
+        {
+            var readService = context.RequestServices.GetService<StrategyRunReadService>();
+            if (readService is null)
+            {
+                return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var attribution = await readService.GetAttributionAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            return attribution is null
+                ? Results.NotFound()
+                : Results.Json(attribution, jsonOptions);
+        })
+        .WithName("GetRunAttribution")
+        .Produces<RunAttributionSummary>(200)
+        .Produces(404)
+        .Produces(501);
+
         group.MapGet("/runs/{runId}/ledger/trial-balance", async (string runId, string? accountType, HttpContext context) =>
         {
             var readService = context.RequestServices.GetService<StrategyRunReadService>();
