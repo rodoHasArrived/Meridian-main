@@ -232,6 +232,45 @@ public sealed class PersistentDedupLedger : IAsyncDisposable
         return s.Replace("\\", "\\\\").Replace("\"", "\\\"");
     }
 
+    // -----------------------------------------------------------------------
+    // Internal shims for benchmarks and tests.
+    // Tagged [EditorBrowsable(Never)] to suppress IDE completion.
+    // Do NOT remove without updating DeduplicationKeyBenchmarks and
+    // AllocationBudgetIntegrationTests in tests/Meridian.Tests/Performance/.
+    // -----------------------------------------------------------------------
+
+    /// <summary>
+    /// Synchronous cache-check shim used by benchmarks and allocation tests.
+    /// Returns <c>true</c> if the event key is present in the in-memory cache
+    /// and has not expired. Does NOT write to disk or update the cache.
+    /// </summary>
+    [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+    internal bool IsDuplicateCacheCheck(MarketEvent evt)
+    {
+        var key = ComputeEventKey(evt);
+        var nowTicks = DateTimeOffset.UtcNow.Ticks;
+        return _cache.TryGetValue(key, out var existingTicks) && (nowTicks - existingTicks < _entryTtl.Ticks);
+    }
+
+    /// <summary>
+    /// Synchronous key-computation shim: warms the prefix cache and computes
+    /// the full event key without any I/O. Used to seed the cache before
+    /// measuring a cache-hit in benchmarks.
+    /// </summary>
+    [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+    internal void SeedCacheEntry(MarketEvent evt)
+    {
+        var key = ComputeEventKey(evt);
+        _cache[key] = DateTimeOffset.UtcNow.Ticks;
+    }
+
+    /// <summary>
+    /// Returns the computed event key for <paramref name="evt"/> without performing
+    /// any cache lookup or I/O. Used to measure key-computation cost in isolation.
+    /// </summary>
+    [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+    internal string ComputeKeyForBenchmark(MarketEvent evt) => ComputeEventKey(evt);
+
     /// <summary>
     /// Background eviction of expired entries, called by the eviction timer.
     /// Runs off the hot path to avoid blocking event processing.

@@ -875,6 +875,20 @@ public sealed class WriteAheadLog : IAsyncDisposable
             _writeLock.Dispose();
         }
     }
+
+    // -----------------------------------------------------------------------
+    // Internal benchmark / test shim.
+    // Do NOT remove without updating WalChecksumBenchmarks and
+    // AllocationBudgetIntegrationTests in tests/Meridian.Tests/Performance/.
+    // -----------------------------------------------------------------------
+
+    /// <summary>
+    /// Exposes the private <c>ComputeChecksum</c> method to benchmark and test
+    /// assemblies so they can measure the cost of checksum computation in isolation.
+    /// </summary>
+    [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+    internal static string ComputeChecksumForBenchmark(long sequence, DateTime timestamp, string recordType, string payload)
+        => ComputeChecksum(sequence, timestamp, recordType, payload);
 }
 
 /// <summary>
