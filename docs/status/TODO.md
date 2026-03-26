@@ -54,7 +54,7 @@ Total items: **235**
 | `CLAUDE.md` | 100 | `NOTE` | ❌ | **Note:** Always use `/p:EnableWindowsTargeting=true` on non-Windows systems to avoid NETSDK1100 errors. |
 | `CLAUDE.md` | 950 | `TODO` | ❌ | │   │   └── TODO.md |
 | `README.md` | 490 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
-| `README.md` | 860 | `TODO` | ❌ | │   │   ├── TODO.md |
+| `README.md` | 861 | `TODO` | ❌ | │   │   ├── TODO.md |
 | `benchmarks/run-bottleneck-benchmarks.sh` | 111 | `NOTE` | ❌ | # Note: --filter is intentionally not added here; each phase below supplies its own |
 | `build/scripts/run/start-collector.ps1` | 109 | `NOTE` | ❌ | if ($depth -gt 0) { Write-Host "[NOTE] L2 depth requires provider depth entitlements for venues." } |
 | `build/scripts/run/start-collector.sh` | 114 | `NOTE` | ❌ | print("[NOTE] L2 depth requires provider depth subscription for venues.") |
@@ -134,9 +134,9 @@ Total items: **235**
 | `docs/operations/portable-data-packager.md` | 303 | `NOTE` | ❌ | 2. **Document filters**: Note any symbols, dates, or types that were excluded |
 | `docs/plans/l3-inference-implementation-plan.md` | 180 | `NOTE` | ❌ | > **Note:** Providers that supply L2 depth data include Interactive Brokers, Polygon, NYSE, and StockSharp. Providers that supply only daily OHLCV bars (e.g. Stooq, Yahoo Finance) are **not sufficient** for queue inference — depth tick data is required. |
 | `docs/plans/quant-script-environment-blueprint.md` | 1193 | `TODO` | ❌ | - [ ] `Api/PortfolioBuilder.cs` + `PortfolioResult.cs` (`EfficientFrontier` returns equal-weight stub + `// TODO` comment) |
-| `docs/plans/ufl-direct-lending-target-state-v2.md` | 413 | `NOTE` | ❌ | \| AssessFee of feeType:FeeType * amount:decimal * effectiveDate:DateOnly * note:string option |
-| `docs/plans/ufl-direct-lending-target-state-v2.md` | 428 | `NOTE` | ❌ | \| FeeAssessed of feeType:FeeType * amount:decimal * effectiveDate:DateOnly * note:string option |
-| `docs/plans/ufl-treasury-bill-target-state-v2.md` | 101 | `NOTE` | ❌ | 5. Future note and bond packages should reuse the same government-security patterns where possible. |
+| `docs/plans/ufl-direct-lending-target-state-v2.md` | 417 | `NOTE` | ❌ | \| AssessFee of feeType:FeeType * amount:decimal * effectiveDate:DateOnly * note:string option |
+| `docs/plans/ufl-direct-lending-target-state-v2.md` | 432 | `NOTE` | ❌ | \| FeeAssessed of feeType:FeeType * amount:decimal * effectiveDate:DateOnly * note:string option |
+| `docs/plans/ufl-treasury-bill-target-state-v2.md` | 105 | `NOTE` | ❌ | 5. Future note and bond packages should reuse the same government-security patterns where possible. |
 | `docs/providers/interactive-brokers-free-equity-reference.md` | 254 | `NOTE` | ❌ | Note: It is important to understand the concept of market data lines since it has an impact not only on the live real time requests but also for requesting market depth and real time bars. |
 | `docs/providers/interactive-brokers-free-equity-reference.md` | 265 | `NOTE` | ❌ | - Note: BID_ASK requests count as **two** requests |
 | `docs/reference/data-dictionary.md` | 724 | `NOTE` | ❌ | **Note:** Aligns with Interactive Brokers conventions. |
