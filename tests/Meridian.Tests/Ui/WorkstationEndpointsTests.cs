@@ -546,6 +546,103 @@ public sealed class WorkstationEndpointsTests
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
+    [Fact]
+    public async Task MapWorkstationEndpoints_CompareRuns_ShouldReturnMetricsForEachRun()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+        });
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildRun(
+            runId: "cmp-1",
+            strategyId: "s1",
+            strategyName: "Alpha Strategy",
+            runType: RunType.Paper,
+            startedAt: new DateTimeOffset(2026, 3, 21, 10, 0, 0, TimeSpan.Zero)));
+        await store.RecordRunAsync(BuildRun(
+            runId: "cmp-2",
+            strategyId: "s2",
+            strategyName: "Beta Strategy",
+            runType: RunType.Backtest,
+            startedAt: new DateTimeOffset(2026, 3, 21, 9, 0, 0, TimeSpan.Zero)));
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsJsonAsync("/api/workstation/runs/compare", new { runIds = new[] { "cmp-1", "cmp-2" } });
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var doc = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
+        var rows = doc.RootElement.EnumerateArray().ToArray();
+        rows.Should().HaveCount(2);
+        rows.Select(r => r.GetProperty("runId").GetString()).Should().Contain("cmp-1").And.Contain("cmp-2");
+        rows.Select(r => r.GetProperty("strategyName").GetString()).Should().Contain("Alpha Strategy").And.Contain("Beta Strategy");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_CompareRuns_ShouldReturnBadRequestForSingleRunId()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+        });
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsJsonAsync("/api/workstation/runs/compare", new { runIds = new[] { "only-one" } });
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_DiffRuns_ShouldReturnPositionAndMetricDeltas()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+        });
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildRun(
+            runId: "diff-base",
+            strategyId: "s-diff",
+            strategyName: "Diff Base",
+            runType: RunType.Backtest,
+            startedAt: new DateTimeOffset(2026, 3, 20, 10, 0, 0, TimeSpan.Zero)));
+        await store.RecordRunAsync(BuildRun(
+            runId: "diff-target",
+            strategyId: "s-diff-2",
+            strategyName: "Diff Target",
+            runType: RunType.Paper,
+            startedAt: new DateTimeOffset(2026, 3, 21, 10, 0, 0, TimeSpan.Zero)));
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsJsonAsync("/api/workstation/runs/diff",
+            new { baseRunId = "diff-base", targetRunId = "diff-target" });
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var doc = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
+        doc.RootElement.GetProperty("baseRunId").GetString().Should().Be("diff-base");
+        doc.RootElement.GetProperty("targetRunId").GetString().Should().Be("diff-target");
+        doc.RootElement.GetProperty("baseStrategyName").GetString().Should().Be("Diff Base");
+        doc.RootElement.GetProperty("targetStrategyName").GetString().Should().Be("Diff Target");
+        doc.RootElement.GetProperty("metrics").GetProperty("netPnlDelta").GetDecimal().Should().Be(0m);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_DiffRuns_ShouldReturnNotFoundWhenRunMissing()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+        });
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsJsonAsync("/api/workstation/runs/diff",
+            new { baseRunId = "no-such-run", targetRunId = "also-missing" });
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
     private static async Task<WebApplication> CreateAppAsync(Action<IServiceCollection>? configureServices = null)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions

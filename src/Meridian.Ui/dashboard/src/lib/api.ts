@@ -8,6 +8,8 @@ import type {
   PromotionEvaluationResult,
   PromotionRecord,
   ResearchWorkspaceResponse,
+  RunComparisonRow,
+  RunDiff,
   SessionInfo,
   TradingWorkspaceResponse
 } from "@/types";
@@ -130,4 +132,14 @@ export function stopStrategy(strategyId: string) {
   return postJson<{ strategyId: string; action: string; success: boolean; reason: string | null }>(
     `/api/strategies/${encodeURIComponent(strategyId)}/stop`
   );
+}
+
+// --- Multi-run comparison and diff ---
+
+export function compareRuns(runIds: string[]) {
+  return postJson<RunComparisonRow[]>("/api/workstation/runs/compare", { runIds });
+}
+
+export function diffRuns(baseRunId: string, targetRunId: string) {
+  return postJson<RunDiff>("/api/workstation/runs/diff", { baseRunId, targetRunId });
 }
