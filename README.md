@@ -2318,6 +2318,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── ProviderHealthViewModel.cs
 │       │   ├── ProviderPageModels.cs
 │       │   ├── RunMatViewModel.cs
+│       │   ├── SecurityMasterViewModel.cs
 │       │   ├── ServiceManagerViewModel.cs
 │       │   ├── StrategyRunBrowserViewModel.cs
 │       │   ├── StrategyRunDetailViewModel.cs
@@ -2412,6 +2413,8 @@ Use these documents together when planning or implementing new work:
 │           ├── RunPortfolioPage.xaml.cs
 │           ├── ScheduleManagerPage.xaml
 │           ├── ScheduleManagerPage.xaml.cs
+│           ├── SecurityMasterPage.xaml
+│           ├── SecurityMasterPage.xaml.cs
 │           ├── ServiceManagerPage.xaml
 │           ├── ServiceManagerPage.xaml.cs
 │           ├── SettingsPage.xaml
@@ -2888,6 +2891,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-451 directories, 2399 files
+451 directories, 2402 files
 ```
 <!-- readme-tree end -->
