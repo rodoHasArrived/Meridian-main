@@ -806,6 +806,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── readability-refactor-baseline.md
 │   │   ├── readability-refactor-roadmap.md
 │   │   ├── readability-refactor-technical-design-pack.md
+│   │   ├── security-master-productization-roadmap.md
 │   │   ├── trading-workstation-migration-blueprint.md
 │   │   ├── ufl-bond-target-state-v2.md
 │   │   ├── ufl-cash-sweep-target-state-v2.md
@@ -2891,6 +2892,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-451 directories, 2402 files
+451 directories, 2403 files
 ```
 <!-- readme-tree end -->
