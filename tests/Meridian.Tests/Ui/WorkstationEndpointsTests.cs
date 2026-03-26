@@ -1154,5 +1154,8 @@ public sealed class WorkstationEndpointsTests
             var rows = history.Take(request.Take).ToArray();
             return Task.FromResult<IReadOnlyList<SecurityMasterEventEnvelope>>(rows);
         }
+
+        public Task<SecurityEconomicDefinitionRecord?> GetEconomicDefinitionByIdAsync(Guid securityId, CancellationToken ct = default)
+            => Task.FromResult<SecurityEconomicDefinitionRecord?>(null);
     }
 }
