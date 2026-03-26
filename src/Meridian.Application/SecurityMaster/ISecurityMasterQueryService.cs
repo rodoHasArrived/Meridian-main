@@ -15,4 +15,16 @@ public interface ISecurityMasterQueryService
     /// by governance or drill-in surfaces that need classification and sub-type detail.
     /// </summary>
     Task<SecurityEconomicDefinitionRecord?> GetEconomicDefinitionByIdAsync(Guid securityId, CancellationToken ct = default);
+
+    /// <summary>
+    /// Returns the trading parameters (lot size, tick size, etc.) for a security as of the
+    /// specified point in time. Returns <c>null</c> when the security is not found.
+    /// </summary>
+    Task<TradingParametersDto?> GetTradingParametersAsync(Guid securityId, DateTimeOffset asOf, CancellationToken ct = default);
+
+    /// <summary>
+    /// Returns the time-ordered list of corporate action events for a security.
+    /// Returns an empty list when no corporate actions are recorded.
+    /// </summary>
+    Task<IReadOnlyList<CorporateActionDto>> GetCorporateActionsAsync(Guid securityId, CancellationToken ct = default);
 }

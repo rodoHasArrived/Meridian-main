@@ -9,8 +9,12 @@ namespace Meridian.Backtesting.FillModels;
 /// Realistic fill model that walks stored <see cref="LOBSnapshot"/> bid/ask levels.
 /// Buy orders consume ask levels in ascending price order; sell orders consume bid levels
 /// in descending order. Supports partial fills, stop triggers, and time-in-force semantics.
+/// When <paramref name="tickSizes"/> is provided, fill prices are rounded to the
+/// instrument's tick grid before being returned.
 /// </summary>
-internal sealed class OrderBookFillModel(ICommissionModel commissionModel) : IFillModel
+internal sealed class OrderBookFillModel(
+    ICommissionModel commissionModel,
+    IReadOnlyDictionary<string, decimal>? tickSizes = null) : IFillModel
 {
     public OrderFillResult TryFill(Order order, MarketEvent evt)
     {
@@ -70,13 +74,14 @@ internal sealed class OrderBookFillModel(ICommissionModel commissionModel) : IFi
                 break;
 
             var signedQuantity = isBuy ? fillQuantity : -fillQuantity;
-            var commission = commissionModel.Calculate(order.Symbol, signedQuantity, level.Price);
+            var fillPrice = SnapToTick(level.Price, order.Symbol);
+            var commission = commissionModel.Calculate(order.Symbol, signedQuantity, fillPrice);
             fills.Add(new FillEvent(
                 Guid.NewGuid(),
                 order.OrderId,
                 order.Symbol,
                 signedQuantity,
-                level.Price,
+                fillPrice,
                 commission,
                 evt.Timestamp,
                 order.AccountId));
@@ -119,6 +124,13 @@ internal sealed class OrderBookFillModel(ICommissionModel commissionModel) : IFi
             fills,
             removeOrder,
             WasTriggered: triggered && !order.IsTriggered);
+    }
+
+    private decimal SnapToTick(decimal price, string symbol)
+    {
+        if (tickSizes is null || !tickSizes.TryGetValue(symbol, out var tickSize) || tickSize <= 0m)
+            return price;
+        return Math.Round(price / tickSize, MidpointRounding.ToEven) * tickSize;
     }
 
     private static List<OrderBookLevel> FilterExecutableLevels(
