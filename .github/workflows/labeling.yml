@@ -29,7 +29,7 @@ jobs:
   auto-label-pr:
     name: Auto Label PR
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
     if: github.event_name == 'pull_request'
 
     steps:
@@ -67,7 +67,7 @@ jobs:
   sync-labels:
     name: Sync Repository Labels
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
     if: github.event.inputs.sync_labels == 'true'
 
     steps:

@@ -37,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     # Cold-cache runs (restore + build + Node + Playwright) can take ~22 min;
     # give a little extra headroom.
-    timeout-minutes: 25
+    timeout-minutes: 30
 
     steps:
       - name: Checkout
