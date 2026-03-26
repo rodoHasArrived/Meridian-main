@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Meridian.Application.SecurityMaster;
 using Meridian.Backtesting.FillModels;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Backtesting.Metrics;
 using Meridian.Backtesting.Portfolio;
 using Meridian.Domain.Events;
@@ -496,5 +497,46 @@ public sealed class BacktestEngine(
             : $" related symbol {assetEvent.RelatedSymbol}.";
 
         return $"{assetEvent.EventType} on {assetEvent.Symbol}: {assetEvent.UnitsImpacted} units impacted at {assetEvent.CashPerShare:F4} cash/share.{related}";
+    }
+
+    /// <summary>
+    /// Resolves per-symbol tick sizes from the Security Master (best-effort).
+    /// Returns an empty dictionary when no Security Master is configured or when a symbol is not found.
+    /// </summary>
+    private async Task<IReadOnlyDictionary<string, decimal>> ResolveTickSizesAsync(
+        IReadOnlySet<string> universe,
+        DateTime asOf,
+        CancellationToken ct)
+    {
+        if (securityMasterQueryService is null || universe.Count == 0)
+            return new Dictionary<string, decimal>();
+
+        var result = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
+        var asOfOffset = new DateTimeOffset(asOf, TimeSpan.Zero);
+
+        foreach (var symbol in universe)
+        {
+            ct.ThrowIfCancellationRequested();
+            try
+            {
+                var detail = await securityMasterQueryService.GetByIdentifierAsync(
+                    SecurityIdentifierKind.Ticker, symbol, provider: null, ct);
+
+                if (detail is null)
+                    continue;
+
+                var tradingParams = await securityMasterQueryService.GetTradingParametersAsync(
+                    detail.SecurityId, asOfOffset, ct);
+
+                if (tradingParams?.TickSize is { } tickSize && tickSize > 0m)
+                    result[symbol] = tickSize;
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                logger.LogWarning(ex, "Failed to resolve tick size for symbol {Symbol}; using default", symbol);
+            }
+        }
+
+        return result;
     }
 }
