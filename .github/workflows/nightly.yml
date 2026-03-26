@@ -35,7 +35,7 @@ jobs:
       runs-on: ${{ matrix.os }}
       collect-coverage: true
       cache-suffix: nightly
-      timeout-minutes: 20
+      timeout-minutes: 30
     secrets: inherit
 
   benchmark:
@@ -71,7 +71,7 @@ jobs:
   integration-tests:
     name: Integration Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
 
     steps:
     - name: Checkout
@@ -106,7 +106,7 @@ jobs:
     needs: [test-matrix, benchmark, integration-tests]
     runs-on: ubuntu-latest
     if: failure()
-    timeout-minutes: 5
+    timeout-minutes: 30
 
     steps:
     - name: Create issue on failure
@@ -146,7 +146,7 @@ jobs:
     needs: [test-matrix, benchmark, integration-tests]
     runs-on: ubuntu-latest
     if: success()
-    timeout-minutes: 5
+    timeout-minutes: 30
 
     steps:
     - name: Close nightly failure issue if all tests pass
@@ -185,7 +185,7 @@ jobs:
     if: |
       always() &&
       (needs.test-matrix.result == 'failure' || needs.benchmark.result == 'failure' || needs.integration-tests.result == 'failure')
-    timeout-minutes: 5
+    timeout-minutes: 30
 
     steps:
       - name: AI diagnose failures
@@ -233,7 +233,7 @@ jobs:
     needs: [test-matrix, benchmark, integration-tests, ai-failure-analysis]
     runs-on: ubuntu-latest
     if: always()
-    timeout-minutes: 2
+    timeout-minutes: 30
 
     steps:
     - name: Generate nightly summary

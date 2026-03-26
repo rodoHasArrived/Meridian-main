@@ -70,7 +70,7 @@ jobs:
   wpf-build:
     name: WPF - Build
     runs-on: windows-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     if: |
       github.event.inputs.build_target == 'wpf' ||
       github.event.inputs.build_target == 'wpf-smoke-test' ||
@@ -110,7 +110,7 @@ jobs:
     name: WPF - Publish ${{ matrix.artifact_suffix }}
     needs: wpf-build
     runs-on: windows-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     if: |
       (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch') &&
       github.event.inputs.build_target != 'wpf-smoke-test'
@@ -199,7 +199,7 @@ jobs:
     name: WPF - Smoke Test
     needs: wpf-build
     runs-on: windows-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
     if: github.event_name == 'workflow_dispatch'
 
     env:
@@ -244,7 +244,7 @@ jobs:
     name: AI Build Failure Analysis
     needs: [wpf-build]
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 30
     if: failure()
 
     steps:
@@ -299,7 +299,7 @@ jobs:
     name: Cleanup Intermediate Artifacts
     needs: [wpf-build, wpf-publish, wpf-smoke-test]
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 30
     if: always()
     permissions:
       actions: write

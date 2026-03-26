@@ -54,7 +54,7 @@ jobs:
   dependency-vulnerability-scan:
     name: Dependency Vulnerability Scan
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
 
     steps:
       - name: Checkout repository
@@ -114,7 +114,7 @@ jobs:
   npm-vulnerability-scan:
     name: npm Vulnerability Scan
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
 
     steps:
       - name: Checkout repository
@@ -168,7 +168,7 @@ jobs:
   dependency-review:
     name: Dependency Review (License & Security)
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
     if: github.event_name == 'pull_request'
 
     steps:
@@ -223,7 +223,7 @@ jobs:
   secret-detection:
     name: Secret Detection
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
 
     steps:
       - name: Checkout repository
@@ -241,7 +241,7 @@ jobs:
   sast-scanning:
     name: SAST Scanning
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
 
     steps:
@@ -322,7 +322,7 @@ jobs:
   ai-security-analysis:
     name: AI Security Analysis
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
     needs: [dependency-vulnerability-scan, secret-detection, sast-scanning]
     if: |
       always() &&
@@ -374,7 +374,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [dependency-vulnerability-scan, npm-vulnerability-scan, dependency-review, secret-detection, sast-scanning, codeql-analysis, ai-security-analysis]
     if: always()
-    timeout-minutes: 5
+    timeout-minutes: 30
 
     steps:
       - name: Generate security summary

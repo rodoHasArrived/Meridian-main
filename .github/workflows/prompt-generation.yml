@@ -66,7 +66,7 @@ jobs:
   generate-prompts:
     name: Generate Prompts from Workflow Results
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
 
     # For workflow_run: only run if the triggering workflow failed
     # For workflow_dispatch: always run
@@ -490,7 +490,7 @@ jobs:
   report:
     name: Prompt Generation Report
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 30
     needs: generate-prompts
     if: always()
     steps:
