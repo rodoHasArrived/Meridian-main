@@ -250,3 +250,62 @@ export interface GovernanceWorkspaceResponse {
   cashFlow: GovernanceCashFlowSummary;
   reporting: GovernanceReportingSummary;
 }
+
+// --- Multi-run comparison types ---
+
+export interface RunComparisonRow {
+  runId: string;
+  strategyName: string;
+  mode: string;
+  engine: string;
+  status: string;
+  netPnl: number | null;
+  totalReturn: number | null;
+  finalEquity: number | null;
+  maxDrawdown: number | null;
+  sharpeRatio: number | null;
+  fillCount: number;
+  lastUpdatedAt: string;
+  promotionState: string;
+  hasLedger: boolean;
+  hasAuditTrail: boolean;
+}
+
+// --- Run diff types ---
+
+export interface PositionDiffEntry {
+  symbol: string;
+  baseQuantity: number;
+  targetQuantity: number;
+  basePnl: number;
+  targetPnl: number;
+  changeType: "Added" | "Removed" | "Modified";
+}
+
+export interface ParameterDiff {
+  key: string;
+  baseValue: string | null;
+  targetValue: string | null;
+}
+
+export interface MetricsDiff {
+  netPnlDelta: number;
+  totalReturnDelta: number;
+  fillCountDelta: number;
+  baseNetPnl: number | null;
+  targetNetPnl: number | null;
+  baseTotalReturn: number | null;
+  targetTotalReturn: number | null;
+}
+
+export interface RunDiff {
+  baseRunId: string;
+  targetRunId: string;
+  baseStrategyName: string;
+  targetStrategyName: string;
+  addedPositions: PositionDiffEntry[];
+  removedPositions: PositionDiffEntry[];
+  modifiedPositions: PositionDiffEntry[];
+  parameterChanges: ParameterDiff[];
+  metrics: MetricsDiff;
+}
