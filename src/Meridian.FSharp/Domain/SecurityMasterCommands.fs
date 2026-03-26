@@ -76,7 +76,7 @@ module SecurityMaster =
             @ require (terms.Multiplier > 0m) (error "future_multiplier_invalid" "Future multiplier must be greater than zero.")
         | SecurityKind.Bond terms ->
             []
-            @ require (terms.CouponRate |> Option.forall (fun rate -> rate >= 0m))
+            @ require (BondTerms.couponRate terms |> Option.forall (fun rate -> rate >= 0m))
                 (error "bond_coupon_invalid" "Bond coupon rate must be zero or greater when present.")
         | SecurityKind.FxSpot terms ->
             []
