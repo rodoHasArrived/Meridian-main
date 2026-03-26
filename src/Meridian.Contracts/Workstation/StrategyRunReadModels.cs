@@ -231,3 +231,64 @@ public sealed record StrategyRunComparison(
     StrategyRunPromotionState PromotionState = StrategyRunPromotionState.None,
     bool HasLedger = false,
     bool HasAuditTrail = false);
+
+// ---------------------------------------------------------------------------
+// Track C drill-in models
+// ---------------------------------------------------------------------------
+
+/// <summary>A single point on the portfolio equity curve.</summary>
+public sealed record EquityCurvePoint(
+    DateOnly Date,
+    decimal TotalEquity,
+    decimal Cash,
+    decimal DailyReturn,
+    decimal DrawdownFromPeak,
+    decimal DrawdownFromPeakPercent);
+
+/// <summary>Full equity curve with summary drawdown statistics for one run.</summary>
+public sealed record EquityCurveSummary(
+    string RunId,
+    decimal InitialEquity,
+    decimal FinalEquity,
+    decimal MaxDrawdown,
+    decimal MaxDrawdownPercent,
+    int MaxDrawdownRecoveryDays,
+    double SharpeRatio,
+    double SortinoRatio,
+    IReadOnlyList<EquityCurvePoint> Points);
+
+/// <summary>A single executed fill from a strategy run.</summary>
+public sealed record RunFillEntry(
+    Guid FillId,
+    Guid OrderId,
+    string Symbol,
+    long FilledQuantity,
+    decimal FillPrice,
+    decimal Commission,
+    DateTimeOffset FilledAt,
+    string? AccountId);
+
+/// <summary>Trade-level fill list for one run.</summary>
+public sealed record RunFillSummary(
+    string RunId,
+    int TotalFills,
+    decimal TotalCommissions,
+    IReadOnlyList<RunFillEntry> Fills);
+
+/// <summary>Per-symbol P&amp;L attribution for one run.</summary>
+public sealed record SymbolAttributionEntry(
+    string Symbol,
+    decimal RealizedPnl,
+    decimal UnrealizedPnl,
+    decimal TotalPnl,
+    int TradeCount,
+    decimal Commissions,
+    decimal MarginInterestAllocated);
+
+/// <summary>Complete attribution breakdown for one run.</summary>
+public sealed record RunAttributionSummary(
+    string RunId,
+    decimal TotalRealizedPnl,
+    decimal TotalUnrealizedPnl,
+    decimal TotalCommissions,
+    IReadOnlyList<SymbolAttributionEntry> BySymbol);

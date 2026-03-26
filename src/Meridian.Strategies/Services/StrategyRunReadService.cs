@@ -276,4 +276,138 @@ public sealed class StrategyRunReadService
     }
 
     private static readonly IReadOnlyDictionary<string, string> EmptyParameters = new Dictionary<string, string>();
+
+    // -----------------------------------------------------------------------
+    // Track C: drill-in surfaces
+    // -----------------------------------------------------------------------
+
+    /// <summary>
+    /// Returns the equity curve with per-point drawdown for the given run.
+    /// Returns <c>null</c> when the run does not exist or has no snapshots recorded.
+    /// </summary>
+    public async Task<EquityCurveSummary?> GetEquityCurveAsync(string runId, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+
+        await foreach (var run in _repository.GetAllRunsAsync(ct).WithCancellation(ct).ConfigureAwait(false))
+        {
+            if (!string.Equals(run.RunId, runId, StringComparison.Ordinal))
+                continue;
+
+            var snapshots = run.Metrics?.Snapshots;
+            if (snapshots is not { Count: > 0 })
+                return null;
+
+            var metrics = run.Metrics!.Metrics;
+            var points = new List<EquityCurvePoint>(snapshots.Count);
+            var peak = snapshots[0].TotalEquity;
+
+            foreach (var snap in snapshots)
+            {
+                if (snap.TotalEquity > peak)
+                    peak = snap.TotalEquity;
+
+                var dd = peak - snap.TotalEquity;
+                var ddPct = peak > 0m ? dd / peak : 0m;
+
+                points.Add(new EquityCurvePoint(
+                    Date: snap.Date,
+                    TotalEquity: snap.TotalEquity,
+                    Cash: snap.Cash,
+                    DailyReturn: snap.DailyReturn,
+                    DrawdownFromPeak: dd,
+                    DrawdownFromPeakPercent: ddPct));
+            }
+
+            return new EquityCurveSummary(
+                RunId: run.RunId,
+                InitialEquity: snapshots[0].TotalEquity,
+                FinalEquity: snapshots[^1].TotalEquity,
+                MaxDrawdown: metrics.MaxDrawdown,
+                MaxDrawdownPercent: metrics.MaxDrawdownPercent,
+                MaxDrawdownRecoveryDays: metrics.MaxDrawdownRecoveryDays,
+                SharpeRatio: metrics.SharpeRatio,
+                SortinoRatio: metrics.SortinoRatio,
+                Points: points);
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Returns all executed fills for the given run, ordered by fill time.
+    /// Returns <c>null</c> when the run does not exist.
+    /// </summary>
+    public async Task<RunFillSummary?> GetFillsAsync(string runId, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+
+        await foreach (var run in _repository.GetAllRunsAsync(ct).WithCancellation(ct).ConfigureAwait(false))
+        {
+            if (!string.Equals(run.RunId, runId, StringComparison.Ordinal))
+                continue;
+
+            var fills = run.Metrics?.Fills ?? [];
+            var entries = fills
+                .OrderBy(static f => f.FilledAt)
+                .Select(static f => new RunFillEntry(
+                    FillId: f.FillId,
+                    OrderId: f.OrderId,
+                    Symbol: f.Symbol,
+                    FilledQuantity: f.FilledQuantity,
+                    FillPrice: f.FillPrice,
+                    Commission: f.Commission,
+                    FilledAt: f.FilledAt,
+                    AccountId: f.AccountId))
+                .ToArray();
+
+            return new RunFillSummary(
+                RunId: run.RunId,
+                TotalFills: entries.Length,
+                TotalCommissions: entries.Sum(static e => e.Commission),
+                Fills: entries);
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Returns per-symbol P&amp;L attribution for the given run.
+    /// Returns <c>null</c> when the run does not exist or has no metrics.
+    /// </summary>
+    public async Task<RunAttributionSummary?> GetAttributionAsync(string runId, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+
+        await foreach (var run in _repository.GetAllRunsAsync(ct).WithCancellation(ct).ConfigureAwait(false))
+        {
+            if (!string.Equals(run.RunId, runId, StringComparison.Ordinal))
+                continue;
+
+            var attr = run.Metrics?.Metrics.SymbolAttribution;
+            if (attr is null)
+                return null;
+
+            var bySymbol = attr.Values
+                .OrderByDescending(static a => a.RealizedPnl + a.UnrealizedPnl)
+                .Select(static a => new SymbolAttributionEntry(
+                    Symbol: a.Symbol,
+                    RealizedPnl: a.RealizedPnl,
+                    UnrealizedPnl: a.UnrealizedPnl,
+                    TotalPnl: a.RealizedPnl + a.UnrealizedPnl,
+                    TradeCount: a.TradeCount,
+                    Commissions: a.Commissions,
+                    MarginInterestAllocated: a.MarginInterestAllocated))
+                .ToArray();
+
+            return new RunAttributionSummary(
+                RunId: run.RunId,
+                TotalRealizedPnl: bySymbol.Sum(static a => a.RealizedPnl),
+                TotalUnrealizedPnl: bySymbol.Sum(static a => a.UnrealizedPnl),
+                TotalCommissions: bySymbol.Sum(static a => a.Commissions),
+                BySymbol: bySymbol);
+        }
+
+        return null;
+    }
 }

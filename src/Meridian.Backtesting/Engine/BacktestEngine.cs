@@ -50,15 +50,15 @@ public sealed class BacktestEngine(
             universe.Count, universe.Count == 0 ? "(asset-event-only run)" : string.Join(", ", universe.Take(10)) + (universe.Count > 10 ? "…" : string.Empty));
 
         // 2. Set up portfolio, fill models, context
-        var commissionModel = new PerShareCommissionModel();
+        var commissionModel = BuildCommissionModel(request);
         var ledger = new BacktestLedger();
         var startTimestamp = new DateTimeOffset(request.From.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
         var accounts = request.ResolveAccounts();
         var portfolio = new SimulatedPortfolio(accounts, request.DefaultBrokerageAccountId, commissionModel, ledger, startTimestamp);
         var ctx = new BacktestContext(portfolio, universe, ledger, request.DefaultBrokerageAccountId);
         var orderBookFillModel = new OrderBookFillModel(commissionModel);
-        var barFillModel = new BarMidpointFillModel(commissionModel, spreadAware: true);
-        var marketImpactFillModel = new MarketImpactFillModel(commissionModel);
+        var barFillModel = new BarMidpointFillModel(commissionModel, request.SlippageBasisPoints, spreadAware: true);
+        var marketImpactFillModel = new MarketImpactFillModel(commissionModel, request.MarketImpactCoefficient, request.SlippageBasisPoints);
 
         var pendingOrders = new List<Order>();
         var allSnapshots = new List<PortfolioSnapshot>();
@@ -108,7 +108,7 @@ public sealed class BacktestEngine(
             pendingOrders.AddRange(newOrders);
 
             // Try to fill pending orders against current event
-            ProcessPendingOrders(pendingOrders, evt, orderBookFillModel, barFillModel, marketImpactFillModel, portfolio, strategy, ctx, allFills);
+            ProcessPendingOrders(pendingOrders, evt, orderBookFillModel, barFillModel, marketImpactFillModel, portfolio, strategy, ctx, allFills, request.DefaultExecutionModel);
         }
 
         // Final day-end for the last processed day and any remaining asset-event-only dates.
@@ -283,7 +283,8 @@ public sealed class BacktestEngine(
         SimulatedPortfolio portfolio,
         IBacktestStrategy strategy,
         BacktestContext ctx,
-        List<FillEvent> allFills)
+        List<FillEvent> allFills,
+        ExecutionModel requestDefault = ExecutionModel.Auto)
     {
         var filled = new List<Guid>();
         for (var i = pendingOrders.Count - 1; i >= 0; i--)
@@ -292,7 +293,7 @@ public sealed class BacktestEngine(
             if (!order.Symbol.Equals(evt.EffectiveSymbol, StringComparison.OrdinalIgnoreCase))
                 continue;
 
-            var model = SelectFillModel(order, evt, lobModel, barModel, marketImpactModel);
+            var model = SelectFillModel(order, evt, lobModel, barModel, marketImpactModel, requestDefault);
             var result = model.TryFill(order, evt);
 
             foreach (var fill in result.Fills)
@@ -362,9 +363,12 @@ public sealed class BacktestEngine(
         MarketEvent evt,
         IFillModel lobModel,
         IFillModel barModel,
-        IFillModel marketImpactModel)
+        IFillModel marketImpactModel,
+        ExecutionModel requestDefault = ExecutionModel.Auto)
     {
-        return order.ExecutionModel switch
+        // Order-level setting takes precedence; fall back to request default, then auto-select.
+        var effective = order.ExecutionModel == ExecutionModel.Auto ? requestDefault : order.ExecutionModel;
+        return effective switch
         {
             ExecutionModel.OrderBook => lobModel,
             ExecutionModel.BarMidpoint => barModel,
@@ -372,6 +376,19 @@ public sealed class BacktestEngine(
             _ => evt.Payload is LOBSnapshot ? lobModel : barModel
         };
     }
+
+    private static ICommissionModel BuildCommissionModel(BacktestRequest request) =>
+        request.CommissionKind switch
+        {
+            BacktestCommissionKind.Free => new FixedCommissionModel(0m),
+            BacktestCommissionKind.Percentage => new PercentageCommissionModel(
+                basisPoints: request.CommissionRate,
+                minimumPerOrder: request.CommissionMinimum),
+            _ => new PerShareCommissionModel(
+                perShare: request.CommissionRate,
+                minimumPerOrder: request.CommissionMinimum,
+                maximumPerOrder: request.CommissionMaximum)
+        };
 
     private static IReadOnlyList<TradeTicket> BuildTradeTickets(IReadOnlyList<CashFlowEntry> cashFlows)
     {
