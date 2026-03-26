@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Meridian.Application.SecurityMaster;
 using Meridian.Backtesting.FillModels;
 using Meridian.Backtesting.Metrics;
 using Meridian.Backtesting.Portfolio;
@@ -14,7 +15,8 @@ namespace Meridian.Backtesting.Engine;
 /// </summary>
 public sealed class BacktestEngine(
     ILogger<BacktestEngine> logger,
-    StorageCatalogService catalogService)
+    StorageCatalogService catalogService,
+    ISecurityMasterQueryService? securityMasterQueryService = null)
 {
     /// <summary>
     /// Runs a complete backtest, replaying all events in the requested date/symbol range.
@@ -49,15 +51,18 @@ public sealed class BacktestEngine(
         logger.LogInformation("Universe contains {Count} symbols: {Symbols}",
             universe.Count, universe.Count == 0 ? "(asset-event-only run)" : string.Join(", ", universe.Take(10)) + (universe.Count > 10 ? "…" : string.Empty));
 
-        // 2. Set up portfolio, fill models, context
+        // 2. Resolve per-symbol tick sizes from Security Master (best-effort; missing symbols are silently skipped).
+        var tickSizes = await ResolveTickSizesAsync(universe, request.To.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), ct);
+
+        // 3. Set up portfolio, fill models, context
         var commissionModel = BuildCommissionModel(request);
         var ledger = new BacktestLedger();
         var startTimestamp = new DateTimeOffset(request.From.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
         var accounts = request.ResolveAccounts();
         var portfolio = new SimulatedPortfolio(accounts, request.DefaultBrokerageAccountId, commissionModel, ledger, startTimestamp);
         var ctx = new BacktestContext(portfolio, universe, ledger, request.DefaultBrokerageAccountId);
-        var orderBookFillModel = new OrderBookFillModel(commissionModel);
-        var barFillModel = new BarMidpointFillModel(commissionModel, request.SlippageBasisPoints, spreadAware: true);
+        var orderBookFillModel = new OrderBookFillModel(commissionModel, tickSizes);
+        var barFillModel = new BarMidpointFillModel(commissionModel, request.SlippageBasisPoints, spreadAware: true, tickSizes);
         var marketImpactFillModel = new MarketImpactFillModel(commissionModel, request.MarketImpactCoefficient, request.SlippageBasisPoints);
 
         var pendingOrders = new List<Order>();

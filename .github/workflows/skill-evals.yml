@@ -11,10 +11,6 @@ on:
         description: 'Skill to evaluate (meridian-code-review, meridian-brainstorm, or all)'
         required: false
         default: 'all'
-      eval_ids:
-        description: 'Comma-separated eval IDs to run (leave blank for all)'
-        required: false
-        default: ''
 
 # Only one eval run at a time per branch to prevent API overload
 concurrency:
@@ -81,7 +77,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
@@ -165,14 +161,19 @@ jobs:
   run-evals:
     name: Run skill evals
     runs-on: ubuntu-latest
+    # Only run when code-review skill changed; tolerate validate-skill-structure being skipped
+    # (e.g. when workflow_dispatch targets only a non-code-review skill).
     needs: [detect-changed-skills, validate-skill-structure]
+    if: |
+      needs.detect-changed-skills.outputs.mdc_code_review_changed == 'true' &&
+      (needs.validate-skill-structure.result == 'success' || needs.validate-skill-structure.result == 'skipped')
     permissions:
       contents: read
     steps:
       - uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
@@ -180,34 +181,31 @@ jobs:
         run: pip install anthropic
 
       - name: Run meridian-code-review evals
-        if: needs.detect-changed-skills.outputs.mdc_code_review_changed == 'true'
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Add the skill directory to PYTHONPATH so `from scripts.utils import` resolves correctly
+          PYTHONPATH: ${{ github.workspace }}/.claude/skills/meridian-code-review
         run: |
-          WORKSPACE=$(mktemp -d)
-          EVAL_IDS="${{ github.event.inputs.eval_ids }}"
+          SKILL_PATH=".claude/skills/meridian-code-review"
+          EVAL_WORKSPACE="${RUNNER_TEMP}/skill-eval-results"
+          mkdir -p "$EVAL_WORKSPACE"
 
-          if [ -n "$EVAL_IDS" ]; then
-            EVAL_ARGS="--eval-ids $EVAL_IDS"
-          else
-            EVAL_ARGS=""
-          fi
+          python "$SKILL_PATH/scripts/run_eval.py" \
+            --skill-path "$SKILL_PATH" \
+            --eval-set "$SKILL_PATH/evals/evals.json" \
+            --verbose \
+            > "$EVAL_WORKSPACE/trigger_eval_results.json"
 
-          python .claude/skills/meridian-code-review/scripts/run_eval.py \
-            --skill-path .claude/skills/meridian-code-review \
-            --workspace "$WORKSPACE" \
-            $EVAL_ARGS
-
-          python .claude/skills/meridian-code-review/scripts/aggregate_benchmark.py \
-            "$WORKSPACE" \
+          python "$SKILL_PATH/scripts/aggregate_benchmark.py" \
+            "$EVAL_WORKSPACE" \
             --skill-name meridian-code-review \
-            --skill-path .claude/skills/meridian-code-review \
-            --baseline .claude/skills/meridian-code-review/evals/benchmark_baseline.json
+            --skill-path "$SKILL_PATH" \
+            --baseline "$SKILL_PATH/evals/benchmark_baseline.json"
 
       - name: Upload eval results
-        if: always() && needs.detect-changed-skills.outputs.mdc_code_review_changed == 'true'
-        uses: actions/upload-artifact@v7
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
           name: skill-eval-results-${{ github.run_id }}
-          path: /tmp/skill-eval-workspace/
+          path: ${{ runner.temp }}/skill-eval-results/
           retention-days: 14

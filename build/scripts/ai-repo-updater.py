@@ -60,6 +60,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 EXCLUDE_DIRS: frozenset[str] = frozenset({
     ".git", "node_modules", "bin", "obj", "__pycache__", ".vs",
     "TestResults", "artifacts", "publish", ".build-system",
+    "archive", "obj-codex",
 })
 
 SOURCE_EXTENSIONS: frozenset[str] = frozenset({".cs", ".fs", ".fsx"})

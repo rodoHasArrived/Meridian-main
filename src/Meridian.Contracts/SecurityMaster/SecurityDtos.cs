@@ -77,3 +77,35 @@ public sealed record SecuritySnapshotRecord(
     long Version,
     DateTimeOffset SnapshotTimestamp,
     JsonElement Payload);
+
+/// <summary>
+/// Trading parameters for an instrument, used for order validation and fill-price rounding.
+/// </summary>
+public sealed record TradingParametersDto(
+    Guid SecurityId,
+    decimal? LotSize,
+    decimal? TickSize,
+    decimal? ContractMultiplier,
+    decimal? MarginRequirementPct,
+    string? TradingHoursUtc,
+    decimal? CircuitBreakerThresholdPct,
+    DateTimeOffset AsOf);
+
+/// <summary>
+/// A single corporate action event envelope returned by the corporate actions query.
+/// </summary>
+public sealed record CorporateActionDto(
+    Guid CorpActId,
+    Guid SecurityId,
+    string EventType,
+    DateOnly ExDate,
+    DateOnly? PayDate,
+    decimal? DividendPerShare,
+    string? Currency,
+    decimal? SplitRatio,
+    Guid? NewSecurityId,
+    decimal? DistributionRatio,
+    Guid? AcquirerSecurityId,
+    decimal? ExchangeRatio,
+    decimal? SubscriptionPricePerShare,
+    decimal? RightsPerShare);
