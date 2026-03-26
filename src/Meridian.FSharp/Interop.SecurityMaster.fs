@@ -70,10 +70,22 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                    multiplier = terms.Multiplier |})
         | SecurityKind.Bond terms ->
             JsonSerializer.Serialize(
+            let couponType =
+                match terms.Coupon with
+                | BondCouponStructure.Fixed _ -> "Fixed"
+                | BondCouponStructure.Floating _ -> "Floating"
+                | BondCouponStructure.ZeroCoupon -> "ZeroCoupon"
+            "Bond", JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion
                    maturity = terms.Maturity
-                   couponRate = terms.CouponRate
-                   dayCount = terms.DayCount |})
+                   issueDate = terms.IssueDate
+                   couponType = couponType
+                   couponRate = BondTerms.couponRate terms
+                   dayCount = BondTerms.dayCount terms
+                   isCallable = terms.IsCallable
+                   callDate = terms.CallDate
+                   issuerName = terms.IssuerName
+                   seniority = terms.Seniority |})
         | SecurityKind.FxSpot terms ->
             JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion

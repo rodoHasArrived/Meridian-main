@@ -59,11 +59,44 @@ type FutureTerms = {
     Multiplier: decimal
 }
 
+[<RequireQualifiedAccess>]
+type BondCouponStructure =
+    | Fixed of rate: decimal * dayCount: string option
+    | Floating of index: string * spreadBps: decimal option * capRate: decimal option * floorRate: decimal option * dayCount: string option
+    | ZeroCoupon
+
 type BondTerms = {
     Maturity: DateOnly
-    CouponRate: decimal option
-    DayCount: string option
+    IssueDate: DateOnly option
+    Coupon: BondCouponStructure
+    IsCallable: bool
+    CallDate: DateOnly option
+    IssuerName: string option
+    Seniority: string option
 }
+
+[<RequireQualifiedAccess>]
+module BondTerms =
+    let fixedRate maturity couponRate dayCount issuerName =
+        { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.Fixed(couponRate, dayCount); IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None }
+
+    let floatingRate maturity index spreadBps issuerName =
+        { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.Floating(index, spreadBps, None, None, None); IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None }
+
+    let zeroCoupon maturity issuerName =
+        { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.ZeroCoupon; IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None }
+
+    let couponRate (terms: BondTerms) =
+        match terms.Coupon with
+        | BondCouponStructure.Fixed(rate, _) -> Some rate
+        | BondCouponStructure.Floating _ -> None
+        | BondCouponStructure.ZeroCoupon -> None
+
+    let dayCount (terms: BondTerms) =
+        match terms.Coupon with
+        | BondCouponStructure.Fixed(_, dc) -> dc
+        | BondCouponStructure.Floating(_, _, _, _, dc) -> dc
+        | BondCouponStructure.ZeroCoupon -> None
 
 type FxSpotTerms = {
     BaseCurrency: string

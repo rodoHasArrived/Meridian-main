@@ -211,10 +211,7 @@ internal static class SecurityMasterMapping
                 GetRequiredString(json, "contractMonth"),
                 GetRequiredDateOnly(json, "expiry"),
                 GetRequiredDecimal(json, "multiplier"))),
-            "Bond" => SecurityKind.NewBond(new BondTerms(
-                GetRequiredDateOnly(json, "maturity"),
-                ToOption(GetOptionalDecimal(json, "couponRate")),
-                ToOption(GetOptionalString(json, "dayCount")))),
+            "Bond" => SecurityKind.NewBond(ToBondTerms(json)),
             "FxSpot" => SecurityKind.NewFxSpot(new FxSpotTerms(
                 GetRequiredString(json, "baseCurrency"),
                 GetRequiredString(json, "quoteCurrency"))),
@@ -276,6 +273,32 @@ internal static class SecurityMasterMapping
                 ToFSharpList(GetRequiredArray(json, "covenants").EnumerateArray().Select(ToCovenant)))),
             _ => throw new InvalidOperationException($"Unsupported asset class '{assetClass}'.")
         };
+    }
+
+    private static BondTerms ToBondTerms(JsonElement json)
+    {
+        var couponType = GetOptionalString(json, "couponType") ?? "Fixed";
+        BondCouponStructure coupon = couponType switch
+        {
+            "Floating" => BondCouponStructure.NewFloating(
+                GetRequiredString(json, "floatingIndex"),
+                ToOption(GetOptionalDecimal(json, "spreadBps")),
+                ToOption(GetOptionalDecimal(json, "capRate")),
+                ToOption(GetOptionalDecimal(json, "floorRate")),
+                ToOption(GetOptionalString(json, "dayCount"))),
+            "ZeroCoupon" => BondCouponStructure.ZeroCoupon,
+            _ => BondCouponStructure.NewFixed(
+                GetOptionalDecimal(json, "couponRate") ?? 0m,
+                ToOption(GetOptionalString(json, "dayCount")))
+        };
+        return new BondTerms(
+            GetRequiredDateOnly(json, "maturity"),
+            ToOption(GetOptionalDateOnly(json, "issueDate")),
+            coupon,
+            GetOptionalBoolean(json, "isCallable") ?? false,
+            ToOption(GetOptionalDateOnly(json, "callDate")),
+            ToOption(GetOptionalString(json, "issuerName")),
+            ToOption(GetOptionalString(json, "seniority")));
     }
 
     private static SwapLeg ToSwapLeg(JsonElement json)
