@@ -437,6 +437,37 @@ public static class WorkstationEndpoints
         .Produces(404)
         .Produces(501);
 
+        // --- Portfolio cash-flow projections ---
+        var portfolioGroup = app.MapGroup("/api/portfolio").WithTags("Portfolio");
+
+        portfolioGroup.MapGet("/{runId}/cash-flows", async (
+            string runId,
+            DateTimeOffset? asOf,
+            string? currency,
+            int? bucketDays,
+            HttpContext context) =>
+        {
+            var projectionService = context.RequestServices.GetService<CashFlowProjectionService>();
+            if (projectionService is null)
+            {
+                return Results.Problem(
+                    "Cash flow projection service is not registered.",
+                    statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var summary = await projectionService
+                .GetAsync(runId, asOf, currency, bucketDays, context.RequestAborted)
+                .ConfigureAwait(false);
+
+            return summary is null
+                ? Results.NotFound()
+                : Results.Json(summary, jsonOptions);
+        })
+        .WithName("GetPortfolioCashFlows")
+        .Produces<RunCashFlowSummary>(200)
+        .Produces(404)
+        .Produces(501);
+
         app.MapGet("/workstation", (IWebHostEnvironment environment) => ServeWorkstationIndex(environment))
             .ExcludeFromDescription();
 
