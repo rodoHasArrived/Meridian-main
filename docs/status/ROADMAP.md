@@ -135,7 +135,7 @@ Multi-run comparison, performance attribution, and strategy lifecycle management
 - `Backtest → Paper` promotion workflow (read services exist; explicit lifecycle flow is not yet wired)
 - Portfolio drill-ins and multi-run comparison depth
 - Ledger reconciliation exposed through the web dashboard
-- Security Master productization (code foundations exist; operator-facing surfaces pending)
+- Security Master productization (code foundations exist; Wave 6 delivers operator-facing surfaces — see [`docs/plans/security-master-productization-roadmap.md`](../plans/security-master-productization-roadmap.md))
 - Brokerage gateway live-order integration (adapters exist; live-validated runtime paths pending)
 
 ### Planned
@@ -151,7 +151,6 @@ Multi-run comparison, performance attribution, and strategy lifecycle management
 - QuantScript runtime and editor
 - L3 inference and queue-aware execution simulation
 - Governance: multi-ledger, trial balance, cash-flow, report packs
-- Security Master productization as a workstation-visible platform layer
 - Multi-instance collector coordination and horizontal scale-out
 - Phase 16 assembly-level performance optimizations
 - WPF desktop app (code in `src/Meridian.Wpf/` — included in solution build, see docs/development/wpf-implementation-notes.md)
@@ -228,6 +227,24 @@ The brokerage gateway framework (`IBrokerageGateway`, `BaseBrokerageGateway`) an
 - Wire `Paper → Live` promotion gate using the existing brokerage gateway framework
 
 **Exit signal:** At least one brokerage adapter is validated against a live vendor surface with audit trail.
+
+---
+
+### Wave 6: Security Master productization
+
+Security Master has contracts, Postgres storage, F# domain models, and REST endpoints. Wave 6 turns it into an operator-visible platform layer that serves as the authoritative instrument-definition source across research, portfolio, governance, and ledger workflows.
+
+**Focus:**
+- Bond term richness: coupon, maturity, day-count, seniority fields in `SecurityEconomicDefinition`
+- Trading parameters: lot size, tick size, contract multiplier, margin requirement per instrument
+- Corporate action events: dividend, split, spin-off, merger events with backtest adjustment integration
+- Exchange bulk ingest: CSV and provider (Polygon) bulk-ingest path with idempotent dedup
+- Golden record conflict resolution: detect, store, and resolve field-level conflicts from multiple providers
+- WPF Security Master browser: `SecurityMasterPage` + `SecurityMasterViewModel` in the desktop app
+
+Full design: [`docs/plans/security-master-productization-roadmap.md`](../plans/security-master-productization-roadmap.md)
+
+**Exit signal:** Security Master is searchable in the web dashboard and WPF app, corporate actions adjust backtest prices, and multi-provider conflicts surface with a resolution workflow.
 
 ---
 
