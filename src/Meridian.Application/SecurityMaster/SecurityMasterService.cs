@@ -41,7 +41,7 @@ public sealed class SecurityMasterService : ISecurityMasterService
 
         var currentProjection = SecurityEconomicDefinitionAdapter.ToProjection(current, aliasProjection?.Aliases);
         var currentRecord = SecurityMasterMapping.ToRecord(currentProjection);
-        var result = SecurityMasterAggregate.Amend(currentRecord, SecurityMasterMapping.ToAmendCommand(request, currentProjection));
+        var result = SecurityMasterCommandFacade.Amend(currentRecord, SecurityMasterMapping.ToAmendCommand(request, currentProjection));
         var projection = CreateProjectionFromResult(result, currentProjection.Aliases);
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
         var envelope = SecurityMasterMapping.ToEventEnvelope(
@@ -67,7 +67,7 @@ public sealed class SecurityMasterService : ISecurityMasterService
 
         var currentProjection = SecurityEconomicDefinitionAdapter.ToProjection(current, aliasProjection?.Aliases);
         var currentRecord = SecurityMasterMapping.ToRecord(currentProjection);
-        var result = SecurityMasterAggregate.Deactivate(currentRecord, SecurityMasterMapping.ToDeactivateCommand(request));
+        var result = SecurityMasterCommandFacade.Deactivate(currentRecord, SecurityMasterMapping.ToDeactivateCommand(request));
         var projection = CreateProjectionFromResult(result, currentProjection.Aliases);
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
         var envelope = SecurityMasterMapping.ToEventEnvelope(
@@ -104,7 +104,7 @@ public sealed class SecurityMasterService : ISecurityMasterService
 
     private async Task<SecurityDetailDto> ExecuteCreateAsync(CreateSecurityRequest request, CancellationToken ct)
     {
-        var result = SecurityMasterAggregate.Create(SecurityMasterMapping.ToCreateCommand(request));
+        var result = SecurityMasterCommandFacade.Create(SecurityMasterMapping.ToCreateCommand(request));
         var projection = CreateProjectionFromResult(result);
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
         var envelope = SecurityMasterMapping.ToEventEnvelope(
@@ -128,7 +128,8 @@ public sealed class SecurityMasterService : ISecurityMasterService
     {
         if (!result.IsSuccess || result.Snapshot is null)
         {
-            throw new InvalidOperationException(string.Join("; ", result.Errors));
+            var errorText = string.Join("; ", result.ErrorDetails.Select(e => $"[{e.Code}] {e.Message}"));
+            throw new InvalidOperationException(errorText);
         }
 
         return SecurityMasterMapping.ToProjection(result.Snapshot, aliases);

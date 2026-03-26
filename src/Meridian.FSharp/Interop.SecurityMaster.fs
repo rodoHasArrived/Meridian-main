@@ -4,6 +4,19 @@ open System
 open System.Text.Json
 open Meridian.FSharp.Domain
 
+/// Private helpers for F# option → C# nullable conversion, mirroring the helpers in Interop.fs.
+[<AutoOpen>]
+module private NullableHelpers =
+    let inline toNullable (opt: 'T option) : Nullable<'T> =
+        match opt with
+        | Some v -> Nullable v
+        | None -> Nullable()
+
+    let inline toNullableRef (opt: 'T option) : 'T =
+        match opt with
+        | Some v -> v
+        | None -> Unchecked.defaultof<'T>
+
 type SecurityIdentifierSnapshot(identifier: Identifier) =
     let provider =
         match identifier.Kind with
@@ -24,10 +37,7 @@ type SecurityIdentifierSnapshot(identifier: Identifier) =
     member _.Value = identifier.Value
     member _.IsPrimary = identifier.IsPrimary
     member _.ValidFrom = identifier.ValidFrom
-    member _.ValidTo =
-        match identifier.ValidTo with
-        | Some value -> Nullable value
-        | None -> Nullable()
+    member _.ValidTo = toNullable identifier.ValidTo
     member _.Provider = provider
 
 [<AllowNullLiteral>]
@@ -35,13 +45,16 @@ type SecurityIdentifierSnapshot(identifier: Identifier) =
 type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
     let schemaVersion = 1
 
-    let assetClass, assetSpecificTermsJson =
+    // Idea 2: delegate to the domain function instead of duplicating the match.
+    let assetClass = SecurityKind.assetClass record.Kind
+
+    let assetSpecificTermsJson =
         match record.Kind with
         | SecurityKind.Equity terms ->
-            "Equity", JsonSerializer.Serialize({| schemaVersion = schemaVersion; shareClass = terms.ShareClass |})
+            JsonSerializer.Serialize({| schemaVersion = schemaVersion; shareClass = terms.ShareClass |})
         | SecurityKind.Option terms ->
             let (SecurityId underlyingId) = terms.UnderlyingId
-            "Option", JsonSerializer.Serialize(
+            JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion
                    underlyingId = underlyingId
                    putCall = terms.PutCall
@@ -49,13 +62,14 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                    expiry = terms.Expiry
                    multiplier = terms.Multiplier |})
         | SecurityKind.Future terms ->
-            "Future", JsonSerializer.Serialize(
+            JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion
                    rootSymbol = terms.RootSymbol
                    contractMonth = terms.ContractMonth
                    expiry = terms.Expiry
                    multiplier = terms.Multiplier |})
         | SecurityKind.Bond terms ->
+            JsonSerializer.Serialize(
             let couponType =
                 match terms.Coupon with
                 | BondCouponStructure.Fixed _ -> "Fixed"
@@ -73,12 +87,12 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                    issuerName = terms.IssuerName
                    seniority = terms.Seniority |})
         | SecurityKind.FxSpot terms ->
-            "FxSpot", JsonSerializer.Serialize(
+            JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion
                    baseCurrency = terms.BaseCurrency
                    quoteCurrency = terms.QuoteCurrency |})
         | SecurityKind.Deposit terms ->
-            "Deposit", JsonSerializer.Serialize(
+            JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion
                    depositType = terms.DepositType
                    institutionName = terms.InstitutionName
@@ -87,14 +101,14 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                    dayCount = terms.DayCount
                    isCallable = terms.IsCallable |})
         | SecurityKind.MoneyMarketFund terms ->
-            "MoneyMarketFund", JsonSerializer.Serialize(
+            JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion
                    fundFamily = terms.FundFamily
                    sweepEligible = terms.SweepEligible
                    weightedAverageMaturityDays = terms.WeightedAverageMaturityDays
                    liquidityFeeEligible = terms.LiquidityFeeEligible |})
         | SecurityKind.CertificateOfDeposit terms ->
-            "CertificateOfDeposit", JsonSerializer.Serialize(
+            JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion
                    issuerName = terms.IssuerName
                    maturity = terms.Maturity
@@ -102,7 +116,7 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                    callableDate = terms.CallableDate
                    dayCount = terms.DayCount |})
         | SecurityKind.CommercialPaper terms ->
-            "CommercialPaper", JsonSerializer.Serialize(
+            JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion
                    issuerName = terms.IssuerName
                    maturity = terms.Maturity
@@ -110,14 +124,14 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                    dayCount = terms.DayCount
                    isAssetBacked = terms.IsAssetBacked |})
         | SecurityKind.TreasuryBill terms ->
-            "TreasuryBill", JsonSerializer.Serialize(
+            JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion
                    maturity = terms.Maturity
                    auctionDate = terms.AuctionDate
                    cusip = terms.CUSIP
                    discountRate = terms.DiscountRate |})
         | SecurityKind.Repo terms ->
-            "Repo", JsonSerializer.Serialize(
+            JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion
                    counterparty = terms.Counterparty
                    startDate = terms.StartDate
@@ -126,7 +140,7 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                    collateralType = terms.CollateralType
                    haircut = terms.Haircut |})
         | SecurityKind.CashSweep terms ->
-            "CashSweep", JsonSerializer.Serialize(
+            JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion
                    programName = terms.ProgramName
                    sweepVehicleType = terms.SweepVehicleType
@@ -134,7 +148,7 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                    targetAccountType = terms.TargetAccountType
                    yieldRate = terms.YieldRate |})
         | SecurityKind.OtherSecurity terms ->
-            "OtherSecurity", JsonSerializer.Serialize(
+            JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion
                    category = terms.Category
                    subType = terms.SubType
@@ -142,7 +156,7 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                    issuerName = terms.IssuerName
                    settlementType = terms.SettlementType |})
         | SecurityKind.Swap terms ->
-            "Swap", JsonSerializer.Serialize(
+            JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion
                    effectiveDate = terms.EffectiveDate
                    maturityDate = terms.MaturityDate
@@ -154,7 +168,7 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                                index = leg.Index
                                fixedRate = leg.FixedRate |}) |})
         | SecurityKind.DirectLoan terms ->
-            "DirectLoan", JsonSerializer.Serialize(
+            JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion
                    borrower = terms.Borrower
                    maturity = terms.Maturity
@@ -183,14 +197,14 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                updatedBy = record.Provenance.UpdatedBy
                reason = record.Provenance.Reason |})
 
-    let primaryIdentifier =
-        record.Identifiers
-        |> List.tryFind (fun identifier -> identifier.IsPrimary)
+    // Idea 2: delegate to SecurityMasterRecord.primaryIdentifier instead of duplicating List.tryFind.
+    let primaryIdentifier = SecurityMasterRecord.primaryIdentifier record
 
     member _.Record = record
     member _.SecurityId = let (SecurityId id) = record.SecurityId in id
     member _.AssetClass = assetClass
-    member _.Status = if record.Status = SecurityStatus.Active then "Active" else "Inactive"
+    // Idea 2: delegate to SecurityStatus.asString instead of inline if/else.
+    member _.Status = SecurityStatus.asString record.Status
     member _.DisplayName = record.Common.DisplayName
     member _.Currency = record.Common.Currency
     member _.CommonTermsJson = commonTermsJson
@@ -198,10 +212,8 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
     member _.ProvenanceJson = provenanceJson
     member _.Version = record.Version
     member _.EffectiveFrom = record.EffectiveFrom
-    member _.EffectiveTo =
-        match record.EffectiveTo with
-        | Some value -> Nullable value
-        | None -> Nullable()
+    // Idea 8: use NullableHelpers.toNullable instead of inline match.
+    member _.EffectiveTo = toNullable record.EffectiveTo
     member _.PrimaryIdentifierKind =
         primaryIdentifier
         |> Option.map (fun identifier -> SecurityIdentifierSnapshot(identifier).Kind)
@@ -214,6 +226,13 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
         record.Identifiers
         |> List.map SecurityIdentifierSnapshot
         |> List.toArray
+
+/// C#-friendly DTO that carries both the error code and human-readable message
+/// from a SecurityMaster validation failure.
+[<Sealed>]
+type SecurityValidationErrorDto(code: string, message: string) =
+    member _.Code = code
+    member _.Message = message
 
 [<AllowNullLiteral>]
 [<Sealed>]
@@ -228,13 +247,26 @@ type SecurityMasterCommandResultWrapper(result: Result<SecurityMasterRecord, Sec
         | Ok record -> SecurityMasterSnapshotWrapper(record)
         | Error _ -> null
 
+    /// Error messages only (kept for backward compatibility).
     member _.Errors =
         match result with
         | Ok _ -> Array.empty
         | Error errors -> errors |> List.map (fun error -> error.Message) |> List.toArray
 
+    // Idea 3: expose both code and message so callers can distinguish error kinds.
+    member _.ErrorDetails =
+        match result with
+        | Ok _ -> Array.empty
+        | Error errors ->
+            errors
+            |> List.map (fun e -> SecurityValidationErrorDto(e.Code, e.Message))
+            |> List.toArray
+
+// Idea 6: renamed from SecurityMasterAggregate to SecurityMasterCommandFacade to
+// reflect that this is a stateless facade over the aggregate command functions,
+// not a stateful aggregate object.
 [<Sealed>]
-type SecurityMasterAggregate private () =
+type SecurityMasterCommandFacade private () =
     static member private ToResult(initialState: SecurityMasterRecord option, events: Result<SecurityMasterEvent list, SecurityValidationError list>) =
         match events with
         | Error errors -> SecurityMasterCommandResultWrapper(Error errors)
@@ -250,10 +282,11 @@ type SecurityMasterAggregate private () =
                     } ])
 
     static member Create(command: CreateSecurity) =
-        SecurityMasterAggregate.ToResult(None, SecurityMaster.create command)
+        SecurityMasterCommandFacade.ToResult(None, SecurityMaster.create command)
 
     static member Amend(current: SecurityMasterRecord, command: AmendTerms) =
-        SecurityMasterAggregate.ToResult(Some current, SecurityMaster.amend current command)
+        SecurityMasterCommandFacade.ToResult(Some current, SecurityMaster.amend current command)
 
     static member Deactivate(current: SecurityMasterRecord, command: DeactivateSecurity) =
-        SecurityMasterAggregate.ToResult(Some current, SecurityMaster.deactivate current command)
+        SecurityMasterCommandFacade.ToResult(Some current, SecurityMaster.deactivate current command)
+
