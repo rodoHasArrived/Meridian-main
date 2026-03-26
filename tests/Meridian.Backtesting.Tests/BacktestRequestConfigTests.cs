@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Meridian.Backtesting.Portfolio;
+using Meridian.Domain.Events;
 using Xunit;
 
 namespace Meridian.Backtesting.Tests;
