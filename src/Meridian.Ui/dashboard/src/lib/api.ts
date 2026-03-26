@@ -7,6 +7,7 @@ import type {
   PromotionDecisionResult,
   PromotionEvaluationResult,
   PromotionRecord,
+  ResearchRunRecord,
   ResearchWorkspaceResponse,
   RunComparisonRow,
   RunDiff,
@@ -132,6 +133,13 @@ export function stopStrategy(strategyId: string) {
   return postJson<{ strategyId: string; action: string; success: boolean; reason: string | null }>(
     `/api/strategies/${encodeURIComponent(strategyId)}/stop`
   );
+}
+
+// --- Strategy runs ---
+
+export function getStrategyRuns(strategyId: string, type?: "backtest" | "paper" | "live") {
+  const params = type ? `?type=${encodeURIComponent(type)}` : "";
+  return getJson<ResearchRunRecord[]>(`/api/strategies/${encodeURIComponent(strategyId)}/runs${params}`);
 }
 
 // --- Multi-run comparison and diff ---

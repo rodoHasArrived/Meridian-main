@@ -58,7 +58,7 @@ public sealed class StrategyRunWorkspaceService
     public event EventHandler<StrategyRunSummary>? RunRecorded;
 
     public Task<IReadOnlyList<StrategyRunSummary>> GetRunsAsync(string? strategyId = null, CancellationToken ct = default) =>
-        _readService.GetRunsAsync(strategyId, ct);
+        _readService.GetRunsAsync(strategyId, ct: ct);
 
     public Task<StrategyRunDetail?> GetRunDetailAsync(string runId, CancellationToken ct = default) =>
         _readService.GetRunDetailAsync(runId, ct);
@@ -77,13 +77,13 @@ public sealed class StrategyRunWorkspaceService
 
     public async Task<StrategyRunSummary?> GetLatestRunAsync(CancellationToken ct = default)
     {
-        var runs = await _readService.GetRunsAsync(null, ct).ConfigureAwait(false);
+        var runs = await _readService.GetRunsAsync(null, ct: ct).ConfigureAwait(false);
         return runs.FirstOrDefault();
     }
 
     public async Task<TradingWorkspaceSummary> GetTradingSummaryAsync(CancellationToken ct = default)
     {
-        var runs = await _readService.GetRunsAsync(null, ct).ConfigureAwait(false);
+        var runs = await _readService.GetRunsAsync(null, ct: ct).ConfigureAwait(false);
 
         var paperRuns = runs.Where(r => r.Mode == StrategyRunMode.Paper).ToList();
         var liveRuns = runs.Where(r => r.Mode == StrategyRunMode.Live).ToList();
@@ -137,7 +137,7 @@ public sealed class StrategyRunWorkspaceService
 
     public async Task<ResearchWorkspaceSummary> GetResearchSummaryAsync(CancellationToken ct = default)
     {
-        var runs = await _readService.GetRunsAsync(null, ct).ConfigureAwait(false);
+        var runs = await _readService.GetRunsAsync(null, ct: ct).ConfigureAwait(false);
 
         var promoted = runs.Count(r =>
             r.Mode is StrategyRunMode.Paper or StrategyRunMode.Live);

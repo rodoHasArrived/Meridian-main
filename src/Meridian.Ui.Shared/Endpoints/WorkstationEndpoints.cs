@@ -6,6 +6,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Meridian.Storage.Export;
+using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -435,6 +436,29 @@ public static class WorkstationEndpoints
         .WithName("DiffRuns")
         .Produces<StrategyRunDiff>(200)
         .Produces(404)
+        .Produces(501);
+
+        app.MapGet("/api/strategies/{strategyId}/runs", async (string strategyId, string? type, HttpContext context) =>
+        {
+            var readService = context.RequestServices.GetService<StrategyRunReadService>();
+            if (readService is null)
+            {
+                return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            RunType? runType = null;
+            if (!string.IsNullOrWhiteSpace(type) &&
+                Enum.TryParse<RunType>(type, ignoreCase: true, out var parsed))
+            {
+                runType = parsed;
+            }
+
+            var runs = await readService.GetRunsAsync(strategyId, runType, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(runs, jsonOptions);
+        })
+        .WithName("GetStrategyRuns")
+        .WithTags("Strategies")
+        .Produces<IReadOnlyList<StrategyRunSummary>>(200)
         .Produces(501);
 
         app.MapGet("/workstation", (IWebHostEnvironment environment) => ServeWorkstationIndex(environment))

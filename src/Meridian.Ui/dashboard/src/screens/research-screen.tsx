@@ -29,6 +29,15 @@ interface PromotionState {
   error: string | null;
 }
 
+type RunModeFilter = "all" | "backtest" | "paper" | "live";
+
+const RUN_MODE_FILTERS: { value: RunModeFilter; label: string }[] = [
+  { value: "all", label: "All" },
+  { value: "backtest", label: "Backtest" },
+  { value: "paper", label: "Paper" },
+  { value: "live", label: "Live" }
+];
+
 export function ResearchScreen({ data }: ResearchScreenProps) {
   const [selectedRun, setSelectedRun] = useState<ResearchRunRecord | null>(null);
   const [promotion, setPromotion] = useState<PromotionState>({
@@ -38,6 +47,14 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
     error: null
   });
   const [rejectReason, setRejectReason] = useState("");
+
+  // --- Run type filter ---
+  const [modeFilter, setModeFilter] = useState<RunModeFilter>("all");
+
+  const filteredRuns = useMemo(() => {
+    if (!data || modeFilter === "all") return data?.runs ?? [];
+    return data.runs.filter((run) => run.mode === modeFilter);
+  }, [data, modeFilter]);
 
   // --- Multi-run comparison ---
   const [comparisonRows, setComparisonRows] = useState<RunComparisonRow[] | null>(null);
@@ -264,12 +281,32 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
         </Card>
       </section>
 
-      <EntityDataTable
-        rows={data.runs}
-        onSelectRun={handleSelectRun}
-        selectedRunIds={selectedRunIds}
-        onToggleSelection={handleToggleRunSelection}
-      />
+      <section>
+        <div className="mb-3 flex flex-wrap gap-2">
+          {RUN_MODE_FILTERS.map((filter) => (
+            <Button
+              key={filter.value}
+              size="sm"
+              variant={modeFilter === filter.value ? "default" : "outline"}
+              onClick={() => setModeFilter(filter.value)}
+            >
+              {filter.label}
+              {filter.value !== "all" && data && (
+                <span className="ml-1.5 rounded-full bg-background/20 px-1.5 py-0.5 text-[10px] font-mono">
+                  {data.runs.filter((r) => r.mode === filter.value).length}
+                </span>
+              )}
+            </Button>
+          ))}
+        </div>
+
+        <EntityDataTable
+          rows={filteredRuns}
+          onSelectRun={handleSelectRun}
+          selectedRunIds={selectedRunIds}
+          onToggleSelection={handleToggleRunSelection}
+        />
+      </section>
 
       {selectedRun ? (
         <Dialog open={selectedRun !== null} onOpenChange={handleDialogClose}>
