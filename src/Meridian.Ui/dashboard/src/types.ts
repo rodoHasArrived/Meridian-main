@@ -26,7 +26,7 @@ export interface MetricSnapshot {
 export interface ResearchRunRecord {
   id: string;
   strategyName: string;
-  engine: "Meridian Native" | "Lean" | string;
+  engine: string;
   mode: "backtest" | "paper" | "live";
   status: "Running" | "Queued" | "Needs Review" | "Completed";
   dataset: string;
