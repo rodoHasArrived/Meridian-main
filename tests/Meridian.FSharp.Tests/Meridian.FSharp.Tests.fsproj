@@ -18,6 +18,7 @@
     <Compile Include="TradingTransitionTests.fs" />
     <Compile Include="LedgerKernelTests.fs" />
     <Compile Include="DirectLendingInteropTests.fs" />
+    <Compile Include="CashFlowProjectorTests.fs" />
   </ItemGroup>
 
   <ItemGroup>

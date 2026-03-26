@@ -61,6 +61,7 @@
     <Compile Include="Pipeline/Transforms.fs" />
 
     <!-- C# interop helpers -->
+    <Compile Include="Interop.CashFlow.fs" />
     <Compile Include="Interop.SecurityMaster.fs" />
     <Compile Include="Interop.DirectLending.fs" />
     <Compile Include="Interop.fs" />
