@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-03-26 18:40:41 UTC. Do not edit manually.
+> Auto-generated on 2026-03-26 19:26:10 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -186,195 +186,6 @@ Meridian-main
 │   ├── PULL_REQUEST_TEMPLATE.md
 │   ├── pull_request_template_desktop.md
 │   └── spellcheck-config.yml
-├── archive
-│   ├── code
-│   │   ├── obj-codex
-│   │   │   ├── src
-│   │   │   │   ├── Meridian
-│   │   │   │   │   └── obj-codex
-│   │   │   │   │       ├── Meridian.csproj.nuget.dgspec.json
-│   │   │   │   │       ├── Meridian.csproj.nuget.g.props
-│   │   │   │   │       ├── Meridian.csproj.nuget.g.targets
-│   │   │   │   │       ├── project.assets.json
-│   │   │   │   │       └── project.nuget.cache
-│   │   │   │   ├── Meridian.Application
-│   │   │   │   │   └── obj-codex
-│   │   │   │   │       ├── Meridian.Application.csproj.nuget.dgspec.json
-│   │   │   │   │       ├── Meridian.Application.csproj.nuget.g.props
-│   │   │   │   │       ├── Meridian.Application.csproj.nuget.g.targets
-│   │   │   │   │       ├── project.assets.json
-│   │   │   │   │       └── project.nuget.cache
-│   │   │   │   ├── Meridian.Backtesting.Sdk
-│   │   │   │   │   └── obj-codex
-│   │   │   │   │       ├── Meridian.Backtesting.Sdk.csproj.nuget.dgspec.json
-│   │   │   │   │       ├── Meridian.Backtesting.Sdk.csproj.nuget.g.props
-│   │   │   │   │       ├── Meridian.Backtesting.Sdk.csproj.nuget.g.targets
-│   │   │   │   │       ├── project.assets.json
-│   │   │   │   │       └── project.nuget.cache
-│   │   │   │   ├── Meridian.Contracts
-│   │   │   │   │   └── obj-codex
-│   │   │   │   │       ├── Meridian.Contracts.csproj.nuget.dgspec.json
-│   │   │   │   │       ├── Meridian.Contracts.csproj.nuget.g.props
-│   │   │   │   │       ├── Meridian.Contracts.csproj.nuget.g.targets
-│   │   │   │   │       ├── project.assets.json
-│   │   │   │   │       └── project.nuget.cache
-│   │   │   │   ├── Meridian.Core
-│   │   │   │   │   └── obj-codex
-│   │   │   │   │       ├── Meridian.Core.csproj.nuget.dgspec.json
-│   │   │   │   │       ├── Meridian.Core.csproj.nuget.g.props
-│   │   │   │   │       ├── Meridian.Core.csproj.nuget.g.targets
-│   │   │   │   │       ├── project.assets.json
-│   │   │   │   │       └── project.nuget.cache
-│   │   │   │   ├── Meridian.Domain
-│   │   │   │   │   └── obj-codex
-│   │   │   │   │       ├── Meridian.Domain.csproj.nuget.dgspec.json
-│   │   │   │   │       ├── Meridian.Domain.csproj.nuget.g.props
-│   │   │   │   │       ├── Meridian.Domain.csproj.nuget.g.targets
-│   │   │   │   │       ├── project.assets.json
-│   │   │   │   │       └── project.nuget.cache
-│   │   │   │   ├── Meridian.Execution
-│   │   │   │   │   └── obj-codex
-│   │   │   │   │       ├── Meridian.Execution.csproj.nuget.dgspec.json
-│   │   │   │   │       ├── Meridian.Execution.csproj.nuget.g.props
-│   │   │   │   │       ├── Meridian.Execution.csproj.nuget.g.targets
-│   │   │   │   │       ├── project.assets.json
-│   │   │   │   │       └── project.nuget.cache
-│   │   │   │   ├── Meridian.Execution.Sdk
-│   │   │   │   │   └── obj-codex
-│   │   │   │   │       ├── Meridian.Execution.Sdk.csproj.nuget.dgspec.json
-│   │   │   │   │       ├── Meridian.Execution.Sdk.csproj.nuget.g.props
-│   │   │   │   │       ├── Meridian.Execution.Sdk.csproj.nuget.g.targets
-│   │   │   │   │       ├── project.assets.json
-│   │   │   │   │       └── project.nuget.cache
-│   │   │   │   ├── Meridian.FSharp
-│   │   │   │   │   └── obj-codex
-│   │   │   │   │       ├── Meridian.FSharp.fsproj.nuget.dgspec.json
-│   │   │   │   │       ├── Meridian.FSharp.fsproj.nuget.g.props
-│   │   │   │   │       ├── Meridian.FSharp.fsproj.nuget.g.targets
-│   │   │   │   │       ├── project.assets.json
-│   │   │   │   │       └── project.nuget.cache
-│   │   │   │   ├── Meridian.FSharp.Ledger
-│   │   │   │   │   └── obj-codex
-│   │   │   │   │       ├── Meridian.FSharp.Ledger.fsproj.nuget.dgspec.json
-│   │   │   │   │       ├── Meridian.FSharp.Ledger.fsproj.nuget.g.props
-│   │   │   │   │       ├── Meridian.FSharp.Ledger.fsproj.nuget.g.targets
-│   │   │   │   │       ├── project.assets.json
-│   │   │   │   │       └── project.nuget.cache
-│   │   │   │   ├── Meridian.FSharp.Trading
-│   │   │   │   │   └── obj-codex
-│   │   │   │   │       ├── Meridian.FSharp.Trading.fsproj.nuget.dgspec.json
-│   │   │   │   │       ├── Meridian.FSharp.Trading.fsproj.nuget.g.props
-│   │   │   │   │       ├── Meridian.FSharp.Trading.fsproj.nuget.g.targets
-│   │   │   │   │       ├── project.assets.json
-│   │   │   │   │       └── project.nuget.cache
-│   │   │   │   ├── Meridian.Infrastructure
-│   │   │   │   │   └── obj-codex
-│   │   │   │   │       ├── Meridian.Infrastructure.csproj.nuget.dgspec.json
-│   │   │   │   │       ├── Meridian.Infrastructure.csproj.nuget.g.props
-│   │   │   │   │       ├── Meridian.Infrastructure.csproj.nuget.g.targets
-│   │   │   │   │       ├── project.assets.json
-│   │   │   │   │       └── project.nuget.cache
-│   │   │   │   ├── Meridian.Infrastructure.CppTrader
-│   │   │   │   │   └── obj-codex
-│   │   │   │   │       ├── Meridian.Infrastructure.CppTrader.csproj.nuget.dgspec.json
-│   │   │   │   │       ├── Meridian.Infrastructure.CppTrader.csproj.nuget.g.props
-│   │   │   │   │       ├── Meridian.Infrastructure.CppTrader.csproj.nuget.g.targets
-│   │   │   │   │       ├── project.assets.json
-│   │   │   │   │       └── project.nuget.cache
-│   │   │   │   ├── Meridian.Ledger
-│   │   │   │   │   └── obj-codex
-│   │   │   │   │       ├── Meridian.Ledger.csproj.nuget.dgspec.json
-│   │   │   │   │       ├── Meridian.Ledger.csproj.nuget.g.props
-│   │   │   │   │       ├── Meridian.Ledger.csproj.nuget.g.targets
-│   │   │   │   │       ├── project.assets.json
-│   │   │   │   │       └── project.nuget.cache
-│   │   │   │   ├── Meridian.ProviderSdk
-│   │   │   │   │   └── obj-codex
-│   │   │   │   │       ├── Meridian.ProviderSdk.csproj.nuget.dgspec.json
-│   │   │   │   │       ├── Meridian.ProviderSdk.csproj.nuget.g.props
-│   │   │   │   │       ├── Meridian.ProviderSdk.csproj.nuget.g.targets
-│   │   │   │   │       ├── project.assets.json
-│   │   │   │   │       └── project.nuget.cache
-│   │   │   │   ├── Meridian.Risk
-│   │   │   │   │   └── obj-codex
-│   │   │   │   │       ├── Meridian.Risk.csproj.nuget.dgspec.json
-│   │   │   │   │       ├── Meridian.Risk.csproj.nuget.g.props
-│   │   │   │   │       ├── Meridian.Risk.csproj.nuget.g.targets
-│   │   │   │   │       ├── project.assets.json
-│   │   │   │   │       └── project.nuget.cache
-│   │   │   │   ├── Meridian.Storage
-│   │   │   │   │   └── obj-codex
-│   │   │   │   │       ├── Meridian.Storage.csproj.nuget.dgspec.json
-│   │   │   │   │       ├── Meridian.Storage.csproj.nuget.g.props
-│   │   │   │   │       ├── Meridian.Storage.csproj.nuget.g.targets
-│   │   │   │   │       ├── project.assets.json
-│   │   │   │   │       └── project.nuget.cache
-│   │   │   │   ├── Meridian.Strategies
-│   │   │   │   │   └── obj-codex
-│   │   │   │   │       ├── Meridian.Strategies.csproj.nuget.dgspec.json
-│   │   │   │   │       ├── Meridian.Strategies.csproj.nuget.g.props
-│   │   │   │   │       ├── Meridian.Strategies.csproj.nuget.g.targets
-│   │   │   │   │       ├── project.assets.json
-│   │   │   │   │       └── project.nuget.cache
-│   │   │   │   └── Meridian.Ui.Shared
-│   │   │   │       └── obj-codex
-│   │   │   │           ├── Meridian.Ui.Shared.csproj.nuget.dgspec.json
-│   │   │   │           ├── Meridian.Ui.Shared.csproj.nuget.g.props
-│   │   │   │           ├── Meridian.Ui.Shared.csproj.nuget.g.targets
-│   │   │   │           ├── project.assets.json
-│   │   │   │           └── project.nuget.cache
-│   │   │   └── tests
-│   │   │       └── Meridian.Tests
-│   │   │           └── obj-codex
-│   │   │               ├── Meridian.Tests.csproj.nuget.dgspec.json
-│   │   │               ├── Meridian.Tests.csproj.nuget.g.props
-│   │   │               ├── Meridian.Tests.csproj.nuget.g.targets
-│   │   │               ├── project.assets.json
-│   │   │               └── project.nuget.cache
-│   │   └── README.md
-│   ├── docs
-│   │   ├── assessments
-│   │   │   ├── ARTIFACT_ACTIONS_DOWNGRADE.md
-│   │   │   ├── AUDIT_REPORT_2026_03_20.md
-│   │   │   ├── canonicalization-drift-report.local.md
-│   │   │   ├── CLEANUP_OPPORTUNITIES.md
-│   │   │   ├── CLEANUP_SUMMARY.md
-│   │   │   ├── CONFIG_CONSOLIDATION_REPORT.md
-│   │   │   ├── desktop-devex-high-value-improvements.md
-│   │   │   ├── desktop-end-user-improvements-shortlist.md
-│   │   │   ├── desktop-end-user-improvements.md
-│   │   │   ├── desktop-ui-alternatives-evaluation.md
-│   │   │   ├── DUPLICATE_CODE_ANALYSIS.md
-│   │   │   ├── H3_DEBUG_CODE_ANALYSIS.md
-│   │   │   ├── high-impact-improvements-brainstorm.md
-│   │   │   └── UWP_COMPREHENSIVE_AUDIT.md
-│   │   ├── migrations
-│   │   │   ├── desktop-app-xaml-compiler-errors.md
-│   │   │   ├── uwp-development-roadmap.md
-│   │   │   ├── uwp-release-checklist.md
-│   │   │   └── uwp-to-wpf-migration.md
-│   │   ├── plans
-│   │   │   ├── consolidation.md
-│   │   │   ├── QUICKSTART_2026-01-08.md
-│   │   │   ├── repository-cleanup-action-plan.md
-│   │   │   ├── REPOSITORY_REORGANIZATION_PLAN.md
-│   │   │   └── WORKFLOW_IMPROVEMENTS_2026-01-08.md
-│   │   ├── summaries
-│   │   │   ├── 2026-02_PR_SUMMARY.md
-│   │   │   ├── 2026-02_UI_IMPROVEMENTS_SUMMARY.md
-│   │   │   ├── 2026-02_VISUAL_CODE_EXAMPLES.md
-│   │   │   ├── CHANGES_SUMMARY.md
-│   │   │   ├── CS0101_FIX_SUMMARY.md
-│   │   │   ├── IMPROVEMENTS_2026-02.md
-│   │   │   ├── REDESIGN_IMPROVEMENTS.md
-│   │   │   ├── ROADMAP_UPDATE_SUMMARY.md
-│   │   │   ├── STRUCTURAL_IMPROVEMENTS_2026-02.md
-│   │   │   └── TEST_MATRIX_FIX_SUMMARY.md
-│   │   ├── c4-context-legacy.png
-│   │   ├── c4-context-legacy.puml
-│   │   ├── INDEX.md
-│   │   └── README.md
-│   └── README.md
 ├── benchmarks
 │   ├── Meridian.Benchmarks
 │   │   ├── Budget
@@ -2431,6 +2242,8 @@ Meridian-main
 │   │   ├── Meridian.DirectLending.Tests.csproj
 │   │   └── PaymentApprovalTests.cs
 │   ├── Meridian.FSharp.Tests
+│   │   ├── TestResults
+│   │   │   └── e5284df0-69fd-4132-8154-95132c29eb32
 │   │   ├── CalculationTests.fs
 │   │   ├── CanonicalizationTests.fs
 │   │   ├── DirectLendingInteropTests.fs
@@ -2748,6 +2561,10 @@ Meridian-main
 │   │   ├── TestHelpers
 │   │   │   ├── PolygonStubClient.cs
 │   │   │   └── TestMarketEventPublisher.cs
+│   │   ├── TestResults
+│   │   │   └── d7c622f5-f599-4258-b8ca-c2a6e1d9e512
+│   │   │       ├── dotnet_3960_20260326T191953_hangdump.dmp
+│   │   │       └── Sequence_cf5f6365e12f4612bd6fe286e62ada18.xml
 │   │   ├── Ui
 │   │   │   ├── DirectLendingEndpointsTests.cs
 │   │   │   └── WorkstationEndpointsTests.cs
