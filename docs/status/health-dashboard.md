@@ -20,7 +20,7 @@
 | Orphaned files | 69 |
 | Files without headings | 2 |
 | Stale files (>90 days) | 0 |
-| TODO/FIXME markers | 179 |
+| Open task markers | 179 |
 | **Health score** | **89/100** |
 
 ### Score Breakdown
@@ -30,7 +30,7 @@
 | Orphan ratio | 30 pts | Fewer orphaned files is better |
 | Heading coverage | 25 pts | All files should have at least one heading |
 | Freshness | 20 pts | Files updated within the last 90 days |
-| TODO density | 15 pts | Lower density of TODO/FIXME markers |
+| Task marker density | 15 pts | Lower density of open task markers |
 | Average size | 10 pts | Files averaging at least 20 lines |
 
 ## Top Priorities for Improvement

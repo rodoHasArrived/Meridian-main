@@ -1272,7 +1272,7 @@ No clear contract for what each validates or when it runs.
 
 - **Small PR (preferred):** 1 improvement item or one coherent subset (<500 LOC net change).
 - **Medium PR:** 1 item with migration shims + tests (<1,200 LOC net).
-- **Large PR (exception):** Theme K or readability-level refactors; require design note and staged rollout plan.
+- **Large PR (exception):** Theme K or readability-level refactors; require a design document and staged rollout plan.
 
 ### Quality Gates per Improvement Item
 
@@ -1311,7 +1311,7 @@ Use this checklist before changing any item status from 📝/🔄 to ✅:
 
 - [ ] Acceptance criteria met for the item’s “Proposed Solution.”
 - [ ] Unit/integration tests included and passing in CI.
-- [ ] No new TODO/FIXME left without linked backlog issue.
+- [ ] No new open task markers left without a linked backlog issue.
 - [ ] Telemetry impact evaluated (log/metric/trace).
 - [ ] Backward compatibility validated (config, endpoints, file formats).
 - [ ] Documentation and status tables updated in this file.
@@ -1341,7 +1341,7 @@ Improvements Tracker Update
 - **[ROADMAP.md](ROADMAP.md)** — Phased execution timeline (Phases 0-10)
 - **[EVALUATIONS_AND_AUDITS.md](EVALUATIONS_AND_AUDITS.md)** — Consolidated architecture evaluations, code audits, and assessments
 - **[CHANGELOG.md](CHANGELOG.md)** — Historical changes and version history
-- **[TODO.md](TODO.md)** — Auto-generated TODO tracking from code comments
+- **[task-markers.md](TODO.md)** — Auto-generated task marker tracking from code comments
 - **[DEPENDENCIES.md](../DEPENDENCIES.md)** — NuGet package dependencies
 - **[production-status.md](production-status.md)** — Current production readiness assessment
 - **[deterministic-canonicalization.md](../architecture/deterministic-canonicalization.md)** — Cross-provider canonicalization design (Theme J)

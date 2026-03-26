@@ -353,7 +353,7 @@ docs/
 │   └── data-dictionary.md
 ├── status/                 # Project status tracking
 │   ├── ROADMAP.md
-│   ├── TODO.md
+│   ├── task-markers.md             # auto-generated task marker tracking
 │   ├── CHANGELOG.md
 │   └── production-status.md
 ├── uml/                    # UML diagrams
@@ -371,7 +371,7 @@ docs/
 | **Guide** | `{topic}-guide.md` | `deployment-guide.md` |
 | **Reference** | `{topic}-reference.md` | `api-reference.md` |
 | **Setup/How-to** | `{provider}-setup.md` | `alpaca-setup.md` |
-| **Status** | UPPERCASE | `TODO.md`, `ROADMAP.md` |
+| **Status** | UPPERCASE | `ROADMAP.md`, `CHANGELOG.md` |
 | **Analysis** | `{topic}-analysis.md` | `duplicate-code-analysis.md` |
 
 ### When to Create New Documentation
@@ -677,8 +677,8 @@ dotnet test
 # Check for build artifacts in git
 git status | grep -E "(bin/|obj/|build-output.log)"
 
-# Scan for TODO comments
-grep -r "TODO:" src/ tests/
+# Scan for open task marker comments
+grep -rE "FIXME:|HACK:" src/ tests/
 ```
 
 ### Automated Checks

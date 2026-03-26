@@ -1,6 +1,6 @@
 # TODO / FIXME / NOTE Scan
 
-Total items: **235**
+Total items: **181**
 
 | File | Line | Tag | Linked Issue | Text |
 |---|---:|---|:---:|---|
@@ -75,33 +75,6 @@ Total items: **235**
 | `docs/architecture/deterministic-canonicalization.md` | 365 | `NOTE` | ❌ | Note: Polygon does not define buyer-initiated codes. Only ~5% of trades carry definitive aggressor inference. The canonicalization layer preserves `Unknown` as a valid canonical value rather than attempting inference. |
 | `docs/architecture/domains.md` | 111 | `NOTE` | ❌ | > Note: not every enum member is currently emitted by the three core collectors (`TradeDataCollector`, `MarketDepthCollector`, `QuoteCollector`); several are used by adapters, backfill paths, or the `L3OrderBookCollector`. |
 | `docs/audits/BACKTEST_ENGINE_CODE_REVIEW_2026_03_25.md` | 150 | `NOTE` | ❌ | **Fix:** Add a note to the XML doc comment explaining the open/close midpoint convention and when to use `BarMidpointFillModel` vs. `OrderBookFillModel`. Consider offering `(bar.High + bar.Low) / 2m` as an alternative mode. |
-| `docs/development/documentation-automation.md` | 19 | `TODO` | ❌ | \| **TODO Scanning** \| Finds TODO/FIXME/HACK comments and generates tracking docs \| |
-| `docs/development/documentation-automation.md` | 26 | `TODO` | ❌ | \| **Automatic TODO Issue Creation** \| Converts untracked TODO/FIXME items into GitHub issues automatically \| |
-| `docs/development/documentation-automation.md` | 91 | `TODO` | ❌ | \| `scan_todos` \| true \| Run TODO scanning \| |
-| `docs/development/documentation-automation.md` | 93 | `NOTE` | ❌ | \| `include_notes` \| true \| Include NOTE comments in TODO scan \| |
-| `docs/development/documentation-automation.md` | 111 | `TODO` | ❌ | +-- create-todo-issues (after scan-todos, manual only) |
-| `docs/development/documentation-automation.md` | 124 | `TODO` | ❌ | Scans the codebase for TODO/FIXME/HACK/NOTE comments. |
-| `docs/development/documentation-automation.md` | 128 | `TODO` | ❌ | python3 build/scripts/docs/scan-todos.py --output docs/status/TODO.md |
-| `docs/development/documentation-automation.md` | 222 | `TODO` | ❌ | #### `create-todo-issues.py` _(new)_ |
-| `docs/development/documentation-automation.md` | 224 | `TODO` | ❌ | Creates GitHub issues for untracked TODO items discovered by `scan-todos.py`. |
-| `docs/development/documentation-automation.md` | 238 | `TODO` | ❌ | --output docs/status/TODO.md \ |
-| `docs/development/documentation-automation.md` | 239 | `TODO` | ❌ | --json-output docs/status/todo-scan-results.json |
-| `docs/development/documentation-automation.md` | 242 | `TODO` | ❌ | python3 build/scripts/docs/create-todo-issues.py \ |
-| `docs/development/documentation-automation.md` | 243 | `TODO` | ❌ | --scan-json docs/status/todo-scan-results.json \ |
-| `docs/development/documentation-automation.md` | 248 | `TODO` | ❌ | python3 build/scripts/docs/create-todo-issues.py \ |
-| `docs/development/documentation-automation.md` | 249 | `TODO` | ❌ | --scan-json docs/status/todo-scan-results.json \ |
-| `docs/development/documentation-automation.md` | 252 | `TODO` | ❌ | --output-json docs/status/todo-issue-creation-summary.json |
-| `docs/development/documentation-automation.md` | 301 | `TODO` | ❌ | --todo-repo owner/repo \ |
-| `docs/development/documentation-automation.md` | 302 | `TODO` | ❌ | --todo-max-issues 25 |
-| `docs/development/documentation-automation.md` | 320 | `TODO` | ❌ | 2. It automatically adds `--json-output docs/status/todo-scan-results.json` to scan-todos |
-| `docs/development/documentation-automation.md` | 322 | `TODO` | ❌ | 4. On success, it calls `create-todo-issues.py` with `--output-json docs/status/todo-issue-creation-summary.json` |
-| `docs/development/documentation-automation.md` | 338 | `TODO` | ❌ | \| `docs/status/TODO.md` \| scan-todos.py \| TODO tracking \| |
-| `docs/development/documentation-automation.md` | 339 | `TODO` | ❌ | \| `docs/status/todo-scan-results.json` \| scan-todos.py \| Machine-readable TODO scan results used for auto issue creation \| |
-| `docs/development/documentation-automation.md` | 340 | `TODO` | ❌ | \| `docs/status/todo-issue-creation-summary.json` \| create-todo-issues.py \| Machine-readable issue creation summary with status counts and issue numbers \| |
-| `docs/development/documentation-automation.md` | 381 | `TODO` | ❌ | Use automatic TODO issue creation with the orchestrator: |
-| `docs/development/documentation-automation.md` | 387 | `TODO` | ❌ | --todo-repo owner/repo \ |
-| `docs/development/documentation-automation.md` | 388 | `TODO` | ❌ | --todo-max-issues 25 |
-| `docs/development/documentation-automation.md` | 391 | `TODO` | ❌ | This creates GitHub issues (label: `auto-todo`) for TODO items that do not already reference an existing issue. |
 | `docs/development/documentation-contribution-guide.md` | 84 | `TODO` | ❌ | ├── status/                    # Project status, roadmap, TODO |
 | `docs/development/documentation-contribution-guide.md` | 154 | `TODO` | ❌ | \| Project roadmap, changelog, TODO, feature inventory \| `status/` \| |
 | `docs/development/expanding-scripts.md` | 11 | `TODO` | ❌ | add-todos.py                  # TODO item creator (NEW) |
@@ -112,14 +85,8 @@ Total items: **235**
 | `docs/development/expanding-scripts.md` | 119 | `TODO` | ❌ | ## Enhanced TODO Scanner |
 | `docs/development/expanding-scripts.md` | 124 | `TODO` | ❌ | - **Assignee detection** - Recognizes @username in TODO comments |
 | `docs/development/expanding-scripts.md` | 131 | `TODO` | ❌ | python3 build/scripts/docs/scan-todos.py --output docs/status/TODO.md |
-| `docs/development/github-actions-summary.md` | 43 | `TODO` | ❌ | \| Documentation \| `documentation.yml` \| Push/PRs (docs/source), weekly (Mon 3 AM UTC), `ai-known-error` issues, manual \| Doc generation, linting, link checks, AI instruction sync, TODO scan \| |
-| `docs/development/github-actions-summary.md` | 57 | `TODO` | ❌ | \| `documentation.yml` \| `docs-comprehensive.yml`, `docs-auto-update.yml`, `docs-structure-sync.yml`, `ai-instructions-sync.yml`, `todo-automation.yml` \| |
-| `docs/development/github-actions-summary.md` | 75 | `TODO` | ❌ | \| `documentation.yml` \| Doc quality review, TODO triage \| |
 | `docs/development/refactor-map.md` | 169 | `NOTE` | ❌ | > **Note:** The UWP desktop application has been fully removed from the codebase. WPF is the sole desktop client. |
-| `docs/development/repository-organization-guide.md` | 356 | `TODO` | ❌ | │   ├── TODO.md |
-| `docs/development/repository-organization-guide.md` | 374 | `TODO` | ❌ | \| **Status** \| UPPERCASE \| `TODO.md`, `ROADMAP.md` \| |
-| `docs/development/repository-organization-guide.md` | 680 | `TODO` | ❌ | # Scan for TODO comments |
-| `docs/development/repository-organization-guide.md` | 681 | `TODO` | ❌ | grep -r "TODO:" src/ tests/ |
+| `docs/development/repository-organization-guide.md` | 681 | `FIXME` | ❌ | grep -rE "FIXME:\|HACK:" src/ tests/ |
 | `docs/docfx/api/index.md` | 62 | `NOTE` | ❌ | > **Note:** The source code must build successfully before DocFX can extract XML documentation. |
 | `docs/evaluations/high-impact-improvement-brainstorm-2026-03.md` | 76 | `NOTE` | ❌ | > **Note:** Ratings above reflect the initial assessment (2026-03-01). Follow-up |
 | `docs/evaluations/high-value-low-cost-improvements-brainstorm.md` | 58 | `NOTE` | ❌ | **Status (2026-03-15):** `ConfigurationPipeline.cs` detects when both `DataSource` and `DataSources` are set and logs: `"Both 'DataSource' and 'DataSources' are set. 'DataSources' takes precedence."` A note was also added to `appsettings.sample.json`. |
@@ -142,17 +109,13 @@ Total items: **235**
 | `docs/reference/data-dictionary.md` | 724 | `NOTE` | ❌ | **Note:** Aligns with Interactive Brokers conventions. |
 | `docs/reference/data-uniformity.md` | 5 | `NOTE` | ❌ | This note expands on the data-quality goals for the collector so downstream users receive a uniform, analysis-ready tape regardless of provider quirks. |
 | `docs/status/EVALUATIONS_AND_AUDITS.md` | 394 | `NOTE` | ❌ | - Historical note: the original audit flagged generated docs as stale, but `docs/generated/` has since been refreshed and expanded |
-| `docs/status/IMPROVEMENTS.md` | 1275 | `NOTE` | ❌ | - **Large PR (exception):** Theme K or readability-level refactors; require design note and staged rollout plan. |
-| `docs/status/IMPROVEMENTS.md` | 1314 | `TODO` | ❌ | - [ ] No new TODO/FIXME left without linked backlog issue. |
-| `docs/status/IMPROVEMENTS.md` | 1344 | `TODO` | ❌ | - **[TODO.md](TODO.md)** — Auto-generated TODO tracking from code comments |
+| `docs/status/IMPROVEMENTS.md` | 1344 | `TODO` | ❌ | - **[task-markers.md](TODO.md)** — Auto-generated task marker tracking from code comments |
 | `docs/status/README.md` | 30 | `TODO` | ❌ | \| [TODO.md](TODO.md) \| Auto-generated TODO tracking from source comments \| |
 | `docs/status/docs-automation-summary.json` | 25 | `TODO` | ❌ | "docs/status/TODO.md", |
 | `docs/status/docs-automation-summary.json` | 27 | `TODO` | ❌ | "docs/status/todo-scan-results.json" |
 | `docs/status/docs-automation-summary.json` | 32 | `TODO` | ❌ | "output_file": "docs/status/TODO.md", |
 | `docs/status/docs-automation-summary.md` | 9 | `TODO` | ❌ | \| `scan-todos` \| `success` \| `175.615` \| `docs/status/TODO.md` \| |
 | `docs/status/example-validation.md` | 148 | `TODO` | ❌ | \| `docs\status\TODO.md` \| 1 \| |
-| `docs/status/health-dashboard.md` | 23 | `TODO` | ❌ | \| TODO/FIXME markers \| 179 \| |
-| `docs/status/health-dashboard.md` | 33 | `TODO` | ❌ | \| TODO density \| 15 pts \| Lower density of TODO/FIXME markers \| |
 | `docs/status/rules-report.md` | 431 | `TODO` | ❌ | \| `docs\status\TODO.md` \| No hardcoded API keys in docs \| error \| |
 | `docs/status/rules-report.md` | 432 | `TODO` | ❌ | \| `docs\status\TODO.md` \| No hardcoded localhost URLs in docs \| info \| |
 | `src/Meridian.Application/Config/ConfigValidationHelper.cs` | 123 | `TODO` | ❌ | var placeholders = new[] { "__SET_ME__", "YOUR_", "REPLACE_", "ENTER_", "INSERT_", "TODO" }; |
@@ -176,23 +139,6 @@ Total items: **235**
 | `src/Meridian.FSharp/Domain/SecMasterDomain.fs` | 98 | `NOTE` | ❌ | \| Note |
 | `src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs` | 87 | `NOTE` | ❌ | return !json.Contains("Note") && !json.Contains("Thank you for using Alpha Vantage"); |
 | `src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs` | 241 | `NOTE` | ❌ | return json.Contains("\"Note\"") \|\| json.Contains("Thank you for using Alpha Vantage"); |
-| `src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs` | 21 | `TODO` | ❌ | /// 4. Implement all TODO methods with broker-specific API calls |
-| `src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs` | 27 | `TODO` | ❌ | // TODO: Add attributes: |
-| `src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs` | 36 | `TODO` | ❌ | // TODO: Add your broker's HTTP client factory, config options, etc. |
-| `src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs` | 43 | `TODO` | ❌ | // TODO: In a full implementation, prefer querying the broker's API for live order state. |
-| `src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs` | 47 | `TODO` | ❌ | // TODO: Add IHttpClientFactory, options, etc. |
-| `src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs` | 55 | `TODO` | ❌ | // TODO: Change to your broker's ID (lowercase, no spaces) |
-| `src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs` | 60 | `TODO` | ❌ | // TODO: Change to your broker's display name |
-| `src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs` | 63 | `TODO` | ❌ | // TODO: Configure capabilities for your broker |
-| `src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs` | 77 | `TODO` | ❌ | // TODO: Authenticate with your broker's API |
-| `src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs` | 89 | `TODO` | ❌ | // TODO: Close WebSocket/API connections |
-| `src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs` | 100 | `TODO` | ❌ | // TODO: Translate OrderRequest to your broker's order format and submit |
-| `src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs` | 133 | `TODO` | ❌ | // TODO: Call your broker's cancel API |
-| `src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs` | 134 | `TODO` | ❌ | // TODO: For brokers that return order details on cancel, use the response to populate Symbol/Side. |
-| `src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs` | 159 | `TODO` | ❌ | // TODO: Call your broker's modify/amend API |
-| `src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs` | 192 | `TODO` | ❌ | // TODO: Call your broker's account endpoint |
-| `src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs` | 205 | `TODO` | ❌ | // TODO: Call your broker's positions endpoint |
-| `src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs` | 212 | `TODO` | ❌ | // TODO: Call your broker's open orders endpoint |
 | `src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs` | 28 | `NOTE` | ❌ | string? Note); |
 | `src/Meridian.Storage/DirectLending/Migrations/005_direct_lending_operations.sql` | 54 | `NOTE` | ❌ | note                     text, |
 | `src/Meridian.Storage/DirectLending/Migrations/005_direct_lending_workflows.sql` | 64 | `NOTE` | ❌ | note text, |
