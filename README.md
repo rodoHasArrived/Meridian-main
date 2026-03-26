@@ -1932,7 +1932,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── ISecurityMasterStore.cs
 │   │   │   ├── Migrations
 │   │   │   │   ├── 001_security_master.sql
-│   │   │   │   └── 002_security_master_fts.sql
+│   │   │   │   ├── 002_security_master_fts.sql
+│   │   │   │   └── 003_security_master_corp_actions.sql
 │   │   │   ├── PostgresSecurityMasterEventStore.cs
 │   │   │   ├── PostgresSecurityMasterSnapshotStore.cs
 │   │   │   ├── PostgresSecurityMasterStore.cs
@@ -2909,6 +2910,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-454 directories, 2417 files
+454 directories, 2418 files
 ```
 <!-- readme-tree end -->
