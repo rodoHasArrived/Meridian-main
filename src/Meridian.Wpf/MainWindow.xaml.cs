@@ -13,9 +13,11 @@ using System.Windows.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Services;
+using Meridian.Wpf.ViewModels;
 using WpfServices = Meridian.Wpf.Services;
 using Meridian.Wpf.Views;
 using Meridian.Ui.Services;
+using Meridian.Ui.Services.Contracts;
 using Meridian.Ui.Services.Services;
 using SysNavigation = System.Windows.Navigation;
 
@@ -42,6 +44,9 @@ public partial class MainWindow : Window
     private DispatcherTimer? _clipboardBannerTimer;
     private IReadOnlyList<string> _pendingClipboardSymbols = [];
 
+    // Status bar view model (lifetime tied to window)
+    private StatusBarViewModel? _statusBarVM;
+
     private static readonly string WindowStateFilePath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "Meridian",
@@ -67,6 +72,10 @@ public partial class MainWindow : Window
         _alertService = AlertService.Instance;
         _workspaceService = WpfServices.WorkspaceService.Instance;
         _fixtureModeDetector = FixtureModeDetector.Instance;
+
+        // Create status bar view model with injected services
+        var statusService = App.Services.GetRequiredService<IStatusService>();
+        _statusBarVM = new StatusBarViewModel(statusService, _notificationService);
 
         // Subscribe to fixture/offline mode changes
         _fixtureModeDetector.ModeChanged += OnFixtureModeChanged;
@@ -103,6 +112,12 @@ public partial class MainWindow : Window
         // Initialize keyboard shortcuts
         _keyboardShortcutService.Initialize(this);
 
+        // Set up window DataContext to expose StatusBar property
+        DataContext = new MainWindowContext { StatusBar = _statusBarVM };
+
+        // Start status bar update loop
+        _ = _statusBarVM?.StartAsync();
+
         // Register clipboard watcher using this window's HWND (must be called after Loaded)
         var hwnd = new WindowInteropHelper(this).Handle;
         ClipboardWatcherService.Instance.Initialize(hwnd);
@@ -125,6 +140,9 @@ public partial class MainWindow : Window
 
         // Save workspace session state for next launch
         SaveWorkspaceSession();
+
+        // Dispose status bar view model
+        _statusBarVM?.Dispose();
 
         // Unsubscribe from all events to prevent memory leaks
         _keyboardShortcutService.ShortcutInvoked -= OnShortcutInvoked;
@@ -1108,3 +1126,12 @@ public partial class MainWindow : Window
 
     #endregion
 }
+
+/// <summary>
+/// Data context for MainWindow, exposing the StatusBar view model.
+/// </summary>
+internal sealed class MainWindowContext
+{
+    public StatusBarViewModel? StatusBar { get; set; }
+}
+

@@ -17,7 +17,7 @@ namespace Meridian.Backtesting.Engine;
 public sealed class BacktestEngine(
     ILogger<BacktestEngine> logger,
     StorageCatalogService catalogService,
-    ISecurityMasterQueryService? securityMasterQueryService = null)
+    Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService? securityMasterQueryService = null)
 {
     /// <summary>
     /// Runs a complete backtest, replaying all events in the requested date/symbol range.

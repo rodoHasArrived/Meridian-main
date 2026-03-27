@@ -97,7 +97,7 @@ public sealed class BatchBacktestService(
 
         var sw = Stopwatch.StartNew();
         var total = request.ParameterGrid.Count;
-        var completed = 0;
+        var completedCounter = new int[1];
         var runs = new List<BatchBacktestRun>();
         var semaphore = new SemaphoreSlim(request.MaxConcurrency, request.MaxConcurrency);
 
@@ -105,7 +105,7 @@ public sealed class BatchBacktestService(
             total, request.MaxConcurrency);
 
         var tasks = request.ParameterGrid.Select((paramSet, index) =>
-            RunSingleBacktestAsync(index, paramSet, request, semaphore, runs, ref completed, total, progress, ct)
+            RunSingleBacktestAsync(index, paramSet, request, semaphore, runs, completedCounter, total, progress, ct)
         ).ToList();
 
         await Task.WhenAll(tasks);
@@ -132,7 +132,7 @@ public sealed class BatchBacktestService(
         BatchBacktestRequest request,
         SemaphoreSlim semaphore,
         List<BatchBacktestRun> runs,
-        ref int completed,
+        int[] completedCounter,
         int total,
         IProgress<BatchBacktestProgress> progress,
         CancellationToken ct)
@@ -148,7 +148,7 @@ public sealed class BatchBacktestService(
 
             progress?.Report(new BatchBacktestProgress
             {
-                Completed = completed,
+                Completed = completedCounter[0],
                 Total = total,
                 CurrentLabel = label
             });
@@ -174,6 +174,7 @@ public sealed class BatchBacktestService(
             }
 
             runSw.Stop();
+            var currentCompleted = completedCounter[0];
 
             lock (runs)
             {
@@ -185,12 +186,13 @@ public sealed class BatchBacktestService(
                     ErrorMessage = errorMessage
                 });
 
-                completed++;
+                completedCounter[0]++;
+                currentCompleted = completedCounter[0];
             }
 
             progress?.Report(new BatchBacktestProgress
             {
-                Completed = completed,
+                Completed = currentCompleted,
                 Total = total,
                 CurrentLabel = label
             });

@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.Input;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Services;
@@ -77,6 +78,34 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         private set => SetProperty(ref _historyText, value);
     }
 
+    private bool _isEditPanelVisible;
+    public bool IsEditPanelVisible
+    {
+        get => _isEditPanelVisible;
+        set => SetProperty(ref _isEditPanelVisible, value);
+    }
+
+    private bool _isDeactivatePanelVisible;
+    public bool IsDeactivatePanelVisible
+    {
+        get => _isDeactivatePanelVisible;
+        set => SetProperty(ref _isDeactivatePanelVisible, value);
+    }
+
+    private SecurityMasterEditViewModel? _editVm;
+    public SecurityMasterEditViewModel? EditVm
+    {
+        get => _editVm;
+        private set => SetProperty(ref _editVm, value);
+    }
+
+    private SecurityMasterDeactivateViewModel? _deactivateVm;
+    public SecurityMasterDeactivateViewModel? DeactivateVm
+    {
+        get => _deactivateVm;
+        private set => SetProperty(ref _deactivateVm, value);
+    }
+
     // ── Derived display helpers ─────────────────────────────────────────────
     public bool HasSelectedSecurity => SelectedSecurity is not null;
 
@@ -94,6 +123,11 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             ? $"{SelectedSecurity!.Classification.PrimaryIdentifierKind}: {v}"
             : string.Empty;
 
+    // ── Commands ────────────────────────────────────────────────────────────
+    public IRelayCommand CreateNewCommand { get; }
+    public IRelayCommand EditSelectedCommand { get; }
+    public IRelayCommand DeactivateSelectedCommand { get; }
+
     // ── Constructor ─────────────────────────────────────────────────────────
     public SecurityMasterViewModel(
         WpfServices.LoggingService loggingService,
@@ -101,6 +135,144 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     {
         _loggingService = loggingService;
         _notificationService = notificationService;
+
+        CreateNewCommand = new RelayCommand(OnCreateNew);
+        EditSelectedCommand = new RelayCommand(OnEditSelected, () => HasSelectedSecurity);
+        DeactivateSelectedCommand = new RelayCommand(OnDeactivateSelected, () => HasSelectedSecurity && IsSelectedSecurityActive());
+    }
+
+    private void OnCreateNew()
+    {
+        EditVm = SecurityMasterEditViewModel.CreateNew(_loggingService, _notificationService);
+        WireEditVmEvents();
+        IsEditPanelVisible = true;
+    }
+
+    private void OnEditSelected()
+    {
+        if (SelectedSecurity is null)
+            return;
+
+        // Fetch the full detail so we have all the required information
+        _ = LoadAndEditAsync();
+    }
+
+    private async Task LoadAndEditAsync()
+    {
+        if (SelectedSecurity?.SecurityId is not { } id)
+            return;
+
+        try
+        {
+            var detail = await ApiClientService.Instance
+                .GetAsync<SecurityDetailDto>($"/api/workstation/security-master/securities/{id}", CancellationToken.None)
+                .ConfigureAwait(false);
+
+            if (detail is not null)
+            {
+                await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    EditVm = new SecurityMasterEditViewModel(_loggingService, _notificationService);
+                    EditVm.LoadForEdit(detail);
+                    WireEditVmEvents();
+                    IsEditPanelVisible = true;
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            _loggingService.LogError($"Failed to load security {id} for edit", ex);
+            StatusText = "Failed to load security for editing.";
+            _notificationService.ShowNotification("Security Master", "Failed to load security.", NotificationType.Error);
+        }
+    }
+
+    private void OnDeactivateSelected()
+    {
+        if (SelectedSecurity is null)
+            return;
+
+        DeactivateVm = new SecurityMasterDeactivateViewModel(_loggingService, _notificationService)
+        {
+            SecurityName = SelectedSecurity.DisplayName,
+            SecurityId = SelectedSecurity.SecurityId,
+            Version = SelectedSecurity.EconomicDefinition?.Version ?? 0
+        };
+        WireDeactivateVmEvents();
+        IsDeactivatePanelVisible = true;
+    }
+
+    private bool IsSelectedSecurityActive()
+    {
+        return SelectedSecurity?.Status == SecurityStatusDto.Active;
+    }
+
+    private void WireEditVmEvents()
+    {
+        if (EditVm is null)
+            return;
+
+        EditVm.CancelRequested += OnEditCancelled;
+        EditVm.SaveCompleted += OnEditSaveCompleted;
+    }
+
+    private void UnwireEditVmEvents()
+    {
+        if (EditVm is null)
+            return;
+
+        EditVm.CancelRequested -= OnEditCancelled;
+        EditVm.SaveCompleted -= OnEditSaveCompleted;
+    }
+
+    private void OnEditCancelled()
+    {
+        UnwireEditVmEvents();
+        IsEditPanelVisible = false;
+    }
+
+    private void OnEditSaveCompleted(SecurityDetailDto result)
+    {
+        UnwireEditVmEvents();
+        IsEditPanelVisible = false;
+        StatusText = "Security saved successfully.";
+        
+        // Refresh search results
+        _ = SearchAsync();
+    }
+
+    private void WireDeactivateVmEvents()
+    {
+        if (DeactivateVm is null)
+            return;
+
+        DeactivateVm.CancelRequested += OnDeactivateCancelled;
+        DeactivateVm.DeactivateCompleted += OnDeactivateCompleted;
+    }
+
+    private void UnwireDeactivateVmEvents()
+    {
+        if (DeactivateVm is null)
+            return;
+
+        DeactivateVm.CancelRequested -= OnDeactivateCancelled;
+        DeactivateVm.DeactivateCompleted -= OnDeactivateCompleted;
+    }
+
+    private void OnDeactivateCancelled()
+    {
+        UnwireDeactivateVmEvents();
+        IsDeactivatePanelVisible = false;
+    }
+
+    private void OnDeactivateCompleted()
+    {
+        UnwireDeactivateVmEvents();
+        IsDeactivatePanelVisible = false;
+        StatusText = "Security deactivated successfully.";
+        
+        // Refresh search results
+        _ = SearchAsync();
     }
 
     // ── Lifecycle ───────────────────────────────────────────────────────────

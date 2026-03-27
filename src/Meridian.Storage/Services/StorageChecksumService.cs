@@ -129,3 +129,4 @@ public sealed class StorageChecksumService
 
         return await _auditChainService.VerifyChainAsync(chainLogPath, ct).ConfigureAwait(false);
     }
+}

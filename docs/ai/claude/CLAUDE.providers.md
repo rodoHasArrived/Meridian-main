@@ -219,7 +219,39 @@ Supporting files:
 
 ---
 
-## Key Interfaces
+## Reference Data Providers
+
+### Security Master
+
+Security Master is the event-sourced golden record for all financial instruments (securities). It provides centralized, version-controlled, audit-trailed definitions of securities across 14 asset classes.
+
+**Key interfaces:**
+- `ISecurityMasterService` — Create, amend, and deactivate securities
+- `ISecurityMasterQueryService` — Query and search securities, retrieve event history
+- `ISecurityMasterEventStore` — Append and load events, handle corporate actions
+- `ISecurityResolver` — Resolve securities by internal ID or external identifier
+
+**Asset classes:** Equity, Bond, Option, Future, FxSpot, Deposit, MoneyMarketFund, CertificateOfDeposit, CommercialPaper, TreasuryBill, Repo, Swap, DirectLoan, CashSweep, OtherSecurity
+
+**Setup:**
+```bash
+export MERIDIAN_SECURITY_MASTER_CONNECTION_STRING="Host=localhost;Port=5432;Database=postgres;Username=postgres;Password=secret"
+export MERIDIAN_SECURITY_MASTER_SCHEMA="security_master"
+```
+
+**Files:**
+| File | Purpose |
+|------|---------|
+| `Application/SecurityMaster/ISecurityMasterService.cs` | Command service (create, amend, deactivate) |
+| `Application/SecurityMaster/ISecurityMasterQueryService.cs` | Query service (get, search, history) |
+| `Storage/SecurityMaster/ISecurityMasterEventStore.cs` | Event store (append, load) |
+| `Storage/SecurityMaster/PostgresSecurityMasterStore.cs` | PostgreSQL implementation |
+| `FSharp/Domain/SecurityMaster.fs` | Domain types and asset class definitions |
+| `Ui.Shared/Endpoints/SecurityMasterEndpoints.cs` | REST API endpoints |
+
+**Related:** [Security Master Guide](../providers/security-master-guide.md) — Complete setup and usage guide
+
+---
 
 ### IDataSource (Base Interface)
 

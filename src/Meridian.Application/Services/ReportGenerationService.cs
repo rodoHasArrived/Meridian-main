@@ -12,10 +12,10 @@ namespace Meridian.Application.Services;
 /// </summary>
 public sealed class ReportGenerationService
 {
-    private readonly ISecurityMasterQueryService _securityMaster;
+    private readonly Meridian.Application.SecurityMaster.ISecurityMasterQueryService _securityMaster;
     private readonly ILogger _log = LoggingSetup.ForContext<ReportGenerationService>();
 
-    public ReportGenerationService(ISecurityMasterQueryService securityMaster)
+    public ReportGenerationService(Meridian.Application.SecurityMaster.ISecurityMasterQueryService securityMaster)
     {
         _securityMaster = securityMaster ?? throw new ArgumentNullException(nameof(securityMaster));
     }

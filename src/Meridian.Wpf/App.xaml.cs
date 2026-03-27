@@ -358,7 +358,9 @@ public partial class App : System.Windows.Application
             services.AddSingleton<ISecurityMasterSnapshotStore, PostgresSecurityMasterSnapshotStore>();
             services.AddSingleton<ISecurityMasterStore, PostgresSecurityMasterStore>();
             services.AddSingleton<SecurityMasterAggregateRebuilder>();
-            services.AddSingleton<ISecurityMasterQueryService, SecurityMasterQueryService>();
+            services.AddSingleton<SecurityMasterQueryService>();
+            services.AddSingleton<Meridian.Application.SecurityMaster.ISecurityMasterQueryService>(sp => sp.GetRequiredService<SecurityMasterQueryService>());
+            services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(sp => sp.GetRequiredService<SecurityMasterQueryService>());
             services.AddSingleton<ISecurityReferenceLookup, SecurityMasterSecurityReferenceLookup>();
         }
 

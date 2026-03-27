@@ -1,7 +1,7 @@
 using System;
 using System.Windows.Input;
 using Meridian.Application.Monitoring;
-using Meridian.Application.Services;
+using Meridian.Contracts.Services;
 using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.ViewModels;

@@ -5,6 +5,8 @@ using Meridian.Application.UI;
 using Meridian.Contracts.DirectLending;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Store;
+using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Storage;
 using Meridian.Storage.DirectLending;
 using Meridian.Storage.Export;
@@ -104,7 +106,9 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.AddSingleton<SecurityMasterProjectionService>();
         services.AddSingleton<SecurityMasterRebuildOrchestrator>();
         services.AddSingleton<ISecurityMasterService, SecurityMasterService>();
-        services.AddSingleton<ISecurityMasterQueryService, SecurityMasterQueryService>();
+        services.AddSingleton<SecurityMasterQueryService>();
+        services.AddSingleton<Meridian.Application.SecurityMaster.ISecurityMasterQueryService>(sp => sp.GetRequiredService<SecurityMasterQueryService>());
+        services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(sp => sp.GetRequiredService<SecurityMasterQueryService>());
         services.AddSingleton<ISecurityResolver, SecurityResolver>();
         services.AddHostedService<SecurityMasterProjectionWarmupService>();
         services.AddSingleton<DirectLendingEventRebuilder>();
@@ -115,6 +119,10 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.AddSingleton<IDirectLendingCommandService, PostgresDirectLendingCommandService>();
         services.AddSingleton<IDirectLendingService, PostgresDirectLendingService>();
         services.AddHostedService<DirectLendingOutboxDispatcher>();
+        services.AddSingleton<RateLimiter>(sp => new RateLimiter(5, TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(0.5)));
+        services.AddSingleton<IPolygonCorporateActionFetcher, PolygonCorporateActionFetcher>();
+        services.AddSingleton<PolygonCorporateActionFetcher>(sp => (PolygonCorporateActionFetcher)sp.GetRequiredService<IPolygonCorporateActionFetcher>());
+        services.AddHostedService<PolygonCorporateActionFetcher>(sp => sp.GetRequiredService<PolygonCorporateActionFetcher>());
 
         return services;
     }

@@ -11,6 +11,8 @@
 
     <Page.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <converters:InvertBoolConverter x:Key="InvertBoolConverter" />
+        <converters:BoolToStringConverter x:Key="BoolToStringConverter" />
     </Page.Resources>
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
@@ -34,7 +36,7 @@
                         </Border>
                         <StackPanel Margin="12,0,0,0">
                             <TextBlock Text="Security Master" Style="{StaticResource PageTitleStyle}"/>
-                            <TextBlock Text="Search, inspect, and review securities registered in the Security Master."
+                            <TextBlock Text="Search, inspect, review, and manage securities registered in the Security Master."
                                        Style="{StaticResource CardDescriptionStyle}"/>
                         </StackPanel>
                     </StackPanel>
@@ -45,6 +47,25 @@
                                    VerticalAlignment="Center" Margin="0,0,16,0" FontSize="12"/>
                     </StackPanel>
                 </Grid>
+            </Border>
+
+            <!-- Toolbar: Create/Edit/Deactivate buttons -->
+            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24">
+                <StackPanel Orientation="Horizontal">
+                    <Button Content="+ New Security"
+                            Command="{Binding CreateNewCommand}"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            Margin="0,0,8,0"/>
+
+                    <Button Content="✏ Edit"
+                            Command="{Binding EditSelectedCommand}"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            Margin="0,0,8,0"/>
+
+                    <Button Content="✕ Deactivate"
+                            Command="{Binding DeactivateSelectedCommand}"
+                            Style="{StaticResource DangerButtonStyle}"/>
+                </StackPanel>
             </Border>
 
             <!-- Search bar -->
@@ -78,6 +99,144 @@
                             Style="{StaticResource PrimaryButtonStyle}"
                             Margin="0,0,8,0"/>
                 </Grid>
+            </Border>
+
+            <!-- Edit panel -->
+            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24"
+                    Visibility="{Binding IsEditPanelVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="500">
+                    <StackPanel>
+                        <TextBlock Text="{Binding EditVm.IsEditMode, Converter={StaticResource BoolToStringConverter}, ConverterParameter='Edit Security|Create Security'}"
+                                   Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,16"/>
+
+                        <!-- Display Name -->
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="Display Name" Style="{StaticResource CardDescriptionStyle}" Margin="0,0,0,4"/>
+                            <TextBox Text="{Binding EditVm.DisplayName, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource FormTextBoxStyle}"
+                                     IsReadOnly="{Binding EditVm.IsBusy}"/>
+                        </StackPanel>
+
+                        <!-- Asset Class -->
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="Asset Class" Style="{StaticResource CardDescriptionStyle}" Margin="0,0,0,4"/>
+                            <ComboBox ItemsSource="{Binding EditVm.AssetClasses}"
+                                      SelectedItem="{Binding EditVm.AssetClass, UpdateSourceTrigger=PropertyChanged}"
+                                      IsEnabled="{Binding EditVm.IsBusy, Converter={StaticResource InvertBoolConverter}}"/>
+                        </StackPanel>
+
+                        <!-- Currency -->
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="Currency" Style="{StaticResource CardDescriptionStyle}" Margin="0,0,0,4"/>
+                            <TextBox Text="{Binding EditVm.Currency, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource FormTextBoxStyle}"
+                                     IsReadOnly="{Binding EditVm.IsBusy}"/>
+                        </StackPanel>
+
+                        <!-- Primary Identifier Kind -->
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="Identifier Kind" Style="{StaticResource CardDescriptionStyle}" Margin="0,0,0,4"/>
+                            <ComboBox ItemsSource="{Binding EditVm.IdentifierKinds}"
+                                      SelectedItem="{Binding EditVm.PrimaryIdentifierKind, UpdateSourceTrigger=PropertyChanged}"
+                                      IsEnabled="{Binding EditVm.IsBusy, Converter={StaticResource InvertBoolConverter}}"/>
+                        </StackPanel>
+
+                        <!-- Primary Identifier Value -->
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="Identifier Value" Style="{StaticResource CardDescriptionStyle}" Margin="0,0,0,4"/>
+                            <TextBox Text="{Binding EditVm.PrimaryIdentifierValue, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource FormTextBoxStyle}"
+                                     IsReadOnly="{Binding EditVm.IsBusy}"/>
+                        </StackPanel>
+
+                        <!-- Exchange (optional) -->
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="Exchange (Optional)" Style="{StaticResource CardDescriptionStyle}" Margin="0,0,0,4"/>
+                            <TextBox Text="{Binding EditVm.Exchange, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource FormTextBoxStyle}"
+                                     IsReadOnly="{Binding EditVm.IsBusy}"/>
+                        </StackPanel>
+
+                        <!-- Issuer Name (optional) -->
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="Issuer Name (Optional)" Style="{StaticResource CardDescriptionStyle}" Margin="0,0,0,4"/>
+                            <TextBox Text="{Binding EditVm.IssuerName, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource FormTextBoxStyle}"
+                                     IsReadOnly="{Binding EditVm.IsBusy}"/>
+                        </StackPanel>
+
+                        <!-- Validation Errors -->
+                        <ItemsControl ItemsSource="{Binding EditVm.ValidationErrors}"
+                                      Visibility="{Binding EditVm.HasErrors, Converter={StaticResource BoolToVisibilityConverter}}"
+                                      Margin="0,0,0,12">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}"
+                                               Foreground="{StaticResource ErrorBrush}"
+                                               TextWrapping="Wrap" Margin="0,0,0,4"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <!-- Status text -->
+                        <TextBlock Text="{Binding EditVm.StatusText}"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   FontSize="11" Margin="0,0,0,12"/>
+
+                        <!-- Save + Cancel buttons -->
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="Save"
+                                    Command="{Binding EditVm.SaveCommand}"
+                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    IsEnabled="{Binding EditVm.IsBusy, Converter={StaticResource InvertBoolConverter}}"
+                                    Margin="0,0,8,0"/>
+                            <Button Content="Cancel"
+                                    Command="{Binding EditVm.CancelCommand}"
+                                    Style="{StaticResource GhostButtonStyle}"
+                                    IsEnabled="{Binding EditVm.IsBusy, Converter={StaticResource InvertBoolConverter}}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+
+            <!-- Deactivate panel -->
+            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24"
+                    Visibility="{Binding IsDeactivatePanelVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+                <StackPanel>
+                    <TextBlock Text="Deactivate Security" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,16"/>
+
+                    <TextBlock Text="{Binding DeactivateVm.SecurityName, StringFormat='Are you sure you want to deactivate &quot;{0}&quot;? This action cannot be undone.'}"
+                               TextWrapping="Wrap" Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                               Margin="0,0,0,12"/>
+
+                    <!-- Reason (optional) -->
+                    <StackPanel Margin="0,0,0,12">
+                        <TextBlock Text="Reason (Optional)" Style="{StaticResource CardDescriptionStyle}" Margin="0,0,0,4"/>
+                        <TextBox Text="{Binding DeactivateVm.Reason, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource FormTextBoxStyle}"
+                                 IsReadOnly="{Binding DeactivateVm.IsBusy}"
+                                 TextWrapping="Wrap" MaxHeight="80"
+                                 ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+                    </StackPanel>
+
+                    <!-- Status text -->
+                    <TextBlock Text="{Binding DeactivateVm.StatusText}"
+                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                               FontSize="11" Margin="0,0,0,12"/>
+
+                    <!-- Confirm + Cancel buttons -->
+                    <StackPanel Orientation="Horizontal">
+                        <Button Content="Confirm Deactivation"
+                                Command="{Binding DeactivateVm.ConfirmCommand}"
+                                Style="{StaticResource DangerButtonStyle}"
+                                IsEnabled="{Binding DeactivateVm.IsBusy, Converter={StaticResource InvertBoolConverter}}"
+                                Margin="0,0,8,0"/>
+                        <Button Content="Cancel"
+                                Command="{Binding DeactivateVm.CancelCommand}"
+                                Style="{StaticResource GhostButtonStyle}"
+                                IsEnabled="{Binding DeactivateVm.IsBusy, Converter={StaticResource InvertBoolConverter}}"/>
+                    </StackPanel>
+                </StackPanel>
             </Border>
 
             <!-- Results + detail split -->

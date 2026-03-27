@@ -1,6 +1,7 @@
 using System.Reflection;
 using Microsoft.Extensions.Logging;
 using Meridian.Infrastructure.DataSources;
+using Meridian.Infrastructure.Contracts;
 
 namespace Meridian.Application.Services;
 

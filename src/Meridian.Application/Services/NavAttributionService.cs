@@ -14,10 +14,10 @@ namespace Meridian.Application.Services;
 /// </summary>
 public sealed class NavAttributionService
 {
-    private readonly ISecurityMasterQueryService _securityMaster;
+    private readonly Meridian.Application.SecurityMaster.ISecurityMasterQueryService _securityMaster;
     private readonly ILogger _log = LoggingSetup.ForContext<NavAttributionService>();
 
-    public NavAttributionService(ISecurityMasterQueryService securityMaster)
+    public NavAttributionService(Meridian.Application.SecurityMaster.ISecurityMasterQueryService securityMaster)
     {
         _securityMaster = securityMaster ?? throw new ArgumentNullException(nameof(securityMaster));
     }

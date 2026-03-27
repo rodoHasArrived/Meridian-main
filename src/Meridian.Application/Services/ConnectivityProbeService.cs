@@ -3,25 +3,10 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Meridian.Application.Logging;
+using Meridian.Contracts.Services;
 using Serilog;
 
 namespace Meridian.Application.Services;
-
-/// <summary>
-/// Service to probe internet connectivity periodically and raise events when state changes.
-/// </summary>
-public interface IConnectivityProbeService
-{
-    /// <summary>
-    /// Gets whether the system is currently online.
-    /// </summary>
-    bool IsOnline { get; }
-
-    /// <summary>
-    /// Raised when connectivity state changes (true = online, false = offline).
-    /// </summary>
-    event EventHandler<bool>? ConnectivityChanged;
-}
 
 /// <summary>
 /// Sealed implementation that probes connectivity every 60 seconds using HTTP GET to Google's connectivity check endpoint.
@@ -99,7 +84,7 @@ public sealed class ConnectivityProbeService : IConnectivityProbeService, IDispo
 
         try
         {
-            await foreach (var _ in _probeTimer.WaitForNextTickAsync())
+            while (await _probeTimer.WaitForNextTickAsync().ConfigureAwait(false))
             {
                 await ProbeOnceAsync().ConfigureAwait(false);
             }

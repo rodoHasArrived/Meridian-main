@@ -4,8 +4,8 @@ using System.Threading;
 using Meridian.Application.Config;
 using Meridian.Application.Exceptions;
 using Meridian.Application.Logging;
-using Meridian.Application.Services;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Contracts.Services;
 using Meridian.Domain.Models;
 using Serilog;
 

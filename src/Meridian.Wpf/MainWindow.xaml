@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Meridian.Wpf"
+        xmlns:views="clr-namespace:Meridian.Wpf.Views"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
         Title="Meridian"
@@ -28,6 +29,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="32" />
         </Grid.RowDefinitions>
 
         <!-- Fixture/Offline Mode Banner (P0: Hard visual distinction for non-live modes) -->
@@ -147,5 +149,8 @@
                         Click="ClipboardDismiss_Click"/>
             </Grid>
         </Border>
+
+        <!-- Persistent status bar: pinned to bottom, 32px height -->
+        <views:StatusBarControl Grid.Row="2" DataContext="{Binding StatusBar}" />
     </Grid>
 </Window>

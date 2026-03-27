@@ -3,7 +3,7 @@ using Meridian.Storage.SecurityMaster;
 
 namespace Meridian.Application.SecurityMaster;
 
-public sealed class SecurityMasterQueryService : ISecurityMasterQueryService
+public sealed class SecurityMasterQueryService : ISecurityMasterQueryService, Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService
 {
     private readonly ISecurityMasterEventStore _eventStore;
     private readonly ISecurityMasterStore _store;
