@@ -228,6 +228,72 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
     }
 
     // ------------------------------------------------------------------ //
+    //  Corporate action price adjustment                                  //
+    // ------------------------------------------------------------------ //
+
+    [Fact]
+    public async Task RunAsync_WithStockSplitAdjustment_StrategyReceivesAdjustedBarPrices()
+    {
+        // Write bars with pre-split price of 200
+        WriteBarJsonl("AAPL", new DateOnly(2024, 1, 2), new DateOnly(2024, 1, 2), basePrice: 200m);
+
+        // Mock adjustment service that halves all prices (simulating a 2:1 split)
+        var mockAdj = new StubCorporateActionAdjustmentService(factor: 2m);
+
+        var catalog = new StorageCatalogService(_dataRoot, new StorageOptions());
+        var engine = new BacktestEngine(
+            NullLogger<BacktestEngine>.Instance,
+            catalog,
+            securityMasterQueryService: null,
+            corporateActionAdjustment: mockAdj);
+
+        var strategy = new PriceCapturingStrategy();
+        var request = new BacktestRequest(
+            From: new DateOnly(2024, 1, 2),
+            To: new DateOnly(2024, 1, 2),
+            DataRoot: _dataRoot,
+            AdjustForCorporateActions: true);
+
+        await engine.RunAsync(request, strategy);
+
+        strategy.ReceivedBars.Should().ContainSingle("one bar was written to disk");
+        var bar = strategy.ReceivedBars[0];
+        bar.Open.Should().Be(100m, "price should be halved by the 2:1 split adjustment (200 / 2)");
+        bar.Close.Should().Be(100m, "close should also be halved");
+        bar.Volume.Should().Be(2_000_000L, "volume should be doubled by the split adjustment");
+    }
+
+    [Fact]
+    public async Task RunAsync_WithAdjustForCorporateActionsFalse_StrategyReceivesOriginalPrices()
+    {
+        // Write bars with pre-split price of 200
+        WriteBarJsonl("AAPL", new DateOnly(2024, 1, 2), new DateOnly(2024, 1, 2), basePrice: 200m);
+
+        // Mock adjustment service would halve prices, but it should NOT be called when disabled
+        var mockAdj = new StubCorporateActionAdjustmentService(factor: 2m);
+
+        var catalog = new StorageCatalogService(_dataRoot, new StorageOptions());
+        var engine = new BacktestEngine(
+            NullLogger<BacktestEngine>.Instance,
+            catalog,
+            securityMasterQueryService: null,
+            corporateActionAdjustment: mockAdj);
+
+        var strategy = new PriceCapturingStrategy();
+        var request = new BacktestRequest(
+            From: new DateOnly(2024, 1, 2),
+            To: new DateOnly(2024, 1, 2),
+            DataRoot: _dataRoot,
+            AdjustForCorporateActions: false);
+
+        await engine.RunAsync(request, strategy);
+
+        strategy.ReceivedBars.Should().ContainSingle();
+        strategy.ReceivedBars[0].Open.Should().Be(200m, "adjustment disabled — original unadjusted price expected");
+        mockAdj.CallCount.Should().Be(0, "adjustment service must not be called when AdjustForCorporateActions is false");
+    }
+
+    // ------------------------------------------------------------------ //
     //  JSONL fixture helpers                                              //
     // ------------------------------------------------------------------ //
 
@@ -334,4 +400,50 @@ file sealed class BuyFirstBarStrategy(string symbol, long quantity) : IBacktestS
     public void OnOrderFill(FillEvent fill, IBacktestContext ctx) { }
     public void OnDayEnd(DateOnly date, IBacktestContext ctx) { }
     public void OnFinished(IBacktestContext ctx) { }
+}
+
+/// <summary>Captures all bars received during the backtest for price assertions.</summary>
+file sealed class PriceCapturingStrategy : IBacktestStrategy
+{
+    public string Name => "PriceCapturing";
+    public List<HistoricalBar> ReceivedBars { get; } = [];
+
+    public void Initialize(IBacktestContext ctx) { }
+    public void OnTrade(Trade trade, IBacktestContext ctx) { }
+    public void OnQuote(BboQuotePayload quote, IBacktestContext ctx) { }
+    public void OnBar(HistoricalBar bar, IBacktestContext ctx) => ReceivedBars.Add(bar);
+    public void OnOrderBook(LOBSnapshot snapshot, IBacktestContext ctx) { }
+    public void OnOrderFill(FillEvent fill, IBacktestContext ctx) { }
+    public void OnDayEnd(DateOnly date, IBacktestContext ctx) { }
+    public void OnFinished(IBacktestContext ctx) { }
+}
+
+/// <summary>
+/// Stub <see cref="ICorporateActionAdjustmentService"/> that divides all bar prices by a
+/// configurable split <paramref name="factor"/> and multiplies volume by the same factor.
+/// </summary>
+file sealed class StubCorporateActionAdjustmentService(decimal factor) : ICorporateActionAdjustmentService
+{
+    public int CallCount { get; private set; }
+
+    public Task<IReadOnlyList<HistoricalBar>> AdjustAsync(
+        IReadOnlyList<HistoricalBar> bars,
+        string ticker,
+        CancellationToken ct = default)
+    {
+        CallCount++;
+        var adjusted = bars
+            .Select(b => new HistoricalBar(
+                Symbol: b.Symbol,
+                SessionDate: b.SessionDate,
+                Open: b.Open / factor,
+                High: b.High / factor,
+                Low: b.Low / factor,
+                Close: b.Close / factor,
+                Volume: (long)(b.Volume * factor),
+                Source: b.Source,
+                SequenceNumber: b.SequenceNumber))
+            .ToList();
+        return Task.FromResult<IReadOnlyList<HistoricalBar>>(adjusted);
+    }
 }
