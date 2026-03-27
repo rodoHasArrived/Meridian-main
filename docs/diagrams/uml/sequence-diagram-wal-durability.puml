@@ -1,0 +1,164 @@
+@startuml Sequence Diagram - WAL Durability and Crash-Safe Writes
+!theme plain
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+
+title Meridian - WAL Durability & Crash-Safe Write Path (ADR-007)
+
+' ==================== PARTICIPANTS ====================
+participant "EventPipeline\n(consumer loop)" as Pipeline
+participant "WriteAheadLog\n(WAL)" as WAL
+participant "JsonlStorageSink" as JsonlSink
+participant "AtomicFileWriter" as AtomicWriter
+participant "File System" as FS
+
+' ==================== LEGEND ====================
+note over Pipeline, FS
+  ADR-007: WAL entry is written and flushed BEFORE the event reaches primary storage.
+  Crash at any point after WAL write → events recoverable on next startup.
+end note
+
+' ==================== NORMAL WRITE PATH ====================
+== Normal Write Path (per event) ==
+
+Pipeline -> WAL: WriteAsync(event, ct)
+activate WAL
+
+WAL -> WAL: _writeLock.WaitAsync(ct)\n[SemaphoreSlim — one writer at a time]
+
+WAL -> WAL: MaybeRotateWalFile()\n[new file if > maxSize or maxAge]
+
+WAL -> WAL: Serialize event to JSON\n(MarketDataJsonContext.Default — ADR-014)
+
+WAL -> WAL: Compute CRC32 checksum\nover payload bytes
+
+WAL -> FS: StreamWriter.WriteLineAsync(\n"seq|checksum|payload")\n[WAL file: wal/MDCWAL01-{timestamp}.wal]
+activate FS
+FS --> WAL: write complete
+deactivate FS
+
+alt AutoFlush enabled (default: every 100 records or 1s)
+    WAL -> FS: StreamWriter.FlushAsync()\n[force OS buffer → disk]
+    FS --> WAL: flushed
+end
+
+WAL -> WAL: _uncommittedRecords++\n_currentFileSize += entryBytes\n_writeLock.Release()
+WAL --> Pipeline: OK
+deactivate WAL
+
+note right of WAL
+  At this point the event is
+  crash-safe in the WAL.
+  Even if the process crashes
+  before primary storage write,
+  the event can be recovered.
+end note
+
+' ==================== PRIMARY STORAGE WRITE ====================
+Pipeline -> JsonlSink: AppendAsync(event, ct)
+activate JsonlSink
+
+JsonlSink -> JsonlSink: GetPath(event)\n[policy: data/{symbol}/{type}/{date}.jsonl]
+JsonlSink -> JsonlSink: GetOrCreateWriter(path)
+
+JsonlSink -> AtomicWriter: AppendLineAsync(path, jsonLine, ct)
+activate AtomicWriter
+
+AtomicWriter -> AtomicWriter: Acquire file-level lock\n(FileStream with exclusive share)
+
+AtomicWriter -> FS: Open temp file: {path}.tmp
+activate FS
+AtomicWriter -> FS: Copy existing content\n(if file already exists)
+AtomicWriter -> FS: Write new JSON line
+AtomicWriter -> FS: Flush and close temp file
+FS --> AtomicWriter: temp write complete
+
+AtomicWriter -> FS: File.Move(src=.tmp, dest=path,\noverwrite=true)\n[atomic rename on POSIX / NTFS]
+note right of FS
+  Atomic rename guarantees
+  readers never see a partial file.
+  Either the old content or the
+  new content is visible.
+end note
+FS --> AtomicWriter: renamed (atomic)
+deactivate FS
+
+AtomicWriter -> AtomicWriter: Release file-level lock
+AtomicWriter --> JsonlSink: OK
+deactivate AtomicWriter
+
+JsonlSink --> Pipeline: OK
+deactivate JsonlSink
+
+' ==================== PERIODIC WAL FLUSH ====================
+== Periodic WAL Flush (every 5s via EventPipeline) ==
+
+Pipeline -> WAL: FlushAsync(ct)
+activate WAL
+WAL -> FS: StreamWriter.FlushAsync()\n[all pending WAL entries → disk]
+FS --> WAL: flushed
+WAL -> WAL: _uncommittedRecords = 0\n_lastFlushTime = UtcNow
+WAL --> Pipeline: OK
+deactivate WAL
+
+Pipeline -> JsonlSink: FlushAsync(ct)
+activate JsonlSink
+JsonlSink -> JsonlSink: FlushAllWriters()\n[iterate all open AtomicFileWriters]
+JsonlSink --> Pipeline: OK
+deactivate JsonlSink
+
+' ==================== CRASH RECOVERY ====================
+== Startup: WAL Recovery (after crash) ==
+
+participant "Application\n(startup)" as App
+
+App -> WAL: InitializeAsync(ct)
+activate WAL
+
+WAL -> FS: Enumerate *.wal files\nin walDirectory
+FS --> WAL: wal file list (sorted by creation time)
+
+loop For each WAL file
+    WAL -> FS: Open WAL file for read
+    FS --> WAL: StreamReader
+
+    loop For each line in WAL file
+        WAL -> WAL: Parse seq|checksum|payload
+
+        alt Checksum valid
+            WAL -> WAL: Deserialize payload → MarketEvent
+            WAL -> WAL: recoveredEvents.Add(event)
+            WAL -> WAL: WalRecoveryEventsTotal.Inc()
+        else Checksum mismatch / corrupt
+            WAL -> WAL: Log warning (seq, file)
+            WAL -> WAL: WalRecoveryCorruptedTotal.Inc()
+            WAL -> WAL: _skippedRecordCount++
+        end
+    end
+
+    WAL -> FS: Mark WAL file as recovered\n(rename to .recovered)
+end
+
+WAL -> WAL: LastRecoveryEventCount = recovered count\nLastRecoveryDurationMs = elapsed
+WAL --> App: recovery complete\n(N events recovered, M corrupted)
+deactivate WAL
+
+note right of App
+  Recovered events are re-published
+  to the EventPipeline for storage,
+  ensuring no data loss after crash.
+end note
+
+loop For each recovered event
+    App -> Pipeline: TryPublish(recoveredEvent)
+    Pipeline -> JsonlSink: AppendAsync(recoveredEvent, ct)
+end
+
+App -> WAL: Start new active WAL file\n(post-recovery)
+activate WAL
+WAL -> FS: Create new MDCWAL01-{timestamp}.wal\nwith magic header + version
+FS --> WAL: file created
+WAL --> App: ready for new writes
+deactivate WAL
+
+@enduml

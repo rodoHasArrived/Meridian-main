@@ -1,0 +1,175 @@
+@startuml Sequence Diagram - Backtesting Engine
+!theme plain
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+
+title Meridian - Backtesting Engine Execution Sequence
+
+' ==================== PARTICIPANTS ====================
+participant "User / CLI" as User
+participant "BacktestEngine" as Engine
+participant "UniverseDiscovery" as Universe
+participant "StorageCatalogService" as Catalog
+participant "ISecurityMasterQueryService" as SecMaster
+participant "SimulatedPortfolio\n+ BacktestLedger" as Portfolio
+box "Fill Models" #LightBlue
+    participant "BarMidpointFillModel" as BarFill
+    participant "OrderBookFillModel" as LOBFill
+    participant "MarketImpactFillModel" as ImpactFill
+end box
+participant "IBacktestStrategy" as Strategy
+participant "JsonlReplayer" as Replayer
+participant "MultiSymbolMerge\nEnumerator" as Merger
+participant "BacktestMetrics\nEngine" as Metrics
+participant "PostSimulation\nTcaReporter" as Tca
+
+' ==================== INITIALIZATION ====================
+== Initialization ==
+
+User -> Engine: RunAsync(request, strategy, progress, ct)
+activate Engine
+
+Engine -> Universe: DiscoverAsync(catalogService, dataRoot, symbols, from, to, ct)
+activate Universe
+Universe -> Catalog: ListSymbolsAsync(dataRoot, from, to, ct)
+Catalog --> Universe: available symbol list
+Universe --> Engine: universe (set of symbols)
+deactivate Universe
+
+note right of Engine
+  Log: "Universe contains N symbols"
+end note
+
+Engine -> SecMaster: GetTickSizesAsync(symbols, asOf, ct)
+SecMaster --> Engine: tickSizes dictionary (symbol → decimal)
+
+Engine -> Engine: BuildCommissionModel(request)
+Engine -> Portfolio: new SimulatedPortfolio(accounts, commissionModel, ledger)
+activate Portfolio
+Engine -> Engine: new BacktestContext(portfolio, universe, ledger)
+Engine -> BarFill: new BarMidpointFillModel(commission, slippage, spreadAware, tickSizes)
+Engine -> LOBFill: new OrderBookFillModel(commission, tickSizes)
+Engine -> ImpactFill: new MarketImpactFillModel(commission, impactCoefficient, slippage)
+
+' ==================== STRATEGY INIT ====================
+== Strategy Initialization ==
+
+Engine -> Strategy: Initialize(ctx)
+activate Strategy
+Strategy --> Engine: (strategy ready)
+
+' ==================== BUILD STREAMS ====================
+== Build Replay Streams ==
+
+loop For each symbol in universe
+    Engine -> Replayer: new JsonlReplayer(symbolRoot)
+    activate Replayer
+    Engine -> Replayer: ReadEventsAsync() → filter by date range
+    Replayer --> Engine: IAsyncEnumerable<MarketEvent> (per symbol)
+    deactivate Replayer
+end
+
+Engine -> Merger: MergeAsync(streams, ct)
+note right of Merger
+  Chronological k-way merge across
+  all per-symbol event streams
+end note
+
+' ==================== REPLAY LOOP ====================
+== Tick-by-Tick Replay Loop ==
+
+loop For each MarketEvent (chronological)
+    Merger --> Engine: evt (next event)
+
+    alt Day boundary crossed
+        Engine -> Engine: AdvanceDaysAsync(prevDay → evtDate)
+        Engine -> Portfolio: TakeSnapshot()
+        Portfolio --> Engine: PortfolioSnapshot
+        Engine -> Strategy: OnDayEnd(ctx, prevDay)
+        Strategy --> Engine: (day-end logic complete)
+        note right: Progress reported to IProgress<T>
+    end
+
+    Engine -> Engine: ctx.CurrentTime = evt.Timestamp
+    Engine -> Engine: UpdateLastPrice(portfolio, evt)
+
+    ' Dispatch event to strategy
+    Engine -> Strategy: OnBar(ctx, evt)\n/ OnTrade(ctx, evt)\n/ OnQuote(ctx, evt)
+    activate Strategy #DarkBlue
+    Strategy -> Strategy: Evaluate signals,\nupdate indicators
+    Strategy -> Strategy: ctx.PlaceOrder(order)\n[optional]
+    Strategy --> Engine: (returns)
+    deactivate Strategy
+
+    ' Drain orders placed by strategy
+    Engine -> Engine: ctx.DrainPendingOrders()
+    note right: Collect any new orders placed\nduring strategy dispatch
+
+    ' Try fills against current event
+    Engine -> BarFill: TryFill(order, evt)
+    activate BarFill
+    alt Bar data available (OHLCV)
+        BarFill -> BarFill: Check limit/stop trigger\nvs bar High/Low
+        BarFill -> BarFill: ComputeFillPrice()\n+ slippage + tick snap
+        BarFill --> Engine: OrderFillResult(fills)
+    else No bar data
+        BarFill --> Engine: OrderFillResult(empty)
+    end
+    deactivate BarFill
+
+    Engine -> LOBFill: TryFill(order, evt)
+    activate LOBFill
+    alt L2 snapshot available
+        LOBFill -> LOBFill: Walk order book levels\nfor price impact
+        LOBFill --> Engine: OrderFillResult(partial/full)
+    end
+    deactivate LOBFill
+
+    loop For each fill
+        Engine -> Portfolio: RecordFill(fill)
+        activate Portfolio #DarkGreen
+        Portfolio -> Portfolio: UpdatePosition(symbol, qty)
+        Portfolio -> Portfolio: DeductCash(notional + commission)
+        Portfolio -> Portfolio: Ledger.PostEntry(fill)
+        Portfolio --> Engine: updated position
+        deactivate Portfolio
+
+        Engine -> Strategy: OnFill(ctx, fill)
+        activate Strategy #DarkOrange
+        Strategy --> Engine: (fill handler)
+        deactivate Strategy
+    end
+
+end
+
+' ==================== FINAL DAY-END ====================
+== Final Day-End Processing ==
+
+Engine -> Portfolio: TakeSnapshot() [last day]
+Engine -> Strategy: OnFinished(ctx)
+activate Strategy
+Strategy --> Engine: (finalization logic)
+deactivate Strategy
+
+progress --> User: BacktestProgressEvent(100%, Complete)
+
+' ==================== METRICS ====================
+== Compute Metrics & Build Result ==
+
+Engine -> Metrics: Compute(snapshots, cashFlows, fills, request)
+activate Metrics
+Metrics -> Metrics: Sharpe ratio, max drawdown,\nXIRR, total return, win rate
+Metrics --> Engine: BacktestMetrics
+deactivate Metrics
+
+Engine -> Tca: Generate(request, fills)
+activate Tca
+Tca -> Tca: Compute TCA: slippage,\nimplementation shortfall,\nmarket impact cost
+Tca --> Engine: TcaReport (optional)
+deactivate Tca
+
+Engine --> User: BacktestResult {\n  universe, snapshots, cashFlows,\n  fills, metrics, ledger, tcaReport,\n  elapsed, eventsProcessed\n}
+deactivate Portfolio
+deactivate Engine
+
+@enduml
