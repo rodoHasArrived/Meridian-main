@@ -427,6 +427,13 @@
                                             <TextBlock Text="Trading Hours" Style="{StaticResource ShellNavLabelStyle}" />
                                         </StackPanel>
                                     </ListBoxItem>
+                                    <ListBoxItem Tag="DirectLending"
+                                                 AutomationProperties.AutomationId="TradingNavDirectLending">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{StaticResource IconList}" Style="{StaticResource ShellNavIconStyle}" />
+                                            <TextBlock Text="Direct Lending" Style="{StaticResource ShellNavLabelStyle}" />
+                                        </StackPanel>
+                                    </ListBoxItem>
                                 </ListBox>
                             </StackPanel>
 
