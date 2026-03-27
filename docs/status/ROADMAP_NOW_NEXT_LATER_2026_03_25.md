@@ -1,6 +1,6 @@
 # Meridian — Now / Next / Later Roadmap
 
-**Generated:** 2026-03-25
+**Generated:** 2026-03-26
 **Format:** Now / Next / Later
 **Basis:** Wave 1–5 roadmap + FEATURE_INVENTORY.md + codebase audit
 **Change from prior roadmap:** Adds Security Master productization as a **Next** initiative; reorganises delivery waves into horizon buckets; retains all existing wave goals.
@@ -30,6 +30,8 @@ The platform's downstream value depends on trustworthy data. Operator confidence
 - NYSE shared-lifecycle depth coverage
 - StockSharp connector examples and validated adapters
 - Backfill checkpoint reliability and gap detection across providers and date ranges
+- Parquet sink flush-path hardening and ADR-014 cleanup for L2 snapshot persistence
+- NYSE transport hardening: `HttpClientFactory` alignment and cancellation-safe websocket send/resubscribe flows
 
 **Exit gate:** Every major provider has documented replay/runtime evidence and passes its validation suite.
 
@@ -135,6 +137,7 @@ Depth multipliers that require a stable platform foundation to deliver value. No
 - L3 inference and queue-aware execution simulation
 - Multi-instance collector coordination and horizontal scale-out
 - Phase 16 assembly-level performance optimizations
+- WPF desktop expansion once MVVM extraction resumes in shell/workflow pages such as `MainPage` and `BackfillPage`
 - WPF desktop app (code in `src/Meridian.Wpf/` — included in solution build; see `docs/development/wpf-implementation-notes.md`)
 
 ---
@@ -159,6 +162,10 @@ Meridian can claim core-platform readiness when all of the following are true:
 **Paper trading cockpit must precede Paper → Live.** The gateway without a cockpit is incomplete operator tooling. Live integration work is blocked on cockpit completion.
 
 **Backfill reliability directly affects backtest quality.** Data gaps silently corrupt results — checkpoint and gap-detection hardening is not optional.
+
+**Storage-path shutdown safety is part of data trust.** A flush failure in `ParquetStorageSink` undermines the same operator confidence that provider validation is supposed to establish.
+
+**NYSE cancellation gaps remain active reliability debt.** Transport paths that ignore caller cancellation can weaken graceful shutdown and reconnect behavior.
 
 **Security Master productization competes for dashboard resources.** The cockpit and Security Master panels share the same React dashboard. Sequencing them (cockpit first) avoids UI layout conflicts and lets Security Master follow established component patterns.
 

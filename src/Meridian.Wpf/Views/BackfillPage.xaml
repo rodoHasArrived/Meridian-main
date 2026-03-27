@@ -598,7 +598,7 @@
                     <StackPanel>
                         <TextBlock Text="Last Backfill Status" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,16" />
 
-                        <Grid x:Name="StatusGrid" Visibility="Collapsed">
+                        <Grid x:Name="StatusGrid" Visibility="{Binding LastStatusVisibility}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="120" />
                                 <ColumnDefinition Width="*" />
@@ -615,35 +615,42 @@
                             <TextBlock Grid.Row="0" Grid.Column="0" Text="Status:"
                                        FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="0,4" />
                             <TextBlock x:Name="StatusText" Grid.Row="0" Grid.Column="1"
-                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,4" />
+                                       Text="{Binding LastRunStatusText}"
+                                       Foreground="{Binding LastRunStatusBrush}" Margin="0,4" />
 
                             <TextBlock Grid.Row="1" Grid.Column="0" Text="Provider:"
                                        FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="0,4" />
                             <TextBlock x:Name="ProviderText" Grid.Row="1" Grid.Column="1"
+                                       Text="{Binding LastRunProviderText}"
                                        Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,4" />
 
                             <TextBlock Grid.Row="2" Grid.Column="0" Text="Symbols:"
                                        FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="0,4" />
                             <TextBlock x:Name="SymbolsText" Grid.Row="2" Grid.Column="1" TextWrapping="Wrap"
+                                       Text="{Binding LastRunSymbolsText}"
                                        Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,4" />
 
                             <TextBlock Grid.Row="3" Grid.Column="0" Text="Bars Written:"
                                        FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="0,4" />
                             <TextBlock x:Name="BarsWrittenText" Grid.Row="3" Grid.Column="1"
+                                       Text="{Binding LastRunBarsWrittenText}"
                                        Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,4" />
 
                             <TextBlock Grid.Row="4" Grid.Column="0" Text="Started:"
                                        FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="0,4" />
                             <TextBlock x:Name="StartedText" Grid.Row="4" Grid.Column="1"
+                                       Text="{Binding LastRunStartedText}"
                                        Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,4" />
 
                             <TextBlock Grid.Row="5" Grid.Column="0" Text="Completed:"
                                        FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="0,4" />
                             <TextBlock x:Name="CompletedText" Grid.Row="5" Grid.Column="1"
+                                       Text="{Binding LastRunCompletedText}"
                                        Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,4" />
                         </Grid>
 
                         <TextBlock x:Name="NoStatusText"
+                                   Visibility="{Binding EmptyStatusVisibility}"
                                    Text="No backfill runs yet. Select a provider and symbols to get started."
                                    Foreground="{StaticResource ConsoleTextMutedBrush}" />
 

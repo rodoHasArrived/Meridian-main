@@ -31,7 +31,7 @@ public sealed class ParquetStorageSink : IStorageSink
     private readonly StorageOptions _options;
     private readonly ParquetStorageOptions _parquetOptions;
     private readonly ConcurrentDictionary<string, MarketEventBuffer> _buffers = new(StringComparer.OrdinalIgnoreCase);
-    private readonly Timer _flushTimer;
+    private readonly Task _flushLoopTask;
     private readonly CancellationTokenSource _disposalCts = new();
     private readonly SemaphoreSlim _flushGate = new(1, 1);
     private int _disposed;
@@ -96,12 +96,7 @@ public sealed class ParquetStorageSink : IStorageSink
         _options = options ?? throw new ArgumentNullException(nameof(options));
         _parquetOptions = parquetOptions ?? ParquetStorageOptions.Default;
 
-        // Setup periodic flush timer with safe async wrapper to prevent silent data loss
-        _flushTimer = new Timer(
-            _ => FlushAllBuffersSafelyAsync(),
-            null,
-            _parquetOptions.FlushInterval,
-            _parquetOptions.FlushInterval);
+        _flushLoopTask = RunPeriodicFlushLoopAsync(_disposalCts.Token);
 
         _log.Information("ParquetStorageSink initialized with buffer size {BufferSize}, flush interval {FlushInterval}s",
             _parquetOptions.BufferSize, _parquetOptions.FlushInterval.TotalSeconds);
@@ -131,13 +126,30 @@ public sealed class ParquetStorageSink : IStorageSink
         await FlushAllBuffersAsync(ct);
     }
 
-    private async void FlushAllBuffersSafelyAsync()
+    private async Task RunPeriodicFlushLoopAsync(CancellationToken ct)
+    {
+        using var periodicTimer = new PeriodicTimer(_parquetOptions.FlushInterval);
+
+        try
+        {
+            while (await periodicTimer.WaitForNextTickAsync(ct).ConfigureAwait(false))
+            {
+                await FlushAllBuffersSafelyAsync(ct).ConfigureAwait(false);
+            }
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            // Disposal in progress, stop flushing
+        }
+    }
+
+    private async Task FlushAllBuffersSafelyAsync(CancellationToken ct)
     {
         try
         {
-            await FlushAllBuffersAsync(_disposalCts.Token).ConfigureAwait(false);
+            await FlushAllBuffersAsync(ct).ConfigureAwait(false);
         }
-        catch (OperationCanceledException) when (_disposalCts.IsCancellationRequested)
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
             // Disposal in progress, stop flushing
         }
@@ -510,13 +522,13 @@ public sealed class ParquetStorageSink : IStorageSink
         if (Interlocked.Exchange(ref _disposed, 1) != 0)
             return;
 
-        // 1. Signal cancellation to stop any in-flight timer callbacks
+        // 1. Signal cancellation to stop the background flush loop
         _disposalCts.Cancel();
 
-        // 2. Dispose timer — waits for any pending callback to complete
-        await _flushTimer.DisposeAsync().ConfigureAwait(false);
+        // 2. Await the background loop so no fire-and-forget flush remains detached from disposal
+        await _flushLoopTask.ConfigureAwait(false);
 
-        // 3. Final flush — guaranteed no concurrent timer flushes after timer disposal
+        // 3. Final flush — guaranteed no concurrent background flushes after loop completion
         try
         {
             await _flushGate.WaitAsync().ConfigureAwait(false);

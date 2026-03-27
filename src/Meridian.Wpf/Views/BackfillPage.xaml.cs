@@ -1,5 +1,4 @@
 using System;
-using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -44,7 +43,6 @@ public partial class BackfillPage : Page
         ResumableJobsList.ItemsSource = _viewModel.ResumableJobs;
         GapAnalysisList.ItemsSource = _viewModel.GapItems;
 
-        _viewModel.PropertyChanged += OnViewModelPropertyChanged;
         DataContext = _viewModel;
     }
 
@@ -59,9 +57,6 @@ public partial class BackfillPage : Page
         UpdateGranularityHint();
 
         await _viewModel.StartAsync();
-
-        // Sync initial status display (color + text logic not handled by bindings)
-        SyncStatusDisplay();
     }
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e)
@@ -71,40 +66,6 @@ public partial class BackfillPage : Page
     }
 
     // ── ViewModel property sync ──────────────────────────────────────────────
-
-    private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
-    {
-        if (e.PropertyName == nameof(BackfillViewModel.HasApiStatus))
-            _ = Dispatcher.InvokeAsync(SyncStatusDisplay);
-    }
-
-    private void SyncStatusDisplay()
-    {
-        if (_viewModel.LastApiStatus != null)
-        {
-            StatusGrid.Visibility = Visibility.Visible;
-            NoStatusText.Visibility = Visibility.Collapsed;
-
-            var lastStatus = _viewModel.LastApiStatus;
-            var isSuccess = lastStatus.Success;
-            StatusText.Text = isSuccess ? "Completed" : "Failed";
-            StatusText.Foreground = isSuccess
-                ? new SolidColorBrush(Color.FromRgb(63, 185, 80))
-                : new SolidColorBrush(Color.FromRgb(244, 67, 54));
-            ProviderText.Text = lastStatus.Provider ?? "Unknown";
-            SymbolsText.Text = lastStatus.Symbols != null
-                ? string.Join(", ", lastStatus.Symbols)
-                : "N/A";
-            BarsWrittenText.Text = lastStatus.BarsWritten.ToString("N0");
-            StartedText.Text = lastStatus.StartedUtc?.LocalDateTime.ToString("g") ?? "Unknown";
-            CompletedText.Text = lastStatus.CompletedUtc?.LocalDateTime.ToString("g") ?? "N/A";
-        }
-        else
-        {
-            StatusGrid.Visibility = Visibility.Collapsed;
-            NoStatusText.Visibility = Visibility.Visible;
-        }
-    }
 
     // ── Data loading helpers ─────────────────────────────────────────────────
 
@@ -121,7 +82,6 @@ public partial class BackfillPage : Page
     private async Task RefreshStatusFromApiAsync(CancellationToken ct = default)
     {
         await _viewModel.RefreshStatusFromApiAsync();
-        SyncStatusDisplay();
     }
 
     // ── Resume / dismiss ─────────────────────────────────────────────────────

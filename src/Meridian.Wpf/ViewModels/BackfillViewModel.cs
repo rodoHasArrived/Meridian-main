@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Media;
 using System.Windows.Threading;
 using Meridian.Ui.Services;
@@ -164,6 +165,83 @@ public sealed class BackfillViewModel : BindableBase, IDisposable
         private set => SetProperty(ref _isOpenFigiKeyClearVisible, value);
     }
 
+    private Meridian.Contracts.Api.BackfillResultDto? _lastApiStatus;
+    public Meridian.Contracts.Api.BackfillResultDto? LastApiStatus
+    {
+        get => _lastApiStatus;
+        private set => SetProperty(ref _lastApiStatus, value);
+    }
+
+    private bool _hasApiStatus;
+    public bool HasApiStatus
+    {
+        get => _hasApiStatus;
+        private set => SetProperty(ref _hasApiStatus, value);
+    }
+
+    private Visibility _lastStatusVisibility = Visibility.Collapsed;
+    public Visibility LastStatusVisibility
+    {
+        get => _lastStatusVisibility;
+        private set => SetProperty(ref _lastStatusVisibility, value);
+    }
+
+    private Visibility _emptyStatusVisibility = Visibility.Visible;
+    public Visibility EmptyStatusVisibility
+    {
+        get => _emptyStatusVisibility;
+        private set => SetProperty(ref _emptyStatusVisibility, value);
+    }
+
+    private string _lastRunStatusText = string.Empty;
+    public string LastRunStatusText
+    {
+        get => _lastRunStatusText;
+        private set => SetProperty(ref _lastRunStatusText, value);
+    }
+
+    private Brush _lastRunStatusBrush = Brushes.Transparent;
+    public Brush LastRunStatusBrush
+    {
+        get => _lastRunStatusBrush;
+        private set => SetProperty(ref _lastRunStatusBrush, value);
+    }
+
+    private string _lastRunProviderText = "Unknown";
+    public string LastRunProviderText
+    {
+        get => _lastRunProviderText;
+        private set => SetProperty(ref _lastRunProviderText, value);
+    }
+
+    private string _lastRunSymbolsText = "N/A";
+    public string LastRunSymbolsText
+    {
+        get => _lastRunSymbolsText;
+        private set => SetProperty(ref _lastRunSymbolsText, value);
+    }
+
+    private string _lastRunBarsWrittenText = "0";
+    public string LastRunBarsWrittenText
+    {
+        get => _lastRunBarsWrittenText;
+        private set => SetProperty(ref _lastRunBarsWrittenText, value);
+    }
+
+    private string _lastRunStartedText = "Unknown";
+    public string LastRunStartedText
+    {
+        get => _lastRunStartedText;
+        private set => SetProperty(ref _lastRunStartedText, value);
+    }
+
+    private string _lastRunCompletedText = "N/A";
+    public string LastRunCompletedText
+    {
+        get => _lastRunCompletedText;
+        private set => SetProperty(ref _lastRunCompletedText, value);
+    }
+
     public BackfillViewModel(
         WpfServices.NotificationService notificationService,
         WpfServices.NavigationService navigationService,
@@ -261,28 +339,54 @@ public sealed class BackfillViewModel : BindableBase, IDisposable
             var lastStatus = await _backfillApiService.GetLastStatusAsync();
             if (lastStatus != null)
             {
-                LastApiStatus = lastStatus;
-                HasApiStatus = true;
+                UpdateLastApiStatus(lastStatus);
             }
             else
             {
-                HasApiStatus = false;
+                ClearLastApiStatus();
             }
         }
         catch
         {
-            HasApiStatus = false;
+            ClearLastApiStatus();
         }
-
-        RaisePropertyChanged(nameof(LastApiStatus));
-        RaisePropertyChanged(nameof(HasApiStatus));
     }
 
-    // Status from API (exposed for code-behind to render into named elements)
-    public Meridian.Contracts.Api.BackfillResultDto? LastApiStatus { get; private set; }
-    public bool HasApiStatus { get; private set; }
-
     // ── Backfill control ────────────────────────────────────────────────────
+    private void UpdateLastApiStatus(Meridian.Contracts.Api.BackfillResultDto status)
+    {
+        LastApiStatus = status;
+        HasApiStatus = true;
+        LastStatusVisibility = Visibility.Visible;
+        EmptyStatusVisibility = Visibility.Collapsed;
+        LastRunStatusText = status.Success ? "Completed" : "Failed";
+        LastRunStatusBrush = status.Success
+            ? new SolidColorBrush(Color.FromRgb(63, 185, 80))
+            : new SolidColorBrush(Color.FromRgb(244, 67, 54));
+        LastRunProviderText = status.Provider ?? "Unknown";
+        LastRunSymbolsText = status.Symbols is { Length: > 0 }
+            ? string.Join(", ", status.Symbols)
+            : "N/A";
+        LastRunBarsWrittenText = status.BarsWritten.ToString("N0");
+        LastRunStartedText = status.StartedUtc?.LocalDateTime.ToString("g") ?? "Unknown";
+        LastRunCompletedText = status.CompletedUtc?.LocalDateTime.ToString("g") ?? "N/A";
+    }
+
+    private void ClearLastApiStatus()
+    {
+        LastApiStatus = null;
+        HasApiStatus = false;
+        LastStatusVisibility = Visibility.Collapsed;
+        EmptyStatusVisibility = Visibility.Visible;
+        LastRunStatusText = string.Empty;
+        LastRunStatusBrush = Brushes.Transparent;
+        LastRunProviderText = "Unknown";
+        LastRunSymbolsText = "N/A";
+        LastRunBarsWrittenText = "0";
+        LastRunStartedText = "Unknown";
+        LastRunCompletedText = "N/A";
+    }
+
     public async Task StartBackfillAsync(
         string[] symbols,
         string provider,

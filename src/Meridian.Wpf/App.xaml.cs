@@ -353,7 +353,20 @@ public partial class App : System.Windows.Application
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[App] Error during application startup: {ex.Message}");
+            WpfServices.LoggingService.Instance.LogError("Error during application startup", ex);
+
+            try
+            {
+                await WpfServices.NotificationService.Instance.NotifyErrorAsync(
+                    "Startup Error",
+                    ex.Message);
+            }
+            catch (Exception notificationEx)
+            {
+                WpfServices.LoggingService.Instance.LogError(
+                    "Failed to display startup error notification",
+                    notificationEx);
+            }
         }
     }
 
@@ -556,7 +569,7 @@ public partial class App : System.Windows.Application
         catch (Exception ex)
         {
             // Q2: Log first-run setup failures instead of silently swallowing
-            System.Diagnostics.Debug.WriteLine($"[App] First-run setup failed: {ex.Message}");
+            WpfServices.LoggingService.Instance.LogError("First-run setup failed", ex);
         }
     }
 
@@ -628,7 +641,7 @@ public partial class App : System.Windows.Application
     {
         if (e.ExceptionObject is Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Domain unhandled exception: {ex}");
+            WpfServices.LoggingService.Instance.LogError("Domain unhandled exception", ex);
         }
     }
 
@@ -637,7 +650,7 @@ public partial class App : System.Windows.Application
     /// </summary>
     private void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
     {
-        System.Diagnostics.Debug.WriteLine($"Unobserved task exception: {e.Exception}");
+        WpfServices.LoggingService.Instance.LogError("Unobserved task exception", e.Exception);
         e.SetObserved(); // Prevent the process from terminating
     }
 }

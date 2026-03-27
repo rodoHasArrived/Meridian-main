@@ -86,6 +86,8 @@ public partial class MainPage : Page
         // Update back button visibility
         UpdateBackButtonVisibility();
 
+        UpdateWorkspaceChrome();
+
         // Initialize fixture/offline mode banner (P0: Hard visual distinction)
         InitializeFixtureModeBanner();
         UpdateAutomationState();
@@ -181,6 +183,21 @@ public partial class MainPage : Page
     private void OnCommandPaletteButtonClick(object sender, RoutedEventArgs e)
     {
         ToggleCommandPalette();
+    }
+
+    private async void OnWorkspaceButtonClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: string workspaceId })
+        {
+            return;
+        }
+
+        foreach (var list in AllNavLists)
+        {
+            list.SelectedItem = null;
+        }
+
+        await NavigateToWorkspacePageAsync(workspaceId, requestedPageTag: null);
     }
 
     private void ToggleCommandPalette()
@@ -391,7 +408,128 @@ public partial class MainPage : Page
     private void UpdatePageTitle(string pageTag)
     {
         PageTitleText.Text = GetPageTitle(pageTag);
+        PageSubtitleText.Text = GetPageSubtitle(pageTag);
         UpdateAutomationState();
+    }
+
+    private void UpdateWorkspaceChrome()
+    {
+        var workspace = _workspaceService.ActiveWorkspace;
+        var workspaceId = workspace?.Id ?? _currentWorkspaceId;
+        var workspaceName = workspace?.Name ?? "Meridian";
+
+        WorkspaceHeadingText.Text = workspaceName;
+        WorkspaceDescriptionText.Text = workspace?.Description ?? "Select a workspace to focus the shell.";
+        WorkspaceSummaryText.Text = workspace is null
+            ? "No workspace metadata loaded yet."
+            : $"{workspace.Pages.Count} pages available in this workflow.";
+        WorkspaceBadgeText.Text = $"{workspaceName.ToUpperInvariant()} WORKSPACE";
+        HeaderWorkspaceSummaryText.Text = workspace is null
+            ? "Workspace unavailable"
+            : $"{workspace.Pages.Count} pages - {GetWorkspaceShortSummary(workspaceId)}";
+        ActiveNavigationLabel.Text = workspace is null
+            ? "Navigation"
+            : $"{workspaceName} pages";
+        RecentPagesHintText.Text = workspace is null
+            ? "Recent pages will appear after you begin navigating."
+            : $"Jump back into recently used pages in {workspaceName}.";
+
+        UpdateWorkspaceButtonStyles(workspaceId);
+        UpdateNavigationSections(workspaceId);
+        RenderRecentPages();
+    }
+
+    private void UpdateWorkspaceButtonStyles(string activeWorkspaceId)
+    {
+        SetWorkspaceButtonStyle(ResearchWorkspaceButton, activeWorkspaceId);
+        SetWorkspaceButtonStyle(TradingWorkspaceButton, activeWorkspaceId);
+        SetWorkspaceButtonStyle(DataOperationsWorkspaceButton, activeWorkspaceId);
+        SetWorkspaceButtonStyle(GovernanceWorkspaceButton, activeWorkspaceId);
+    }
+
+    private void SetWorkspaceButtonStyle(Button button, string activeWorkspaceId)
+    {
+        var styleKey = string.Equals(button.Tag as string, activeWorkspaceId, StringComparison.OrdinalIgnoreCase)
+            ? "ActiveWorkspaceTileStyle"
+            : "WorkspaceTileStyle";
+        button.Style = (Style)FindResource(styleKey);
+    }
+
+    private void UpdateNavigationSections(string workspaceId)
+    {
+        ResearchNavigationSection.Visibility = ToVisibility(string.Equals(workspaceId, "research", StringComparison.OrdinalIgnoreCase));
+        TradingNavigationSection.Visibility = ToVisibility(string.Equals(workspaceId, "trading", StringComparison.OrdinalIgnoreCase));
+        DataOperationsNavigationSection.Visibility = ToVisibility(string.Equals(workspaceId, "data-operations", StringComparison.OrdinalIgnoreCase));
+        GovernanceNavigationSection.Visibility = ToVisibility(string.Equals(workspaceId, "governance", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private void RenderRecentPages()
+    {
+        RecentPagesPanel.Children.Clear();
+
+        var recentPages = BuildRecentPagesForCurrentWorkspace();
+        RecentPagesEmptyText.Visibility = recentPages.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+
+        foreach (var pageTag in recentPages)
+        {
+            var button = new Button
+            {
+                Content = GetPageTitle(pageTag),
+                Tag = pageTag,
+                ToolTip = GetPageSubtitle(pageTag),
+                Style = (Style)FindResource("RecentPageButtonStyle")
+            };
+            button.Click += OnRecentPageButtonClick;
+            RecentPagesPanel.Children.Add(button);
+        }
+    }
+
+    private List<string> BuildRecentPagesForCurrentWorkspace()
+    {
+        var session = _workspaceService.GetLastSessionState();
+        var pages = new List<string>();
+
+        if (session?.RecentPages is not null)
+        {
+            pages.AddRange(session.RecentPages);
+        }
+
+        if (_workspaceService.ActiveWorkspace?.RecentPageTags is not null)
+        {
+            pages.AddRange(_workspaceService.ActiveWorkspace.RecentPageTags);
+        }
+
+        return pages
+            .Where(pageTag => !string.IsNullOrWhiteSpace(pageTag))
+            .Where(pageTag => ResolveWorkspaceIdForPage(pageTag) == _currentWorkspaceId)
+            .Where(pageTag => !string.Equals(pageTag, _currentPageTag, StringComparison.OrdinalIgnoreCase))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Take(5)
+            .ToList();
+    }
+
+    private async void OnRecentPageButtonClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: string pageTag })
+        {
+            return;
+        }
+
+        await NavigateToWorkspacePageAsync(_currentWorkspaceId, pageTag);
+    }
+
+    private static Visibility ToVisibility(bool isVisible) => isVisible ? Visibility.Visible : Visibility.Collapsed;
+
+    private string GetWorkspaceShortSummary(string workspaceId)
+    {
+        return workspaceId switch
+        {
+            "research" => "analysis and experimentation",
+            "trading" => "live operations",
+            "data-operations" => "collection and storage",
+            "governance" => "quality and controls",
+            _ => "workstation"
+        };
     }
 
     private void UpdateAutomationState()
@@ -519,14 +657,10 @@ public partial class MainPage : Page
             {
                 SetFixtureModeBannerColor(Colors.Orange);
             }
-
-            // Adjust content frame margin to account for banner
-            ContentFrame.Margin = new Thickness(0, 92, 0, 0); // 56 header + 36 banner
         }
         else
         {
             FixtureModeBanner.Visibility = Visibility.Collapsed;
-            ContentFrame.Margin = new Thickness(0, 56, 0, 0);
         }
     }
 
@@ -541,7 +675,6 @@ public partial class MainPage : Page
     private void OnFixtureModeDismiss(object sender, RoutedEventArgs e)
     {
         FixtureModeBanner.Visibility = Visibility.Collapsed;
-        ContentFrame.Margin = new Thickness(0, 56, 0, 0);
     }
 
     #endregion
@@ -599,6 +732,7 @@ public partial class MainPage : Page
         await _workspaceService.ActivateWorkspaceAsync(workspaceId);
 
         _currentWorkspaceId = workspaceId;
+        UpdateWorkspaceChrome();
         var workspace = _workspaceService.ActiveWorkspace;
         var session = _workspaceService.GetLastSessionState();
         var targetPageTag = requestedPageTag
@@ -629,6 +763,7 @@ public partial class MainPage : Page
         _currentWorkspaceId = ResolveWorkspaceIdForPage(e.PageTag);
         UpdateNavigationSelectionForPage(e.PageTag);
         UpdatePageTitle(e.PageTag);
+        UpdateWorkspaceChrome();
         UpdateBackButtonVisibility();
         UpdateAutomationState();
         _ = PersistWorkspaceShellStateAsync(e.PageTag);
@@ -789,6 +924,54 @@ public partial class MainPage : Page
             "SetupWizard" => "Setup Wizard",
             "Help" => "Help & Support",
             _ => pageTag
+        };
+    }
+
+    private string GetPageSubtitle(string pageTag)
+    {
+        return pageTag switch
+        {
+            "Dashboard" => "Monitor operator posture, event health, and the fastest actions from one place.",
+            "LiveData" => "Track live streams, pricing movement, and feed confidence in real time.",
+            "Charts" => "Inspect market structure and strategy context with chart-driven workflows.",
+            "RunMat" => "Launch research notebooks and experimental analysis workflows.",
+            "StrategyRuns" => "Review strategy execution history, outcomes, and drill into details.",
+            "RunDetail" => "Investigate a single run with execution context and audit trails.",
+            "RunPortfolio" => "Inspect portfolio state and exposures for the selected run.",
+            "RunLedger" => "Validate postings, balances, and ledger consequences for a run.",
+            "OrderBook" => "Observe depth, liquidity, and book movement with operator-friendly context.",
+            "Watchlist" => "Keep priority symbols and workflows visible during the session.",
+            "NotificationCenter" => "Review system alerts, acknowledgements, and action-required events.",
+            "Backtest" => "Configure and launch historical strategy simulations with clearer controls.",
+            "LeanIntegration" => "Manage Lean engine workflows and supporting integration settings.",
+            "PortfolioImport" => "Bring external portfolio state into Meridian with validation checkpoints.",
+            "TradingHours" => "Confirm sessions, holidays, and market timing before execution workflows.",
+            "Provider" => "Manage upstream provider connectivity, credentials, and readiness.",
+            "DataSources" => "Coordinate multi-source routing, failover, and ingestion behavior.",
+            "Symbols" => "Curate the security master and symbol reference data used across workflows.",
+            "Backfill" => "Run historical collection jobs with better visibility into scope and progress.",
+            "Options" => "Inspect option chains, expiries, and derivative coverage.",
+            "Schedules" => "Review and tune recurring collection schedules and automation cadence.",
+            "CollectionSessions" => "Audit ingestion sessions, job history, and runtime outcomes.",
+            "DataBrowser" => "Browse stored datasets quickly to validate what is on disk.",
+            "Storage" => "Manage storage posture, capacity, and configuration choices.",
+            "DataExport" => "Package and ship curated datasets to downstream consumers.",
+            "PackageManager" => "Handle data packages and portable assets for operators and teams.",
+            "DataCalendar" => "Assess coverage windows, market-day presence, and gaps over time.",
+            "EventReplay" => "Replay captured sequences to investigate incidents and behavior changes.",
+            "DataQuality" => "Track quality posture, file health, and outstanding exceptions.",
+            "AdvancedAnalytics" => "Compare providers and analyze gaps that affect confidence.",
+            "ArchiveHealth" => "Verify archive integrity and maintenance readiness across storage tiers.",
+            "ProviderHealth" => "Measure provider reliability, latency, and operational risk.",
+            "SystemHealth" => "See platform-wide health signals and recent operational changes.",
+            "Diagnostics" => "Run deeper environment and workflow diagnostics when something looks off.",
+            "Settings" => "Tune application behavior, connectivity, and workstation preferences.",
+            "AdminMaintenance" => "Handle maintenance and privileged controls with more guardrails.",
+            "RetentionAssurance" => "Review retention controls, holds, and compliance-sensitive actions.",
+            "StorageOptimization" => "Find cleanup, compression, and storage-efficiency opportunities.",
+            "SetupWizard" => "Step through first-run setup and bring the workstation online safely.",
+            "Help" => "Find support, onboarding guidance, and reference material quickly.",
+            _ => "Use this page to continue the current Meridian workflow."
         };
     }
 }

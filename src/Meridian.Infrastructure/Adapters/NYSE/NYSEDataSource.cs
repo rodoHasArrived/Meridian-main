@@ -891,7 +891,7 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
                 symbol
             });
 
-            await _wsManager.SendAsync(message, CancellationToken.None).ConfigureAwait(false);
+            await _wsManager.SendAsync(message, ct).ConfigureAwait(false);
 
             Log.Debug("NYSE {Action} {Channel} for {Symbol}", action, channel, symbol);
         }
@@ -910,7 +910,7 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
                 return;
 
             var message = JsonSerializer.Serialize(new { action = "unsubscribe_all" });
-            await _wsManager.SendAsync(message, CancellationToken.None).ConfigureAwait(false);
+            await _wsManager.SendAsync(message, ct).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -923,7 +923,7 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
         foreach (var (_, info) in _subscriptions)
         {
             var channel = info.Type.ToString().ToLowerInvariant();
-            await SendSubscriptionMessageAsync(info.Symbol, channel, "subscribe").ConfigureAwait(false);
+            await SendSubscriptionMessageAsync(info.Symbol, channel, "subscribe", ct).ConfigureAwait(false);
         }
     }
 
