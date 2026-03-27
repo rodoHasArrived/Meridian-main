@@ -418,4 +418,115 @@ public sealed class GapBackfillServiceTests
 
         svc.GapBackfillsTriggered.Should().Be(1);
     }
+
+    // ── rate-limit retry behaviour ────────────────────────────────────────────
+
+    [Fact]
+    public async Task OnReconnected_ExecutorEventuallySucceedsAfterRetry_IncrementsSucceeded()
+    {
+        // Simulate an executor that fails on the first attempt (rate-limited) but succeeds on retry.
+        // The GapBackfillService itself fires-and-forgets; the executor owns retry logic.
+        int attemptCount = 0;
+        var tcs = new TaskCompletionSource<bool>();
+
+        var svc = new GapBackfillService(
+            async (req, ct) =>
+            {
+                var attempt = Interlocked.Increment(ref attemptCount);
+                await Task.Yield();
+                if (attempt == 1)
+                    return FailureResult(req); // first attempt: simulated rate-limit rejection
+                tcs.TrySetResult(true);
+                return SuccessResult(req); // second attempt: success
+            },
+            subscribedSymbols: ["AAPL"],
+            minimumGap: TimeSpan.FromSeconds(5));
+
+        var helper = new WebSocketReconnectionHelper("test");
+        svc.Subscribe(helper);
+
+        // First reconnection fires executor once (fails → not succeeded).
+        RaiseReconnected(helper, MakeEvent(TimeSpan.FromSeconds(30)));
+        await WaitUntilAsync(() => svc.GapBackfillsTriggered == 1);
+
+        svc.GapBackfillsSucceeded.Should().Be(0, "first executor call returns a failure");
+
+        // Second reconnection fires executor again (succeeds).
+        RaiseReconnected(helper, MakeEvent(TimeSpan.FromSeconds(30)));
+        await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        await WaitUntilAsync(() => svc.GapBackfillsSucceeded == 1);
+
+        svc.GapBackfillsTriggered.Should().Be(2);
+        svc.GapBackfillsSucceeded.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task OnReconnected_ExecutorWithRateLimitFailure_RequestCoversFullGapWindow()
+    {
+        // When the executor is called, the BackfillRequest must span the full
+        // [disconnected_at … reconnected_at] window — no gaps introduced by the
+        // rate-limit error on the provider side.
+        var tcs = new TaskCompletionSource<BackfillRequest>();
+
+        var svc = new GapBackfillService(
+            async (req, ct) =>
+            {
+                tcs.TrySetResult(req);
+                await Task.Yield();
+                return FailureResult(req); // simulate rate-limit rejection
+            },
+            subscribedSymbols: ["SPY", "QQQ"],
+            minimumGap: TimeSpan.FromSeconds(5));
+
+        var helper = new WebSocketReconnectionHelper("test");
+        svc.Subscribe(helper);
+
+        var reconnectedAt = DateTimeOffset.UtcNow;
+        var disconnectedAt = reconnectedAt.AddHours(-2); // 2-hour gap across a date boundary
+        var evt = new ReconnectionEvent("polygon", disconnectedAt, reconnectedAt, AttemptsUsed: 3);
+        RaiseReconnected(helper, evt);
+
+        var request = await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        // The request must cover the full window, regardless of the eventual failure.
+        request.From.Should().Be(DateOnly.FromDateTime(disconnectedAt.UtcDateTime),
+            "request start must align with disconnection time");
+        request.To.Should().Be(DateOnly.FromDateTime(reconnectedAt.UtcDateTime),
+            "request end must align with reconnection time");
+        request.Symbols.Should().BeEquivalentTo(["SPY", "QQQ"],
+            "all subscribed symbols must be included in the gap fill request");
+    }
+
+    [Fact]
+    public async Task OnReconnected_RateLimitedProviderError_TriggeredCounterIncrements_NoDataGap()
+    {
+        // Verify that even with a rate-limit failure from the executor, the triggered
+        // counter increments (the service attempted to fill the gap) while succeeded
+        // correctly stays at zero (the gap was not filled).
+        var tcs = new TaskCompletionSource<bool>();
+
+        var svc = new GapBackfillService(
+            async (req, ct) =>
+            {
+                await Task.Yield();
+                tcs.TrySetResult(true);
+                return new BackfillResult(
+                    false, req.Provider, req.Symbols.ToArray(), req.From, req.To,
+                    BarsWritten: 0, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow,
+                    Error: "HTTP 429 Too Many Requests");
+            },
+            subscribedSymbols: ["AAPL"],
+            minimumGap: TimeSpan.FromSeconds(5));
+
+        var helper = new WebSocketReconnectionHelper("test");
+        svc.Subscribe(helper);
+
+        RaiseReconnected(helper, MakeEvent(TimeSpan.FromSeconds(120)));
+
+        await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        await WaitUntilAsync(() => svc.GapBackfillsTriggered == 1);
+
+        svc.GapBackfillsTriggered.Should().Be(1, "service should have attempted the gap fill");
+        svc.GapBackfillsSucceeded.Should().Be(0, "rate-limit error means the gap was not filled");
+    }
 }

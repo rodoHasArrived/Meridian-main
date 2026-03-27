@@ -425,6 +425,130 @@ public sealed class OpenFigiClientParsingTests
 
     #endregion
 
+    #region LookupByIsinAsync / LookupByCusipAsync / LookupBySedolAsync — Parsing
+
+    [Fact]
+    public async Task LookupByIsin_ParsesValidMappingResponse_ReturnsFigiMappings()
+    {
+        using var handler = new StubHttpMessageHandler(req =>
+        {
+            // Verify the request body contains the correct idType
+            var body = req.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
+            body.Should().Contain("\"ID_ISIN\"", "ISIN lookup must set idType to ID_ISIN");
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(OpenFigiResponses.ValidIsinMappingResponse, Encoding.UTF8, "application/json")
+            };
+        });
+        using var httpClient = new HttpClient(handler);
+        using var client = new OpenFigiClient(httpClient: httpClient);
+
+        var results = await client.LookupByIsinAsync("US0378331005");
+
+        results.Should().HaveCount(1);
+        results[0].Figi.Should().Be("BBG000B9XRY4");
+        results[0].Ticker.Should().Be("AAPL");
+    }
+
+    [Fact]
+    public async Task LookupByCusip_ParsesValidMappingResponse_ReturnsFigiMappings()
+    {
+        using var handler = new StubHttpMessageHandler(req =>
+        {
+            var body = req.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
+            body.Should().Contain("\"ID_CUSIP\"", "CUSIP lookup must set idType to ID_CUSIP");
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(OpenFigiResponses.ValidCusipMappingResponse, Encoding.UTF8, "application/json")
+            };
+        });
+        using var httpClient = new HttpClient(handler);
+        using var client = new OpenFigiClient(httpClient: httpClient);
+
+        var results = await client.LookupByCusipAsync("037833100");
+
+        results.Should().HaveCount(1);
+        results[0].Figi.Should().Be("BBG000B9XRY4");
+        results[0].Ticker.Should().Be("AAPL");
+    }
+
+    [Fact]
+    public async Task LookupBySedol_ParsesValidMappingResponse_ReturnsFigiMappings()
+    {
+        using var handler = new StubHttpMessageHandler(req =>
+        {
+            var body = req.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
+            body.Should().Contain("\"ID_SEDOL\"", "SEDOL lookup must set idType to ID_SEDOL");
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(OpenFigiResponses.ValidSedolMappingResponse, Encoding.UTF8, "application/json")
+            };
+        });
+        using var httpClient = new HttpClient(handler);
+        using var client = new OpenFigiClient(httpClient: httpClient);
+
+        var results = await client.LookupBySedolAsync("2046251");
+
+        results.Should().HaveCount(1);
+        results[0].Figi.Should().Be("BBG000B9XRY4");
+        results[0].Ticker.Should().Be("AAPL");
+    }
+
+    [Fact]
+    public async Task LookupByIsin_WhenApiReturnsErrorField_ReturnsEmptyList()
+    {
+        using var handler = new StubHttpMessageHandler(_ =>
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(OpenFigiResponses.TickerNotFoundResponse, Encoding.UTF8, "application/json")
+            });
+        using var httpClient = new HttpClient(handler);
+        using var client = new OpenFigiClient(httpClient: httpClient);
+
+        var results = await client.LookupByIsinAsync("US9999999999");
+
+        results.Should().BeEmpty("error field in response means ISIN was not found");
+    }
+
+    [Fact]
+    public async Task LookupByCusip_WhenApiReturns429_ThrowsHttpRequestException()
+    {
+        using var handler = new StubHttpMessageHandler(_ =>
+            new HttpResponseMessage((HttpStatusCode)429)
+            {
+                Content = new StringContent("{\"error\":\"Too Many Requests\"}", Encoding.UTF8, "application/json")
+            });
+        using var httpClient = new HttpClient(handler);
+        using var client = new OpenFigiClient(httpClient: httpClient);
+
+        await Assert.ThrowsAsync<HttpRequestException>(() => client.LookupByCusipAsync("037833100"));
+    }
+
+    [Fact]
+    public async Task BulkLookupByTickersAsync_WithMoreThan100Tickers_BatchesRequests()
+    {
+        var callCount = 0;
+        using var handler = new StubHttpMessageHandler(_ =>
+        {
+            callCount++;
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("[{\"data\":[{\"figi\":\"BBG000B9XRY4\",\"ticker\":\"T\"}]}]",
+                    Encoding.UTF8, "application/json")
+            };
+        });
+        using var httpClient = new HttpClient(handler);
+        using var client = new OpenFigiClient(httpClient: httpClient);
+
+        // 110 unique tickers should require 2 batches (100 + 10)
+        var tickers = Enumerable.Range(1, 110).Select(i => $"SYM{i:D3}").ToArray();
+        await client.BulkLookupByTickersAsync(tickers);
+
+        callCount.Should().Be(2, "110 tickers should be split into 2 API calls of 100 each");
+    }
+
+    #endregion
+
     #region EnrichWithFigiAsync — Enrichment
 
     [Fact]
@@ -535,6 +659,63 @@ internal static class OpenFigiResponses
         [
           {
             "error": "No identifier found."
+          }
+        ]
+        """;
+
+    /// <summary>Mapping response for ISIN US0378331005 (AAPL).</summary>
+    public const string ValidIsinMappingResponse = """
+        [
+          {
+            "data": [
+              {
+                "figi": "BBG000B9XRY4",
+                "compositeFIGI": "BBG000B9Y5X2",
+                "securityType": "Common Stock",
+                "marketSector": "Equity",
+                "ticker": "AAPL",
+                "name": "APPLE INC",
+                "exchCode": "UW"
+              }
+            ]
+          }
+        ]
+        """;
+
+    /// <summary>Mapping response for CUSIP 037833100 (AAPL).</summary>
+    public const string ValidCusipMappingResponse = """
+        [
+          {
+            "data": [
+              {
+                "figi": "BBG000B9XRY4",
+                "compositeFIGI": "BBG000B9Y5X2",
+                "securityType": "Common Stock",
+                "marketSector": "Equity",
+                "ticker": "AAPL",
+                "name": "APPLE INC",
+                "exchCode": "UW"
+              }
+            ]
+          }
+        ]
+        """;
+
+    /// <summary>Mapping response for SEDOL 2046251 (AAPL).</summary>
+    public const string ValidSedolMappingResponse = """
+        [
+          {
+            "data": [
+              {
+                "figi": "BBG000B9XRY4",
+                "compositeFIGI": "BBG000B9Y5X2",
+                "securityType": "Common Stock",
+                "marketSector": "Equity",
+                "ticker": "AAPL",
+                "name": "APPLE INC",
+                "exchCode": "UW"
+              }
+            ]
           }
         ]
         """;

@@ -458,7 +458,7 @@ public static class WorkstationEndpoints
         })
         .WithName("GetStrategyRuns")
         .WithTags("Strategies")
-        .Produces<IReadOnlyList<StrategyRunSummary>>(200)
+        .Produces<IReadOnlyList<StrategyRunSummary>>(200);
         // --- Portfolio cash-flow projections ---
         var portfolioGroup = app.MapGroup("/api/portfolio").WithTags("Portfolio");
 
