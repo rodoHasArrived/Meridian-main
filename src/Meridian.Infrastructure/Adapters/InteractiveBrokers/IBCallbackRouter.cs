@@ -16,20 +16,23 @@ public sealed class IBCallbackRouter
     private readonly MarketDepthCollector _depthCollector;
     private readonly TradeDataCollector _tradeCollector;
     private readonly QuoteCollector? _quoteCollector;
+    private readonly OptionDataCollector? _optionCollector;
 
     // requestId/tickerId -> symbol maps
     private readonly ConcurrentDictionary<int, string> _depthTickerMap = new();
     private readonly ConcurrentDictionary<int, string> _tradeTickerMap = new();
     private readonly ConcurrentDictionary<int, string> _quoteTickerMap = new();
+    private readonly ConcurrentDictionary<int, OptionContractSpec> _optionTickerMap = new();
 
     // Per-ticker state for building quotes from separate price/size callbacks
     private readonly ConcurrentDictionary<int, QuoteState> _quoteStates = new();
 
-    public IBCallbackRouter(MarketDepthCollector depthCollector, TradeDataCollector tradeCollector, QuoteCollector? quoteCollector = null)
+    public IBCallbackRouter(MarketDepthCollector depthCollector, TradeDataCollector tradeCollector, QuoteCollector? quoteCollector = null, OptionDataCollector? optionCollector = null)
     {
         _depthCollector = depthCollector ?? throw new ArgumentNullException(nameof(depthCollector));
         _tradeCollector = tradeCollector ?? throw new ArgumentNullException(nameof(tradeCollector));
         _quoteCollector = quoteCollector;
+        _optionCollector = optionCollector;
     }
 
     public void RegisterDepthTicker(int tickerId, string symbol) => _depthTickerMap[tickerId] = symbol;
@@ -39,6 +42,13 @@ public sealed class IBCallbackRouter
         _quoteTickerMap[tickerId] = symbol;
         _quoteStates[tickerId] = new QuoteState();
     }
+
+    /// <summary>
+    /// Registers an option contract ticker so that tickOptionComputation callbacks are routed
+    /// to the <see cref="OptionDataCollector"/>.
+    /// </summary>
+    public void RegisterOptionTicker(int tickerId, OptionContractSpec contract) =>
+        _optionTickerMap[tickerId] = contract;
 
     // ---------------------------
     // Depth callbacks (IB shape)
@@ -263,6 +273,69 @@ public sealed class IBCallbackRouter
         {
             EmitQuote(symbol, state);
         }
+    }
+
+    // ---------------------------
+    // Options greeks callback
+    // ---------------------------
+
+    /// <summary>
+    /// Handles an IB tickOptionComputation callback (tickType 10=Bid, 11=Ask, 12=Last, 13=Model).
+    /// Only model ticks (tickType == 13) are used to populate greeks — bid/ask/last option computation
+    /// ticks use the same IB callback but carry less reliable IV/greeks values.
+    /// </summary>
+    /// <param name="tickerId">The IB request id that identifies the option contract.</param>
+    /// <param name="tickType">IB tick type: 10=BidOption, 11=AskOption, 12=LastOption, 13=ModelOption.</param>
+    /// <param name="impliedVol">Implied volatility (IB transmits -1 when not available).</param>
+    /// <param name="delta">Option delta (-1 to +1; IB transmits -2 when not available).</param>
+    /// <param name="optPrice">Option price; IB transmits -1 when not available.</param>
+    /// <param name="pvDividend">Present value of dividends expected before expiry.</param>
+    /// <param name="gamma">Option gamma; IB transmits -2 when not available.</param>
+    /// <param name="vega">Option vega; IB transmits -2 when not available.</param>
+    /// <param name="theta">Option theta; IB transmits -2 when not available.</param>
+    /// <param name="undPrice">Underlying price at time of computation; IB transmits -1 when not available.</param>
+    public void OnTickOptionComputation(
+        int tickerId,
+        int tickType,
+        double impliedVol,
+        double delta,
+        double optPrice,
+        double pvDividend,
+        double gamma,
+        double vega,
+        double theta,
+        double undPrice)
+    {
+        // Only process the "model" tick (13) — it carries the authoritative IV and full greeks.
+        // Other tickType values (10=BidOption, 11=AskOption, 12=LastOption) are informational.
+        if (tickType != 13)
+            return;
+
+        if (_optionCollector is null)
+            return;
+
+        if (!_optionTickerMap.TryGetValue(tickerId, out var contract))
+            return;
+
+        // IB uses sentinel values of -1/-2 for "not available" — skip the update if
+        // the two most critical values are missing.
+        if (impliedVol < 0 || undPrice <= 0)
+            return;
+
+        var greeks = new GreeksSnapshot(
+            Timestamp: DateTimeOffset.UtcNow,
+            Symbol: contract.UnderlyingSymbol,
+            Contract: contract,
+            Delta: delta < -1.5 ? 0m : (decimal)delta,
+            Gamma: gamma < -1.5 ? 0m : (decimal)gamma,
+            Theta: theta < -1.5 ? 0m : (decimal)theta,
+            Vega: vega < -1.5 ? 0m : (decimal)vega,
+            Rho: 0m,
+            ImpliedVolatility: (decimal)impliedVol,
+            UnderlyingPrice: (decimal)undPrice,
+            TheoreticalPrice: optPrice > 0 ? (decimal?)optPrice : null);
+
+        _optionCollector.OnGreeksUpdate(greeks);
     }
 
     private void TryEmitQuote(int tickerId, string symbol, QuoteState state)

@@ -23,10 +23,10 @@ public sealed class IBMarketDataClient : IMarketDataClient
     private readonly IMarketDataClient _inner;
     private readonly bool _isSimulation;
 
-    public IBMarketDataClient(IMarketEventPublisher publisher, TradeDataCollector tradeCollector, MarketDepthCollector depthCollector, QuoteCollector? quoteCollector = null)
+    public IBMarketDataClient(IMarketEventPublisher publisher, TradeDataCollector tradeCollector, MarketDepthCollector depthCollector, QuoteCollector? quoteCollector = null, OptionDataCollector? optionCollector = null)
     {
 #if IBAPI
-        _inner = new IBMarketDataClientIBApi(publisher, tradeCollector, depthCollector, quoteCollector);
+        _inner = new IBMarketDataClientIBApi(publisher, tradeCollector, depthCollector, quoteCollector, optionCollector);
         _isSimulation = false;
 #else
         _inner = new IBSimulationClient(publisher);
@@ -117,11 +117,12 @@ internal sealed class IBMarketDataClientIBApi : IMarketDataClient
     // Track subscription ids if you want per-symbol teardown later
     public bool IsEnabled => true;
 
-    public IBMarketDataClientIBApi(IMarketEventPublisher publisher, TradeDataCollector tradeCollector, MarketDepthCollector depthCollector, QuoteCollector? quoteCollector = null)
+    public IBMarketDataClientIBApi(IMarketEventPublisher publisher, TradeDataCollector tradeCollector, MarketDepthCollector depthCollector, QuoteCollector? quoteCollector = null, OptionDataCollector? optionCollector = null)
     {
         // Router wires IB callbacks -> collectors (collectors already publish into publisher).
         // QuoteCollector enables Level 1 BBO quote emission from reqMktData callbacks.
-        _router = new IBCallbackRouter(depthCollector, tradeCollector, quoteCollector);
+        // OptionDataCollector enables live greeks from tickOptionComputation callbacks.
+        _router = new IBCallbackRouter(depthCollector, tradeCollector, quoteCollector, optionCollector);
         _conn = new EnhancedIBConnectionManager(_router, host: "127.0.0.1", port: 7497, clientId: 1);
     }
 

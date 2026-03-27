@@ -1,0 +1,11 @@
+{
+  "description": "IB stop-limit buy order for NVDA, day session.",
+  "orderId": 1007,
+  "symbol": "NVDA",
+  "orderType": "STP LMT",
+  "side": "BUY",
+  "quantity": 10,
+  "tif": "DAY",
+  "auxPrice": 865.00,
+  "price": 870.00
+}

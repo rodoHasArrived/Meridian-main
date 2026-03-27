@@ -231,4 +231,278 @@ public sealed class IBSimulationClientTests : IAsyncLifetime
         // Assert
         act.Should().Throw<ArgumentNullException>();
     }
+
+    // ------------------------------------------------------------------
+    // Dispose edge cases
+    // ------------------------------------------------------------------
+
+    [Fact]
+    public async Task DisposeAsync_WithoutConnecting_ShouldNotThrow()
+    {
+        // Arrange — fresh client that was never connected
+        var client = new IBSimulationClient(new TestMarketEventPublisher(), enableAutoTicks: false);
+
+        // Act
+        var act = async () => await client.DisposeAsync();
+
+        // Assert
+        await act.Should().NotThrowAsync();
+    }
+
+    [Fact]
+    public async Task DisposeAsync_CalledTwice_ShouldNotThrow()
+    {
+        // Arrange
+        var client = new IBSimulationClient(new TestMarketEventPublisher(), enableAutoTicks: false);
+        await client.DisposeAsync();
+
+        // Act — second dispose must be idempotent
+        var act = async () => await client.DisposeAsync();
+
+        // Assert
+        await act.Should().NotThrowAsync();
+    }
+
+    [Fact]
+    public async Task DisposeAsync_AfterConnect_ShouldNotThrow()
+    {
+        // Arrange
+        await _client.ConnectAsync();
+
+        // Act
+        var act = async () => await _client.DisposeAsync();
+
+        // Assert
+        await act.Should().NotThrowAsync();
+    }
+
+    // ------------------------------------------------------------------
+    // Disconnect edge cases
+    // ------------------------------------------------------------------
+
+    [Fact]
+    public async Task DisconnectAsync_WithoutPriorConnect_ShouldNotThrow()
+    {
+        // Act — disconnect a client that was never connected
+        var act = async () => await _client.DisconnectAsync();
+
+        // Assert
+        await act.Should().NotThrowAsync();
+    }
+
+    [Fact]
+    public async Task DisconnectAsync_CalledTwice_ShouldNotThrow()
+    {
+        // Arrange
+        await _client.ConnectAsync();
+        await _client.DisconnectAsync();
+
+        // Act — second disconnect
+        var act = async () => await _client.DisconnectAsync();
+
+        // Assert
+        await act.Should().NotThrowAsync();
+    }
+
+    // ------------------------------------------------------------------
+    // Subscription state after reconnect
+    // ------------------------------------------------------------------
+
+    [Fact]
+    public async Task SubscribeAfterReconnect_ReturnsFreshUniqueId()
+    {
+        // Arrange — subscribe, disconnect, reconnect
+        await _client.ConnectAsync();
+        var firstId = _client.SubscribeTrades(new SymbolConfig("SPY"));
+        await _client.DisconnectAsync();
+        await _client.ConnectAsync();
+
+        // Act
+        var secondId = _client.SubscribeTrades(new SymbolConfig("SPY"));
+
+        // Assert — IDs must be monotonically increasing and distinct
+        secondId.Should().BeGreaterThan(firstId, "ticker IDs are assigned via Interlocked.Increment");
+    }
+
+    [Fact]
+    public async Task MultipleDepthSubscriptions_AllReturnUniqueIds()
+    {
+        // Arrange
+        await _client.ConnectAsync();
+
+        // Act
+        var ids = Enumerable.Range(0, 5)
+            .Select(i => _client.SubscribeMarketDepth(new SymbolConfig($"SYM{i}", SubscribeDepth: true, DepthLevels: 5)))
+            .ToArray();
+
+        // Assert
+        ids.Distinct().Should().HaveCount(5, "every depth subscription must receive a unique ticker ID");
+    }
+
+    // ------------------------------------------------------------------
+    // Tick generation (without the wall-clock timer)
+    // ------------------------------------------------------------------
+
+    [Fact]
+    public async Task TickGeneration_WhenConnectedWithAutoTicks_PublishesTradeEvents()
+    {
+        // Arrange — enable auto-ticks and subscribe to a well-known symbol
+        await using var tickingClient = new IBSimulationClient(_publisher, enableAutoTicks: true);
+        await tickingClient.ConnectAsync();
+        tickingClient.SubscribeTrades(new SymbolConfig("AAPL"));
+
+        // Act — allow one tick interval plus margin
+        await Task.Delay(TimeSpan.FromSeconds(1.5));
+        await tickingClient.DisconnectAsync();
+
+        // Assert — at least one trade event must have been published
+        _publisher.PublishedEvents.Should().NotBeEmpty(
+            because: "IBSimulationClient fires ticks every second for subscribed symbols");
+    }
+
+    [Fact]
+    public async Task TickGeneration_AfterDisconnect_StopsPublishing()
+    {
+        // Arrange
+        await using var tickingClient = new IBSimulationClient(_publisher, enableAutoTicks: true);
+        await tickingClient.ConnectAsync();
+        tickingClient.SubscribeTrades(new SymbolConfig("SPY"));
+
+        // Let one tick interval fire
+        await Task.Delay(TimeSpan.FromSeconds(1.5));
+        await tickingClient.DisconnectAsync();
+        var countAfterDisconnect = _publisher.PublishedEvents.Count;
+
+        // Act — wait another interval; no new ticks should arrive
+        await Task.Delay(TimeSpan.FromSeconds(1.5));
+
+        // Assert
+        _publisher.PublishedEvents.Should().HaveCount(countAfterDisconnect,
+            because: "the timer is stopped on DisconnectAsync");
+    }
+
+    [Fact]
+    public async Task TickGeneration_UnknownSymbol_UsesDefaultBasePrice()
+    {
+        // Arrange — subscribe to a symbol not in the well-known price table
+        await using var tickingClient = new IBSimulationClient(_publisher, enableAutoTicks: true);
+        await tickingClient.ConnectAsync();
+        tickingClient.SubscribeTrades(new SymbolConfig("XYZUNKNOWN"));
+
+        // Act
+        await Task.Delay(TimeSpan.FromSeconds(1.5));
+        await tickingClient.DisconnectAsync();
+
+        // Assert — price should still be positive (default base = 100)
+        var tradePayloads = _publisher.PublishedEvents
+            .Select(e => e.Payload as Meridian.Contracts.Domain.Models.Trade)
+            .Where(t => t is not null)
+            .ToList();
+        tradePayloads.Should().NotBeEmpty(because: "at least one simulated trade must be published");
+        foreach (var trade in tradePayloads)
+        {
+            trade!.Price.Should().BeGreaterThan(0m, because: "simulated prices must always be positive");
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // SymbolConfig variant coverage (different security types)
+    // ------------------------------------------------------------------
+
+    [Fact]
+    public async Task SubscribeTrades_ForOptionsSymbol_ReturnsValidId()
+    {
+        await _client.ConnectAsync();
+        var cfg = new SymbolConfig("AAPL", SecurityType: "OPT", Exchange: "CBOE", Currency: "USD");
+
+        var id = _client.SubscribeTrades(cfg);
+
+        id.Should().BeGreaterThan(0);
+    }
+
+    [Fact]
+    public async Task SubscribeMarketDepth_ForForexSymbol_ReturnsValidId()
+    {
+        await _client.ConnectAsync();
+        var cfg = new SymbolConfig("EUR", SecurityType: "CASH", Exchange: "IDEALPRO", Currency: "USD");
+
+        var id = _client.SubscribeMarketDepth(cfg);
+
+        id.Should().BeGreaterThan(0);
+    }
+
+    [Fact]
+    public async Task SubscribeTrades_ForFuturesSymbol_ReturnsValidId()
+    {
+        await _client.ConnectAsync();
+        var cfg = new SymbolConfig("ES", SecurityType: "FUT", Exchange: "CME", Currency: "USD");
+
+        var id = _client.SubscribeTrades(cfg);
+
+        id.Should().BeGreaterThan(0);
+    }
+
+    // ------------------------------------------------------------------
+    // Concurrent access safety
+    // ------------------------------------------------------------------
+
+    [Fact]
+    public async Task ConcurrentSubscriptions_FromMultipleThreads_AllReturnUniqueIds()
+    {
+        // Arrange
+        await _client.ConnectAsync();
+        var ids = new System.Collections.Concurrent.ConcurrentBag<int>();
+
+        // Act — 20 concurrent subscribe calls
+        await Task.WhenAll(Enumerable.Range(0, 20).Select(_ => Task.Run(() =>
+        {
+            var id = _client.SubscribeTrades(new SymbolConfig("SPY"));
+            ids.Add(id);
+        })));
+
+        // Assert
+        ids.Distinct().Should().HaveCount(20, "concurrent subscribe calls must still produce unique IDs");
+    }
+
+    [Fact]
+    public async Task ConcurrentUnsubscribes_FromMultipleThreads_ShouldNotThrow()
+    {
+        // Arrange
+        await _client.ConnectAsync();
+        var subIds = Enumerable.Range(0, 10)
+            .Select(_ => _client.SubscribeTrades(new SymbolConfig("AAPL")))
+            .ToList();
+
+        // Act — unsubscribe all concurrently
+        var act = async () =>
+            await Task.WhenAll(subIds.Select(id => Task.Run(() => _client.UnsubscribeTrades(id))));
+
+        // Assert
+        await act.Should().NotThrowAsync();
+    }
+
+    // ------------------------------------------------------------------
+    // Metadata contracts
+    // ------------------------------------------------------------------
+
+    [Fact]
+    public void ProviderWarnings_ContainSimulationDisclaimer()
+    {
+        _client.ProviderWarnings.Should().Contain(w =>
+            w.Contains("simulated", StringComparison.OrdinalIgnoreCase) ||
+            w.Contains("not real", StringComparison.OrdinalIgnoreCase),
+            because: "the simulation provider must clearly disclaim that data is not real");
+    }
+
+    [Fact]
+    public void ProviderCapabilities_MaxDepthLevels_IsAtLeastOne()
+    {
+        _client.ProviderCapabilities.MaxDepthLevels.Should().BeGreaterThanOrEqualTo(1);
+    }
+
+    [Fact]
+    public void ProviderCapabilities_SupportedMarkets_IsNotEmpty()
+    {
+        _client.ProviderCapabilities.SupportedMarkets.Should().NotBeNullOrEmpty();
+    }
 }

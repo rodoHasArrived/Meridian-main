@@ -435,8 +435,7 @@ public sealed class IBHistoricalDataProvider : IHistoricalDataProvider, IRateLim
             Symbol: symbol.ToUpperInvariant(),
             SecurityType: "STK",
             Exchange: "SMART",
-            Currency: "USD",
-            PrimaryExchange: "NASDAQ");
+            Currency: "USD");
     }
 
     private static DateOnly ParseBarDate(string ibDate)
