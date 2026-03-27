@@ -2800,6 +2800,7 @@ Meridian-main
 │   │   │   └── CompositeRiskValidatorTests.cs
 │   │   ├── SecurityMaster
 │   │   │   ├── SecurityEnrichmentTests.cs
+│   │   │   ├── SecurityMasterAggregateRebuilderTests.cs
 │   │   │   ├── SecurityMasterAssetClassSupportTests.cs
 │   │   │   ├── SecurityMasterDatabaseFactAttribute.cs
 │   │   │   ├── SecurityMasterDatabaseFixture.cs
