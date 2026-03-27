@@ -1,5 +1,8 @@
 # Meridian Shared Project Context
 
+> Last verified: 2026-03-27 (UTC)
+> Canonical deep reference: `.claude/skills/_shared/project-context.md`
+
 Use this file as the common source of truth for Meridian-specific terminology, commands, and architecture when a skill needs repository grounding without repeating the same facts in every `SKILL.md`.
 
 ## Platform Snapshot
@@ -37,6 +40,7 @@ Prefer the narrowest validation command that matches the files being changed.
 - `src/Meridian.Backtesting/`, `src/Meridian.Backtesting.Sdk/`: replay engine and strategy SDK
 - `src/Meridian.Execution/`, `src/Meridian.Execution.Sdk/`: execution and broker gateway abstractions
 - `src/Meridian.Ledger/`: double-entry accounting ledger
+- `src/Meridian.Mcp/`, `src/Meridian.McpServer/`: MCP hosts, tools, and resources
 - `src/Meridian.Risk/`: pre-trade risk validation
 - `src/Meridian.Strategies/`: strategy lifecycle and run storage
 - `src/Meridian.Ui/`, `src/Meridian.Ui.Services/`, `src/Meridian.Ui.Shared/`: web UI and shared UI services
