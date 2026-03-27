@@ -729,12 +729,17 @@ Use these documents together when planning or implementing new work:
 │   │       ├── activity-diagram-backfill.puml
 │   │       ├── activity-diagram.png
 │   │       ├── activity-diagram.puml
+│   │       ├── class-diagram-wpf-mvvm.puml
 │   │       ├── communication-diagram.png
 │   │       ├── communication-diagram.puml
 │   │       ├── interaction-overview-diagram.png
 │   │       ├── interaction-overview-diagram.puml
 │   │       ├── sequence-diagram-backfill.png
 │   │       ├── sequence-diagram-backfill.puml
+│   │       ├── sequence-diagram-backtesting.puml
+│   │       ├── sequence-diagram-paper-trading.puml
+│   │       ├── sequence-diagram-strategy-promotion.puml
+│   │       ├── sequence-diagram-wal-durability.puml
 │   │       ├── sequence-diagram.png
 │   │       ├── sequence-diagram.puml
 │   │       ├── state-diagram-backfill.png
@@ -3020,6 +3025,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-455 directories, 2527 files
+455 directories, 2532 files
 ```
 <!-- readme-tree end -->
