@@ -1,0 +1,185 @@
+@startuml Sequence Diagram - Strategy Promotion Lifecycle
+!theme plain
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+
+title Meridian - Strategy Promotion Lifecycle\n(Backtest → Paper Trading → Live)
+
+' ==================== PARTICIPANTS ====================
+participant "Quant / Operator" as User
+participant "StrategyLifecycle\nManager" as LCMgr
+participant "IStrategyRepository" as Repo
+participant "BacktestToLive\nPromoter" as Promoter
+participant "F# Promotion\nInterop" as FSharpPromo
+participant "IBacktestStrategy\n(implementation)" as Strategy
+participant "BacktestEngine" as BacktestEng
+participant "PaperExecution\nContext" as PaperCtx
+participant "PaperTradingGateway\n(IOrderGateway)" as PaperGW
+participant "Live ExecutionContext\n(IOrderGateway)" as LiveCtx
+
+' ==================== REGISTRATION ====================
+== Phase 1: Strategy Registration ==
+
+User -> LCMgr: Register(strategy)
+note right of LCMgr
+  _registered[strategyId] = (strategy, run: null)
+  Status: Idle
+end note
+LCMgr --> User: OK
+
+' ==================== BACKTEST ====================
+== Phase 2: Backtest Run ==
+
+User -> LCMgr: StartAsync(strategyId, ctx=BacktestCtx,\nrunType=Backtest, ct)
+activate LCMgr
+
+LCMgr -> LCMgr: StrategyLifecycleInterop\n.EvaluateStart(status)
+note right: F# DU validates\nIdle → Running transition
+
+LCMgr -> Repo: RecordRunAsync(run=StrategyRunEntry.Start(\nid, name, Backtest), ct)
+activate Repo
+Repo --> LCMgr: run persisted
+deactivate Repo
+
+LCMgr -> Strategy: StartAsync(BacktestCtx, ct)
+activate Strategy #DarkBlue
+Strategy -> BacktestEng: RunAsync(request, strategy, progress, ct)
+activate BacktestEng
+BacktestEng -> BacktestEng: Replay stored JSONL tick data\n(see backtesting sequence diagram)
+BacktestEng --> Strategy: BacktestResult {\n  metrics: { sharpe, drawdown,\n  totalReturn, netPnl, xirr }\n}
+deactivate BacktestEng
+Strategy --> LCMgr: (run complete)
+deactivate Strategy
+
+LCMgr --> User: run finished
+deactivate LCMgr
+
+' ==================== PROMOTION EVALUATION ====================
+== Phase 3: Promotion Eligibility Check ==
+
+User -> Promoter: MeetsPromotionThresholds(result, criteria)
+activate Promoter
+note right of Promoter
+  Default PromotionCriteria:
+  - MinSharpeRatio: 0.5
+  - MaxAllowedDrawdown: 25%
+  - MinTotalReturn: 0%
+end note
+
+Promoter -> FSharpPromo: PromotionInterop\n.EvaluateBacktestPromotion(\nresult, minSharpe,\nmaxDrawdown, minReturn)
+activate FSharpPromo
+FSharpPromo -> FSharpPromo: Pattern match against\nF# PromotionDecision DU
+FSharpPromo --> Promoter: PromotionDecision\n{ Eligible: bool, Reason: string }
+deactivate FSharpPromo
+
+alt Metrics below thresholds
+    Promoter --> User: Eligible = false\n("Sharpe 0.3 < minimum 0.5")
+    note right: Strategy stays in Idle.\nOperator can tune params\nand re-run backtest.
+else Metrics meet thresholds
+    Promoter --> User: Eligible = true
+    deactivate Promoter
+
+    User -> Promoter: CreatePromotionRecord(result,\nstrategyId, strategyName,\ntarget=Paper)
+    activate Promoter
+    Promoter --> User: StrategyPromotionRecord {\n  promotionId, strategyId,\n  qualifyingSharpe,\n  qualifyingDrawdown,\n  promotedAt: UtcNow\n}
+    deactivate Promoter
+    note right of User
+      Promotion record stored for
+      audit trail (immutable record).
+    end note
+end
+
+' ==================== PAPER TRADING ====================
+== Phase 4: Paper Trading Run ==
+
+User -> LCMgr: StartAsync(strategyId, ctx=PaperCtx,\nrunType=Paper, ct)
+activate LCMgr
+
+LCMgr -> LCMgr: EvaluateStart(Idle → Running)
+LCMgr -> Repo: RecordRunAsync(run Paper, ct)
+
+LCMgr -> Strategy: StartAsync(PaperCtx, ct)
+activate Strategy #DarkGreen
+
+note right of Strategy
+  Strategy now receives live
+  market data from IMarketDataClient
+  but orders go to PaperTradingGateway
+end note
+
+loop Live market events arrive
+    Strategy -> PaperCtx: PlaceOrder(request)
+    PaperCtx -> PaperGW: SubmitAsync(request, ct)
+    activate PaperGW
+    PaperGW -> PaperGW: ValidateOrderAsync()
+    PaperGW -> PaperGW: Register in _workingOrders
+    PaperGW --> PaperCtx: OrderAcknowledgement\n(Status: Accepted)
+
+    PaperGW -> PaperGW: SimulateFillAsync()\n[fire-and-forget background task]
+    PaperGW -> PaperGW: Compute synthetic fill price\n(scaffold price for market orders,\nlimit price for limit orders)
+    PaperGW -> PaperGW: channel.WriteAsync(\nOrderStatusUpdate.Filled)
+    deactivate PaperGW
+end
+
+Strategy --> LCMgr: running (async background)
+LCMgr --> User: paper run started
+deactivate LCMgr
+
+' ==================== PAUSE / STOP ====================
+== Phase 5: Pause or Stop ==
+
+User -> LCMgr: PauseAsync(strategyId, ct)
+activate LCMgr
+LCMgr -> LCMgr: EvaluatePause(Running → Paused)
+LCMgr -> Strategy: PauseAsync(ct)
+Strategy --> LCMgr: paused
+LCMgr --> User: OK
+deactivate LCMgr
+
+User -> LCMgr: StopAsync(strategyId, ct)
+activate LCMgr
+LCMgr -> LCMgr: EvaluateStop(Paused → Stopped)
+LCMgr -> Strategy: StopAsync(ct)
+activate Strategy
+Strategy -> Strategy: Flush outstanding orders,\nreport final P&L
+Strategy --> LCMgr: stopped
+deactivate Strategy
+
+LCMgr -> Repo: RecordRunEndAsync(run, ct)
+Repo --> LCMgr: persisted
+LCMgr --> User: OK
+deactivate LCMgr
+
+' ==================== LIVE PROMOTION ====================
+== Phase 6: Promote to Live (if paper metrics pass) ==
+
+User -> Promoter: MeetsPromotionThresholds(\npaper metrics, criteria)
+activate Promoter
+Promoter -> FSharpPromo: EvaluatePaperPromotion(...)
+FSharpPromo --> Promoter: Eligible = true
+Promoter --> User: eligible
+deactivate Promoter
+
+User -> Promoter: CreatePromotionRecord(\nresult, strategyId, target=Live)
+activate Promoter
+Promoter --> User: StrategyPromotionRecord (Paper → Live)
+deactivate Promoter
+
+User -> LCMgr: StartAsync(strategyId,\nctx=LiveCtx, runType=Live, ct)
+activate LCMgr
+LCMgr -> Strategy: StartAsync(LiveCtx, ct)
+activate Strategy #DarkRed
+note right of Strategy
+  Live: orders routed to real
+  brokerage gateway (Alpaca, IB,
+  StockSharp BrokerageGateway).
+  Risk rules enforced by
+  CompositeRiskValidator.
+end note
+Strategy -> LiveCtx: PlaceOrder(request)
+LiveCtx --> Strategy: OrderAcknowledgement (real broker)
+deactivate Strategy
+LCMgr --> User: live run started
+deactivate LCMgr
+
+@enduml

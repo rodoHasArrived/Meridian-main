@@ -27,8 +27,13 @@ This directory contains PlantUML source files (`.puml`) and committed PNG artifa
 | Interaction Overview | `interaction-overview-diagram.puml` | `interaction-overview-diagram.png` | High-level workflow orchestration |
 | Timing | `timing-diagram.puml` | `timing-diagram.png` | Real-time event timing |
 | Timing | `timing-diagram-backfill.puml` | `timing-diagram-backfill.png` | Backfill operation timing |
+| Sequence | `sequence-diagram-backtesting.puml` | `sequence-diagram-backtesting.png` | BacktestEngine replay loop, fill models, portfolio, and metrics |
+| Sequence | `sequence-diagram-strategy-promotion.puml` | `sequence-diagram-strategy-promotion.png` | Strategy lifecycle: backtest → paper trading → live promotion |
+| Class | `class-diagram-wpf-mvvm.puml` | `class-diagram-wpf-mvvm.png` | WPF MVVM hierarchy: BindableBase, ViewModels, Views, and Services |
+| Sequence | `sequence-diagram-wal-durability.puml` | `sequence-diagram-wal-durability.png` | WAL + AtomicFileWriter crash-safe write path (ADR-007) |
+| Sequence | `sequence-diagram-paper-trading.puml` | `sequence-diagram-paper-trading.png` | PaperTradingGateway order submission, synthetic fill, and risk validation (ADR-015) |
 
-**Totals:** 13 PlantUML sources + 13 PNG artifacts.
+**Totals:** 18 PlantUML sources + 18 PNG artifacts.
 
 ---
 
@@ -87,4 +92,4 @@ When editing UML docs:
 
 ---
 
-*Last Updated: 2026-03-15*
+*Last Updated: 2026-03-27*

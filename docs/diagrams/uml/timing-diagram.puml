@@ -5,7 +5,6 @@ skinparam backgroundColor white
 title Meridian - Event Processing Timing Diagram
 
 ' ==================== PARTICIPANTS ====================
-robust "System Clock" as Clock
 robust "Provider Connection" as Provider
 robust "Trade Collector" as TradeColl
 robust "Quote Collector" as QuoteColl
