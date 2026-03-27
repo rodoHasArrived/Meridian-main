@@ -22,7 +22,10 @@ public sealed class StrategyRunReadService
         _ledgerReadService = ledgerReadService ?? throw new ArgumentNullException(nameof(ledgerReadService));
     }
 
-    public async Task<IReadOnlyList<StrategyRunSummary>> GetRunsAsync(string? strategyId = null, CancellationToken ct = default)
+    public async Task<IReadOnlyList<StrategyRunSummary>> GetRunsAsync(
+        string? strategyId = null,
+        RunType? runType = null,
+        CancellationToken ct = default)
     {
         var results = new List<StrategyRunSummary>();
 
@@ -32,6 +35,9 @@ public sealed class StrategyRunReadService
 
         await foreach (var run in runs.WithCancellation(ct).ConfigureAwait(false))
         {
+            if (runType.HasValue && run.RunType != runType.Value)
+                continue;
+
             results.Add(ToSummary(run));
         }
 

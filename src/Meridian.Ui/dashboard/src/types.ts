@@ -26,8 +26,8 @@ export interface MetricSnapshot {
 export interface ResearchRunRecord {
   id: string;
   strategyName: string;
-  engine: "Meridian Native" | "Lean";
-  mode: "paper" | "live";
+  engine: string;
+  mode: "backtest" | "paper" | "live";
   status: "Running" | "Queued" | "Needs Review" | "Completed";
   dataset: string;
   window: string;
@@ -308,4 +308,175 @@ export interface RunDiff {
   modifiedPositions: PositionDiffEntry[];
   parameterChanges: ParameterDiff[];
   metrics: MetricsDiff;
+}
+
+// --- Security reference ---
+
+export interface WorkstationSecurityReference {
+  securityId: string;
+  displayName: string;
+  assetClass: string;
+  currency: string;
+  status: "Active" | "Inactive" | "Pending";
+  primaryIdentifier: string | null;
+  subType: string | null;
+}
+
+// --- Portfolio types ---
+
+export interface PortfolioPositionSummary {
+  symbol: string;
+  quantity: number;
+  averageCostBasis: number;
+  realizedPnl: number;
+  unrealizedPnl: number;
+  isShort: boolean;
+  security: WorkstationSecurityReference | null;
+}
+
+export interface PortfolioSummary {
+  portfolioId: string;
+  runId: string;
+  asOf: string;
+  cash: number;
+  longMarketValue: number;
+  shortMarketValue: number;
+  grossExposure: number;
+  netExposure: number;
+  totalEquity: number;
+  realizedPnl: number;
+  unrealizedPnl: number;
+  commissions: number;
+  financing: number;
+  positions: PortfolioPositionSummary[];
+  securityResolvedCount: number;
+  securityMissingCount: number;
+}
+
+// --- Ledger types ---
+
+export interface LedgerTrialBalanceLine {
+  accountName: string;
+  accountType: string;
+  symbol: string | null;
+  financialAccountId: string | null;
+  balance: number;
+  entryCount: number;
+  security: WorkstationSecurityReference | null;
+}
+
+export interface LedgerJournalLine {
+  journalEntryId: string;
+  timestamp: string;
+  description: string;
+  totalDebits: number;
+  totalCredits: number;
+  lineCount: number;
+}
+
+export interface LedgerSummary {
+  ledgerReference: string;
+  runId: string;
+  asOf: string;
+  journalEntryCount: number;
+  ledgerEntryCount: number;
+  assetBalance: number;
+  liabilityBalance: number;
+  equityBalance: number;
+  revenueBalance: number;
+  expenseBalance: number;
+  trialBalance: LedgerTrialBalanceLine[];
+  journal: LedgerJournalLine[];
+  securityResolvedCount: number;
+  securityMissingCount: number;
+}
+
+// --- Equity curve types ---
+
+export interface EquityCurvePoint {
+  date: string;
+  totalEquity: number;
+  cash: number;
+  dailyReturn: number;
+  drawdownFromPeak: number;
+  drawdownFromPeakPercent: number;
+}
+
+export interface EquityCurveSummary {
+  runId: string;
+  initialEquity: number;
+  finalEquity: number;
+  maxDrawdown: number;
+  maxDrawdownPercent: number;
+  maxDrawdownRecoveryDays: number;
+  sharpeRatio: number;
+  sortinoRatio: number;
+  points: EquityCurvePoint[];
+}
+
+// --- Fill types ---
+
+export interface RunFillEntry {
+  fillId: string;
+  orderId: string;
+  symbol: string;
+  filledQuantity: number;
+  fillPrice: number;
+  commission: number;
+  filledAt: string;
+  accountId: string | null;
+}
+
+export interface RunFillSummary {
+  runId: string;
+  totalFills: number;
+  totalCommissions: number;
+  fills: RunFillEntry[];
+}
+
+// --- Attribution types ---
+
+export interface SymbolAttributionEntry {
+  symbol: string;
+  realizedPnl: number;
+  unrealizedPnl: number;
+  totalPnl: number;
+  tradeCount: number;
+  commissions: number;
+  marginInterestAllocated: number;
+}
+
+export interface RunAttributionSummary {
+  runId: string;
+  totalRealizedPnl: number;
+  totalUnrealizedPnl: number;
+  totalCommissions: number;
+  bySymbol: SymbolAttributionEntry[];
+}
+
+// --- Strategy run summary ---
+
+export type StrategyRunMode = "Backtest" | "Paper" | "Live";
+export type StrategyRunEngine = "Internal" | "QuantConnect" | "External";
+export type StrategyRunStatus = "Running" | "Paused" | "Completed" | "Failed" | "Cancelled";
+
+export interface StrategyRunSummary {
+  runId: string;
+  strategyId: string;
+  strategyName: string;
+  mode: StrategyRunMode;
+  engine: StrategyRunEngine;
+  status: StrategyRunStatus;
+  startedAt: string;
+  completedAt: string | null;
+  datasetReference: string | null;
+  feedReference: string | null;
+  portfolioId: string | null;
+  ledgerReference: string | null;
+  netPnl: number | null;
+  totalReturn: number | null;
+  finalEquity: number | null;
+  fillCount: number;
+  lastUpdatedAt: string;
+  auditReference: string | null;
 }
