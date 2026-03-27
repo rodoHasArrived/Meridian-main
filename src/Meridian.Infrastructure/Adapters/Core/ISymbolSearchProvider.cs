@@ -1,4 +1,5 @@
 using Meridian.Application.Subscriptions.Models;
+using Meridian.Contracts.Domain;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 
@@ -48,10 +49,10 @@ public interface ISymbolSearchProvider : IProviderMetadata
     /// <summary>
     /// Get detailed information about a specific symbol.
     /// </summary>
-    /// <param name="symbol">Symbol ticker.</param>
+    /// <param name="symbol">Symbol ticker as a typed <see cref="SymbolId"/>.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>Symbol details or null if not found.</returns>
-    Task<SymbolDetails?> GetDetailsAsync(string symbol, CancellationToken ct = default);
+    Task<SymbolDetails?> GetDetailsAsync(SymbolId symbol, CancellationToken ct = default);
 
     #region IProviderMetadata Default Implementations
 

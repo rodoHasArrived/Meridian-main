@@ -1,14 +1,25 @@
 namespace Meridian.Contracts.Domain;
 
 /// <summary>
-/// Zero-cost value object representing a market instrument symbol.
+/// Zero-cost value object representing a raw, provider-independent market instrument symbol.
+/// This is the "Symbol (raw)" type in the typed symbol hierarchy.
 /// Prevents accidental interchange of symbols with other string-typed IDs
 /// (e.g. <see cref="ProviderId"/> or <see cref="VenueCode"/>).
 /// </summary>
 /// <remarks>
+/// <para>
+/// The three symbol types form a strict hierarchy:
+/// </para>
+/// <list type="number">
+///   <item><description><see cref="ProviderSymbol"/> — raw, provider-scoped ticker (before mapping, e.g. <c>"AAPL.US"</c> from Stooq).</description></item>
+///   <item><description><see cref="SymbolId"/> — normalized ticker, provider-independent (e.g. <c>"AAPL"</c> after stripping exchange suffixes).</description></item>
+///   <item><description><see cref="CanonicalSymbol"/> — fully resolved, system-wide canonical symbol produced by the canonicalization pipeline.</description></item>
+/// </list>
+/// <para>
 /// Use this type on API boundaries and domain models instead of bare <see langword="string"/>
 /// to make the compiler enforce that a symbol is never used where a provider ID or venue is expected.
 /// Equality and comparison are case-insensitive to match industry conventions.
+/// </para>
 /// </remarks>
 public readonly struct SymbolId : IEquatable<SymbolId>, IComparable<SymbolId>
 {

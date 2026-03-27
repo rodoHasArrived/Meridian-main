@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Meridian.Application.Logging;
 using Meridian.Application.Subscriptions.Models;
+using Meridian.Contracts.Domain;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.Http;
@@ -249,11 +250,11 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
     /// <summary>
     /// Get detailed information about a specific symbol.
     /// </summary>
-    public async Task<SymbolDetails?> GetDetailsAsync(string symbol, CancellationToken ct = default)
+    public async Task<SymbolDetails?> GetDetailsAsync(SymbolId symbol, CancellationToken ct = default)
     {
         ThrowIfDisposed();
 
-        if (string.IsNullOrWhiteSpace(symbol))
+        if (string.IsNullOrWhiteSpace(symbol.Value))
             return null;
 
         if (!HasValidCredentials())
@@ -261,7 +262,7 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
 
         await RateLimiter.WaitForSlotAsync(ct).ConfigureAwait(false);
 
-        var normalizedSymbol = symbol.ToUpperInvariant();
+        var symbolValue = symbol.Value;
 
         try
         {
