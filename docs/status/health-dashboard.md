@@ -1,7 +1,7 @@
 # Documentation Health Dashboard
 
 > Auto-generated documentation health report. Do not edit manually.
-> Last updated: 2026-03-26T20:01:34.897397+00:00
+> Last updated: 2026-03-27T19:42:00.979365+00:00
 
 ## Overall Health Score
 
@@ -14,10 +14,10 @@
 
 | Metric | Value |
 |--------|-------|
-| Total documentation files | 275 |
-| Total lines | 106,937 |
-| Average file size (lines) | 388.9 |
-| Orphaned files | 82 |
+| Total documentation files | 286 |
+| Total lines | 110,604 |
+| Average file size (lines) | 386.7 |
+| Orphaned files | 80 |
 | Files without headings | 0 |
 | Stale files (>90 days) | 0 |
 | TODO/FIXME markers | 309 |
@@ -59,7 +59,7 @@ These files are not linked from any other Markdown file in the repository:
 - `.codex/skills/meridian-brainstorm/references/competitive-landscape.md`
 - `.codex/skills/meridian-code-review/SKILL.md`
 - `.codex/skills/meridian-provider-builder/SKILL.md`
-- ... and 62 more
+- ... and 60 more
 
 ## Trend
 
@@ -67,7 +67,7 @@ These files are not linked from any other Markdown file in the repository:
 
 | Date | Score | Files | Orphans | Stale |
 |------|-------|-------|---------|-------|
-| 2026-03-26 | 87 | 275 | 82 | 0 |
+| 2026-03-27 | 87 | 286 | 80 | 0 |
 
 ---
 

@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-03-27 15:15:00 UTC. Do not edit manually.
+> Auto-generated on 2026-03-27 19:41:57 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -512,6 +512,7 @@ Meridian-main
 │   ├── evaluations
 │   │   ├── 2026-03-brainstorm-next-frontier.md
 │   │   ├── assembly-performance-opportunities.md
+│   │   ├── competitive-analysis-2026-03.md
 │   │   ├── data-quality-monitoring-evaluation.md
 │   │   ├── desktop-improvements-executive-summary.md
 │   │   ├── desktop-platform-improvements-implementation-guide.md
@@ -786,7 +787,9 @@ Meridian-main
 │   │   │   ├── SensitiveValueMasker.cs
 │   │   │   └── StorageConfigExtensions.cs
 │   │   ├── Coordination
+│   │   │   ├── ClusterCoordinatorService.cs
 │   │   │   ├── CoordinationSnapshot.cs
+│   │   │   ├── IClusterCoordinator.cs
 │   │   │   ├── ICoordinationStore.cs
 │   │   │   ├── ILeaseManager.cs
 │   │   │   ├── IScheduledWorkOwnershipService.cs
@@ -796,10 +799,12 @@ Meridian-main
 │   │   │   ├── LeaseRecord.cs
 │   │   │   ├── ScheduledWorkOwnershipService.cs
 │   │   │   ├── SharedStorageCoordinationStore.cs
+│   │   │   ├── SplitBrainDetector.cs
 │   │   │   └── SubscriptionOwnershipService.cs
 │   │   ├── Credentials
 │   │   │   └── ICredentialStore.cs
 │   │   ├── DirectLending
+│   │   │   ├── DailyAccrualWorker.cs
 │   │   │   ├── DirectLendingEventRebuilder.cs
 │   │   │   ├── DirectLendingOutboxDispatcher.cs
 │   │   │   ├── DirectLendingServiceSupport.cs
@@ -881,6 +886,7 @@ Meridian-main
 │   │   │   ├── EventPipeline.cs
 │   │   │   ├── FSharpEventValidator.cs
 │   │   │   ├── HotPathBatchSerializer.cs
+│   │   │   ├── IDedupStore.cs
 │   │   │   ├── IEventValidator.cs
 │   │   │   ├── IngestionJobService.cs
 │   │   │   ├── PersistentDedupLedger.cs
@@ -1008,6 +1014,7 @@ Meridian-main
 │   │   │   └── OrderFillResult.cs
 │   │   ├── Metrics
 │   │   │   ├── BacktestMetricsEngine.cs
+│   │   │   ├── PostSimulationTcaReporter.cs
 │   │   │   └── XirrCalculator.cs
 │   │   ├── Plugins
 │   │   │   └── StrategyPluginLoader.cs
@@ -1044,6 +1051,7 @@ Meridian-main
 │   │   ├── PortfolioSnapshot.cs
 │   │   ├── Position.cs
 │   │   ├── StrategyParameterAttribute.cs
+│   │   ├── TcaReportModels.cs
 │   │   └── TradeTicket.cs
 │   ├── Meridian.Contracts
 │   │   ├── Api
@@ -2122,6 +2130,7 @@ Meridian-main
 │       │   ├── DashboardViewModel.cs
 │       │   ├── DataQualityViewModel.cs
 │       │   ├── DiagnosticsPageViewModel.cs
+│       │   ├── DirectLendingViewModel.cs
 │       │   ├── ExportPresetsViewModel.cs
 │       │   ├── IPageActionBarProvider.cs
 │       │   ├── LeanIntegrationViewModel.cs
@@ -2195,6 +2204,8 @@ Meridian-main
 │       │   ├── DataSourcesPage.xaml.cs
 │       │   ├── DiagnosticsPage.xaml
 │       │   ├── DiagnosticsPage.xaml.cs
+│       │   ├── DirectLendingPage.xaml
+│       │   ├── DirectLendingPage.xaml.cs
 │       │   ├── EventReplayPage.xaml
 │       │   ├── EventReplayPage.xaml.cs
 │       │   ├── ExportPresetsPage.xaml
@@ -2314,6 +2325,7 @@ Meridian-main
 │   │   ├── MarketImpactFillModelTests.cs
 │   │   ├── Meridian.Backtesting.Tests.csproj
 │   │   ├── SimulatedPortfolioTests.cs
+│   │   ├── TcaReporterTests.cs
 │   │   ├── XirrCalculatorTests.cs
 │   │   └── YahooFinanceBacktestIntegrationTests.cs
 │   ├── Meridian.DirectLending.Tests
@@ -2390,7 +2402,9 @@ Meridian-main
 │   │   │   │   ├── ConfigValidationPipelineTests.cs
 │   │   │   │   └── ConfigValidatorTests.cs
 │   │   │   ├── Coordination
+│   │   │   │   ├── ClusterCoordinatorServiceTests.cs
 │   │   │   │   ├── LeaseManagerTests.cs
+│   │   │   │   ├── SplitBrainDetectorTests.cs
 │   │   │   │   └── SubscriptionOrchestratorCoordinationTests.cs
 │   │   │   ├── Credentials
 │   │   │   │   ├── CredentialStatusTests.cs
