@@ -586,6 +586,24 @@
                                                VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
+                            <Button x:Name="TickerStripToggleButton"
+                                    Style="{StaticResource GhostButtonStyle}"
+                                    HorizontalAlignment="Stretch"
+                                    Click="OnTickerStripToggleClick"
+                                    Margin="0,8,0,0"
+                                    AutomationProperties.AutomationId="TickerStripToggleButton"
+                                    AutomationProperties.Name="Toggle Ticker Strip"
+                                    ToolTip="Toggle always-on-top live ticker strip (bid/ask/last)">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                    <TextBlock Text="&#x1F4C8;"
+                                               FontSize="13"
+                                               VerticalAlignment="Center" />
+                                    <TextBlock x:Name="TickerStripButtonLabel"
+                                               Text="Ticker Strip"
+                                               Margin="8,0,0,0"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
                         </StackPanel>
                     </Border>
                 </Grid>

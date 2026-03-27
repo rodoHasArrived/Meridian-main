@@ -25,8 +25,10 @@ public partial class ScheduleManagerPage : Page { }
 
 // Monitoring pages
 public partial class DataQualityPage : Page { }
+public partial class QualityArchivePage : Page { }
 public partial class CollectionSessionPage : Page { }
 public partial class ArchiveHealthPage : Page { }
+public partial class ClusterStatusPage : UserControl { }
 public partial class ServiceManagerPage : Page { }
 public partial class SystemHealthPage : Page { }
 public partial class DiagnosticsPage : Page { }
@@ -91,3 +93,6 @@ public partial class AddProviderWizardPage : Page { }
 
 // Activity Log page
 public partial class ActivityLogPage : Page { }
+
+// Plugin Management page
+public partial class PluginManagementPage : Page { }

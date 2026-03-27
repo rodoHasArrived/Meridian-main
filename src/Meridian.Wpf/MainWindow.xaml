@@ -75,8 +75,77 @@
 
         <Frame x:Name="RootFrame"
                Grid.Row="1"
+               AllowDrop="True"
                Background="{DynamicResource ShellWindowBackgroundBrush}"
                NavigationUIVisibility="Hidden"
-               Navigated="OnRootFrameNavigated" />
+               Navigated="OnRootFrameNavigated"
+               DragEnter="OnRootFrameDragEnter"
+               DragOver="OnRootFrameDragOver"
+               DragLeave="OnRootFrameDragLeave"
+               Drop="OnRootFrameDrop" />
+
+        <!-- Drop overlay: shown while a file drag is in progress over the window -->
+        <Grid x:Name="DropOverlay"
+              Grid.Row="0" Grid.RowSpan="2"
+              Visibility="Collapsed"
+              IsHitTestVisible="False"
+              Panel.ZIndex="100">
+            <Rectangle Fill="#AA1A3A5C" />
+            <Border BorderBrush="#4499CC" BorderThickness="3" Margin="24" CornerRadius="8">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <TextBlock x:Name="DropOverlayIcon"
+                               Text="&#xE896;"
+                               FontFamily="{StaticResource SymbolThemeFontFamily}"
+                               FontSize="48" Foreground="White"
+                               HorizontalAlignment="Center" />
+                    <TextBlock x:Name="DropOverlayTitle"
+                               Text="Drop to Import"
+                               FontSize="24" FontWeight="Bold" Foreground="White"
+                               HorizontalAlignment="Center" Margin="0,12,0,4" />
+                    <TextBlock x:Name="DropOverlaySubtitle"
+                               Text="CSV · JSON · JSONL · Parquet"
+                               FontSize="14" Foreground="#AACCFF"
+                               HorizontalAlignment="Center" />
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- Clipboard symbol detection banner: floats at top of content area when symbols found -->
+        <Border x:Name="ClipboardSymbolBanner"
+                Grid.Row="1"
+                VerticalAlignment="Top"
+                Visibility="Collapsed"
+                Padding="12,8"
+                Panel.ZIndex="50"
+                Background="#1A2A4A"
+                BorderBrush="#4488CC" BorderThickness="0,0,0,1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0"
+                           Text="&#xE72D;"
+                           FontFamily="{StaticResource SymbolThemeFontFamily}"
+                           Foreground="#66AAFF" FontSize="16"
+                           VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <TextBlock x:Name="ClipboardBannerText"
+                           Grid.Column="1"
+                           Foreground="White" VerticalAlignment="Center" FontSize="13"
+                           TextTrimming="CharacterEllipsis"/>
+                <Button x:Name="ClipboardAddButton"
+                        Grid.Column="2"
+                        Content="Add to Watchlist"
+                        Margin="12,0,8,0" Padding="10,4"
+                        Click="ClipboardAdd_Click"/>
+                <Button x:Name="ClipboardDismissButton"
+                        Grid.Column="3"
+                        Content="Dismiss"
+                        Padding="10,4"
+                        Click="ClipboardDismiss_Click"/>
+            </Grid>
+        </Border>
     </Grid>
 </Window>

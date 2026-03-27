@@ -16,7 +16,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Meridian.Wpf</RootNamespace>
     <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <ImplicitUsings>disable</ImplicitUsings>
     <!-- Exclude all source files on non-Windows -->
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
@@ -27,8 +27,10 @@
     <TargetFramework>net9.0-windows</TargetFramework>
     <RootNamespace>Meridian.Wpf</RootNamespace>
     <UseWPF>true</UseWPF>
+    <!-- Required for System.Windows.Forms.NotifyIcon (balloon-tip notifications) -->
+    <UseWindowsForms>true</UseWindowsForms>
     <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <ImplicitUsings>disable</ImplicitUsings>
     <!-- ApplicationIcon temporarily commented out until Assets/app.ico is created -->
     <!-- <ApplicationIcon>Assets\app.ico</ApplicationIcon> -->
 

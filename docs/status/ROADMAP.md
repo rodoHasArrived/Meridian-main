@@ -1,10 +1,10 @@
 # Meridian - Project Roadmap
 
 **Last Updated:** 2026-03-26
-**Status:** Refocused on core platform functionality
+**Status:** Refocused on core platform functionality and active native desktop redevelopment
 **Repository Snapshot (2026-03-24):** solution projects: 35 | `src/` projects: 27 | test projects: 7 | workflow files: 35 | source files: 1,118 (1,073 C# + 45 F#) | test files: 335 (326 C# + 9 F#) | tests: ~4,424
 
-Meridian is a self-hosted trading platform. The active delivery focus is the four core platform pillars: **data collection**, **backtesting**, **real-time execution**, and **portfolio/strategy tracking**. The web dashboard is the primary operator surface. The WPF desktop app remains in the solution build as a Windows-first surface (full app on Windows, stubbed on non-Windows), but it is still a secondary delivery track relative to the web dashboard (see `src/Meridian.Wpf/`).
+Meridian is a self-hosted trading platform. The active delivery focus is the four core platform pillars: **data collection**, **backtesting**, **real-time execution**, and **portfolio/strategy tracking**. The web dashboard remains the primary cross-platform operator surface. As of **March 26, 2026**, the WPF desktop app is back in **active development** as the Windows-first workstation track, beginning with shell modernization and workflow-page redesigns in `src/Meridian.Wpf/`.
 
 Use this document with:
 
@@ -140,7 +140,7 @@ Multi-run comparison, performance attribution, and strategy lifecycle management
 - Ledger reconciliation exposed through the web dashboard
 - Security Master productization (code foundations exist; Wave 6 delivers operator-facing surfaces — see [`docs/plans/security-master-productization-roadmap.md`](../plans/security-master-productization-roadmap.md))
 - Brokerage gateway live-order integration (adapters exist; live-validated runtime paths pending)
-- WPF desktop coverage has improved with dedicated ViewModels, but shell and workflow pages such as `MainPage` and `BackfillPage` still retain significant code-behind orchestration and direct UI state sync
+- WPF desktop redevelopment is active again: the shell refresh is in flight and operator pages such as `MainPage`, `LiveDataViewerPage`, and `ProviderPage` are being modernized, but many workflow pages still retain significant code-behind orchestration and direct UI state sync
 
 ### Planned
 
@@ -157,8 +157,8 @@ Multi-run comparison, performance attribution, and strategy lifecycle management
 - Governance: multi-ledger, trial balance, cash-flow, report packs
 - Multi-instance collector coordination and horizontal scale-out
 - Phase 16 assembly-level performance optimizations
-- WPF desktop expansion beyond maintenance mode should follow continued MVVM extraction in shell/workflow pages such as `MainPage` and `BackfillPage`
-- WPF desktop app (code in `src/Meridian.Wpf/` — included in solution build, see docs/development/wpf-implementation-notes.md)
+- Deeper WPF workstation coverage should continue after the current shell/page modernization wave and further MVVM extraction in workflow pages such as `BackfillPage`
+- WPF desktop app (code in `src/Meridian.Wpf/` - included in solution build, now actively redeveloping as the Windows-first workstation surface)
 
 ---
 

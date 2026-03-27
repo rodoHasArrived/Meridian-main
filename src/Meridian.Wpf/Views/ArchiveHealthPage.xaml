@@ -39,6 +39,12 @@
                             <TextBlock Text="Quick Check" />
                         </StackPanel>
                     </Button>
+                    <Button x:Name="VerifyAuditChainButton" Click="VerifyAuditChain_Click" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0" ToolTip="Verify compliance-grade tamper-evident audit chain">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE72E;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="14" Margin="0,0,6,0" />
+                            <TextBlock Text="Verify Integrity" />
+                        </StackPanel>
+                    </Button>
                     <Button x:Name="RefreshButton" Click="Refresh_Click" Style="{StaticResource GhostButtonStyle}">
                         <TextBlock Text="&#xE72C;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="14" />
                     </Button>
@@ -126,6 +132,14 @@
                             <TextBlock Text="&#xE787;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="14"
                                        Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,8,0" />
                             <TextBlock x:Name="LastVerificationText" Text="Last full verification: Never"
+                                       Style="{StaticResource ConsoleTextMutedStyle}" />
+                        </StackPanel>
+
+                        <!-- Audit Chain Status -->
+                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                            <TextBlock x:Name="AuditChainIcon" Text="&#xE72E;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="14"
+                                       Foreground="{StaticResource InfoColorBrush}" Margin="0,0,8,0" />
+                            <TextBlock x:Name="AuditChainStatusText" Text="Audit chain: Not verified"
                                        Style="{StaticResource ConsoleTextMutedStyle}" />
                         </StackPanel>
                     </StackPanel>

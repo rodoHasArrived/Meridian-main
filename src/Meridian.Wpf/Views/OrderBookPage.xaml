@@ -3,6 +3,7 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:views="clr-namespace:Meridian.Wpf.Views"
       mc:Ignorable="d"
       Background="{DynamicResource ShellWindowBackgroundBrush}"
       Loaded="OnPageLoaded"
@@ -79,6 +80,11 @@
 
         <!-- Main Content -->
         <Grid Grid.Row="1" Margin="24,0,24,24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" MinHeight="280"/>
+                <RowDefinition Height="12"/>
+                <RowDefinition Height="190"/>
+            </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="16"/>
@@ -86,7 +92,7 @@
             </Grid.ColumnDefinitions>
 
             <!-- Order Book Ladder -->
-            <Border Grid.Column="0" Style="{StaticResource CardStyle}">
+            <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource CardStyle}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -221,7 +227,7 @@
             </Border>
 
             <!-- Right Panel: Stats and Trade Tape -->
-            <StackPanel Grid.Column="2">
+            <StackPanel Grid.Row="0" Grid.Column="2">
                 <!-- Market Stats -->
                 <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
                     <StackPanel>
@@ -341,6 +347,36 @@
                     </StackPanel>
                 </Border>
             </StackPanel>
+
+            <!-- Depth Heatmap Panel — spans full width below the ladder and stats -->
+            <Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3"
+                    Style="{StaticResource CardStyle}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Card header -->
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6">
+                        <TextBlock Text="DEPTH HEATMAP"
+                                   FontSize="11" FontWeight="SemiBold"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   VerticalAlignment="Center"/>
+                        <TextBlock Text="bid/ask liquidity density · green = bids · red = asks · yellow = mid"
+                                   FontSize="9" Margin="12,0,0,0"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   VerticalAlignment="Center" Opacity="0.6"/>
+                    </StackPanel>
+
+                    <!-- Heatmap control — DataContext bound to the sibling VM on OrderBookViewModel -->
+                    <views:OrderBookHeatmapControl
+                        Grid.Row="1"
+                        DataContext="{Binding Heatmap}"
+                        MinHeight="120"/>
+                </Grid>
+            </Border>
+
         </Grid>
     </Grid>
 </Page>

@@ -452,6 +452,12 @@ public sealed class DashboardViewModel : BindableBase, IDisposable
             ConnectionStatusFill = e.State == ConnectionState.Connected ? _successBrush : _errorBrush;
             AddActivityItem($"Connection {state.ToLowerInvariant()}", $"Provider: {e.Provider ?? "Unknown"}");
             UpdateCollectorBadge();
+
+            // Reflect collection activity on the taskbar icon.
+            if (e.State == ConnectionState.Connected)
+                WpfServices.TaskbarProgressService.Instance.SetIndeterminate();
+            else
+                WpfServices.TaskbarProgressService.Instance.Clear();
         });
     }
 

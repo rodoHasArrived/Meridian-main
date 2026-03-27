@@ -4,6 +4,9 @@
       Background="{DynamicResource ShellWindowBackgroundBrush}"
       Loaded="OnPageLoaded"
       AutomationProperties.Name="Diagnostics">
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </Page.Resources>
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
         <StackPanel MaxWidth="1200">
 
@@ -104,7 +107,7 @@
                 </StackPanel>
             </Border>
 
-            <!-- Configuration Check Card -->
+            <!-- Diagnostic Output Card -->
             <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
                 <StackPanel>
                     <TextBlock Text="Configuration Check" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,16" />
@@ -167,7 +170,7 @@
                     </Grid>
 
                     <!-- Provider Configuration -->
-                    <Grid Margin="0,0,0,0">
+                    <Grid Margin="0,0,0,10">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="180" />
@@ -184,6 +187,80 @@
                                    Foreground="{StaticResource ConsoleTextMutedBrush}"
                                    VerticalAlignment="Center" />
                     </Grid>
+
+                    <!-- Connectivity Status -->
+                    <Grid Margin="0,0,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="180" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Ellipse x:Name="ConnectivityStatusDot" Grid.Column="0"
+                                 Width="10" Height="10"
+                                 Fill="{StaticResource ConsoleTextMutedBrush}"
+                                 VerticalAlignment="Center" Margin="0,0,10,0" />
+                        <TextBlock Grid.Column="1" Text="Connectivity"
+                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                   VerticalAlignment="Center" />
+                        <TextBlock x:Name="ConnectivityStatusText" Grid.Column="2" 
+                                   Text="{Binding ConnectivityStatus}"
+                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                   VerticalAlignment="Center" FontWeight="SemiBold" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Performance Profile Card -->
+            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="Performance Profile" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,16" />
+
+                    <!-- Latency Percentiles -->
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                        <!-- p50 Card -->
+                        <Border Width="100" Height="80" CornerRadius="8" Background="#1A3A5C" Margin="0,0,12,0">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding P50Ms}" FontSize="22" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" />
+                                <TextBlock Text="p50 ms" Foreground="#888" FontSize="11" HorizontalAlignment="Center" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- p95 Card -->
+                        <Border Width="100" Height="80" CornerRadius="8" Background="#1A3A5C" Margin="0,0,12,0">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding P95Ms}" FontSize="22" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" />
+                                <TextBlock Text="p95 ms" Foreground="#888" FontSize="11" HorizontalAlignment="Center" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- p99 Card -->
+                        <Border Width="100" Height="80" CornerRadius="8" Background="#1A3A5C">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding P99Ms}" FontSize="22" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" />
+                                <TextBlock Text="p99 ms" Foreground="#888" FontSize="11" HorizontalAlignment="Center" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- CoLocation Badge -->
+                    <Border x:Name="CoLocationBadge" 
+                            Visibility="{Binding CoLocationActive, Converter={StaticResource BoolToVisibilityConverter}}"
+                            Background="#1A5C3A" CornerRadius="6" Padding="12,6" Margin="0,8,0,0" Width="Auto" HorizontalAlignment="Left">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="⚡" FontSize="14" Margin="0,0,6,0" VerticalAlignment="Center" />
+                            <TextBlock Text="CoLocation Profile Active" Foreground="#3AD16A" FontSize="12" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Refresh Button -->
+                    <Button Command="{Binding RefreshLatencyCommand}" 
+                            Style="{StaticResource GhostButtonStyle}"
+                            Margin="0,12,0,0" HorizontalAlignment="Left" Padding="8,6">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE895;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="12" Margin="0,0,6,0" VerticalAlignment="Center" />
+                            <TextBlock Text="Refresh Metrics" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
                 </StackPanel>
             </Border>
 

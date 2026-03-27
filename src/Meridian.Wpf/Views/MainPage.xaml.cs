@@ -562,6 +562,12 @@ public partial class MainPage : Page
         _ = NavigateToWorkspacePageAsync(_currentWorkspaceId, "Help", updateSelection: false);
     }
 
+    private void OnTickerStripToggleClick(object sender, RoutedEventArgs e)
+    {
+        TickerStripService.Toggle();
+        TickerStripButtonLabel.Text = TickerStripService.IsOpen ? "Hide Ticker" : "Ticker Strip";
+    }
+
     private void OnRefreshButtonClick(object sender, RoutedEventArgs e)
     {
         _messagingService.Send("RefreshStatus");

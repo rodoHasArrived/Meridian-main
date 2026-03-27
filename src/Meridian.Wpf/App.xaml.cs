@@ -26,8 +26,9 @@ namespace Meridian.Wpf;
 /// </summary>
 public partial class App : System.Windows.Application
 {
-    private static bool _isFirstRun;
-    private static bool _isFixtureMode;
+    private static bool     _isFirstRun;
+    private static bool     _isFixtureMode;
+    private static string[] _launchArgs = [];
     private IHost? _host;
 
     /// <summary>
@@ -50,6 +51,12 @@ public partial class App : System.Windows.Application
     /// Gets whether this is the first run of the application.
     /// </summary>
     public static bool IsFirstRun => _isFirstRun;
+
+    /// <summary>
+    /// Gets the command-line arguments passed at launch.
+    /// Used by <see cref="MainWindow"/> to handle jump-list and deep-link args.
+    /// </summary>
+    public static string[] GetLaunchArgs() => _launchArgs;
 
     /// <summary>
     /// Gets the notification service instance.
@@ -83,8 +90,28 @@ public partial class App : System.Windows.Application
 
     private async void OnStartup(object sender, StartupEventArgs e)
     {
+        // Register the AppUserModelID before any window is shown so that the
+        // Windows shell (taskbar, JumpList, toast activations) maps all
+        // notifications back to this process identity.
+        WpfServices.ToastNotificationService.SetAppUserModelId();
+
+        // Enforce single instance: if another Meridian window is already running,
+        // forward the launch args to it via named pipe and exit cleanly.
+        _launchArgs = e.Args;
+        if (!WpfServices.SingleInstanceService.Instance.TryAcquire())
+        {
+            WpfServices.SingleInstanceService.SendArgsToPrimary(e.Args);
+            Shutdown();
+            return;
+        }
+
         // Detect fixture mode from --fixture arg or MDC_FIXTURE_MODE env var
         _isFixtureMode = DetectFixtureMode(e.Args);
+
+        // Parse any deep-link navigation tag from launch args (e.g. --navigate Backfill).
+        // Toast balloon-tip clicks raise BalloonTipClicked in-process, but external
+        // activations (future WinRT toasts, shortcuts) can pass this argument.
+        var deepLinkTag = ParseDeepLinkTag(e.Args);
 
         // Configure the host with dependency injection
         _host = Host.CreateDefaultBuilder()
@@ -110,8 +137,44 @@ public partial class App : System.Windows.Application
         Current.MainWindow = mainWindow;
         mainWindow.Show();
 
+        // Register taskbar jump list tasks (Start Collector, Open Dashboard, etc.).
+        WpfServices.JumpListService.Instance.Register();
+
+        // Begin listening for args forwarded from secondary instances (jump list re-launch).
+        WpfServices.SingleInstanceService.Instance.StartListening();
+
+        // If a deep-link page was requested, navigate immediately after the window opens.
+        if (!string.IsNullOrEmpty(deepLinkTag))
+            WpfServices.NavigationService.Instance.NavigateTo(deepLinkTag);
+
         // Fire-and-forget async initialization with proper exception handling
         await SafeOnStartupAsync();
+    }
+
+    /// <summary>
+    /// Parses a deep-link navigation tag from command-line args.
+    /// Supports <c>--navigate &lt;PageTag&gt;</c> (e.g. <c>--navigate Backfill</c>)
+    /// and <c>--page=&lt;PageTag&gt;</c> (e.g. <c>--page=Dashboard</c>, used by jump list tasks).
+    /// </summary>
+    private static string? ParseDeepLinkTag(string[] args)
+    {
+        for (var i = 0; i < args.Length - 1; i++)
+        {
+            if (string.Equals(args[i], "--navigate", StringComparison.OrdinalIgnoreCase))
+                return args[i + 1];
+        }
+
+        // Also support --page=PageTag format used by taskbar jump list tasks.
+        foreach (var arg in args)
+        {
+            if (arg.StartsWith("--page=", StringComparison.OrdinalIgnoreCase))
+            {
+                var tag = arg["--page=".Length..];
+                if (!string.IsNullOrWhiteSpace(tag)) return tag;
+            }
+        }
+
+        return null;
     }
 
     /// <summary>
@@ -189,6 +252,7 @@ public partial class App : System.Windows.Application
         services.AddSingleton(_ => WpfServices.BackgroundTaskSchedulerService.Instance);
         services.AddSingleton(_ => WpfServices.OfflineTrackingPersistenceService.Instance);
         services.AddSingleton(_ => WpfServices.PendingOperationsQueueService.Instance);
+        services.AddSingleton(_ => WpfServices.ToastNotificationService.Instance);
 
         // ── MainWindow ──────────────────────────────────────────────────────
         services.AddSingleton<MainWindow>();
@@ -251,6 +315,7 @@ public partial class App : System.Windows.Application
         services.AddTransient<RunLedgerPage>();
         services.AddTransient<SecurityMasterPage>();
         services.AddTransient<Meridian.Wpf.ViewModels.SecurityMasterViewModel>();
+        services.AddTransient<PluginManagementPage>();
 
         // ── Backtesting service ──────────────────────────────────────────────
         services.AddSingleton(_ => WpfServices.BacktestService.Instance);
@@ -267,6 +332,12 @@ public partial class App : System.Windows.Application
         services.AddTransient<Meridian.Wpf.ViewModels.StrategyRunDetailViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.StrategyRunPortfolioViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.StrategyRunLedgerViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.PluginManagementViewModel>();
+
+        // ── Plugin loader service ────────────────────────────────────────────
+        services.AddSingleton<Meridian.Infrastructure.DataSources.DataSourceRegistry>();
+        services.AddSingleton<Meridian.Application.Services.IPluginLoaderService,
+                              Meridian.Application.Services.PluginLoaderService>();
     }
 
     private static void RegisterStrategyWorkspaceServices(IServiceCollection services)
@@ -339,6 +410,10 @@ public partial class App : System.Windows.Application
             // Start background task scheduler
             await InitializeBackgroundServicesAsync();
 
+            // Handle --start-collector launch arg now that connection monitoring is active.
+            if (Array.Exists(_launchArgs, a => string.Equals(a, "--start-collector", StringComparison.OrdinalIgnoreCase)))
+                await StartCollectorFromLaunchArgAsync();
+
             // Notify if running in fixture mode
             if (_isFixtureMode)
             {
@@ -410,6 +485,33 @@ public partial class App : System.Windows.Application
     }
 
     /// <summary>
+    /// Starts the data collector as requested by the <c>--start-collector</c> launch arg.
+    /// Runs after all services are initialised so connection monitoring is active.
+    /// </summary>
+    private static async Task StartCollectorFromLaunchArgAsync(CancellationToken ct = default)
+    {
+        try
+        {
+            var provider = WpfServices.ConnectionService.Instance.CurrentProvider ?? "default";
+            var success  = await WpfServices.ConnectionService.Instance.ConnectAsync(provider, ct);
+
+            WpfServices.NotificationService.Instance.ShowNotification(
+                success ? "Collector Started" : "Start Failed",
+                success
+                    ? "Data collection started via taskbar jump list."
+                    : "Failed to start collector — check provider settings.",
+                success
+                    ? NotificationType.Success
+                    : NotificationType.Error,
+                success ? 5000 : 0);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[App] StartCollectorFromLaunchArg failed: {ex.Message}");
+        }
+    }
+
+    /// <summary>
     /// Restores the last workspace session state (active page, window bounds).
     /// </summary>
     private static async Task RestoreWorkspaceSessionAsync(CancellationToken ct = default)
@@ -466,6 +568,7 @@ public partial class App : System.Windows.Application
     {
         await SafeOnExitAsync();
         _host?.Dispose();
+        WpfServices.SingleInstanceService.Instance.Dispose();
     }
 
     /// <summary>
@@ -478,6 +581,9 @@ public partial class App : System.Windows.Application
         try
         {
             System.Diagnostics.Debug.WriteLine("App exiting, shutting down services...");
+
+            // Close any floating tear-off quote panels before service shutdown
+            WpfServices.TearOffPanelService.Instance.CloseAll();
 
             using var cts = new CancellationTokenSource(ShutdownTimeoutMs);
 
@@ -494,6 +600,10 @@ public partial class App : System.Windows.Application
             };
 
             await Task.WhenAll(shutdownTasks);
+
+            // Dispose the NotifyIcon so the system-tray icon is removed cleanly.
+            try { WpfServices.ToastNotificationService.Instance.Dispose(); }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[App] Error disposing ToastNotificationService: {ex.Message}"); }
 
             System.Diagnostics.Debug.WriteLine("Services shut down cleanly");
         }

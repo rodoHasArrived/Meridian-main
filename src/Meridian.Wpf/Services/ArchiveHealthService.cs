@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Meridian.Contracts.Archive;
+using Meridian.Storage.Services;
 using Meridian.Ui.Services;
 using HttpClientFactoryProvider = Meridian.Ui.Services.HttpClientFactoryProvider;
 using HttpClientNames = Meridian.Ui.Services.HttpClientNames;
@@ -175,6 +176,32 @@ public sealed class ArchiveHealthService
             issue.ResolvedAt = DateTime.UtcNow;
             await SaveHealthStatusAsync(status);
             IssueResolved?.Invoke(this, new ArchiveIssueEventArgs { Issue = issue });
+        }
+    }
+
+    public async Task<AuditChainVerifyResult> VerifyAuditChainAsync(CancellationToken ct = default)
+    {
+        try
+        {
+            var config = await ConfigService.Instance.LoadConfigAsync();
+            var dataRoot = config?.DataRoot ?? "data";
+            var basePath = Path.IsPathRooted(dataRoot)
+                ? dataRoot
+                : Path.Combine(AppContext.BaseDirectory, dataRoot);
+
+            var checksumService = new StorageChecksumService();
+            var result = await checksumService.VerifyAuditChainAsync(basePath, ct);
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            return new AuditChainVerifyResult
+            {
+                IsValid = false,
+                EntriesChecked = 0,
+                FirstTamperPath = ex.Message
+            };
         }
     }
 

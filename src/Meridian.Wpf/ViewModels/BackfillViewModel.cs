@@ -32,6 +32,10 @@ public sealed class BackfillViewModel : BindableBase, IDisposable
     private readonly DispatcherTimer _progressPollTimer;
     private CancellationTokenSource? _backfillCts;
 
+    // Last known symbol counts — used to restore taskbar progress after a resume.
+    private ulong _lastCompletedSymbols;
+    private ulong _lastTotalSymbols;
+
     // ── Public collections ──────────────────────────────────────────────────
     public ObservableCollection<SymbolProgressInfo> SymbolProgress { get; } = new();
     public ObservableCollection<ScheduledJobInfo> ScheduledJobs { get; } = new();
@@ -413,6 +417,7 @@ public sealed class BackfillViewModel : BindableBase, IDisposable
         IsBackfillActive = true;
         IsProgressVisible = true;
         PauseButtonContent = "Pause";
+        WpfServices.TaskbarProgressService.Instance.SetIndeterminate();
 
         _notificationService.ShowNotification(
             "Backfill Started",
@@ -436,12 +441,14 @@ public sealed class BackfillViewModel : BindableBase, IDisposable
             _progressPollTimer.Stop();
             BackfillStatusText = "Cancelled";
             IsBackfillActive = false;
+            WpfServices.TaskbarProgressService.Instance.Clear();
         }
         catch (Exception ex)
         {
             _progressPollTimer.Stop();
             BackfillStatusText = "Failed";
             IsBackfillActive = false;
+            WpfServices.TaskbarProgressService.Instance.SetError();
 
             _notificationService.ShowNotification(
                 "Backfill Failed",
@@ -457,6 +464,7 @@ public sealed class BackfillViewModel : BindableBase, IDisposable
             _backfillService.Resume();
             BackfillStatusText = "Running...";
             PauseButtonContent = "Pause";
+            WpfServices.TaskbarProgressService.Instance.SetNormal(_lastCompletedSymbols, _lastTotalSymbols);
             _notificationService.ShowNotification("Backfill Resumed", "Backfill operation has been resumed.", NotificationType.Info);
         }
         else
@@ -464,6 +472,7 @@ public sealed class BackfillViewModel : BindableBase, IDisposable
             _backfillService.Pause();
             BackfillStatusText = "Paused";
             PauseButtonContent = "Resume";
+            WpfServices.TaskbarProgressService.Instance.SetPaused();
             _notificationService.ShowNotification("Backfill Paused", "Backfill operation has been paused.", NotificationType.Warning);
         }
     }
@@ -476,6 +485,7 @@ public sealed class BackfillViewModel : BindableBase, IDisposable
         BackfillStatusText = "Cancelled";
         IsBackfillActive = false;
         IsProgressVisible = false;
+        WpfServices.TaskbarProgressService.Instance.Clear();
         _notificationService.ShowNotification("Backfill Cancelled", "The backfill operation was cancelled.", NotificationType.Warning);
     }
 
@@ -496,6 +506,7 @@ public sealed class BackfillViewModel : BindableBase, IDisposable
             IsBackfillActive = true;
             IsProgressVisible = true;
             PauseButtonContent = "Pause";
+            WpfServices.TaskbarProgressService.Instance.SetIndeterminate();
 
             _notificationService.ShowNotification(
                 "Resuming Backfill",
@@ -510,12 +521,14 @@ public sealed class BackfillViewModel : BindableBase, IDisposable
             _progressPollTimer.Stop();
             BackfillStatusText = "Cancelled";
             IsBackfillActive = false;
+            WpfServices.TaskbarProgressService.Instance.Clear();
         }
         catch (Exception ex)
         {
             _progressPollTimer.Stop();
             BackfillStatusText = "Resume Failed";
             IsBackfillActive = false;
+            WpfServices.TaskbarProgressService.Instance.SetError();
 
             _notificationService.ShowNotification("Resume Failed", ex.Message, NotificationType.Error);
         }
@@ -553,6 +566,11 @@ public sealed class BackfillViewModel : BindableBase, IDisposable
         var completedCount = progress.CompletedSymbols;
         OverallProgressText = $"Overall: {completedCount} / {progress.TotalSymbols} symbols complete";
 
+        // Reflect symbol-level progress on the taskbar icon.
+        _lastCompletedSymbols = (ulong)Math.Max(0, completedCount);
+        _lastTotalSymbols = (ulong)Math.Max(1, progress.TotalSymbols);
+        WpfServices.TaskbarProgressService.Instance.SetNormal(_lastCompletedSymbols, _lastTotalSymbols);
+
         if (progress.SymbolProgress == null) return;
         for (var i = 0; i < progress.SymbolProgress.Length && i < SymbolProgress.Count; i++)
         {
@@ -581,18 +599,28 @@ public sealed class BackfillViewModel : BindableBase, IDisposable
 
             if (e.Success)
             {
+                WpfServices.TaskbarProgressService.Instance.Clear();
                 BackfillStatusText = "Completed";
                 _notificationService.ShowNotification(
                     "Backfill Complete",
                     $"Successfully downloaded data for {e.Progress?.CompletedSymbols ?? 0} symbols.",
                     NotificationType.Success);
+
+                var symbolCount = e.Progress?.CompletedSymbols ?? 0;
+                var barsWritten = e.Progress?.DownloadedBars ?? 0L;
+                var duration = e.Progress?.CompletedAt.HasValue == true
+                    ? e.Progress.CompletedAt.Value - e.Progress.StartedAt
+                    : TimeSpan.Zero;
+                WpfServices.ToastNotificationService.Instance.ShowBackfillComplete(symbolCount, barsWritten, duration);
             }
             else if (e.WasCancelled)
             {
+                WpfServices.TaskbarProgressService.Instance.Clear();
                 BackfillStatusText = "Cancelled";
             }
             else
             {
+                WpfServices.TaskbarProgressService.Instance.SetError();
                 BackfillStatusText = "Failed";
                 _notificationService.ShowNotification(
                     "Backfill Failed",

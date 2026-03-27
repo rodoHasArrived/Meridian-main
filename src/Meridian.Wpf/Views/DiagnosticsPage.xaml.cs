@@ -6,7 +6,10 @@ using System.Windows;
 using System.Windows.Shapes;
 using System.Windows.Controls;
 using System.Windows.Media;
+using Meridian.Application.Monitoring;
+using Meridian.Application.Services;
 using Meridian.Ui.Services;
+using Meridian.Wpf.ViewModels;
 using WpfServices = Meridian.Wpf.Services;
 using Path = System.IO.Path;
 
@@ -25,20 +28,56 @@ public partial class DiagnosticsPage : Page
 
     private readonly WpfServices.NavigationService _navigationService;
     private readonly WpfServices.NotificationService _notificationService;
+    private readonly DiagnosticsPageViewModel _viewModel;
 
     public DiagnosticsPage(
         WpfServices.NavigationService navigationService,
-        WpfServices.NotificationService notificationService)
+        WpfServices.NotificationService notificationService,
+        IConnectivityProbeService? connectivityProbe = null,
+        ICoLocationProfileActivator? coLocationProfileActivator = null,
+        ProviderLatencyService? latencyService = null)
     {
         InitializeComponent();
 
         _navigationService = navigationService;
         _notificationService = notificationService;
+        _viewModel = new DiagnosticsPageViewModel(connectivityProbe, coLocationProfileActivator, latencyService);
+        
+        DataContext = _viewModel;
     }
 
     private void OnPageLoaded(object sender, RoutedEventArgs e)
     {
         PopulateSystemInfo();
+        UpdateConnectivityStatusDot();
+        
+        // Subscribe to ViewModel connectivity changes
+        if (_viewModel != null)
+        {
+            _viewModel.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(DiagnosticsPageViewModel.IsOnline))
+                {
+                    UpdateConnectivityStatusDot();
+                }
+            };
+        }
+    }
+
+    private void UpdateConnectivityStatusDot()
+    {
+        if (_viewModel?.IsOnline == true)
+        {
+            ConnectivityStatusDot.Fill = (Brush)FindResource("SuccessColorBrush");
+        }
+        else if (_viewModel?.IsOnline == false)
+        {
+            ConnectivityStatusDot.Fill = (Brush)FindResource("ErrorColorBrush");
+        }
+        else
+        {
+            ConnectivityStatusDot.Fill = (Brush)FindResource("WarningColorBrush");
+        }
     }
 
     private void PopulateSystemInfo()

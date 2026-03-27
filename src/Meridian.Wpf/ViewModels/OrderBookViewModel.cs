@@ -31,6 +31,11 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
     private CancellationTokenSource? _cts;
     private readonly string _baseUrl;
 
+    // ── Heatmap ───────────────────────────────────────────────────────────────────
+
+    /// <summary>Depth heatmap ViewModel — receives the same snapshot data as the ladder.</summary>
+    public OrderBookHeatmapViewModel Heatmap { get; } = new();
+
     // ── Collections ───────────────────────────────────────────────────────────────
 
     public ObservableCollection<OrderBookDisplayLevel> Bids { get; } = new();
@@ -399,6 +404,7 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
             BidVolumeText = "--";
             AskVolumeText = "--";
             ImbalanceText = "--";
+            Heatmap.UpdateFromSnapshot(bids, asks); // clears heatmap when data is absent
             return;
         }
 
@@ -424,6 +430,10 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
         var bidRatio = totalVolume > 0 ? (double)bidVolume / (double)totalVolume : 0.5;
         BidBarWidth = new GridLength(bidRatio, GridUnitType.Star);
         AskBarWidth = new GridLength(1 - bidRatio, GridUnitType.Star);
+
+        // Push the same snapshot to the depth heatmap.
+        // bids are sorted descending (best bid first); asks ascending (best ask first).
+        Heatmap.UpdateFromSnapshot(bids, asks);
     }
 
     private async Task RefreshRecentTradesAsync(CancellationToken ct = default)

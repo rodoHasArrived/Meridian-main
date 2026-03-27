@@ -1,0 +1,124 @@
+<Page x:Class="Meridian.Wpf.Views.BatchBacktestPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="Batch Backtest"
+      Background="{DynamicResource ShellWindowBackgroundBrush}"
+      AutomationProperties.Name="BatchBacktest">
+
+    <Page.Resources>
+        <Style x:Key="HeaderStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
+            <Setter Property="Margin" Value="0,0,0,12" />
+        </Style>
+
+        <Style x:Key="StatusStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{StaticResource ConsoleTextMutedBrush}" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+        </Style>
+
+        <Style x:Key="ButtonStyle" TargetType="Button">
+            <Setter Property="Padding" Value="12,8" />
+            <Setter Property="Margin" Value="8,0,0,0" />
+            <Setter Property="MinWidth" Value="90" />
+        </Style>
+    </Page.Resources>
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="8" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="8" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <TextBlock Grid.Row="0" Style="{StaticResource HeaderStyle}" Text="Batch Backtest" />
+
+        <!-- Control Panel -->
+        <Border Grid.Row="1" Style="{StaticResource SectionCardStyle}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                    <TextBlock Style="{StaticResource StatusStyle}">
+                        <Run Text="Completed: " />
+                        <Run Text="{Binding CompletedRuns, Mode=OneWay}" />
+                        <Run Text="/" />
+                        <Run Text="{Binding TotalRuns, Mode=OneWay}" />
+                    </TextBlock>
+                    <TextBlock Style="{StaticResource StatusStyle}" Text="{Binding CurrentLabel}" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Style="{StaticResource ButtonStyle}"
+                            Command="{Binding StartBatchCommand}"
+                            Content="Start" />
+                    <Button Style="{StaticResource ButtonStyle}"
+                            Command="{Binding CancelCommand}"
+                            Content="Cancel" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Progress Bar -->
+        <ProgressBar Grid.Row="3"
+                     Height="6"
+                     Minimum="0"
+                     Maximum="100"
+                     Value="{Binding ProgressPercent}"
+                     Foreground="{StaticResource ConsoleAccentBlueAlpha80Brush}"
+                     Background="{StaticResource ConsoleWindowBackgroundBrush}" />
+
+        <!-- Results Grid -->
+        <DataGrid Grid.Row="5"
+                  ItemsSource="{Binding Results}"
+                  AutoGenerateColumns="False"
+                  CanUserAddRows="False"
+                  CanUserDeleteRows="False"
+                  IsReadOnly="True"
+                  ColumnHeaderHeight="32"
+                  RowHeight="24"
+                  BorderThickness="0"
+                  Background="{StaticResource ShellWindowBackgroundBrush}"
+                  Foreground="{StaticResource ConsoleTextPrimaryBrush}">
+
+            <DataGrid.CellStyle>
+                <Style TargetType="DataGridCell">
+                    <Setter Property="Padding" Value="8,4" />
+                    <Setter Property="BorderThickness" Value="0" />
+                    <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
+                </Style>
+            </DataGrid.CellStyle>
+
+            <DataGrid.ColumnHeaderStyle>
+                <Style TargetType="DataGridColumnHeader">
+                    <Setter Property="Background" Value="{StaticResource ConsoleWindowBackgroundBrush}" />
+                    <Setter Property="Foreground" Value="{StaticResource ConsoleTextMutedBrush}" />
+                    <Setter Property="FontSize" Value="11" />
+                    <Setter Property="FontWeight" Value="SemiBold" />
+                    <Setter Property="Padding" Value="8,4" />
+                    <Setter Property="BorderThickness" Value="0,0,0,1" />
+                    <Setter Property="BorderBrush" Value="{StaticResource ConsoleWindowBorderBrush}" />
+                </Style>
+            </DataGrid.ColumnHeaderStyle>
+
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Parameters" Binding="{Binding ParametersSummary}" Width="200" />
+                <DataGridTextColumn Header="Sharpe Ratio" Binding="{Binding SharpeRatio, StringFormat=N2}" Width="100" />
+                <DataGridTextColumn Header="Total Return %" Binding="{Binding TotalReturnPct, StringFormat=N1}" Width="120" />
+                <DataGridTextColumn Header="Max Drawdown %" Binding="{Binding MaxDrawdownPct, StringFormat=N1}" Width="120" />
+                <DataGridTextColumn Header="Duration (ms)" Binding="{Binding DurationMs}" Width="100" />
+                <DataGridCheckBoxColumn Header="Error" Binding="{Binding HasError}" Width="60" />
+                <DataGridTextColumn Header="Error Message" Binding="{Binding ErrorMessage}" Width="*" />
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</Page>

@@ -12,10 +12,12 @@ namespace Meridian.Storage.Services;
 public sealed class StorageChecksumService
 {
     private readonly ILogger _log;
+    private readonly IAuditChainService? _auditChainService;
 
-    public StorageChecksumService(ILogger? log = null)
+    public StorageChecksumService(ILogger? log = null, IAuditChainService? auditChainService = null)
     {
         _log = log ?? LoggingSetup.ForContext<StorageChecksumService>();
+        _auditChainService = auditChainService;
     }
 
     /// <summary>
@@ -108,4 +110,22 @@ public sealed class StorageChecksumService
 
         return results;
     }
-}
+
+    /// <summary>
+    /// Verify the audit chain for a storage path.
+    /// </summary>
+    public async Task<AuditChainVerifyResult> VerifyAuditChainAsync(string storageBasePath, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(storageBasePath, nameof(storageBasePath));
+
+        if (_auditChainService == null)
+        {
+            _log.Warning("Audit chain service not configured, cannot verify chain");
+            return new AuditChainVerifyResult { IsValid = false, EntriesChecked = 0 };
+        }
+
+        var chainLogPath = Path.Combine(storageBasePath, "chain.log");
+        _log.Information("Verifying audit chain at {ChainLogPath}", chainLogPath);
+
+        return await _auditChainService.VerifyChainAsync(chainLogPath, ct).ConfigureAwait(false);
+    }

@@ -3,7 +3,7 @@
 **Generated:** 2026-03-26
 **Format:** Now / Next / Later
 **Basis:** Wave 1–5 roadmap + FEATURE_INVENTORY.md + codebase audit
-**Change from prior roadmap:** Adds Security Master productization as a **Next** initiative; reorganises delivery waves into horizon buckets; retains all existing wave goals.
+**Change from prior roadmap:** Adds Security Master productization as a **Next** initiative; reorganises delivery waves into horizon buckets; retains all existing wave goals; marks the WPF workstation as an active Windows delivery track again as of March 26, 2026.
 
 ---
 
@@ -52,9 +52,24 @@ The paper trading gateway and brokerage adapter framework are implemented. The g
 
 ---
 
+### 3. Native Desktop Workstation Refresh *(active again as of 2026-03-26)*
+
+The WPF workstation is no longer parked as a passive maintenance surface. Native desktop development has restarted around a Windows-first operator shell that complements the web dashboard for research, live monitoring, provider operations, and governance workflows.
+
+**Delivery scope:**
+
+- Modernize the shell and navigation model in `src/Meridian.Wpf`
+- Redesign high-traffic workflow pages such as Live Data, Provider, Backfill, and Data Quality for clearer operator use
+- Reduce dense page chrome and improve workstation hierarchy, page context, and recent-task movement
+- Continue MVVM extraction where pages still depend heavily on code-behind orchestration
+
+**Exit gate:** The desktop workstation feels coherent and actively maintained across its core operator pages, not just present in the solution.
+
+---
+
 ## Next
 
-### 3. Security Master Productization *(new initiative)*
+### 4. Security Master Productization *(new initiative)*
 
 **Background and rationale:**
 
@@ -80,7 +95,7 @@ The gap is the operator layer. Today, Security Master data is invisible to an op
 
 ---
 
-### 4. Portfolio and Strategy Tracking Depth *(Wave 3)*
+### 5. Portfolio and Strategy Tracking Depth *(Wave 3)*
 
 Strengthen the portfolio read models and multi-run comparison so strategy research produces durable, comparable results.
 
@@ -95,7 +110,7 @@ Strengthen the portfolio read models and multi-run comparison so strategy resear
 
 ---
 
-### 5. Backtest Studio Unification *(Wave 4)*
+### 6. Backtest Studio Unification *(Wave 4)*
 
 Consolidate the native and Lean backtest experiences into one coherent workflow. The native engine and QuantConnect Lean integration are both operational; the gap is a unified UI and result model.
 
@@ -112,7 +127,7 @@ Consolidate the native and Lean backtest experiences into one coherent workflow.
 
 ## Later
 
-### 6. Live Integration Readiness *(Wave 5)*
+### 7. Live Integration Readiness *(Wave 5)*
 
 The brokerage gateway framework (`IBrokerageGateway`, `BaseBrokerageGateway`) and provider-specific adapters (Alpaca, IB, StockSharp) are implemented. The remaining work is validating these adapters against live vendor surfaces and adding execution audit trail.
 
@@ -129,7 +144,7 @@ The brokerage gateway framework (`IBrokerageGateway`, `BaseBrokerageGateway`) an
 
 ---
 
-### 7. Advanced Research and Scale *(Optional Wave)*
+### 8. Advanced Research and Scale *(Optional Wave)*
 
 Depth multipliers that require a stable platform foundation to deliver value. None of these are prerequisites for core operator value.
 
@@ -137,8 +152,8 @@ Depth multipliers that require a stable platform foundation to deliver value. No
 - L3 inference and queue-aware execution simulation
 - Multi-instance collector coordination and horizontal scale-out
 - Phase 16 assembly-level performance optimizations
-- WPF desktop expansion once MVVM extraction resumes in shell/workflow pages such as `MainPage` and `BackfillPage`
-- WPF desktop app (code in `src/Meridian.Wpf/` — included in solution build; see `docs/development/wpf-implementation-notes.md`)
+- Broader WPF workstation coverage after the current active shell/page refresh stabilizes
+- WPF desktop app (code in `src/Meridian.Wpf/` - included in solution build and back in active development)
 
 ---
 

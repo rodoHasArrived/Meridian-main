@@ -1,0 +1,82 @@
+<Page
+    x:Class="Meridian.Wpf.Views.QualityArchivePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="clr-namespace:Meridian.Wpf.Converters"
+    Background="{DynamicResource ShellWindowBackgroundBrush}">
+
+    <Page.Resources>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </Page.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
+        <StackPanel MaxWidth="1400">
+            <!-- Header -->
+            <TextBlock
+                Text="Symbol Quality Archive"
+                FontSize="28"
+                FontWeight="Bold"
+                Margin="0,0,0,24"/>
+
+            <!-- Controls -->
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,16" VerticalAlignment="Center">
+                <TextBlock Text="Symbol:" VerticalAlignment="Center" Margin="0,0,8,0" FontSize="14"/>
+                <ComboBox
+                    Width="180"
+                    ItemsSource="{Binding Symbols}"
+                    SelectedItem="{Binding SelectedSymbol}"
+                    Margin="0,0,16,0"
+                    Padding="8,6"/>
+                <Button
+                    Command="{Binding LoadCommand}"
+                    Content="Load"
+                    Width="80"
+                    Padding="8,6"/>
+            </StackPanel>
+
+            <!-- Progress Indicator -->
+            <ProgressBar
+                Height="3"
+                IsIndeterminate="{Binding IsLoading}"
+                Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}"
+                Margin="0,0,0,8"/>
+
+            <!-- Status Message -->
+            <TextBlock
+                Text="{Binding StatusMessage}"
+                FontSize="12"
+                Foreground="Gray"
+                Margin="0,0,0,16"/>
+
+            <!-- Calendar Grid -->
+            <Border Margin="0,16,0,0">
+                <ItemsControl ItemsSource="{Binding CalendarCells}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Columns="7"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border
+                                Background="{Binding Background}"
+                                CornerRadius="4"
+                                Margin="2"
+                                Width="40"
+                                Height="40"
+                                ToolTip="{Binding DisplayDate}">
+                                <TextBlock
+                                    Text="{Binding Date.Day}"
+                                    Foreground="White"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontSize="10"
+                                    FontWeight="Bold"/>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

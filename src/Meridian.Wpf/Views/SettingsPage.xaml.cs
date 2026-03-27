@@ -50,6 +50,7 @@ public partial class SettingsPage : Page
         RefreshProfiles();
         LoadRecentActivity();
         UpdateSystemStatus();
+        LoadGlobalHotkeys();
     }
 
     // ── Quick Actions ──────────────────────────────────────────────
@@ -432,6 +433,20 @@ public partial class SettingsPage : Page
     private void CheckForUpdates_Click(object sender, RoutedEventArgs e)
     {
         MessageBox.Show("You are running the latest version (1.6.1).", "Check for Updates", MessageBoxButton.OK, MessageBoxImage.Information);
+    }
+
+    // ── Global Hotkeys ─────────────────────────────────────────────
+
+    private void LoadGlobalHotkeys()
+    {
+        GlobalHotkeysEnabledCheckBox.IsChecked = WpfServices.GlobalHotkeyService.Instance.IsEnabled;
+        GlobalHotkeysList.ItemsSource = WpfServices.GlobalHotkeyService.Instance.Definitions;
+    }
+
+    private void GlobalHotkeysEnabled_Click(object sender, RoutedEventArgs e)
+    {
+        var enabled = GlobalHotkeysEnabledCheckBox.IsChecked ?? true;
+        WpfServices.GlobalHotkeyService.Instance.IsEnabled = enabled;
     }
 }
 

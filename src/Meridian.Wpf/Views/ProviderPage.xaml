@@ -13,183 +13,199 @@
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     </Page.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
         <StackPanel MaxWidth="1200">
 
-            <!-- Header -->
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                <TextBlock Text="&#xE8B9;" FontFamily="{StaticResource SymbolThemeFontFamily}"
-                           FontSize="28" Foreground="{StaticResource InfoColorBrush}"
-                           VerticalAlignment="Center" />
-                <TextBlock Text="Data Providers" Style="{StaticResource PageTitleStyle}"
-                           Margin="12,0,0,0" VerticalAlignment="Center" />
-            </StackPanel>
-            <TextBlock Text="Configure and manage market data providers for real-time and historical data."
-                       Style="{StaticResource PageSubtitleStyle}" Margin="0,0,0,24" />
+            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
 
-            <!-- ================================================ -->
-            <!-- Streaming Providers Card                         -->
-            <!-- ================================================ -->
-            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
-                <StackPanel>
-                    <TextBlock Text="Streaming Providers" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,16" />
-
-                    <!-- Interactive Brokers -->
-                    <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
-                            CornerRadius="8" Padding="16" Margin="0,0,0,12">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-
-                            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                                <Ellipse Width="10" Height="10"
-                                         Fill="{StaticResource ConsoleTextMutedBrush}"
-                                         VerticalAlignment="Center" Margin="0,0,12,0" />
+                    <StackPanel Grid.Column="0">
+                        <StackPanel Orientation="Horizontal">
+                            <Border Width="44"
+                                    Height="44"
+                                    CornerRadius="14"
+                                    Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                                    BorderBrush="{StaticResource InfoColorBrush}"
+                                    BorderThickness="1">
+                                <TextBlock Text="&#xE8B9;"
+                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                           FontSize="24"
+                                           Foreground="{StaticResource InfoColorBrush}"
+                                           VerticalAlignment="Center"
+                                           HorizontalAlignment="Center" />
+                            </Border>
+                            <StackPanel Margin="12,0,0,0">
+                                <TextBlock Text="Data Providers" Style="{StaticResource PageTitleStyle}" />
+                                <TextBlock Text="Control upstream market data sources, fallback behavior, and validation from a cleaner operator console."
+                                           Style="{StaticResource CardDescriptionStyle}" />
                             </StackPanel>
+                        </StackPanel>
 
-                            <StackPanel Grid.Column="1">
-                                <TextBlock Text="Interactive Brokers" FontWeight="SemiBold" FontSize="14"
-                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                <TextBlock Text="Full Level 2 depth and tick-by-tick trades. Requires TWS/Gateway."
-                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                           FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0" />
-                            </StackPanel>
+                        <WrapPanel Margin="0,16,0,0">
+                            <Border Style="{StaticResource NeutralBadgeStyle}" Margin="0,0,10,10">
+                                <TextBlock Text="Streaming, historical, dry-run, and audit workflows"
+                                           FontSize="12"
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+                            </Border>
+                            <Border Style="{StaticResource NeutralBadgeStyle}" Margin="0,0,10,10">
+                                <TextBlock Text="Desktop provider workstation"
+                                           FontSize="12"
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+                            </Border>
+                        </WrapPanel>
+                    </StackPanel>
 
-                            <Button Grid.Column="2" Content="Configure"
-                                    Style="{StaticResource SecondaryButtonStyle}"
-                                    Click="ConfigureProvider_Click"
-                                    VerticalAlignment="Center" Margin="12,0,0,0" />
-                        </Grid>
-                    </Border>
-
-                    <!-- Alpaca -->
-                    <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
-                            CornerRadius="8" Padding="16" Margin="0,0,0,12">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-
-                            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                                <Ellipse Width="10" Height="10"
-                                         Fill="{StaticResource ConsoleTextMutedBrush}"
-                                         VerticalAlignment="Center" Margin="0,0,12,0" />
-                            </StackPanel>
-
-                            <StackPanel Grid.Column="1">
-                                <TextBlock Text="Alpaca" FontWeight="SemiBold" FontSize="14"
-                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                <TextBlock Text="Real-time trades and quotes via WebSocket. Free IEX tier available."
-                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                           FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0" />
-                            </StackPanel>
-
-                            <Button Grid.Column="2" Content="Configure"
-                                    Style="{StaticResource SecondaryButtonStyle}"
-                                    Click="ConfigureProvider_Click"
-                                    VerticalAlignment="Center" Margin="12,0,0,0" />
-                        </Grid>
-                    </Border>
-
-                    <!-- Polygon -->
-                    <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
-                            CornerRadius="8" Padding="16" Margin="0,0,0,12">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-
-                            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                                <Ellipse Width="10" Height="10"
-                                         Fill="{StaticResource ConsoleTextMutedBrush}"
-                                         VerticalAlignment="Center" Margin="0,0,12,0" />
-                            </StackPanel>
-
-                            <StackPanel Grid.Column="1">
-                                <TextBlock Text="Polygon" FontWeight="SemiBold" FontSize="14"
-                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                <TextBlock Text="Real-time data with circuit breaker and retry patterns."
-                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                           FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0" />
-                            </StackPanel>
-
-                            <Button Grid.Column="2" Content="Configure"
-                                    Style="{StaticResource SecondaryButtonStyle}"
-                                    Click="ConfigureProvider_Click"
-                                    VerticalAlignment="Center" Margin="12,0,0,0" />
-                        </Grid>
-                    </Border>
-
-                    <!-- StockSharp -->
-                    <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
-                            CornerRadius="8" Padding="16" Margin="0,0,0,12">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-
-                            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                                <Ellipse Width="10" Height="10"
-                                         Fill="{StaticResource ConsoleTextMutedBrush}"
-                                         VerticalAlignment="Center" Margin="0,0,12,0" />
-                            </StackPanel>
-
-                            <StackPanel Grid.Column="1">
-                                <TextBlock Text="StockSharp" FontWeight="SemiBold" FontSize="14"
-                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                <TextBlock Text="Access to 90+ data sources through unified interface."
-                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                           FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0" />
-                            </StackPanel>
-
-                            <Button Grid.Column="2" Content="Configure"
-                                    Style="{StaticResource SecondaryButtonStyle}"
-                                    Click="ConfigureProvider_Click"
-                                    VerticalAlignment="Center" Margin="12,0,0,0" />
-                        </Grid>
-                    </Border>
-
-                    <!-- NYSE -->
-                    <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
-                            CornerRadius="8" Padding="16">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-
-                            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                                <Ellipse Width="10" Height="10"
-                                         Fill="{StaticResource ConsoleTextMutedBrush}"
-                                         VerticalAlignment="Center" Margin="0,0,12,0" />
-                            </StackPanel>
-
-                            <StackPanel Grid.Column="1">
-                                <TextBlock Text="NYSE" FontWeight="SemiBold" FontSize="14"
-                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                <TextBlock Text="Hybrid streaming and historical data source."
-                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                           FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0" />
-                            </StackPanel>
-
-                            <Button Grid.Column="2" Content="Configure"
-                                    Style="{StaticResource SecondaryButtonStyle}"
-                                    Click="ConfigureProvider_Click"
-                                    VerticalAlignment="Center" Margin="12,0,0,0" />
-                        </Grid>
-                    </Border>
-                </StackPanel>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Button x:Name="ValidateConfigButtonHeader"
+                                Content="Validate"
+                                Style="{StaticResource GhostButtonStyle}"
+                                Click="ValidateConfig_Click"
+                                Margin="0,0,8,0" />
+                        <Button x:Name="RefreshProvidersButtonHeader"
+                                Content="Refresh"
+                                Style="{StaticResource GhostButtonStyle}"
+                                Click="RefreshProviders_Click"
+                                Margin="0,0,8,0" />
+                        <Button Content="Test Connections"
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                Click="TestAllConnections_Click" />
+                    </StackPanel>
+                </Grid>
             </Border>
+
+            <Grid Margin="0,0,0,24">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="16" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="Operator Workflow" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12" />
+                        <TextBlock Text="Use this page to confirm provider readiness, tune backfill priority, run a dry plan, and keep an audit trail of configuration changes."
+                                   Style="{StaticResource CardDescriptionStyle}" />
+                        <WrapPanel Margin="0,16,0,0">
+                            <Border Style="{StaticResource CompactCardStyle}" Margin="0,0,10,10">
+                                <TextBlock Text="1. Validate configuration"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                            </Border>
+                            <Border Style="{StaticResource CompactCardStyle}" Margin="0,0,10,10">
+                                <TextBlock Text="2. Review fallback chain"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                            </Border>
+                            <Border Style="{StaticResource CompactCardStyle}" Margin="0,0,10,10">
+                                <TextBlock Text="3. Preview dry-run selection"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                            </Border>
+                            <Border Style="{StaticResource CompactCardStyle}" Margin="0,0,10,10">
+                                <TextBlock Text="4. Commit changes with audit visibility"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                            </Border>
+                        </WrapPanel>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="2" Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="Streaming Providers" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12" />
+                        <TextBlock Text="The most common operator-configured streaming sources are surfaced here for quick review before deeper tuning below."
+                                   Style="{StaticResource CardDescriptionStyle}" Margin="0,0,0,16" />
+
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="12" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource CompactCardStyle}" Margin="0,0,0,12">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="Interactive Brokers" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                        <TextBlock Text="Depth and tick-by-tick streaming via TWS or Gateway."
+                                                   Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" />
+                                    </StackPanel>
+                                    <Button Grid.Column="1" Content="Configure" Style="{StaticResource SecondaryButtonStyle}" Click="ConfigureProvider_Click" Margin="12,0,0,0" VerticalAlignment="Center" />
+                                </Grid>
+                            </Border>
+
+                            <Border Grid.Row="0" Grid.Column="2" Style="{StaticResource CompactCardStyle}" Margin="0,0,0,12">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="Alpaca" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                        <TextBlock Text="WebSocket trades and quotes with an accessible free tier."
+                                                   Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" />
+                                    </StackPanel>
+                                    <Button Grid.Column="1" Content="Configure" Style="{StaticResource SecondaryButtonStyle}" Click="ConfigureProvider_Click" Margin="12,0,0,0" VerticalAlignment="Center" />
+                                </Grid>
+                            </Border>
+
+                            <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource CompactCardStyle}" Margin="0,0,0,12">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="Polygon" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                        <TextBlock Text="Resilient streaming with retry and circuit-breaker patterns."
+                                                   Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" />
+                                    </StackPanel>
+                                    <Button Grid.Column="1" Content="Configure" Style="{StaticResource SecondaryButtonStyle}" Click="ConfigureProvider_Click" Margin="12,0,0,0" VerticalAlignment="Center" />
+                                </Grid>
+                            </Border>
+
+                            <Border Grid.Row="1" Grid.Column="2" Style="{StaticResource CompactCardStyle}" Margin="0,0,0,12">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="StockSharp" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                        <TextBlock Text="Unified access to many connectors through one provider layer."
+                                                   Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" />
+                                    </StackPanel>
+                                    <Button Grid.Column="1" Content="Configure" Style="{StaticResource SecondaryButtonStyle}" Click="ConfigureProvider_Click" Margin="12,0,0,0" VerticalAlignment="Center" />
+                                </Grid>
+                            </Border>
+
+                            <Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Style="{StaticResource CompactCardStyle}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="NYSE" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                        <TextBlock Text="Hybrid streaming and historical coverage for exchange-driven workflows."
+                                                   Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" />
+                                    </StackPanel>
+                                    <Button Grid.Column="1" Content="Configure" Style="{StaticResource SecondaryButtonStyle}" Click="ConfigureProvider_Click" Margin="12,0,0,0" VerticalAlignment="Center" />
+                                </Grid>
+                            </Border>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </Grid>
 
             <!-- ================================================ -->
             <!-- Backfill Provider Settings Card (Phase 1)        -->

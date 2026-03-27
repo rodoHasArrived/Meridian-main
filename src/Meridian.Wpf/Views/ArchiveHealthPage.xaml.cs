@@ -247,6 +247,47 @@ public sealed partial class ArchiveHealthPage : Page
         }
     }
 
+    private async void VerifyAuditChain_Click(object sender, RoutedEventArgs e)
+    {
+        VerifyAuditChainButton.IsEnabled = false;
+        AuditChainStatusText.Text = "Verifying audit chain...";
+        AuditChainIcon.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(237, 137, 54));
+
+        try
+        {
+            var result = await _healthService.VerifyAuditChainAsync();
+
+            if (result.IsValid)
+            {
+                AuditChainStatusText.Text = $"✓ Audit chain valid ({result.EntriesChecked} entries verified)";
+                AuditChainStatusText.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(72, 187, 120));
+                AuditChainIcon.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(72, 187, 120));
+                ShowInfoBar("Audit Chain Valid", $"✓ Compliance audit chain is intact. {result.EntriesChecked} entries verified.", isError: false);
+            }
+            else
+            {
+                AuditChainStatusText.Text = $"⚠ TAMPER DETECTED at {result.FirstTamperPath ?? "unknown location"}";
+                AuditChainStatusText.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(245, 101, 101));
+                AuditChainIcon.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(245, 101, 101));
+                ShowInfoBar("⚠ COMPLIANCE ALERT: Tampering Detected",
+                    $"Audit chain integrity violation detected at: {result.FirstTamperPath ?? "unknown"}. " +
+                    $"Detected at: {result.TamperedAt:O}. Immediate investigation required.",
+                    isError: true);
+            }
+        }
+        catch (Exception ex)
+        {
+            AuditChainStatusText.Text = $"✗ Verification failed: {ex.Message}";
+            AuditChainStatusText.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(245, 101, 101));
+            AuditChainIcon.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(245, 101, 101));
+            ShowInfoBar("Audit Chain Verification Failed", ex.Message, isError: true);
+        }
+        finally
+        {
+            VerifyAuditChainButton.IsEnabled = true;
+        }
+    }
+
     private async void Refresh_Click(object sender, RoutedEventArgs e)
     {
         await LoadHealthStatusAsync();
