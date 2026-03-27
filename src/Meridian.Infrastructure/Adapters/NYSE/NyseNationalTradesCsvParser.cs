@@ -161,12 +161,12 @@ public static class NyseNationalTradesCsvParser
     private static readonly IReadOnlyDictionary<int, string> ExchangeCodeMap =
         new Dictionary<int, string>
         {
-            [4]  = "ARCA",    // NYSE Arca
-            [5]  = "NYSE",    // New York Stock Exchange
-            [6]  = "EDGX",   // CBOE EDGX
-            [7]  = "EDGA",   // CBOE EDGA
-            [8]  = "BZX",    // CBOE BZX (formerly BATS)
-            [9]  = "BYX",    // CBOE BYX
+            [4] = "ARCA",    // NYSE Arca
+            [5] = "NYSE",    // New York Stock Exchange
+            [6] = "EDGX",   // CBOE EDGX
+            [7] = "EDGA",   // CBOE EDGA
+            [8] = "BZX",    // CBOE BZX (formerly BATS)
+            [9] = "BYX",    // CBOE BYX
             [10] = "AMEX",   // NYSE American (formerly AMEX)
             [11] = "NSDQ",   // NASDAQ
             [12] = "BX",     // NASDAQ BX

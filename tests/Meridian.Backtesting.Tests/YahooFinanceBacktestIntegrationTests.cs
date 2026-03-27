@@ -60,18 +60,19 @@ public sealed class YahooFinanceBacktestIntegrationTests : IDisposable
     {
         // Arrange: January 2024 was a broadly positive month for SPY.
         var from = new DateOnly(2024, 1, 2);
-        var to   = new DateOnly(2024, 1, 31);
+        var to = new DateOnly(2024, 1, 31);
 
         var bars = await _provider.GetDailyBarsAsync("SPY", from, to);
 
-        if (!HasData("SPY", bars.Count)) return;
+        if (!HasData("SPY", bars.Count))
+            return;
 
         YahooBacktestSeedHelper.WriteToJsonl(_dataRoot, "SPY", bars);
         _output.WriteLine($"Seeded {bars.Count} SPY bars ({from} – {to}) to {_dataRoot}");
 
         // Act
         var strategy = new YahooBuyOnFirstBarStrategy("SPY", quantity: 100);
-        var request  = new BacktestRequest(From: from, To: to, InitialCash: 50_000m, DataRoot: _dataRoot);
+        var request = new BacktestRequest(From: from, To: to, InitialCash: 50_000m, DataRoot: _dataRoot);
 
         var result = await _engine.RunAsync(request, strategy);
 
@@ -93,28 +94,30 @@ public sealed class YahooFinanceBacktestIntegrationTests : IDisposable
     {
         // Arrange: seed two symbols over the same short window.
         var from = new DateOnly(2024, 2, 1);
-        var to   = new DateOnly(2024, 2, 29);
+        var to = new DateOnly(2024, 2, 29);
 
-        var spyBars  = await _provider.GetDailyBarsAsync("SPY",  from, to);
+        var spyBars = await _provider.GetDailyBarsAsync("SPY", from, to);
         var aaplBars = await _provider.GetDailyBarsAsync("AAPL", from, to);
 
-        if (!HasData("SPY",  spyBars.Count))  return;
-        if (!HasData("AAPL", aaplBars.Count)) return;
+        if (!HasData("SPY", spyBars.Count))
+            return;
+        if (!HasData("AAPL", aaplBars.Count))
+            return;
 
-        YahooBacktestSeedHelper.WriteToJsonl(_dataRoot, "SPY",  spyBars);
+        YahooBacktestSeedHelper.WriteToJsonl(_dataRoot, "SPY", spyBars);
         YahooBacktestSeedHelper.WriteToJsonl(_dataRoot, "AAPL", aaplBars);
 
         _output.WriteLine($"Seeded {spyBars.Count} SPY + {aaplBars.Count} AAPL bars ({from} – {to})");
 
         // Act
         var request = new BacktestRequest(From: from, To: to, DataRoot: _dataRoot);
-        var result  = await _engine.RunAsync(request, new YahooNoOpStrategy());
+        var result = await _engine.RunAsync(request, new YahooNoOpStrategy());
 
         // Assert
         LogResult(result);
 
         result.Universe.Should().HaveCount(2, "two symbols were seeded");
-        result.Universe.Should().Contain("SPY",  "SPY bars were written");
+        result.Universe.Should().Contain("SPY", "SPY bars were written");
         result.Universe.Should().Contain("AAPL", "AAPL bars were written");
         result.TotalEventsProcessed.Should().BeGreaterThanOrEqualTo(2,
             "at least one bar per symbol must have been replayed");
@@ -125,17 +128,18 @@ public sealed class YahooFinanceBacktestIntegrationTests : IDisposable
     {
         // Arrange: a longer window to make ordering more meaningful.
         var from = new DateOnly(2023, 10, 1);
-        var to   = new DateOnly(2023, 12, 29);
+        var to = new DateOnly(2023, 12, 29);
 
         var bars = await _provider.GetDailyBarsAsync("QQQ", from, to);
-        if (!HasData("QQQ", bars.Count)) return;
+        if (!HasData("QQQ", bars.Count))
+            return;
 
         YahooBacktestSeedHelper.WriteToJsonl(_dataRoot, "QQQ", bars);
 
         // Act
         var received = new List<DateOnly>();
         var strategy = new YahooDateCapturingStrategy(received);
-        var request  = new BacktestRequest(From: from, To: to, DataRoot: _dataRoot);
+        var request = new BacktestRequest(From: from, To: to, DataRoot: _dataRoot);
 
         await _engine.RunAsync(request, strategy);
 
@@ -166,7 +170,8 @@ public sealed class YahooFinanceBacktestIntegrationTests : IDisposable
     /// </summary>
     private bool HasData(string symbol, int count)
     {
-        if (count > 0) return true;
+        if (count > 0)
+            return true;
         _output.WriteLine($"INCONCLUSIVE: Yahoo Finance returned no data for {symbol}. " +
                           "The symbol may be unavailable or the API is unreachable. " +
                           "Re-run with network access to exercise this test.");
@@ -203,20 +208,21 @@ internal static class YahooBacktestSeedHelper
     /// </summary>
     public static void WriteToJsonl(string dataRoot, string symbol, IReadOnlyList<HistoricalBar> bars)
     {
-        if (bars.Count == 0) return;
+        if (bars.Count == 0)
+            return;
 
         var upperSymbol = symbol.ToUpperInvariant();
-        var symbolDir   = Path.Combine(dataRoot, upperSymbol);
+        var symbolDir = Path.Combine(dataRoot, upperSymbol);
         Directory.CreateDirectory(symbolDir);
 
         var firstDate = bars.Min(b => b.SessionDate);
-        var filePath  = Path.Combine(symbolDir, $"{upperSymbol}_bars_{firstDate:yyyy-MM-dd}.jsonl");
+        var filePath = Path.Combine(symbolDir, $"{upperSymbol}_bars_{firstDate:yyyy-MM-dd}.jsonl");
 
         using var writer = new StreamWriter(filePath);
         var seq = 1L;
         foreach (var bar in bars.OrderBy(b => b.SessionDate))
         {
-            var ts  = bar.ToTimestampUtc();
+            var ts = bar.ToTimestampUtc();
             var evt = MarketEvent.HistoricalBar(ts, bar.Symbol, bar, seq++, bar.Source);
             writer.WriteLine(JsonSerializer.Serialize(evt, MarketDataJsonContext.HighPerformanceOptions));
         }

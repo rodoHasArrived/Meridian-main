@@ -37,7 +37,7 @@ public static class PerformanceBudgetRegistry
     /// <summary>
     /// Deduplication key computation — cache-miss path.
     /// Includes prefix lookup (GetOrAdd), SHA256 via <c>stackalloc</c>,
-    /// and <see cref="Convert.ToHexStringLower"/> (one interned/short string).
+    /// and <see cref="Convert.ToHexStringLower(byte[])"/> (one interned/short string).
     /// Budget: ≤128 managed bytes (one interned hex key string).
     /// </summary>
     /// <remarks>

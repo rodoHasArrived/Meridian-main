@@ -363,30 +363,30 @@ public sealed class SymbolCompleteness
     public int DaysCovered { get; set; }
     public int DaysExpected { get; set; }
     public List<DateOnly> MissingDays { get; set; } = new();
-    
+
     // Alias properties for compatibility
-    public double Score 
-    { 
-        get => CompletenessPercent; 
-        set => CompletenessPercent = value; 
+    public double Score
+    {
+        get => CompletenessPercent;
+        set => CompletenessPercent = value;
     }
-    
-    public int DaysWithData 
-    { 
-        get => DaysCovered; 
-        set => DaysCovered = value; 
+
+    public int DaysWithData
+    {
+        get => DaysCovered;
+        set => DaysCovered = value;
     }
-    
-    public int ExpectedDays 
-    { 
-        get => DaysExpected; 
-        set => DaysExpected = value; 
+
+    public int ExpectedDays
+    {
+        get => DaysExpected;
+        set => DaysExpected = value;
     }
-    
+
     // Additional properties
     public long RecordCount { get; set; }
     public long TotalEvents { get; set; }
-    
+
     /// <summary>
     /// Per-day event breakdown showing trade, quote, depth, and bar event counts for each date.
     /// See DayEventCount class in DataCompletenessService for structure.

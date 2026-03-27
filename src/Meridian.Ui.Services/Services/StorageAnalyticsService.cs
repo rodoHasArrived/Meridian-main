@@ -246,7 +246,8 @@ public sealed class StorageAnalyticsService
 
     private static int? CalculateDaysUntilFull(string basePath, long dailyGrowth)
     {
-        if (dailyGrowth <= 0) return null;
+        if (dailyGrowth <= 0)
+            return null;
 
         try
         {

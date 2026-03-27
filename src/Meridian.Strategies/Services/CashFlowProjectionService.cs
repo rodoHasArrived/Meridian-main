@@ -48,17 +48,17 @@ public sealed class CashFlowProjectionService
                 continue;
             }
 
-            var effectiveAsOf    = asOf      ?? run.StartedAt;
-            var effectiveCcy     = string.IsNullOrWhiteSpace(currency) ? DefaultCurrency : currency!;
+            var effectiveAsOf = asOf ?? run.StartedAt;
+            var effectiveCcy = string.IsNullOrWhiteSpace(currency) ? DefaultCurrency : currency!;
             var effectiveBuckets = Math.Max(1, bucketDays ?? DefaultBucketDays);
 
             var cashFlows = run.Metrics?.CashFlows ?? [];
-            var entries   = BuildEntries(cashFlows, effectiveCcy);
-            var inputs    = BuildProjectionInputs(cashFlows, effectiveCcy);
-            var ladder    = CashFlowProjector.BuildLadder(effectiveAsOf, effectiveCcy, effectiveBuckets, inputs);
+            var entries = BuildEntries(cashFlows, effectiveCcy);
+            var inputs = BuildProjectionInputs(cashFlows, effectiveCcy);
+            var ladder = CashFlowProjector.BuildLadder(effectiveAsOf, effectiveCcy, effectiveBuckets, inputs);
 
-            var totalInflows  = entries.Sum(static e => e.Amount > 0m ? e.Amount : 0m);
-            var totalOutflows  = entries.Sum(static e => e.Amount < 0m ? -e.Amount : 0m);
+            var totalInflows = entries.Sum(static e => e.Amount > 0m ? e.Amount : 0m);
+            var totalOutflows = entries.Sum(static e => e.Amount < 0m ? -e.Amount : 0m);
 
             return new RunCashFlowSummary(
                 RunId: run.RunId,
@@ -99,15 +99,15 @@ public sealed class CashFlowProjectionService
         return cashFlows
             .Select(f => new CashFlowProjectionInput
             {
-                FlowId           = Guid.NewGuid(),
-                SecurityGuid     = GetSecurityGuid(f),
-                EventKindLabel   = GetEventKindLabel(f),
-                ExpectedAmount   = f.Amount,
+                FlowId = Guid.NewGuid(),
+                SecurityGuid = GetSecurityGuid(f),
+                EventKindLabel = GetEventKindLabel(f),
+                ExpectedAmount = f.Amount,
                 ExpectedCurrency = currency,
-                DueDate          = f.Timestamp,
-                IsPrincipalFlow  = IsPrincipalFlow(f),
-                IsIncomeFlow     = IsIncomeFlow(f),
-                Notes            = GetDescription(f) ?? string.Empty
+                DueDate = f.Timestamp,
+                IsPrincipalFlow = IsPrincipalFlow(f),
+                IsIncomeFlow = IsIncomeFlow(f),
+                Notes = GetDescription(f) ?? string.Empty
             })
             .ToArray();
     }
@@ -137,47 +137,47 @@ public sealed class CashFlowProjectionService
 
     private static string GetEventKindLabel(CashFlowEntry entry) => entry switch
     {
-        TradeCashFlow             => "Trade",
-        CommissionCashFlow        => "Commission",
-        DividendCashFlow          => "Dividend",
-        MarginInterestCashFlow    => "MarginInterest",
-        ShortRebateCashFlow       => "ShortRebate",
-        CashInterestCashFlow      => "CashInterest",
-        AssetEventCashFlow aec    => MapAssetEventKindLabel(aec.EventType),
-        _                         => "Other"
+        TradeCashFlow => "Trade",
+        CommissionCashFlow => "Commission",
+        DividendCashFlow => "Dividend",
+        MarginInterestCashFlow => "MarginInterest",
+        ShortRebateCashFlow => "ShortRebate",
+        CashInterestCashFlow => "CashInterest",
+        AssetEventCashFlow aec => MapAssetEventKindLabel(aec.EventType),
+        _ => "Other"
     };
 
     private static string MapAssetEventKindLabel(AssetEventType eventType) => eventType switch
     {
-        AssetEventType.Dividend         => "Dividend",
-        AssetEventType.Coupon           => "Coupon",
-        AssetEventType.Payment          => "Proceeds",
+        AssetEventType.Dividend => "Dividend",
+        AssetEventType.Coupon => "Coupon",
+        AssetEventType.Payment => "Proceeds",
         AssetEventType.CashDistribution => "Proceeds",
-        AssetEventType.ReturnOfCapital  => "Principal",
-        AssetEventType.Fee              => "Fee",
-        _                               => "Other"
+        AssetEventType.ReturnOfCapital => "Principal",
+        AssetEventType.Fee => "Fee",
+        _ => "Other"
     };
 
     private static string? GetSymbol(CashFlowEntry entry) => entry switch
     {
-        TradeCashFlow t           => t.Symbol,
-        CommissionCashFlow c      => c.Symbol,
-        DividendCashFlow d        => d.Symbol,
-        ShortRebateCashFlow s     => s.Symbol,
-        AssetEventCashFlow a      => a.Symbol,
-        _                         => null
+        TradeCashFlow t => t.Symbol,
+        CommissionCashFlow c => c.Symbol,
+        DividendCashFlow d => d.Symbol,
+        ShortRebateCashFlow s => s.Symbol,
+        AssetEventCashFlow a => a.Symbol,
+        _ => null
     };
 
     private static string? GetDescription(CashFlowEntry entry) => entry switch
     {
-        TradeCashFlow t           => $"Trade {t.Symbol} qty={t.Quantity} @ {t.Price}",
-        CommissionCashFlow c      => $"Commission {c.Symbol}",
-        DividendCashFlow d        => $"Dividend {d.Symbol} {d.DividendPerShare:F4}/share",
-        MarginInterestCashFlow m  => $"Margin interest {m.AnnualRate:P2} on {m.MarginBalance:C}",
-        ShortRebateCashFlow s     => $"Short rebate {s.Symbol}",
-        CashInterestCashFlow ci   => $"Cash interest {ci.AnnualRate:P2}",
-        AssetEventCashFlow a      => a.Description ?? $"{a.EventType} {a.Symbol}",
-        _                         => null
+        TradeCashFlow t => $"Trade {t.Symbol} qty={t.Quantity} @ {t.Price}",
+        CommissionCashFlow c => $"Commission {c.Symbol}",
+        DividendCashFlow d => $"Dividend {d.Symbol} {d.DividendPerShare:F4}/share",
+        MarginInterestCashFlow m => $"Margin interest {m.AnnualRate:P2} on {m.MarginBalance:C}",
+        ShortRebateCashFlow s => $"Short rebate {s.Symbol}",
+        CashInterestCashFlow ci => $"Cash interest {ci.AnnualRate:P2}",
+        AssetEventCashFlow a => a.Description ?? $"{a.EventType} {a.Symbol}",
+        _ => null
     };
 
     private static Guid GetSecurityGuid(CashFlowEntry entry)
@@ -198,17 +198,17 @@ public sealed class CashFlowProjectionService
     {
         AssetEventCashFlow aec when
             aec.EventType is AssetEventType.ReturnOfCapital => true,
-        TradeCashFlow                                       => true,
-        _                                                   => false
+        TradeCashFlow => true,
+        _ => false
     };
 
     private static bool IsIncomeFlow(CashFlowEntry entry) => entry switch
     {
-        DividendCashFlow                                    => true,
-        CashInterestCashFlow                                => true,
+        DividendCashFlow => true,
+        CashInterestCashFlow => true,
         AssetEventCashFlow aec when
             aec.EventType is AssetEventType.Dividend
-                          or AssetEventType.Coupon          => true,
-        _                                                   => false
+                          or AssetEventType.Coupon => true,
+        _ => false
     };
 }

@@ -40,23 +40,23 @@ public sealed class GovernanceExceptionService
 
             var severity = ClassifySeverity(breakResult);
             var exception = new GovernanceException(
-                ExceptionId:   Guid.NewGuid(),
-                RunId:         runId,
-                PortfolioId:   portfolioId,
-                CheckId:       breakResult.CheckId,
-                Label:         breakResult.Label,
-                Category:      breakResult.Category,
-                Severity:      severity,
-                Status:        GovernanceExceptionStatus.Open,
+                ExceptionId: Guid.NewGuid(),
+                RunId: runId,
+                PortfolioId: portfolioId,
+                CheckId: breakResult.CheckId,
+                Label: breakResult.Label,
+                Category: breakResult.Category,
+                Severity: severity,
+                Status: GovernanceExceptionStatus.Open,
                 ExpectedAmount: breakResult.HasExpectedAmount ? breakResult.ExpectedAmount : null,
-                ActualAmount:   breakResult.HasActualAmount   ? breakResult.ActualAmount   : null,
-                Variance:      breakResult.Variance,
-                Reason:        breakResult.Reason,
-                AsOf:          asOf,
-                CreatedAt:     DateTimeOffset.UtcNow,
-                UpdatedAt:     DateTimeOffset.UtcNow,
-                ResolvedAt:    null,
-                Notes:         null);
+                ActualAmount: breakResult.HasActualAmount ? breakResult.ActualAmount : null,
+                Variance: breakResult.Variance,
+                Reason: breakResult.Reason,
+                AsOf: asOf,
+                CreatedAt: DateTimeOffset.UtcNow,
+                UpdatedAt: DateTimeOffset.UtcNow,
+                ResolvedAt: null,
+                Notes: null);
 
             _exceptions[exception.ExceptionId] = exception;
             created.Add(exception);
@@ -95,13 +95,13 @@ public sealed class GovernanceExceptionService
             .ToList();
 
         return new GovernanceExceptionDashboard(
-            TotalOpen:       filtered.Count(e => e.Status == GovernanceExceptionStatus.Open),
-            TotalResolved:   filtered.Count(e => e.Status == GovernanceExceptionStatus.Resolved),
-            Critical:        filtered.Count(e => e.Status == GovernanceExceptionStatus.Open && e.Severity == GovernanceExceptionSeverity.Critical),
-            High:            filtered.Count(e => e.Status == GovernanceExceptionStatus.Open && e.Severity == GovernanceExceptionSeverity.High),
-            Medium:          filtered.Count(e => e.Status == GovernanceExceptionStatus.Open && e.Severity == GovernanceExceptionSeverity.Medium),
-            Low:             filtered.Count(e => e.Status == GovernanceExceptionStatus.Open && e.Severity == GovernanceExceptionSeverity.Low),
-            AsOf:            DateTimeOffset.UtcNow);
+            TotalOpen: filtered.Count(e => e.Status == GovernanceExceptionStatus.Open),
+            TotalResolved: filtered.Count(e => e.Status == GovernanceExceptionStatus.Resolved),
+            Critical: filtered.Count(e => e.Status == GovernanceExceptionStatus.Open && e.Severity == GovernanceExceptionSeverity.Critical),
+            High: filtered.Count(e => e.Status == GovernanceExceptionStatus.Open && e.Severity == GovernanceExceptionSeverity.High),
+            Medium: filtered.Count(e => e.Status == GovernanceExceptionStatus.Open && e.Severity == GovernanceExceptionSeverity.Medium),
+            Low: filtered.Count(e => e.Status == GovernanceExceptionStatus.Open && e.Severity == GovernanceExceptionSeverity.Low),
+            AsOf: DateTimeOffset.UtcNow);
     }
 
     /// <summary>Transitions an exception to <see cref="GovernanceExceptionStatus.Investigating"/>.</summary>
@@ -116,10 +116,10 @@ public sealed class GovernanceExceptionService
 
         _exceptions[exceptionId] = ex with
         {
-            Status     = GovernanceExceptionStatus.Resolved,
+            Status = GovernanceExceptionStatus.Resolved,
             ResolvedAt = DateTimeOffset.UtcNow,
-            UpdatedAt  = DateTimeOffset.UtcNow,
-            Notes      = notes ?? ex.Notes
+            UpdatedAt = DateTimeOffset.UtcNow,
+            Notes = notes ?? ex.Notes
         };
 
         _log.Information("Governance exception {ExceptionId} resolved", exceptionId);
@@ -135,9 +135,9 @@ public sealed class GovernanceExceptionService
 
         _exceptions[id] = ex with
         {
-            Status    = status,
+            Status = status,
             UpdatedAt = DateTimeOffset.UtcNow,
-            Notes     = notes ?? ex.Notes
+            Notes = notes ?? ex.Notes
         };
         return true;
     }
@@ -149,13 +149,13 @@ public sealed class GovernanceExceptionService
         return result.Category switch
         {
             "currency_mismatch" or "missing_ledger_coverage" when abs > 100_000m => GovernanceExceptionSeverity.Critical,
-            "missing_ledger_coverage" or "missing_portfolio_coverage"            => GovernanceExceptionSeverity.High,
-            "amount_mismatch" when abs > 50_000m                                 => GovernanceExceptionSeverity.Critical,
-            "amount_mismatch" when abs > 10_000m                                 => GovernanceExceptionSeverity.High,
-            "amount_mismatch"                                                    => GovernanceExceptionSeverity.Medium,
-            "classification_gap"                                                 => GovernanceExceptionSeverity.High,
-            "timing_mismatch"                                                    => GovernanceExceptionSeverity.Low,
-            _                                                                    => GovernanceExceptionSeverity.Medium
+            "missing_ledger_coverage" or "missing_portfolio_coverage" => GovernanceExceptionSeverity.High,
+            "amount_mismatch" when abs > 50_000m => GovernanceExceptionSeverity.Critical,
+            "amount_mismatch" when abs > 10_000m => GovernanceExceptionSeverity.High,
+            "amount_mismatch" => GovernanceExceptionSeverity.Medium,
+            "classification_gap" => GovernanceExceptionSeverity.High,
+            "timing_mismatch" => GovernanceExceptionSeverity.Low,
+            _ => GovernanceExceptionSeverity.Medium
         };
     }
 }
@@ -165,25 +165,25 @@ public sealed class GovernanceExceptionService
 /// <summary>Severity ordering for governance exceptions (higher value = more severe).</summary>
 public enum GovernanceExceptionSeverity
 {
-    Info     = 0,
-    Low      = 1,
-    Medium   = 2,
-    High     = 3,
+    Info = 0,
+    Low = 1,
+    Medium = 2,
+    High = 3,
     Critical = 4
 }
 
 /// <summary>Workflow status for a governance exception.</summary>
 public enum GovernanceExceptionStatus
 {
-    Open         = 0,
+    Open = 0,
     Investigating = 1,
-    Resolved     = 2
+    Resolved = 2
 }
 
 /// <summary>An individual governance exception derived from a reconciliation break.</summary>
 public sealed record GovernanceException(
-    Guid   ExceptionId,
-    Guid   RunId,
+    Guid ExceptionId,
+    Guid RunId,
     string PortfolioId,
     string CheckId,
     string Label,
@@ -192,8 +192,8 @@ public sealed record GovernanceException(
     GovernanceExceptionStatus Status,
     decimal? ExpectedAmount,
     decimal? ActualAmount,
-    decimal  Variance,
-    string   Reason,
+    decimal Variance,
+    string Reason,
     DateTimeOffset AsOf,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt,

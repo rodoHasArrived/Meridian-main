@@ -352,16 +352,16 @@ public sealed class MarketImpactFillModelTests
     public void TryFill_HighImpactCoefficient_ProducesMoreImpactThanLow()
     {
         var commission = new FixedCommissionModel(0m);
-        var modelLow  = new MarketImpactFillModel(commission, impactCoefficient: 0.01m, slippageBasisPoints: 0m);
-        var modelHigh = new MarketImpactFillModel(commission, impactCoefficient: 1.0m,  slippageBasisPoints: 0m);
+        var modelLow = new MarketImpactFillModel(commission, impactCoefficient: 0.01m, slippageBasisPoints: 0m);
+        var modelHigh = new MarketImpactFillModel(commission, impactCoefficient: 1.0m, slippageBasisPoints: 0m);
 
         var order = MakeMarketOrder("SPY", 20_000L);
-        var evt   = MakeBarEvent("SPY", 400m, 410m, 390m, 405m, volume: 100_000L);
+        var evt = MakeBarEvent("SPY", 400m, 410m, 390m, 405m, volume: 100_000L);
 
-        var resultLow  = modelLow.TryFill(order, evt);
+        var resultLow = modelLow.TryFill(order, evt);
         var resultHigh = modelHigh.TryFill(order, evt);
 
-        var avgLow  = resultLow.Fills.Average(f => (double)f.FillPrice);
+        var avgLow = resultLow.Fills.Average(f => (double)f.FillPrice);
         var avgHigh = resultHigh.Fills.Average(f => (double)f.FillPrice);
 
         avgHigh.Should().BeGreaterThan(avgLow,

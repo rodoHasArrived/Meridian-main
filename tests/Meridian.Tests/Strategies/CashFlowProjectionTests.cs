@@ -19,7 +19,7 @@ public sealed class CashFlowProjectionTests
     [Fact]
     public async Task GetAsync_ReturnsNull_WhenRunNotFound()
     {
-        var store   = new StrategyRunStore();
+        var store = new StrategyRunStore();
         var service = new CashFlowProjectionService(store);
 
         var result = await service.GetAsync("no-such-run");
@@ -31,11 +31,11 @@ public sealed class CashFlowProjectionTests
     public async Task GetAsync_ReturnsEmptySummary_WhenRunHasNoCashFlows()
     {
         var store = new StrategyRunStore();
-        var run   = BuildRunWithNoFlows("cf-empty-1");
+        var run = BuildRunWithNoFlows("cf-empty-1");
         await store.RecordRunAsync(run);
 
         var service = new CashFlowProjectionService(store);
-        var result  = await service.GetAsync("cf-empty-1");
+        var result = await service.GetAsync("cf-empty-1");
 
         result.Should().NotBeNull();
         result!.RunId.Should().Be("cf-empty-1");
@@ -49,11 +49,11 @@ public sealed class CashFlowProjectionTests
     public async Task GetAsync_ReturnsSummaryWithEntries_WhenRunHasCashFlows()
     {
         var store = new StrategyRunStore();
-        var run   = BuildRunWithMixedFlows("cf-mixed-1");
+        var run = BuildRunWithMixedFlows("cf-mixed-1");
         await store.RecordRunAsync(run);
 
         var service = new CashFlowProjectionService(store);
-        var result  = await service.GetAsync("cf-mixed-1");
+        var result = await service.GetAsync("cf-mixed-1");
 
         result.Should().NotBeNull();
         result!.RunId.Should().Be("cf-mixed-1");
@@ -69,13 +69,13 @@ public sealed class CashFlowProjectionTests
     public async Task GetAsync_TotalInflowsAndOutflows_MatchEntrySums()
     {
         var store = new StrategyRunStore();
-        var run   = BuildRunWithMixedFlows("cf-totals-1");
+        var run = BuildRunWithMixedFlows("cf-totals-1");
         await store.RecordRunAsync(run);
 
         var service = new CashFlowProjectionService(store);
-        var result  = await service.GetAsync("cf-totals-1");
+        var result = await service.GetAsync("cf-totals-1");
 
-        var expectedInflows  = result!.Entries.Sum(static e => e.Amount > 0m ? e.Amount : 0m);
+        var expectedInflows = result!.Entries.Sum(static e => e.Amount > 0m ? e.Amount : 0m);
         var expectedOutflows = result.Entries.Sum(static e => e.Amount < 0m ? -e.Amount : 0m);
 
         result.TotalInflows.Should().Be(expectedInflows);
@@ -87,11 +87,11 @@ public sealed class CashFlowProjectionTests
     public async Task GetAsync_EntriesAreSortedByTimestamp()
     {
         var store = new StrategyRunStore();
-        var run   = BuildRunWithMixedFlows("cf-sort-1");
+        var run = BuildRunWithMixedFlows("cf-sort-1");
         await store.RecordRunAsync(run);
 
         var service = new CashFlowProjectionService(store);
-        var result  = await service.GetAsync("cf-sort-1");
+        var result = await service.GetAsync("cf-sort-1");
 
         result!.Entries.Should().BeInAscendingOrder(static e => e.Timestamp);
     }
@@ -104,11 +104,11 @@ public sealed class CashFlowProjectionTests
     public async Task GetAsync_LadderNetPosition_EqualsTotalInflowsMinusOutflows_WithinWindow()
     {
         var store = new StrategyRunStore();
-        var run   = BuildRunWithMixedFlows("cf-ladder-1");
+        var run = BuildRunWithMixedFlows("cf-ladder-1");
         await store.RecordRunAsync(run);
 
         var service = new CashFlowProjectionService(store);
-        var result  = await service.GetAsync("cf-ladder-1");
+        var result = await service.GetAsync("cf-ladder-1");
 
         // The ladder's net position equals sum of bucket netflows
         var bucketNetSum = result!.Ladder.Buckets.Sum(static b => b.NetFlow);
@@ -119,11 +119,11 @@ public sealed class CashFlowProjectionTests
     public async Task GetAsync_LadderTotals_EqualSumOfBuckets()
     {
         var store = new StrategyRunStore();
-        var run   = BuildRunWithMixedFlows("cf-ladder-totals-1");
+        var run = BuildRunWithMixedFlows("cf-ladder-totals-1");
         await store.RecordRunAsync(run);
 
         var service = new CashFlowProjectionService(store);
-        var result  = await service.GetAsync("cf-ladder-totals-1");
+        var result = await service.GetAsync("cf-ladder-totals-1");
 
         var ladder = result!.Ladder;
         ladder.TotalProjectedInflows.Should().Be(ladder.Buckets.Sum(static b => b.ProjectedInflows));
@@ -134,13 +134,13 @@ public sealed class CashFlowProjectionTests
     public async Task GetAsync_BucketDays_AffectsNumberOfBuckets()
     {
         var store = new StrategyRunStore();
-        var run   = BuildRunWithMixedFlows("cf-buckets-1");
+        var run = BuildRunWithMixedFlows("cf-buckets-1");
         await store.RecordRunAsync(run);
 
         var service = new CashFlowProjectionService(store);
 
         // Wide buckets = fewer buckets
-        var wideBuckets  = await service.GetAsync("cf-buckets-1", bucketDays: 30);
+        var wideBuckets = await service.GetAsync("cf-buckets-1", bucketDays: 30);
         // Narrow buckets = more or equal buckets
         var narrowBuckets = await service.GetAsync("cf-buckets-1", bucketDays: 1);
 
@@ -157,11 +157,11 @@ public sealed class CashFlowProjectionTests
     public async Task GetAsync_DividendFlow_HasCorrectEventKind()
     {
         var store = new StrategyRunStore();
-        var run   = BuildRunWithDividendFlow("cf-dividend-1");
+        var run = BuildRunWithDividendFlow("cf-dividend-1");
         await store.RecordRunAsync(run);
 
         var service = new CashFlowProjectionService(store);
-        var result  = await service.GetAsync("cf-dividend-1");
+        var result = await service.GetAsync("cf-dividend-1");
 
         result!.Entries.Should().ContainSingle(e => e.EventKind == "Dividend");
     }
@@ -170,11 +170,11 @@ public sealed class CashFlowProjectionTests
     public async Task GetAsync_CommissionFlow_HasCorrectEventKind()
     {
         var store = new StrategyRunStore();
-        var run   = BuildRunWithCommissionFlow("cf-commission-1");
+        var run = BuildRunWithCommissionFlow("cf-commission-1");
         await store.RecordRunAsync(run);
 
         var service = new CashFlowProjectionService(store);
-        var result  = await service.GetAsync("cf-commission-1");
+        var result = await service.GetAsync("cf-commission-1");
 
         result!.Entries.Should().ContainSingle(e => e.EventKind == "Commission");
     }
@@ -187,7 +187,7 @@ public sealed class CashFlowProjectionTests
     public async Task GetAsync_AsOf_FiltersLadderEntries()
     {
         var store = new StrategyRunStore();
-        var run   = BuildRunWithMixedFlows("cf-asof-1");
+        var run = BuildRunWithMixedFlows("cf-asof-1");
         await store.RecordRunAsync(run);
 
         var service = new CashFlowProjectionService(store);
@@ -202,11 +202,11 @@ public sealed class CashFlowProjectionTests
     public async Task GetAsync_RunId_IsPropagated()
     {
         var store = new StrategyRunStore();
-        var run   = BuildRunWithMixedFlows("cf-runid-check");
+        var run = BuildRunWithMixedFlows("cf-runid-check");
         await store.RecordRunAsync(run);
 
         var service = new CashFlowProjectionService(store);
-        var result  = await service.GetAsync("cf-runid-check");
+        var result = await service.GetAsync("cf-runid-check");
 
         result!.RunId.Should().Be("cf-runid-check");
     }
@@ -218,7 +218,7 @@ public sealed class CashFlowProjectionTests
     private static StrategyRunEntry BuildRunWithNoFlows(string runId)
     {
         var startedAt = new DateTimeOffset(2026, 1, 2, 9, 30, 0, TimeSpan.Zero);
-        var result    = BuildMinimalBacktestResult(startedAt, cashFlows: []);
+        var result = BuildMinimalBacktestResult(startedAt, cashFlows: []);
 
         return new StrategyRunEntry(
             RunId: runId,
@@ -277,7 +277,7 @@ public sealed class CashFlowProjectionTests
     private static StrategyRunEntry BuildRunWithCommissionFlow(string runId)
     {
         var startedAt = new DateTimeOffset(2026, 3, 1, 9, 30, 0, TimeSpan.Zero);
-        var orderId   = Guid.NewGuid();
+        var orderId = Guid.NewGuid();
 
         var cashFlows = new CashFlowEntry[]
         {

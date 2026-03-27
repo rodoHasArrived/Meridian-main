@@ -1,5 +1,5 @@
-using Meridian.Infrastructure.CppTrader.Symbols;
 using Meridian.Infrastructure.CppTrader.Protocol;
+using Meridian.Infrastructure.CppTrader.Symbols;
 using GatewayOrderStatus = Meridian.Execution.Models.OrderStatus;
 
 namespace Meridian.Infrastructure.CppTrader.Translation;

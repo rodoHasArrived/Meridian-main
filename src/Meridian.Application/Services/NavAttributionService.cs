@@ -76,14 +76,14 @@ public sealed class NavAttributionService
             request.FundId, consolidatedNav.TotalNav, request.Currency);
 
         return new NavAttributionResult(
-            FundId:        request.FundId,
-            AsOf:          request.AsOf,
-            Currency:      request.Currency,
-            ComputedAt:    DateTimeOffset.UtcNow,
-            Consolidated:  consolidatedNav,
-            ByEntity:      entityNav,
-            BySleeve:      sleeveNav,
-            ByVehicle:     vehicleNav);
+            FundId: request.FundId,
+            AsOf: request.AsOf,
+            Currency: request.Currency,
+            ComputedAt: DateTimeOffset.UtcNow,
+            Consolidated: consolidatedNav,
+            ByEntity: entityNav,
+            BySleeve: sleeveNav,
+            ByVehicle: vehicleNav);
     }
 
     // ── Private helpers ────────────────────────────────────────────────────────
@@ -117,14 +117,14 @@ public sealed class NavAttributionService
             components.Add(new NavComponent(
                 AccountName: account.Name,
                 AccountType: account.AccountType.ToString(),
-                Symbol:      account.Symbol,
-                AssetClass:  security?.AssetClass,
+                Symbol: account.Symbol,
+                AssetClass: security?.AssetClass,
                 DisplayName: security?.DisplayName,
-                Balance:     balance));
+                Balance: balance));
         }
 
-        var totalNav      = components.Sum(c => c.Balance);
-        var byAssetClass  = components
+        var totalNav = components.Sum(c => c.Balance);
+        var byAssetClass = components
             .GroupBy(c => c.AssetClass ?? "Unclassified", StringComparer.OrdinalIgnoreCase)
             .ToDictionary(g => g.Key, g => g.Sum(c => c.Balance));
 

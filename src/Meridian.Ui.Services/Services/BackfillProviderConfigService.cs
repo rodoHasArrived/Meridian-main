@@ -385,7 +385,8 @@ public sealed class BackfillProviderConfigService
         BackfillProvidersConfigDto? config,
         string providerId)
     {
-        if (config == null) return null;
+        if (config == null)
+            return null;
 
         return providerId.ToLowerInvariant() switch
         {
@@ -441,14 +442,17 @@ public sealed class BackfillProviderConfigService
     /// </summary>
     public static string ComputeAuditDeltaSummary(string? previousJson, string? newJson)
     {
-        if (previousJson == null) return "Initial configuration set";
-        if (newJson == null) return "Configuration removed";
+        if (previousJson == null)
+            return "Initial configuration set";
+        if (newJson == null)
+            return "Configuration removed";
 
         try
         {
             var prev = System.Text.Json.JsonSerializer.Deserialize<BackfillProviderOptionsDto>(previousJson);
             var next = System.Text.Json.JsonSerializer.Deserialize<BackfillProviderOptionsDto>(newJson);
-            if (prev == null || next == null) return "Configuration updated";
+            if (prev == null || next == null)
+                return "Configuration updated";
 
             var changes = new List<string>();
             if (prev.Enabled != next.Enabled)
@@ -472,7 +476,8 @@ public sealed class BackfillProviderConfigService
         BackfillProviderOptionsDto? options,
         BackfillProviderMetadataDto metadata)
     {
-        if (options == null) return "default";
+        if (options == null)
+            return "default";
 
         // Check if all fields match defaults — if so, it's effectively the default config
         if (options.Priority == metadata.DefaultPriority

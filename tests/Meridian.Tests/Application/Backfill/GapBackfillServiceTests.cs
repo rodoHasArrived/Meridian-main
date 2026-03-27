@@ -352,8 +352,10 @@ public sealed class GapBackfillServiceTests
             {
                 var n = Interlocked.Increment(ref callCount);
                 await Task.Yield();
-                if (n == 1) tcs1.TrySetResult(true);
-                else tcs2.TrySetResult(true);
+                if (n == 1)
+                    tcs1.TrySetResult(true);
+                else
+                    tcs2.TrySetResult(true);
                 return SuccessResult(req);
             },
             subscribedSymbols: ["AAPL"],

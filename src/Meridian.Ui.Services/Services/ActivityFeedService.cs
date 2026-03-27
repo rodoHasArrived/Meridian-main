@@ -274,18 +274,20 @@ public sealed class ActivityFeedService
                 UiApiRoutes.Errors,
                 ct).ConfigureAwait(false);
 
-            if (response?.Errors == null) return;
+            if (response?.Errors == null)
+                return;
 
             foreach (var entry in response.Errors)
             {
-                if (ct.IsCancellationRequested) break;
+                if (ct.IsCancellationRequested)
+                    break;
 
                 var activityType = entry.Level?.ToLowerInvariant() switch
                 {
                     "critical" => ActivityType.DataQualityIssue,
-                    "error"    => ActivityType.DataQualityIssue,
-                    "warning"  => ActivityType.DataQualityIssue,
-                    _          => ActivityType.ProviderConnected
+                    "error" => ActivityType.DataQualityIssue,
+                    "warning" => ActivityType.DataQualityIssue,
+                    _ => ActivityType.ProviderConnected
                 };
 
                 var item = new ActivityItem
@@ -528,10 +530,14 @@ public sealed class ActivityItem
         get
         {
             var diff = DateTime.UtcNow - Timestamp;
-            if (diff.TotalSeconds < 60) return "Just now";
-            if (diff.TotalMinutes < 60) return $"{(int)diff.TotalMinutes}m ago";
-            if (diff.TotalHours < 24) return $"{(int)diff.TotalHours}h ago";
-            if (diff.TotalDays < 7) return $"{(int)diff.TotalDays}d ago";
+            if (diff.TotalSeconds < 60)
+                return "Just now";
+            if (diff.TotalMinutes < 60)
+                return $"{(int)diff.TotalMinutes}m ago";
+            if (diff.TotalHours < 24)
+                return $"{(int)diff.TotalHours}h ago";
+            if (diff.TotalDays < 7)
+                return $"{(int)diff.TotalDays}d ago";
             return Timestamp.ToString("MMM d");
         }
     }

@@ -190,7 +190,8 @@ public sealed class ErrorHandlingService : IDisposable
 
     private async Task NotifyUserAsync(ErrorRecord record, ErrorHandlingOptions options, CancellationToken ct)
     {
-        if (ct.IsCancellationRequested) return;
+        if (ct.IsCancellationRequested)
+            return;
 
         var title = options.NotificationTitle ?? GetDefaultTitle(record.Severity);
         var message = record.Exception?.Message ?? record.ErrorMessage ?? "An unknown error occurred";
@@ -314,7 +315,8 @@ public sealed class ErrorHandlingService : IDisposable
 
     public void Dispose()
     {
-        if (_disposed) return;
+        if (_disposed)
+            return;
         _disposed = true;
     }
 }

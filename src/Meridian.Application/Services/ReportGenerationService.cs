@@ -46,10 +46,10 @@ public sealed class ReportGenerationService
         var assetClassSections = BuildAssetClassSections(enrichedRows);
 
         return new ReportPack(
-            ReportId:    Guid.NewGuid(),
-            FundId:      request.FundId,
-            ReportKind:  request.ReportKind,
-            AsOf:        request.AsOf,
+            ReportId: Guid.NewGuid(),
+            FundId: request.FundId,
+            ReportKind: request.ReportKind,
+            AsOf: request.AsOf,
             GeneratedAt: DateTimeOffset.UtcNow,
             TrialBalance: enrichedRows,
             AssetClassSections: assetClassSections,
@@ -84,13 +84,13 @@ public sealed class ReportGenerationService
             }
 
             rows.Add(new EnrichedLedgerRow(
-                AccountName:  account.Name,
-                AccountType:  account.AccountType.ToString(),
-                Symbol:       account.Symbol,
-                Currency:     detail?.Currency,
-                AssetClass:   detail?.AssetClass,
-                DisplayName:  detail?.DisplayName,
-                NetBalance:   balance));
+                AccountName: account.Name,
+                AccountType: account.AccountType.ToString(),
+                Symbol: account.Symbol,
+                Currency: detail?.Currency,
+                AssetClass: detail?.AssetClass,
+                DisplayName: detail?.DisplayName,
+                NetBalance: balance));
         }
 
         return rows
@@ -105,8 +105,8 @@ public sealed class ReportGenerationService
             .GroupBy(r => r.AssetClass ?? "Unclassified", StringComparer.OrdinalIgnoreCase)
             .Select(g => new AssetClassSection(
                 AssetClass: g.Key,
-                Rows:       g.ToList(),
-                Total:      g.Sum(r => r.NetBalance)))
+                Rows: g.ToList(),
+                Total: g.Sum(r => r.NetBalance)))
             .OrderBy(s => s.AssetClass, StringComparer.Ordinal)
             .ToList();
 }

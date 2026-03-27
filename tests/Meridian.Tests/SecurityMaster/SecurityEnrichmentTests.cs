@@ -3,10 +3,10 @@ using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
-using MeridianLedger = Meridian.Ledger.Ledger;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
 using Xunit;
+using MeridianLedger = Meridian.Ledger.Ledger;
 
 namespace Meridian.Tests.SecurityMaster;
 
@@ -36,7 +36,7 @@ public sealed class SecurityEnrichmentTests
         summary.Positions.Should().ContainSingle();
         summary.Positions[0].Security.Should().NotBeNull();
         summary.Positions[0].Security!.DisplayName.Should().Be("Apple Inc.");
-        summary.Positions[0].Security.AssetClass.Should().Be("Equity");
+        summary.Positions[0].Security!.AssetClass.Should().Be("Equity");
     }
 
     [Fact]

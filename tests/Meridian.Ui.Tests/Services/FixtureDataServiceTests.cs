@@ -176,7 +176,7 @@ public sealed class FixtureDataServiceTests
         var trades = response.Trades.ToList();
         for (int i = 1; i < trades.Count; i++)
         {
-            trades[i].Price.Should().BeGreaterThan(trades[i - 1].Price, 
+            trades[i].Price.Should().BeGreaterThan(trades[i - 1].Price,
                 "prices should increase in mock data");
         }
     }
@@ -226,9 +226,9 @@ public sealed class FixtureDataServiceTests
 
         // Assert
         status.Metrics.Should().NotBeNull();
-        status.Metrics!.Published.Should().BeGreaterThan(status.Metrics.Dropped, 
+        status.Metrics!.Published.Should().BeGreaterThan(status.Metrics.Dropped,
             "published should exceed dropped events");
-        status.Metrics.DropRate.Should().BeInRange(0, 1, 
+        status.Metrics.DropRate.Should().BeInRange(0, 1,
             "drop rate should be a percentage");
         status.Metrics.EventsPerSecond.Should().BeGreaterThan(0);
         status.Metrics.Trades.Should().BeGreaterThan(0);

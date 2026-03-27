@@ -1,6 +1,6 @@
+using System.Text.Json;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.FSharp.Domain;
-using System.Text.Json;
 
 namespace Meridian.Application.SecurityMaster;
 

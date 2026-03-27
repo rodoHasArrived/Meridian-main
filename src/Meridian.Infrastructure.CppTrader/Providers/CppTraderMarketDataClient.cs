@@ -268,28 +268,28 @@ public sealed class CppTraderMarketDataClient : IMarketDataClient
                 switch (envelope.MessageType)
                 {
                     case CppTraderProtocolNames.TradePrint:
-                    {
-                        var payload = envelope.Payload.Deserialize(CppTraderJsonContext.Default.TradePrintEvent);
-                        if (payload is not null)
-                            HandleTradePrint(payload);
-                        else
-                            _logger.LogWarning(
-                                "Failed to deserialize '{MessageType}' payload; frame skipped.",
-                                CppTraderProtocolNames.TradePrint);
-                        break;
-                    }
+                        {
+                            var payload = envelope.Payload.Deserialize(CppTraderJsonContext.Default.TradePrintEvent);
+                            if (payload is not null)
+                                HandleTradePrint(payload);
+                            else
+                                _logger.LogWarning(
+                                    "Failed to deserialize '{MessageType}' payload; frame skipped.",
+                                    CppTraderProtocolNames.TradePrint);
+                            break;
+                        }
 
                     case CppTraderProtocolNames.BookSnapshot:
-                    {
-                        var payload = envelope.Payload.Deserialize(CppTraderJsonContext.Default.BookSnapshotEvent);
-                        if (payload is not null)
-                            HandleBookSnapshot(payload.Snapshot);
-                        else
-                            _logger.LogWarning(
-                                "Failed to deserialize '{MessageType}' payload; frame skipped.",
-                                CppTraderProtocolNames.BookSnapshot);
-                        break;
-                    }
+                        {
+                            var payload = envelope.Payload.Deserialize(CppTraderJsonContext.Default.BookSnapshotEvent);
+                            if (payload is not null)
+                                HandleBookSnapshot(payload.Snapshot);
+                            else
+                                _logger.LogWarning(
+                                    "Failed to deserialize '{MessageType}' payload; frame skipped.",
+                                    CppTraderProtocolNames.BookSnapshot);
+                            break;
+                        }
                 }
             }
         }

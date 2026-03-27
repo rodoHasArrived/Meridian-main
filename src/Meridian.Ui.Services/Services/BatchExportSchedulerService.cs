@@ -329,7 +329,8 @@ public sealed class BatchExportSchedulerService : IAsyncDisposable
 
         foreach (var symbolPath in symbolPaths)
         {
-            if (!Directory.Exists(symbolPath)) continue;
+            if (!Directory.Exists(symbolPath))
+                continue;
 
             foreach (var pattern in searchPatterns)
             {
@@ -352,10 +353,12 @@ public sealed class BatchExportSchedulerService : IAsyncDisposable
 
     private static bool MatchesDateRange(string filePath, ExportDateRange? range)
     {
-        if (range == null) return true;
+        if (range == null)
+            return true;
 
         var fileName = Path.GetFileNameWithoutExtension(filePath);
-        if (fileName.EndsWith(".jsonl")) fileName = Path.GetFileNameWithoutExtension(fileName);
+        if (fileName.EndsWith(".jsonl"))
+            fileName = Path.GetFileNameWithoutExtension(fileName);
 
         if (DateOnly.TryParse(fileName, out var fileDate))
         {
@@ -513,7 +516,8 @@ public sealed class BatchExportSchedulerService : IAsyncDisposable
 
     private static bool ShouldRunScheduledJob(ExportJob job, DateTime now)
     {
-        if (job.Schedule == null) return false;
+        if (job.Schedule == null)
+            return false;
 
         var lastRun = job.LastRunAt ?? DateTime.MinValue;
         var nextRun = GetNextRunTime(lastRun, job.Schedule);

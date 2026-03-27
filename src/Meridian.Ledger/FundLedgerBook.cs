@@ -74,12 +74,12 @@ public sealed class FundLedgerBook
     /// </summary>
     public FundLedgerSnapshot ReconciliationSnapshot(DateTimeOffset asOf) =>
         new FundLedgerSnapshot(
-            FundId:      FundId,
-            AsOf:        asOf,
+            FundId: FundId,
+            AsOf: asOf,
             Consolidated: ConsolidatedSnapshotAsOf(asOf),
-            Entities:     EntitySnapshotsAsOf(asOf),
-            Sleeves:      SleeveSnapshotsAsOf(asOf),
-            Vehicles:     VehicleSnapshotsAsOf(asOf));
+            Entities: EntitySnapshotsAsOf(asOf),
+            Sleeves: SleeveSnapshotsAsOf(asOf),
+            Vehicles: VehicleSnapshotsAsOf(asOf));
 
     // ── Private helpers ────────────────────────────────────────────────────────
 

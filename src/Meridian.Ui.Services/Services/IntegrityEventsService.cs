@@ -333,9 +333,12 @@ public sealed class IntegrityEvent
         get
         {
             var elapsed = DateTime.UtcNow - Timestamp;
-            if (elapsed.TotalSeconds < 60) return "Just now";
-            if (elapsed.TotalMinutes < 60) return $"{(int)elapsed.TotalMinutes}m ago";
-            if (elapsed.TotalHours < 24) return $"{(int)elapsed.TotalHours}h ago";
+            if (elapsed.TotalSeconds < 60)
+                return "Just now";
+            if (elapsed.TotalMinutes < 60)
+                return $"{(int)elapsed.TotalMinutes}m ago";
+            if (elapsed.TotalHours < 24)
+                return $"{(int)elapsed.TotalHours}h ago";
             return $"{(int)elapsed.TotalDays}d ago";
         }
     }
