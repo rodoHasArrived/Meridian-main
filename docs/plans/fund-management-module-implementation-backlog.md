@@ -164,6 +164,8 @@ Execution primitives and paper-trading infrastructure exist, but not yet as a fu
 - Introduce trade-management DTOs and view models shared between execution and WPF.
 - Add implementation workflows that bridge research output into trade intent.
 - Add guardrails, approvals, and exception handling for paper/live progression.
+- Add pre-trade compliance checks wired into the order submission path (mandate limits, concentration rules, exposure constraints).
+- Add post-trade compliance validation: flag fills that cause mandate drift, surface breaks in the governance exception queue.
 
 **Target phase**
 
@@ -360,6 +362,9 @@ There is already a narrow reconciliation kernel, but it does not yet represent a
 - Add cash-ladder and realized-vs-projected cash-flow views.
 - Add new workstation DTOs for breaks, exceptions, and cash-flow summaries.
 - Keep rule-heavy matching logic in F# and orchestration in C#.
+- Add external custodian statement adapters (CSV position file, SWIFT MT940/942, JSON) for automated T+1 reconciliation.
+- Add break classification (quantity, settlement date, currency, instrument) and severity scoring.
+- Add multi-custodian break queue with assignment, resolution tracking, and automated exception-based processing.
 
 **Target phase**
 
@@ -604,6 +609,109 @@ Data-ops controls exist, but they are not yet shaped around fund-ops reporting a
 
 - Phase 5
 
+### 18. Post-Trade Allocation Rule Engine
+
+**Projects**
+
+- `src/Meridian.FSharp`
+- `src/Meridian.Application`
+- `src/Meridian.Contracts`
+- `src/Meridian.Wpf`
+
+**Key anchors**
+
+- `src/Meridian.FSharp/Domain/` (new `TradeAllocation.fs`)
+- `src/Meridian.Execution/OrderManagementSystem.cs`
+- `src/Meridian.Application/` (new `PostTradeAllocationService.cs`)
+- `src/Meridian.Contracts/Workstation/` (new allocation DTOs)
+
+**Current state**
+
+Fills flow from the execution layer into the ledger directly. There is no rules-based allocation layer to distribute quantities by strategy, tax lot, account, or trader before ledger posting.
+
+**Primary backlog**
+
+- Define `TradeAllocationRule` domain model: allocation by strategy, tax lot, account, or trader.
+- Add F# allocation kernel (pure function: fill + rules → allocation breakdown).
+- Add `PostTradeAllocationService` in `Meridian.Application`: apply rules to fills, distribute quantities to fund/sleeve/account ledger lines.
+- Add workstation UI for reviewing and overriding allocations before confirmation.
+- Add allocation approval workflow: operator review → confirm or reject → ledger posting.
+- Add tests for allocation rule evaluation, override paths, and edge cases (partial fills, fractional quantities).
+
+**Target phase**
+
+- Phase 6
+
+### 19. Model Portfolio Management and Rebalancing
+
+**Projects**
+
+- `src/Meridian.FSharp`
+- `src/Meridian.Application`
+- `src/Meridian.Contracts`
+- `src/Meridian.Wpf`
+
+**Key anchors**
+
+- `src/Meridian.FSharp/Domain/` (new `ModelPortfolio.fs`)
+- `src/Meridian.Application/` (new `ModelPortfolioDriftMonitor.cs`, `RebalancingSignalService.cs`)
+- `src/Meridian.Contracts/` (new `ModelPortfolioDtos.cs`)
+- `src/Meridian.Wpf/ViewModels/` (new `ModelPortfolioViewModel.cs`)
+
+**Current state**
+
+There is no model portfolio concept — strategies produce fills but there is no target-weight definition, drift monitoring, or rebalancing workflow.
+
+**Primary backlog**
+
+- Define `ModelPortfolio` domain model: target weights by instrument, asset class, duration bucket, or factor exposure.
+- Add drift monitoring service: compare current portfolio weights against model targets; compute absolute and relative drift per position.
+- Add rebalancing signal generator: produce candidate order lists to restore target weights within configurable drift tolerances.
+- Add mandate-aware rebalancing constraints: position limits, liquidity minimums, and mandate restrictions from Security Master and compliance layer.
+- Add WPF surfaces: model portfolio construction, drift dashboard, rebalancing review and approval workflow.
+- Add tests for drift calculation accuracy, constraint satisfaction, and order sizing.
+
+**Target phase**
+
+- Phase 7
+
+### 20. Regulatory Reporting
+
+**Projects**
+
+- `src/Meridian.Application`
+- `src/Meridian.FSharp`
+- `src/Meridian.Contracts`
+- `src/Meridian.Wpf`
+
+**Key anchors**
+
+- `src/Meridian.Application/` (new `RegulatoryReportingService.cs`)
+- `src/Meridian.FSharp/Domain/` (new `RegulatoryReporting.fs`)
+- `src/Meridian.Contracts/` (new `RegulatoryReportingDtos.cs`)
+- `src/Meridian.Storage/Export/AnalysisExportService.cs`
+
+**Current state**
+
+The export and report-pack infrastructure exists for internal governance reports. There are no regulatory-specific data models or generation services for MiFID II, AIFMD, or PRIIPs.
+
+**Primary backlog**
+
+- Define regulatory reporting domain models: `TransactionReportRecord`, `CostChargeDisclosureRecord`, `RegulatoryReportBatch`.
+- Implement MiFID II RTS 28 best-execution report generation (quarterly aggregation by venue and instrument class).
+- Implement MiFID II Article 24 cost-and-charges disclosure records linked to fills and portfolio positions.
+- Add PRIIPs KID data assembly service (performance scenarios, cost structures, risk rating inputs); defer PDF rendering to a later milestone but produce the data model.
+- Add AIFMD Annex IV data aggregation: AUM, leverage, liquidity, and risk exposure summaries.
+- Add shadow-NAV calculation path: Meridian-computed NAV alongside administrator-issued NAV for cross-check and versioning.
+- Add locked reporting periods: prevent backdating once a period is closed.
+- Add regulated report history with immutable audit log and version control.
+- Add automated report distribution metadata: recipient, format, timestamp, and version for each published pack.
+- Add tests for batch generation correctness, classification mapping, shadow-NAV delta detection, and required field completeness.
+
+**Target phase**
+
+- Phase 7
+
 ## Cross-Module Sequencing
 
 ### Wave A
@@ -636,6 +744,17 @@ Data-ops controls exist, but they are not yet shaped around fund-ops reporting a
 - Report validation and quality attachments
 - Evidence, provenance, and investor/stakeholder delivery
 
+### Wave F
+
+- Post-trade allocation rule engine
+- Regulatory reporting (MiFID II, AIFMD Annex IV)
+- Shadow-NAV and locked reporting periods
+
+### Wave G
+
+- Model portfolio management and drift monitoring
+- Rebalancing signal generation and approval workflows
+
 ## Immediate Next Slices
 
 1. Add new contracts for account/entity structures and governance workstation DTOs.
@@ -643,6 +762,10 @@ Data-ops controls exist, but they are not yet shaped around fund-ops reporting a
 3. Introduce application services for reconciliation orchestration and report generation.
 4. Add WPF governance surfaces for reconciliation, cash-flow, and reporting.
 5. Extend export infrastructure into governed report-pack workflows.
+6. Add post-trade allocation rule domain model and `PostTradeAllocationService` shell.
+7. Add external custodian statement adapter and break classification for T+1 reconciliation.
+8. Add MiFID II RTS 28 and cost/charges data models plus `RegulatoryReportingService` shell.
+9. Add model portfolio domain model and drift monitoring service.
 
 ## Related Documents
 
