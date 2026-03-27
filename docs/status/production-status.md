@@ -46,7 +46,7 @@ The active plan now has two connected delivery tracks:
 - Security Master foundations already present in contracts, storage, application, and F# domain modules
 - Existing export infrastructure that can support future report-pack generation
 - WPF desktop application included in solution build (`src/Meridian.Wpf/`; builds full WPF app on Windows, CI stub on Linux/macOS)
-- Comprehensive test coverage (~4,424 tests across 7 test projects)
+- Comprehensive test coverage (~4,756 tests across 7 test projects)
 
 ## Current Gaps
 

@@ -18,7 +18,7 @@ def utc_now() -> str:
 def is_excluded(path: Path) -> bool:
     excluded_parts = {
         ".git", ".vs", ".idea", "bin", "obj", "node_modules",
-        "archive", "obj-codex",
+        "archive", "obj-codex", "TestResults",
     }
     return any(part in excluded_parts for part in path.parts)
 

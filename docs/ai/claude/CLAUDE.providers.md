@@ -43,7 +43,7 @@ The system uses a unified abstraction layer supporting both **real-time streamin
 
 ## Current Provider Inventory (2026-03-20)
 
-The repository currently includes **20 concrete provider implementations** plus shared base and registry components.
+The repository currently includes **30 concrete provider implementations** plus shared base and registry components.
 
 ### Streaming / Hybrid Providers
 | Provider | Class | Path |
@@ -51,9 +51,12 @@ The repository currently includes **20 concrete provider implementations** plus 
 | Alpaca | `AlpacaMarketDataClient` | `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs` |
 | Interactive Brokers | `IBMarketDataClient` | `src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs` |
 | Interactive Brokers (simulation) | `IBSimulationClient` | `src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs` |
-| NYSE | `NYSEDataSource` | `src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs` |
+| NYSE | `NyseMarketDataClient` | `src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs` |
+| NYSE (data source) | `NYSEDataSource` | `src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs` |
 | Polygon | `PolygonMarketDataClient` | `src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs` |
 | StockSharp | `StockSharpMarketDataClient` | `src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpMarketDataClient.cs` |
+| Synthetic | `SyntheticMarketDataClient` | `src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs` |
+| CppTrader | `CppTraderMarketDataClient` | `src/Meridian.Infrastructure.CppTrader/Providers/CppTraderMarketDataClient.cs` |
 | Streaming failover | `FailoverAwareMarketDataClient` | `src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs` |
 
 ### Historical Providers
@@ -63,11 +66,13 @@ The repository currently includes **20 concrete provider implementations** plus 
 | Alpha Vantage | `AlphaVantageHistoricalDataProvider` | `src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs` |
 | Composite failover | `CompositeHistoricalDataProvider` | `src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs` |
 | Finnhub | `FinnhubHistoricalDataProvider` | `src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs` |
+| FRED | `FredHistoricalDataProvider` | `src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs` |
 | Interactive Brokers | `IBHistoricalDataProvider` | `src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs` |
 | Nasdaq Data Link | `NasdaqDataLinkHistoricalDataProvider` | `src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs` |
 | Polygon | `PolygonHistoricalDataProvider` | `src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs` |
 | StockSharp | `StockSharpHistoricalDataProvider` | `src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpHistoricalDataProvider.cs` |
 | Stooq | `StooqHistoricalDataProvider` | `src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs` |
+| Synthetic | `SyntheticHistoricalDataProvider` | `src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs` |
 | Tiingo | `TiingoHistoricalDataProvider` | `src/Meridian.Infrastructure/Adapters/Tiingo/TiingoHistoricalDataProvider.cs` |
 | Twelve Data | `TwelveDataHistoricalDataProvider` | `src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs` |
 | Yahoo Finance | `YahooFinanceHistoricalDataProvider` | `src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs` |
@@ -80,6 +85,7 @@ The repository currently includes **20 concrete provider implementations** plus 
 | OpenFIGI | `OpenFigiClient` | `src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs` |
 | Polygon | `PolygonSymbolSearchProvider` | `src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs` |
 | StockSharp | `StockSharpSymbolSearchProvider` | `src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpSymbolSearchProvider.cs` |
+| Synthetic | `SyntheticMarketDataClient` | `src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs` |
 
 ## File Locations
 
