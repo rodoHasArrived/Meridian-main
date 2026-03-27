@@ -748,24 +748,42 @@ Use these documents together when planning or implementing new work:
 │   │   ├── ui-navigation-map.svg
 │   │   └── uml
 │   │       ├── Activity Diagram - Data Collection Process Flow.png
+│   │       ├── Activity Diagram - Data Collection Process Flow.svg
 │   │       ├── Activity Diagram - Historical Backfill Process.png
+│   │       ├── Activity Diagram - Historical Backfill Process.svg
 │   │       ├── Class Diagram - WPF MVVM Architecture.png
+│   │       ├── Class Diagram - WPF MVVM Architecture.svg
 │   │       ├── Communication Diagram - Component Message Exchange.png
+│   │       ├── Communication Diagram - Component Message Exchange.svg
 │   │       ├── Interaction Overview Diagram - System Workflow.png
+│   │       ├── Interaction Overview Diagram - System Workflow.svg
 │   │       ├── README.md
 │   │       ├── Sequence Diagram - Backtesting Engine.png
+│   │       ├── Sequence Diagram - Backtesting Engine.svg
 │   │       ├── Sequence Diagram - Historical Backfill Flow.png
+│   │       ├── Sequence Diagram - Historical Backfill Flow.svg
 │   │       ├── Sequence Diagram - Paper Trading Order Execution.png
+│   │       ├── Sequence Diagram - Paper Trading Order Execution.svg
 │   │       ├── Sequence Diagram - Real-Time Data Collection Flow.png
+│   │       ├── Sequence Diagram - Real-Time Data Collection Flow.svg
 │   │       ├── Sequence Diagram - Strategy Promotion Lifecycle.png
+│   │       ├── Sequence Diagram - Strategy Promotion Lifecycle.svg
 │   │       ├── Sequence Diagram - WAL Durability and Crash-Safe Writes.png
+│   │       ├── Sequence Diagram - WAL Durability and Crash-Safe Writes.svg
 │   │       ├── State Diagram - Backfill Request States.png
+│   │       ├── State Diagram - Backfill Request States.svg
 │   │       ├── State Diagram - Order Book Stream States.png
+│   │       ├── State Diagram - Order Book Stream States.svg
 │   │       ├── State Diagram - Provider Connection States.png
+│   │       ├── State Diagram - Provider Connection States.svg
 │   │       ├── State Diagram - Trade Sequence Validation States.png
+│   │       ├── State Diagram - Trade Sequence Validation States.svg
 │   │       ├── Timing Diagram - Backfill Operation Timeline.png
+│   │       ├── Timing Diagram - Backfill Operation Timeline.svg
 │   │       ├── Timing Diagram - Event Processing Timeline.png
+│   │       ├── Timing Diagram - Event Processing Timeline.svg
 │   │       ├── Use Case Diagram - Meridian.png
+│   │       ├── Use Case Diagram - Meridian.svg
 │   │       ├── activity-diagram-backfill.png
 │   │       ├── activity-diagram-backfill.puml
 │   │       ├── activity-diagram.png
@@ -3066,6 +3084,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-455 directories, 2573 files
+455 directories, 2591 files
 ```
 <!-- readme-tree end -->
