@@ -120,4 +120,13 @@
     <SolidColorBrush x:Key="SkeletonHighlightBrush" Color="{StaticResource ConsoleBorderColor}" />
     <SolidColorBrush x:Key="FocusVisualPrimaryBrush" Color="{StaticResource ConsoleAccentBlue}" />
     <SolidColorBrush x:Key="FocusVisualSecondaryBrush" Color="{StaticResource ConsoleBackgroundDark}" />
+
+    <!-- MaterialDesign3 key aliases: map MD3 resource names to the institutional palette so any
+         DynamicResource references to these keys (in custom views or MD3 control templates) resolve
+         to the correct dark-theme colours rather than falling through to the MD Light theme. -->
+    <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource ConsoleBackgroundLight}" />
+    <SolidColorBrush x:Key="OnSurfaceBrush" Color="{StaticResource ConsoleTextPrimary}" />
+    <SolidColorBrush x:Key="SurfaceVariantBrush" Color="{StaticResource ConsoleBackgroundMedium}" />
+    <SolidColorBrush x:Key="OnSurfaceVariantBrush" Color="{StaticResource ConsoleTextSecondary}" />
+    <SolidColorBrush x:Key="OutlineDimBrush" Color="{StaticResource ConsoleBorderColor}" />
 </ResourceDictionary>
