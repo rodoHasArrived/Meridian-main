@@ -3,116 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:sys="clr-namespace:System;assembly=mscorlib">
 
-    <!-- ========================================== -->
-    <!-- CONSOLE-INSPIRED COLOR PALETTE (GitHub Dark) -->
-    <!-- ========================================== -->
-
-    <!-- Background Colors -->
-    <Color x:Key="ConsoleBackgroundDark">#0d1117</Color>
-    <Color x:Key="ConsoleBackgroundMedium">#161b22</Color>
-    <Color x:Key="ConsoleBackgroundLight">#21262d</Color>
-    <Color x:Key="ConsoleBackgroundHover">#292e36</Color>
-    <Color x:Key="ConsoleBackgroundActive">#33383f</Color>
-
-    <!-- Border Colors -->
-    <Color x:Key="ConsoleBorderColor">#30363d</Color>
-    <Color x:Key="ConsoleBorderHover">#484f58</Color>
-    <Color x:Key="ConsoleBorderFocus">#58a6ff</Color>
-
-    <!-- Text Colors -->
-    <Color x:Key="ConsoleTextPrimary">#e6edf3</Color>
-    <Color x:Key="ConsoleTextSecondary">#8b949e</Color>
-    <Color x:Key="ConsoleTextMuted">#6e7681</Color>
-    <Color x:Key="ConsoleTextDisabled">#484f58</Color>
-
-    <!-- Accent Colors -->
-    <Color x:Key="ConsoleAccentGreen">#3fb950</Color>
-    <Color x:Key="ConsoleAccentGreenDim">#238636</Color>
-    <Color x:Key="ConsoleAccentGreenLight">#56d364</Color>
-    <Color x:Key="ConsoleAccentBlue">#58a6ff</Color>
-    <Color x:Key="ConsoleAccentBlueDim">#1f6feb</Color>
-    <Color x:Key="ConsoleAccentPurple">#a371f7</Color>
-    <Color x:Key="ConsoleAccentPurpleDim">#8957e5</Color>
-    <Color x:Key="ConsoleAccentRed">#f85149</Color>
-    <Color x:Key="ConsoleAccentRedDim">#da3633</Color>
-    <Color x:Key="ConsoleAccentOrange">#d29922</Color>
-    <Color x:Key="ConsoleAccentOrangeDim">#bb8009</Color>
-    <Color x:Key="ConsoleAccentCyan">#39c5cf</Color>
-    <Color x:Key="ConsoleAccentCyanDim">#2b959d</Color>
-    <Color x:Key="ConsoleAccentPink">#db61a2</Color>
-    <Color x:Key="ConsoleAccentYellow">#e3b341</Color>
-
-    <!-- Semi-Transparent Accent Colors (for backgrounds) -->
-    <Color x:Key="ConsoleAccentGreenAlpha10">#1A3fb950</Color>
-    <Color x:Key="ConsoleAccentGreenAlpha20">#333fb950</Color>
-    <Color x:Key="ConsoleAccentBlueAlpha10">#1A58a6ff</Color>
-    <Color x:Key="ConsoleAccentBlueAlpha20">#3358a6ff</Color>
-    <Color x:Key="ConsoleAccentRedAlpha10">#1Af85149</Color>
-    <Color x:Key="ConsoleAccentRedAlpha20">#33f85149</Color>
-    <Color x:Key="ConsoleAccentOrangeAlpha10">#1Ad29922</Color>
-    <Color x:Key="ConsoleAccentOrangeAlpha20">#33d29922</Color>
-    <Color x:Key="ConsoleAccentPurpleAlpha10">#1Aa371f7</Color>
-
-    <!-- ========================================== -->
-    <!-- SOLID COLOR BRUSHES -->
-    <!-- ========================================== -->
-
-    <!-- Background Brushes -->
-    <SolidColorBrush x:Key="ConsoleBackgroundDarkBrush" Color="{StaticResource ConsoleBackgroundDark}" />
-    <SolidColorBrush x:Key="ConsoleBackgroundMediumBrush" Color="{StaticResource ConsoleBackgroundMedium}" />
-    <SolidColorBrush x:Key="ConsoleBackgroundLightBrush" Color="{StaticResource ConsoleBackgroundLight}" />
-    <SolidColorBrush x:Key="ConsoleBackgroundHoverBrush" Color="{StaticResource ConsoleBackgroundHover}" />
-    <SolidColorBrush x:Key="ConsoleBackgroundActiveBrush" Color="{StaticResource ConsoleBackgroundActive}" />
-
-    <!-- Border Brushes -->
-    <SolidColorBrush x:Key="ConsoleBorderBrush" Color="{StaticResource ConsoleBorderColor}" />
-    <SolidColorBrush x:Key="ConsoleBorderHoverBrush" Color="{StaticResource ConsoleBorderHover}" />
-    <SolidColorBrush x:Key="ConsoleBorderFocusBrush" Color="{StaticResource ConsoleBorderFocus}" />
-
-    <!-- Text Brushes -->
-    <SolidColorBrush x:Key="ConsoleTextPrimaryBrush" Color="{StaticResource ConsoleTextPrimary}" />
-    <SolidColorBrush x:Key="ConsoleTextSecondaryBrush" Color="{StaticResource ConsoleTextSecondary}" />
-    <SolidColorBrush x:Key="ConsoleTextMutedBrush" Color="{StaticResource ConsoleTextMuted}" />
-    <SolidColorBrush x:Key="ConsoleTextDisabledBrush" Color="{StaticResource ConsoleTextDisabled}" />
-
-    <!-- Status Colors -->
-    <SolidColorBrush x:Key="SuccessColorBrush" Color="{StaticResource ConsoleAccentGreen}" />
-    <SolidColorBrush x:Key="WarningColorBrush" Color="{StaticResource ConsoleAccentOrange}" />
-    <SolidColorBrush x:Key="ErrorColorBrush" Color="{StaticResource ConsoleAccentRed}" />
-    <SolidColorBrush x:Key="InfoColorBrush" Color="{StaticResource ConsoleAccentBlue}" />
-    <SolidColorBrush x:Key="AccentCyanBrush" Color="{StaticResource ConsoleAccentCyan}" />
-    <SolidColorBrush x:Key="AccentPurpleBrush" Color="{StaticResource ConsoleAccentPurple}" />
-    <SolidColorBrush x:Key="ConsoleAccentGreenDimBrush" Color="{StaticResource ConsoleAccentGreenDim}" />
-    <SolidColorBrush x:Key="ConsoleAccentGreenLightBrush" Color="{StaticResource ConsoleAccentGreenLight}" />
-    <SolidColorBrush x:Key="ConsoleAccentGreenAlpha10Brush" Color="{StaticResource ConsoleAccentGreenAlpha10}" />
-    <SolidColorBrush x:Key="ConsoleAccentGreenAlpha20Brush" Color="{StaticResource ConsoleAccentGreenAlpha20}" />
-    <SolidColorBrush x:Key="ConsoleAccentBlueAlpha10Brush" Color="{StaticResource ConsoleAccentBlueAlpha10}" />
-    <SolidColorBrush x:Key="ConsoleAccentBlueAlpha20Brush" Color="{StaticResource ConsoleAccentBlueAlpha20}" />
-    <SolidColorBrush x:Key="ConsoleAccentRedAlpha10Brush" Color="{StaticResource ConsoleAccentRedAlpha10}" />
-    <SolidColorBrush x:Key="ConsoleAccentRedAlpha20Brush" Color="{StaticResource ConsoleAccentRedAlpha20}" />
-    <SolidColorBrush x:Key="ConsoleAccentOrangeAlpha10Brush" Color="{StaticResource ConsoleAccentOrangeAlpha10}" />
-    <SolidColorBrush x:Key="ConsoleAccentOrangeAlpha20Brush" Color="{StaticResource ConsoleAccentOrangeAlpha20}" />
-    <SolidColorBrush x:Key="ConsoleAccentPurpleAlpha10Brush" Color="{StaticResource ConsoleAccentPurpleAlpha10}" />
-
-    <!-- Glow Effect Brush -->
-    <LinearGradientBrush x:Key="GlowGradientBrush" StartPoint="0,0" EndPoint="1,0">
-        <GradientStop Color="{StaticResource ConsoleAccentGreen}" Offset="0" />
-        <GradientStop Color="{StaticResource ConsoleAccentCyan}" Offset="1" />
-    </LinearGradientBrush>
-
-    <!-- Progress Bar Accent Colors -->
-    <SolidColorBrush x:Key="ProgressSuccessBrush" Color="{StaticResource ConsoleAccentGreen}" />
-    <SolidColorBrush x:Key="ProgressWarningBrush" Color="{StaticResource ConsoleAccentOrange}" />
-    <SolidColorBrush x:Key="ProgressErrorBrush" Color="{StaticResource ConsoleAccentRed}" />
-    <SolidColorBrush x:Key="ProgressInfoBrush" Color="{StaticResource ConsoleAccentBlue}" />
-
-    <!-- Skeleton Loading -->
-    <SolidColorBrush x:Key="SkeletonBackgroundBrush" Color="{StaticResource ConsoleBackgroundLight}" />
-    <SolidColorBrush x:Key="SkeletonHighlightBrush" Color="{StaticResource ConsoleBorderColor}" />
-
-    <!-- Focus Visual -->
-    <SolidColorBrush x:Key="FocusVisualPrimaryBrush" Color="{StaticResource ConsoleAccentBlue}" />
-    <SolidColorBrush x:Key="FocusVisualSecondaryBrush" Color="{StaticResource ConsoleBackgroundDark}" />
+    <!-- Color tokens and brushes are defined in ThemeTokens.xaml, which is loaded first in App.xaml. -->
 
     <!-- ========================================== -->
     <!-- CARD STYLES -->
@@ -307,19 +198,19 @@
 
     <Style x:Key="TagIBStyle" TargetType="Border" BasedOn="{StaticResource TagStyle}">
         <Setter Property="Background" Value="{StaticResource ConsoleAccentBlueAlpha10Brush}" />
-        <Setter Property="BorderBrush" Value="#4D58a6ff" />
+        <Setter Property="BorderBrush" Value="#4D42C6D6" />
         <Setter Property="BorderThickness" Value="1" />
     </Style>
 
     <Style x:Key="TagAlpacaStyle" TargetType="Border" BasedOn="{StaticResource TagStyle}">
         <Setter Property="Background" Value="{StaticResource ConsoleAccentOrangeAlpha10Brush}" />
-        <Setter Property="BorderBrush" Value="#4Dd29922" />
+        <Setter Property="BorderBrush" Value="#4DE4A84B" />
         <Setter Property="BorderThickness" Value="1" />
     </Style>
 
     <Style x:Key="TagPolygonStyle" TargetType="Border" BasedOn="{StaticResource TagStyle}">
         <Setter Property="Background" Value="{StaticResource ConsoleAccentPurpleAlpha10Brush}" />
-        <Setter Property="BorderBrush" Value="#4Da371f7" />
+        <Setter Property="BorderBrush" Value="#4D7AB3FF" />
         <Setter Property="BorderThickness" Value="1" />
     </Style>
 
