@@ -2,6 +2,7 @@ using Meridian.Application.Config;
 using Meridian.Application.Coordination;
 using Meridian.Application.UI;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Meridian.Application.Composition.Features;
 
@@ -35,6 +36,17 @@ internal sealed class CoordinationFeatureRegistration : IServiceFeatureRegistrat
         });
         services.AddSingleton<ISubscriptionOwnershipService, SubscriptionOwnershipService>();
         services.AddSingleton<IScheduledWorkOwnershipService, ScheduledWorkOwnershipService>();
+
+        // Leader election: ClusterCoordinatorService is registered as both a singleton
+        // (for IClusterCoordinator injection) and a hosted service (for the election loop).
+        services.AddSingleton<ClusterCoordinatorService>();
+        services.AddSingleton<IClusterCoordinator>(sp =>
+            sp.GetRequiredService<ClusterCoordinatorService>());
+        services.AddSingleton<IHostedService>(sp =>
+            sp.GetRequiredService<ClusterCoordinatorService>());
+
+        // Split-brain detection runs as a background service on every cluster member.
+        services.AddHostedService<SplitBrainDetector>();
 
         return services;
     }
