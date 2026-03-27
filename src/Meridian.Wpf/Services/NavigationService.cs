@@ -143,6 +143,9 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
 
         // Security Master workstation (1 page)
         RegisterPage("SecurityMaster", typeof(SecurityMasterPage));
+
+        // Direct Lending workstation (1 page)
+        RegisterPage("DirectLending", typeof(DirectLendingPage));
     }
 
     /// <inheritdoc />

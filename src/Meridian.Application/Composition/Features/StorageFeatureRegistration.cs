@@ -119,6 +119,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.AddSingleton<IDirectLendingCommandService, PostgresDirectLendingCommandService>();
         services.AddSingleton<IDirectLendingService, PostgresDirectLendingService>();
         services.AddHostedService<DirectLendingOutboxDispatcher>();
+        services.AddHostedService<DailyAccrualWorker>();
         services.AddSingleton<RateLimiter>(sp => new RateLimiter(5, TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(0.5)));
         services.AddSingleton<IPolygonCorporateActionFetcher, PolygonCorporateActionFetcher>();
         services.AddSingleton<PolygonCorporateActionFetcher>(sp => (PolygonCorporateActionFetcher)sp.GetRequiredService<IPolygonCorporateActionFetcher>());

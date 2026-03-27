@@ -72,6 +72,9 @@ public partial class RunLedgerPage : Page { }
 // Security Master workstation page
 public partial class SecurityMasterPage : Page { }
 
+// Direct Lending workstation page
+public partial class DirectLendingPage : Page { }
+
 // Data Browser page
 public partial class DataBrowserPage : Page { }
 

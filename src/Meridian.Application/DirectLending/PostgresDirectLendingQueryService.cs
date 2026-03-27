@@ -207,4 +207,51 @@ public sealed partial class PostgresDirectLendingQueryService : IDirectLendingQu
         await _stateStore.SaveStateAsync(loanId, rebuilt.AggregateVersion, rebuilt.Contract, rebuilt.Servicing, ct).ConfigureAwait(false);
         return rebuilt;
     }
+
+    public async Task<LoanPortfolioSummaryDto> GetPortfolioSummaryAsync(CancellationToken ct = default)
+    {
+        var loanIds = await _operationsStore.GetLoanIdsAsync(ct).ConfigureAwait(false);
+
+        var summaries = new List<LoanSummaryDto>(loanIds.Count);
+        foreach (var loanId in loanIds)
+        {
+            var contract = await _stateStore.LoadContractProjectionAsync(loanId, ct).ConfigureAwait(false);
+            var servicing = await _stateStore.LoadServicingProjectionAsync(loanId, ct).ConfigureAwait(false);
+            if (contract is null || servicing is null)
+            {
+                continue;
+            }
+
+            summaries.Add(new LoanSummaryDto(
+                loanId,
+                contract.FacilityName,
+                contract.Borrower.BorrowerId,
+                contract.Borrower.BorrowerName,
+                contract.Status,
+                contract.CurrentTerms.BaseCurrency,
+                contract.CurrentTerms.CommitmentAmount,
+                servicing.Balances.PrincipalOutstanding,
+                servicing.Balances.InterestAccruedUnpaid,
+                servicing.Balances.PenaltyAccruedUnpaid,
+                servicing.AvailableToDraw,
+                contract.CurrentTerms.OriginationDate,
+                contract.CurrentTerms.MaturityDate,
+                servicing.LastAccrualDate,
+                servicing.LastPaymentDate));
+        }
+
+        var active = summaries.Count(s => s.Status == LoanStatus.Active);
+        var defaulted = summaries.Count(s => s.Status == LoanStatus.Defaulted);
+
+        return new LoanPortfolioSummaryDto(
+            summaries.Count,
+            active,
+            defaulted,
+            summaries.Sum(s => s.CommitmentAmount),
+            summaries.Sum(s => s.PrincipalOutstanding),
+            summaries.Sum(s => s.InterestAccruedUnpaid),
+            summaries.Sum(s => s.PenaltyAccruedUnpaid),
+            summaries.Sum(s => s.AvailableToDraw),
+            summaries);
+    }
 }

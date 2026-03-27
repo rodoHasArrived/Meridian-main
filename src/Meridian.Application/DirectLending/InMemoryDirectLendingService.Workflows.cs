@@ -135,6 +135,44 @@ public sealed partial class InMemoryDirectLendingService
         }
     }
 
+    public Task<LoanServicingStateDto?> ChargePrepaymentPenaltyAsync(Guid loanId, ChargePrepaymentPenaltyRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        if (request.OutstandingPrincipal <= 0m)
+        {
+            throw new DirectLendingCommandException(new DirectLendingCommandError(DirectLendingErrorCode.Validation, "Outstanding principal must be positive."));
+        }
+
+        lock (_gate)
+        {
+            if (!_loans.TryGetValue(loanId, out var stored))
+            {
+                return Task.FromResult<LoanServicingStateDto?>(null);
+            }
+
+            if (!stored.TermsVersions[^1].Terms.PrepaymentAllowed)
+            {
+                throw new DirectLendingCommandException(new DirectLendingCommandError(DirectLendingErrorCode.Validation, "Prepayment is not permitted under the current loan terms."));
+            }
+
+            var penaltyRate = stored.TermsVersions[^1].Terms.PrepaymentPenaltyRate ?? 0m;
+            var penaltyAmount = penaltyRate > 0m
+                ? Math.Round(request.OutstandingPrincipal * penaltyRate, 2, MidpointRounding.AwayFromZero)
+                : 0m;
+
+            stored.Servicing = stored.Servicing with
+            {
+                Balances = stored.Servicing.Balances with
+                {
+                    PenaltyAccruedUnpaid = stored.Servicing.Balances.PenaltyAccruedUnpaid + penaltyAmount
+                }
+            };
+            AppendRevision(stored, "InternalEvent", request.EffectiveDate, $"Prepayment penalty charged for {penaltyAmount:0.00}.");
+            AppendEvent(stored, "loan.prepayment-penalty-charged", request.EffectiveDate, new { loanId, request.OutstandingPrincipal, PenaltyAmount = penaltyAmount, request.EffectiveDate, request.ExternalRef }, metadata);
+            return Task.FromResult<LoanServicingStateDto?>(ToServicingState(stored));
+        }
+    }
+
     public Task<IReadOnlyList<CashTransactionDto>> GetCashTransactionsAsync(Guid loanId, CancellationToken ct = default) => Task.FromResult<IReadOnlyList<CashTransactionDto>>(GetList(_cashTransactions, loanId).ToArray());
     public Task<IReadOnlyList<PaymentAllocationDto>> GetPaymentAllocationsAsync(Guid loanId, CancellationToken ct = default) => Task.FromResult<IReadOnlyList<PaymentAllocationDto>>(GetList(_paymentAllocations, loanId).ToArray());
     public Task<IReadOnlyList<FeeBalanceDto>> GetFeeBalancesAsync(Guid loanId, CancellationToken ct = default) => Task.FromResult<IReadOnlyList<FeeBalanceDto>>(GetList(_feeBalances, loanId).ToArray());
@@ -328,6 +366,48 @@ public sealed partial class InMemoryDirectLendingService
             _checkpoints.Clear();
             _checkpoints.Add(new RebuildCheckpointDto("direct-lending.full-rebuild", _loans.Values.Sum(static x => x.AggregateVersion), null, DateTimeOffset.UtcNow, "Completed", $"Rebuilt {_loans.Count} loans."));
             return Task.FromResult<IReadOnlyList<LoanAggregateSnapshotDto>>(_loans.Values.Select(stored => new LoanAggregateSnapshotDto(stored.LoanId, stored.AggregateVersion, ToContractDetail(stored), ToServicingState(stored))).ToArray());
+        }
+    }
+
+    public Task<LoanPortfolioSummaryDto> GetPortfolioSummaryAsync(CancellationToken ct = default)
+    {
+        lock (_gate)
+        {
+            var summaries = _loans.Values.Select(stored =>
+            {
+                var contract = ToContractDetail(stored);
+                var servicing = ToServicingState(stored);
+                return new LoanSummaryDto(
+                    stored.LoanId,
+                    contract.FacilityName,
+                    contract.Borrower.BorrowerId,
+                    contract.Borrower.BorrowerName,
+                    contract.Status,
+                    contract.CurrentTerms.BaseCurrency,
+                    contract.CurrentTerms.CommitmentAmount,
+                    servicing.Balances.PrincipalOutstanding,
+                    servicing.Balances.InterestAccruedUnpaid,
+                    servicing.Balances.PenaltyAccruedUnpaid,
+                    servicing.AvailableToDraw,
+                    contract.CurrentTerms.OriginationDate,
+                    contract.CurrentTerms.MaturityDate,
+                    servicing.LastAccrualDate,
+                    servicing.LastPaymentDate);
+            }).ToList();
+
+            var active = summaries.Count(s => s.Status == LoanStatus.Active);
+            var defaulted = summaries.Count(s => s.Status == LoanStatus.Defaulted);
+
+            return Task.FromResult(new LoanPortfolioSummaryDto(
+                summaries.Count,
+                active,
+                defaulted,
+                summaries.Sum(s => s.CommitmentAmount),
+                summaries.Sum(s => s.PrincipalOutstanding),
+                summaries.Sum(s => s.InterestAccruedUnpaid),
+                summaries.Sum(s => s.PenaltyAccruedUnpaid),
+                summaries.Sum(s => s.AvailableToDraw),
+                summaries));
         }
     }
 
