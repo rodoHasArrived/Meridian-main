@@ -207,6 +207,140 @@ Example:
 - Crypto connectors may require separate StockSharp packages or crowdfunding access beyond the packages currently referenced by Meridian.
 - Interactive Brokers support exists both natively (`IBMarketDataClient`) and through StockSharp; use the native path when you specifically want Meridian's direct IB integration.
 
+## Validated Adapter Samples
+
+The tests in
+`tests/Meridian.Tests/Infrastructure/Providers/StockSharpMessageConversionTests.cs`
+lock the domain model contracts produced by each connector path. The sections
+below describe the data flow and the expected field values for two representative
+connectors: **Rithmic** (futures) and **IQFeed** (equities/options).
+
+### Rithmic — Futures Trade and Depth Sample
+
+Rithmic emits `ExecutionMessage` objects for trade ticks and `QuoteChangeMessage`
+objects for order book snapshots. `MessageConverter` converts them to Meridian's
+immutable domain records.
+
+**Trade tick (ES front-month contract)**
+
+| Field | StockSharp source | Meridian field |
+|---|---|---|
+| `msg.ServerTime` | Execution timestamp | `Trade.Timestamp` |
+| `msg.TradePrice` | Last trade price | `Trade.Price` |
+| `msg.TradeVolume` | Lot size | `Trade.Size` (cast to `long`) |
+| `msg.OriginSide` (`Sides.Buy`) | Aggressor indicator | `Trade.Aggressor = AggressorSide.Buy` |
+| `msg.SeqNum` | Sequence counter | `Trade.SequenceNumber` |
+| `msg.SecurityId.BoardCode` | Exchange code (e.g., `"CME"`) | `Trade.Venue` |
+
+Example validated output for a daily ES bar from a `TimeFrameCandleMessage`:
+
+```csharp
+var bar = new HistoricalBar(
+    Symbol: "ESM5",
+    SessionDate: new DateOnly(2025, 6, 1),
+    Open: 5270.00m,
+    High: 5285.50m,
+    Low: 5265.25m,
+    Close: 5280.00m,
+    Volume: 1_250_000,
+    Source: "stocksharp");
+
+// Derived properties available on HistoricalBar:
+// bar.Range       == 20.25m  (High - Low)
+// bar.IsBullish   == true    (Close > Open)
+// bar.TypicalPrice == (5285.50 + 5265.25 + 5280.00) / 3
+```
+
+**Order book snapshot**
+
+`MessageConverter.ToLOBSnapshot` copies each `QuoteChange` entry from
+`msg.Bids` / `msg.Asks` into `OrderBookLevel` records (Level 0 = best price).
+Mid-price is set to `null` when the book is empty.
+
+```csharp
+// Snapshot with 3 bid and 3 ask levels at 09:30 UTC
+var snapshot = new LOBSnapshot(
+    Timestamp: new DateTimeOffset(2025, 6, 1, 9, 30, 0, TimeSpan.Zero),
+    Symbol: "ESM5",
+    Bids: bids,   // Levels 0–2, descending price
+    Asks: asks,   // Levels 0–2, ascending price
+    MidPrice: (bids[0].Price + asks[0].Price) / 2m,
+    SequenceNumber: 1001,
+    Venue: "CME");
+```
+
+Rithmic capabilities confirmed in tests (via `StockSharpConnectorCapabilities.GetCapabilities("Rithmic")`):
+`SupportsStreaming`, `SupportsHistorical`, `SupportsTrades`, `SupportsDepth`,
+`SupportsOrderLog`, `SupportsCandles`. Supported markets include `CME`, `NYMEX`,
+`COMEX`, `CBOT`, `ICE`. Supported asset types include `Future` and `FuturesOption`.
+
+---
+
+### IQFeed — Equities BBO Quote Sample
+
+IQFeed emits `Level1ChangeMessage` objects for best-bid/offer updates.
+`MessageConverter.ToBboQuote` extracts `BestBidPrice`, `BestBidVolume`,
+`BestAskPrice`, and `BestAskVolume` from the `Changes` dictionary.
+
+**BBO quote (AAPL on NASDAQ)**
+
+| Field | Level1Fields key | Meridian field |
+|---|---|---|
+| `BestBidPrice` | `Level1Fields.BestBidPrice` | `BboQuotePayload.BidPrice` |
+| `BestBidVolume` | `Level1Fields.BestBidVolume` | `BboQuotePayload.BidSize` (cast to `long`) |
+| `BestAskPrice` | `Level1Fields.BestAskPrice` | `BboQuotePayload.AskPrice` |
+| `BestAskVolume` | `Level1Fields.BestAskVolume` | `BboQuotePayload.AskSize` (cast to `long`) |
+| Computed | `(bid + ask) / 2` when both > 0 and not crossed | `BboQuotePayload.MidPrice` |
+| Computed | `ask - bid` when both > 0 and not crossed | `BboQuotePayload.Spread` |
+
+Example validated output:
+
+```csharp
+// Normal market (bid < ask)
+var payload = new BboQuotePayload(
+    Timestamp: ts,
+    Symbol: "AAPL",
+    BidPrice: 185.45m,
+    BidSize: 1500,
+    AskPrice: 185.50m,
+    AskSize: 1200,
+    MidPrice: 185.475m,
+    Spread: 0.05m,
+    SequenceNumber: 100,
+    Venue: "NASDAQ");
+
+// Crossed market or zero price → MidPrice and Spread are null
+var crossedPayload = new BboQuotePayload(
+    ...,
+    BidPrice: 186.00m,
+    AskPrice: 185.90m,   // bid > ask
+    MidPrice: null,
+    Spread: null,
+    ...);
+```
+
+IQFeed capabilities confirmed in tests (via `StockSharpConnectorCapabilities.GetCapabilities("IQFeed")`):
+`SupportsStreaming`, `SupportsHistorical`, `SupportsTrades`, `SupportsDepth`,
+`SupportsOrderLog`, `SupportsCandles`. Supported markets include `NYSE`, `NASDAQ`,
+`AMEX`, `CME`. Supported asset types include `Stock`, `ETF`, `Option`, `Future`, `Index`.
+
+---
+
+### Connector Factory Stub Behaviour (non-StockSharp builds)
+
+When `STOCKSHARP` is not defined (the default CI build), every `StockSharpConnectorFactory.Create`
+call throws `NotSupportedException`. The error message always contains:
+
+- `EnableStockSharp=true` — the build flag needed to enable the real path.
+- `StockSharp.Algo` (or the connector-specific package name) — the NuGet package to install.
+- The list of supported named connector types.
+- A link to this guide (`docs/providers/stocksharp-connectors.md`).
+
+This is verified for both Rithmic and IQFeed in the test file under the
+`Connector Factory Stub — Rithmic and IQFeed` region.
+
+---
+
 ## Failure Modes to Expect
 
 - Unknown connector type without `AdapterType`: Meridian throws a `NotSupportedException` listing the built-in connector names and the `AdapterType` / `AdapterAssembly` settings needed for custom adapters.

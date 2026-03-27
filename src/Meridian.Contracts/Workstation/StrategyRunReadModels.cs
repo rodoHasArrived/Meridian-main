@@ -296,3 +296,53 @@ public sealed record RunAttributionSummary(
     decimal TotalUnrealizedPnl,
     decimal TotalCommissions,
     IReadOnlyList<SymbolAttributionEntry> BySymbol);
+
+// ---------------------------------------------------------------------------
+// Cash-flow projection models
+// ---------------------------------------------------------------------------
+
+/// <summary>A single historical cash-flow entry from a strategy run.</summary>
+public sealed record CashFlowEntryDto(
+    DateTimeOffset Timestamp,
+    decimal Amount,
+    string EventKind,
+    string? Symbol,
+    string Currency,
+    string? AccountId,
+    string? Description);
+
+/// <summary>A single time-bucket within a projected cash ladder.</summary>
+public sealed record CashLadderBucketDto(
+    DateTimeOffset BucketStart,
+    DateTimeOffset BucketEnd,
+    decimal ProjectedInflows,
+    decimal ProjectedOutflows,
+    decimal NetFlow,
+    string Currency,
+    int EventCount);
+
+/// <summary>Time-bucketed forward view of projected cash flows for one run.</summary>
+public sealed record RunCashLadder(
+    DateTimeOffset AsOf,
+    string Currency,
+    int BucketDays,
+    decimal TotalProjectedInflows,
+    decimal TotalProjectedOutflows,
+    decimal NetPosition,
+    IReadOnlyList<CashLadderBucketDto> Buckets);
+
+/// <summary>
+/// Cash-flow projection summary for a strategy run.
+/// <para>Includes both the raw historical entries and a time-bucketed cash ladder
+/// computed by the F# <c>CashLadder.build</c> module.</para>
+/// </summary>
+public sealed record RunCashFlowSummary(
+    string RunId,
+    DateTimeOffset AsOf,
+    string Currency,
+    int TotalEntries,
+    decimal TotalInflows,
+    decimal TotalOutflows,
+    decimal NetCashFlow,
+    IReadOnlyList<CashFlowEntryDto> Entries,
+    RunCashLadder Ladder);

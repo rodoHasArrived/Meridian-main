@@ -434,6 +434,9 @@ public static class UiApiRoutes
     public const string RunsReconciliation = "/api/workstation/runs/{runId}/reconciliation";
     public const string RunsLedger = "/api/workstation/runs/{runId}/ledger";
 
+    // Portfolio cash-flow projection endpoints
+    public const string PortfolioCashFlows = "/api/portfolio/{runId}/cash-flows";
+
     // Resilience endpoints
     public const string ResilienceCircuitBreakers = "/api/resilience/circuit-breakers";
 

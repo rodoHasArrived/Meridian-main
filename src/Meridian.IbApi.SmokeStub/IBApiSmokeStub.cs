@@ -24,6 +24,11 @@ public sealed class EClientSocket
 
     public bool IsConnected() => _connected;
 
+    /// <summary>
+    /// Server version returned after connection. Returns the maximum tested version in the smoke stub.
+    /// </summary>
+    public int ServerVersion => 178;
+
     public void reqCurrentTime() { }
 
     public void reqMktDepth(int tickerId, Contract contract, int depthLevels, bool isSmartDepth, IList<TagValue>? options) { }
@@ -72,6 +77,12 @@ public sealed class Contract
     public string? PrimaryExch { get; set; }
     public string? TradingClass { get; set; }
     public string? LocalSymbol { get; set; }
+
+    // Options / futures-options fields
+    public double Strike { get; set; }
+    public string? Right { get; set; }                    // "C" or "P"
+    public string? LastTradeDateOrContractMonth { get; set; }
+    public string? Multiplier { get; set; }
 }
 
 public sealed class Bar

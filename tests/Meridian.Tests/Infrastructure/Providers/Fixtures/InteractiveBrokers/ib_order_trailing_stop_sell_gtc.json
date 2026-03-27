@@ -1,0 +1,10 @@
+{
+  "description": "IB trailing stop sell order for SPY, good-till-cancelled.",
+  "orderId": 1006,
+  "symbol": "SPY",
+  "orderType": "TRAIL",
+  "side": "SELL",
+  "quantity": 50,
+  "tif": "GTC",
+  "trailPercent": 2.0
+}

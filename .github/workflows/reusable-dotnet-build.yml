@@ -65,7 +65,7 @@ on:
         description: 'Job timeout in minutes'
         required: false
         type: number
-        default: 15
+        default: 30
     outputs:
       build-result:
         description: 'Build result (success/failure)'
