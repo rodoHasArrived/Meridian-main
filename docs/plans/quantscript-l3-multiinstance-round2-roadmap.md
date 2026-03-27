@@ -170,6 +170,29 @@ two scripts are typically < 500 lines and the LCS budget is trivially satisfied.
 `MetricsDiffViewModel.ComputeDeltas()` calculates absolute and relative changes for Sharpe, CAGR,
 and max drawdown.
 
+#### Class Design
+
+| Type | Kind | Key Members | Notes |
+|---|---|---|---|
+| `IScriptHistoryStore` | Interface | `Task AppendAsync(string scriptName, ScriptRunRecord, CancellationToken)`, `Task<IReadOnlyList<ScriptRunRecord>> GetHistoryAsync(string scriptName, int maxEntries, CancellationToken)`, `Task<string?> GetContentAsync(string hash, CancellationToken)`, `Task WriteContentAsync(string hash, string text, CancellationToken)` | New |
+| `ScriptHistoryWriter` | Sealed class : `IScriptHistoryStore` | `ScriptHistoryWriter(ICatalogPathResolver, IOptions<QuantScriptOptions>)` | JSONL append writer; prunes on write |
+| `ScriptRunRecord` | Sealed record | `string RunId, string MeridianBinaryHash, string ScriptContentHash, IReadOnlyList<string> PrintOutput, ResultsSummary ResultsSummary, DateTimeOffset RunAtUtc` | Serialized to `.history/{name}.jsonl` |
+| `ResultsSummary` | Sealed record | `double? Sharpe, double? Cagr, double? MaxDrawdown, bool HadBacktest` | JSON sub-object |
+| `ScriptDiffEngine` | Static class | `static ScriptDiff Compute(string left, string right)` | 50-line LCS in `History/ScriptDiffEngine.cs` |
+| `ScriptDiff` | Sealed record | `IReadOnlyList<DiffLine> Lines` | LCS result |
+| `DiffLine` | Sealed record | `DiffKind Kind, string Text` | `DiffKind` enum: `Unchanged`, `Added`, `Removed` |
+| `MetricsDiffViewModel` | Sealed class | `MetricsDiffViewModel(ResultsSummary left, ResultsSummary right)`, `void ComputeDeltas()` | Drives metrics diff table |
+| `DiffViewModel` | Sealed class | `DiffViewModel(IScriptHistoryStore)` | Owns left/right script text and metrics |
+| `HistoryEntryViewModel` | Sealed class | `HistoryEntryViewModel(ScriptRunRecord)` | Single history list row |
+
+```csharp
+// Constructor signatures
+public ScriptHistoryWriter(ICatalogPathResolver pathResolver, IOptions<QuantScriptOptions> opts)
+public DiffViewModel(IScriptHistoryStore historyStore)
+public MetricsDiffViewModel(ResultsSummary left, ResultsSummary right)
+public HistoryEntryViewModel(ScriptRunRecord record)
+```
+
 #### Implementation Notes
 
 - `ScriptRunRecord` persistence uses `System.Text.Json`; no new serializer dependency.
@@ -179,6 +202,67 @@ and max drawdown.
   here directly — the `.history/` writer reuses the same `JsonlAppendWriter` helper.
 - Diff view is a WPF `Grid` with two `AvalonEdit` instances in read-only mode; differing lines
   are highlighted via `IBackgroundRenderer`.
+
+**Concrete interface definitions:**
+
+```csharp
+// src/Meridian.QuantScript/History/IScriptHistoryStore.cs
+public interface IScriptHistoryStore
+{
+    Task AppendAsync(string scriptName, ScriptRunRecord record, CancellationToken ct);
+    Task<IReadOnlyList<ScriptRunRecord>> GetHistoryAsync(string scriptName, int maxEntries, CancellationToken ct);
+    Task<string?> GetContentAsync(string contentHash, CancellationToken ct);
+    Task WriteContentAsync(string contentHash, string scriptText, CancellationToken ct);
+}
+
+// src/Meridian.QuantScript/History/ScriptRunRecord.cs
+public sealed record ScriptRunRecord(
+    string RunId,
+    string MeridianBinaryHash,
+    string ScriptContentHash,
+    IReadOnlyList<string> PrintOutput,
+    ResultsSummary ResultsSummary,
+    DateTimeOffset RunAtUtc);
+
+public sealed record ResultsSummary(
+    double? Sharpe,
+    double? Cagr,
+    double? MaxDrawdown,
+    bool HadBacktest);
+```
+
+**DI registration (`QuantScriptFeatureRegistration.cs`):**
+
+```csharp
+services.AddSingleton<IScriptHistoryStore, ScriptHistoryWriter>();
+services.AddSingleton<DiffViewModel>();
+services.AddTransient<HistoryEntryViewModel>();
+```
+
+**Data flow:**
+
+1. `ScriptRunner.ExecuteCellsAsync` completes all cells successfully.
+2. `ScriptRunner` builds `ScriptRunRecord` from: `RunId = DateTimeOffset.UtcNow.ToString("O")`, `ScriptContentHash = SHA256(scriptText)`, `PrintOutput = consoleBuffer.ToArray()`, `ResultsSummary` from `BacktestProxy.LastResult`.
+3. `IScriptHistoryStore.WriteContentAsync(hash, scriptText, ct)` writes `{ScriptLibraryRoot}/.content/{hash}.csx` only if the file does not already exist (idempotent by hash).
+4. `IScriptHistoryStore.AppendAsync(scriptName, record, ct)` appends one JSON line to `{ScriptLibraryRoot}/.history/{scriptName}.jsonl`. After append, if the file has more than `QuantScriptOptions.MaxHistoryRunsPerScript` entries, `ScriptHistoryWriter` rewrites the file keeping only the most recent N records.
+5. `HistoryTabViewModel` calls `IScriptHistoryStore.GetHistoryAsync(scriptName, 100, ct)` on tab activation to populate `ObservableCollection<HistoryEntryViewModel>`.
+6. User clicks "Diff" on an entry → `DiffViewModel.LoadAsync(historicalRecord, currentScriptText, ct)`.
+7. `DiffViewModel` calls `IScriptHistoryStore.GetContentAsync(record.ScriptContentHash, ct)` to retrieve the historical source text.
+8. `ScriptDiffEngine.Compute(historicalText, currentText)` returns `ScriptDiff`; `DiffViewModel.DiffLines` is populated and the split view renders.
+9. `MetricsDiffViewModel.ComputeDeltas()` computes Δ Sharpe, Δ CAGR, Δ MaxDrawdown (absolute and relative); both VMs bind to the two-column metrics table.
+
+**Error handling and cancellation:**
+
+- All `IScriptHistoryStore` operations accept a `CancellationToken`. On partial JSONL write (e.g., power loss), `ScriptHistoryWriter.GetHistoryAsync` validates each line on read; malformed lines are skipped and logged at `Warning`.
+- If `GetContentAsync` returns `null` (content file missing — orphaned hash), `DiffViewModel` displays "Historical script content unavailable" in the left AvalonEdit panel instead of throwing.
+- File system `IOException` on `AppendAsync` is caught, logged at `Error`, and the write is skipped — the script run itself is unaffected.
+
+**Edge cases:**
+
+1. **Two runs produce identical script content hashes:** `WriteContentAsync` checks file existence first; the second write is a no-op. The `.history/` JSONL correctly accumulates two entries pointing to the same hash.
+2. **`MaxHistoryRunsPerScript = 0`:** Validated by `QuantScriptOptions` constructor; clamped to a minimum of 1 with a `Warning` log to prevent an infinite pruning loop.
+3. **Diff of two scripts with only whitespace changes:** `ScriptDiffEngine.Compute` treats lines verbatim; whitespace-only diff lines are shown with `DiffKind.Modified`. The UI highlights them in a muted amber to visually distinguish from semantic changes.
+4. **Script renamed between runs:** History is keyed by script name at write time. A renamed script accumulates a new history file. Old history is not migrated automatically; a `renamedFrom` field is reserved for a future v2 enhancement.
 
 #### Dependencies
 
@@ -193,6 +277,18 @@ and max drawdown.
   setting (default 100) so the JSONL is pruned by `ScriptHistoryWriter` on write.
 - Storing script content by hash means a deleted script's history entries become orphaned.
   `HistoryCleanupService` can reconcile on startup, but this is a v2 concern.
+
+
+#### Test Strategy
+
+**Test class:** `ScriptHistoryWriterTests` — `tests/Meridian.QuantScript.Tests/History/ScriptHistoryWriterTests.cs`
+**Pattern:** Arrange-Act-Assert; real file system via temp directory for store tests; no external mocks required.
+
+1. `AppendAsync_WithSingleRecord_WritesValidJsonlLine` — appends one `ScriptRunRecord`, reads the `.jsonl` file, deserializes the single line, asserts `RunId` matches.
+2. `AppendAsync_ExceedsMaxHistoryRuns_PrunesOldestEntries` — appends `MaxHistoryRunsPerScript + 3` records, reads file, asserts line count equals `MaxHistoryRunsPerScript`.
+3. `GetHistoryAsync_WithMalformedLine_SkipsMalformedAndReturnsValid` — writes one valid JSON line and one corrupt line to the `.jsonl` file manually; asserts only one record returned.
+4. `ScriptDiffEngine_Compute_WithIdenticalScripts_ReturnsAllUnchangedLines` — both inputs identical; asserts all `DiffLine.Kind == DiffKind.Unchanged`.
+5. `ScriptDiffEngine_Compute_WithOneAddedLine_DetectsInsertedDiffLine` — right script has one extra line; asserts exactly one `DiffKind.Added` entry in result.
 
 #### Audience
 
@@ -248,6 +344,23 @@ Located in `src/Meridian.QuantScript/Adapters/SecurityEconomicDefinitionAdapter.
 A console warning is emitted via `QuantScriptGlobals.Console.Warn(...)` so the script author
 sees the issue without an unhandled exception derailing the run.
 
+#### Class Design
+
+| Type | Kind | Key Members | Notes |
+|---|---|---|---|
+| `SecurityGlobal` | Sealed class | `SecurityGlobal(ISecurityMasterQueryService, ILogger<SecurityGlobal>)`, `Task<SecurityMasterEntry?> GetAsync(string identifier, DateTime? asOf, CancellationToken)`, `Task<IReadOnlyList<SecurityMasterEntry>> QueryAsync(Func<SecurityMasterEntry,bool> filter, CancellationToken)` | Exposed as `Securities` global in `QuantScriptGlobals` |
+| `SecurityEconomicDefinitionAdapter` | Static class | `static SecurityEconomicDefinition Adapt(FSharpDomainEntry entry)` | Bridges F# domain types → C# DTO |
+| `SecurityEconomicDefinition` | Sealed record | `DateOnly? MaturityDate, string? Sector, string? Rating, string? CurrencyCode` | C# DTO consumed by scripts |
+
+```csharp
+// Constructor signatures
+public SecurityGlobal(
+    ISecurityMasterQueryService queryService,
+    ILogger<SecurityGlobal> logger)
+```
+
+Note: `ISecurityMasterQueryService` is at `src/Meridian.Contracts/SecurityMaster/ISecurityMasterQueryService.cs` (not `src/Meridian.Application/SecurityMaster/`).
+
 #### Implementation Notes
 
 - `ISecurityMasterQueryService` already exists at
@@ -258,6 +371,56 @@ sees the issue without an unhandled exception derailing the run.
 - The in-memory projection cache must be warmed before the first script run.
   `QuantScriptStartupInitializer` awaits `ISecurityMasterQueryService.WarmupAsync()` at
   application start.
+
+**Concrete API surface (SecurityGlobal methods used in scripts):**
+
+```csharp
+// src/Meridian.QuantScript/Api/SecurityGlobal.cs
+public sealed class SecurityGlobal
+{
+    public SecurityGlobal(
+        ISecurityMasterQueryService queryService,
+        ILogger<SecurityGlobal> logger) { ... }
+
+    /// <returns>null if symbol not found — check before accessing fields.</returns>
+    public Task<SecurityMasterEntry?> GetAsync(
+        string identifier,
+        DateTime? asOf = null,
+        CancellationToken ct = default);
+
+    public Task<IReadOnlyList<SecurityMasterEntry>> QueryAsync(
+        Func<SecurityMasterEntry, bool> filter,
+        CancellationToken ct = default);
+}
+```
+
+**DI registration (`QuantScriptFeatureRegistration.cs`):**
+
+```csharp
+services.AddScoped<SecurityGlobal>();
+// ISecurityMasterQueryService is already registered by SecurityMasterFeatureRegistration
+```
+
+**Data flow:**
+
+1. Script calls `await Securities.GetAsync("AAPL")`.
+2. `SecurityGlobal.GetAsync` calls `ISecurityMasterQueryService.GetByIdentifierAsync("AAPL", asOf: DateTime.UtcNow, ct)`.
+3. If the service returns `null`, `SecurityGlobal` emits a console warning via `QuantScriptGlobals.Console.Warn("Symbol 'AAPL' not found in Security Master")` and returns `null` to the script.
+4. For `QueryAsync`, `SecurityGlobal` calls `ISecurityMasterQueryService.GetAllAsync(ct)` to obtain the in-memory snapshot, then applies the `Func<SecurityMasterEntry, bool>` predicate client-side via LINQ.
+5. Returned entries are `SecurityMasterEntry` records in C# form; `SecurityEconomicDefinitionAdapter.Adapt()` is called on demand if the script accesses `.EconomicDefinition`.
+
+**Error handling and cancellation:**
+
+- `ct` from the script's execution context is passed to `ISecurityMasterQueryService` calls. Cancellation during a long `QueryAsync` over a large security master stops iteration immediately.
+- If the projection cache is not yet warmed at script run time, `GetAllAsync` returns an empty snapshot. `SecurityGlobal` logs `Warning: "Security Master cache not yet warmed — results may be incomplete"` and returns empty results rather than blocking.
+- `SecurityEconomicDefinitionAdapter.Adapt` catches `InvalidCastException` for unrecognized F# DU cases and returns a `SecurityEconomicDefinition` with all nullable fields set to `null`.
+
+**Edge cases:**
+
+1. **Unknown identifier in `GetAsync`:** Returns `null` with a console warning. The `/// <returns>` XML doc comment on `GetAsync` states "null if symbol not found" so IntelliSense in the script editor shows the null-return contract.
+2. **`QueryAsync` called before cache warm:** Returns empty list. `QuantScriptGlobals.Console.Warn("Security Master not yet warmed — results may be incomplete")` is emitted.
+3. **`asOf` date earlier than Security Master data coverage:** `ISecurityMasterQueryService` returns whatever data it has for the date; `SecurityGlobal` surfaces the result without additional validation. Script authors must document their assumptions about point-in-time accuracy.
+4. **Large security master with expensive predicate in `QueryAsync`:** Execution time can be high. If execution exceeds 2 seconds, `Warning` is logged recommending the user restrict the filter predicate. A 10-second hard timeout is enforced via `CancellationTokenSource.CancelAfter(TimeSpan.FromSeconds(10))` linked to `ct`.
 
 #### Dependencies
 
@@ -274,6 +437,18 @@ sees the issue without an unhandled exception derailing the run.
   `QuantScriptOptions.EnableSecurityMasterInMemoryQuery` (default `true` for typical deployments).
 - The F#-to-C# adapter adds a translation layer. If `SecurityMaster.Domain.fs` evolves,
   `SecurityEconomicDefinitionAdapter` must be updated to stay in sync.
+
+
+#### Test Strategy
+
+**Test class:** `SecurityGlobalTests` — `tests/Meridian.QuantScript.Tests/Api/SecurityGlobalTests.cs`
+**Pattern:** Arrange-Act-Assert with `Mock<ISecurityMasterQueryService>` (Moq).
+
+1. `GetAsync_WithKnownSymbol_ReturnsEntry` — mocks `GetByIdentifierAsync` returning a populated entry; asserts `SecurityGlobal.GetAsync("AAPL")` returns that entry with matching `Name`.
+2. `GetAsync_WithUnknownSymbol_ReturnsNullAndEmitsConsoleWarning` — mocks service returning `null`; asserts return is `null` and the console warning collector received one entry.
+3. `QueryAsync_WithFilterMatchingSubset_ReturnsOnlyMatchingEntries` — mocks `GetAllAsync` returning 5 entries; applies a filter matching 2; asserts result count is 2.
+4. `QueryAsync_WhenCacheEmpty_ReturnsEmptyListAndLogsWarning` — mocks `GetAllAsync` returning empty list; asserts result is empty and warning is logged.
+5. `SecurityEconomicDefinitionAdapter_Adapt_WithValidFSharpEntry_MapsFieldsCorrectly` — constructs a test F# domain entry; calls `Adapt`; asserts DTO fields match expected values.
 
 #### Audience
 
@@ -341,6 +516,30 @@ export requests and executing them in sequence.
 }
 ```
 
+#### Class Design
+
+| Type | Kind | Key Members | Notes |
+|---|---|---|---|
+| `IExportGlobal` | Interface | `IChartExport Charts`, `Task DataAsync<T>(IEnumerable<T>, string, ExportFormat, CancellationToken)`, `Task ReportAsync(string, CancellationToken)`, `Task FlushAllAsync(CancellationToken)` | Exposed as `Export` in `QuantScriptGlobals` |
+| `ExportGlobal` | Sealed class : `IExportGlobal` | `ExportGlobal(AnalysisExportService, PdfChartWriter, HtmlReportWriter, IOptions<QuantScriptOptions>)` | Accumulates `List<IPendingExport>`; flushes on run completion |
+| `IPendingExport` | Interface | `Task ExecuteAsync(CancellationToken)` | Strategy pattern for deferred exports |
+| `PendingPdfExport` | Sealed class : `IPendingExport` | `PendingPdfExport(IReadOnlyList<ScottPlot.Plot>, string path, QuantScriptOptions)` | One chart per page |
+| `PendingDataExport<T>` | Sealed class : `IPendingExport` | `PendingDataExport(IEnumerable<T>, string, ExportFormat, AnalysisExportService)` | Delegates to `AnalysisExportService` |
+| `PendingReportExport` | Sealed class : `IPendingExport` | `PendingReportExport(HtmlReportWriter, string, RunReportModel)` | Template substitution |
+| `PdfChartWriter` | Sealed class | `PdfChartWriter(IOptions<QuantScriptOptions>)`, `Task WriteAsync(IReadOnlyList<Plot>, string, CancellationToken)` | ScottPlot PNG → PDF via `System.Drawing.Common` |
+| `HtmlReportWriter` | Sealed class | `HtmlReportWriter()`, `Task WriteAsync(RunReportModel, string, CancellationToken)` | Reads embedded `RunReport.html.template`; token substitution |
+
+```csharp
+// Constructor signatures
+public ExportGlobal(
+    AnalysisExportService exportService,
+    PdfChartWriter pdfWriter,
+    HtmlReportWriter htmlWriter,
+    IOptions<QuantScriptOptions> opts)
+public PdfChartWriter(IOptions<QuantScriptOptions> opts)
+public HtmlReportWriter()   // reads embedded assembly resource
+```
+
 #### Implementation Notes
 
 - `ExportGlobal` wraps a `List<IPendingExport>` that accumulates export requests during script
@@ -349,6 +548,59 @@ export requests and executing them in sequence.
 - `PdfChartWriter` uses a 1-chart-per-page layout for v1; multi-chart grid layout is v2.
 - Paths passed to `Export.*` are resolved relative to `QuantScriptOptions.ExportOutputRoot`
   if they are relative paths.
+
+**Concrete interface definitions:**
+
+```csharp
+// src/Meridian.QuantScript/Export/IExportGlobal.cs
+public interface IExportGlobal
+{
+    IChartExport Charts { get; }
+    Task DataAsync<T>(IEnumerable<T> data, string path,
+        ExportFormat format = ExportFormat.Parquet,
+        CancellationToken ct = default);
+    Task ReportAsync(string path, CancellationToken ct = default);
+    Task FlushAllAsync(CancellationToken ct);
+}
+
+public interface IChartExport
+{
+    void Pdf(string path, bool flush = false);
+}
+```
+
+**DI registration (`QuantScriptFeatureRegistration.cs`):**
+
+```csharp
+services.AddScoped<IExportGlobal, ExportGlobal>();
+services.AddSingleton<PdfChartWriter>();
+services.AddSingleton<HtmlReportWriter>();
+// AnalysisExportService is already registered by StorageFeatureRegistration
+```
+
+**Data flow:**
+
+1. Script calls `Export.Data(fills, "./reports/fills.parquet")`.
+2. `ExportGlobal.DataAsync` creates `PendingDataExport<FillEvent>(fills, resolvedPath, ExportFormat.Parquet, _exportService)` and appends it to `_pendingExports`.
+3. When the script run completes, `QuantScriptViewModel` calls `IExportGlobal.FlushAllAsync(ct)`.
+4. `FlushAllAsync` iterates `_pendingExports` sequentially, calling `IPendingExport.ExecuteAsync(ct)` for each.
+5. `PendingDataExport.ExecuteAsync` calls `AnalysisExportService.ExportAsync(data, format, path, ct)`.
+6. `PendingPdfExport.ExecuteAsync` calls `PdfChartWriter.WriteAsync(charts, path, ct)` — ScottPlot renders each plot to PNG bytes; the PDF wrapper concatenates pages using `System.Drawing.Common`.
+7. `PendingReportExport.ExecuteAsync` calls `HtmlReportWriter.WriteAsync(model, path, ct)` — `RunReport.html.template` (embedded resource) is loaded; `{{SHARPE}}`, `{{CAGR}}`, `{{CHART_PNG_B64}}` tokens are substituted; the file is written.
+8. Path resolution: relative paths are combined with `QuantScriptOptions.ExportOutputRoot`; the output directory is created if absent.
+
+**Error handling and cancellation:**
+
+- Each `IPendingExport.ExecuteAsync` call is individually wrapped in `try/catch(Exception)`. Failure of one export does not abort the others. All exceptions are collected and surfaced as a single `AggregateException` after all exports complete.
+- On Linux: `PdfChartWriter` probes GDI availability at startup via `RuntimeInformation.IsOSPlatform(OSPlatform.Linux)` and a `new Bitmap(1,1)` probe. If GDI is unavailable, `WriteAsync` logs `Warning: "PDF export skipped: GDI+ unavailable on this platform"` and returns immediately without throwing.
+- If `ct` is cancelled during `FlushAllAsync`, the currently-executing export completes (no mid-write cancellation), and remaining pending exports are skipped cleanly.
+
+**Edge cases:**
+
+1. **`Export.Data(series, path)` called with empty `IEnumerable`:** `PendingDataExport.ExecuteAsync` delegates to `AnalysisExportService` which creates a zero-row file — valid and consistent with the service's existing behavior.
+2. **Path collision — two exports target the same file:** The last export wins (files are overwritten). A `Debug` log notes the collision, but no exception is thrown since overwrites are intentional in script workflows.
+3. **`MaxReportEmbedCharts` exceeded:** `ExportGlobal` counts queued chart exports before report generation. If count exceeds `QuantScriptOptions.MaxReportEmbedCharts`, excess charts are omitted from the HTML report and a `Warning` log records the count.
+4. **`FlushAllAsync` called with no pending exports:** Returns immediately — idempotent and expected for scripts that make no `Export.*` calls.
 
 #### Dependencies
 
@@ -365,6 +617,18 @@ export requests and executing them in sequence.
   log a warning if GDI is unavailable; skip PDF export gracefully.
 - HTML report with embedded base64 PNGs can become large (5–10 MB) for scripts with many
   charts. Add a `QuantScriptOptions.MaxReportEmbedCharts` cap (default 20).
+
+
+#### Test Strategy
+
+**Test class:** `ExportGlobalTests` — `tests/Meridian.QuantScript.Tests/Export/ExportGlobalTests.cs`
+**Pattern:** Arrange-Act-Assert with `Mock<AnalysisExportService>` and temp directories.
+
+1. `DataAsync_WithParquetFormat_DelegatesToAnalysisExportServiceWithCorrectFormat` — verifies `AnalysisExportService.ExportAsync` is called with `ExportFormat.Parquet`.
+2. `FlushAllAsync_WithMultipleExports_ExecutesAllInSequence` — queues 3 different `IPendingExport` instances; asserts all three `ExecuteAsync` calls complete after `FlushAllAsync`.
+3. `FlushAllAsync_WhenOneExportFails_ContinuesRemainingExportsAndAggregatesExceptions` — first export throws `IOException`; asserts second and third still execute and aggregate exception contains one inner exception.
+4. `PdfChartWriter_WhenGdiUnavailable_LogsWarningAndReturnsWithoutThrowing` — simulates GDI unavailability; asserts no exception propagated and `Warning` was logged.
+5. `HtmlReportWriter_WriteAsync_ProducesHtmlFileWithSubstitutedMetricTokens` — writes to temp path; reads HTML; asserts `{{SHARPE}}` token replaced with the expected value.
 
 #### Audience
 
@@ -412,6 +676,24 @@ setting `ReplViewModel.CurrentInput` to the selected entry's source text.
 been run), the REPL creates a new `ScriptState` with `QuantScriptGlobals` injected, so the user
 can experiment without running the script first.
 
+#### Class Design
+
+| Type | Kind | Key Members | Notes |
+|---|---|---|---|
+| `ReplViewModel` | Sealed class | `ReplViewModel(IScriptRunner, IReplHistory, IOptions<QuantScriptOptions>)`, `ICommand ExecuteCommand`, `ICommand ClearCommand`, `string CurrentInput { get; set; }`, `bool IsVisible { get; set; }` | Nested on `QuantScriptViewModel.Repl` |
+| `ReplEntry` | Sealed record | `string Source, string Result, bool IsError, DateTimeOffset Timestamp` | One output line in REPL history |
+| `IReplHistory` | Interface | `void Add(ReplEntry)`, `bool TryGetAt(int offsetFromNewest, out ReplEntry?)`, `void Clear()`, `IReadOnlyList<ReplEntry> ToList()` | Thin wrapper over `CircularBuffer<ReplEntry>` |
+| `ReplHistory` | Sealed class : `IReplHistory` | `ReplHistory(int capacity = 200)` | Wraps existing `CircularBuffer<ReplEntry>` from `Meridian.Ui.Services` |
+
+```csharp
+// Constructor signatures
+public ReplViewModel(
+    IScriptRunner scriptRunner,
+    IReplHistory history,
+    IOptions<QuantScriptOptions> opts)
+public ReplHistory(int capacity = 200)  // wraps CircularBuffer<ReplEntry>
+```
+
 #### Implementation Notes
 
 - `ReplViewModel` is a nested ViewModel on `QuantScriptViewModel`:
@@ -421,6 +703,59 @@ can experiment without running the script first.
 - `ReplEntry` record: `{ string Source, string Result, bool IsError, DateTimeOffset Timestamp }`.
 - Exception output is caught and displayed as an error-styled entry (red foreground in the
   output list) without crashing the session.
+
+**Concrete interface definitions:**
+
+```csharp
+// src/Meridian.QuantScript/Repl/IReplHistory.cs
+public interface IReplHistory
+{
+    int Count { get; }
+    void Add(ReplEntry entry);
+    bool TryGetAt(int offsetFromNewest, out ReplEntry? entry);
+    void Clear();
+    IReadOnlyList<ReplEntry> ToList();
+}
+
+// src/Meridian.QuantScript/Repl/ReplEntry.cs
+public sealed record ReplEntry(
+    string Source,
+    string Result,
+    bool IsError,
+    DateTimeOffset Timestamp);
+```
+
+**DI registration (`QuantScriptFeatureRegistration.cs`):**
+
+```csharp
+services.AddSingleton<IReplHistory>(_ => new ReplHistory(capacity: 200));
+services.AddSingleton<ReplViewModel>();
+```
+
+**Data flow:**
+
+1. User types an expression in the REPL `TextBox` and presses `Enter` (or clicks "Run").
+2. `ReplViewModel.ExecuteCommand` fires; calls `ExecuteAsync(CurrentInput)`.
+3. `ExecuteAsync` checks `QuantScriptViewModel.CurrentScriptState`: if `null`, creates a fresh `ScriptState` via `IScriptRunner.CreateInitialStateAsync(QuantScriptGlobals, ct)`.
+4. A 5-second timeout `CancellationTokenSource` is created: `using var tcs = new CancellationTokenSource(TimeSpan.FromSeconds(5));` linked to the session `CancellationToken`.
+5. Calls `await IScriptRunner.ContinueWithAsync(expression, scriptState, tcs.Token)`.
+6. On success: result is `scriptState.ReturnValue?.ToString() ?? "(void)"`. A `ReplEntry` is created with `IsError = false`.
+7. On `OperationCanceledException` (timeout): entry created with `Result = "Timed out (5 s)"`, `IsError = true`.
+8. On any other `Exception`: entry created with `Result = ex.Message`, `IsError = true`.
+9. `IReplHistory.Add(entry)` appends to the circular buffer.
+10. `ReplViewModel.OutputEntries` (`ObservableCollection<ReplEntry>`) is updated on the UI dispatcher thread; `CurrentInput` is cleared.
+
+**Error handling and cancellation:**
+
+- The 5-second `CancellationTokenSource` is the primary guard against infinite loops in REPL expressions. When the timeout fires, `OperationCanceledException` is caught and surfaced as a timeout entry — the underlying Roslyn task may continue in the background but its result is discarded.
+- `ContinueWithAsync` compilation errors (e.g., `CompilationErrorException`) are caught at the outermost level in `ExecuteAsync` and shown as error entries with red foreground styling via `IsError` → WPF `DataTrigger`.
+
+**Edge cases:**
+
+1. **Expression with side effects on shared `ScriptState`:** The REPL mutates the shared state (e.g., redefines a variable used by a downstream cell). A tooltip on the REPL input bar reads: "REPL expressions modify the current session state." State forking is deferred to v2.
+2. **`Up` / `Down` navigation on empty history:** `IReplHistory.TryGetAt` returns `false`; `CurrentInput` is unchanged. The navigation key is silently consumed.
+3. **Multi-line expression with `Shift+Enter`:** `TextBox.AcceptsReturn` is `True` while `Shift` is held. The `Enter` key binding fires `ExecuteCommand` only when `ModifierKeys.Shift` is not active (checked in the `KeyDown` handler).
+4. **REPL panel toggled off while an expression is executing:** `ReplViewModel.IsVisible = false` hides the bar but does not cancel the in-flight execution. The 5-second timeout still applies; the result entry is added to history and displayed when the bar is re-opened.
 
 #### Dependencies
 
@@ -436,6 +771,18 @@ can experiment without running the script first.
   `// REPL expressions run in a forked state` warning note in the UI tooltip.
 - `ContinueWithAsync` is not cancellation-safe once started. Set a 5-second timeout on
   `ReplViewModel.ExecuteAsync` and surface a "Timed out" entry if exceeded.
+
+
+#### Test Strategy
+
+**Test class:** `ReplViewModelTests` — `tests/Meridian.QuantScript.Tests/Repl/ReplViewModelTests.cs`
+**Pattern:** Arrange-Act-Assert with `Mock<IScriptRunner>` (Moq).
+
+1. `ExecuteAsync_WithSimpleExpression_AddsSuccessEntryToHistory` — mocks `ContinueWithAsync` returning a state with `ReturnValue = 42`; asserts `IReplHistory.Count == 1` and `Entries[0].IsError == false`.
+2. `ExecuteAsync_WhenTimeoutExceeded_AddsTimeoutErrorEntry` — mocks `ContinueWithAsync` as `Task.Delay(Timeout.Infinite, ct)` (respects cancellation); asserts entry contains "Timed out" and `IsError = true` after 5 s.
+3. `ExecuteAsync_WhenExceptionThrown_AddsErrorEntryWithMessage` — mocks throwing `InvalidOperationException("bad input")`; asserts entry `IsError = true` and `Result` contains "bad input".
+4. `ReplHistory_TryGetAt_WithValidOffset_ReturnsCorrectEntry` — adds 3 entries; calls `TryGetAt(0)` (newest); asserts it returns the third entry.
+5. `ReplHistory_Add_ExceedingCapacity_OverwritesOldestEntry` — `capacity = 3`; adds 4 entries; asserts `Count == 3` and oldest is gone.
 
 #### Audience
 
@@ -501,6 +848,29 @@ flag is set.
 `IanaTimezone` field populated from `config/venue-mapping.json`. Adding this field unblocks
 both ideas in a single config change.
 
+#### Class Design
+
+| Type | Kind | Key Members | Notes |
+|---|---|---|---|
+| `VenueCalibrationPriors` | Sealed record | `string VenueName, GaussianPrior ArrivalRatePrior, GaussianPrior DecayAlphaPrior, GaussianPrior QueueDepthScalePrior` | `src/Meridian.L3.Inference/Calibration/VenueCalibrationPriors.cs` |
+| `GaussianPrior` | Sealed record | `double Mean, double StdDev` | Reusable prior type; validated `StdDev > 0` at load time |
+| `IVenueProfileResolver` | Interface | `Task<VenueCalibrationPriors?> ResolveAsync(string exchangeMic, CancellationToken)`, `VenueCalibrationPriors GetGenericFallback()` | |
+| `VenueProfileResolver` | Sealed class : `IVenueProfileResolver` | `VenueProfileResolver(VenueMicMapper, IReadOnlyDictionary<string, VenueCalibrationPriors>, ILogger<VenueProfileResolver>)` | Resolves `"Auto"` at calibration time |
+| `VenueProfileLoader` | Static class | `static IReadOnlyDictionary<string, VenueCalibrationPriors> LoadFromFile(string path)` | Parses `config/venue-calibration-priors.json` |
+
+```csharp
+// Constructor signatures
+public VenueProfileResolver(
+    VenueMicMapper micMapper,
+    IReadOnlyDictionary<string, VenueCalibrationPriors> profiles,
+    ILogger<VenueProfileResolver> logger)
+```
+
+Note on `VenueMicMapper`: it maps `(string Provider, string RawVenue) → string? MIC`. For
+`"Auto"` profile resolution, `VenueProfileResolver` uses the canonical MIC to look up the
+venue name key in the `profiles` dictionary. The `IanaTimezone` field required by Features
+#24 and #29 must be added to `config/venue-mapping.json` and exposed on `VenueMicMapper`.
+
 #### Implementation Notes
 
 - `VenueCalibrationPriors` is a record in `src/Meridian.L3.Inference/Calibration/VenueCalibrationPriors.cs`.
@@ -509,6 +879,63 @@ both ideas in a single config change.
 - Priors are injected into the MLE optimizer as regularization terms (Gaussian prior on each
   parameter), not as hard constraints — the posterior can deviate from the prior given
   sufficient data.
+
+**Concrete interface definitions:**
+
+```csharp
+// src/Meridian.L3.Inference/Calibration/IVenueProfileResolver.cs
+public interface IVenueProfileResolver
+{
+    Task<VenueCalibrationPriors?> ResolveAsync(string exchangeMic, CancellationToken ct);
+    VenueCalibrationPriors GetGenericFallback();
+}
+
+// src/Meridian.L3.Inference/Calibration/VenueCalibrationPriors.cs
+public sealed record VenueCalibrationPriors(
+    string VenueName,
+    GaussianPrior ArrivalRatePrior,
+    GaussianPrior DecayAlphaPrior,
+    GaussianPrior QueueDepthScalePrior);
+
+public sealed record GaussianPrior(double Mean, double StdDev);
+```
+
+**DI registration (`L3InferenceFeatureRegistration.cs`):**
+
+```csharp
+services.AddSingleton<IVenueProfileResolver>(sp =>
+{
+    var mapper = sp.GetRequiredService<VenueMicMapper>();
+    var priors = VenueProfileLoader.LoadFromFile(
+        Path.Combine(
+            sp.GetRequiredService<IHostEnvironment>().ContentRootPath,
+            "config/venue-calibration-priors.json"));
+    return new VenueProfileResolver(mapper, priors,
+        sp.GetRequiredService<ILogger<VenueProfileResolver>>());
+});
+```
+
+**Data flow:**
+
+1. Calibration job starts for symbol `AAPL`; `CalibrationOrchestrator` reads `InferenceModelConfig.VenueProfile`.
+2. If `VenueProfile == "Auto"`: `IVenueProfileResolver.ResolveAsync(symbol.ExchangeMic, ct)` is called.
+3. `VenueProfileResolver` uses the canonical MIC to look up the venue name (e.g., `"XNAS"` → `"NASDAQ"`) in the profiles dictionary.
+4. If no match: `GetGenericFallback()` returns a flat prior (`Mean = 0, StdDev = 1.0`) and logs `Warning: "'XNAS' not in venue-calibration-priors.json; using Generic fallback"`.
+5. `VenueCalibrationPriors` is injected into the MLE optimizer as Gaussian regularization terms: `logLikelihood -= 0.5 * ((param - prior.Mean) / prior.StdDev)^2` for each parameter.
+6. After calibration, `CalibrationReportCard` computes `venuePriorDivergence` as KL divergence between posterior and prior. If `> CalibrationOptions.PriorDivergenceWarningThreshold` (default `0.4`), the letter grade is downgraded one notch.
+
+**Error handling and cancellation:**
+
+- `ct` is passed to `ResolveAsync`; resolution is a fast in-memory dictionary lookup — effectively instantaneous relative to calibration time.
+- If `venue-calibration-priors.json` is malformed at startup, `VenueProfileLoader.LoadFromFile` throws `JsonException`. This is a fatal configuration error; the host startup fails with a clear error message.
+- KL divergence can return `NaN` if the posterior has zero variance; guarded with `if (double.IsNaN(divergence)) divergence = 0.0` and a `Debug` log.
+
+**Edge cases:**
+
+1. **Dual-listed symbol (multiple venues simultaneously):** `VenueProfileResolver` resolves using the symbol's `PrimaryExchangeMic`. A `Debug` log notes which venue was selected.
+2. **`VenueProfile` explicitly set to a venue name absent from the config file:** `ResolveAsync` returns `null`; `GetGenericFallback()` is used with a `Warning` log.
+3. **Prior `StdDev = 0` in JSON config (degenerate prior):** `VenueProfileLoader` validates all `StdDev > 0`; throws `InvalidOperationException` at load time naming the offending venue.
+4. **Calibration data window shorter than 30 minutes:** `CalibrationWarning.ShortWindowPriorUnreliable` is added to the report card alongside the reduced-confidence `venuePriorDivergence`.
 
 #### Dependencies
 
@@ -525,6 +952,18 @@ both ideas in a single config change.
   CLI command as a future self-calibration path.
 - `"Auto"` resolution can fail if `VenueMicMapper` does not recognize the exchange code. Fall
   back to a `"Generic"` prior and log a warning rather than failing the calibration run.
+
+
+#### Test Strategy
+
+**Test class:** `VenueProfileResolverTests` — `tests/Meridian.L3.Inference.Tests/Calibration/VenueProfileResolverTests.cs`
+**Pattern:** Arrange-Act-Assert with a mock `VenueMicMapper`.
+
+1. `ResolveAsync_WithKnownExchangeMic_ReturnsMatchingVenuePriors` — maps `"XNYS"` → `"NYSE"` priors; asserts `ArrivalRatePrior.Mean` matches the configured value.
+2. `ResolveAsync_WithUnknownExchangeMic_ReturnsNullAndLogsWarning` — MIC not in config; asserts return `null` and warning logged.
+3. `GetGenericFallback_ReturnsNonZeroStdDevForAllPriors` — asserts `ArrivalRatePrior.StdDev > 0`, `DecayAlphaPrior.StdDev > 0`, `QueueDepthScalePrior.StdDev > 0`.
+4. `VenueProfileLoader_LoadFromFile_WithMalformedJson_ThrowsJsonException`
+5. `VenueProfileLoader_LoadFromFile_WithZeroStdDev_ThrowsInvalidOperationException` — JSON has `"stdDev": 0`; asserts `InvalidOperationException` at load time.
 
 #### Audience
 
@@ -606,6 +1045,33 @@ Print(tca.Summary);
 `TcaResult` exposes `CostWaterfall` (array of `(string label, double bps)`) for ScottPlot
 rendering, and a `Summary` string for `Print()`.
 
+#### Class Design
+
+| Type | Kind | Key Members | Notes |
+|---|---|---|---|
+| `TcaExecutionCostSummary` | Sealed record | `double? AvgSlippageBps, double? AvgSpreadCostBps, double? AvgTimingCostBps, double? AvgMarketImpactBps, int BboCoverageCount, int TotalFills, double BboCoveragePct` | New; added alongside existing `TcaCostSummary` in `TcaReportModels.cs` |
+| `TcaReport` (extended) | Sealed record | All existing fields + `TcaExecutionCostSummary? ExecutionCostSummary = null` | Non-breaking optional addition |
+| `TcaBboSnapshot` | Sealed record | `Guid FillId, decimal BidAtFill, decimal AskAtFill, decimal ArrivalMid, DateTimeOffset Timestamp` | BBO context captured at fill time from L3 engine |
+| `TcaHtmlReportWriter` | Sealed class | `TcaHtmlReportWriter()`, `Task WriteAsync(TcaReport report, string path, CancellationToken ct)` | Embeds ScottPlot cost-waterfall chart as base64 PNG |
+| `TcaResult` | Sealed class | `IReadOnlyList<(string Label, double Bps)> CostWaterfall`, `string Summary` | QuantScript extension surface; returned by `fills.TcaReport()` |
+
+```csharp
+// TcaReport record with new optional field (non-breaking):
+public sealed record TcaReport(
+    DateTimeOffset GeneratedAtUtc,
+    string? StrategyAssemblyPath,
+    TcaCostSummary CostSummary,
+    IReadOnlyList<SymbolTcaSummary> SymbolSummaries,
+    IReadOnlyList<TcaFillOutlier> Outliers,
+    TcaExecutionCostSummary? ExecutionCostSummary = null);   // NEW
+
+// PostSimulationTcaReporter.Generate already exists (commission-only).
+// Feature #25 extends it: BBO data present → compute ExecutionCostSummary.
+// BBO data absent → ExecutionCostSummary = null (graceful degradation).
+```
+
+Note: `BacktestResult.TcaReport` already exists — no schema change needed there.
+
 #### Implementation Notes
 
 - Spread cost is computed as `(ask - bid) / 2` at the time of fill using the BBO snapshot from
@@ -614,7 +1080,73 @@ rendering, and a `Summary` string for `Print()`.
 - Market impact is estimated as the VWAP shortfall beyond timing cost (requires VWAP from
   `summary.json` VWAP field).
 - Outlier threshold: `|slippageBps| > 3 × median(|slippageBps|)` across all orders.
+  The existing `OutlierThresholdMultiplier = 3.0` constant in `PostSimulationTcaReporter` is reused.
 - `BacktestMetricsEngine` already computes VWAP — reuse its output rather than recomputing.
+
+**Concrete record definitions (additions to `TcaReportModels.cs`):**
+
+```csharp
+// src/Meridian.Backtesting.Sdk/TcaReportModels.cs — new record
+public sealed record TcaExecutionCostSummary(
+    double? AvgSlippageBps,
+    double? AvgSpreadCostBps,
+    double? AvgTimingCostBps,
+    double? AvgMarketImpactBps,
+    int BboCoverageCount,
+    int TotalFills,
+    double BboCoveragePct);
+
+// TcaReport extended (non-breaking — new optional field with default null):
+public sealed record TcaReport(
+    DateTimeOffset GeneratedAtUtc,
+    string? StrategyAssemblyPath,
+    TcaCostSummary CostSummary,
+    IReadOnlyList<SymbolTcaSummary> SymbolSummaries,
+    IReadOnlyList<TcaFillOutlier> Outliers,
+    TcaExecutionCostSummary? ExecutionCostSummary = null);
+
+// BBO snapshot record stored in fill-tape.jsonl per fill:
+public sealed record TcaBboSnapshot(
+    Guid FillId,
+    decimal BidAtFill,
+    decimal AskAtFill,
+    decimal ArrivalMid,
+    DateTimeOffset Timestamp);
+```
+
+**DI registration:** `PostSimulationTcaReporter` is a static class; `TcaHtmlReportWriter` is registered separately:
+
+```csharp
+services.AddSingleton<TcaHtmlReportWriter>();
+// PostSimulationTcaReporter.Generate is a static method called by BacktestResultSerializer
+```
+
+**Data flow:**
+
+1. `BacktestResultSerializer` writes `fill-tape.jsonl` including `BboSnapshot` objects when L3 is enabled.
+2. Simulation engine calls `PostSimulationTcaReporter.Generate(request, fills)`.
+3. `Generate` runs the existing commission cost path, producing `TcaCostSummary` unchanged.
+4. If any fill has non-null `BboSnapshot.BidAtFill`/`AskAtFill`: compute per-fill execution costs:
+   - **Spread cost (bps):** `(ask - bid) / midPrice / 2 × 10_000`
+   - **Timing cost (bps):** `(arrivalMid - fillPrice) / arrivalMid × 10_000 × sideSign` (positive = adverse)
+   - **Market impact (bps):** VWAP shortfall minus timing cost, using VWAP from `summary.json`
+5. Average across all fills with BBO data → `TcaExecutionCostSummary` with `BboCoveragePct = bboCount / totalFills`.
+6. If `BboCoveragePct < 0.80`, the JSON output includes `"dataQualityWarning": "BBO coverage below 80%"`.
+7. `TcaHtmlReportWriter.WriteAsync(report, path, ct)` renders the HTML report with an embedded cost waterfall bar chart (ScottPlot `BarPlot`) encoded as base64 PNG.
+8. `fills.TcaReport()` extension method in `src/Meridian.QuantScript/Extensions/FillExtensions.cs` calls `PostSimulationTcaReporter.Generate` and wraps the result in a `TcaResult` for QuantScript use.
+
+**Error handling and cancellation:**
+
+- If `fill-tape.jsonl` is absent or empty, `Generate` returns a `TcaReport` with `ExecutionCostSummary = null` and logs `Warning: "fill-tape.jsonl not found; TCA execution cost components skipped"`.
+- VWAP shortfall computation guards against division by zero: `if (totalNotional == 0m) return null` for that symbol.
+- `TcaHtmlReportWriter.WriteAsync` propagates `ct`; if cancelled before file write completes, the partial file is deleted to avoid corrupt reports on disk.
+
+**Edge cases:**
+
+1. **Zero fills in `fill-tape.jsonl`:** `Generate` returns `TcaReport` with `TcaCostSummary` of all zeros and `ExecutionCostSummary = null`. No division-by-zero exceptions.
+2. **All fills on the same side (all buys or all sells):** `sideSign` is applied uniformly; single-sided fill tapes are valid inputs.
+3. **BBO snapshot has `bid == ask` (crossed market — data quality issue):** Spread cost for that fill is `0.0 bps`; a `Debug` log notes the crossed BBO. The fill is still included in the BBO coverage count.
+4. **`BacktestResult.TcaReport` already exists:** No schema change is needed on `BacktestResult`. Only the `TcaReport` record gains the optional `ExecutionCostSummary` field, which is backward-compatible.
 
 #### Dependencies
 
@@ -631,6 +1163,18 @@ rendering, and a `Summary` string for `Print()`.
   when BBO coverage < 80% of fills.
 - The HTML report is a static one-pager — no interactive filtering. QuantScript's `TcaResult`
   covers the interactive exploration use case.
+
+
+#### Test Strategy
+
+**Test class:** `PostSimulationTcaReporterTests` — `tests/Meridian.Backtesting.Tests/Metrics/PostSimulationTcaReporterTests.cs`
+**Pattern:** Arrange-Act-Assert; `PostSimulationTcaReporter.Generate` is a static method — no mocks needed.
+
+1. `Generate_WithFillsAndBboData_PopulatesExecutionCostSummary` — provides 10 `FillEvent` records each with a `TcaBboSnapshot`; asserts `ExecutionCostSummary` is not null and `AvgSpreadCostBps > 0`.
+2. `Generate_WithNoBboData_ReturnsNullExecutionCostSummary` — fills have no `BboSnapshot`; asserts `ExecutionCostSummary == null`.
+3. `Generate_WithBboCoverageBelow80Pct_SetsBboCoveragePctCorrectly` — 7 of 10 fills have BBO; asserts `BboCoveragePct ≈ 0.7`.
+4. `Generate_WithZeroFills_ReturnsZeroCostSummaryWithoutException` — empty fills list; asserts returns without exception and `TotalFills == 0`.
+5. `Generate_WithOneOutlierFill_IncludesItInOutliersList` — one fill has slippage >> `3 × median`; asserts it appears in `Outliers` with correct `FillId`.
 
 #### Audience
 
@@ -698,6 +1242,21 @@ for a given symbol. When `--sim-carry-state` is active, the simulation runner sw
 a parallel day-batch to a sequential per-symbol, sequential-day schedule. A warning is logged:
 `"Carry-state mode: day-level parallelism disabled for {symbol}"`.
 
+#### Class Design
+
+| Type | Kind | Key Members | Notes |
+|---|---|---|---|
+| `DayEndQueueState` | Sealed record | `string Symbol, DateOnly Date, int EstimatedQueuePositionAtClose, double BookImbalanceAtClose, decimal BidAskSpreadAtClose, double DecayFactorApplied` | `src/Meridian.L3.Inference/Simulation/DayEndQueueState.cs` |
+| `IQueueStatePersister` | Interface | `Task WriteAsync(DayEndQueueState, CancellationToken)`, `Task<DayEndQueueState?> ReadAsync(string symbol, DateOnly forDate, CancellationToken)`, `Task DeleteAsync(string symbol, CancellationToken)` | |
+| `FileQueueStatePersister` | Sealed class : `IQueueStatePersister` | `FileQueueStatePersister(string outputDirectory)` | Reads/writes `{outputDir}/{SYMBOL}/day-state.json` |
+| `SimCarryStateOptions` | Sealed record | `bool Enabled, double NightlyDecayFactor` | Parsed from `--sim-carry-state` / `--sim-nightly-decay` CLI flags; validated `[0.0, 0.8]` |
+
+```csharp
+// Constructor signatures
+public FileQueueStatePersister(string outputDirectory)
+// DayEndQueueState — record constructor auto-generated
+```
+
 #### Implementation Notes
 
 - `DayEndQueueState` is a record in
@@ -707,6 +1266,58 @@ a parallel day-batch to a sequential per-symbol, sequential-day schedule. A warn
   decay, and injects into `QueueModel.InitialState`.
 - When `day-state.json` is absent (first day of a carry-state run), `InferenceEngine` silently
   falls back to the default cold-start prior.
+
+**Concrete interface definitions:**
+
+```csharp
+// src/Meridian.L3.Inference/Simulation/IQueueStatePersister.cs
+public interface IQueueStatePersister
+{
+    Task WriteAsync(DayEndQueueState state, CancellationToken ct);
+    Task<DayEndQueueState?> ReadAsync(string symbol, DateOnly forDate, CancellationToken ct);
+    Task DeleteAsync(string symbol, CancellationToken ct);
+}
+
+// src/Meridian.L3.Inference/Simulation/DayEndQueueState.cs
+public sealed record DayEndQueueState(
+    string Symbol,
+    DateOnly Date,
+    int EstimatedQueuePositionAtClose,
+    double BookImbalanceAtClose,
+    decimal BidAskSpreadAtClose,
+    double DecayFactorApplied);
+```
+
+**DI registration (`L3InferenceFeatureRegistration.cs`):**
+
+```csharp
+services.AddSingleton<IQueueStatePersister>(sp =>
+    new FileQueueStatePersister(
+        sp.GetRequiredService<SimulationOutputOptions>().OutputDirectory));
+```
+
+**Data flow:**
+
+1. CLI parses `--sim-carry-state` → `SimCarryStateOptions.Enabled = true` and `NightlyDecayFactor` is validated to `[0.0, 0.8]`.
+2. Simulation runner detects `Enabled = true` → disables day-level parallelism for all symbols; switches to sequential-per-symbol, sequential-day scheduling. Logs `Warning: "Carry-state mode: day-level parallelism disabled for {symbol}"`.
+3. For each day, `InferenceEngine.OnSessionOpenAsync(symbol, date, ct)` calls `IQueueStatePersister.ReadAsync(symbol, date, ct)`.
+4. If `DayEndQueueState` found: decay is applied to each field — `initialQueuePos = (int)(state.EstimatedQueuePositionAtClose × NightlyDecayFactor)`, similarly for imbalance and spread. Result is injected into `QueueModel.InitialState`.
+5. If not found (first day): cold-start prior is used; `Debug` log notes the absence.
+6. At session close, `InferenceEngine.OnSessionCloseAsync(symbol, date, ct)` reads final `QueueModel` state, constructs `DayEndQueueState` with `DecayFactorApplied = NightlyDecayFactor`, calls `IQueueStatePersister.WriteAsync(state, ct)`.
+7. File path: `{outputDirectory}/{SYMBOL}/day-state.json` — symbol is `ToUpperInvariant()` for case-insensitive filesystem safety; one file per symbol, overwritten each day.
+
+**Error handling and cancellation:**
+
+- `ReadAsync` catches `FileNotFoundException` silently (returns `null`). Other `IOException` is logged at `Warning` and returns `null` — carry state is silently disabled for that day rather than aborting the simulation.
+- `WriteAsync` catches `IOException`, logs at `Error`, and rethrows — losing carry state silently is worse than surfacing the error clearly.
+- `NightlyDecayFactor` CLI validator enforces `[0.0, 0.8]`; values > 0.8 produce a CLI validation error with the message `"NightlyDecayFactor must be ≤ 0.8 to prevent bias amplification"`.
+
+**Edge cases:**
+
+1. **`NightlyDecayFactor = 0.0`:** All fields multiplied by zero; `DayEndQueueState` with all-zero numeric fields is written. `OnSessionOpenAsync` detects all-zero state and uses cold-start prior (same outcome as no carry state). No special casing needed.
+2. **Symbol starts on day 2 of a multi-day run:** `ReadAsync` returns `null`; cold-start prior is used. No error.
+3. **Output directory does not exist:** `FileQueueStatePersister` creates the directory (including `{SYMBOL}/` subdirectory) on first `WriteAsync` via `Directory.CreateDirectory`.
+4. **Two symbols with different cases (e.g., `aapl` vs `AAPL`):** `FileQueueStatePersister` normalises to `symbol.ToUpperInvariant()` in all path operations, ensuring a single canonical file on case-sensitive filesystems.
 
 #### Dependencies
 
@@ -722,6 +1333,18 @@ a parallel day-batch to a sequential per-symbol, sequential-day schedule. A warn
   continuity is theoretically meaningful for their strategy.
 - `NightlyDecayFactor = 1.0` could amplify systematic bias if the close-state estimate is
   wrong. Restrict to `[0.0, 0.8]` in the CLI validator and surface a warning for values > 0.7.
+
+
+#### Test Strategy
+
+**Test class:** `FileQueueStatePersisterTests` — `tests/Meridian.L3.Inference.Tests/Simulation/FileQueueStatePersisterTests.cs`
+**Pattern:** Arrange-Act-Assert with a temp directory; no external mocks.
+
+1. `WriteAsync_ThenReadAsync_RoundTripsStateCorrectly` — writes a `DayEndQueueState`, reads it back, asserts all fields (`Symbol`, `Date`, `BookImbalanceAtClose`, etc.) match.
+2. `ReadAsync_WhenFileAbsent_ReturnsNull` — temp directory is empty; asserts `ReadAsync` returns `null` without throwing.
+3. `WriteAsync_WhenOutputDirectoryAbsent_CreatesDirectoryAndWritesFile` — uses a non-existent subdirectory; asserts directory is created and file is readable afterwards.
+4. `InferenceEngine_OnSessionOpenAsync_WithCarryState_AppliesDecayFactor` — integration test: provides a `DayEndQueueState` with known values; asserts the second day's `QueueModel.InitialState` is within the expected decay-factor range.
+5. `SimulationRunner_WithCarryStateEnabled_ProcessesDaysSequentially` — asserts days are processed in chronological order (not in parallel) when `SimCarryStateOptions.Enabled = true`.
 
 #### Audience
 
@@ -780,6 +1403,21 @@ detection signal over the calibration window.
 gate exists because the detection heuristic can produce false positives on symbols with low
 L2 update latency (L2 update arrives after the trade due to feed sequencing differences).
 
+#### Class Design
+
+| Type | Kind | Key Members | Notes |
+|---|---|---|---|
+| `IDarkPoolEstimator` | Interface | `bool IsEnabled`, `DarkPoolPrintResult ProcessTick(L3Tick, L2Snapshot l2Before, L2Snapshot l2After)`, `double CurrentParticipationRate`, `double CurrentConfidence`, `void Reset()` | |
+| `DarkPoolEstimator` | Sealed class : `IDarkPoolEstimator` | `DarkPoolEstimator(IOptions<InferenceModelConfig>, ILogger<DarkPoolEstimator>)` | `src/Meridian.L3.Inference/DarkPool/DarkPoolEstimator.cs` |
+| `HiddenLiquidityModel` | Sealed class | `HiddenLiquidityModel(int windowSize = 100, double emaAlpha = 0.05)`, `void Update(bool isDarkPrint, int tradeSize)`, `double ParticipationRate`, `double Confidence` | Rolling window EMA state |
+| `DarkPoolPrintResult` | Sealed record | `bool IsDarkPrintCandidate, int EstimatedHiddenSize, DarkPrintReason? Reason` | Per-tick output |
+| `DarkPrintReason` | Enum | `NoBidSizeChange, NoAskSizeChange, BothSidesUnchanged` | |
+
+```csharp
+public DarkPoolEstimator(IOptions<InferenceModelConfig> config, ILogger<DarkPoolEstimator> logger)
+public HiddenLiquidityModel(int windowSize = 100, double emaAlpha = 0.05)
+```
+
 #### Implementation Notes
 
 - `DarkPoolEstimator` lives in
@@ -791,6 +1429,57 @@ L2 update latency (L2 update arrives after the trade due to feed sequencing diff
   `Warning` and disables itself for that symbol.
 - False positive mitigation: a 2-millisecond grace window after the trade tick before checking
   L2 for size reduction accounts for normal feed latency.
+
+**Concrete interface definitions:**
+
+```csharp
+// src/Meridian.L3.Inference/DarkPool/IDarkPoolEstimator.cs
+public interface IDarkPoolEstimator
+{
+    bool IsEnabled { get; }
+    DarkPoolPrintResult ProcessTick(L3Tick tick, L2Snapshot l2Before, L2Snapshot l2After);
+    double CurrentParticipationRate { get; }
+    double CurrentConfidence { get; }
+    void Reset();
+}
+
+public sealed record DarkPoolPrintResult(
+    bool IsDarkPrintCandidate,
+    int EstimatedHiddenSize,
+    DarkPrintReason? Reason);
+```
+
+**DI registration (`L3InferenceFeatureRegistration.cs`):**
+
+```csharp
+services.AddSingleton<IDarkPoolEstimator, DarkPoolEstimator>();
+// Enabled/disabled via InferenceModelConfig.EnableDarkPoolEstimation (default false)
+```
+
+**Data flow:**
+
+1. `InferenceEngine.ProcessTickAsync(tick, ct)` is called for each incoming `L3Tick`.
+2. If `InferenceModelConfig.EnableDarkPoolEstimation == false`, `IDarkPoolEstimator.IsEnabled` returns `false`; the estimator path is skipped entirely.
+3. If enabled: `InferenceEngine` retrieves `L2Snapshot l2Before` from its 2 ms `TimestampedBuffer<L2Snapshot>`.
+4. After the 2 ms grace window, `L2Snapshot l2After` is read from the current L2 state.
+5. `IDarkPoolEstimator.ProcessTick(tick, l2Before, l2After)` checks: `tick.Price ∈ [bid, ask]` AND `l2After.BidSize == l2Before.BidSize` AND `l2After.AskSize == l2Before.AskSize`.
+6. If candidate: `HiddenLiquidityModel.Update(isDarkPrint: true, tick.Size)`. EMA updates `ParticipationRate`.
+7. `QueueModel.EffectiveQueueDepth = visibleDepth × (1 - participationRate × darkPoolScaleFactor)`.
+8. After calibration window, `CalibrationReportCard.DarkPoolConfidence = HiddenLiquidityModel.Confidence`.
+9. `summary.json` writer appends `"estimatedDarkPoolFraction": currentParticipationRate`.
+
+**Error handling and cancellation:**
+
+- If aggressor-side data unavailable: `DarkPoolEstimator` sets `IsEnabled = false` for that symbol and logs `Warning: "Aggressor-side data unavailable for {symbol} — DarkPoolEstimator disabled"`.
+- Division-by-zero in confidence: `Confidence = darkPrintCount > 0 ? (double)consistentPrints / darkPrintCount : 0.0`.
+- `ProcessTick` is synchronous and must complete within 5 µs. If profiling shows > 5 µs, the `TimestampedBuffer` scan must be changed to an indexed ring-buffer lookup.
+
+**Edge cases:**
+
+1. **Symbol halted during data collection:** `HiddenLiquidityModel.Update` receives no ticks; `ParticipationRate` is frozen at its last value. `DarkPoolEstimator.Reset()` is called on halt/resume.
+2. **Pre-market / post-market sessions:** High false-positive rates in illiquid sessions. Gated via `InferenceModelConfig.DarkPoolEstimationSessionFilter` (default: `RegularSession` only).
+3. **Tick with price outside spread (crossed market):** Heuristic check fails; tick classified as lit print. No false positives from crossed-market ticks.
+4. **Low-latency co-located feed (L2 update arrives before 2 ms window):** The heuristic correctly identifies a lit print (false negative, not false positive). The trade-off is documented in calibration guidance.
 
 #### Dependencies
 
@@ -805,6 +1494,18 @@ L2 update latency (L2 update arrives after the trade due to feed sequencing diff
   false positive rates are low. On slower feeds, the 2 ms grace window may need tuning.
 - Dark pool estimation adds per-tick overhead. Profile the `DarkPoolEstimator.ProcessTick`
   path; if it exceeds 5 µs per tick, consider batching updates.
+
+
+#### Test Strategy
+
+**Test class:** `DarkPoolEstimatorTests` — `tests/Meridian.L3.Inference.Tests/DarkPool/DarkPoolEstimatorTests.cs`
+**Pattern:** Arrange-Act-Assert; no external dependencies.
+
+1. `ProcessTick_WithPriceInSpreadAndUnchangedL2Sizes_ReturnsDarkPrintCandidate`
+2. `ProcessTick_WhenL2BidSizeDecreases_ReturnsLitPrint` — bid size reduced by the trade; asserts `IsDarkPrintCandidate == false`.
+3. `ProcessTick_WhenAggressorSideUnavailable_DisablesEstimatorAndLogsWarning`
+4. `HiddenLiquidityModel_Update_WithDarkPrints_IncreasesParticipationRateViaEma`
+5. `DarkPoolEstimator_Reset_ClearsAllHiddenLiquidityModelState`
 
 #### Audience
 
@@ -869,6 +1570,39 @@ lease re-election is in progress.
 **`RollingUpgradeOrchestrator`** lives in
 `src/Meridian.Application/Coordination/RollingUpgradeOrchestrator.cs`.
 
+#### Class Design
+
+| Type | Kind | Key Members | Notes |
+|---|---|---|---|
+| `RollingUpgradeOrchestrator` | Sealed class | `RollingUpgradeOrchestrator(ICoordinationStore, IClusterCoordinator, GracefulShutdownHandler, ISubscriptionOwnershipService, IOptions<ClusterOptions>, ILogger<>)`, `Task<UpgradeResult> ExecuteAsync(string targetVersion, CancellationToken)` | `src/Meridian.Application/Coordination/RollingUpgradeOrchestrator.cs` |
+| `ShutdownSignalWatcher` | Sealed class : `BackgroundService` | `ShutdownSignalWatcher(ICoordinationStore, GracefulShutdownHandler, IOptions<ClusterOptions>, ILogger<>)` | Polls `cluster/shutdown-requests/{instanceId}`; calls local `GracefulShutdownHandler` |
+| `UpgradeState` | Sealed record | `string TargetVersion, IReadOnlyList<string> PendingInstanceIds, IReadOnlyList<string> UpgradedInstanceIds, UpgradeStatus Status, DateTimeOffset StartedAtUtc` | Persisted to `ICoordinationStore` under `cluster/upgrade-state` |
+| `UpgradeResult` | Sealed record | `UpgradeStatus Status, string? ErrorReason, TimeSpan Duration` | |
+| `UpgradeStatus` | Enum | `InProgress, Completed, Aborted` | |
+
+```csharp
+public RollingUpgradeOrchestrator(
+    ICoordinationStore store,
+    IClusterCoordinator coordinator,
+    GracefulShutdownHandler shutdownHandler,
+    ISubscriptionOwnershipService subscriptionService,
+    IOptions<ClusterOptions> clusterOptions,
+    ILogger<RollingUpgradeOrchestrator> logger)
+```
+
+**Schema additions required before this feature can be implemented:**
+
+- `LeaseRecord` must gain `string? BinaryVersion = null` (does not currently exist).
+- `ISubscriptionOwnershipService` must gain `int OwnedSymbolCount { get; }` (does not currently exist).
+
+**IMPORTANT CORRECTION — `GracefulShutdownHandler.InitiateShutdownAsync` signature:**
+The method takes `(ShutdownReason reason, string? message, CancellationToken ct)` and operates
+on the **local process only** — it cannot be called cross-process. The orchestrator signals
+remote shutdown by writing to `ICoordinationStore` under key
+`cluster/shutdown-requests/{instanceId}`. A new `ShutdownSignalWatcher` background service
+on each instance polls that key and calls its local
+`GracefulShutdownHandler.InitiateShutdownAsync(ShutdownReason.Requested, "Rolling upgrade", ct)`.
+
 #### Implementation Notes
 
 - `BinaryVersion` is added to the heartbeat record (`LeaseRecord`) and populated from
@@ -879,6 +1613,65 @@ lease re-election is in progress.
   endpoint resets all `"pre-reassign"` flags.
 - Upgrade state is persisted in `ICoordinationStore` under key `cluster/upgrade-state` so it
   survives coordinator restart.
+
+**Required schema additions (these fields do NOT yet exist in the codebase):**
+
+```csharp
+// LeaseRecord.cs — add BinaryVersion field:
+public sealed record LeaseRecord(
+    string ResourceId,
+    string InstanceId,
+    long LeaseVersion,
+    DateTimeOffset AcquiredAtUtc,
+    DateTimeOffset ExpiresAtUtc,
+    DateTimeOffset LastRenewedAtUtc,
+    string? BinaryVersion = null);   // NEW — from AssemblyInformationalVersionAttribute
+
+// ISubscriptionOwnershipService.cs — add OwnedSymbolCount property:
+public interface ISubscriptionOwnershipService
+{
+    Task<LeaseAcquireResult> TryAcquireAsync(string providerId, string kind, string symbol, CancellationToken ct);
+    Task<bool> ReleaseAsync(string providerId, string kind, string symbol, CancellationToken ct);
+    int OwnedSymbolCount { get; }   // NEW — used by orchestrator and Feature #29 load-balancing
+}
+```
+
+**DI registration (`CoordinationFeatureRegistration.cs`):**
+
+```csharp
+services.AddSingleton<RollingUpgradeOrchestrator>();
+services.AddHostedService<ShutdownSignalWatcher>();
+```
+
+**Data flow:**
+
+1. `PUT /api/cluster/upgrade` calls `RollingUpgradeOrchestrator.ExecuteAsync(targetVersion, ct)`.
+2. Orchestrator calls `ICoordinationStore.GetAllLeasesAsync(ct)` to read all heartbeat leases (key prefix `"cluster/heartbeats/"`). Identifies instances where `LeaseRecord.BinaryVersion != targetVersion`.
+3. Sorts stale instances workers-first, current coordinator last. Persists initial `UpgradeState` to `ICoordinationStore` under `cluster/upgrade-state`.
+4. For each stale instance:
+   a. Writes `"pre-reassign"` markers to `PartitionManifest` for that instance's symbols.
+   b. Polls `ICoordinationStore.GetAllLeasesAsync` with exponential backoff (250 ms → 500 ms → 1 s) until all symbols show a new owner, up to `UpgradeSubscriptionAckTimeoutSeconds`.
+   c. Writes shutdown signal to `ICoordinationStore.TryAcquireLeaseAsync("cluster/shutdown-requests/{instanceId}", ...)`.
+   d. Target instance's `ShutdownSignalWatcher` detects the key and calls local `GracefulShutdownHandler.InitiateShutdownAsync(ShutdownReason.Requested, "Rolling upgrade", ct)`.
+   e. Instance flushes WAL, disposes async disposables, exits.
+   f. Orchestrator polls heartbeat store until the instance's lease expires (TTL 15 s), confirming it stopped.
+   g. New-version instance starts, registers heartbeat with updated `BinaryVersion`.
+   h. Orchestrator updates `UpgradeState.UpgradedInstanceIds` in store.
+5. When all instances upgraded: `UpgradeState.Status = UpgradeStatus.Completed`.
+
+**Error handling and cancellation:**
+
+- Ack timeout: orchestrator writes `UpgradeState.Status = UpgradeStatus.Aborted`, resets all `"pre-reassign"` markers, returns `UpgradeResult(Aborted, "Ack timeout", elapsed)`.
+- `ct` cancellation mid-upgrade writes `UpgradeStatus.Aborted` to the store before returning.
+- On coordinator restart mid-upgrade: new instance reads existing `UpgradeState` from store and resumes from `PendingInstanceIds`.
+- `ICoordinationStore.GetCorruptedLeaseFilesAsync` is checked at upgrade start; corrupted files cause a pre-flight abort.
+
+**Edge cases:**
+
+1. **All instances already at `targetVersion`:** No stale instances; returns `UpgradeResult(Completed, null, TimeSpan.Zero)` immediately.
+2. **Upgrade triggered while a previous one is `InProgress`:** If `StartedAtUtc` < 10 minutes ago, returns `409 Conflict`. Stale upgrades (> 10 min) are forcibly reset.
+3. **Instance crashes during drain:** After TTL expiry the heartbeat-poll succeeds. The crashed instance's symbols are temporarily orphaned; the next rebalance cycle reassigns them.
+4. **`OwnedSymbolCount` returns 0 immediately after pre-reassign (race condition):** Exponential backoff handles this; the orchestrator does not declare ack success until symbols show positive `OwnedSymbolCount` on a receiving instance.
 
 #### Dependencies
 
@@ -898,6 +1691,18 @@ lease re-election is in progress.
 - Acknowledgment-based sequencing adds latency. For large symbol portfolios (1000+ symbols),
   the per-instance subscription acknowledgment can take > 30 seconds. Make the timeout
   configurable and document observed timing for representative deployments.
+
+
+#### Test Strategy
+
+**Test class:** `RollingUpgradeOrchestratorTests` — `tests/Meridian.Application.Tests/Coordination/RollingUpgradeOrchestratorTests.cs`
+**Pattern:** Arrange-Act-Assert with `Mock<ICoordinationStore>`, `Mock<IClusterCoordinator>` (Moq).
+
+1. `ExecuteAsync_WhenAllInstancesAtTargetVersion_ReturnsCompletedImmediately`
+2. `ExecuteAsync_WhenAckTimeoutExpires_ReturnsAbortedAndResetsPreReassignMarkers`
+3. `ExecuteAsync_WithOneStaleInstance_WritesShutdownSignalKeyToStore` — asserts `TryAcquireLeaseAsync` called with key matching `"cluster/shutdown-requests/"` prefix.
+4. `ExecuteAsync_OnCoordinatorRestartMidUpgrade_ResumesFromPersistedUpgradeState` — pre-stores partial `UpgradeState`; creates new orchestrator instance; asserts resumes from correct `PendingInstanceIds`.
+5. `LeaseRecord_WithBinaryVersion_SerializesAndDeserializesCorrectly` — round-trips through `System.Text.Json`; asserts `BinaryVersion` field preserved.
 
 #### Audience
 
@@ -962,6 +1767,25 @@ this config file — adding the field is a non-breaking extension.
 is omitted from `PartitionManifest` and the feature is entirely inactive. No behavioral
 difference for deployments that do not configure affinities.
 
+#### Class Design
+
+| Type | Kind | Key Members | Notes |
+|---|---|---|---|
+| `ITimezoneAffinityResolver` | Interface | `string? ResolveIanaTimezone(string exchangeMic)`, `IReadOnlyList<string> GetPreferredInstances(string ianaTimezone)`, `bool HasAffinity(string ianaTimezone)` | Optional DI dep on `SubscriptionOwnershipService` |
+| `TimezoneAffinityResolver` | Sealed class : `ITimezoneAffinityResolver` | `TimezoneAffinityResolver(VenueMicMapper, IReadOnlyDictionary<string, IReadOnlyList<string>> affinityMap)` | Loaded from `PartitionManifest.timezoneAffinity` at startup |
+
+```csharp
+public TimezoneAffinityResolver(
+    VenueMicMapper micMapper,
+    IReadOnlyDictionary<string, IReadOnlyList<string>> affinityMap)
+```
+
+**`VenueMicMapper` extension required:** The constructor gains a second
+`FrozenDictionary<string, string> timezoneByMic` parameter (MIC → IANA timezone). This is
+populated from a new `"ianaTimezone"` field added to each entry in `config/venue-mapping.json`.
+`VenueMicMapper` currently maps `(Provider, RawVenue) → MIC` only; the timezone layer is
+additive and non-breaking.
+
 #### Implementation Notes
 
 - Affinity resolution happens at rebalance time, not at subscription time. If a symbol's
@@ -970,6 +1794,60 @@ difference for deployments that do not configure affinities.
   optional dependency (null = affinity disabled).
 - Affinity ties (multiple preferred instances) are broken by current symbol count. This
   implicitly load-balances within a region.
+
+**Concrete interface definitions:**
+
+```csharp
+// src/Meridian.Application/Coordination/ITimezoneAffinityResolver.cs
+public interface ITimezoneAffinityResolver
+{
+    string? ResolveIanaTimezone(string exchangeMic);
+    IReadOnlyList<string> GetPreferredInstances(string ianaTimezone);
+    bool HasAffinity(string ianaTimezone);
+}
+
+// config/venue-mapping.json — each entry gains ianaTimezone:
+// { "provider": "InteractiveBrokers", "rawVenue": "NYSE", "mic": "XNYS",
+//   "ianaTimezone": "America/New_York" }   <-- NEW field
+```
+
+**DI registration (`CoordinationFeatureRegistration.cs`):**
+
+```csharp
+// Registered as nullable — null when timezoneAffinity is absent from PartitionManifest
+services.AddSingleton<ITimezoneAffinityResolver?>(sp =>
+{
+    var manifest = sp.GetRequiredService<PartitionManifest>();
+    if (manifest.TimezoneAffinity is null or { Count: 0 }) return null;
+    var mapper = sp.GetRequiredService<VenueMicMapper>();
+    return new TimezoneAffinityResolver(mapper, manifest.TimezoneAffinity);
+});
+```
+
+**Data flow:**
+
+1. `SubscriptionOwnershipService.RebalanceAsync(ct)` fires on startup or instance join/leave.
+2. For each unassigned symbol:
+   a. `ITimezoneAffinityResolver?.ResolveIanaTimezone(symbol.ExchangeMic)` → `string? tz`.
+   b. If `tz != null` and `HasAffinity(tz)`: get preferred instances via `GetPreferredInstances(tz)`.
+   c. Filter to healthy instances only (those with non-expired heartbeat leases in `ICoordinationStore`).
+   d. From healthy preferred instances, pick the one with the lowest `OwnedSymbolCount` (the new `ISubscriptionOwnershipService` member from Feature #28).
+   e. If no healthy preferred instances: fall back to the existing lowest-load any-healthy assignment.
+   f. `ISubscriptionOwnershipService.TryAcquireAsync(providerId, kind, symbol.Symbol, ct)` assigns the symbol.
+3. Startup validation: if any instance ID in `timezoneAffinity` does not appear in any current heartbeat, log `Warning: "Affinity instance '{id}' not in cluster heartbeats — affinity map may be stale"`.
+
+**Error handling and cancellation:**
+
+- `ITimezoneAffinityResolver` is nullable; if `null` (no affinity configured), `SubscriptionOwnershipService` uses the existing load-balancing path unchanged.
+- `ResolveIanaTimezone` returns `null` for unknown MICs; fallback path is used silently.
+- `ct` propagates through `RebalanceAsync`; partial assignment on cancellation is corrected on the next rebalance cycle via idempotent acquire logic.
+
+**Edge cases:**
+
+1. **All preferred instances for a timezone are unhealthy:** Full fallback to load-balanced any-healthy assignment. `Debug` log: `"All preferred instances for 'Europe/London' unhealthy — using fallback"`.
+2. **`timezoneAffinity` map contains an empty list for a timezone:** `GetPreferredInstances` returns empty; fallback path used for all symbols in that timezone. No exception.
+3. **Symbol's exchange MIC not in `venue-mapping.json`:** `ResolveIanaTimezone` returns `null`; symbol assigned via default load-balancing.
+4. **Single-instance deployment with non-empty `timezoneAffinity`:** Every timezone zone resolves to the single instance; feature is a no-op. Fully transparent to single-instance operators.
 
 #### Dependencies
 
@@ -988,6 +1866,18 @@ difference for deployments that do not configure affinities.
   preferred instance IDs in `timezoneAffinity` do not match any registered instance heartbeat.
 - Cross-region network partitions are the primary failure mode. Without #30, a partition that
   splits `inst-eu-1` from the coordinator could result in double-collection of London symbols.
+
+
+#### Test Strategy
+
+**Test class:** `TimezoneAffinityResolverTests` — `tests/Meridian.Application.Tests/Coordination/TimezoneAffinityResolverTests.cs`
+**Pattern:** Arrange-Act-Assert with a mock `VenueMicMapper`.
+
+1. `ResolveIanaTimezone_WithKnownMic_ReturnsCorrectTimezone` — maps `"XNYS"` → `"America/New_York"`.
+2. `ResolveIanaTimezone_WithUnknownMic_ReturnsNull`
+3. `GetPreferredInstances_WithConfiguredTimezone_ReturnsInstanceList`
+4. `SubscriptionOwnershipService_RebalanceAsync_WithAffinity_AssignsSymbolToPreferredInstance` — integration test; verifies timezone-guided assignment when preferred instance is healthy.
+5. `SubscriptionOwnershipService_RebalanceAsync_WhenAllPreferredUnhealthy_UsesDefaultLoadBalancedAssignment`
 
 #### Audience
 
@@ -1063,6 +1953,35 @@ if (coordinatorHeartbeats.Count > 1)
 by a Server-Sent Events stream from `/api/cluster/events`. Events include:
 `SplitBrainDetected`, `SplitBrainResolved`, `LeaseReacquired`, `ReconciliationComplete`.
 
+#### Class Design
+
+| Type | Kind | Key Members | Notes |
+|---|---|---|---|
+| `SplitBrainDetector` | Sealed class : `BackgroundService` | Already exists as skeleton; `ExecuteAsync(CancellationToken)` 5-second loop, `DetectAndHealAsync(CancellationToken)` filled in by this feature | `src/Meridian.Application/Coordination/SplitBrainDetector.cs` |
+| `ReconciliationRequest` | Sealed record | `string RequestId, string YieldingInstanceId, string SurvivingInstanceId, IReadOnlyList<string> DoubleCollectedSymbols, DateTimeOffset CreatedAtUtc` | Written to `ICoordinationStore` under `cluster/reconciliation/{requestId}` |
+| `ReconciliationWorker` | Sealed class : `BackgroundService` | `ReconciliationWorker(ICoordinationStore, ISubscriptionOwnershipService, PersistentDedupLedger, ILogger<>)` | New; processes `ReconciliationRequest` entries idempotently |
+| `ClusterEventViewModel` | Sealed class | `string EventType, string Description, DateTimeOffset OccurredAt, string? InstanceId` | Dashboard "Cluster Events" panel |
+
+```csharp
+// SplitBrainDetector constructor (already exists):
+public SplitBrainDetector(
+    ICoordinationStore store,
+    IClusterCoordinator coordinator,
+    ILogger<SplitBrainDetector> logger)
+
+// ReconciliationWorker (new):
+public ReconciliationWorker(
+    ICoordinationStore store,
+    ISubscriptionOwnershipService subscriptionService,
+    PersistentDedupLedger dedupLedger,
+    ILogger<ReconciliationWorker> logger)
+```
+
+**IMPORTANT CORRECTIONS:**
+
+- **Heartbeats are stored as leases** via `ICoordinationStore.TryAcquireLeaseAsync("cluster/heartbeats/{instanceId}", instanceId, TimeSpan.FromSeconds(15), TimeSpan.Zero, ct)` — refreshed every 5 seconds with `ILeaseManager.RenewAsync`. There is NO separate `WriteHeartbeatAsync` API.
+- **`IDedupStore` / `PersistentDedupLedger`** is for event-level deduplication (tracks whether an event ID has been processed). After split-brain recovery, the reconciliation process force-expires `PersistentDedupLedger` cache entries for the affected symbols' event streams within the split-brain window, causing those events to be re-evaluated for duplicates rather than silently dropped.
+
 #### Implementation Notes
 
 - `SplitBrainDetector` already exists at
@@ -1075,6 +1994,59 @@ by a Server-Sent Events stream from `/api/cluster/events`. Events include:
   `ReconciliationWorker` background service (new, in `src/Meridian.Application/Coordination/`).
 - `IDedupStore.MarkForDeduplication(symbolId, duplicateInstanceId)` is called for each
   identified double-collected symbol.
+
+**Heartbeat mechanism — using `ICoordinationStore` leases (no separate API):**
+
+```csharp
+// Heartbeat write every 5 seconds (inside SplitBrainDetector.ExecuteAsync loop):
+// First registration:
+await _store.TryAcquireLeaseAsync(
+    $"cluster/heartbeats/{_instanceId}", _instanceId,
+    TimeSpan.FromSeconds(15), takeoverDelay: TimeSpan.Zero, ct);
+// Renewal:
+await _store.RenewLeaseAsync(
+    $"cluster/heartbeats/{_instanceId}", _instanceId,
+    TimeSpan.FromSeconds(15), ct);
+```
+
+**DI registration (`CoordinationFeatureRegistration.cs`):**
+
+```csharp
+services.AddHostedService<SplitBrainDetector>();  // already registered as skeleton
+services.AddHostedService<ReconciliationWorker>(); // NEW
+```
+
+**Data flow:**
+
+1. `SplitBrainDetector.ExecuteAsync(ct)` runs a 5-second loop calling `DetectAndHealAsync(ct)`.
+2. **Heartbeat write:** `ICoordinationStore.RenewLeaseAsync("cluster/heartbeats/{instanceId}", instanceId, TTL=15s, ct)`.
+3. **Detection:** `ICoordinationStore.GetAllLeasesAsync(ct)` → filters leases with `ResourceId.StartsWith("cluster/heartbeats/")` and `ExpiresAtUtc > now`. Determines which instances are coordinators by checking `ICoordinationStore.GetLeaseAsync("leader/cluster-coordinator", ct)`.
+4. If `coordinatorCount > 1`: `string.Compare(myInstanceId, lowestCoordinatorId, Ordinal) > 0` → this instance yields.
+5. **YieldCoordinatorLeaseAsync:**
+   a. `ICoordinationStore.ReleaseLeaseAsync("leader/cluster-coordinator", myInstanceId, ct)`.
+   b. Log `Warning: "SplitBrain: yielding coordinator role to {survivingId}"`.
+   c. Read all symbol leases owned by this instance (prefix `"symbols/"`); cross-reference with surviving coordinator's to find double-collected symbols.
+   d. Create `ReconciliationRequest` and write via `ICoordinationStore.TryAcquireLeaseAsync("cluster/reconciliation/{requestId}", ...)` with TTL 1 hour.
+6. **`ReconciliationWorker`** polls `GetAllLeasesAsync` every 10 s for keys with prefix `"cluster/reconciliation/"`.
+7. For each unprocessed request:
+   a. `ISubscriptionOwnershipService.ReleaseAsync(...)` for each double-collected symbol on the yielding instance.
+   b. Force-expire `PersistentDedupLedger` entries for those symbols' event streams within the 15-second split-brain window (set `expiryTicks = 0` in the in-memory cache), causing re-evaluation of events received during the split-brain window.
+   c. `ICoordinationStore.ReleaseLeaseAsync("cluster/reconciliation/{requestId}", ...)` marks processed.
+8. Dashboard SSE stream broadcasts `SplitBrainDetected`, `SplitBrainResolved`, `ReconciliationComplete` events.
+
+**Error handling and cancellation:**
+
+- `DetectAndHealAsync` is wrapped in `try/catch(Exception ex)` inside the loop. Any exception is logged at `Error` and the loop continues — a single crashed detection cycle must not permanently disable the detector.
+- `ReconciliationWorker` is idempotent: if a `requestId` lease has already been released, that request is skipped on restart.
+- `ct` propagates to all `ICoordinationStore` calls; on graceful shutdown, in-progress detection is abandoned cleanly.
+- `ICoordinationStore.GetCorruptedLeaseFilesAsync` checked on startup; non-empty results logged at `Warning`.
+
+**Edge cases:**
+
+1. **Both instances share identical InstanceIds (misconfiguration):** Both yield; cluster loses coordinator. `CoordinationFeatureRegistration` validates at startup that the configured `InstanceId` does not match any existing heartbeat; throws `InvalidOperationException` on conflict.
+2. **Three-way split (3 coordinators):** Two higher-ID instances yield; both write `ReconciliationRequest` entries. `ReconciliationWorker` processes both independently. Surviving coordinator handles multiple reconciliation requests correctly.
+3. **`GetAllLeasesAsync` takes > 4 s (storage contention):** Guard with an `Interlocked`-based `_detectionInProgress` flag; skip the detection cycle if a previous one is still running.
+4. **`TotalDuplicates` counter spikes after dedup window reset:** Expected and documented in the operator runbook. The spike is bounded to events received during the ≤ 15-second split-brain window.
 
 #### Dependencies
 
@@ -1098,6 +2070,18 @@ by a Server-Sent Events stream from `/api/cluster/events`. Events include:
   seconds.
 - `ReconciliationWorker` must be idempotent — if it crashes mid-reconciliation and restarts,
   it should not create new duplicates.
+
+
+#### Test Strategy
+
+**Test class:** `SplitBrainDetectorTests` — `tests/Meridian.Application.Tests/Coordination/SplitBrainDetectorTests.cs`
+**Pattern:** Arrange-Act-Assert with `Mock<ICoordinationStore>`, `Mock<IClusterCoordinator>` (Moq).
+
+1. `DetectAndHealAsync_WithSingleCoordinator_DoesNotCallReleaseLeaseAsync`
+2. `DetectAndHealAsync_WithTwoCoordinators_HigherLexicographicIdYields` — two coordinator heartbeat leases; local instance has higher ID; asserts `ReleaseLeaseAsync("leader/cluster-coordinator", ...)` called.
+3. `DetectAndHealAsync_WithTwoCoordinators_LowerLexicographicIdDoesNotYield` — local instance has lower ID; asserts `ReleaseLeaseAsync` NOT called.
+4. `YieldCoordinatorLeaseAsync_WritesReconciliationRequestToCoordinationStore` — asserts `TryAcquireLeaseAsync` called with key starting with `"cluster/reconciliation/"`.
+5. `ReconciliationWorker_ProcessesRequest_ReleasesDoubleCollectedSymbolSubscriptions` — mock store returns one reconciliation request; asserts `ISubscriptionOwnershipService.ReleaseAsync` called for each double-collected symbol.
 
 #### Audience
 
