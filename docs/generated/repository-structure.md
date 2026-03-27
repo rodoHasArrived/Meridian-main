@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-03-27 19:41:57 UTC. Do not edit manually.
+> Auto-generated on 2026-03-27 19:51:46 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -575,6 +575,7 @@ Meridian-main
 │   │   ├── meridian-6-week-roadmap.md
 │   │   ├── meridian-database-blueprint.md
 │   │   ├── quant-script-environment-blueprint.md
+│   │   ├── quantscript-l3-multiinstance-round2-roadmap.md
 │   │   ├── readability-refactor-baseline.md
 │   │   ├── readability-refactor-roadmap.md
 │   │   ├── readability-refactor-technical-design-pack.md
