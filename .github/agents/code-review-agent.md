@@ -21,7 +21,7 @@ You are a **Code Review Specialist Agent** for the Meridian project. Your primar
 Meridian is a high-throughput .NET 9 / C# 13 system (with F# 8.0 domain models) that captures real-time market microstructure data (trades, quotes, L2 order books) from multiple providers (Alpaca, Polygon, Interactive Brokers, StockSharp, NYSE) and persists it via a backpressured pipeline to JSONL/Parquet storage with WAL durability. It also supports historical backfill from 10+ providers (Yahoo Finance, Stooq, Tiingo, Alpha Vantage, Finnhub, etc.) with automatic failover chains. It has a WPF desktop app (recommended) and a web dashboard — sharing services through a layered architecture.
 
 **Key facts for reviewers:**
-- **704 source files**: 692 C#, 12 F#, 241 test files
+- **1,118+ source files**: 1,073 C#, 45 F#, ~4,424 tests
 - **WPF is the primary desktop target.** UWP was removed — flag any WinRT dependency introduction into shared projects.
 - The project already has strong backend patterns — bounded channels, Write-Ahead Logging, batched flushing, backpressure signals. The primary area for improvement is the WPF desktop layer, where business logic has accumulated in XAML code-behind files instead of proper ViewModels.
 - There is a dedicated `Meridian.ProviderSdk` project with clean interfaces for provider implementations.
