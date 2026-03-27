@@ -227,13 +227,20 @@ Use these documents together when planning or implementing new work:
 ├── .globalconfig
 ├── .markdownlint.json
 ├── .vsconfig
+├── AGENT_IMPLEMENTATION_SUMMARY.md
+├── AGENT_QUICK_REFERENCE.md
 ├── CLAUDE.md
+├── CONTEXTUAL_COMMANDS_IMPLEMENTATION_SUMMARY.md
+├── CORPACTIONS_IMPLEMENTATION.md
 ├── Directory.Build.props
 ├── Directory.Packages.props
+├── IMPLEMENTATION_CHECKLIST.md
+├── IMPLEMENTATION_SUMMARY.md
 ├── LICENSE
 ├── Makefile
 ├── Meridian.sln
 ├── README.md
+├── SYSTEM_TRAY_IMPLEMENTATION.md
 ├── archive
 │   ├── README.md
 │   ├── code
@@ -754,6 +761,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── 2026-03-brainstorm-next-frontier.md
 │   │   ├── README.md
 │   │   ├── assembly-performance-opportunities.md
+│   │   ├── competitive-analysis-2026-03.md
 │   │   ├── data-quality-monitoring-evaluation.md
 │   │   ├── desktop-improvements-executive-summary.md
 │   │   ├── desktop-platform-improvements-implementation-guide.md
@@ -768,6 +776,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── storage-architecture-evaluation.md
 │   │   └── windows-desktop-provider-configurability-assessment.md
 │   ├── examples
+│   │   ├── README.md
 │   │   └── provider-template
 │   │       ├── README.md
 │   │       ├── TemplateConfig.cs
@@ -804,6 +813,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── portable-data-packager.md
 │   │   └── service-level-objectives.md
 │   ├── plans
+│   │   ├── README.md
 │   │   ├── assembly-performance-roadmap.md
 │   │   ├── codebase-audit-cleanup-roadmap.md
 │   │   ├── fund-management-module-implementation-backlog.md
@@ -846,6 +856,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── interactive-brokers-free-equity-reference.md
 │   │   ├── interactive-brokers-setup.md
 │   │   ├── provider-comparison.md
+│   │   ├── security-master-guide.md
 │   │   └── stocksharp-connectors.md
 │   ├── reference
 │   │   ├── README.md
@@ -1025,7 +1036,9 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── SensitiveValueMasker.cs
 │   │   │   └── StorageConfigExtensions.cs
 │   │   ├── Coordination
+│   │   │   ├── ClusterCoordinatorService.cs
 │   │   │   ├── CoordinationSnapshot.cs
+│   │   │   ├── IClusterCoordinator.cs
 │   │   │   ├── ICoordinationStore.cs
 │   │   │   ├── ILeaseManager.cs
 │   │   │   ├── IScheduledWorkOwnershipService.cs
@@ -1035,10 +1048,12 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── LeaseRecord.cs
 │   │   │   ├── ScheduledWorkOwnershipService.cs
 │   │   │   ├── SharedStorageCoordinationStore.cs
+│   │   │   ├── SplitBrainDetector.cs
 │   │   │   └── SubscriptionOwnershipService.cs
 │   │   ├── Credentials
 │   │   │   └── ICredentialStore.cs
 │   │   ├── DirectLending
+│   │   │   ├── DailyAccrualWorker.cs
 │   │   │   ├── DirectLendingEventRebuilder.cs
 │   │   │   ├── DirectLendingOutboxDispatcher.cs
 │   │   │   ├── DirectLendingServiceSupport.cs
@@ -1122,6 +1137,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── EventPipeline.cs
 │   │   │   ├── FSharpEventValidator.cs
 │   │   │   ├── HotPathBatchSerializer.cs
+│   │   │   ├── IDedupStore.cs
 │   │   │   ├── IEventValidator.cs
 │   │   │   ├── IngestionJobService.cs
 │   │   │   ├── PersistentDedupLedger.cs
@@ -1143,6 +1159,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── ISecurityResolver.cs
 │   │   │   ├── SecurityEconomicDefinitionAdapter.cs
 │   │   │   ├── SecurityMasterAggregateRebuilder.cs
+│   │   │   ├── SecurityMasterCsvParser.cs
+│   │   │   ├── SecurityMasterImportService.cs
 │   │   │   ├── SecurityMasterMapping.cs
 │   │   │   ├── SecurityMasterOptionsValidator.cs
 │   │   │   ├── SecurityMasterProjectionService.cs
@@ -1156,11 +1174,13 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── AutoConfigurationService.cs
 │   │   │   ├── CanonicalSymbolRegistry.cs
 │   │   │   ├── CliModeResolver.cs
+│   │   │   ├── CoLocationProfileActivator.cs
 │   │   │   ├── ConfigEnvironmentOverride.cs
 │   │   │   ├── ConfigTemplateGenerator.cs
 │   │   │   ├── ConfigurationService.cs
 │   │   │   ├── ConfigurationServiceCredentialAdapter.cs
 │   │   │   ├── ConfigurationWizard.cs
+│   │   │   ├── ConnectivityProbeService.cs
 │   │   │   ├── ConnectivityTestService.cs
 │   │   │   ├── CredentialValidationService.cs
 │   │   │   ├── DailySummaryWebhook.cs
@@ -1174,6 +1194,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── HistoricalDataQueryService.cs
 │   │   │   ├── NavAttributionService.cs
 │   │   │   ├── OptionsChainService.cs
+│   │   │   ├── PluginLoaderService.cs
 │   │   │   ├── PreflightChecker.cs
 │   │   │   ├── ProgressDisplayService.cs
 │   │   │   ├── ReconciliationEngineService.cs
@@ -1228,6 +1249,8 @@ Use these documents together when planning or implementing new work:
 │   │       │   └── ValidateCredentialsStep.cs
 │   │       └── WizardWorkflowFactory.cs
 │   ├── Meridian.Backtesting
+│   │   ├── BatchBacktestService.cs
+│   │   ├── CorporateActionAdjustmentService.cs
 │   │   ├── Engine
 │   │   │   ├── BacktestContext.cs
 │   │   │   ├── BacktestEngine.cs
@@ -1241,9 +1264,11 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── OrderBookFillModel.cs
 │   │   │   └── OrderFillResult.cs
 │   │   ├── GlobalUsings.cs
+│   │   ├── ICorporateActionAdjustmentService.cs
 │   │   ├── Meridian.Backtesting.csproj
 │   │   ├── Metrics
 │   │   │   ├── BacktestMetricsEngine.cs
+│   │   │   ├── PostSimulationTcaReporter.cs
 │   │   │   └── XirrCalculator.cs
 │   │   ├── Plugins
 │   │   │   └── StrategyPluginLoader.cs
@@ -1275,6 +1300,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── PortfolioSnapshot.cs
 │   │   ├── Position.cs
 │   │   ├── StrategyParameterAttribute.cs
+│   │   ├── TcaReportModels.cs
 │   │   └── TradeTicket.cs
 │   ├── Meridian.Contracts
 │   │   ├── Api
@@ -1393,12 +1419,17 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── EventSchema.cs
 │   │   │   └── ISchemaUpcaster.cs
 │   │   ├── SecurityMaster
+│   │   │   ├── ISecurityMasterAmender.cs
+│   │   │   ├── ISecurityMasterQueryService.cs
+│   │   │   ├── ISecurityMasterService.cs
 │   │   │   ├── SecurityCommands.cs
 │   │   │   ├── SecurityDtos.cs
 │   │   │   ├── SecurityEvents.cs
 │   │   │   ├── SecurityIdentifiers.cs
 │   │   │   ├── SecurityMasterOptions.cs
 │   │   │   └── SecurityQueries.cs
+│   │   ├── Services
+│   │   │   └── IConnectivityProbeService.cs
 │   │   ├── Session
 │   │   │   └── CollectionSession.cs
 │   │   ├── Store
@@ -1563,6 +1594,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── Sides.fs
 │   │   ├── Generated
 │   │   │   └── Meridian.FSharp.Interop.g.cs
+│   │   ├── Interop.CashFlow.fs
 │   │   ├── Interop.DirectLending.fs
 │   │   ├── Interop.SecurityMaster.fs
 │   │   ├── Interop.fs
@@ -1662,6 +1694,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── EnhancedIBConnectionManager.IBApi.cs
 │   │   │   │   ├── EnhancedIBConnectionManager.cs
 │   │   │   │   ├── IBApiLimits.cs
+│   │   │   │   ├── IBApiVersionValidator.cs
 │   │   │   │   ├── IBBrokerageGateway.cs
 │   │   │   │   ├── IBBuildGuidance.cs
 │   │   │   │   ├── IBCallbackRouter.cs
@@ -1681,10 +1714,13 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── OpenFigiClient.cs
 │   │   │   │   └── OpenFigiSymbolResolver.cs
 │   │   │   ├── Polygon
+│   │   │   │   ├── ITradingParametersBackfillService.cs
 │   │   │   │   ├── PolygonConstants.cs
+│   │   │   │   ├── PolygonCorporateActionFetcher.cs
 │   │   │   │   ├── PolygonHistoricalDataProvider.cs
 │   │   │   │   ├── PolygonMarketDataClient.cs
-│   │   │   │   └── PolygonSymbolSearchProvider.cs
+│   │   │   │   ├── PolygonSymbolSearchProvider.cs
+│   │   │   │   └── TradingParametersBackfillService.cs
 │   │   │   ├── StockSharp
 │   │   │   │   ├── Converters
 │   │   │   │   │   ├── MessageConverter.cs
@@ -1941,6 +1977,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── SecurityMasterMigrationRunner.cs
 │   │   │   └── SecurityMasterProjectionCache.cs
 │   │   ├── Services
+│   │   │   ├── AuditChainService.cs
 │   │   │   ├── DataLineageService.cs
 │   │   │   ├── DataQualityScoringService.cs
 │   │   │   ├── DataQualityService.cs
@@ -1985,6 +2022,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Promotions
 │   │   │   └── BacktestToLivePromoter.cs
 │   │   ├── Services
+│   │   │   ├── CashFlowProjectionService.cs
 │   │   │   ├── IReconciliationRunRepository.cs
 │   │   │   ├── IReconciliationRunService.cs
 │   │   │   ├── ISecurityReferenceLookup.cs
@@ -2160,6 +2198,7 @@ Use these documents together when planning or implementing new work:
 │   │       ├── PortfolioImportService.cs
 │   │       ├── ProviderHealthService.cs
 │   │       ├── ProviderManagementService.cs
+│   │       ├── QualityArchiveStore.cs
 │   │       ├── RetentionAssuranceModels.cs
 │   │       ├── ScheduleManagerService.cs
 │   │       ├── ScheduledMaintenanceService.cs
@@ -2256,12 +2295,16 @@ Use these documents together when planning or implementing new work:
 │       │   ├── IConnectionService.cs
 │       │   └── INavigationService.cs
 │       ├── Converters
-│       │   └── BoolToVisibilityConverter.cs
+│       │   ├── BoolToStringConverter.cs
+│       │   ├── BoolToVisibilityConverter.cs
+│       │   ├── InvertBoolConverter.cs
+│       │   └── NullToCollapsedConverter.cs
 │       ├── GlobalUsings.cs
 │       ├── MainWindow.xaml
 │       ├── MainWindow.xaml.cs
 │       ├── Meridian.Wpf.csproj
 │       ├── Models
+│       │   ├── ActionEntry.cs
 │       │   ├── ActivityLogModels.cs
 │       │   ├── AppConfig.cs
 │       │   ├── BackfillModels.cs
@@ -2271,26 +2314,35 @@ Use these documents together when planning or implementing new work:
 │       │   ├── LiveDataModels.cs
 │       │   ├── NotificationModels.cs
 │       │   ├── OrderBookModels.cs
+│       │   ├── PaneLayout.cs
 │       │   ├── ProviderHealthModels.cs
 │       │   ├── StorageDisplayModels.cs
 │       │   ├── SymbolsModels.cs
+│       │   ├── WorkspaceDefinition.cs
+│       │   ├── WorkspaceRegistry.cs
 │       │   └── WorkspaceShellModels.cs
 │       ├── README.md
 │       ├── Services
+│       │   ├── AgentLoopService.cs
 │       │   ├── ArchiveHealthService.cs
 │       │   ├── BackendServiceManager.cs
 │       │   ├── BackgroundTaskSchedulerService.cs
 │       │   ├── BacktestService.cs
 │       │   ├── BrushRegistry.cs
+│       │   ├── ClipboardWatcherService.cs
 │       │   ├── ConfigService.cs
 │       │   ├── ConnectionService.cs
 │       │   ├── ContextMenuService.cs
 │       │   ├── CredentialService.cs
+│       │   ├── DropImportService.cs
 │       │   ├── ExportFormat.cs
 │       │   ├── ExportPresetService.cs
 │       │   ├── FirstRunService.cs
 │       │   ├── FormValidationService.cs
+│       │   ├── GlobalHotkeyService.cs
+│       │   ├── ICommandContextProvider.cs
 │       │   ├── InfoBarService.cs
+│       │   ├── JumpListService.cs
 │       │   ├── KeyboardShortcutService.cs
 │       │   ├── LoggingService.cs
 │       │   ├── MessagingService.cs
@@ -2301,10 +2353,16 @@ Use these documents together when planning or implementing new work:
 │       │   ├── RetentionAssuranceService.cs
 │       │   ├── RunMatService.cs
 │       │   ├── SchemaService.cs
+│       │   ├── SingleInstanceService.cs
 │       │   ├── StatusService.cs
 │       │   ├── StorageService.cs
 │       │   ├── StrategyRunWorkspaceService.cs
+│       │   ├── SystemTrayService.cs
+│       │   ├── TaskbarProgressService.cs
+│       │   ├── TearOffPanelService.cs
 │       │   ├── ThemeService.cs
+│       │   ├── TickerStripService.cs
+│       │   ├── ToastNotificationService.cs
 │       │   ├── TooltipService.cs
 │       │   ├── TypeForwards.cs
 │       │   ├── WatchlistService.cs
@@ -2319,27 +2377,43 @@ Use these documents together when planning or implementing new work:
 │       │   └── ThemeTypography.xaml
 │       ├── ViewModels
 │       │   ├── ActivityLogViewModel.cs
+│       │   ├── AgentViewModel.cs
 │       │   ├── BackfillViewModel.cs
 │       │   ├── BacktestViewModel.cs
+│       │   ├── BatchBacktestViewModel.cs
 │       │   ├── BindableBase.cs
 │       │   ├── ChartingPageViewModel.cs
+│       │   ├── ClusterStatusViewModel.cs
 │       │   ├── DashboardViewModel.cs
 │       │   ├── DataQualityViewModel.cs
+│       │   ├── DiagnosticsPageViewModel.cs
+│       │   ├── DirectLendingViewModel.cs
 │       │   ├── ExportPresetsViewModel.cs
+│       │   ├── IPageActionBarProvider.cs
 │       │   ├── LeanIntegrationViewModel.cs
 │       │   ├── LiveDataViewerViewModel.cs
+│       │   ├── MainPageViewModel.cs
 │       │   ├── NotificationCenterViewModel.cs
+│       │   ├── OrderBookHeatmapViewModel.cs
 │       │   ├── OrderBookViewModel.cs
+│       │   ├── PluginManagementViewModel.cs
 │       │   ├── ProviderHealthViewModel.cs
 │       │   ├── ProviderPageModels.cs
+│       │   ├── QualityArchiveViewModel.cs
+│       │   ├── QuoteFloatViewModel.cs
 │       │   ├── RunMatViewModel.cs
+│       │   ├── SecurityMasterDeactivateViewModel.cs
+│       │   ├── SecurityMasterEditViewModel.cs
 │       │   ├── SecurityMasterViewModel.cs
 │       │   ├── ServiceManagerViewModel.cs
+│       │   ├── SplitPaneViewModel.cs
+│       │   ├── StatusBarViewModel.cs
 │       │   ├── StrategyRunBrowserViewModel.cs
 │       │   ├── StrategyRunDetailViewModel.cs
 │       │   ├── StrategyRunLedgerViewModel.cs
 │       │   ├── StrategyRunPortfolioViewModel.cs
-│       │   └── SymbolsPageViewModel.cs
+│       │   ├── SymbolsPageViewModel.cs
+│       │   └── TickerStripViewModel.cs
 │       └── Views
 │           ├── ActivityLogPage.xaml
 │           ├── ActivityLogPage.xaml.cs
@@ -2349,6 +2423,8 @@ Use these documents together when planning or implementing new work:
 │           ├── AdminMaintenancePage.xaml.cs
 │           ├── AdvancedAnalyticsPage.xaml
 │           ├── AdvancedAnalyticsPage.xaml.cs
+│           ├── AgentPage.xaml
+│           ├── AgentPage.xaml.cs
 │           ├── AnalysisExportPage.xaml
 │           ├── AnalysisExportPage.xaml.cs
 │           ├── AnalysisExportWizardPage.xaml
@@ -2359,8 +2435,12 @@ Use these documents together when planning or implementing new work:
 │           ├── BackfillPage.xaml.cs
 │           ├── BacktestPage.xaml
 │           ├── BacktestPage.xaml.cs
+│           ├── BatchBacktestPage.xaml
+│           ├── BatchBacktestPage.xaml.cs
 │           ├── ChartingPage.xaml
 │           ├── ChartingPage.xaml.cs
+│           ├── ClusterStatusPage.xaml
+│           ├── ClusterStatusPage.xaml.cs
 │           ├── CollectionSessionPage.xaml
 │           ├── CollectionSessionPage.xaml.cs
 │           ├── CommandPaletteWindow.xaml
@@ -2381,6 +2461,8 @@ Use these documents together when planning or implementing new work:
 │           ├── DataSourcesPage.xaml.cs
 │           ├── DiagnosticsPage.xaml
 │           ├── DiagnosticsPage.xaml.cs
+│           ├── DirectLendingPage.xaml
+│           ├── DirectLendingPage.xaml.cs
 │           ├── EventReplayPage.xaml
 │           ├── EventReplayPage.xaml.cs
 │           ├── ExportPresetsPage.xaml
@@ -2395,6 +2477,7 @@ Use these documents together when planning or implementing new work:
 │           ├── LeanIntegrationPage.xaml.cs
 │           ├── LiveDataViewerPage.xaml
 │           ├── LiveDataViewerPage.xaml.cs
+│           ├── MainPage.SplitPane.cs
 │           ├── MainPage.xaml
 │           ├── MainPage.xaml.cs
 │           ├── MessagingHubPage.xaml
@@ -2403,17 +2486,27 @@ Use these documents together when planning or implementing new work:
 │           ├── NotificationCenterPage.xaml.cs
 │           ├── OptionsPage.xaml
 │           ├── OptionsPage.xaml.cs
+│           ├── OrderBookHeatmapControl.xaml
+│           ├── OrderBookHeatmapControl.xaml.cs
 │           ├── OrderBookPage.xaml
 │           ├── OrderBookPage.xaml.cs
 │           ├── PackageManagerPage.xaml
 │           ├── PackageManagerPage.xaml.cs
+│           ├── PageActionBarControl.xaml
+│           ├── PageActionBarControl.xaml.cs
 │           ├── Pages.cs
+│           ├── PluginManagementPage.xaml
+│           ├── PluginManagementPage.xaml.cs
 │           ├── PortfolioImportPage.xaml
 │           ├── PortfolioImportPage.xaml.cs
 │           ├── ProviderHealthPage.xaml
 │           ├── ProviderHealthPage.xaml.cs
 │           ├── ProviderPage.xaml
 │           ├── ProviderPage.xaml.cs
+│           ├── QualityArchivePage.xaml
+│           ├── QualityArchivePage.xaml.cs
+│           ├── QuoteFloatWindow.xaml
+│           ├── QuoteFloatWindow.xaml.cs
 │           ├── ResearchWorkspaceShellPage.xaml
 │           ├── ResearchWorkspaceShellPage.xaml.cs
 │           ├── RetentionAssurancePage.xaml
@@ -2436,6 +2529,10 @@ Use these documents together when planning or implementing new work:
 │           ├── SettingsPage.xaml.cs
 │           ├── SetupWizardPage.xaml
 │           ├── SetupWizardPage.xaml.cs
+│           ├── SplitPaneHostControl.xaml
+│           ├── SplitPaneHostControl.xaml.cs
+│           ├── StatusBarControl.xaml
+│           ├── StatusBarControl.xaml.cs
 │           ├── StorageOptimizationPage.xaml
 │           ├── StorageOptimizationPage.xaml.cs
 │           ├── StoragePage.xaml
@@ -2450,6 +2547,8 @@ Use these documents together when planning or implementing new work:
 │           ├── SymbolsPage.xaml.cs
 │           ├── SystemHealthPage.xaml
 │           ├── SystemHealthPage.xaml.cs
+│           ├── TickerStripWindow.xaml
+│           ├── TickerStripWindow.xaml.cs
 │           ├── TimeSeriesAlignmentPage.xaml
 │           ├── TimeSeriesAlignmentPage.xaml.cs
 │           ├── TradingHoursPage.xaml
@@ -2468,6 +2567,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── BacktestEngineIntegrationTests.cs
 │   │   ├── BacktestRequestConfigTests.cs
 │   │   ├── BracketOrderTests.cs
+│   │   ├── CorporateActionAdjustmentServiceTests.cs
 │   │   ├── FillModelExpansionTests.cs
 │   │   ├── FillModelTests.cs
 │   │   ├── GlobalUsings.cs
@@ -2475,7 +2575,9 @@ Use these documents together when planning or implementing new work:
 │   │   ├── MarketImpactFillModelTests.cs
 │   │   ├── Meridian.Backtesting.Tests.csproj
 │   │   ├── SimulatedPortfolioTests.cs
-│   │   └── XirrCalculatorTests.cs
+│   │   ├── TcaReporterTests.cs
+│   │   ├── XirrCalculatorTests.cs
+│   │   └── YahooFinanceBacktestIntegrationTests.cs
 │   ├── Meridian.DirectLending.Tests
 │   │   ├── BankTransactionSeedTests.cs
 │   │   ├── DirectLendingPostgresIntegrationTests.cs
@@ -2488,6 +2590,7 @@ Use these documents together when planning or implementing new work:
 │   ├── Meridian.FSharp.Tests
 │   │   ├── CalculationTests.fs
 │   │   ├── CanonicalizationTests.fs
+│   │   ├── CashFlowProjectorTests.fs
 │   │   ├── DirectLendingInteropTests.fs
 │   │   ├── DomainTests.fs
 │   │   ├── LedgerKernelTests.fs
@@ -2549,7 +2652,9 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── ConfigValidatorTests.cs
 │   │   │   │   └── ConfigurationUnificationTests.cs
 │   │   │   ├── Coordination
+│   │   │   │   ├── ClusterCoordinatorServiceTests.cs
 │   │   │   │   ├── LeaseManagerTests.cs
+│   │   │   │   ├── SplitBrainDetectorTests.cs
 │   │   │   │   └── SubscriptionOrchestratorCoordinationTests.cs
 │   │   │   ├── Credentials
 │   │   │   │   ├── CredentialStatusTests.cs
@@ -2669,9 +2774,12 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   ├── InteractiveBrokers
 │   │   │   │   │   │   ├── ib_order_limit_buy_day.json
 │   │   │   │   │   │   ├── ib_order_limit_sell_fok.json
+│   │   │   │   │   │   ├── ib_order_loc_sell_day.json
 │   │   │   │   │   │   ├── ib_order_market_sell_gtc.json
 │   │   │   │   │   │   ├── ib_order_moc_sell_day.json
-│   │   │   │   │   │   └── ib_order_stop_buy_ioc.json
+│   │   │   │   │   │   ├── ib_order_stop_buy_ioc.json
+│   │   │   │   │   │   ├── ib_order_stop_limit_buy_day.json
+│   │   │   │   │   │   └── ib_order_trailing_stop_sell_gtc.json
 │   │   │   │   │   └── Polygon
 │   │   │   │   │       ├── polygon-recorded-session-aapl.json
 │   │   │   │   │       ├── polygon-recorded-session-gld-cboe-sell.json
@@ -2792,6 +2900,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── WriteAheadLogFuzzTests.cs
 │   │   │   └── WriteAheadLogTests.cs
 │   │   ├── Strategies
+│   │   │   ├── CashFlowProjectionTests.cs
 │   │   │   ├── PromotionServiceTests.cs
 │   │   │   ├── StrategyLifecycleManagerTests.cs
 │   │   │   ├── StrategyRunDrillInTests.cs
@@ -2910,6 +3019,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-454 directories, 2418 files
+455 directories, 2526 files
 ```
 <!-- readme-tree end -->
