@@ -1,6 +1,6 @@
 # TODO / FIXME / NOTE Scan
 
-Total items: **187**
+Total items: **193**
 
 | File | Line | Tag | Linked Issue | Text |
 |---|---:|---|:---:|---|
@@ -29,8 +29,9 @@ Total items: **187**
 | `.github/agents/cleanup-agent.md` | 393 | `TODO` | ❌ | - `// TODO:` or `// FIXME:` comments that describe genuine open work items — flag |
 | `.github/agents/cleanup-agent.md` | 436 | `NOTE` | ❌ | - **No new features** — cleanup only; if something is missing, note it but do not add it. |
 | `.github/agents/cleanup-agent.md` | 438 | `NOTE` | ❌ | - **No ViewModel extraction** — flag it as a note; full MVVM refactors belong in code review. |
-| `.github/agents/documentation-agent.md` | 294 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
-| `.github/agents/documentation-agent.md` | 678 | `TODO` | ❌ | │   │   └── TODO.md |
+| `.github/agents/documentation-agent.md` | 330 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
+| `.github/agents/documentation-agent.md` | 718 | `TODO` | ❌ | │   │   └── TODO.md |
+| `.github/agents/documentation-agent.md` | 2976 | `TODO` | ❌ | - `TODO.md` - Pending work items |
 | `.github/agents/performance-agent.md` | 248 | `NOTE` | ❌ | - **No new features** — if a performance win requires a new feature, note it but defer it. |
 | `.github/workflows/README.md` | 11 | `TODO` | ❌ | \| `documentation.yml` \| `docs-comprehensive.yml`, `docs-auto-update.yml`, `docs-structure-sync.yml`, `ai-instructions-sync.yml`, `todo-automation.yml`, `docs-check.yml` \| AI documentation quality review, AI TODO triage \| |
 | `.github/workflows/README.md` | 136 | `TODO` | ❌ | - **Purpose**: Centralized documentation quality checks, generation, AI instruction sync, and TODO tracking |
@@ -54,9 +55,9 @@ Total items: **187**
 | `.github/workflows/validate-workflows.yml` | 206 | `NOTE` | ❌ | echo "Note: Ensure cron schedules are distributed to avoid rate limits" |
 | `CLAUDE.md` | 100 | `NOTE` | ❌ | **Note:** Always use `/p:EnableWindowsTargeting=true` on non-Windows systems to avoid NETSDK1100 errors. |
 | `CLAUDE.md` | 383 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
-| `CLAUDE.md` | 767 | `TODO` | ❌ | │   │   └── TODO.md |
-| `README.md` | 497 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
-| `README.md` | 871 | `TODO` | ❌ | │   │   ├── TODO.md |
+| `CLAUDE.md` | 771 | `TODO` | ❌ | │   │   └── TODO.md |
+| `README.md` | 504 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
+| `README.md` | 883 | `TODO` | ❌ | │   │   ├── TODO.md |
 | `benchmarks/run-bottleneck-benchmarks.sh` | 111 | `NOTE` | ❌ | # Note: --filter is intentionally not added here; each phase below supplies its own |
 | `build/scripts/run/start-collector.ps1` | 109 | `NOTE` | ❌ | if ($depth -gt 0) { Write-Host "[NOTE] L2 depth requires provider depth entitlements for venues." } |
 | `build/scripts/run/start-collector.sh` | 114 | `NOTE` | ❌ | print("[NOTE] L2 depth requires provider depth subscription for venues.") |
@@ -73,8 +74,8 @@ Total items: **187**
 | `docs/ai/claude/CLAUDE.structure.md` | 473 | `TODO` | ❌ | │   │   └── TODO.md |
 | `docs/ai/copilot/instructions.md` | 5 | `NOTE` | ❌ | > **Note:** For comprehensive project context, see [CLAUDE.md](https://github.com/rodoHasArrived/Meridian/blob/main/CLAUDE.md) in the repository root. For the master AI resource index, see [docs/ai/README.md](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/README.md). |
 | `docs/ai/copilot/instructions.md` | 368 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
-| `docs/ai/copilot/instructions.md` | 752 | `TODO` | ❌ | │   │   └── TODO.md |
-| `docs/ai/copilot/instructions.md` | 2812 | `TODO` | ❌ | - `documentation.yml` — Doc generation, TODO scanning, AI error intake |
+| `docs/ai/copilot/instructions.md` | 756 | `TODO` | ❌ | │   │   └── TODO.md |
+| `docs/ai/copilot/instructions.md` | 2922 | `TODO` | ❌ | - `documentation.yml` — Doc generation, TODO scanning, AI error intake |
 | `docs/architecture/deterministic-canonicalization.md` | 365 | `NOTE` | ❌ | Note: Polygon does not define buyer-initiated codes. Only ~5% of trades carry definitive aggressor inference. The canonicalization layer preserves `Unknown` as a valid canonical value rather than attempting inference. |
 | `docs/architecture/domains.md` | 111 | `NOTE` | ❌ | > Note: not every enum member is currently emitted by the three core collectors (`TradeDataCollector`, `MarketDepthCollector`, `QuoteCollector`); several are used by adapters, backfill paths, or the `L3OrderBookCollector`. |
 | `docs/audits/BACKTEST_ENGINE_CODE_REVIEW_2026_03_25.md` | 150 | `NOTE` | ❌ | **Fix:** Add a note to the XML doc comment explaining the open/close midpoint convention and when to use `BarMidpointFillModel` vs. `OrderBookFillModel`. Consider offering `(bar.High + bar.Low) / 2m` as an alternative mode. |
@@ -105,11 +106,16 @@ Total items: **187**
 | `docs/operations/portable-data-packager.md` | 303 | `NOTE` | ❌ | 2. **Document filters**: Note any symbols, dates, or types that were excluded |
 | `docs/plans/l3-inference-implementation-plan.md` | 180 | `NOTE` | ❌ | > **Note:** Providers that supply L2 depth data include Interactive Brokers, Polygon, NYSE, and StockSharp. Providers that supply only daily OHLCV bars (e.g. Stooq, Yahoo Finance) are **not sufficient** for queue inference — depth tick data is required. |
 | `docs/plans/quant-script-environment-blueprint.md` | 1193 | `TODO` | ❌ | - [ ] `Api/PortfolioBuilder.cs` + `PortfolioResult.cs` (`EfficientFrontier` returns equal-weight stub + `// TODO` comment) |
+| `docs/plans/quantscript-l3-multiinstance-round2-roadmap.md` | 362 | `NOTE` | ❌ | Note: `ISecurityMasterQueryService` is at `src/Meridian.Contracts/SecurityMaster/ISecurityMasterQueryService.cs` (not `src/Meridian.Application/SecurityMaster/`). |
+| `docs/plans/quantscript-l3-multiinstance-round2-roadmap.md` | 771 | `NOTE` | ❌ | `// REPL expressions run in a forked state` warning note in the UI tooltip. |
+| `docs/plans/quantscript-l3-multiinstance-round2-roadmap.md` | 869 | `NOTE` | ❌ | Note on `VenueMicMapper`: it maps `(string Provider, string RawVenue) → string? MIC`. For |
+| `docs/plans/quantscript-l3-multiinstance-round2-roadmap.md` | 1073 | `NOTE` | ❌ | Note: `BacktestResult.TcaReport` already exists — no schema change needed there. |
 | `docs/plans/ufl-direct-lending-target-state-v2.md` | 417 | `NOTE` | ❌ | \| AssessFee of feeType:FeeType * amount:decimal * effectiveDate:DateOnly * note:string option |
 | `docs/plans/ufl-direct-lending-target-state-v2.md` | 432 | `NOTE` | ❌ | \| FeeAssessed of feeType:FeeType * amount:decimal * effectiveDate:DateOnly * note:string option |
 | `docs/plans/ufl-treasury-bill-target-state-v2.md` | 105 | `NOTE` | ❌ | 5. Future note and bond packages should reuse the same government-security patterns where possible. |
 | `docs/providers/interactive-brokers-free-equity-reference.md` | 254 | `NOTE` | ❌ | Note: It is important to understand the concept of market data lines since it has an impact not only on the live real time requests but also for requesting market depth and real time bars. |
 | `docs/providers/interactive-brokers-free-equity-reference.md` | 265 | `NOTE` | ❌ | - Note: BID_ASK requests count as **two** requests |
+| `docs/providers/interactive-brokers-setup.md` | 215 | `NOTE` | ❌ | > **Note**: "Server version" is the integer exchanged during the TCP handshake |
 | `docs/reference/data-dictionary.md` | 724 | `NOTE` | ❌ | **Note:** Aligns with Interactive Brokers conventions. |
 | `docs/reference/data-uniformity.md` | 5 | `NOTE` | ❌ | This note expands on the data-quality goals for the collector so downstream users receive a uniform, analysis-ready tape regardless of provider quirks. |
 | `docs/status/EVALUATIONS_AND_AUDITS.md` | 394 | `NOTE` | ❌ | - Historical note: the original audit flagged generated docs as stale, but `docs/generated/` has since been refreshed and expanded |
@@ -129,8 +135,8 @@ Total items: **187**
 | `src/Meridian.Application/Config/Credentials/CredentialTestingService.cs` | 377 | `NOTE` | ❌ | if (content.Contains("\"Note\":")) |
 | `src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs` | 195 | `TODO` | ❌ | "TODO" or |
 | `src/Meridian.Application/Config/IConfigValidator.cs` | 165 | `TODO` | ❌ | "TODO", "xxx", "change-me", "placeholder" |
-| `src/Meridian.Application/DirectLending/InMemoryDirectLendingService.Workflows.cs` | 99 | `NOTE` | ❌ | AppendEvent(stored, "loan.fee-assessed", request.EffectiveDate, new { loanId, request.FeeType, request.Amount, request.EffectiveDate, request.Note }, metadata); |
-| `src/Meridian.Application/DirectLending/InMemoryDirectLendingService.Workflows.cs` | 100 | `NOTE` | ❌ | GetList(_feeBalances, loanId).Add(new FeeBalanceDto(Guid.NewGuid(), loanId, request.FeeType, request.EffectiveDate, request.Amount, request.Amount, stored.History[^1].EventId, request.Note, DateTimeOffset.UtcNow)); |
+| `src/Meridian.Application/DirectLending/InMemoryDirectLendingService.Workflows.cs` | 100 | `NOTE` | ❌ | AppendEvent(stored, "loan.fee-assessed", request.EffectiveDate, new { loanId, request.FeeType, request.Amount, request.EffectiveDate, request.Note }, metadata); |
+| `src/Meridian.Application/DirectLending/InMemoryDirectLendingService.Workflows.cs` | 101 | `NOTE` | ❌ | GetList(_feeBalances, loanId).Add(new FeeBalanceDto(Guid.NewGuid(), loanId, request.FeeType, request.EffectiveDate, request.Amount, request.Amount, stored.History[^1].EventId, request.Note, DateTimeOffset.UtcNow)); |
 | `src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs` | 397 | `NOTE` | ❌ | request.Note |
 | `src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs` | 420 | `NOTE` | ❌ | request.Note) |
 | `src/Meridian.Application/Http/HtmlTemplates.cs` | 149 | `NOTE` | ❌ | <p><strong>Note:</strong> External templates not found. Using minimal fallback UI.</p> |
@@ -161,15 +167,15 @@ Total items: **187**
 | `src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs` | 856 | `NOTE` | ❌ | "Note: Full Excel (.xlsx) export requires the EPPlus library.\n" + |
 | `src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs` | 892 | `NOTE` | ❌ | "Note: Full HDF5 (.h5) export requires the h5py library in Python.\n" + |
 | `src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs` | 986 | `NOTE` | ❌ | "Note: Full QuantConnect Lean format export requires specific data structure.\n" + |
-| `src/Meridian.Ui.Services/Services/ProviderHealthService.cs` | 516 | `NOTE` | ❌ | // NOTE: ProviderComparison is defined in AdvancedAnalyticsModels.cs for cross-provider comparison |
+| `src/Meridian.Ui.Services/Services/ProviderHealthService.cs` | 518 | `NOTE` | ❌ | // NOTE: ProviderComparison is defined in AdvancedAnalyticsModels.cs for cross-provider comparison |
 | `src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs` | 806 | `NOTE` | ❌ | // Fallback: Note that tier migration requires storage configuration |
 | `src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs` | 1043 | `NOTE` | ❌ | // Fallback: Note that tier migration requires storage configuration |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 931 | `NOTE` | ❌ | new { provider = "Interactive Brokers", status = "Healthy", capability = "Execution + fills", latency = "23ms p50", note = "Paper session heartbeat and ingress are healthy." }, |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 932 | `NOTE` | ❌ | new { provider = "Polygon", status = "Healthy", capability = "Streaming equities", latency = "18ms p50", note = "Quote and trade subscriptions are within expected envelope." }, |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 933 | `NOTE` | ❌ | new { provider = "Databento", status = "Warning", capability = "Historical replay", latency = "74ms p50", note = "Backfill queue is elevated for options symbols." } |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 961 | `NOTE` | ❌ | new { provider = "Interactive Brokers", status = "Healthy", capability = "Execution + fills", latency = "21ms p50", note = "Paper adapter routing is available." }, |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 962 | `NOTE` | ❌ | new { provider = "Polygon", status = "Healthy", capability = "Streaming equities", latency = "16ms p50", note = "Realtime subscriptions are steady." }, |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 963 | `NOTE` | ❌ | new { provider = "Databento", status = "Warning", capability = "Historical replay", latency = "69ms p50", note = "Replay queue is elevated but within tolerance." } |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 984 | `NOTE` | ❌ | new { provider = "Interactive Brokers", status = "Healthy", capability = "Execution + fills", latency = "23ms p50", note = "Paper session heartbeat and ingress are healthy." }, |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 985 | `NOTE` | ❌ | new { provider = "Polygon", status = "Healthy", capability = "Streaming equities", latency = "18ms p50", note = "Quote and trade subscriptions are within expected envelope." }, |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 986 | `NOTE` | ❌ | new { provider = "Databento", status = "Warning", capability = "Historical replay", latency = "74ms p50", note = "Backfill queue is elevated for options symbols." } |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 1014 | `NOTE` | ❌ | new { provider = "Interactive Brokers", status = "Healthy", capability = "Execution + fills", latency = "21ms p50", note = "Paper adapter routing is available." }, |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 1015 | `NOTE` | ❌ | new { provider = "Polygon", status = "Healthy", capability = "Streaming equities", latency = "16ms p50", note = "Realtime subscriptions are steady." }, |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 1016 | `NOTE` | ❌ | new { provider = "Databento", status = "Warning", capability = "Historical replay", latency = "69ms p50", note = "Replay queue is elevated but within tolerance." } |
 | `src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs` | 55 | `NOTE` | ❌ | /// <para><b>Migration Note:</b> This class wraps the core implementation from |
 | `src/Meridian.Ui/dashboard/src/screens/data-operations-screen.test.tsx` | 20 | `NOTE` | ❌ | note: "Realtime subscriptions are stable." |
 | `src/Meridian.Ui/dashboard/src/screens/data-operations-screen.tsx` | 211 | `NOTE` | ❌ | <div className="mt-3 text-sm leading-6 text-foreground">{provider.note}</div> |
@@ -178,8 +184,8 @@ Total items: **187**
 | `src/Meridian.Wpf/Services/ContextMenuService.cs` | 120 | `NOTE` | ❌ | "Add Note", "\uE70B", |
 | `tests/Meridian.Tests/Application/Backfill/AdditionalProviderContractTests.cs` | 637 | `NOTE` | ❌ | "Note": "Thank you for using Alpha Vantage! Our standard API call frequency is 5 calls per minute and 500 calls per day. Please visit https://www.alphavantage.co/premium/ if you would like to target a higher API call frequency." |
 | `tests/Meridian.Tests/Application/Backfill/BackfillWorkerServiceTests.cs` | 28 | `NOTE` | ❌ | // NOTE: Using null! because validation throws before dependencies are accessed |
-| `tests/Meridian.Tests/Application/Backfill/BackfillWorkerServiceTests.cs` | 55 | `NOTE` | ❌ | // NOTE: Using null! because validation throws before dependencies are accessed |
-| `tests/Meridian.Tests/Application/Backfill/BackfillWorkerServiceTests.cs` | 84 | `NOTE` | ❌ | // NOTE: Using null! dependencies - we only verify that ArgumentOutOfRangeException is not thrown |
+| `tests/Meridian.Tests/Application/Backfill/BackfillWorkerServiceTests.cs` | 56 | `NOTE` | ❌ | // NOTE: Using null! because validation throws before dependencies are accessed |
+| `tests/Meridian.Tests/Application/Backfill/BackfillWorkerServiceTests.cs` | 86 | `NOTE` | ❌ | // NOTE: Using null! dependencies - we only verify that ArgumentOutOfRangeException is not thrown |
 | `tests/Meridian.Tests/Application/Monitoring/DataQuality/DataFreshnessSlaMonitorTests.cs` | 525 | `NOTE` | ❌ | // NOTE: Actual result depends on current time, so we check the logic is working |
 | `tests/Meridian.Tests/Application/Pipeline/FSharpEventValidatorTests.cs` | 72 | `NOTE` | ❌ | // Note: Trade.ctor only checks Price > 0, so $2,000,000 is constructible. |
 | `tests/Meridian.Tests/Infrastructure/Providers/IBRuntimeGuidanceTests.cs` | 46 | `NOTE` | ❌ | client.ProviderNotes.Should().Contain(note => note.Contains("interactive-brokers-setup.md")); |
