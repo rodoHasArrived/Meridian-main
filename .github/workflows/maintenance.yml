@@ -53,6 +53,13 @@ jobs:
           fi
           git cat-file -e "$BASE_REF^{commit}" 2>/dev/null || git fetch --no-tags --depth=1 origin "$BASE_REF"
           bash scripts/ai/route-maintenance.sh --classify-only --base "$BASE_REF" --head "${{ github.sha }}"
+
+          # Verify the route file was created
+          if [[ ! -f ".ai/maintenance-route.json" ]]; then
+            echo "ERROR: route-maintenance.sh failed to create .ai/maintenance-route.json"
+            exit 1
+          fi
+
           python3 - <<'PY' >> "$GITHUB_OUTPUT"
           import json
           from pathlib import Path
