@@ -552,26 +552,37 @@ Meridian-main
 │   ├── diagrams
 │   │   ├── uml
 │   │   │   ├── Activity Diagram - Data Collection Process Flow.png
+│   │   │   ├── Activity Diagram - Data Collection Process Flow.svg
 │   │   │   ├── Activity Diagram - Historical Backfill Process.png
+│   │   │   ├── Activity Diagram - Historical Backfill Process.svg
 │   │   │   ├── activity-diagram-backfill.png
 │   │   │   ├── activity-diagram-backfill.puml
 │   │   │   ├── activity-diagram.png
 │   │   │   ├── activity-diagram.puml
 │   │   │   ├── Class Diagram - WPF MVVM Architecture.png
+│   │   │   ├── Class Diagram - WPF MVVM Architecture.svg
 │   │   │   ├── class-diagram-wpf-mvvm.puml
 │   │   │   ├── Communication Diagram - Component Message Exchange.png
+│   │   │   ├── Communication Diagram - Component Message Exchange.svg
 │   │   │   ├── communication-diagram.png
 │   │   │   ├── communication-diagram.puml
 │   │   │   ├── Interaction Overview Diagram - System Workflow.png
+│   │   │   ├── Interaction Overview Diagram - System Workflow.svg
 │   │   │   ├── interaction-overview-diagram.png
 │   │   │   ├── interaction-overview-diagram.puml
 │   │   │   ├── README.md
 │   │   │   ├── Sequence Diagram - Backtesting Engine.png
+│   │   │   ├── Sequence Diagram - Backtesting Engine.svg
 │   │   │   ├── Sequence Diagram - Historical Backfill Flow.png
+│   │   │   ├── Sequence Diagram - Historical Backfill Flow.svg
 │   │   │   ├── Sequence Diagram - Paper Trading Order Execution.png
+│   │   │   ├── Sequence Diagram - Paper Trading Order Execution.svg
 │   │   │   ├── Sequence Diagram - Real-Time Data Collection Flow.png
+│   │   │   ├── Sequence Diagram - Real-Time Data Collection Flow.svg
 │   │   │   ├── Sequence Diagram - Strategy Promotion Lifecycle.png
+│   │   │   ├── Sequence Diagram - Strategy Promotion Lifecycle.svg
 │   │   │   ├── Sequence Diagram - WAL Durability and Crash-Safe Writes.png
+│   │   │   ├── Sequence Diagram - WAL Durability and Crash-Safe Writes.svg
 │   │   │   ├── sequence-diagram-backfill.png
 │   │   │   ├── sequence-diagram-backfill.puml
 │   │   │   ├── sequence-diagram-backtesting.puml
@@ -581,9 +592,13 @@ Meridian-main
 │   │   │   ├── sequence-diagram.png
 │   │   │   ├── sequence-diagram.puml
 │   │   │   ├── State Diagram - Backfill Request States.png
+│   │   │   ├── State Diagram - Backfill Request States.svg
 │   │   │   ├── State Diagram - Order Book Stream States.png
+│   │   │   ├── State Diagram - Order Book Stream States.svg
 │   │   │   ├── State Diagram - Provider Connection States.png
+│   │   │   ├── State Diagram - Provider Connection States.svg
 │   │   │   ├── State Diagram - Trade Sequence Validation States.png
+│   │   │   ├── State Diagram - Trade Sequence Validation States.svg
 │   │   │   ├── state-diagram-backfill.png
 │   │   │   ├── state-diagram-backfill.puml
 │   │   │   ├── state-diagram-orderbook.png
@@ -593,12 +608,15 @@ Meridian-main
 │   │   │   ├── state-diagram.png
 │   │   │   ├── state-diagram.puml
 │   │   │   ├── Timing Diagram - Backfill Operation Timeline.png
+│   │   │   ├── Timing Diagram - Backfill Operation Timeline.svg
 │   │   │   ├── Timing Diagram - Event Processing Timeline.png
+│   │   │   ├── Timing Diagram - Event Processing Timeline.svg
 │   │   │   ├── timing-diagram-backfill.png
 │   │   │   ├── timing-diagram-backfill.puml
 │   │   │   ├── timing-diagram.png
 │   │   │   ├── timing-diagram.puml
 │   │   │   ├── Use Case Diagram - Meridian.png
+│   │   │   ├── Use Case Diagram - Meridian.svg
 │   │   │   ├── use-case-diagram.png
 │   │   │   └── use-case-diagram.puml
 │   │   ├── backfill-workflow.dot
