@@ -266,7 +266,7 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
 
         try
         {
-            var url = BuildDetailsUrl(normalizedSymbol);
+            var url = BuildDetailsUrl(symbolValue);
             using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode)
@@ -277,7 +277,7 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
             }
 
             var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
-            return await DeserializeDetailsAsync(json, normalizedSymbol, ct).ConfigureAwait(false);
+            return await DeserializeDetailsAsync(json, symbolValue, ct).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
