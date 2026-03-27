@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-03-27 15:07:02 UTC. Do not edit manually.
+> Auto-generated on 2026-03-27 15:15:00 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -527,14 +527,15 @@ Meridian-main
 │   │   ├── storage-architecture-evaluation.md
 │   │   └── windows-desktop-provider-configurability-assessment.md
 │   ├── examples
-│   │   └── provider-template
-│   │       ├── README.md
-│   │       ├── TemplateConfig.cs
-│   │       ├── TemplateConstants.cs
-│   │       ├── TemplateFactory.cs
-│   │       ├── TemplateHistoricalDataProvider.cs
-│   │       ├── TemplateMarketDataClient.cs
-│   │       └── TemplateSymbolSearchProvider.cs
+│   │   ├── provider-template
+│   │   │   ├── README.md
+│   │   │   ├── TemplateConfig.cs
+│   │   │   ├── TemplateConstants.cs
+│   │   │   ├── TemplateFactory.cs
+│   │   │   ├── TemplateHistoricalDataProvider.cs
+│   │   │   ├── TemplateMarketDataClient.cs
+│   │   │   └── TemplateSymbolSearchProvider.cs
+│   │   └── README.md
 │   ├── generated
 │   │   ├── adr-index.md
 │   │   ├── configuration-schema.md
@@ -576,6 +577,7 @@ Meridian-main
 │   │   ├── readability-refactor-baseline.md
 │   │   ├── readability-refactor-roadmap.md
 │   │   ├── readability-refactor-technical-design-pack.md
+│   │   ├── README.md
 │   │   ├── security-master-productization-roadmap.md
 │   │   ├── trading-workstation-migration-blueprint.md
 │   │   ├── ufl-bond-target-state-v2.md
@@ -2299,18 +2301,6 @@ Meridian-main
 │       ├── MainWindow.xaml.cs
 │       ├── Meridian.Wpf.csproj
 │       └── README.md
-├── TestResults
-│   ├── 0c3ce827-5f95-4e34-92d6-44d07c90314c
-│   │   ├── dotnet_3686_20260327T150157_hangdump.dmp
-│   │   └── Sequence_fe4ec5f3dc1c4374b5a2e04d25a12cf6.xml
-│   ├── _runnervmrg6be_2026-03-27_15_00_39
-│   │   └── In
-│   │       └── runnervmrg6be
-│   │           ├── dotnet_3686_20260327T150157_hangdump.dmp
-│   │           └── Sequence_fe4ec5f3dc1c4374b5a2e04d25a12cf6.xml
-│   ├── aa95829a-595e-48cf-8b89-a9f7ace89da8
-│   ├── test-results-csharp.trx
-│   └── test-results-fsharp.trx
 ├── tests
 │   ├── Meridian.Backtesting.Tests
 │   │   ├── BacktestEngineIntegrationTests.cs
