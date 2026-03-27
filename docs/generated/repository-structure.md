@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-03-27 19:51:46 UTC. Do not edit manually.
+> Auto-generated on 2026-03-27 20:07:05 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -429,6 +429,7 @@ Meridian-main
 │   │   │   ├── activity-diagram-backfill.puml
 │   │   │   ├── activity-diagram.png
 │   │   │   ├── activity-diagram.puml
+│   │   │   ├── class-diagram-wpf-mvvm.puml
 │   │   │   ├── communication-diagram.png
 │   │   │   ├── communication-diagram.puml
 │   │   │   ├── interaction-overview-diagram.png
@@ -436,6 +437,10 @@ Meridian-main
 │   │   │   ├── README.md
 │   │   │   ├── sequence-diagram-backfill.png
 │   │   │   ├── sequence-diagram-backfill.puml
+│   │   │   ├── sequence-diagram-backtesting.puml
+│   │   │   ├── sequence-diagram-paper-trading.puml
+│   │   │   ├── sequence-diagram-strategy-promotion.puml
+│   │   │   ├── sequence-diagram-wal-durability.puml
 │   │   │   ├── sequence-diagram.png
 │   │   │   ├── sequence-diagram.puml
 │   │   │   ├── state-diagram-backfill.png
