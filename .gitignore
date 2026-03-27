@@ -219,4 +219,4 @@ __pycache__/
 *.egg-info/
 .eggs/
 
-.fake
+.fakeactionlint

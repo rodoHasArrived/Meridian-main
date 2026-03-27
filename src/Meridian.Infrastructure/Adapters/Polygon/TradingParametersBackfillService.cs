@@ -1,8 +1,8 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Infrastructure.Contracts;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Infrastructure.Adapters.Polygon;
