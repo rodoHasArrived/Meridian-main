@@ -224,6 +224,7 @@ Use these documents together when planning or implementing new work:
 │       ├── update-diagrams.yml
 │       └── validate-workflows.yml
 ├── .gitignore
+├── .gitleaks.toml
 ├── .globalconfig
 ├── .markdownlint.json
 ├── .vsconfig
@@ -3025,6 +3026,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-455 directories, 2532 files
+455 directories, 2533 files
 ```
 <!-- readme-tree end -->
