@@ -23,6 +23,7 @@
    - 2.11 [Composer.trade & Collective2](#211-composertrade--collective2)
    - 2.12 [Allvue Systems (Direct Lending)](#212-allvue-systems-direct-lending)
    - 2.13 [Broadridge / Ipreo (Fund Operations)](#213-broadridge--ipreo-fund-operations)
+   - 2.14 [FundStudio (Objectway)](#214-fundstudio-objectway)
 3. [Business Model Analysis](#3-business-model-analysis)
 4. [Meridian Capability Matrix vs Competitors](#4-meridian-capability-matrix-vs-competitors)
 5. [Feature Gap Analysis](#5-feature-gap-analysis)
@@ -40,7 +41,7 @@ Meridian occupies a unique position across **four competitive segments** simulta
 | **Market Data Infrastructure** | Multi-provider real-time collection, tick storage, backfill, data quality | Databento, Polygon, Refinitiv Tick History, Bloomberg B-PIPE |
 | **Algorithmic Trading / Backtesting** | Tick-level strategy replay, fill models, portfolio metrics, live execution | QuantConnect, NinjaTrader, TradeStation, Nautilus Trader, Backtrader |
 | **Quant Research Workstation** | Desktop UI, live data viewer, charting, symbol management | Bloomberg Terminal, thinkorswim, MultiCharts |
-| **Fund / Direct Lending Operations** | Direct lending lifecycle, portfolio tracking, security master, ledger | Allvue, Broadridge, FactSet, Ipreo |
+| **Fund / Direct Lending Operations** | Direct lending lifecycle, portfolio tracking, security master, ledger | Allvue, Broadridge, FactSet, Ipreo, FundStudio (Objectway) |
 
 This multi-segment scope is both Meridian's differentiation and its execution risk. The analysis below evaluates each competitive cluster and then synthesizes a gap analysis.
 
@@ -465,6 +466,42 @@ This multi-segment scope is both Meridian's differentiation and its execution ri
 
 ---
 
+### 2.14 FundStudio (Objectway)
+
+**What it is:** FundStudio is a fund administration and portfolio management platform developed by **Objectway**, a European financial technology firm headquartered in Milan. It targets wealth managers, fund administrators, asset servicers, and discretionary portfolio managers — primarily across European and Middle Eastern markets, with a growing presence in the UK.
+
+**Business model:**
+- Perpetual licence + annual maintenance, or SaaS subscription
+- Modular per-component pricing (portfolio management, order management, back-office, reporting)
+- Professional services for implementation and migration
+
+**Strengths:**
+- Full front-to-back office coverage: portfolio construction → order management → settlement → back-office accounting
+- Discretionary and advisory mandate management
+- Regulatory reporting suite: MiFID II, PRIIPs, FATCA, CRS, AIFMD
+- Multi-currency, multi-entity, multi-custodian support
+- Model portfolio management with rebalancing and drift monitoring
+- Client reporting and investor portal
+- Deep European regulatory compliance depth
+
+**Weaknesses:**
+- No real-time market data collection or tick-level data storage
+- No algorithmic trading or backtesting engine
+- No direct lending / private credit vertical (positioned for regulated collective investment schemes and managed accounts, not bilateral credit)
+- Enterprise pricing and lengthy implementation cycles — inaccessible to small funds
+- Primarily front-to-back for regulated asset managers; lacks the private credit / direct lending specificity of Allvue
+
+**Meridian advantage:** Meridian integrates market data infrastructure, backtesting, and direct lending in a single platform. FundStudio addresses a different buyer persona (regulated UCITS/AIFMD fund administrators) rather than the credit fund / multi-strategy quant manager that Meridian targets.
+
+**Gap vs Meridian (areas FundStudio covers that Meridian lacks):**
+- Discretionary mandate / model portfolio management with rebalancing
+- MiFID II transaction and cost reporting (RTS 28, cost/charges disclosures)
+- Client-facing investor portal with mandate statements and performance attribution
+- Multi-custodian settlement reconciliation
+- PRIIPs KID document generation
+
+---
+
 ## 3. Business Model Analysis
 
 ### 3.1 Current Meridian Positioning
@@ -761,6 +798,7 @@ The following ranking weights **strategic impact** (how much it differentiates M
 | Databento | Pay-per-dataset | Usage |
 | Bloomberg Terminal | ~$27,000/year | Seat license |
 | Allvue Systems | $5,000–$20,000+/month | Enterprise SaaS |
+| FundStudio (Objectway) | €50,000–€500,000+/year | Licence + SaaS |
 | VectorBT Pro | ~$500/year | Open core |
 | Composer.trade | ~$29/month | SaaS subscription |
 | Collective2 | $99–$299/month | SaaS + marketplace |
