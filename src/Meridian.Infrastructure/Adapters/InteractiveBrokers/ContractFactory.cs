@@ -1,4 +1,5 @@
 using Meridian.Application.Config;
+using Meridian.Contracts.Domain.Enums;
 
 namespace Meridian.Infrastructure.Adapters.InteractiveBrokers;
 
@@ -22,7 +23,7 @@ public static class ContractFactory
             return new IBApi.Contract
             {
                 ConId = conId,
-                SecType = cfg.SecurityType,
+                SecType = ResolveSecType(cfg),
                 Exchange = cfg.Exchange,
                 Currency = cfg.Currency
             };
@@ -36,7 +37,7 @@ public static class ContractFactory
         var c = new IBApi.Contract
         {
             Symbol = ibSymbol,
-            SecType = cfg.SecurityType,
+            SecType = ResolveSecType(cfg),
             Exchange = cfg.Exchange,
             Currency = cfg.Currency
         };
@@ -50,7 +51,65 @@ public static class ContractFactory
         // LocalSymbol is the most important knob for preferreds.
         c.LocalSymbol = !string.IsNullOrWhiteSpace(cfg.LocalSymbol) ? cfg.LocalSymbol : localSymFallback;
 
+        // Options / futures-options contract fields.
+        var secType = c.SecType;
+        if (secType is "OPT" or "FOP")
+        {
+            if (cfg.Strike is decimal strike)
+                c.Strike = (double)strike;
+
+            if (cfg.Right is Contracts.Domain.Enums.OptionRight right)
+                c.Right = right == Contracts.Domain.Enums.OptionRight.Call ? "C" : "P";
+
+            if (!string.IsNullOrWhiteSpace(cfg.LastTradeDateOrContractMonth))
+                c.LastTradeDateOrContractMonth = cfg.LastTradeDateOrContractMonth;
+
+            if (cfg.Multiplier is int multiplier)
+                c.Multiplier = multiplier.ToString();
+        }
+
+        // Futures / SSF: expiry required.
+        if (secType is "FUT" or "SSF")
+        {
+            if (!string.IsNullOrWhiteSpace(cfg.LastTradeDateOrContractMonth))
+                c.LastTradeDateOrContractMonth = cfg.LastTradeDateOrContractMonth;
+
+            if (cfg.Multiplier is int multiplier)
+                c.Multiplier = multiplier.ToString();
+        }
+
         return c;
+    }
+
+    /// <summary>
+    /// Resolves the IB SecType string from SymbolConfig, preferring the explicit
+    /// <see cref="SymbolConfig.SecurityType"/> field but falling back to
+    /// <see cref="SymbolConfig.InstrumentType"/> when the caller only sets the enum.
+    /// </summary>
+    private static string ResolveSecType(SymbolConfig cfg)
+    {
+        // If the caller set an explicit SecType string (e.g. "FUT", "CASH"), honour it.
+        if (!string.IsNullOrWhiteSpace(cfg.SecurityType) && cfg.SecurityType != "STK")
+            return cfg.SecurityType;
+
+        // Otherwise derive from the strongly-typed InstrumentType enum.
+        return cfg.InstrumentType switch
+        {
+            Contracts.Domain.Enums.InstrumentType.Equity           => "STK",
+            Contracts.Domain.Enums.InstrumentType.EquityOption     => "OPT",
+            Contracts.Domain.Enums.InstrumentType.IndexOption      => "OPT",
+            Contracts.Domain.Enums.InstrumentType.Future           => "FUT",
+            Contracts.Domain.Enums.InstrumentType.SingleStockFuture=> "SSF",
+            Contracts.Domain.Enums.InstrumentType.Forex            => "CASH",
+            Contracts.Domain.Enums.InstrumentType.Commodity        => "CMDTY",
+            Contracts.Domain.Enums.InstrumentType.Crypto           => "CRYPTO",
+            Contracts.Domain.Enums.InstrumentType.Bond             => "BOND",
+            Contracts.Domain.Enums.InstrumentType.FuturesOption    => "FOP",
+            Contracts.Domain.Enums.InstrumentType.Index            => "IND",
+            Contracts.Domain.Enums.InstrumentType.CFD              => "CFD",
+            Contracts.Domain.Enums.InstrumentType.Warrant          => "WAR",
+            _                                                       => cfg.SecurityType
+        };
     }
 #else
     /// <summary>
