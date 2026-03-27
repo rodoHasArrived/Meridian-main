@@ -134,6 +134,8 @@ internal sealed class MarketImpactFillModel(
         switch (executableType)
         {
             case OrderType.Market:
+                // Midpoint is (Open + Close) / 2 — the bar's open-to-close centre — consistent
+                // with BarMidpointFillModel. See that model's summary XML doc for the rationale.
                 var mid = (bar.Open + bar.Close) / 2m;
                 var slip = mid * (slippageBasisPoints / 10_000m);
                 fillPrice = isBuy ? mid + slip : mid - slip;

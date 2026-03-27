@@ -57,6 +57,10 @@ public enum BacktestCommissionKind
 /// <param name="AdjustForCorporateActions">
 /// When true, adjusts historical bar prices for splits and dividends using Security Master data (default: true).
 /// </param>
+/// <param name="RiskFreeRate">
+/// Annualised risk-free rate used by <see cref="BacktestMetrics.SharpeRatio"/> and
+/// <see cref="BacktestMetrics.SortinoRatio"/> calculations (e.g. 0.04 for 4%). Defaults to 0.04.
+/// </param>
 public sealed record BacktestRequest(
     DateOnly From,
     DateOnly To,
@@ -77,7 +81,8 @@ public sealed record BacktestRequest(
     decimal CommissionMinimum = 1.00m,
     decimal CommissionMaximum = decimal.MaxValue,
     decimal MarketImpactCoefficient = 0.1m,
-    bool AdjustForCorporateActions = true)
+    bool AdjustForCorporateActions = true,
+    double RiskFreeRate = 0.04)
 {
     /// <summary>
     /// Returns the normalized account list, falling back to a single default brokerage account for

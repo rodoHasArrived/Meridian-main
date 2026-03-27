@@ -93,6 +93,9 @@ internal sealed class BarMidpointFillModel(
         switch (executableType)
         {
             case OrderType.Market:
+                // Midpoint is defined as (Open + Close) / 2 — the bar's open-to-close centre —
+                // rather than the OHLC midpoint ((High + Low) / 2). This models fills executing
+                // somewhere in the middle of the bar's price path, not at its intrabar extreme.
                 var mid = (bar.Open + bar.Close) / 2m;
                 var effectiveSlippage = slippageBasisPoints;
 
@@ -102,8 +105,11 @@ internal sealed class BarMidpointFillModel(
                 {
                     var range = bar.High - bar.Low;
                     var volatilityFactor = range / mid; // e.g., 0.02 for a 2% bar range
-                    // Scale: base slippage * (1 + volatility multiplier)
-                    // A 1% bar range adds ~50% more slippage; a 3% range adds ~150%
+                    // Scale: base slippage * (1 + volatility multiplier × 50).
+                    // The 50× factor is an empirical calibration: it maps a typical equity
+                    // intraday range of 1–2 % to a slippage increase of 50–100 %, approximating
+                    // the widening of quoted spreads in high-volatility conditions. Adjust this
+                    // constant when calibrating the model against actual market microstructure data.
                     effectiveSlippage = slippageBasisPoints * (1m + volatilityFactor * 50m);
                 }
 
