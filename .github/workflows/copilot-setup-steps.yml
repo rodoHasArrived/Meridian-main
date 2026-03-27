@@ -1,4 +1,4 @@
-name: Copilot Setup Steps
+name: Copilot Environment Setup
 
 on:
   push:
@@ -135,7 +135,7 @@ jobs:
         if: always()
         shell: bash
         run: |
-          echo "## Copilot Setup Steps Summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "## Copilot Environment Setup Summary" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "| Step | Status |" >> "$GITHUB_STEP_SUMMARY"
           echo "|------|--------|" >> "$GITHUB_STEP_SUMMARY"
