@@ -36,6 +36,12 @@ This directory contains in-depth evaluations of architecture components, provide
 
 **Archived:** [Desktop End-User Improvements](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/assessments/desktop-end-user-improvements.md) — Comprehensive desktop UX assessment retained for historical reference
 
+## Competitive Analysis
+
+| Document | Description |
+|----------|-------------|
+| [Competitive Analysis (Mar 2026)](competitive-analysis-2026-03.md) | Competitive landscape analysis across 13 platforms: QuantConnect, NinjaTrader, Databento, Bloomberg, Allvue, and others; feature gap analysis and prioritized recommendations |
+
 ## Improvement Proposals & Brainstorms
 
 | Document | Description |

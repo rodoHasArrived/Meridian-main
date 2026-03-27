@@ -33,7 +33,7 @@ For the first deep vertical implementation of these governance patterns in direc
 
 ### Out of scope
 
-- Full investor portal
+- Full self-service investor portal (distribution of regulatory documents to LPs is a future milestone after core reporting is stable)
 - Full statutory/tax reporting engine
 - OCR/document ingestion for broker statements
 - Replacing the current ledger with an entirely new accounting subsystem
@@ -450,9 +450,49 @@ dotnet test tests/Meridian.Wpf.Tests -c Release /p:EnableWindowsTargeting=true
 
 - [ ] Define classification-aware mandate rule inputs.
 - [ ] Connect Security Master classifications to risk/compliance evaluation.
-- [ ] Add governance exception queue DTOs and UI.
+- [ ] Add pre-trade compliance hard-stops wired into the execution path: block order submission when mandate limits, concentration rules, or exposure constraints would be breached.
+- [ ] Add post-trade compliance validation: flag fills that cause mandate drift, generate compliance breach events, and surface them in the governance exception queue.
+- [ ] Add governance exception queue DTOs and UI for breaks, overrides, and approval workflows.
 - [ ] Add promotion gates that require governance/accounting readiness.
-- [ ] Add tests for mandate breaches, overrides, and promotion blocking.
+- [ ] Add tests for mandate breaches, overrides, pre-trade blocking, post-trade flagging, and promotion blocking.
+
+### Phase F6: Post-Trade Allocation and External Custodian Reconciliation
+
+*FundStudio source: rules-based post-trade allocation by strategy, trader, or tax lot; automated multi-prime reconciliation to reduce T+1 breaks.*
+
+- [ ] Define `TradeAllocationRule` domain model and F# rule engine: allocation by strategy, tax lot, account, or trader.
+- [ ] Add `PostTradeAllocationService` to apply rules to fills from the execution layer and distribute quantities to fund/sleeve/account ledger lines.
+- [ ] Add workstation UI for reviewing and overriding allocations before confirmation.
+- [ ] Extend the existing reconciliation engine to accept external custodian position and cash statements as structured inputs (CSV, SWIFT MT940/942, or JSON adapters).
+- [ ] Add break classification and severity for internal-vs-custodian mismatches (quantity, settlement date, currency, instrument).
+- [ ] Add multi-custodian break queue with assignment and resolution workflow, targeting automated exception-based T+1 reconciliation.
+- [ ] Add tests for allocation rule evaluation, custodian feed parsing, and break matching accuracy.
+
+### Phase F7: Regulatory and Investor Reporting
+
+*FundStudio source: automated multi-fund NAV calculation; shadow-NAV; drag-and-drop report builder; automated distribution via portal or email; AIFMD Annex IV; SEC reporting data exports; locked periods; version control.*
+
+- [ ] Define regulatory reporting domain models: `TransactionReportRecord`, `CostChargeDisclosureRecord`, `RegulatoryReportBatch`.
+- [ ] Implement MiFID II RTS 28 best-execution report generation (quarterly aggregation by venue and instrument class).
+- [ ] Implement MiFID II Article 24 cost-and-charges disclosure records, linked to fills and portfolio positions.
+- [ ] Add PRIIPs KID data assembly service (performance scenarios, cost structures, risk rating inputs); defer full PDF rendering to a later milestone but produce the underlying data model.
+- [ ] Add shadow-NAV calculation path: Meridian-computed NAV alongside administrator-issued NAV for cross-check and versioning.
+- [ ] Add locked reporting periods: prevent backdating of ledger entries or NAV changes once a period is closed.
+- [ ] Add governed report pack profiles — `board`, `investor`, `compliance-mifid`, `regulatory-batch`, `aifmd-annex-iv` — each with automated format outputs (PDF/XLSX/CSV).
+- [ ] Add automated report distribution metadata: record recipient, format, timestamp, and version for each published report pack.
+- [ ] Add regulatory report history with immutable audit log and version control.
+- [ ] Add tests for batch generation correctness, classification mapping, shadow-NAV delta detection, and required field completeness.
+
+### Phase F8: Model Portfolio Management and Rebalancing
+
+*FundStudio source: discretionary mandate management with drift monitoring and rebalancing; cross-asset model portfolios for equity long/short, global macro, and credit strategies.*
+
+- [ ] Define `ModelPortfolio` domain model: target weights by instrument, asset class, duration bucket, or factor exposure.
+- [ ] Add drift monitoring service: compare current portfolio weights against model targets; compute absolute and relative drift per position.
+- [ ] Add rebalancing signal generator: produce candidate order lists to restore target weights within configurable drift tolerances.
+- [ ] Add mandate-aware rebalancing constraints: respect position limits, liquidity minimums, and mandate restrictions from Security Master and the compliance layer.
+- [ ] Add WPF and API surfaces for model portfolio construction, drift dashboard, and rebalancing review/approval workflow.
+- [ ] Add tests for drift calculation accuracy, constraint satisfaction, and rebalancing order sizing.
 
 ### Cross-cutting
 
@@ -468,14 +508,24 @@ dotnet test tests/Meridian.Wpf.Tests -c Release /p:EnableWindowsTargeting=true
 3. Reconciliation DTOs plus F# rules spike and C# orchestration shell
 4. Cash-flow projection kernel plus governance cash-ladder read path
 5. Report-pack contracts plus export-profile integration
+6. Pre/post-trade compliance hard-stops wired into `IRiskRule` and the execution path
+7. Post-trade allocation rule engine (F# kernel) plus allocation DTOs and `PostTradeAllocationService`
+8. External custodian statement adapter plus break classification kernel for T+1 reconciliation
+9. Shadow-NAV calculation path, locked reporting periods, and governed report pack profiles
+10. MiFID II RTS 28 and cost/charges data model plus `RegulatoryReportingService` shell
+11. Model portfolio domain model, drift monitoring service, and rebalancing signal generator
 
 ## Open Questions
 
-- What external statement formats should the first reconciliation engine support?
+- What external statement formats should the first reconciliation engine support: CSV position files, SWIFT MT940/942, or a JSON adapter against a specific custodian API?
 - Should multi-ledger grouping be explicit configuration, derived from strategy/fund metadata, or both?
 - Which cash-flow categories are required for the first release: coupons, distributions, financing, fees, margin, subscriptions/redemptions?
 - Does NAV/attribution need to ship before or after the first governed report-pack workflow?
 - Should report generation produce only artifacts, or also versioned stored report snapshots queryable inside Meridian?
+- Should post-trade allocation rules be configured per fund/strategy in `appsettings.json` or managed through a governance UI?
+- Should the MiFID II reporting baseline target only best-execution (RTS 28) for the first release, or also include cost-and-charges in the same slice?
+- Should model portfolio weights be manually entered, derived from a reference strategy run, or both?
+- Which regulatory reporting jurisdiction should be the first target: MiFID II (EU/UK) or SEC (US)?
 
 ## Related Documents
 
