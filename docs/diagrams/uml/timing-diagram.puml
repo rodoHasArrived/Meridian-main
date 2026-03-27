@@ -159,6 +159,6 @@ highlight 20 to 23 #LightGreen : Quote Processing (~3ms)
 highlight 50 to 60 #LightYellow : Batch Storage (~10ms)
 highlight 5000 to 5015 #LightPink : Periodic Flush (~15ms)
 highlight 15000 to 17000 #LightCoral : Reconnection (~2s)
-highlight 20000 to 20003 #LightOrange : Integrity Detection (~3ms)
+highlight 20000 to 20003 #FFD700 : Integrity Detection (~3ms)
 
 @enduml
