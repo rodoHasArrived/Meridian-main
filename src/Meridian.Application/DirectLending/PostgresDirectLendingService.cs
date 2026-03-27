@@ -134,5 +134,8 @@ public sealed partial class PostgresDirectLendingService : IDirectLendingService
 
     public async Task<IReadOnlyList<LoanAggregateSnapshotDto>> RebuildAllAsync(CancellationToken ct = default)
         => DirectLendingServiceSupport.RequireSuccess(await _commandService.RebuildAllAsync(ct).ConfigureAwait(false));
+
+    public Task<LoanPortfolioSummaryDto> GetPortfolioSummaryAsync(CancellationToken ct = default)
+        => _queryService.GetPortfolioSummaryAsync(ct);
 }
 

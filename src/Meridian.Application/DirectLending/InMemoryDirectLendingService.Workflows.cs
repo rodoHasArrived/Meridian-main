@@ -331,6 +331,48 @@ public sealed partial class InMemoryDirectLendingService
         }
     }
 
+    public Task<LoanPortfolioSummaryDto> GetPortfolioSummaryAsync(CancellationToken ct = default)
+    {
+        lock (_gate)
+        {
+            var summaries = _loans.Values.Select(stored =>
+            {
+                var contract = ToContractDetail(stored);
+                var servicing = ToServicingState(stored);
+                return new LoanSummaryDto(
+                    stored.LoanId,
+                    contract.FacilityName,
+                    contract.Borrower.BorrowerId,
+                    contract.Borrower.BorrowerName,
+                    contract.Status,
+                    contract.CurrentTerms.BaseCurrency,
+                    contract.CurrentTerms.CommitmentAmount,
+                    servicing.Balances.PrincipalOutstanding,
+                    servicing.Balances.InterestAccruedUnpaid,
+                    servicing.Balances.PenaltyAccruedUnpaid,
+                    servicing.AvailableToDraw,
+                    contract.CurrentTerms.OriginationDate,
+                    contract.CurrentTerms.MaturityDate,
+                    servicing.LastAccrualDate,
+                    servicing.LastPaymentDate);
+            }).ToList();
+
+            var active = summaries.Count(s => s.Status == LoanStatus.Active);
+            var defaulted = summaries.Count(s => s.Status == LoanStatus.Defaulted);
+
+            return Task.FromResult(new LoanPortfolioSummaryDto(
+                summaries.Count,
+                active,
+                defaulted,
+                summaries.Sum(s => s.CommitmentAmount),
+                summaries.Sum(s => s.PrincipalOutstanding),
+                summaries.Sum(s => s.InterestAccruedUnpaid),
+                summaries.Sum(s => s.PenaltyAccruedUnpaid),
+                summaries.Sum(s => s.AvailableToDraw),
+                summaries));
+        }
+    }
+
     private static List<T> GetList<T>(Dictionary<Guid, List<T>> source, Guid key)
     {
         if (!source.TryGetValue(key, out var list))

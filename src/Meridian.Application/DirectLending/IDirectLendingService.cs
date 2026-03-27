@@ -83,5 +83,7 @@ public interface IDirectLendingService
     Task<IReadOnlyList<RebuildCheckpointDto>> GetRebuildCheckpointsAsync(CancellationToken ct = default);
 
     Task<IReadOnlyList<LoanAggregateSnapshotDto>> RebuildAllAsync(CancellationToken ct = default);
+
+    Task<LoanPortfolioSummaryDto> GetPortfolioSummaryAsync(CancellationToken ct = default);
 }
 

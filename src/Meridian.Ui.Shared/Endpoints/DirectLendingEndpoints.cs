@@ -634,6 +634,16 @@ public static class DirectLendingEndpoints
                 : Results.Json(await service.GetRebuildCheckpointsAsync(context.RequestAborted).ConfigureAwait(false), jsonOptions);
         });
 
+        app.MapGet("/api/loans/portfolio", async (HttpContext context) =>
+        {
+            var service = ResolveService(context);
+            return service is null
+                ? ServiceUnavailable()
+                : Results.Json(await service.GetPortfolioSummaryAsync(context.RequestAborted).ConfigureAwait(false), jsonOptions);
+        })
+        .WithName("GetPortfolioSummary")
+        .Produces<LoanPortfolioSummaryDto>(StatusCodes.Status200OK);
+
         app.MapPost("/api/loans/rebuild-all", async (HttpContext context) =>
         {
             var service = ResolveService(context);

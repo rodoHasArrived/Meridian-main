@@ -56,4 +56,6 @@ public interface IDirectLendingQueryService
     Task<IReadOnlyList<RebuildCheckpointDto>> GetRebuildCheckpointsAsync(CancellationToken ct = default);
 
     Task<PersistedDirectLendingState?> LoadAggregateAsync(Guid loanId, CancellationToken ct = default);
+
+    Task<LoanPortfolioSummaryDto> GetPortfolioSummaryAsync(CancellationToken ct = default);
 }
