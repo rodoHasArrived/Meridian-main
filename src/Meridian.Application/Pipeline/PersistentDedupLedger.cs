@@ -16,7 +16,7 @@ namespace Meridian.Application.Pipeline;
 /// Uses a JSONL-backed rolling log with in-memory bloom-filter-like cache.
 /// Keyed by (provider, symbol, eventIdentity) with configurable TTL.
 /// </summary>
-public sealed class PersistentDedupLedger : IAsyncDisposable
+public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
 {
     private readonly ILogger _log = LoggingSetup.ForContext<PersistentDedupLedger>();
     private readonly string _ledgerPath;

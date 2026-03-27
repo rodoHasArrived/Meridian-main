@@ -137,7 +137,8 @@ public sealed class BacktestEngine(
             eventsProcessed, metrics.FinalEquity, metrics.NetPnl, sw.ElapsedMilliseconds);
 
         var tradeTickets = BuildTradeTickets(allCashFlows);
-        return new BacktestResult(request, universe, allSnapshots, allCashFlows, allFills, metrics, ledger, sw.Elapsed, eventsProcessed, tradeTickets);
+        var tcaReport = PostSimulationTcaReporter.Generate(request, allFills);
+        return new BacktestResult(request, universe, allSnapshots, allCashFlows, allFills, metrics, ledger, sw.Elapsed, eventsProcessed, tradeTickets, tcaReport);
     }
 
     // ── Private helpers ──────────────────────────────────────────────────────
