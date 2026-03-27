@@ -152,6 +152,9 @@ public partial class SymbolsPage : Page
             _selectedSymbol = symbol;
             _isEditMode = true;
 
+            // Update the ViewModel's selected item for action strip
+            _vm.SelectedItem = symbol;
+
             SymbolBox.Text = symbol.Symbol;
             SubscribeTradesToggle.IsChecked = symbol.SubscribeTrades;
             SubscribeDepthToggle.IsChecked = symbol.SubscribeDepth;
@@ -241,6 +244,8 @@ public partial class SymbolsPage : Page
     {
         _selectedSymbol = null;
         _isEditMode = false;
+        _vm.SelectedItem = null;
+        _vm.SelectedSymbolTicker = string.Empty; // Clear the Security Master bridge state
         SymbolBox.Text = string.Empty;
         SubscribeTradesToggle.IsChecked = true;
         SubscribeDepthToggle.IsChecked = false;

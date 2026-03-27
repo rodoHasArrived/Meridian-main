@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Meridian.Wpf.Converters"
         mc:Ignorable="d"
         Title="Command Palette"
         Width="600" Height="450"
@@ -114,33 +115,58 @@
                 </ListBox.ItemContainerStyle>
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <Grid>
+                        <Grid Margin="4">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="28" />
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
+
+                            <!-- Icon -->
                             <TextBlock Grid.Column="0"
                                        Text="{Binding Icon}"
                                        FontFamily="Segoe MDL2 Assets"
                                        FontSize="14"
                                        Foreground="#FF89B4FA"
-                                       VerticalAlignment="Center" />
-                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                       VerticalAlignment="Top"
+                                       Margin="0,1,0,0" />
+
+                            <!-- Title and Description -->
+                            <StackPanel Grid.Column="1" VerticalAlignment="Top" Margin="4,0,8,0">
                                 <TextBlock Text="{Binding Title}"
                                            FontSize="13"
+                                           FontWeight="SemiBold"
                                            Foreground="#FFCDD6F4" />
                                 <TextBlock Text="{Binding Description}"
                                            FontSize="11"
                                            Foreground="#FF6C7086"
-                                           Margin="0,1,0,0" />
+                                           Margin="0,2,0,0"
+                                           TextWrapping="Wrap" />
                             </StackPanel>
-                            <TextBlock Grid.Column="2"
-                                       Text="{Binding Shortcut}"
-                                       FontSize="11"
-                                       Foreground="#FF585B70"
-                                       VerticalAlignment="Center"
-                                       Margin="8,0,0,0" />
+
+                            <!-- Category and Shortcut -->
+                            <StackPanel Grid.Column="2"
+                                        Orientation="Vertical"
+                                        VerticalAlignment="Top"
+                                        Margin="8,0,0,0">
+                                <!-- Category Badge -->
+                                <TextBlock Text="{Binding Category}"
+                                           FontSize="10"
+                                           Foreground="#FF585B70"
+                                           Margin="0,0,0,4"
+                                           Visibility="{Binding Category, Converter={StaticResource NullToCollapsedConverter}}" />
+                                
+                                <!-- Shortcut Chip -->
+                                <Border Background="#FF313244"
+                                        CornerRadius="3"
+                                        Padding="4,2"
+                                        Visibility="{Binding Shortcut, Converter={StaticResource NullToCollapsedConverter}}">
+                                    <TextBlock Text="{Binding Shortcut}"
+                                               FontFamily="Consolas"
+                                               FontSize="10"
+                                               Foreground="#FF89B4FA" />
+                                </Border>
+                            </StackPanel>
                         </Grid>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
@@ -161,6 +187,7 @@
     </Border>
 
     <Window.Resources>
+        <local:NullToCollapsedConverter x:Key="NullToCollapsedConverter" />
         <DropShadowEffect x:Key="CommandPaletteShadow"
                           BlurRadius="24"
                           Direction="270"

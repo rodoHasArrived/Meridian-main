@@ -54,6 +54,9 @@ public enum BacktestCommissionKind
 /// Scales the square-root market-impact formula used by the <see cref="ExecutionModel.MarketImpact"/> fill model.
 /// Higher values simulate stronger price impact from large orders (default: 0.1).
 /// </param>
+/// <param name="AdjustForCorporateActions">
+/// When true, adjusts historical bar prices for splits and dividends using Security Master data (default: true).
+/// </param>
 public sealed record BacktestRequest(
     DateOnly From,
     DateOnly To,
@@ -73,7 +76,8 @@ public sealed record BacktestRequest(
     decimal CommissionRate = 0.005m,
     decimal CommissionMinimum = 1.00m,
     decimal CommissionMaximum = decimal.MaxValue,
-    decimal MarketImpactCoefficient = 0.1m)
+    decimal MarketImpactCoefficient = 0.1m,
+    bool AdjustForCorporateActions = true)
 {
     /// <summary>
     /// Returns the normalized account list, falling back to a single default brokerage account for

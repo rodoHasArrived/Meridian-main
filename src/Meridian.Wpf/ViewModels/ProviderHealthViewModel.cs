@@ -18,7 +18,7 @@ namespace Meridian.Wpf.ViewModels;
 /// All state, HTTP loading, timer management, and connection-event tracking live here
 /// so that the code-behind is thinned to lifecycle wiring only.
 /// </summary>
-public sealed class ProviderHealthViewModel : BindableBase, IDisposable
+public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageActionBarProvider
 {
     private readonly WpfServices.StatusService _statusService;
     private readonly WpfServices.ConnectionService _connectionService;
@@ -58,6 +58,10 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable
     private bool _hasNoHistory = true;
     public bool HasNoHistory { get => _hasNoHistory; private set => SetProperty(ref _hasNoHistory, value); }
 
+    // ── IPageActionBarProvider implementation ──────────────────────────────────────
+    public string PageTitle => "Provider Health";
+    public ObservableCollection<ActionEntry> Actions { get; } = new();
+
     public ProviderHealthViewModel(
         WpfServices.StatusService statusService,
         WpfServices.ConnectionService connectionService,
@@ -80,6 +84,11 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable
     {
         _connectionService.StateChanged += OnConnectionStateChanged;
         _connectionService.ConnectionHealthUpdated += OnConnectionHealthUpdated;
+
+        // Populate action bar.
+        Actions.Clear();
+        Actions.Add(new ActionEntry("Refresh", new RelayCommand(() => _ = RefreshAsync()), "↻", "Refresh provider data", IsPrimary: true));
+        Actions.Add(new ActionEntry("Reconnect All", new RelayCommand(() => _notificationService.NotifyInfo("Reconnecting", "Initiating provider reconnection...")), "🔗", "Reconnect all providers"));
 
         await RefreshDataAsync();
 

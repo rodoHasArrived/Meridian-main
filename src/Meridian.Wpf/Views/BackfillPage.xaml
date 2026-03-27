@@ -4,6 +4,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:converters="clr-namespace:Meridian.Wpf.Converters"
+      xmlns:views="clr-namespace:Meridian.Wpf.Views"
       mc:Ignorable="d"
       d:DesignHeight="900" d:DesignWidth="1400"
       Background="{DynamicResource ShellWindowBackgroundBrush}"
@@ -15,13 +16,18 @@
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </Page.Resources>
 
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="380" />
-        </Grid.ColumnDefinitions>
+    <DockPanel>
+        <!-- Page Action Bar -->
+        <views:PageActionBarControl DockPanel.Dock="Top" DataContext="{Binding}"/>
 
-        <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" Padding="28,20,16,32">
+        <!-- Main Content -->
+        <Grid DockPanel.Dock="Bottom">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="380" />
+            </Grid.ColumnDefinitions>
+
+            <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" Padding="28,20,16,32">
             <StackPanel MaxWidth="900">
                 <!-- Header -->
                 <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24">
@@ -1032,6 +1038,7 @@
                     </StackPanel>
                 </Border>
             </StackPanel>
-        </ScrollViewer>
-    </Grid>
+            </ScrollViewer>
+        </Grid>
+    </DockPanel>
 </Page>

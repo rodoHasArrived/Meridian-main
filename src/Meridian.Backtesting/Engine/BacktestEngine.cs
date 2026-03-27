@@ -17,7 +17,8 @@ namespace Meridian.Backtesting.Engine;
 public sealed class BacktestEngine(
     ILogger<BacktestEngine> logger,
     StorageCatalogService catalogService,
-    Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService? securityMasterQueryService = null)
+    Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService? securityMasterQueryService = null,
+    ICorporateActionAdjustmentService? corporateActionAdjustment = null)
 {
     /// <summary>
     /// Runs a complete backtest, replaying all events in the requested date/symbol range.
@@ -78,8 +79,8 @@ public sealed class BacktestEngine(
         strategy.Initialize(ctx);
         ApplyScheduledAssetEvents(request.From, assetEventsByDate, portfolio, ctx);
 
-        // 4. Build per-symbol replay streams
-        var streams = BuildSymbolStreams(universe, request);
+        // 4. Build per-symbol replay streams (with corporate action adjustments if enabled)
+        var streams = await BuildSymbolStreamsAsync(universe, request, ct);
 
         // 5. Replay loop — multi-symbol chronological merge
         var currentDay = request.From;
@@ -142,9 +143,10 @@ public sealed class BacktestEngine(
 
     // ── Private helpers ──────────────────────────────────────────────────────
 
-    private static IReadOnlyList<IAsyncEnumerable<MarketEvent>> BuildSymbolStreams(
+    private async Task<IReadOnlyList<IAsyncEnumerable<MarketEvent>>> BuildSymbolStreamsAsync(
         IReadOnlySet<string> universe,
-        BacktestRequest request)
+        BacktestRequest request,
+        CancellationToken ct)
     {
         var streams = new List<IAsyncEnumerable<MarketEvent>>();
         foreach (var symbol in universe)
@@ -154,9 +156,88 @@ public sealed class BacktestEngine(
                 symbolRoot = request.DataRoot;  // flat layout fallback
 
             var reader = new JsonlReplayer(symbolRoot);
-            streams.Add(FilterBySymbolAndDate(reader.ReadEventsAsync(), symbol, request.From, request.To));
+            var symbolStream = FilterBySymbolAndDate(reader.ReadEventsAsync(), symbol, request.From, request.To);
+
+            // Apply corporate action adjustments if enabled
+            if (request.AdjustForCorporateActions && corporateActionAdjustment != null)
+            {
+                symbolStream = ApplyCorporateActionAdjustmentsAsync(symbolStream, symbol, ct);
+            }
+
+            streams.Add(symbolStream);
         }
         return streams;
+    }
+
+    /// <summary>
+    /// Wraps a symbol stream to apply corporate action adjustments to all HistoricalBar events.
+    /// </summary>
+    private async IAsyncEnumerable<MarketEvent> ApplyCorporateActionAdjustmentsAsync(
+        IAsyncEnumerable<MarketEvent> source,
+        string symbol,
+        [EnumeratorCancellation] CancellationToken ct)
+    {
+        // Buffer all bars for this symbol
+        var bars = new List<HistoricalBar>();
+        var nonBarEvents = new List<MarketEvent>();
+
+        await foreach (var evt in source.WithCancellation(ct))
+        {
+            if (evt.Payload is HistoricalBar bar)
+            {
+                bars.Add(bar);
+            }
+            else
+            {
+                nonBarEvents.Add(evt);
+            }
+        }
+
+        // Apply adjustments to all bars
+        var adjustedBars = await corporateActionAdjustment!.AdjustAsync(bars, symbol, ct)
+            .ConfigureAwait(false);
+
+        // Merge adjusted bars back with non-bar events
+        // Re-create events in chronological order
+        var barsByTimestamp = adjustedBars.OrderBy(b => b.SessionDate).ToList();
+        var nonBarsByTimestamp = nonBarEvents.OrderBy(e => e.Timestamp).ToList();
+
+        int bIdx = 0, nbIdx = 0;
+        while (bIdx < barsByTimestamp.Count && nbIdx < nonBarsByTimestamp.Count)
+        {
+            var bar = barsByTimestamp[bIdx];
+            var nonBar = nonBarsByTimestamp[nbIdx];
+            var barTimestamp = bar.SessionDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+            if (barTimestamp <= nonBar.Timestamp.UtcDateTime)
+            {
+                yield return new MarketEvent(
+                    barTimestamp.ToDateTimeOffset(TimeSpan.Zero),
+                    symbol,
+                    bar);
+                bIdx++;
+            }
+            else
+            {
+                yield return nonBar;
+                nbIdx++;
+            }
+        }
+
+        while (bIdx < barsByTimestamp.Count)
+        {
+            var bar = barsByTimestamp[bIdx];
+            yield return new MarketEvent(
+                bar.SessionDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc).ToDateTimeOffset(TimeSpan.Zero),
+                symbol,
+                bar);
+            bIdx++;
+        }
+
+        while (nbIdx < nonBarsByTimestamp.Count)
+        {
+            yield return nonBarsByTimestamp[nbIdx];
+            nbIdx++;
+        }
     }
 
     private static Dictionary<DateOnly, List<AssetEvent>> BuildAssetEventIndex(

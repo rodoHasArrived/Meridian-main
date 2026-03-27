@@ -96,3 +96,7 @@ public partial class ActivityLogPage : Page { }
 
 // Plugin Management page
 public partial class PluginManagementPage : Page { }
+
+// AI Agent page
+public partial class AgentPage : Page { }
+

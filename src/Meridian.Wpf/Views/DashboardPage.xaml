@@ -3,6 +3,7 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:views="clr-namespace:Meridian.Wpf.Views"
       mc:Ignorable="d"
       d:DesignHeight="900" d:DesignWidth="1400"
       Background="{DynamicResource ConsoleBackgroundDarkBrush}"
@@ -14,8 +15,13 @@
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </Page.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto"
-                  Padding="28,20,28,32">
+    <DockPanel>
+        <!-- Page Action Bar -->
+        <views:PageActionBarControl DockPanel.Dock="Top" DataContext="{Binding}"/>
+
+        <!-- Main Content -->
+        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                      Padding="28,20,28,32">
         <StackPanel MaxWidth="1400">
             <!-- Header with Quick Actions -->
             <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24">
@@ -1075,5 +1081,6 @@
                 </StackPanel>
             </Border>
         </StackPanel>
-    </ScrollViewer>
+        </ScrollViewer>
+    </DockPanel>
 </Page>

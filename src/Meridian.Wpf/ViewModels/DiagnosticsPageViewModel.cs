@@ -201,4 +201,12 @@ public sealed class RelayCommand : ICommand
     public bool CanExecute(object? parameter) => _canExecute?.Invoke() ?? true;
 
     public void Execute(object? parameter) => _execute();
+
+    /// <summary>
+    /// Raises the CanExecuteChanged event to notify the UI that the command's executable state may have changed.
+    /// </summary>
+    public void RaiseCanExecuteChanged()
+    {
+        System.Windows.Input.CommandManager.InvalidateRequerySuggested();
+    }
 }

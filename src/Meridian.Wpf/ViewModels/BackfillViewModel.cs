@@ -1,11 +1,14 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
+using CommunityToolkit.Mvvm.Input;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
 using UiBackfillService = Meridian.Ui.Services.BackfillService;
@@ -19,8 +22,9 @@ namespace Meridian.Wpf.ViewModels;
 /// ViewModel for the Backfill page.
 /// All state, collections, timer management, and backfill orchestration live here;
 /// the code-behind is thinned to lifecycle wiring and form-input delegation.
+/// Provides contextual commands for the command palette when activated.
 /// </summary>
-public sealed class BackfillViewModel : BindableBase, IDisposable
+public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandContextProvider, IPageActionBarProvider
 {
     private readonly WpfServices.NotificationService _notificationService;
     private readonly WpfServices.NavigationService _navigationService;
@@ -246,6 +250,10 @@ public sealed class BackfillViewModel : BindableBase, IDisposable
         private set => SetProperty(ref _lastRunCompletedText, value);
     }
 
+    // ── IPageActionBarProvider implementation ──────────────────────────────────────
+    public string PageTitle => "Backfill";
+    public ObservableCollection<ActionEntry> Actions { get; } = new();
+
     public BackfillViewModel(
         WpfServices.NotificationService notificationService,
         WpfServices.NavigationService navigationService,
@@ -268,6 +276,11 @@ public sealed class BackfillViewModel : BindableBase, IDisposable
     {
         _backfillService.ProgressUpdated += OnBackfillProgressUpdated;
         _backfillService.BackfillCompleted += OnBackfillCompleted;
+
+        // Populate action bar.
+        Actions.Clear();
+        Actions.Add(new ActionEntry("Start Backfill", new RelayCommand(() => _ = StartBackfillAsync()), "▶", "Start a new backfill", IsPrimary: true));
+        Actions.Add(new ActionEntry("View Status", new RelayCommand(() => _navigationService.NavigateTo("Backfill")), "📊", "View backfill status"));
 
         await LoadScheduledJobsAsync();
         await LoadResumableJobsAsync();
@@ -802,6 +815,88 @@ public sealed class BackfillViewModel : BindableBase, IDisposable
     // ── Navigation helper ───────────────────────────────────────────────────
     public void NavigateToWizard() => _navigationService.NavigateTo("AnalysisExportWizard");
     public void NavigateToBrowser() => _navigationService.NavigateTo("DataBrowser");
+
+    // ── ICommandContextProvider implementation ──────────────────────────────
+
+    public string ContextKey => "Backfill";
+
+    public IReadOnlyList<CommandEntry> GetContextualCommands()
+    {
+        var commands = new List<CommandEntry>();
+
+        // Start/resume backfill command
+        var startCommand = new RelayCommand(() =>
+        {
+            // Open the backfill start dialog via UI interaction
+            _navigationService.NavigateTo("Backfill");
+        });
+        commands.Add(new CommandEntry(
+            "Start Backfill",
+            "Begin a new backfill operation for selected symbols",
+            "Backfill",
+            startCommand,
+            "Ctrl+B"));
+
+        // Pause/Resume command
+        var pauseResumeCommand = new RelayCommand(PauseOrResumeBackfill);
+        commands.Add(new CommandEntry(
+            IsBackfillActive && !(_backfillService?.IsPaused ?? false) ? "Pause Backfill" : "Resume Backfill",
+            IsBackfillActive && !(_backfillService?.IsPaused ?? false)
+                ? "Pause the currently running backfill operation"
+                : "Resume a paused backfill operation",
+            "Backfill",
+            pauseResumeCommand));
+
+        // Cancel command
+        if (IsBackfillActive)
+        {
+            var cancelCommand = new RelayCommand(CancelBackfill);
+            commands.Add(new CommandEntry(
+                "Cancel Backfill",
+                "Stop and cancel the current backfill operation",
+                "Backfill",
+                cancelCommand));
+        }
+
+        // View status command
+        var viewStatusCommand = new RelayCommand(() =>
+        {
+            _notificationService.ShowNotification(
+                "Backfill Status",
+                BackfillStatusText,
+                NotificationType.Info);
+        });
+        commands.Add(new CommandEntry(
+            "View Backfill Status",
+            "Display current backfill job status and progress",
+            "Backfill",
+            viewStatusCommand));
+
+        // View backfill schedule command
+        var scheduleCommand = new RelayCommand(() =>
+            _navigationService.NavigateTo("Schedules"));
+        commands.Add(new CommandEntry(
+            "View Backfill Schedule",
+            "Open backfill schedule settings",
+            "Backfill",
+            scheduleCommand));
+
+        return commands.AsReadOnly();
+    }
+
+    public void OnActivated()
+    {
+        var paletteService = CommandPaletteService.Instance;
+        paletteService.RegisterContextualProvider(ContextKey, GetContextualCommands);
+        paletteService.SetActiveContext(ContextKey);
+    }
+
+    public void OnDeactivated()
+    {
+        var paletteService = CommandPaletteService.Instance;
+        paletteService.ClearActiveContext();
+        paletteService.UnregisterContextualProvider(ContextKey);
+    }
 
     public void Dispose() => Stop();
 }

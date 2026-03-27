@@ -2,8 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Net.Http;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Input;
+using CommunityToolkit.Mvvm.Input;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
 using WpfServices = Meridian.Wpf.Services;
@@ -14,14 +18,18 @@ namespace Meridian.Wpf.ViewModels;
 /// ViewModel for the Symbols subscription management page.
 /// All state, business logic, watchlist event handling, and backend sync live here;
 /// the code-behind is thinned to lifecycle wiring and pure UI-input delegation.
+/// Includes bridge to Security Master workstation for symbol enrichment.
+/// Provides contextual commands for the command palette when activated.
 /// </summary>
-public sealed class SymbolsPageViewModel : BindableBase, IDisposable
+public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandContextProvider, IPageActionBarProvider
 {
     private readonly WpfServices.ConfigService _configService;
     private readonly WpfServices.WatchlistService _watchlistService;
     private readonly WpfServices.LoggingService _loggingService;
     private readonly WpfServices.NotificationService _notificationService;
+    private readonly WpfServices.NavigationService _navigationService;
     private readonly SymbolManagementService _symbolManagementService;
+    private readonly HttpClient _httpClient = new();
 
     private CancellationTokenSource? _loadCts;
 
@@ -62,6 +70,77 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable
         private set => SetProperty(ref _canBulkAction, value);
     }
 
+    // ── Security Master bridge properties ───────────────────────────────────
+    private string _selectedSymbolTicker = string.Empty;
+    public string SelectedSymbolTicker
+    {
+        get => _selectedSymbolTicker;
+        set
+        {
+            if (SetProperty(ref _selectedSymbolTicker, value))
+            {
+                _ = CheckSecurityMasterStatusAsync(value);
+            }
+        }
+    }
+
+    private bool _canAddToSecurityMaster;
+    public bool CanAddToSecurityMaster
+    {
+        get => _canAddToSecurityMaster;
+        private set => SetProperty(ref _canAddToSecurityMaster, value);
+    }
+
+    private bool _canViewInSecurityMaster;
+    public bool CanViewInSecurityMaster
+    {
+        get => _canViewInSecurityMaster;
+        private set => SetProperty(ref _canViewInSecurityMaster, value);
+    }
+
+    private Guid? _selectedSymbolSecurityId;
+    public Guid? SelectedSymbolSecurityId
+    {
+        get => _selectedSymbolSecurityId;
+        private set => SetProperty(ref _selectedSymbolSecurityId, value);
+    }
+
+    private SymbolViewModel? _selectedItem;
+    public SymbolViewModel? SelectedItem
+    {
+        get => _selectedItem;
+        set
+        {
+            if (SetProperty(ref _selectedItem, value))
+            {
+                SelectedSymbolTicker = value?.Symbol ?? string.Empty;
+                RaisePropertyChanged(nameof(HasSelectedSymbol));
+                NavigateToLiveDataCommand?.RaiseCanExecuteChanged();
+                NavigateToOrderBookCommand?.RaiseCanExecuteChanged();
+                StartBackfillCommand?.RaiseCanExecuteChanged();
+                NavigateToChartCommand?.RaiseCanExecuteChanged();
+                ExportSymbolDataCommand?.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
+    public bool HasSelectedSymbol => _selectedItem != null;
+
+    // ── IPageActionBarProvider implementation ──────────────────────────────────────
+    public string PageTitle => "Symbols";
+    public ObservableCollection<ActionEntry> Actions { get; } = new();
+
+    // ── Commands for Security Master integration ────────────────────────────
+    public RelayCommand AddToSecurityMasterCommand { get; }
+    public RelayCommand ViewInSecurityMasterCommand { get; }
+
+    // ── Commands for action strip ────────────────────────────────────────────
+    public RelayCommand NavigateToLiveDataCommand { get; }
+    public RelayCommand NavigateToOrderBookCommand { get; }
+    public RelayCommand StartBackfillCommand { get; }
+    public RelayCommand NavigateToChartCommand { get; }
+    public RelayCommand ExportSymbolDataCommand { get; }
+
     public SymbolsPageViewModel(
         WpfServices.ConfigService configService,
         WpfServices.WatchlistService watchlistService,
@@ -72,13 +151,51 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable
         _watchlistService = watchlistService;
         _loggingService = loggingService;
         _notificationService = notificationService;
+        _navigationService = WpfServices.NavigationService.Instance;
         _symbolManagementService = SymbolManagementService.Instance;
+
+        // Initialize Security Master commands
+        AddToSecurityMasterCommand = new RelayCommand(
+            () => AddToSecurityMaster(),
+            () => CanAddToSecurityMaster);
+
+        ViewInSecurityMasterCommand = new RelayCommand(
+            () => ViewInSecurityMaster(),
+            () => CanViewInSecurityMaster);
+
+        // Initialize action strip commands
+        NavigateToLiveDataCommand = new RelayCommand(
+            () => NavigateToLiveData(),
+            () => HasSelectedSymbol);
+
+        NavigateToOrderBookCommand = new RelayCommand(
+            () => NavigateToOrderBook(),
+            () => HasSelectedSymbol);
+
+        StartBackfillCommand = new RelayCommand(
+            () => StartBackfill(),
+            () => HasSelectedSymbol);
+
+        NavigateToChartCommand = new RelayCommand(
+            () => NavigateToChart(),
+            () => HasSelectedSymbol);
+
+        ExportSymbolDataCommand = new RelayCommand(
+            () => ExportSymbolData(),
+            () => HasSelectedSymbol);
     }
 
     // ── Lifecycle ───────────────────────────────────────────────────────────
     public async Task StartAsync(CancellationToken ct = default)
     {
         _watchlistService.WatchlistsChanged += OnWatchlistsChanged;
+
+        // Populate action bar.
+        Actions.Clear();
+        Actions.Add(new ActionEntry("Add Symbol", AddToSecurityMasterCommand, "➕", "Add a new symbol", IsPrimary: true));
+        Actions.Add(new ActionEntry("Import", new RelayCommand(() => _notificationService.NotifyInfo("Import", "Symbol import started")), "📥", "Import symbols"));
+        Actions.Add(new ActionEntry("Export", ExportSymbolDataCommand, "📤", "Export symbols"));
+
         await LoadSymbolsFromConfigAsync();
         await LoadWatchlistsAsync();
     }
@@ -448,6 +565,92 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable
         _ = SyncRemoveSymbolFromBackendAsync(symbolToDelete);
     }
 
+    // ── Action Strip Commands ───────────────────────────────────────────────
+    private void NavigateToLiveData()
+    {
+        if (_selectedItem == null) return;
+        try
+        {
+            _navigationService.NavigateTo("LiveData", _selectedItem.Symbol);
+        }
+        catch (Exception ex)
+        {
+            _loggingService.LogError("Failed to navigate to Live Data for symbol", ex);
+            _notificationService.ShowNotification(
+                "Navigation Error",
+                "Failed to open Live Data viewer.",
+                NotificationType.Error);
+        }
+    }
+
+    private void NavigateToOrderBook()
+    {
+        if (_selectedItem == null) return;
+        try
+        {
+            _navigationService.NavigateTo("OrderBook", _selectedItem.Symbol);
+        }
+        catch (Exception ex)
+        {
+            _loggingService.LogError("Failed to navigate to Order Book for symbol", ex);
+            _notificationService.ShowNotification(
+                "Navigation Error",
+                "Failed to open Order Book page.",
+                NotificationType.Error);
+        }
+    }
+
+    private void StartBackfill()
+    {
+        if (_selectedItem == null) return;
+        try
+        {
+            _navigationService.NavigateTo("Backfill", _selectedItem.Symbol);
+        }
+        catch (Exception ex)
+        {
+            _loggingService.LogError("Failed to navigate to Backfill for symbol", ex);
+            _notificationService.ShowNotification(
+                "Navigation Error",
+                "Failed to open Backfill page.",
+                NotificationType.Error);
+        }
+    }
+
+    private void NavigateToChart()
+    {
+        if (_selectedItem == null) return;
+        try
+        {
+            _navigationService.NavigateTo("Charts", _selectedItem.Symbol);
+        }
+        catch (Exception ex)
+        {
+            _loggingService.LogError("Failed to navigate to Charts for symbol", ex);
+            _notificationService.ShowNotification(
+                "Navigation Error",
+                "Failed to open Charting page.",
+                NotificationType.Error);
+        }
+    }
+
+    private void ExportSymbolData()
+    {
+        if (_selectedItem == null) return;
+        try
+        {
+            _navigationService.NavigateTo("DataExport", _selectedItem.Symbol);
+        }
+        catch (Exception ex)
+        {
+            _loggingService.LogError("Failed to navigate to Data Export for symbol", ex);
+            _notificationService.ShowNotification(
+                "Navigation Error",
+                "Failed to open Data Export page.",
+                NotificationType.Error);
+        }
+    }
+
     // ── Persistence & backend sync ──────────────────────────────────────────
     public async Task PersistSymbolsToConfigAsync(CancellationToken ct = default)
     {
@@ -505,4 +708,238 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable
     }
 
     public void Dispose() => Stop();
+
+    // ── Security Master integration ──────────────────────────────────────────
+    /// <summary>
+    /// Checks if the given ticker exists in Security Master.
+    /// Updates SelectedSymbolSecurityId, CanAddToSecurityMaster, and CanViewInSecurityMaster accordingly.
+    /// </summary>
+    private async Task CheckSecurityMasterStatusAsync(string ticker, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(ticker))
+        {
+            SelectedSymbolSecurityId = null;
+            CanViewInSecurityMaster = false;
+            CanAddToSecurityMaster = false;
+            return;
+        }
+
+        try
+        {
+            var baseUrl = _watchlistService.BaseUrl; // Use same base URL as watchlist service
+            var url = $"{baseUrl}/api/security-master/search?query={Uri.EscapeDataString(ticker)}&pageSize=10";
+            
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            cts.CancelAfter(TimeSpan.FromSeconds(5)); // 5-second timeout
+            
+            using var response = await _httpClient.GetAsync(url, cts.Token);
+            
+            if (!response.IsSuccessStatusCode)
+            {
+                _loggingService.LogError($"Security Master search failed with status {response.StatusCode} for {ticker}");
+                SelectedSymbolSecurityId = null;
+                CanViewInSecurityMaster = false;
+                CanAddToSecurityMaster = true; // Allow adding if lookup fails
+                return;
+            }
+
+            var content = await response.Content.ReadAsStringAsync(cts.Token);
+            using var doc = JsonDocument.Parse(content);
+            
+            // Look for a result with an exact Ticker identifier match
+            var root = doc.RootElement;
+            if (root.TryGetProperty("results", out var results) && results.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var result in results.EnumerateArray())
+                {
+                    if (result.TryGetProperty("classification", out var classification) &&
+                        classification.TryGetProperty("primaryIdentifiers", out var identifiers) &&
+                        identifiers.ValueKind == JsonValueKind.Array)
+                    {
+                        foreach (var identifier in identifiers.EnumerateArray())
+                        {
+                            if (identifier.TryGetProperty("kind", out var kind) &&
+                                kind.GetString()?.Equals("Ticker", StringComparison.OrdinalIgnoreCase) == true &&
+                                identifier.TryGetProperty("value", out var value) &&
+                                value.GetString()?.Equals(ticker, StringComparison.OrdinalIgnoreCase) == true)
+                            {
+                                // Found exact match!
+                                if (result.TryGetProperty("securityId", out var securityIdElem) &&
+                                    Guid.TryParse(securityIdElem.GetString(), out var securityId))
+                                {
+                                    SelectedSymbolSecurityId = securityId;
+                                    CanViewInSecurityMaster = true;
+                                    CanAddToSecurityMaster = false;
+                                    _loggingService.LogInformation("Found security in Master for {Ticker}", ticker);
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Not found or no match
+            SelectedSymbolSecurityId = null;
+            CanViewInSecurityMaster = false;
+            CanAddToSecurityMaster = true;
+        }
+        catch (HttpRequestException ex)
+        {
+            _loggingService.LogError($"HTTP error checking Security Master status for {ticker}", ex);
+            SelectedSymbolSecurityId = null;
+            CanViewInSecurityMaster = false;
+            CanAddToSecurityMaster = true;
+        }
+        catch (OperationCanceledException)
+        {
+            _loggingService.LogWarning($"Security Master search timeout for {ticker}");
+            SelectedSymbolSecurityId = null;
+            CanViewInSecurityMaster = false;
+            CanAddToSecurityMaster = true;
+        }
+        catch (Exception ex)
+        {
+            _loggingService.LogError($"Error checking Security Master status for {ticker}", ex);
+            SelectedSymbolSecurityId = null;
+            CanViewInSecurityMaster = false;
+            CanAddToSecurityMaster = true;
+        }
+    }
+
+    /// <summary>
+    /// Navigates to the Security Master page with the selected ticker pre-filled for creation.
+    /// </summary>
+    private void AddToSecurityMaster()
+    {
+        if (string.IsNullOrWhiteSpace(SelectedSymbolTicker))
+        {
+            _notificationService.ShowNotification(
+                "No Selection",
+                "Please select a symbol first.",
+                NotificationType.Warning);
+            return;
+        }
+
+        try
+        {
+            _navigationService.NavigateTo("SecurityMaster", SelectedSymbolTicker);
+        }
+        catch (Exception ex)
+        {
+            _loggingService.LogError("Failed to navigate to Security Master for adding symbol", ex);
+            _notificationService.ShowNotification(
+                "Navigation Error",
+                "Failed to open Security Master page.",
+                NotificationType.Error);
+        }
+    }
+
+    /// <summary>
+    /// Navigates to the Security Master page to view the selected security.
+    /// </summary>
+    private void ViewInSecurityMaster()
+    {
+        if (SelectedSymbolSecurityId == null)
+        {
+            _notificationService.ShowNotification(
+                "No Security Found",
+                "The symbol is not in Security Master.",
+                NotificationType.Warning);
+            return;
+        }
+
+        try
+        {
+            _navigationService.NavigateTo("SecurityMaster", SelectedSymbolSecurityId);
+        }
+        catch (Exception ex)
+        {
+            _loggingService.LogError("Failed to navigate to Security Master for viewing security", ex);
+            _notificationService.ShowNotification(
+                "Navigation Error",
+                "Failed to open Security Master page.",
+                NotificationType.Error);
+        }
+    }
+
+    // ── ICommandContextProvider implementation ──────────────────────────────
+
+    public string ContextKey => "Symbols";
+
+    public IReadOnlyList<CommandEntry> GetContextualCommands()
+    {
+        var commands = new List<CommandEntry>();
+
+        // Add Symbol command
+        var addCommand = new RelayCommand(async () =>
+            await AddSymbolAsync(string.Empty, true, false, 10, "XNAS"));
+        commands.Add(new CommandEntry(
+            "Add Symbol",
+            "Add a new symbol to subscription list",
+            "Symbols",
+            addCommand,
+            "Ctrl+N"));
+
+        // Remove Selected command
+        if (HasSelectedSymbol)
+        {
+            var removeCommand = new RelayCommand(async () =>
+            {
+                if (_selectedItem != null)
+                    await DeleteSymbolAsync(_selectedItem);
+            });
+            commands.Add(new CommandEntry(
+                "Remove Selected",
+                $"Remove {_selectedItem?.Symbol} from the list",
+                "Symbols",
+                removeCommand,
+                "Delete"));
+        }
+
+        // View in Live Data
+        if (HasSelectedSymbol)
+        {
+            var liveDataCommand = new RelayCommand(NavigateToLiveData);
+            commands.Add(new CommandEntry(
+                "View in Live Data",
+                $"Open {_selectedItem?.Symbol} in the Live Data viewer",
+                "Symbols",
+                liveDataCommand));
+        }
+
+        // Export Symbols command
+        var exportCommand = new RelayCommand(() =>
+            _navigationService.NavigateTo("DataExport"));
+        commands.Add(new CommandEntry(
+            "Export Symbols",
+            "Export symbol list and data to file",
+            "Symbols",
+            exportCommand));
+
+        // Reload Symbols command
+        var reloadCommand = new AsyncRelayCommand(LoadSymbolsFromConfigAsync);
+        commands.Add(new CommandEntry(
+            "Reload Symbols",
+            "Refresh the symbol list from configuration",
+            "Symbols",
+            reloadCommand,
+            "F5"));
+
+        return commands.AsReadOnly();
+    }
+
+    public void OnActivated()
+    {
+        var paletteService = CommandPaletteService.Instance;
+        paletteService.RegisterContextualProvider(ContextKey, GetContextualCommands);
+        paletteService.SetActiveContext(ContextKey);
+    }
+
+    public void OnDeactivated()
+    {
+        var paletteService = CommandPaletteService.Instance;
+        paletteService.ClearActiveContext();
+        paletteService.UnregisterContextualProvider(ContextKey);
+    }
 }

@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
+using System.Windows.Forms;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Meridian.Application.SecurityMaster;
@@ -242,6 +243,9 @@ public partial class App : System.Windows.Application
         services.AddSingleton<AdvancedAnalyticsServiceBase>(_ => new AdvancedAnalyticsServiceBase());
         services.AddSingleton(_ => SearchService.Instance);
 
+        // ── AI Agent service (local Ollama) ──────────────────────────────────
+        services.AddSingleton<IAgentLoopService, WpfServices.AgentLoopService>();
+
         // ── Data quality shared services ─────────────────────────────────────
         services.AddSingleton<IDataQualityApiClient, DataQualityApiClient>();
         services.AddSingleton<IDataQualityPresentationService, DataQualityPresentationService>();
@@ -253,6 +257,8 @@ public partial class App : System.Windows.Application
         services.AddSingleton(_ => WpfServices.OfflineTrackingPersistenceService.Instance);
         services.AddSingleton(_ => WpfServices.PendingOperationsQueueService.Instance);
         services.AddSingleton(_ => WpfServices.ToastNotificationService.Instance);
+        services.AddSingleton<ISystemTrayService>(_ => new WpfServices.SystemTrayService());
+        services.AddSingleton(_ => new WpfServices.SystemTrayService());
 
         // ── MainWindow ──────────────────────────────────────────────────────
         services.AddSingleton<MainWindow>();
@@ -316,6 +322,7 @@ public partial class App : System.Windows.Application
         services.AddTransient<SecurityMasterPage>();
         services.AddTransient<Meridian.Wpf.ViewModels.SecurityMasterViewModel>();
         services.AddTransient<PluginManagementPage>();
+        services.AddTransient<AgentPage>();
 
         // ── Backtesting service ──────────────────────────────────────────────
         services.AddSingleton(_ => WpfServices.BacktestService.Instance);
@@ -333,6 +340,7 @@ public partial class App : System.Windows.Application
         services.AddTransient<Meridian.Wpf.ViewModels.StrategyRunPortfolioViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.StrategyRunLedgerViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.PluginManagementViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.AgentViewModel>();
 
         // ── Plugin loader service ────────────────────────────────────────────
         services.AddSingleton<Meridian.Infrastructure.DataSources.DataSourceRegistry>();
@@ -362,6 +370,10 @@ public partial class App : System.Windows.Application
             services.AddSingleton<Meridian.Application.SecurityMaster.ISecurityMasterQueryService>(sp => sp.GetRequiredService<SecurityMasterQueryService>());
             services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(sp => sp.GetRequiredService<SecurityMasterQueryService>());
             services.AddSingleton<ISecurityReferenceLookup, SecurityMasterSecurityReferenceLookup>();
+
+            // Security Master bulk import services
+            services.AddSingleton<SecurityMasterCsvParser>();
+            services.AddSingleton<ISecurityMasterImportService, SecurityMasterImportService>();
         }
 
         services.AddSingleton<IStrategyRepository, StrategyRunStore>();
@@ -401,6 +413,16 @@ public partial class App : System.Windows.Application
             if (Current.MainWindow is MainWindow mainWindow)
             {
                 WpfServices.ThemeService.Instance.Initialize(mainWindow);
+
+                // Initialize system tray integration
+                var systemTrayService = Services.GetRequiredService<ISystemTrayService>();
+                systemTrayService.Initialize(mainWindow);
+
+                // Wire notifications to system tray balloons
+                WireNotificationsTray(systemTrayService);
+
+                // Wire connection status to tray icon
+                WireConnectionStatusTray(systemTrayService);
             }
 
             // Start connection monitoring
@@ -765,4 +787,61 @@ public partial class App : System.Windows.Application
         WpfServices.LoggingService.Instance.LogError("Unobserved task exception", e.Exception);
         e.SetObserved(); // Prevent the process from terminating
     }
+
+    /// <summary>
+    /// Wires the NotificationService to the system tray to display important notifications as balloon tips.
+    /// </summary>
+    private static void WireNotificationsTray(ISystemTrayService systemTrayService)
+    {
+        var notificationService = WpfServices.NotificationService.Instance;
+        notificationService.NotificationReceived += (sender, args) =>
+        {
+            // Only show high-priority notifications in tray to avoid spam
+            if (args.Type == NotificationType.Error || args.Type == NotificationType.Success)
+            {
+                var icon = args.Type switch
+                {
+                    NotificationType.Error => System.Windows.Forms.ToolTipIcon.Error,
+                    NotificationType.Warning => System.Windows.Forms.ToolTipIcon.Warning,
+                    NotificationType.Success => System.Windows.Forms.ToolTipIcon.Info,
+                    _ => System.Windows.Forms.ToolTipIcon.Info
+                };
+
+                systemTrayService.ShowBalloonTip(args.Title, args.Message, icon, args.DurationMs);
+            }
+        };
+    }
+
+    /// <summary>
+    /// Wires the ConnectionService status changes to the system tray icon color and tooltip.
+    /// Updates the tray icon to reflect connection health: green (connected), amber (reconnecting), red (disconnected).
+    /// </summary>
+    private static void WireConnectionStatusTray(ISystemTrayService systemTrayService)
+    {
+        var connectionService = WpfServices.ConnectionService.Instance;
+        connectionService.StateChanged += (sender, args) =>
+        {
+            // Map ConnectionState to ConnectionStatus
+            var status = args.NewState switch
+            {
+                ConnectionState.Connected => ConnectionStatus.Connected,
+                ConnectionState.Reconnecting => ConnectionStatus.Reconnecting,
+                ConnectionState.Disconnected => ConnectionStatus.Disconnected,
+                _ => ConnectionStatus.Unknown
+            };
+
+            systemTrayService.UpdateHealthStatus(status);
+        };
+
+        // Set initial status
+        var initialStatus = connectionService.State switch
+        {
+            ConnectionState.Connected => ConnectionStatus.Connected,
+            ConnectionState.Reconnecting => ConnectionStatus.Reconnecting,
+            ConnectionState.Disconnected => ConnectionStatus.Disconnected,
+            _ => ConnectionStatus.Unknown
+        };
+        systemTrayService.UpdateHealthStatus(initialStatus);
+    }
 }
+

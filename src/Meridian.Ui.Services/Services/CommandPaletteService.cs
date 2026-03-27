@@ -1,14 +1,20 @@
+using System.Collections.Concurrent;
+using System.Windows.Input;
+
 namespace Meridian.Ui.Services;
 
 /// <summary>
 /// Service providing a command palette (Ctrl+K) for quick navigation and action execution.
 /// Supports fuzzy search across all registered pages, actions, and settings.
+/// Also supports contextual commands registered per ViewModel.
 /// </summary>
 public sealed class CommandPaletteService
 {
     private static readonly Lazy<CommandPaletteService> _instance = new(() => new CommandPaletteService());
     private readonly List<PaletteCommand> _commands = new();
     private readonly List<string> _recentCommands = new();
+    private readonly ConcurrentDictionary<string, Func<IReadOnlyList<CommandEntry>>> _contextualProviders = new();
+    private string? _activeContextKey;
     private const int MaxRecentCommands = 10;
 
     public static CommandPaletteService Instance => _instance.Value;
@@ -22,6 +28,11 @@ public sealed class CommandPaletteService
     /// Event raised when a command is executed through the palette.
     /// </summary>
     public event EventHandler<PaletteCommandEventArgs>? CommandExecuted;
+
+    /// <summary>
+    /// Event raised when available commands change (context switch or provider registration).
+    /// </summary>
+    public event EventHandler? CommandsChanged;
 
     /// <summary>
     /// Searches commands using fuzzy matching.
@@ -99,6 +110,48 @@ public sealed class CommandPaletteService
     /// Gets all registered commands.
     /// </summary>
     public IReadOnlyList<PaletteCommand> GetAllCommands() => _commands.AsReadOnly();
+
+    /// <summary>
+    /// Registers a contextual command provider for a specific context key.
+    /// </summary>
+    public void RegisterContextualProvider(string contextKey, Func<IReadOnlyList<CommandEntry>> provider)
+    {
+        _contextualProviders[contextKey] = provider;
+        CommandsChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>
+    /// Unregisters a contextual command provider.
+    /// </summary>
+    public void UnregisterContextualProvider(string contextKey)
+    {
+        if (_contextualProviders.TryRemove(contextKey, out _))
+        {
+            if (_activeContextKey == contextKey)
+            {
+                _activeContextKey = null;
+            }
+            CommandsChanged?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    /// <summary>
+    /// Sets the active context, enabling contextual commands from that context's provider.
+    /// </summary>
+    public void SetActiveContext(string contextKey)
+    {
+        _activeContextKey = contextKey;
+        CommandsChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>
+    /// Clears the active context, disabling contextual commands.
+    /// </summary>
+    public void ClearActiveContext()
+    {
+        _activeContextKey = null;
+        CommandsChanged?.Invoke(this, EventArgs.Empty);
+    }
 
     private IReadOnlyList<PaletteCommand> GetRecentAndPopularCommands()
     {
@@ -360,3 +413,14 @@ public sealed class PaletteCommandEventArgs : EventArgs
     public string ActionId { get; init; } = string.Empty;
     public PaletteCommandCategory Category { get; init; }
 }
+
+/// <summary>
+/// A contextual command entry with title, description, category, and command.
+/// </summary>
+public sealed record CommandEntry(
+    string Title,
+    string? Description,
+    string? Category,
+    ICommand Command,
+    string? Shortcut = null);
+

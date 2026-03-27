@@ -123,6 +123,11 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.AddSingleton<IPolygonCorporateActionFetcher, PolygonCorporateActionFetcher>();
         services.AddSingleton<PolygonCorporateActionFetcher>(sp => (PolygonCorporateActionFetcher)sp.GetRequiredService<IPolygonCorporateActionFetcher>());
         services.AddHostedService<PolygonCorporateActionFetcher>(sp => sp.GetRequiredService<PolygonCorporateActionFetcher>());
+        services.AddSingleton<ITradingParametersBackfillService, TradingParametersBackfillService>();
+
+        // Security Master bulk import services
+        services.AddSingleton<SecurityMasterCsvParser>();
+        services.AddSingleton<ISecurityMasterImportService, SecurityMasterImportService>();
 
         return services;
     }

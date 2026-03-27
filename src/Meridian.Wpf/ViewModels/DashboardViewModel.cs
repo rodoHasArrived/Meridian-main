@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.Input;
@@ -18,8 +20,9 @@ namespace Meridian.Wpf.ViewModels;
 /// ViewModel for the Dashboard page.
 /// Holds all state, business logic, cached resources, timer management, and commands
 /// so that the code-behind can be thinned to lifecycle wiring only (M1–M4, M6, M7).
+/// Provides contextual commands for the command palette when activated.
 /// </summary>
-public sealed class DashboardViewModel : BindableBase, IDisposable
+public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionBarProvider, ICommandContextProvider
 {
     private const int MaxActivityItems = 25;
     private const int SparklineCapacity = 30;
@@ -302,6 +305,10 @@ public sealed class DashboardViewModel : BindableBase, IDisposable
     public IRelayCommand ExportIntegrityReportCommand { get; }
     public IRelayCommand QuickAddSymbolCommand { get; }
 
+    // ── IPageActionBarProvider implementation ──────────────────────────────────────
+    public string PageTitle => "Dashboard";
+    public ObservableCollection<ActionEntry> Actions { get; } = new();
+
     // ─────────────────────────────────────────────────────────────────────────────
 
     public DashboardViewModel(
@@ -358,6 +365,12 @@ public sealed class DashboardViewModel : BindableBase, IDisposable
         ExportIntegrityReportCommand = new RelayCommand(() =>
             _notificationService.NotifyInfo("Report queued", "Integrity report export started."));
         QuickAddSymbolCommand = new RelayCommand(ExecuteQuickAddSymbol);
+
+        // Populate action bar.
+        Actions.Clear();
+        Actions.Add(new ActionEntry("Refresh", RefreshStatusCommand, "↻", "Refresh all data", IsPrimary: true));
+        Actions.Add(new ActionEntry("View Logs", ViewLogsCommand, "📋", "View activity log"));
+        Actions.Add(new ActionEntry("Data Quality", ViewAllIntegrityEventsCommand, "✓", "View data quality metrics"));
 
         // Observe collection changes to keep empty-state flags up to date.
         ActivityItems.CollectionChanged += (_, _) => IsNoActivityVisible = ActivityItems.Count == 0;
@@ -863,4 +876,92 @@ public sealed class DashboardViewModel : BindableBase, IDisposable
         >= 1_000 => $"{number / 1_000.0:F1}K",
         _ => number.ToString("N0")
     };
+
+    // ── ICommandContextProvider implementation ──────────────────────────────
+
+    public string ContextKey => "Dashboard";
+
+    public IReadOnlyList<CommandEntry> GetContextualCommands()
+    {
+        var commands = new List<CommandEntry>();
+
+        // Refresh Status command
+        var refreshCommand = RefreshStatusCommand;
+        commands.Add(new CommandEntry(
+            "Refresh Dashboard",
+            "Refresh all dashboard metrics and status",
+            "Dashboard",
+            refreshCommand,
+            "F5"));
+
+        // Start/Stop Collector command
+        if (_isCollectorPaused || CollectorStatusText.Contains("Stopped"))
+        {
+            var startCommand = StartCollectorCommand;
+            commands.Add(new CommandEntry(
+                "Start Data Collector",
+                "Start collecting market data from enabled providers",
+                "Dashboard",
+                startCommand));
+        }
+        else
+        {
+            var stopCommand = StopCollectorCommand;
+            commands.Add(new CommandEntry(
+                "Stop Data Collector",
+                "Stop the data collector",
+                "Dashboard",
+                stopCommand));
+        }
+
+        // View Provider Health command
+        var healthCommand = new RelayCommand(() =>
+            _navigationService.NavigateTo("ProviderHealth"));
+        commands.Add(new CommandEntry(
+            "View Provider Health",
+            "Open provider status and health monitoring",
+            "Dashboard",
+            healthCommand));
+
+        // View Data Quality command
+        var qualityCommand = new RelayCommand(() =>
+            _navigationService.NavigateTo("DataQuality"));
+        commands.Add(new CommandEntry(
+            "View Data Quality",
+            "Open data quality metrics and alerts",
+            "Dashboard",
+            qualityCommand));
+
+        // View Activity Log command
+        var logCommand = ViewLogsCommand;
+        commands.Add(new CommandEntry(
+            "View Activity Log",
+            "View recent activity and events",
+            "Dashboard",
+            logCommand));
+
+        // Run Backfill command
+        var backfillCommand = RunBackfillCommand;
+        commands.Add(new CommandEntry(
+            "Run Backfill",
+            "Start a backfill operation for missing data",
+            "Dashboard",
+            backfillCommand));
+
+        return commands.AsReadOnly();
+    }
+
+    public void OnActivated()
+    {
+        var paletteService = CommandPaletteService.Instance;
+        paletteService.RegisterContextualProvider(ContextKey, GetContextualCommands);
+        paletteService.SetActiveContext(ContextKey);
+    }
+
+    public void OnDeactivated()
+    {
+        var paletteService = CommandPaletteService.Instance;
+        paletteService.ClearActiveContext();
+        paletteService.UnregisterContextualProvider(ContextKey);
+    }
 }
