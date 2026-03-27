@@ -159,14 +159,18 @@ Workflows have been consolidated from 37 to 33 files, reducing duplication and a
   - Skips bot-authored pushes to avoid workflow loops
 
 #### 13. **Update Diagram Artifacts** (`update-diagrams.yml`) *(consolidated)*
-- **Trigger**: Push to `main` touching `docs/diagrams/*.dot`, `docs/diagrams/uml/*.puml`, or WPF source files; manual dispatch
+- **Trigger**: Push to `main` touching `docs/diagrams/**/*.dot`, `docs/diagrams/uml/*.puml`, diagram generator scripts, or WPF source files; manual dispatch
 - **Absorbed**: `update-uml-diagrams.yml`
 - **Purpose**: Automatically regenerates SVG and PNG diagram artifacts from DOT and PlantUML sources
 - **Features**:
-  - `regenerate-diagrams` job: Installs Graphviz and converts DOT files to SVG; also runs `npm run generate-diagrams` to regenerate auto-generated UI diagram DOT sources
-  - `regenerate-uml-diagrams` job: Installs PlantUML and converts `.puml` files to PNG
-  - Auto-commits regenerated artifacts to keep them in sync with sources
-  - Both jobs run independently to avoid blocking each other
+  - Single `regenerate-diagrams` job handles all diagram types end-to-end
+  - Runs `npm run generate-diagrams` to regenerate auto-derived DOT sources from WPF XAML
+  - Installs Graphviz + JRE in one consolidated `apt-get install` step
+  - Converts all `docs/diagrams/**/*.dot` files to `.svg` and `.png` using Graphviz
+  - Converts all `docs/diagrams/uml/*.puml` files to `.svg` and `.png` using PlantUML
+  - Verifies all generated artifacts are non-empty before committing
+  - Publishes a workflow summary with artifact counts
+  - Auto-commits changed `.svg` and `.png` artifacts only (source `.dot` and `.puml` files are never modified by CI)
 
 ### Automation and Maintenance Workflows
 
@@ -473,5 +477,5 @@ When using `peter-evans/create-pull-request` action with a fallback commit step:
 
 ---
 
-**Last Updated**: 2026-02-12
+**Last Updated**: 2026-03-27
 **Maintained By**: Meridian Team

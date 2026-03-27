@@ -1,7 +1,7 @@
 # Consolidated diagram artifact workflow
 # Replaces and combines:
 #   - update-diagrams.yml (Graphviz/DOT → SVG + PNG)
-#   - update-uml-diagrams.yml (PlantUML → PNG)
+#   - update-uml-diagrams.yml (PlantUML → SVG + PNG)
 
 name: Update Diagram Artifacts
 
@@ -50,10 +50,13 @@ jobs:
       - name: Generate auto-updated UI diagram sources
         run: npm run generate-diagrams
 
-      - name: Install Graphviz
-        run: sudo apt-get update && sudo apt-get install -y graphviz
+      - name: Install system dependencies (Graphviz + JRE)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends graphviz default-jre-headless wget
 
       - name: Regenerate Graphviz artifacts from DOT
+        id: graphviz
         run: |
           set -euo pipefail
 
@@ -61,22 +64,24 @@ jobs:
 
           if [ ${#dot_files[@]} -eq 0 ]; then
             echo "No DOT files found in docs/diagrams"
+            echo "dot_count=0" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
+          count=0
           for file in "${dot_files[@]}"; do
             base="${file%.dot}"
             dot -Tsvg "$file" -o "${base}.svg"
             dot -Tpng "$file" -o "${base}.png"
             echo "Generated ${base}.svg"
             echo "Generated ${base}.png"
+            count=$((count + 1))
           done
+          echo "dot_count=${count}" >> "$GITHUB_OUTPUT"
 
       - name: Install PlantUML
         run: |
-          sudo apt-get update
-          sudo apt-get install -y default-jre-headless wget
-          PLANTUML_VERSION="1.2024.8"
+          PLANTUML_VERSION="1.2025.2"
           sudo wget -q "https://github.com/plantuml/plantuml/releases/download/v${PLANTUML_VERSION}/plantuml-${PLANTUML_VERSION}.jar" \
             -O /usr/local/share/plantuml.jar
           printf '#!/bin/sh\nexec java -jar /usr/local/share/plantuml.jar "$@"\n' \
@@ -84,7 +89,8 @@ jobs:
           sudo chmod +x /usr/local/bin/plantuml
           plantuml -version
 
-      - name: Regenerate UML PNG artifacts
+      - name: Regenerate UML artifacts from PUML
+        id: plantuml
         run: |
           set -euo pipefail
 
@@ -93,13 +99,48 @@ jobs:
 
           if [ ${#puml_files[@]} -eq 0 ]; then
             echo "No PlantUML files found in docs/diagrams/uml"
+            echo "puml_count=0" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
+          count=0
           for file in "${puml_files[@]}"; do
             echo "Rendering ${file}"
             plantuml -tpng "$file"
+            plantuml -tsvg "$file"
+            count=$((count + 1))
           done
+          echo "puml_count=${count}" >> "$GITHUB_OUTPUT"
+
+      - name: Verify generated artifacts are non-empty
+        run: |
+          set -euo pipefail
+          failed=0
+          while IFS= read -r -d '' f; do
+            if [ ! -s "$f" ]; then
+              echo "::error::Generated artifact is empty: $f"
+              failed=$((failed + 1))
+            fi
+          done < <(find docs/diagrams -type f \( -name '*.svg' -o -name '*.png' \) -print0)
+          if [ "$failed" -gt 0 ]; then
+            echo "::error::${failed} artifact(s) are empty — rendering may have failed silently"
+            exit 1
+          fi
+          echo "All generated artifacts are non-empty."
+
+      - name: Write workflow summary
+        if: always()
+        run: |
+          {
+            echo "## Diagram Artifact Regeneration"
+            echo ""
+            echo "| Type | Sources processed |"
+            echo "|------|------------------|"
+            echo "| Graphviz (DOT → SVG + PNG) | ${{ steps.graphviz.outputs.dot_count || '0' }} |"
+            echo "| PlantUML (PUML → SVG + PNG) | ${{ steps.plantuml.outputs.puml_count || '0' }} |"
+            echo ""
+            echo "Changed artifacts will be committed back to the branch by the next step."
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Commit regenerated diagram artifacts
         uses: stefanzweifel/git-auto-commit-action@v7
