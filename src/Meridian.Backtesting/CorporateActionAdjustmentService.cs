@@ -9,12 +9,12 @@ namespace Meridian.Backtesting;
 /// </summary>
 public sealed class CorporateActionAdjustmentService : ICorporateActionAdjustmentService
 {
-    private readonly ISecurityMasterQueryService _queryService;
+    private readonly Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService _queryService;
     private readonly ISecurityResolver _resolver;
     private readonly ILogger<CorporateActionAdjustmentService> _logger;
 
     public CorporateActionAdjustmentService(
-        ISecurityMasterQueryService queryService,
+        Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService queryService,
         ISecurityResolver resolver,
         ILogger<CorporateActionAdjustmentService> logger)
     {
