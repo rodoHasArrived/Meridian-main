@@ -468,37 +468,44 @@ This multi-segment scope is both Meridian's differentiation and its execution ri
 
 ### 2.14 FundStudio (Objectway)
 
-**What it is:** FundStudio is a fund administration and portfolio management platform developed by **Objectway**, a European financial technology firm headquartered in Milan. It targets wealth managers, fund administrators, asset servicers, and discretionary portfolio managers — primarily across European and Middle Eastern markets, with a growing presence in the UK.
+**What it is:** FundStudio is a front-to-back fund management platform developed by **Objectway**, a European financial technology firm headquartered in Milan. It targets hedge funds, CTAs, private credit managers, wealth managers, fund administrators, and asset servicers — primarily across European and Middle Eastern markets, with a growing presence in the UK.
 
 **Business model:**
 - Perpetual licence + annual maintenance, or SaaS subscription
 - Modular per-component pricing (portfolio management, order management, back-office, reporting)
 - Professional services for implementation and migration
+- Cloud-native SaaS deployment also available
 
 **Strengths:**
-- Full front-to-back office coverage: portfolio construction → order management → settlement → back-office accounting
-- Discretionary and advisory mandate management
-- Regulatory reporting suite: MiFID II, PRIIPs, FATCA, CRS, AIFMD
+- Full front-to-back office coverage: portfolio construction → order management → settlement → back-office accounting → NAV calculation
+- Cross-asset order management system (OMS): unified order blotter for equities, fixed income, credit, FX, and derivatives
+- FIX protocol connectivity for order routing to brokers and execution venues
+- Real-time pre- and post-trade compliance checks with configurable hard-stops and mandate enforcement
+- Rules-based post-trade allocation by strategy, trader, or tax lot
+- Multi-custodian order synchronization and position reconciliation
+- Discretionary and advisory mandate management with rebalancing and drift monitoring
+- Regulatory reporting suite: MiFID II (RTS 28, cost/charges), PRIIPs, FATCA, CRS, AIFMD
 - Multi-currency, multi-entity, multi-custodian support
-- Model portfolio management with rebalancing and drift monitoring
-- Client reporting and investor portal
-- Deep European regulatory compliance depth
+- Client reporting and investor portal with performance attribution
 
 **Weaknesses:**
 - No real-time market data collection or tick-level data storage
 - No algorithmic trading or backtesting engine
-- No direct lending / private credit vertical (positioned for regulated collective investment schemes and managed accounts, not bilateral credit)
 - Enterprise pricing and lengthy implementation cycles — inaccessible to small funds
-- Primarily front-to-back for regulated asset managers; lacks the private credit / direct lending specificity of Allvue
+- OMS targets discretionary execution workflows; lacks the automated strategy-driven order generation that Meridian provides through its execution gateway
 
-**Meridian advantage:** Meridian integrates market data infrastructure, backtesting, and direct lending in a single platform. FundStudio addresses a different buyer persona (regulated UCITS/AIFMD fund administrators) rather than the credit fund / multi-strategy quant manager that Meridian targets.
+**Meridian advantage:** Meridian delivers market data infrastructure, tick-level backtesting, and strategy-driven live execution in a single platform. FundStudio's OMS is designed for human-in-the-loop discretionary trading with compliance guardrails, whereas Meridian's execution layer is built for automated strategy execution with paper trading and brokerage gateway support. Meridian also has no FIX or multi-custodian settlement layer, which FundStudio covers well for regulated fund operations.
 
 **Gap vs Meridian (areas FundStudio covers that Meridian lacks):**
+- FIX protocol order routing to external brokers and execution venues
+- Pre- and post-trade compliance hard-stops with mandate enforcement
+- Rules-based post-trade trade allocation (by strategy, tax lot, or trader)
+- Multi-custodian settlement reconciliation and position synchronization
 - Discretionary mandate / model portfolio management with rebalancing
 - MiFID II transaction and cost reporting (RTS 28, cost/charges disclosures)
 - Client-facing investor portal with mandate statements and performance attribution
-- Multi-custodian settlement reconciliation
 - PRIIPs KID document generation
+- NAV calculation and back-office accounting automation
 
 ---
 
