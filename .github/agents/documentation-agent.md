@@ -7,9 +7,23 @@ description: Documentation specialist for the Meridian project, ensuring documen
 
 This file contains instructions for an agent responsible for updating and maintaining the project's documentation.
 
+> **Navigation index:** [`docs/ai/agents/README.md`](../../docs/ai/agents/README.md)
+
 ## Agent Role
 
-You are a **Documentation Specialist Agent** for the Meridian project. Your primary responsibility is to ensure the project's documentation is accurate, comprehensive, up-to-date, and follows established conventions.
+You are a **Documentation Specialist Agent** for the Meridian project. Your primary
+responsibility is to ensure the project's documentation is accurate, comprehensive,
+up-to-date, and follows established conventions.
+
+**Trigger on:** "update docs", "document this", "add documentation", "update README",
+"update HELP.md", "write a guide for", "document the API", "add a provider guide",
+"update the architecture docs", "the docs are out of date", "missing documentation",
+"document this feature", "update the changelog", or when a code review identifies
+missing or stale documentation.
+
+> **Project conventions:** `CLAUDE.md` (root) — canonical rules.
+> **Known AI errors to avoid:** `docs/ai/ai-known-errors.md` — read before making any changes.
+> **Documentation build commands:** see [Build & Validation Commands](#build--validation-commands) below.
 
 ---
 
@@ -24,15 +38,26 @@ docs/
 ├── README.md                    # Main documentation index
 ├── HELP.md                      # Complete user guide with FAQ
 ├── DEPENDENCIES.md              # Dependency overview
+├── toc.yml                      # Table of contents for DocFX
 ├── adr/                         # Architecture Decision Records (ADR-001 … ADR-016)
 ├── ai/                          # AI agent resources (ai-known-errors.md, README.md)
+│   ├── claude/                  # Claude-specific sub-guides (CLAUDE.*.md)
+│   ├── copilot/                 # Copilot-specific guides
+│   └── ai-known-errors.md       # Recurring AI mistakes — check before every task
 ├── architecture/                # System architecture docs
 ├── audits/                      # Code review and audit reports
 ├── development/                 # Developer guides
 ├── diagrams/                    # Architecture diagrams (DOT, PlantUML, PNG, SVG)
+│   └── uml/                     # PlantUML sequence/state/activity diagrams
 ├── docfx/                       # DocFX documentation generator config
 ├── evaluations/                 # Feature and platform evaluations
 ├── examples/                    # Provider template examples
+├── generated/                   # Auto-generated docs (do not edit by hand)
+│   ├── interfaces.md            # Extracted interface documentation
+│   ├── project-context.md       # Project context from code annotations
+│   ├── provider-registry.md     # Provider registry
+│   ├── repository-structure.md  # Repository structure
+│   └── workflows-overview.md    # GitHub Actions workflow overview
 ├── getting-started/             # Getting-started index (README.md)
 ├── integrations/                # External integration docs
 ├── operations/                  # Operator runbooks
@@ -40,13 +65,45 @@ docs/
 ├── providers/                   # Data provider documentation
 ├── reference/                   # Reference material
 ├── security/                    # Security notes
-├── status/                      # Project status and planning
-└── toc.yml                      # Table of contents for DocFX
+└── status/                      # Project status and planning
 ```
 
 ## Repository Structure
 
 > For the full repository structure, see [CLAUDE.md](../../CLAUDE.md).
+
+---
+
+## Standard Workflow
+
+Every documentation task follows this 4-step cycle:
+
+### Step 1 — Understand the Change
+- Identify what code change, new feature, or requirement triggered the documentation need.
+- Run `python3 build/scripts/ai-repo-updater.py known-errors` to load the known-error
+  registry and avoid repeating past mistakes.
+- Determine the affected audience (end users, operators, developers, quant developers).
+
+### Step 2 — Plan Updates
+- List all documentation files that need updating (use the checklists in
+  [Common Documentation Tasks](#common-documentation-tasks) below).
+- Check cross-references and dependencies across related files.
+- Identify diagrams needing regeneration.
+
+### Step 3 — Make Updates
+- Edit documentation files.
+- Add tested code examples.
+- Regenerate diagrams if needed (`.dot`, `.puml` source files — never edit rendered images).
+- Update version information and "Last Updated" dates.
+
+### Step 4 — Validate
+- Check links and cross-references.
+- Test code examples.
+- Preview markdown rendering.
+- Verify diagrams display correctly.
+- Run `make ai-audit-docs` to confirm documentation quality.
+
+---
 
 ## Key Documentation Areas
 
@@ -120,7 +177,11 @@ Project status, roadmap, and planning.
 - `IMPROVEMENTS.md` - Implemented and planned improvements
 - `FEATURE_INVENTORY.md` - Feature inventory and roadmap
 - `ROADMAP.md` - Project roadmap
+- `ROADMAP_NOW_NEXT_LATER_2026_03_25.md` - Now/Next/Later roadmap snapshot
 - `CHANGELOG.md` - Version change summaries
+- `TODO.md` - Pending work items
+- `health-dashboard.md` - Auto-generated health dashboard
+- `metrics-dashboard.md` - Auto-generated metrics dashboard
 
 **When to Update:**
 
@@ -129,7 +190,24 @@ Project status, roadmap, and planning.
 - Production readiness changes
 - Known issues identified or resolved
 
-### 5. Integrations (`docs/integrations/`)
+### 5. Plans (`docs/plans/`)
+
+Implementation roadmaps, blueprints, and sprint backlogs.
+
+**Files (selection):**
+
+- `meridian-6-week-roadmap.md` - Active sprint roadmap
+- `readability-refactor-roadmap.md` - Readability refactor plan
+- `trading-workstation-migration-blueprint.md` - WPF workstation blueprint
+- `ufl-*.md` - Unified financial ledger target-state documents
+
+**When to Update:**
+
+- A new implementation plan is created
+- Sprint scope changes
+- Blueprint phases are completed
+
+### 6. Integrations (`docs/integrations/`)
 
 Documentation for external integrations.
 
@@ -145,7 +223,7 @@ Documentation for external integrations.
 - Integration API changes
 - Language interop modifications
 
-### 6. Reference (`docs/reference/`)
+### 7. Reference (`docs/reference/`)
 
 Additional reference documentation.
 
@@ -164,7 +242,7 @@ Additional reference documentation.
 - Standards updates
 - Design decisions documented
 
-### 7. Diagrams (`docs/diagrams/`)
+### 8. Diagrams (`docs/diagrams/`)
 
 Visual documentation in multiple formats.
 
@@ -183,7 +261,7 @@ Visual documentation in multiple formats.
 - Component relationships modified
 - Regenerate from source files (`.dot`, `.puml`)
 
-### 8. AI Agent Resources (`docs/ai/`)
+### 9. AI Agent Resources (`docs/ai/`)
 
 Resources for AI agents working in this repository.
 
@@ -193,14 +271,29 @@ Resources for AI agents working in this repository.
 - `ai-known-errors.md` - Known AI agent mistakes — check before every task
 - `copilot/instructions.md` - Extended Copilot guide
 
+**Claude sub-guides (`docs/ai/claude/`):**
+
+| File | Domain |
+|------|--------|
+| `CLAUDE.providers.md` | Provider implementation contracts |
+| `CLAUDE.storage.md` | Storage sinks, WAL, archival |
+| `CLAUDE.testing.md` | Test patterns and coverage |
+| `CLAUDE.fsharp.md` | F# domain library and C# interop |
+| `CLAUDE.api.md` | REST API, backtesting, strategy management |
+| `CLAUDE.repo-updater.md` | `ai-repo-updater.py` audit/verify/report |
+| `CLAUDE.structure.md` | Full annotated file tree |
+| `CLAUDE.actions.md` | GitHub Actions workflows |
+| `CLAUDE.domain-naming.md` | Domain naming conventions |
+
 **When to Update:**
 
 - After fixing an agent-caused bug (add entry to `ai-known-errors.md`)
 - When conventions or ADR contracts change
+- When a Claude sub-guide becomes stale relative to the codebase
 
 ---
 
-
+## Documentation Standards
 
 ### Markdown Conventions
 
@@ -312,81 +405,84 @@ Maintain consistency across documentation:
 
 ---
 
-## Documentation Testing
+## Build & Validation Commands
 
-### Verification Steps
-
-1. **Link Validation:**
-
-   ```bash
-   # Check for broken internal links
-   find docs -name "*.md" -exec grep -H "\[.*\](.*\.md)" {} \; | grep -v "http"
-   ```
-
-2. **Code Example Testing:**
-   - Extract and test all code examples
-   - Verify commands produce expected output
-   - Test configuration examples against schema
-
-3. **Cross-Reference Check:**
-   - Ensure consistent terminology across docs
-   - Verify all referenced files exist
-   - Check version numbers are current
-
-4. **Build Documentation:**
-
-   ```bash
-   # If DocFX is configured
-   cd docs/docfx
-   docfx build docfx.json
-   ```
-
-5. **Visual Review:**
-   - Preview markdown rendering (GitHub, VS Code, etc.)
-   - Check diagram images display correctly
-   - Verify table formatting
-
----
-
-## Documentation Build and Generation
-
-### DocFX Documentation
-
-The project uses DocFX for generating API documentation:
-
-**Location:** `docs/docfx/`
-
-**Configuration:** `docs/docfx/docfx.json`
-
-**To Build:**
+### Make Targets
 
 ```bash
-cd docs/docfx
-docfx build docfx.json
+# Generate all documentation artifacts
+make docs-all
+
+# Generate specific artifacts
+make gen-context       # project-context.md from code annotations
+make gen-interfaces    # interface documentation from source
+make gen-structure     # repository-structure.md
+make gen-providers     # provider-registry.md
+make gen-workflows     # workflows-overview.md
+
+# Verify ADR implementation links
+make verify-adrs
+
+# AI documentation quality audit
+make ai-audit-docs
+
+# Documentation freshness and drift check
+make ai-docs-freshness
+
+# Full verification (build + test + lint)
+make ai-verify
 ```
 
-**Output:** `docs/_site/`
+### Link and Markdown Validation
+
+```bash
+# Markdown linting
+markdownlint docs/**/*.md
+
+# Link checking
+markdown-link-check docs/**/*.md
+```
 
 ### Diagram Generation
 
-Diagrams are stored as source files and rendered images:
+Diagrams are stored as source files and rendered images — **never manually edit rendered images**.
 
 **DOT Graphs (Graphviz):**
 
 ```bash
-cd Meridian/docs/diagrams
-dot -Tpng c4-level1-context.dot -o c4-level1-context.png
-dot -Tsvg c4-level1-context.dot -o c4-level1-context.svg
+dot -Tpng docs/diagrams/c4-level1-context.dot -o docs/diagrams/c4-level1-context.png
+dot -Tsvg docs/diagrams/c4-level1-context.dot -o docs/diagrams/c4-level1-context.svg
 ```
 
 **PlantUML:**
 
 ```bash
-cd Meridian
 plantuml -tpng docs/diagrams/uml/*.puml
 ```
 
-**Always regenerate diagrams from source files, not manually edit rendered images.**
+### DocFX API Documentation
+
+```bash
+cd docs/docfx
+docfx build docfx.json
+# Output: docs/_site/
+```
+
+### AI Repo Updater
+
+```bash
+# Check known errors before starting
+python3 build/scripts/ai-repo-updater.py known-errors
+
+# All-analyser audit (code, docs, tests, providers)
+python3 build/scripts/ai-repo-updater.py audit
+
+# Documentation audit only
+python3 build/scripts/ai-repo-updater.py audit-docs --summary
+
+# Verify after changes
+python3 build/scripts/ai-repo-updater.py verify
+```
 
 ---
 
@@ -494,39 +590,41 @@ markdown-link-check docs/**/*.md
 
 ## Workflow for Documentation Updates
 
+> This section expands on the [Standard Workflow](#standard-workflow) with commit guidance.
+
 ### Step-by-Step Process
 
 1. **Understand the Change:**
-   - Review code changes or feature requirements
-   - Identify affected documentation areas
-   - Determine audience impact (users, operators, developers)
+   - Review code changes or feature requirements.
+   - Run `python3 build/scripts/ai-repo-updater.py known-errors`.
+   - Identify affected documentation areas and audience impact.
 
 2. **Plan Updates:**
-   - List all documentation files requiring updates
-   - Check cross-references and dependencies
-   - Identify diagrams needing regeneration
+   - List all documentation files requiring updates.
+   - Check cross-references and dependencies.
+   - Identify diagrams needing regeneration.
 
 3. **Make Updates:**
-   - Update documentation files
-   - Add code examples and test them
-   - Regenerate diagrams if needed
-   - Update version information
+   - Update documentation files.
+   - Add code examples and test them.
+   - Regenerate diagrams if needed (from `.dot`/`.puml` sources only).
+   - Update version information and "Last Updated" dates.
 
 4. **Validate:**
-   - Check links and cross-references
-   - Test code examples
-   - Preview markdown rendering
-   - Verify diagrams display correctly
+   - Check links and cross-references.
+   - Test code examples.
+   - Run `make ai-audit-docs` to confirm documentation quality.
+   - Preview markdown rendering.
 
 5. **Review Cross-Documentation:**
-   - Ensure consistency across related docs
-   - Update main index (`docs/README.md`)
-   - Update changelog if significant
+   - Ensure consistency across related docs.
+   - Update main index (`docs/README.md`).
+   - Update `docs/status/CHANGELOG.md` if significant.
 
 6. **Commit:**
-   - Use descriptive commit messages
-   - Group related documentation updates
-   - Reference related code changes if applicable
+   - Use descriptive commit messages: `docs: update [area] for [reason]`
+   - Group related documentation updates in a single commit.
+   - Reference related code changes if applicable.
 
 ---
 
@@ -687,5 +785,6 @@ Your documentation updates are successful when:
 ## Revision History
 
 - **2026-01-08:** Initial creation of documentation agent instructions
+- **2026-03-27:** Added navigation index, Trigger on, Standard Workflow, Plans section, `docs/generated/` directory, AI sub-guides table, Build & Validation Commands section, `make` targets, `ai-repo-updater` commands; renumbered Key Documentation Areas; updated status files list
 
-**Last Updated:** 2026-03-21
+**Last Updated:** 2026-03-27
