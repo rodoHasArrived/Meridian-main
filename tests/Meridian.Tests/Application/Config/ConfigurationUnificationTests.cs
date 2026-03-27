@@ -243,6 +243,31 @@ public sealed class ConfigurationUnificationTests
         options.ValidateConfig.Should().BeFalse();
     }
 
+    [Theory]
+    [InlineData("production", SelfHealingStrictness.Production)]
+    [InlineData("PRODUCTION", SelfHealingStrictness.Production)]
+    [InlineData("prod", SelfHealingStrictness.Production)]
+    [InlineData("PROD", SelfHealingStrictness.Production)]
+    [InlineData("strict", SelfHealingStrictness.Production)]
+    [InlineData("development", SelfHealingStrictness.Development)]
+    [InlineData("dev", SelfHealingStrictness.Development)]
+    [InlineData("", SelfHealingStrictness.Development)]
+    [InlineData(null, SelfHealingStrictness.Development)]
+    [InlineData("unknown", SelfHealingStrictness.Development)]
+    public void PipelineOptions_ParseStrictness_CorrectlyMapsValues(
+        string? input, SelfHealingStrictness expected)
+    {
+        PipelineOptions.ParseStrictness(input).Should().Be(expected);
+    }
+
+    [Fact]
+    public void PipelineOptions_Default_HealingStrictnessDefaultsToDevelopment_WhenEnvVarNotSet()
+    {
+        // Env var not set in unit test environment → Development
+        var options = new PipelineOptions();
+        options.HealingStrictness.Should().Be(SelfHealingStrictness.Development);
+    }
+
     #endregion
 
     #region ConfigurationSource Tests
@@ -258,6 +283,131 @@ public sealed class ConfigurationUnificationTests
         sources.Should().Contain(ConfigurationOrigin.AutoConfig);
         sources.Should().Contain(ConfigurationOrigin.HotReload);
         sources.Should().Contain(ConfigurationOrigin.Programmatic);
+    }
+
+    #endregion
+
+    #region Self-Healing Strictness (ConfigurationPipeline)
+
+    [Fact]
+    public void ConfigurationPipeline_Development_AppliesWarnLevelFixes()
+    {
+        // Empty symbols list is a Warn-level fix.
+        // In Development mode it should be applied silently.
+        var pipeline = new ConfigurationPipeline();
+        var config = new AppConfig(Symbols: Array.Empty<SymbolConfig>());
+        var options = PipelineOptions.Default with
+        {
+            ApplySelfHealing = true,
+            ValidateConfig = false,
+            HealingStrictness = SelfHealingStrictness.Development
+        };
+
+        var result = pipeline.Process(config, options);
+
+        result.Config.Symbols.Should().NotBeNullOrEmpty(
+            "Development mode should apply Warn-level empty-symbols fix");
+        result.AppliedFixes.Should().NotBeEmpty();
+        result.BlockedFixes.Should().BeEmpty();
+        result.IsValid.Should().BeTrue();
+    }
+
+    [Fact]
+    public void ConfigurationPipeline_Production_RefusesWarnLevelFixes()
+    {
+        // Empty symbols list is a Warn-level fix.
+        // In Production mode it should be refused and surfaced as a validation error.
+        var pipeline = new ConfigurationPipeline();
+        var config = new AppConfig(Symbols: Array.Empty<SymbolConfig>());
+        var options = PipelineOptions.Default with
+        {
+            ApplySelfHealing = true,
+            ValidateConfig = false,   // isolate self-healing from field validation
+            HealingStrictness = SelfHealingStrictness.Production
+        };
+
+        var result = pipeline.Process(config, options);
+
+        result.Config.Symbols.Should().BeNullOrEmpty(
+            "Production mode must NOT auto-apply Warn-level empty-symbols fix");
+        result.BlockedFixes.Should().NotBeEmpty(
+            "Refused Warn-level fixes must appear in BlockedFixes");
+        result.ValidationErrors.Should().NotBeEmpty(
+            "Refused fixes must translate to validation errors");
+        result.IsValid.Should().BeFalse(
+            "A refused fix is a startup-blocking error in production mode");
+    }
+
+    [Fact]
+    public void ConfigurationPipeline_Production_AppliesAutoFixChanges()
+    {
+        // Invalid naming convention is an AutoFix — must still be applied in Production.
+        var pipeline = new ConfigurationPipeline();
+        var config = new AppConfig(
+            Symbols: new[] { new SymbolConfig("SPY") },
+            Storage: new StorageConfig(NamingConvention: "INVALID"));
+        var options = PipelineOptions.Default with
+        {
+            ApplySelfHealing = true,
+            ValidateConfig = false,
+            HealingStrictness = SelfHealingStrictness.Production
+        };
+
+        var result = pipeline.Process(config, options);
+
+        result.Config.Storage!.NamingConvention.Should().Be("BySymbol",
+            "AutoFix-level fixes must be applied even in production mode");
+        result.AppliedFixes.Should().NotBeEmpty();
+        result.BlockedFixes.Should().BeEmpty();
+        result.IsValid.Should().BeTrue();
+    }
+
+    [Fact]
+    public void ConfigurationPipeline_Production_PartialFixes_AutoFixAppliedWarnRefused()
+    {
+        // Config has both an AutoFix issue (invalid naming) and a Warn issue (no symbols).
+        // Production mode: AutoFix should be applied; Warn should be refused.
+        var pipeline = new ConfigurationPipeline();
+        var config = new AppConfig(
+            Symbols: Array.Empty<SymbolConfig>(),
+            Storage: new StorageConfig(NamingConvention: "BOGUS"));
+        var options = PipelineOptions.Default with
+        {
+            ApplySelfHealing = true,
+            ValidateConfig = false,
+            HealingStrictness = SelfHealingStrictness.Production
+        };
+
+        var result = pipeline.Process(config, options);
+
+        result.Config.Storage!.NamingConvention.Should().Be("BySymbol",
+            "AutoFix for naming convention should be applied");
+        result.Config.Symbols.Should().BeNullOrEmpty(
+            "Warn-level empty-symbols fix must NOT be applied");
+        result.AppliedFixes.Should().Contain(f => f.Contains("naming convention"));
+        result.BlockedFixes.Should().NotBeEmpty();
+        result.IsValid.Should().BeFalse();
+    }
+
+    [Fact]
+    public void ValidatedConfig_BlockedFixes_EmptyByDefault()
+    {
+        var validated = ValidatedConfig.Default();
+        validated.BlockedFixes.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ValidatedConfig_FromConfig_SetsBlockedFixes()
+    {
+        var config = new AppConfig();
+        var blocked = new[] { "Fix A was blocked" };
+
+        var validated = ValidatedConfig.FromConfig(
+            config,
+            isValid: false,
+            blockedFixes: blocked);
+
+        validated.BlockedFixes.Should().BeEquivalentTo(blocked);
     }
 
     #endregion
