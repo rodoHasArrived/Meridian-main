@@ -30,8 +30,8 @@ Total items: **193**
 | `.github/agents/cleanup-agent.md` | 436 | `NOTE` | ❌ | - **No new features** — cleanup only; if something is missing, note it but do not add it. |
 | `.github/agents/cleanup-agent.md` | 438 | `NOTE` | ❌ | - **No ViewModel extraction** — flag it as a note; full MVVM refactors belong in code review. |
 | `.github/agents/documentation-agent.md` | 330 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
-| `.github/agents/documentation-agent.md` | 718 | `TODO` | ❌ | │   │   └── TODO.md |
-| `.github/agents/documentation-agent.md` | 2976 | `TODO` | ❌ | - `TODO.md` - Pending work items |
+| `.github/agents/documentation-agent.md` | 719 | `TODO` | ❌ | │   │   └── TODO.md |
+| `.github/agents/documentation-agent.md` | 2977 | `TODO` | ❌ | - `TODO.md` - Pending work items |
 | `.github/agents/performance-agent.md` | 248 | `NOTE` | ❌ | - **No new features** — if a performance win requires a new feature, note it but defer it. |
 | `.github/workflows/README.md` | 11 | `TODO` | ❌ | \| `documentation.yml` \| `docs-comprehensive.yml`, `docs-auto-update.yml`, `docs-structure-sync.yml`, `ai-instructions-sync.yml`, `todo-automation.yml`, `docs-check.yml` \| AI documentation quality review, AI TODO triage \| |
 | `.github/workflows/README.md` | 136 | `TODO` | ❌ | - **Purpose**: Centralized documentation quality checks, generation, AI instruction sync, and TODO tracking |
@@ -55,9 +55,9 @@ Total items: **193**
 | `.github/workflows/validate-workflows.yml` | 206 | `NOTE` | ❌ | echo "Note: Ensure cron schedules are distributed to avoid rate limits" |
 | `CLAUDE.md` | 100 | `NOTE` | ❌ | **Note:** Always use `/p:EnableWindowsTargeting=true` on non-Windows systems to avoid NETSDK1100 errors. |
 | `CLAUDE.md` | 383 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
-| `CLAUDE.md` | 771 | `TODO` | ❌ | │   │   └── TODO.md |
+| `CLAUDE.md` | 772 | `TODO` | ❌ | │   │   └── TODO.md |
 | `README.md` | 504 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
-| `README.md` | 883 | `TODO` | ❌ | │   │   ├── TODO.md |
+| `README.md` | 888 | `TODO` | ❌ | │   │   ├── TODO.md |
 | `benchmarks/run-bottleneck-benchmarks.sh` | 111 | `NOTE` | ❌ | # Note: --filter is intentionally not added here; each phase below supplies its own |
 | `build/scripts/run/start-collector.ps1` | 109 | `NOTE` | ❌ | if ($depth -gt 0) { Write-Host "[NOTE] L2 depth requires provider depth entitlements for venues." } |
 | `build/scripts/run/start-collector.sh` | 114 | `NOTE` | ❌ | print("[NOTE] L2 depth requires provider depth subscription for venues.") |
@@ -74,8 +74,8 @@ Total items: **193**
 | `docs/ai/claude/CLAUDE.structure.md` | 473 | `TODO` | ❌ | │   │   └── TODO.md |
 | `docs/ai/copilot/instructions.md` | 5 | `NOTE` | ❌ | > **Note:** For comprehensive project context, see [CLAUDE.md](https://github.com/rodoHasArrived/Meridian/blob/main/CLAUDE.md) in the repository root. For the master AI resource index, see [docs/ai/README.md](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/README.md). |
 | `docs/ai/copilot/instructions.md` | 368 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
-| `docs/ai/copilot/instructions.md` | 756 | `TODO` | ❌ | │   │   └── TODO.md |
-| `docs/ai/copilot/instructions.md` | 2922 | `TODO` | ❌ | - `documentation.yml` — Doc generation, TODO scanning, AI error intake |
+| `docs/ai/copilot/instructions.md` | 757 | `TODO` | ❌ | │   │   └── TODO.md |
+| `docs/ai/copilot/instructions.md` | 2923 | `TODO` | ❌ | - `documentation.yml` — Doc generation, TODO scanning, AI error intake |
 | `docs/architecture/deterministic-canonicalization.md` | 365 | `NOTE` | ❌ | Note: Polygon does not define buyer-initiated codes. Only ~5% of trades carry definitive aggressor inference. The canonicalization layer preserves `Unknown` as a valid canonical value rather than attempting inference. |
 | `docs/architecture/domains.md` | 111 | `NOTE` | ❌ | > Note: not every enum member is currently emitted by the three core collectors (`TradeDataCollector`, `MarketDepthCollector`, `QuoteCollector`); several are used by adapters, backfill paths, or the `L3OrderBookCollector`. |
 | `docs/audits/BACKTEST_ENGINE_CODE_REVIEW_2026_03_25.md` | 150 | `NOTE` | ❌ | **Fix:** Add a note to the XML doc comment explaining the open/close midpoint convention and when to use `BarMidpointFillModel` vs. `OrderBookFillModel`. Consider offering `(bar.High + bar.Low) / 2m` as an alternative mode. |
