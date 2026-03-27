@@ -1,97 +1,72 @@
-> **AUTO-GENERATED — DO NOT EDIT**
-> This file is generated automatically. Manual edits will be overwritten.
-> See `docs/generated/README.md` for details on how generation works.
-
 # Provider Registry
 
-> Updated on 2026-03-27. Source of truth: `src/Meridian.Infrastructure/Adapters/`.
-> For full documentation see [docs/providers/data-sources.md](../providers/data-sources.md).
+> Auto-generated on 2026-03-27 21:36:30 UTC. Do not edit manually.
 
-This document lists all data providers available in Meridian.
-
-## Real-Time Streaming Providers
-
-| Provider | Class | Status | Notes |
-|----------|-------|--------|-------|
-| Alpaca Markets | `AlpacaMarketDataClient` | ✅ Active | US equities; REST + WebSocket |
-| Interactive Brokers | `IBMarketDataClient` | ✅ Active (with `IBAPI`) | Global multi-asset; requires IBAPI vendor path for live use |
-| Polygon.io | `PolygonMarketDataClient` | ✅ Active | Equities, options, forex, crypto WebSocket |
-| NYSE | `NyseMarketDataClient` | ✅ Active | NYSE-focused feed via `NYSEDataSource` |
-| StockSharp | `StockSharpMarketDataClient` | ✅ Active (with `STOCKSHARP`) | Connector-dependent multi-exchange |
-| Synthetic | `SyntheticMarketDataClient` | ✅ Active | Deterministic offline streaming for development and tests |
-| CppTrader | `CppTraderMarketDataClient` | ✅ Active | Native matching engine integration via `Meridian.Infrastructure.CppTrader` |
-| Failover | `FailoverAwareMarketDataClient` | ✅ Active | Streaming failover wrapper |
-
-## Historical Data Providers (Backfill)
-
-| Provider | Class | Free Tier | Rate Limits |
-|----------|-------|-----------|-------------|
-| Yahoo Finance | `YahooFinanceHistoricalDataProvider` | Yes (unofficial API) | ~2000/hour |
-| Stooq | `StooqHistoricalDataProvider` | Yes | Respectful usage |
-| Alpaca | `AlpacaHistoricalDataProvider` | Requires credentials | 200/min |
-| Tiingo | `TiingoHistoricalDataProvider` | Requires credentials | 50/hour free tier |
-| Alpha Vantage | `AlphaVantageHistoricalDataProvider` | Requires credentials | 25/day free tier |
-| Finnhub | `FinnhubHistoricalDataProvider` | Requires credentials | 60/min |
-| Nasdaq Data Link | `NasdaqDataLinkHistoricalDataProvider` | Limited free tier | Varies |
-| Polygon | `PolygonHistoricalDataProvider` | Requires credentials | 5/min free tier |
-| Interactive Brokers | `IBHistoricalDataProvider` | With account (IBAPI) | Per IB limits |
-| StockSharp | `StockSharpHistoricalDataProvider` | With account/license (`STOCKSHARP`) | Connector-dependent |
-| Twelve Data | `TwelveDataHistoricalDataProvider` | Requires credentials | 8/min free tier |
-| FRED | `FredHistoricalDataProvider` | Free API key | 120/min |
-| Synthetic | `SyntheticHistoricalDataProvider` | No credentials | Unlimited local |
-| Composite | `CompositeHistoricalDataProvider` | N/A | Multi-source failover |
-
-## Symbol Search Providers
-
-| Provider | Class | Status | Notes |
-|----------|-------|--------|-------|
-| Alpaca | `AlpacaSymbolSearchProviderRefactored` | ✅ Active | US equities, trading-status aware |
-| Finnhub | `FinnhubSymbolSearchProviderRefactored` | ✅ Active | 60K+ global symbols |
-| Polygon | `PolygonSymbolSearchProvider` | ✅ Active | US equities, filterable |
-| OpenFIGI | `OpenFigiClient` | ✅ Active | Global FIGI normalization |
-| StockSharp | `StockSharpSymbolSearchProvider` | ✅ Active (with `STOCKSHARP`) | Connector-native security lookup |
-| Synthetic | `SyntheticMarketDataClient` | ✅ Active | Offline stock and ETF catalog |
-
-## Brokerage Gateway Implementations
-
-| Provider | Class | Notes |
-|----------|-------|-------|
-| Alpaca | `AlpacaBrokerageGateway` | Order routing with fractional quantity support |
-| Interactive Brokers | `IBBrokerageGateway` | Conditional on `IBAPI` |
-| StockSharp | `StockSharpBrokerageGateway` | Connector-based order routing |
-| Base | `BaseBrokerageGateway` | Abstract brokerage adapter base class |
-| Adapter | `BrokerageGatewayAdapter` | Order routing wrapper for `IBrokerageGateway` |
-
-## Provider Configuration
-
-Providers are configured via environment variables or `appsettings.json`:
-
-```bash
-# Streaming providers
-export ALPACA__KEYID=your-key-id
-export ALPACA__SECRETKEY=your-secret-key
-export POLYGON__APIKEY=your-api-key
-
-# Historical providers
-export TIINGO__TOKEN=your-token
-export ALPHAVANTAGE__APIKEY=your-key
-export FINNHUB__APIKEY=your-key
-export TWELVEDATA__APIKEY=your-key
-export FRED__APIKEY=your-key
-```
-
-## Adding a New Provider
-
-1. Create provider class in `src/Meridian.Infrastructure/Adapters/{Name}/`
-2. Implement `IMarketDataClient` (streaming) or `IHistoricalDataProvider` (backfill)
-3. Add `[DataSource]` attribute with provider metadata
-4. Add `[ImplementsAdr]` attributes for ADR compliance
-5. Register in DI container
-6. Add configuration section
-7. Write tests
-
-See the [provider implementation guide](../development/provider-implementation.md) and [provider template](../examples/provider-template/README.md) for details.
-
----
-
-*For full provider documentation including setup guides and rate limits, see [docs/providers/data-sources.md](../providers/data-sources.md).*
+| Provider Candidate |
+|---|
+| `src/Meridian/Integrations/Lean/MeridianDataProvider.cs` |
+| `src/Meridian.Application/Composition/Features/ProviderFeatureRegistration.cs` |
+| `src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs` |
+| `src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs` |
+| `src/Meridian.Application/Monitoring/DataQuality/LiquidityProfileProvider.cs` |
+| `src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs` |
+| `src/Meridian.Application/Monitoring/ProviderLatencyService.cs` |
+| `src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs` |
+| `src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs` |
+| `src/Meridian.Application/Wizard/Metadata/ProviderRegistry.cs` |
+| `src/Meridian.Application/Wizard/Steps/DetectProvidersStep.cs` |
+| `src/Meridian.Contracts/Api/ProviderCatalog.cs` |
+| `src/Meridian.Contracts/Credentials/ISecretProvider.cs` |
+| `src/Meridian.Contracts/Domain/ProviderId.cs` |
+| `src/Meridian.Core/Config/IConfigurationProvider.cs` |
+| `src/Meridian.Core/Exceptions/DataProviderException.cs` |
+| `src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs` |
+| `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs` |
+| `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs` |
+| `src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs` |
+| `src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs` |
+| `src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs` |
+| `src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs` |
+| `src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs` |
+| `src/Meridian.Infrastructure/Adapters/Core/ISymbolSearchProvider.cs` |
+| `src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs` |
+| `src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs` |
+| `src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs` |
+| `src/Meridian.Infrastructure/Adapters/Core/ProviderSubscriptionRanges.cs` |
+| `src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs` |
+| `src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs` |
+| `src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs` |
+| `src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs` |
+| `src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubSymbolSearchProviderRefactored.cs` |
+| `src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs` |
+| `src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs` |
+| `src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs` |
+| `src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs` |
+| `src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs` |
+| `src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpHistoricalDataProvider.cs` |
+| `src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpSymbolSearchProvider.cs` |
+| `src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs` |
+| `src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs` |
+| `src/Meridian.Infrastructure/Adapters/Tiingo/TiingoHistoricalDataProvider.cs` |
+| `src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs` |
+| `src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs` |
+| `src/Meridian.Mcp/Prompts/ProviderPrompts.cs` |
+| `src/Meridian.Mcp/Tools/ProviderTools.cs` |
+| `src/Meridian.McpServer/Tools/ProviderTools.cs` |
+| `src/Meridian.ProviderSdk/IOptionsChainProvider.cs` |
+| `src/Meridian.ProviderSdk/IProviderMetadata.cs` |
+| `src/Meridian.ProviderSdk/IProviderModule.cs` |
+| `src/Meridian.ProviderSdk/ProviderHttpUtilities.cs` |
+| `src/Meridian.Ui.Services/Services/BackfillProviderConfigService.cs` |
+| `src/Meridian.Ui.Services/Services/ProviderHealthService.cs` |
+| `src/Meridian.Ui.Services/Services/ProviderManagementService.cs` |
+| `src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs` |
+| `src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs` |
+| `src/Meridian.Wpf/Models/ProviderHealthModels.cs` |
+| `src/Meridian.Wpf/Services/ICommandContextProvider.cs` |
+| `src/Meridian.Wpf/ViewModels/IPageActionBarProvider.cs` |
+| `src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs` |
+| `src/Meridian.Wpf/ViewModels/ProviderPageModels.cs` |
+| `src/Meridian.Wpf/Views/AddProviderWizardPage.xaml.cs` |
+| `src/Meridian.Wpf/Views/ProviderHealthPage.xaml.cs` |
+| `src/Meridian.Wpf/Views/ProviderPage.xaml.cs` |
