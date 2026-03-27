@@ -42,7 +42,8 @@ public sealed class BacktestEngine(
 
         // 1. Discover universe
         var universe = await UniverseDiscovery.DiscoverAsync(
-            catalogService, request.DataRoot, request.Symbols, request.From, request.To, ct);
+            catalogService, request.DataRoot, request.Symbols, request.From, request.To, ct)
+            .ConfigureAwait(false);
 
         if (universe.Count == 0 && request.AssetEvents is not { Count: > 0 })
         {
@@ -54,7 +55,8 @@ public sealed class BacktestEngine(
             universe.Count, universe.Count == 0 ? "(asset-event-only run)" : string.Join(", ", universe.Take(10)) + (universe.Count > 10 ? "…" : string.Empty));
 
         // 2. Resolve per-symbol tick sizes from Security Master (best-effort; missing symbols are silently skipped).
-        var tickSizes = await ResolveTickSizesAsync(universe, request.To.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), ct);
+        var tickSizes = await ResolveTickSizesAsync(universe, request.To.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), ct)
+            .ConfigureAwait(false);
 
         // 3. Set up portfolio, fill models, context
         var commissionModel = BuildCommissionModel(request);
@@ -80,7 +82,7 @@ public sealed class BacktestEngine(
         ApplyScheduledAssetEvents(request.From, assetEventsByDate, portfolio, ctx);
 
         // 4. Build per-symbol replay streams (with corporate action adjustments if enabled)
-        var streams = await BuildSymbolStreamsAsync(universe, request, ct);
+        var streams = await BuildSymbolStreamsAsync(universe, request, ct).ConfigureAwait(false);
 
         // 5. Replay loop — multi-symbol chronological merge
         var currentDay = request.From;
@@ -91,12 +93,12 @@ public sealed class BacktestEngine(
         {
             ct.ThrowIfCancellationRequested();
 
-            var evtDate = DateOnly.FromDateTime(evt.Timestamp.LocalDateTime);
+            var evtDate = DateOnly.FromDateTime(evt.Timestamp.UtcDateTime);
 
             // Day boundary — close out the previous day and apply any gap-day asset events.
             if (evtDate > currentDay)
             {
-                await AdvanceDaysAsync(currentDay, evtDate, portfolio, ctx, strategy, pendingOrders, allSnapshots, allCashFlows, assetEventsByDate, progress, request.From, totalDays, eventsProcessed, ct);
+                AdvanceDays(currentDay, evtDate, portfolio, ctx, strategy, pendingOrders, allSnapshots, allCashFlows, assetEventsByDate, progress, request.From, totalDays, eventsProcessed, ct);
                 currentDay = evtDate;
             }
 
@@ -115,15 +117,15 @@ public sealed class BacktestEngine(
             pendingOrders.AddRange(newOrders);
 
             // Try to fill pending orders against current event
-            ProcessPendingOrders(pendingOrders, evt, orderBookFillModel, barFillModel, marketImpactFillModel, portfolio, strategy, ctx, allFills, request.DefaultExecutionModel);
+            ProcessPendingOrders(pendingOrders, evt, orderBookFillModel, barFillModel, marketImpactFillModel, portfolio, strategy, ctx, allFills, logger, request.DefaultExecutionModel);
         }
 
         // Final day-end for the last processed day and any remaining asset-event-only dates.
-        await ProcessDayEndAsync(currentDay, portfolio, pendingOrders, ctx, strategy, allSnapshots, allCashFlows, ct);
+        ProcessDayEnd(currentDay, portfolio, pendingOrders, ctx, strategy, allSnapshots, allCashFlows, ct);
         for (var date = currentDay.AddDays(1); date <= request.To; date = date.AddDays(1))
         {
             ApplyScheduledAssetEvents(date, assetEventsByDate, portfolio, ctx);
-            await ProcessDayEndAsync(date, portfolio, pendingOrders, ctx, strategy, allSnapshots, allCashFlows, ct);
+            ProcessDayEnd(date, portfolio, pendingOrders, ctx, strategy, allSnapshots, allCashFlows, ct);
         }
 
         strategy.OnFinished(ctx);
@@ -132,6 +134,9 @@ public sealed class BacktestEngine(
         // 6. Compute metrics
         var metrics = BacktestMetricsEngine.Compute(allSnapshots, allCashFlows, allFills, request);
         sw.Stop();
+
+        if (double.IsNaN(metrics.Xirr))
+            logger.LogWarning("XIRR bisection did not converge for this backtest run; Xirr will be reported as NaN. Check cash-flow patterns for non-standard sign changes.");
 
         logger.LogInformation(
             "Backtest complete: {Events} events, final equity {Equity:C}, net PnL {NetPnl:C} in {Elapsed}ms",
@@ -278,7 +283,7 @@ public sealed class BacktestEngine(
         }
     }
 
-    private static async Task AdvanceDaysAsync(
+    private static void AdvanceDays(
         DateOnly fromDay,
         DateOnly toDay,
         SimulatedPortfolio portfolio,
@@ -294,14 +299,14 @@ public sealed class BacktestEngine(
         long eventsProcessed,
         CancellationToken ct)
     {
-        await ProcessDayEndAsync(fromDay, portfolio, pendingOrders, ctx, strategy, snapshots, allCashFlows, ct);
+        ProcessDayEnd(fromDay, portfolio, pendingOrders, ctx, strategy, snapshots, allCashFlows, ct);
 
         for (var date = fromDay.AddDays(1); date <= toDay; date = date.AddDays(1))
         {
             ApplyScheduledAssetEvents(date, assetEventsByDate, portfolio, ctx);
 
             if (date < toDay)
-                await ProcessDayEndAsync(date, portfolio, pendingOrders, ctx, strategy, snapshots, allCashFlows, ct);
+                ProcessDayEnd(date, portfolio, pendingOrders, ctx, strategy, snapshots, allCashFlows, ct);
 
             var daysElapsed = (date.ToDateTime(TimeOnly.MinValue) - requestFrom.ToDateTime(TimeOnly.MinValue)).Days;
             progress?.Report(new BacktestProgressEvent(
@@ -323,7 +328,7 @@ public sealed class BacktestEngine(
         {
             if (!evt.EffectiveSymbol.Equals(symbol, StringComparison.OrdinalIgnoreCase))
                 continue;
-            var date = DateOnly.FromDateTime(evt.Timestamp.LocalDateTime);
+            var date = DateOnly.FromDateTime(evt.Timestamp.UtcDateTime);
             if (date < from || date > to)
                 continue;
             yield return evt;
@@ -372,6 +377,7 @@ public sealed class BacktestEngine(
         IBacktestStrategy strategy,
         BacktestContext ctx,
         List<FillEvent> allFills,
+        ILogger<BacktestEngine> logger,
         ExecutionModel requestDefault = ExecutionModel.Auto)
     {
         var filled = new List<Guid>();
@@ -386,7 +392,20 @@ public sealed class BacktestEngine(
 
             foreach (var fill in result.Fills)
             {
-                portfolio.ProcessFill(fill);
+                try
+                {
+                    portfolio.ProcessFill(fill);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    // Account rule violation (e.g. short-selling or margin disabled).
+                    // Reject this fill rather than crashing the entire backtest run.
+                    logger.LogWarning(ex,
+                        "Fill rejected for order {OrderId} on {Symbol}: {Message}. The fill has been discarded.",
+                        fill.OrderId, fill.Symbol, ex.Message);
+                    continue;
+                }
+
                 ContingentOrderManager.ReconcileOcoSiblings(pendingOrders, order, fill);
                 allFills.Add(fill);
                 strategy.OnOrderFill(fill, ctx);
@@ -410,7 +429,7 @@ public sealed class BacktestEngine(
             (o.Status == OrderStatus.Filled && o.IsComplete));
     }
 
-    private static async Task ProcessDayEndAsync(
+    private static void ProcessDayEnd(
         DateOnly date,
         SimulatedPortfolio portfolio,
         List<Order> pendingOrders,
@@ -420,8 +439,7 @@ public sealed class BacktestEngine(
         List<CashFlowEntry> allCashFlows,
         CancellationToken ct = default)
     {
-        _ = ct;
-        await Task.Yield();  // allow UI thread to breathe during long replays
+        ct.ThrowIfCancellationRequested();
         portfolio.AccrueDailyInterest(date);
         ctx.CurrentDate = date;
         strategy.OnDayEnd(date, ctx);

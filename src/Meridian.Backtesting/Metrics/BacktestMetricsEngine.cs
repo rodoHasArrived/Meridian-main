@@ -6,8 +6,6 @@ namespace Meridian.Backtesting.Metrics;
 /// </summary>
 internal static class BacktestMetricsEngine
 {
-    private const double RiskFreeRate = 0.04;  // 4% annualised, configurable in future
-
     public static BacktestMetrics Compute(
         IReadOnlyList<PortfolioSnapshot> snapshots,
         IReadOnlyList<CashFlowEntry> allCashFlows,
@@ -21,8 +19,9 @@ internal static class BacktestMetricsEngine
         var final = snapshots[^1].TotalEquity;
         var grossPnl = final - initial;
 
-        var totalCommissions = allCashFlows.OfType<CommissionCashFlow>().Sum(c => Math.Abs(c.Amount));
-        var totalMarginInterest = allCashFlows.OfType<MarginInterestCashFlow>().Sum(c => Math.Abs(c.Amount));
+        // Commissions and margin interest are stored as negative cash flows; negate to get positive totals.
+        var totalCommissions = -allCashFlows.OfType<CommissionCashFlow>().Sum(c => c.Amount);
+        var totalMarginInterest = -allCashFlows.OfType<MarginInterestCashFlow>().Sum(c => c.Amount);
         var totalShortRebates = allCashFlows.OfType<ShortRebateCashFlow>().Sum(c => c.Amount);
         var netPnl = grossPnl - totalCommissions - totalMarginInterest + totalShortRebates;
 
@@ -31,8 +30,8 @@ internal static class BacktestMetricsEngine
 
         var totalReturn = initial == 0 ? 0m : (final - initial) / initial;
         var annualisedReturn = (decimal)(Math.Pow(1.0 + (double)totalReturn, 1.0 / years) - 1.0);
-        var sharpe = ComputeSharpe(dailyReturns, RiskFreeRate);
-        var sortino = ComputeSortino(dailyReturns, RiskFreeRate);
+        var sharpe = ComputeSharpe(dailyReturns, request.RiskFreeRate);
+        var sortino = ComputeSortino(dailyReturns, request.RiskFreeRate);
         var (maxDrawdown, maxDrawdownPct, recoveryDays) = ComputeMaxDrawdown(snapshots);
         var calmar = maxDrawdown == 0 ? 0.0 : (double)annualisedReturn / (double)maxDrawdownPct;
 
@@ -99,6 +98,7 @@ internal static class BacktestMetricsEngine
         var maxDd = 0m;
         var maxDdPct = 0m;
         var troughIdx = 0;
+        var peakAtTrough = snapshots[0].TotalEquity;  // running peak at the time the worst trough was observed
         var recoveryDays = 0;
 
         for (var i = 1; i < snapshots.Count; i++)
@@ -106,7 +106,6 @@ internal static class BacktestMetricsEngine
             var equity = snapshots[i].TotalEquity;
             if (equity > peak)
             {
-                // Recovered — calculate recovery time for the worst DD
                 peak = equity;
             }
             else
@@ -118,17 +117,18 @@ internal static class BacktestMetricsEngine
                     maxDd = dd;
                     maxDdPct = ddPct;
                     troughIdx = i;
+                    peakAtTrough = peak;  // record the peak that preceded this worst trough
                 }
             }
         }
 
-        // Count recovery days from trough
+        // Count calendar days from trough back to the preceding peak level.
+        // Compare directly against the recorded peak — no algebraic reconstruction needed.
         if (troughIdx > 0)
         {
-            var troughEquity = snapshots[troughIdx].TotalEquity;
             for (var i = troughIdx + 1; i < snapshots.Count; i++)
             {
-                if (snapshots[i].TotalEquity >= troughEquity / (1m - maxDdPct))
+                if (snapshots[i].TotalEquity >= peakAtTrough)
                 {
                     recoveryDays = (snapshots[i].Date.ToDateTime(TimeOnly.MinValue) -
                                     snapshots[troughIdx].Date.ToDateTime(TimeOnly.MinValue)).Days;
@@ -143,35 +143,97 @@ internal static class BacktestMetricsEngine
     private static (double winRate, double profitFactor, int total, int wins, int losses) ComputeTradeStats(
         IReadOnlyList<FillEvent> fills)
     {
-        // Group fills into round-trips (buy then sell) by symbol — simplified per-fill P&L
-        var trades = fills.Where(f => f.FilledQuantity != 0).ToList();
-        if (trades.Count == 0)
+        if (fills.Count == 0)
             return (0.0, 0.0, 0, 0, 0);
 
-        // For simplicity: each fill represents a "trade"; win = positive (qty * sign contributes to profit)
-        // A more precise approach groups buy/sell pairs. We use a sign-based heuristic here.
+        // Aggregate multi-fill orders (e.g. partial slices from MarketImpact model) into single
+        // order-level summaries so that one order == one potential trade entry or exit.
+        var orderSummaries = fills
+            .Where(f => f.FilledQuantity != 0)
+            .GroupBy(f => f.OrderId)
+            .Select(g =>
+            {
+                var totalAbsQty = g.Sum(f => Math.Abs(f.FilledQuantity));
+                var avgPrice = totalAbsQty == 0 ? 0m
+                    : g.Sum(f => Math.Abs(f.FilledQuantity) * f.FillPrice) / totalAbsQty;
+                return (
+                    Symbol: g.First().Symbol,
+                    FilledAt: g.Max(f => f.FilledAt),
+                    Quantity: g.Sum(f => f.FilledQuantity),
+                    Price: avgPrice,
+                    Commission: g.Sum(f => f.Commission));
+            })
+            .OrderBy(o => o.FilledAt)
+            .ToList();
+
         var grossWins = 0m;
         var grossLosses = 0m;
         var wins = 0;
         var losses = 0;
 
-        // Use fills paired with commission: net = -(qty * price) - commission relative to prior avg
-        // Since we don't have prior avg here, treat positive net proceeds as wins
-        foreach (var fill in trades)
+        // Per-symbol FIFO lot matching: count a round-trip each time a long lot is closed.
+        foreach (var symbolOrders in orderSummaries.GroupBy(o => o.Symbol, StringComparer.OrdinalIgnoreCase))
         {
-            var net = fill.FilledQuantity < 0
-                ? Math.Abs(fill.FilledQuantity) * fill.FillPrice - fill.Commission   // sale proceeds
-                : -(fill.FilledQuantity * fill.FillPrice + fill.Commission);          // buy cost (negative)
+            // Each lot entry: (quantity remaining, entry price, proportional entry commission)
+            var lots = new LinkedList<(long qty, decimal price, decimal commission)>();
 
-            if (net > 0)
-            { grossWins += net; wins++; }
-            else if (net < 0)
-            { grossLosses += Math.Abs(net); losses++; }
+            foreach (var order in symbolOrders)
+            {
+                if (order.Quantity > 0)
+                {
+                    // Entry — add lot to queue
+                    lots.AddLast((order.Quantity, order.Price, order.Commission));
+                }
+                else if (order.Quantity < 0)
+                {
+                    // Exit — consume lots FIFO and compute round-trip P&L
+                    var closeQty = Math.Abs(order.Quantity);
+                    var remaining = closeQty;
+                    var roundTripPnl = 0m;
+
+                    while (remaining > 0 && lots.Count > 0)
+                    {
+                        var node = lots.First!;
+                        var (lotQty, lotPrice, lotCommission) = node.Value;
+                        var consumed = Math.Min(lotQty, remaining);
+
+                        // Allocate entry and exit commission proportionally to consumed quantity
+                        var entryCommForConsumed = lotQty > 0 ? lotCommission * consumed / lotQty : 0m;
+                        var exitCommForConsumed = closeQty > 0 ? order.Commission * consumed / closeQty : 0m;
+
+                        roundTripPnl += consumed * (order.Price - lotPrice)
+                            - entryCommForConsumed - exitCommForConsumed;
+                        remaining -= consumed;
+
+                        if (consumed >= lotQty)
+                        {
+                            lots.RemoveFirst();
+                        }
+                        else
+                        {
+                            // Partial lot: remove front and prepend reduced entry. O(1) time;
+                            // avoids reallocating the entire collection that the old Queue required.
+                            var leftoverCommission = lotQty > 0 ? lotCommission * (lotQty - consumed) / lotQty : 0m;
+                            lots.RemoveFirst();
+                            lots.AddFirst((lotQty - consumed, lotPrice, leftoverCommission));
+                        }
+                    }
+
+                    // Only record a completed round-trip if at least some lots were consumed
+                    if (remaining < closeQty)
+                    {
+                        if (roundTripPnl > 0) { grossWins += roundTripPnl; wins++; }
+                        else if (roundTripPnl < 0) { grossLosses += -roundTripPnl; losses++; }
+                    }
+                }
+            }
         }
 
         var total = wins + losses;
         var winRate = total == 0 ? 0.0 : (double)wins / total;
-        var profitFactor = grossLosses == 0 ? (grossWins > 0 ? double.PositiveInfinity : 0.0) : (double)(grossWins / grossLosses);
+        var profitFactor = grossLosses == 0
+            ? (grossWins > 0 ? double.PositiveInfinity : 0.0)
+            : (double)(grossWins / grossLosses);
         return (winRate, profitFactor, total, wins, losses);
     }
 
@@ -200,33 +262,46 @@ internal static class BacktestMetricsEngine
         return result;
     }
 
+    /// <summary>
+    /// Computes realized P&amp;L for a single symbol's fills using FIFO lot matching.
+    /// <para>
+    /// NOTE: This is an independent computation over fill events for metric attribution purposes.
+    /// It must produce results consistent with <c>SimulatedPortfolio.RealiseFifo</c>, which drives
+    /// the live portfolio accounting. If one is changed, the other must be updated in parallel.
+    /// </para>
+    /// </summary>
     private static decimal ComputeRealisedPnl(IReadOnlyList<FillEvent> fills)
     {
-        var lotQueue = new Queue<(long qty, decimal price)>();
+        // Use LinkedList so partial-lot updates are O(1) AddFirst — no new collection per split.
+        var lots = new LinkedList<(long qty, decimal price)>();
         var realised = 0m;
 
         foreach (var fill in fills.OrderBy(f => f.FilledAt))
         {
             if (fill.FilledQuantity > 0)
             {
-                lotQueue.Enqueue((fill.FilledQuantity, fill.FillPrice));
+                lots.AddLast((fill.FilledQuantity, fill.FillPrice));
             }
             else
             {
                 var closeQty = Math.Abs(fill.FilledQuantity);
-                while (closeQty > 0 && lotQueue.Count > 0)
+                while (closeQty > 0 && lots.Count > 0)
                 {
-                    var (lotQty, lotPrice) = lotQueue.Peek();
+                    var node = lots.First!;
+                    var (lotQty, lotPrice) = node.Value;
                     if (lotQty <= closeQty)
                     {
                         realised += lotQty * (fill.FillPrice - lotPrice);
                         closeQty -= lotQty;
-                        lotQueue.Dequeue();
+                        lots.RemoveFirst();
                     }
                     else
                     {
                         realised += closeQty * (fill.FillPrice - lotPrice);
-                        lotQueue = new Queue<(long, decimal)>(lotQueue.Skip(1).Prepend((lotQty - closeQty, lotPrice)));
+                        // Partial lot: remove front and prepend reduced entry. O(1) time;
+                        // avoids reallocating the entire collection that the old Queue required.
+                        lots.RemoveFirst();
+                        lots.AddFirst((lotQty - closeQty, lotPrice));
                         closeQty = 0;
                     }
                 }
