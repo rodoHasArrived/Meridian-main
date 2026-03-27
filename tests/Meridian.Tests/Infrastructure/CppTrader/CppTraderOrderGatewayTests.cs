@@ -1,5 +1,5 @@
-using System.Threading.Channels;
 using System.Text.Json;
+using System.Threading.Channels;
 using FluentAssertions;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;

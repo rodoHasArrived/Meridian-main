@@ -21,7 +21,9 @@ public sealed class DataCompletenessServiceTests : IDisposable
 
     public void Dispose()
     {
-        try { Directory.Delete(_tempDir, recursive: true); } catch { }
+        try
+        { Directory.Delete(_tempDir, recursive: true); }
+        catch { }
     }
 
     // ═══════════════════════════════════════════════════════════════════

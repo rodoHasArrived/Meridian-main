@@ -1,8 +1,8 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
-using Meridian.Contracts.Catalog;
 using Meridian.Application.Config;
+using Meridian.Contracts.Catalog;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Events;

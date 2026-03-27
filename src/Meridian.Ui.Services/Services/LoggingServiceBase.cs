@@ -85,7 +85,8 @@ public abstract class LoggingServiceBase : Contracts.ILoggingService
 
     private void Log(LogLevel level, string message, Exception? exception, (string key, string value)[] properties)
     {
-        if (level < MinimumLevel) return;
+        if (level < MinimumLevel)
+            return;
 
         var timestamp = DateTime.UtcNow;
         var formattedMessage = FormatLogEntry(level, timestamp, message, exception, properties);
@@ -124,7 +125,8 @@ public abstract class LoggingServiceBase : Contracts.ILoggingService
             sb.Append(" {");
             for (var i = 0; i < properties.Length; i++)
             {
-                if (i > 0) sb.Append(", ");
+                if (i > 0)
+                    sb.Append(", ");
                 sb.Append(properties[i].key);
                 sb.Append('=');
                 sb.Append(properties[i].value);

@@ -135,7 +135,8 @@ public sealed class BoundedObservableCollection<T> : INotifyCollectionChanged, I
     public void PrependRange(IEnumerable<T> items)
     {
         var itemList = items.ToList();
-        if (itemList.Count == 0) return;
+        if (itemList.Count == 0)
+            return;
 
         // Reverse to maintain insertion order (first item ends up at index 0)
         itemList.Reverse();
@@ -198,7 +199,8 @@ public sealed class BoundedObservableCollection<T> : INotifyCollectionChanged, I
     {
         lock (_syncRoot)
         {
-            if (_items.Count == 0) return;
+            if (_items.Count == 0)
+                return;
 
             _items.Clear();
         }
@@ -278,7 +280,8 @@ public sealed class BoundedObservableCollection<T> : INotifyCollectionChanged, I
     public bool Remove(T item)
     {
         var index = _items.IndexOf(item);
-        if (index < 0) return false;
+        if (index < 0)
+            return false;
 
         RemoveAt(index);
         return true;

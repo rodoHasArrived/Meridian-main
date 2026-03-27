@@ -163,7 +163,8 @@ public abstract class StatusServiceBase
     {
         get
         {
-            lock (_lock) { return _currentStatus; }
+            lock (_lock)
+            { return _currentStatus; }
         }
     }
 
@@ -241,7 +242,8 @@ public abstract class StatusServiceBase
             catch (OperationCanceledException) { break; }
             catch (Exception ex) { SetBackendReachable(false); LogInfo("Live monitoring error", ("error", ex.Message)); }
 
-            try { await Task.Delay(TimeSpan.FromSeconds(intervalSeconds), ct); }
+            try
+            { await Task.Delay(TimeSpan.FromSeconds(intervalSeconds), ct); }
             catch (OperationCanceledException) { break; }
         }
     }
@@ -371,7 +373,8 @@ public abstract class StatusServiceBase
 
         lock (_lock)
         {
-            if (_currentStatus == status) return;
+            if (_currentStatus == status)
+                return;
             previousStatus = _currentStatus;
             _currentStatus = status;
         }

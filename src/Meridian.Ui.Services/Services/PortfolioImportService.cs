@@ -48,17 +48,21 @@ public sealed class PortfolioImportService
             var hasHeader = symbolColumnIndex >= 0;
 
             var startIndex = hasHeader ? 1 : 0;
-            if (!hasHeader) symbolColumnIndex = 0;
+            if (!hasHeader)
+                symbolColumnIndex = 0;
 
             for (var i = startIndex; i < lines.Length; i++)
             {
-                if (string.IsNullOrWhiteSpace(lines[i])) continue;
+                if (string.IsNullOrWhiteSpace(lines[i]))
+                    continue;
 
                 var parts = lines[i].Split(',');
-                if (parts.Length <= symbolColumnIndex) continue;
+                if (parts.Length <= symbolColumnIndex)
+                    continue;
 
                 var symbol = parts[symbolColumnIndex].Trim().ToUpperInvariant();
-                if (string.IsNullOrWhiteSpace(symbol)) continue;
+                if (string.IsNullOrWhiteSpace(symbol))
+                    continue;
 
                 // Remove any quotes
                 symbol = symbol.Trim('"', '\'');

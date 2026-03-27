@@ -6,12 +6,12 @@ using Meridian.Infrastructure.CppTrader.Options;
 using Meridian.Infrastructure.CppTrader.Protocol;
 using Meridian.Infrastructure.CppTrader.Symbols;
 using Meridian.Infrastructure.CppTrader.Translation;
-using GatewayExecutionMode = global::Meridian.Execution.Models.ExecutionMode;
-using GatewayOrderStatus = global::Meridian.Execution.Models.OrderStatus;
 using ExecutionOrderRequest = global::Meridian.Execution.Sdk.OrderRequest;
 using ExecutionOrderSide = global::Meridian.Execution.Sdk.OrderSide;
 using ExecutionOrderType = global::Meridian.Execution.Sdk.OrderType;
 using ExecutionTimeInForce = global::Meridian.Execution.Sdk.TimeInForce;
+using GatewayExecutionMode = global::Meridian.Execution.Models.ExecutionMode;
+using GatewayOrderStatus = global::Meridian.Execution.Models.OrderStatus;
 
 namespace Meridian.Infrastructure.CppTrader.Execution;
 
@@ -263,82 +263,82 @@ public sealed class CppTraderOrderGateway : IOrderGateway
                 switch (envelope.MessageType)
                 {
                     case CppTraderProtocolNames.Accepted:
-                    {
-                        var payload = envelope.Payload.Deserialize(CppTraderJsonContext.Default.AcceptedEvent);
-                        if (payload is not null)
-                            await _updates.Writer.WriteAsync(_executionTranslator.ToAcceptedStatus(payload), ct).ConfigureAwait(false);
-                        break;
-                    }
+                        {
+                            var payload = envelope.Payload.Deserialize(CppTraderJsonContext.Default.AcceptedEvent);
+                            if (payload is not null)
+                                await _updates.Writer.WriteAsync(_executionTranslator.ToAcceptedStatus(payload), ct).ConfigureAwait(false);
+                            break;
+                        }
                     case CppTraderProtocolNames.Rejected:
-                    {
-                        var payload = envelope.Payload.Deserialize(CppTraderJsonContext.Default.RejectedEvent);
-                        if (payload is not null)
                         {
-                            _hostManager.RecordExecutionUpdate(rejected: true);
-                            await _updates.Writer.WriteAsync(_executionTranslator.ToRejectedStatus(payload), ct).ConfigureAwait(false);
+                            var payload = envelope.Payload.Deserialize(CppTraderJsonContext.Default.RejectedEvent);
+                            if (payload is not null)
+                            {
+                                _hostManager.RecordExecutionUpdate(rejected: true);
+                                await _updates.Writer.WriteAsync(_executionTranslator.ToRejectedStatus(payload), ct).ConfigureAwait(false);
+                            }
+                            break;
                         }
-                        break;
-                    }
                     case CppTraderProtocolNames.Execution:
-                    {
-                        var payload = envelope.Payload.Deserialize(CppTraderJsonContext.Default.ExecutionEvent);
-                        if (payload is not null)
                         {
-                            _hostManager.RecordExecutionUpdate(rejected: false);
-                            await _updates.Writer.WriteAsync(_executionTranslator.ToExecutionStatus(payload), ct).ConfigureAwait(false);
+                            var payload = envelope.Payload.Deserialize(CppTraderJsonContext.Default.ExecutionEvent);
+                            if (payload is not null)
+                            {
+                                _hostManager.RecordExecutionUpdate(rejected: false);
+                                await _updates.Writer.WriteAsync(_executionTranslator.ToExecutionStatus(payload), ct).ConfigureAwait(false);
+                            }
+                            break;
                         }
-                        break;
-                    }
                     case CppTraderProtocolNames.Cancelled:
-                    {
-                        var payload = envelope.Payload.Deserialize(CppTraderJsonContext.Default.CancelledEvent);
-                        if (payload is not null)
-                            await _updates.Writer.WriteAsync(_executionTranslator.ToCancelledStatus(payload), ct).ConfigureAwait(false);
-                        break;
-                    }
+                        {
+                            var payload = envelope.Payload.Deserialize(CppTraderJsonContext.Default.CancelledEvent);
+                            if (payload is not null)
+                                await _updates.Writer.WriteAsync(_executionTranslator.ToCancelledStatus(payload), ct).ConfigureAwait(false);
+                            break;
+                        }
                     case CppTraderProtocolNames.BookSnapshot:
-                    {
-                        var payload = envelope.Payload.Deserialize(CppTraderJsonContext.Default.BookSnapshotEvent);
-                        if (payload is not null)
                         {
-                            _hostManager.RecordSnapshot();
-                            _feedAdapter.ApplySnapshot(_snapshotTranslator.Translate(payload));
+                            var payload = envelope.Payload.Deserialize(CppTraderJsonContext.Default.BookSnapshotEvent);
+                            if (payload is not null)
+                            {
+                                _hostManager.RecordSnapshot();
+                                _feedAdapter.ApplySnapshot(_snapshotTranslator.Translate(payload));
+                            }
+                            break;
                         }
-                        break;
-                    }
                     case CppTraderProtocolNames.TradePrint:
-                    {
-                        var payload = envelope.Payload.Deserialize(CppTraderJsonContext.Default.TradePrintEvent);
-                        if (payload is not null)
                         {
-                            _feedAdapter.ApplyTrade(new Trade(
-                                payload.Timestamp,
-                                payload.Symbol,
-                                payload.Price,
-                                payload.Size,
-                                payload.Aggressor,
-                                payload.SequenceNumber,
-                                StreamId: "CPPTRADER",
-                                payload.Venue));
+                            var payload = envelope.Payload.Deserialize(CppTraderJsonContext.Default.TradePrintEvent);
+                            if (payload is not null)
+                            {
+                                _feedAdapter.ApplyTrade(new Trade(
+                                    payload.Timestamp,
+                                    payload.Symbol,
+                                    payload.Price,
+                                    payload.Size,
+                                    payload.Aggressor,
+                                    payload.SequenceNumber,
+                                    StreamId: "CPPTRADER",
+                                    payload.Venue));
+                            }
+                            break;
                         }
-                        break;
-                    }
                     case CppTraderProtocolNames.HeartbeatResponse:
                         _hostManager.RecordHeartbeat();
                         break;
                     case CppTraderProtocolNames.Fault:
-                    {
-                        var payload = envelope.Payload.Deserialize(CppTraderJsonContext.Default.FaultEvent);
-                        if (payload is not null)
-                            _hostManager.RecordFault(payload.Message);
-                        break;
-                    }
+                        {
+                            var payload = envelope.Payload.Deserialize(CppTraderJsonContext.Default.FaultEvent);
+                            if (payload is not null)
+                                _hostManager.RecordFault(payload.Message);
+                            break;
+                        }
                     case CppTraderProtocolNames.SessionClosed:
-                    {
-                        var payload = envelope.Payload.Deserialize(CppTraderJsonContext.Default.SessionClosedEvent);
-                        _hostManager.RecordFault(payload?.Reason ?? "CppTrader session closed unexpectedly.");
-                        break;
-                    }
+                        {
+                            var payload = envelope.Payload.Deserialize(CppTraderJsonContext.Default.SessionClosedEvent);
+                            _hostManager.RecordFault(payload?.Reason ?? "CppTrader session closed unexpectedly.");
+                            break;
+                        }
                 }
             }
         }

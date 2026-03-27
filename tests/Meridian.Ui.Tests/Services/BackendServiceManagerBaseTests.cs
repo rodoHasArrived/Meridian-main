@@ -40,7 +40,8 @@ internal sealed class TestBackendServiceManager : BackendServiceManagerBase
 
     protected override int? StartProcess(string executablePath, string workingDirectory)
     {
-        if (StartProcessShouldFail) return null;
+        if (StartProcessShouldFail)
+            return null;
         _lastPid = 12345;
         _processRunning = true;
         return _lastPid;
@@ -48,7 +49,8 @@ internal sealed class TestBackendServiceManager : BackendServiceManagerBase
 
     protected override Task<bool> KillProcessAsync(int processId, CancellationToken ct)
     {
-        if (processId == _lastPid) _processRunning = false;
+        if (processId == _lastPid)
+            _processRunning = false;
         return Task.FromResult(true);
     }
 
@@ -83,7 +85,9 @@ public sealed class BackendServiceManagerBaseTests : IDisposable
 
     public void Dispose()
     {
-        try { Directory.Delete(_tempDir, true); } catch { }
+        try
+        { Directory.Delete(_tempDir, true); }
+        catch { }
     }
 
     [Fact]

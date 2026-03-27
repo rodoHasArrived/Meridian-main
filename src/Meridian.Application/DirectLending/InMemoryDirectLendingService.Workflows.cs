@@ -67,7 +67,8 @@ public sealed partial class InMemoryDirectLendingService
 
             void AddAllocation(decimal amount, string targetType)
             {
-                if (amount <= 0m) return;
+                if (amount <= 0m)
+                    return;
                 allocations.Add(new PaymentAllocationDto(Guid.NewGuid(), loanId, cashTxn.CashTransactionId, seq++, targetType, Guid.NewGuid().ToString("D"), amount, "Waterfall", stored.History[^1].EventId, DateTimeOffset.UtcNow));
             }
         }
@@ -350,7 +351,8 @@ public sealed partial class InMemoryDirectLendingService
         while (currentDate < stored.TermsVersions[^1].Terms.MaturityDate && currentDate < run.ProjectionAsOf)
         {
             var nextDate = currentDate.AddMonths(1);
-            if (nextDate > stored.TermsVersions[^1].Terms.MaturityDate) nextDate = stored.TermsVersions[^1].Terms.MaturityDate;
+            if (nextDate > stored.TermsVersions[^1].Terms.MaturityDate)
+                nextDate = stored.TermsVersions[^1].Terms.MaturityDate;
             var amount = Meridian.FSharp.DirectLendingInterop.DirectLendingInterop.CalculateDailyAccrualAmount(stored.Servicing.Balances.PrincipalOutstanding, annualRate, (int)stored.TermsVersions[^1].Terms.DayCountBasis) * Math.Max(1, nextDate.DayNumber - currentDate.DayNumber);
             flows.Add(new ProjectedCashFlowDto(Guid.NewGuid(), run.ProjectionRunId, stored.LoanId, seq++, "Interest", nextDate, currentDate, nextDate, decimal.Round(amount, 2, MidpointRounding.AwayFromZero), stored.TermsVersions[^1].Terms.BaseCurrency, stored.Servicing.Balances.PrincipalOutstanding, annualRate, JsonSerializer.Serialize(new { type = "interest" }), DateTimeOffset.UtcNow));
             currentDate = nextDate;

@@ -25,7 +25,9 @@ public sealed class ConfigServiceTests : IDisposable
 
     public void Dispose()
     {
-        try { Directory.Delete(_tempDir, recursive: true); } catch { }
+        try
+        { Directory.Delete(_tempDir, recursive: true); }
+        catch { }
     }
 
     // ── Singleton ────────────────────────────────────────────────────
@@ -329,7 +331,8 @@ public sealed class ConfigServiceTests : IDisposable
 
         public override async Task<AppConfigDto?> LoadConfigAsync(CancellationToken ct = default)
         {
-            if (!File.Exists(_path)) return null;
+            if (!File.Exists(_path))
+                return null;
             var json = await File.ReadAllTextAsync(_path, ct);
             return System.Text.Json.JsonSerializer.Deserialize<AppConfigDto>(json,
                 new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
@@ -338,7 +341,8 @@ public sealed class ConfigServiceTests : IDisposable
         public override async Task SaveConfigAsync(AppConfigDto config, CancellationToken ct = default)
         {
             var dir = Path.GetDirectoryName(_path);
-            if (dir != null) Directory.CreateDirectory(dir);
+            if (dir != null)
+                Directory.CreateDirectory(dir);
             var json = System.Text.Json.JsonSerializer.Serialize(config,
                 new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
             await File.WriteAllTextAsync(_path, json, ct);

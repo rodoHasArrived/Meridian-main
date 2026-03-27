@@ -64,7 +64,7 @@ public static class FormValidationRules
         foreach (var symbol in symbols)
         {
             var result = ValidateSymbol(symbol);
-            if (!result.IsValid) 
+            if (!result.IsValid)
                 invalidSymbols.Add(symbol);
         }
 

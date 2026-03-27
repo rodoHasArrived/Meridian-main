@@ -238,7 +238,8 @@ public abstract class DataQualityServiceBase
     public async Task<List<DataGapInfo>> GetDataGapsAsync(string symbol, CancellationToken ct = default)
     {
         var report = await GetSymbolQualityAsync(symbol, ct);
-        if (report?.Gaps == null) return new List<DataGapInfo>();
+        if (report?.Gaps == null)
+            return new List<DataGapInfo>();
 
         var gaps = new List<DataGapInfo>();
         foreach (var gap in report.Gaps)

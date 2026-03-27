@@ -334,31 +334,31 @@ public sealed class ParquetStorageSink : IStorageSink
 
         var count = snapshots.Count;
         var timestamps = new DateTimeOffset[count];
-        var symbols    = new string[count];
-        var bidCounts  = new int[count];
-        var askCounts  = new int[count];
-        var bestBids   = new decimal?[count];
-        var bestAsks   = new decimal?[count];
-        var spreads    = new decimal?[count];
-        var seqNums    = new long[count];
-        var sources    = new string[count];
-        var bidsJson   = new string[count];
-        var asksJson   = new string[count];
+        var symbols = new string[count];
+        var bidCounts = new int[count];
+        var askCounts = new int[count];
+        var bestBids = new decimal?[count];
+        var bestAsks = new decimal?[count];
+        var spreads = new decimal?[count];
+        var seqNums = new long[count];
+        var sources = new string[count];
+        var bidsJson = new string[count];
+        var asksJson = new string[count];
 
         for (var i = 0; i < count; i++)
         {
             var (evt, snap, seq) = snapshots[i];
             timestamps[i] = evt.Timestamp;
-            symbols[i]    = evt.EffectiveSymbol;
-            bidCounts[i]  = snap.Bids?.Count ?? 0;
-            askCounts[i]  = snap.Asks?.Count ?? 0;
-            bestBids[i]   = snap.Bids is { Count: > 0 } bids ? bids[0].Price : 0m;
-            bestAsks[i]   = snap.Asks is { Count: > 0 } asks ? asks[0].Price : 0m;
-            spreads[i]    = ComputeSpread(snap);
-            seqNums[i]    = seq;
-            sources[i]    = evt.Source;
-            bidsJson[i]   = JsonSerializer.Serialize(snap.Bids ?? EmptyBookLevels, MarketDataJsonContext.HighPerformanceOptions);
-            asksJson[i]   = JsonSerializer.Serialize(snap.Asks ?? EmptyBookLevels, MarketDataJsonContext.HighPerformanceOptions);
+            symbols[i] = evt.EffectiveSymbol;
+            bidCounts[i] = snap.Bids?.Count ?? 0;
+            askCounts[i] = snap.Asks?.Count ?? 0;
+            bestBids[i] = snap.Bids is { Count: > 0 } bids ? bids[0].Price : 0m;
+            bestAsks[i] = snap.Asks is { Count: > 0 } asks ? asks[0].Price : 0m;
+            spreads[i] = ComputeSpread(snap);
+            seqNums[i] = seq;
+            sources[i] = evt.Source;
+            bidsJson[i] = JsonSerializer.Serialize(snap.Bids ?? EmptyBookLevels, MarketDataJsonContext.HighPerformanceOptions);
+            asksJson[i] = JsonSerializer.Serialize(snap.Asks ?? EmptyBookLevels, MarketDataJsonContext.HighPerformanceOptions);
         }
 
         await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[0], timestamps));
@@ -454,23 +454,23 @@ public sealed class ParquetStorageSink : IStorageSink
             new DataField<string>("Source")
         );
 
-        var count      = events.Count;
+        var count = events.Count;
         var timestamps = new DateTimeOffset[count];
-        var symbols    = new string[count];
-        var types      = new string[count];
-        var payloads   = new string[count];
-        var sequences  = new long[count];
-        var sources    = new string[count];
+        var symbols = new string[count];
+        var types = new string[count];
+        var payloads = new string[count];
+        var sequences = new long[count];
+        var sources = new string[count];
 
         for (var i = 0; i < count; i++)
         {
             var e = events[i];
             timestamps[i] = e.Timestamp;
-            symbols[i]    = e.EffectiveSymbol;
-            types[i]      = e.Type.ToString();
-            payloads[i]   = JsonSerializer.Serialize(e, MarketDataJsonContext.Default.MarketEvent);
-            sequences[i]  = e.Sequence;
-            sources[i]    = e.Source;
+            symbols[i] = e.EffectiveSymbol;
+            types[i] = e.Type.ToString();
+            payloads[i] = JsonSerializer.Serialize(e, MarketDataJsonContext.Default.MarketEvent);
+            sequences[i] = e.Sequence;
+            sources[i] = e.Source;
         }
 
         using var groupWriter = await ParquetWriter.CreateAsync(genericSchema, File.Create(path));

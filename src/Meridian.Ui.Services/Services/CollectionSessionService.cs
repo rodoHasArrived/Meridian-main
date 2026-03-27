@@ -64,7 +64,8 @@ public sealed class CollectionSessionService
     /// </summary>
     public async Task SaveSessionsAsync(CancellationToken ct = default)
     {
-        if (_sessionsConfig == null) return;
+        if (_sessionsConfig == null)
+            return;
 
         try
         {
@@ -296,7 +297,8 @@ public sealed class CollectionSessionService
         var config = await LoadSessionsAsync();
         var session = config.Sessions?.FirstOrDefault(s => s.Id == sessionId);
 
-        if (session?.Statistics == null) return;
+        if (session?.Statistics == null)
+            return;
 
         session.Statistics.TotalEvents += newEvents;
         session.Statistics.TotalBytes += newBytes;
@@ -341,7 +343,8 @@ public sealed class CollectionSessionService
         var config = await LoadSessionsAsync();
         var session = config.Sessions?.FirstOrDefault(s => s.Id == sessionId);
 
-        if (session?.Statistics == null) return;
+        if (session?.Statistics == null)
+            return;
 
         session.Statistics.GapsDetected++;
         session.UpdatedAt = DateTime.UtcNow;
@@ -356,7 +359,8 @@ public sealed class CollectionSessionService
         var config = await LoadSessionsAsync();
         var session = config.Sessions?.FirstOrDefault(s => s.Id == sessionId);
 
-        if (session?.Statistics == null) return;
+        if (session?.Statistics == null)
+            return;
 
         session.Statistics.SequenceErrors++;
         session.UpdatedAt = DateTime.UtcNow;
@@ -372,7 +376,8 @@ public sealed class CollectionSessionService
         var sessions = config.Sessions?.ToList() ?? new List<CollectionSession>();
         var session = sessions.FirstOrDefault(s => s.Id == sessionId);
 
-        if (session == null) return;
+        if (session == null)
+            return;
 
         if (session.Status == "Active")
         {
@@ -399,7 +404,8 @@ public sealed class CollectionSessionService
         var config = await LoadSessionsAsync();
         var session = config.Sessions?.FirstOrDefault(s => s.Id == sessionId);
 
-        if (session == null) return;
+        if (session == null)
+            return;
 
         session.Notes = notes;
         session.UpdatedAt = DateTime.UtcNow;
@@ -414,7 +420,8 @@ public sealed class CollectionSessionService
         var config = await LoadSessionsAsync();
         var session = config.Sessions?.FirstOrDefault(s => s.Id == sessionId);
 
-        if (session == null) return;
+        if (session == null)
+            return;
 
         session.Tags = tags;
         session.UpdatedAt = DateTime.UtcNow;
@@ -466,8 +473,10 @@ Verification: {(session.ManifestPath != null ? "✓ Manifest generated" : "Pendi
         {
             foreach (var symbol in config.Symbols)
             {
-                if (symbol.SubscribeTrades) eventTypes.Add("Trade");
-                if (symbol.SubscribeDepth) eventTypes.Add("Depth");
+                if (symbol.SubscribeTrades)
+                    eventTypes.Add("Trade");
+                if (symbol.SubscribeDepth)
+                    eventTypes.Add("Depth");
             }
         }
 

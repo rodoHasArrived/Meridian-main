@@ -290,7 +290,7 @@ public sealed class NyseTaqCollectorIntegrationTests
         var aaplRecord = NyseNationalTradesCsvParser.ParseTradeLine(AaplPreMarketFinalCorrection, SessionDate)!;
         // TSLA seq 61928 is *lower* than AAPL's 64802 but on a separate symbol track.
         var tslaRecord = NyseNationalTradesCsvParser.ParseTradeLine(TslaEarlyPreMarket, SessionDate)!;
-        var spyRecord  = NyseNationalTradesCsvParser.ParseTradeLine(SpyPreMarket, SessionDate)!;
+        var spyRecord = NyseNationalTradesCsvParser.ParseTradeLine(SpyPreMarket, SessionDate)!;
 
         _collector.OnTrade(ToUpdate(aaplRecord));
         _collector.OnTrade(ToUpdate(tslaRecord));

@@ -1,9 +1,9 @@
 using System.Diagnostics;
 using Meridian.Application.SecurityMaster;
 using Meridian.Backtesting.FillModels;
-using Meridian.Contracts.SecurityMaster;
 using Meridian.Backtesting.Metrics;
 using Meridian.Backtesting.Portfolio;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Domain.Events;
 using Meridian.Storage.Replay;
 using Meridian.Storage.Services;

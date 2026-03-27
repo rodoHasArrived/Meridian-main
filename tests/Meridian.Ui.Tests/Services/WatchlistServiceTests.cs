@@ -1,6 +1,6 @@
+using System.Linq;
 using FluentAssertions;
 using Meridian.Ui.Services;
-using System.Linq;
 
 namespace Meridian.Ui.Tests.Services;
 

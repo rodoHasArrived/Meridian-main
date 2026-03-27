@@ -66,7 +66,8 @@ public abstract class BaseBrokerageGateway : IBrokerageGateway
     /// <inheritdoc />
     public async Task DisconnectAsync(CancellationToken ct = default)
     {
-        if (!_connected) return;
+        if (!_connected)
+            return;
 
         Logger.LogInformation("{Gateway} disconnecting...", GatewayId);
 
@@ -214,7 +215,8 @@ public abstract class BaseBrokerageGateway : IBrokerageGateway
 
         for (int attempt = 1; attempt <= MaxReconnectAttempts; attempt++)
         {
-            if (ct.IsCancellationRequested) return;
+            if (ct.IsCancellationRequested)
+                return;
 
             var delay = TimeSpan.FromSeconds(ReconnectBaseDelay.TotalSeconds * Math.Pow(2, attempt - 1));
             Logger.LogWarning(
@@ -253,7 +255,8 @@ public abstract class BaseBrokerageGateway : IBrokerageGateway
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
-        if (_disposed) return;
+        if (_disposed)
+            return;
         _disposed = true;
 
         _reconnectCts?.Cancel();

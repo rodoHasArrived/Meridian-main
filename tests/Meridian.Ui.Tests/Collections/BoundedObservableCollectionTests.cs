@@ -1,6 +1,6 @@
+using System.Collections.Specialized;
 using FluentAssertions;
 using Meridian.Ui.Services.Collections;
-using System.Collections.Specialized;
 
 namespace Meridian.Ui.Tests.Collections;
 
@@ -80,7 +80,7 @@ public sealed class BoundedObservableCollectionTests
         var collection = new BoundedObservableCollection<int>(maxCapacity: 5);
         var eventFired = false;
         NotifyCollectionChangedEventArgs? eventArgs = null;
-        
+
         collection.CollectionChanged += (sender, args) =>
         {
             eventFired = true;
@@ -103,7 +103,7 @@ public sealed class BoundedObservableCollectionTests
         var collection = new BoundedObservableCollection<int>(maxCapacity: 2);
         collection.Add(1);
         collection.Add(2);
-        
+
         var removeFired = false;
         var addFired = false;
 

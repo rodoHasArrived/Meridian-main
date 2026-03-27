@@ -7,8 +7,8 @@ using Meridian.Infrastructure.DataSources;
 using Microsoft.Extensions.Logging;
 using IBOptions = Meridian.Application.Config.IBOptions;
 using OrderSide = Meridian.Execution.Sdk.OrderSide;
-using OrderType = Meridian.Execution.Sdk.OrderType;
 using OrderStatus = Meridian.Execution.Sdk.OrderStatus;
+using OrderType = Meridian.Execution.Sdk.OrderType;
 using TimeInForce = Meridian.Execution.Sdk.TimeInForce;
 
 namespace Meridian.Infrastructure.Adapters.InteractiveBrokers;
@@ -96,7 +96,8 @@ public sealed class IBBrokerageGateway : IBrokerageGateway
     public async Task ConnectAsync(CancellationToken ct = default)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        if (_connected) return;
+        if (_connected)
+            return;
 
         _logger.LogInformation(
             "IB brokerage connecting to {Host}:{Port} (clientId={ClientId}, paper={Paper})",
@@ -261,7 +262,8 @@ public sealed class IBBrokerageGateway : IBrokerageGateway
     /// <inheritdoc />
     public ValueTask DisposeAsync()
     {
-        if (_disposed) return ValueTask.CompletedTask;
+        if (_disposed)
+            return ValueTask.CompletedTask;
         _disposed = true;
         _connected = false;
         _reportChannel.Writer.TryComplete();

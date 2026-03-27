@@ -53,23 +53,23 @@ public sealed class ReconciliationEngineService
         var checkDtos = candidates
             .Select(c => new PortfolioLedgerCheckDto
             {
-                CheckId          = c.CandidateId.ToString("N"),
-                Label            = c.Label,
-                ExpectedSource   = "portfolio",
-                ActualSource     = "ledger",
-                ExpectedAmount   = c.ExpectedAmount,
-                ActualAmount     = c.ActualAmount,
+                CheckId = c.CandidateId.ToString("N"),
+                Label = c.Label,
+                ExpectedSource = "portfolio",
+                ActualSource = "ledger",
+                ExpectedAmount = c.ExpectedAmount,
+                ActualAmount = c.ActualAmount,
                 HasExpectedAmount = true,
-                HasActualAmount  = true,
-                ExpectedPresent  = c.ExpectedPresent,
-                ActualPresent    = c.ActualPresent,
-                ExpectedAsOf     = request.AsOf,
-                ActualAsOf       = request.AsOf,
-                HasExpectedAsOf  = true,
-                HasActualAsOf    = true,
-                CategoryHint     = c.CategoryHint,
+                HasActualAmount = true,
+                ExpectedPresent = c.ExpectedPresent,
+                ActualPresent = c.ActualPresent,
+                ExpectedAsOf = request.AsOf,
+                ActualAsOf = request.AsOf,
+                HasExpectedAsOf = true,
+                HasActualAsOf = true,
+                CategoryHint = c.CategoryHint,
                 MissingSourceHint = string.Empty,
-                ActualKind       = c.ActualKind
+                ActualKind = c.ActualKind
             })
             .ToArray();
 
@@ -79,7 +79,7 @@ public sealed class ReconciliationEngineService
             checkDtos);
 
         var matches = results.Where(r => r.IsMatch).ToArray();
-        var breaks  = results.Where(r => !r.IsMatch).ToArray();
+        var breaks = results.Where(r => !r.IsMatch).ToArray();
 
         var completedAt = DateTimeOffset.UtcNow;
 
@@ -89,16 +89,16 @@ public sealed class ReconciliationEngineService
             (long)(completedAt - startedAt).TotalMilliseconds);
 
         return new EngineReconciliationResult(
-            RunId:          runId,
-            PortfolioId:    request.PortfolioId,
-            AsOf:           request.AsOf,
-            StartedAt:      startedAt,
-            CompletedAt:    completedAt,
-            TotalChecks:    checkDtos.Length,
-            MatchCount:     matches.Length,
-            BreakCount:     breaks.Length,
-            Matches:        matches,
-            Breaks:         breaks,
+            RunId: runId,
+            PortfolioId: request.PortfolioId,
+            AsOf: request.AsOf,
+            StartedAt: startedAt,
+            CompletedAt: completedAt,
+            TotalChecks: checkDtos.Length,
+            MatchCount: matches.Length,
+            BreakCount: breaks.Length,
+            Matches: matches,
+            Breaks: breaks,
             ResolvedSecurities: securityDetails);
     }
 
@@ -146,15 +146,15 @@ public sealed class ReconciliationEngineService
             var ledgerAmount = request.LedgerBalances.TryGetValue(position.Symbol, out var lb) ? lb : 0m;
 
             candidates.Add(new ReconciliationCandidate(
-                CandidateId:    Guid.NewGuid(),
-                Symbol:         position.Symbol,
-                Label:          security?.DisplayName ?? position.Symbol,
+                CandidateId: Guid.NewGuid(),
+                Symbol: position.Symbol,
+                Label: security?.DisplayName ?? position.Symbol,
                 ExpectedAmount: position.MarketValue,
-                ActualAmount:   ledgerAmount,
+                ActualAmount: ledgerAmount,
                 ExpectedPresent: true,
-                ActualPresent:  ledgerAmount != 0m,
-                CategoryHint:  security?.AssetClass ?? "Unknown",
-                ActualKind:    security?.AssetClass ?? string.Empty));
+                ActualPresent: ledgerAmount != 0m,
+                CategoryHint: security?.AssetClass ?? "Unknown",
+                ActualKind: security?.AssetClass ?? string.Empty));
         }
 
         // Also surface ledger entries not present in portfolio
@@ -166,15 +166,15 @@ public sealed class ReconciliationEngineService
             securityDetails.TryGetValue(symbol, out var security);
 
             candidates.Add(new ReconciliationCandidate(
-                CandidateId:    Guid.NewGuid(),
-                Symbol:         symbol,
-                Label:          security?.DisplayName ?? symbol,
+                CandidateId: Guid.NewGuid(),
+                Symbol: symbol,
+                Label: security?.DisplayName ?? symbol,
                 ExpectedAmount: 0m,
-                ActualAmount:   balance,
+                ActualAmount: balance,
                 ExpectedPresent: false,
-                ActualPresent:  true,
-                CategoryHint:  security?.AssetClass ?? "Unknown",
-                ActualKind:    security?.AssetClass ?? string.Empty));
+                ActualPresent: true,
+                CategoryHint: security?.AssetClass ?? "Unknown",
+                ActualKind: security?.AssetClass ?? string.Empty));
         }
 
         return candidates;
@@ -182,13 +182,13 @@ public sealed class ReconciliationEngineService
 
     // ── Private model ──────────────────────────────────────────────────────────
     private sealed record ReconciliationCandidate(
-        Guid   CandidateId,
+        Guid CandidateId,
         string Symbol,
         string Label,
         decimal ExpectedAmount,
         decimal ActualAmount,
-        bool   ExpectedPresent,
-        bool   ActualPresent,
+        bool ExpectedPresent,
+        bool ActualPresent,
         string CategoryHint,
         string ActualKind);
 }

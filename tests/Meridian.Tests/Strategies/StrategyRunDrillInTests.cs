@@ -372,7 +372,7 @@ public sealed class StrategyRunDrillInTests
         {
             ["AAPL"] = new("AAPL", 5_000m, 1_200m, 8, 45m, 20m),
             ["MSFT"] = new("MSFT", 3_000m, -200m, 4, 22m, 10m),
-            ["SPY"]  = new("SPY",  1_000m, 500m, 2, 10m, 5m)
+            ["SPY"] = new("SPY", 1_000m, 500m, 2, 10m, 5m)
         };
 
         var request = new BacktestRequest(

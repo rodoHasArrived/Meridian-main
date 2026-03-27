@@ -52,7 +52,7 @@ public sealed class SecurityMasterService : ISecurityMasterService
             request.Reason,
             projection.Version);
 
-        await _eventStore.AppendAsync(request.SecurityId, request.ExpectedVersion, [ envelope ], ct).ConfigureAwait(false);
+        await _eventStore.AppendAsync(request.SecurityId, request.ExpectedVersion, [envelope], ct).ConfigureAwait(false);
         await _store.UpsertProjectionAsync(projection, ct).ConfigureAwait(false);
         await SaveSnapshotIfNeededAsync(economic, ct).ConfigureAwait(false);
 
@@ -78,7 +78,7 @@ public sealed class SecurityMasterService : ISecurityMasterService
             request.Reason,
             projection.Version);
 
-        await _eventStore.AppendAsync(request.SecurityId, request.ExpectedVersion, [ envelope ], ct).ConfigureAwait(false);
+        await _eventStore.AppendAsync(request.SecurityId, request.ExpectedVersion, [envelope], ct).ConfigureAwait(false);
         await _store.UpsertProjectionAsync(projection, ct).ConfigureAwait(false);
         await SaveSnapshotIfNeededAsync(economic, ct).ConfigureAwait(false);
     }
@@ -115,7 +115,7 @@ public sealed class SecurityMasterService : ISecurityMasterService
             request.Reason,
             projection.Version);
 
-        await _eventStore.AppendAsync(request.SecurityId, expectedVersion: 0, [ envelope ], ct).ConfigureAwait(false);
+        await _eventStore.AppendAsync(request.SecurityId, expectedVersion: 0, [envelope], ct).ConfigureAwait(false);
         await _store.UpsertProjectionAsync(projection, ct).ConfigureAwait(false);
         await SaveSnapshotIfNeededAsync(economic, ct).ConfigureAwait(false);
 
