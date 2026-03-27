@@ -675,7 +675,11 @@ Use these documents together when planning or implementing new work:
 │   ├── diagrams
 │   │   ├── README.md
 │   │   ├── backfill-workflow.dot
+│   │   ├── backfill-workflow.png
+│   │   ├── backfill-workflow.svg
 │   │   ├── backtesting-engine.dot
+│   │   ├── backtesting-engine.png
+│   │   ├── backtesting-engine.svg
 │   │   ├── c4-level1-context.dot
 │   │   ├── c4-level1-context.png
 │   │   ├── c4-level1-context.svg
@@ -689,20 +693,32 @@ Use these documents together when planning or implementing new work:
 │   │   ├── cli-commands.png
 │   │   ├── cli-commands.svg
 │   │   ├── configuration-management.dot
+│   │   ├── configuration-management.png
+│   │   ├── configuration-management.svg
 │   │   ├── data-flow.dot
 │   │   ├── data-flow.png
 │   │   ├── data-flow.svg
 │   │   ├── data-quality-monitoring.dot
+│   │   ├── data-quality-monitoring.png
+│   │   ├── data-quality-monitoring.svg
 │   │   ├── deployment-options.dot
 │   │   ├── deployment-options.png
 │   │   ├── deployment-options.svg
 │   │   ├── domain-event-model.dot
+│   │   ├── domain-event-model.png
+│   │   ├── domain-event-model.svg
 │   │   ├── event-pipeline-sequence.dot
 │   │   ├── event-pipeline-sequence.png
 │   │   ├── event-pipeline-sequence.svg
 │   │   ├── execution-layer.dot
+│   │   ├── execution-layer.png
+│   │   ├── execution-layer.svg
 │   │   ├── fsharp-domain.dot
+│   │   ├── fsharp-domain.png
+│   │   ├── fsharp-domain.svg
 │   │   ├── mcp-server.dot
+│   │   ├── mcp-server.png
+│   │   ├── mcp-server.svg
 │   │   ├── onboarding-flow.dot
 │   │   ├── onboarding-flow.png
 │   │   ├── onboarding-flow.svg
@@ -719,13 +735,37 @@ Use these documents together when planning or implementing new work:
 │   │   ├── storage-architecture.png
 │   │   ├── storage-architecture.svg
 │   │   ├── strategy-lifecycle.dot
+│   │   ├── strategy-lifecycle.png
+│   │   ├── strategy-lifecycle.svg
 │   │   ├── symbol-search-resolution.dot
+│   │   ├── symbol-search-resolution.png
+│   │   ├── symbol-search-resolution.svg
 │   │   ├── ui-implementation-flow.dot
+│   │   ├── ui-implementation-flow.png
 │   │   ├── ui-implementation-flow.svg
 │   │   ├── ui-navigation-map.dot
+│   │   ├── ui-navigation-map.png
 │   │   ├── ui-navigation-map.svg
 │   │   └── uml
+│   │       ├── Activity Diagram - Data Collection Process Flow.png
+│   │       ├── Activity Diagram - Historical Backfill Process.png
+│   │       ├── Class Diagram - WPF MVVM Architecture.png
+│   │       ├── Communication Diagram - Component Message Exchange.png
+│   │       ├── Interaction Overview Diagram - System Workflow.png
 │   │       ├── README.md
+│   │       ├── Sequence Diagram - Backtesting Engine.png
+│   │       ├── Sequence Diagram - Historical Backfill Flow.png
+│   │       ├── Sequence Diagram - Paper Trading Order Execution.png
+│   │       ├── Sequence Diagram - Real-Time Data Collection Flow.png
+│   │       ├── Sequence Diagram - Strategy Promotion Lifecycle.png
+│   │       ├── Sequence Diagram - WAL Durability and Crash-Safe Writes.png
+│   │       ├── State Diagram - Backfill Request States.png
+│   │       ├── State Diagram - Order Book Stream States.png
+│   │       ├── State Diagram - Provider Connection States.png
+│   │       ├── State Diagram - Trade Sequence Validation States.png
+│   │       ├── Timing Diagram - Backfill Operation Timeline.png
+│   │       ├── Timing Diagram - Event Processing Timeline.png
+│   │       ├── Use Case Diagram - Meridian.png
 │   │       ├── activity-diagram-backfill.png
 │   │       ├── activity-diagram-backfill.puml
 │   │       ├── activity-diagram.png
@@ -3026,6 +3066,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-455 directories, 2533 files
+455 directories, 2573 files
 ```
 <!-- readme-tree end -->

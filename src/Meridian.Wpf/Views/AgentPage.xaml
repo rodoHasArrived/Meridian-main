@@ -8,9 +8,9 @@
         <DataTemplate x:Key="MessageTemplate">
             <Border Margin="0,4" Padding="12,8" CornerRadius="8" MaxWidth="500"
                     HorizontalAlignment="{Binding Alignment}"
-                    Background="{DynamicResource SurfaceVariantBrush}">
+                    Background="{StaticResource ConsoleBackgroundMediumBrush}">
                 <TextBlock Text="{Binding Content}" TextWrapping="Wrap"
-                           Foreground="{DynamicResource OnSurfaceVariantBrush}"/>
+                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"/>
             </Border>
         </DataTemplate>
     </Page.Resources>
@@ -23,9 +23,9 @@
         </Grid.RowDefinitions>
 
         <!-- Header: Model selector + Ollama status -->
-        <DockPanel Grid.Row="0" Margin="16,12,16,12" Background="{DynamicResource SurfaceBrush}">
+        <DockPanel Grid.Row="0" Margin="16,12,16,12" Background="{StaticResource ConsoleBackgroundLightBrush}">
             <TextBlock Text="Local AI Agent" FontSize="16" FontWeight="SemiBold" DockPanel.Dock="Left" 
-                       Foreground="{DynamicResource OnSurfaceBrush}" VerticalAlignment="Center"/>
+                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" VerticalAlignment="Center"/>
 
             <!-- Status indicator -->
             <Border Background="{Binding OllamaStatusBrush}" Width="10" Height="10" 
@@ -52,7 +52,7 @@
         </ScrollViewer>
 
         <!-- Input bar -->
-        <DockPanel Grid.Row="2" Margin="16,8" Background="{DynamicResource SurfaceBrush}" Padding="0,8">
+        <DockPanel Grid.Row="2" Margin="16,8" Background="{StaticResource ConsoleBackgroundLightBrush}" Padding="0,8">
             <Button DockPanel.Dock="Right" Content="Send" 
                     Command="{Binding SendCommand}" 
                     Width="70" Margin="8,0,0,0"/>

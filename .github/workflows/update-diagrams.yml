@@ -146,4 +146,4 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: 'docs(diagrams): regenerate diagram artifacts from sources'
-          file_pattern: docs/diagrams/**/*.svg docs/diagrams/**/*.png
+          file_pattern: docs/diagrams/*.dot docs/diagrams/uml/*.puml docs/diagrams/*.svg docs/diagrams/*.png docs/diagrams/uml/*.png

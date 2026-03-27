@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-03-27 20:16:38 UTC. Do not edit manually.
+> Auto-generated on 2026-03-27 20:27:18 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -2778,6 +2778,7 @@ Meridian-main
 ├── .flake8
 ├── .gitattributes
 ├── .gitignore
+├── .gitleaks.toml
 ├── .globalconfig
 ├── .markdownlint.json
 ├── .vsconfig

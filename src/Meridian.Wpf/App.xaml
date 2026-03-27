@@ -11,9 +11,9 @@
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Light.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesign3.Defaults.xaml" />
 
-                <!-- Core Styles -->
-                <ResourceDictionary Source="Styles/AppStyles.xaml" />
+                <!-- Core Styles: ThemeTokens must load first so AppStyles can resolve its StaticResource references -->
                 <ResourceDictionary Source="Styles/ThemeTokens.xaml" />
+                <ResourceDictionary Source="Styles/AppStyles.xaml" />
                 <ResourceDictionary Source="Styles/ThemeTypography.xaml" />
                 <ResourceDictionary Source="Styles/ThemeSurfaces.xaml" />
                 <ResourceDictionary Source="Styles/ThemeControls.xaml" />

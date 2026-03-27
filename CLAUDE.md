@@ -2904,6 +2904,7 @@ Meridian-main
 ├── .flake8
 ├── .gitattributes
 ├── .gitignore
+├── .gitleaks.toml
 ├── .globalconfig
 ├── .markdownlint.json
 ├── .vsconfig
