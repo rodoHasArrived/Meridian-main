@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-03-27 21:36:30 UTC. Do not edit manually.
+> Auto-generated on 2026-03-27 21:55:32 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -2620,7 +2620,8 @@ Meridian-main
 │   │   │   │   ├── StockSharpMessageConversionTests.cs
 │   │   │   │   ├── StockSharpSubscriptionTests.cs
 │   │   │   │   ├── StreamingFailoverServiceTests.cs
-│   │   │   │   └── SyntheticMarketDataProviderTests.cs
+│   │   │   │   ├── SyntheticMarketDataProviderTests.cs
+│   │   │   │   └── WebSocketProviderBaseTests.cs
 │   │   │   ├── Resilience
 │   │   │   │   ├── WebSocketConnectionManagerTests.cs
 │   │   │   │   └── WebSocketResiliencePolicyTests.cs
