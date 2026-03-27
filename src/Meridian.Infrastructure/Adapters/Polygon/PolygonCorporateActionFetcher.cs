@@ -68,7 +68,7 @@ public sealed class PolygonCorporateActionFetcher : IPolygonCorporateActionFetch
         _logger = logger;
     }
 
-    public async Task StartAsync(CancellationToken ct)
+    public Task StartAsync(CancellationToken ct)
     {
         var config = _configOptions.Value;
         _apiKey = ResolvePolygonApiKey(config);
@@ -76,7 +76,7 @@ public sealed class PolygonCorporateActionFetcher : IPolygonCorporateActionFetch
         if (string.IsNullOrEmpty(_apiKey))
         {
             _logger.LogInformation("Polygon API key not configured; corporate action fetcher will not start");
-            return;
+            return Task.CompletedTask;
         }
 
         _logger.LogInformation("Starting PolygonCorporateActionFetcher with API key configured");
@@ -100,6 +100,7 @@ public sealed class PolygonCorporateActionFetcher : IPolygonCorporateActionFetch
                 }
             },
             _backgroundCts.Token);
+        return Task.CompletedTask;
     }
 
     public async Task StopAsync(CancellationToken ct)

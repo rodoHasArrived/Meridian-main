@@ -144,7 +144,7 @@ public sealed class BacktestEngine(
 
     // ── Private helpers ──────────────────────────────────────────────────────
 
-    private async Task<IReadOnlyList<IAsyncEnumerable<MarketEvent>>> BuildSymbolStreamsAsync(
+    private Task<IReadOnlyList<IAsyncEnumerable<MarketEvent>>> BuildSymbolStreamsAsync(
         IReadOnlySet<string> universe,
         BacktestRequest request,
         CancellationToken ct)
@@ -167,7 +167,7 @@ public sealed class BacktestEngine(
 
             streams.Add(symbolStream);
         }
-        return streams;
+        return Task.FromResult<IReadOnlyList<IAsyncEnumerable<MarketEvent>>>(streams);
     }
 
     /// <summary>

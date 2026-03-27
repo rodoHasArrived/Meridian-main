@@ -1,4 +1,3 @@
-using System.Net;
 using Meridian.Application.Logging;
 using Meridian.Core.Performance;
 using Serilog;
@@ -52,19 +51,6 @@ public sealed class CoLocationProfileActivator : ICoLocationProfileActivator
         catch (Exception ex)
         {
             _logger.Warning(ex, "Failed to set GC latency mode");
-        }
-
-        try
-        {
-            // Disable Nagle's algorithm at the HTTP layer to reduce latency
-            // Nagle combines small packets which adds latency; colocation should send immediately
-            ServicePointManager.UseNagleAlgorithm = false;
-            ServicePointManager.Expect100Continue = false;
-            _logger.Information("HTTP/TCP Nagle algorithm disabled");
-        }
-        catch (Exception ex)
-        {
-            _logger.Warning(ex, "Failed to disable Nagle algorithm");
         }
 
         try

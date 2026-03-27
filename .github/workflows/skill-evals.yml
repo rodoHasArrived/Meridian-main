@@ -26,7 +26,7 @@ jobs:
       mdc_brainstorm_changed: ${{ steps.changes.outputs.mdc_brainstorm }}
       shared_changed: ${{ steps.changes.outputs.shared }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Detect changed skill directories
         id: changes
@@ -74,7 +74,7 @@ jobs:
     needs: detect-changed-skills
     if: needs.detect-changed-skills.outputs.mdc_code_review_changed == 'true' || needs.detect-changed-skills.outputs.mdc_brainstorm_changed == 'true'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -170,7 +170,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up Python
         uses: actions/setup-python@v5
