@@ -100,7 +100,7 @@ jobs:
         run: dotnet build ${{ env.WPF_PROJECT }} -c ${{ env.BUILD_CONFIG }} --no-restore -p:TargetFramework=net9.0-windows --verbosity minimal
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: wpf-build-output
           path: src/Meridian.Wpf/bin/${{ env.BUILD_CONFIG }}/
@@ -178,14 +178,14 @@ jobs:
           Compress-Archive -Path "./publish/${{ matrix.rid }}-fdd/*" -DestinationPath "Meridian.Desktop-${{ matrix.rid }}-fdd.zip"
 
       - name: Upload self-contained artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: Meridian.Desktop-${{ matrix.rid }}-selfcontained
           path: Meridian.Desktop-${{ matrix.rid }}-selfcontained.zip
           retention-days: 30
 
       - name: Upload framework-dependent artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: Meridian.Desktop-${{ matrix.rid }}-fdd
           path: Meridian.Desktop-${{ matrix.rid }}-fdd.zip
@@ -217,7 +217,7 @@ jobs:
           cache-suffix: 'wpf'
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v4
         with:
           name: wpf-build-output
           path: src/Meridian.Wpf/bin/${{ env.BUILD_CONFIG }}/
@@ -249,7 +249,7 @@ jobs:
 
     steps:
       - name: Download build logs
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v4
         with:
           pattern: '*-build-logs-*'
           path: build-logs/

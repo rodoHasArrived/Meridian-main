@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
+using ISecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 

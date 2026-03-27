@@ -1,5 +1,6 @@
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
+using ISecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
 
 namespace Meridian.Backtesting;
 

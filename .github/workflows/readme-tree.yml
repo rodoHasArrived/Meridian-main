@@ -20,7 +20,7 @@ jobs:
           fetch-depth: 0
 
       - name: Update repository tree markers
-        uses: RavelloH/readme-tree@latest
+        uses: RavelloH/readme-tree@main
         with:
           ignoregit: 'yes'
 

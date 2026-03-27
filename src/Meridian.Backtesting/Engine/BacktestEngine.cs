@@ -210,8 +210,8 @@ public sealed class BacktestEngine(
             var barTimestamp = bar.SessionDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
             if (barTimestamp <= nonBar.Timestamp.UtcDateTime)
             {
-                yield return new MarketEvent(
-                    barTimestamp.ToDateTimeOffset(TimeSpan.Zero),
+                yield return MarketEvent.HistoricalBar(
+                    new DateTimeOffset(barTimestamp, TimeSpan.Zero),
                     symbol,
                     bar);
                 bIdx++;
@@ -226,8 +226,8 @@ public sealed class BacktestEngine(
         while (bIdx < barsByTimestamp.Count)
         {
             var bar = barsByTimestamp[bIdx];
-            yield return new MarketEvent(
-                bar.SessionDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc).ToDateTimeOffset(TimeSpan.Zero),
+            yield return MarketEvent.HistoricalBar(
+                new DateTimeOffset(bar.SessionDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
                 symbol,
                 bar);
             bIdx++;
