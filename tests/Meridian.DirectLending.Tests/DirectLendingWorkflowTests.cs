@@ -147,6 +147,44 @@ public sealed class DirectLendingWorkflowTests
         reconciliationException.Error.Code.Should().Be(DirectLendingErrorCode.NotFound);
     }
 
+    [Fact]
+    public async Task ChargePrepaymentPenaltyAsync_ShouldAddPenaltyToBalances()
+    {
+        var service = new InMemoryDirectLendingService();
+        var loan = await service.CreateLoanAsync(BuildCreateRequestWithPenaltyRate(0.02m));
+        await service.ActivateLoanAsync(loan.LoanId, new ActivateLoanRequest(new DateOnly(2026, 3, 23)));
+        await service.BookDrawdownAsync(loan.LoanId, new BookDrawdownRequest(500_000m, new DateOnly(2026, 3, 23), new DateOnly(2026, 3, 23), "wire-3"));
+
+        var servicing = await service.ChargePrepaymentPenaltyAsync(
+            loan.LoanId,
+            new ChargePrepaymentPenaltyRequest(500_000m, new DateOnly(2026, 3, 24), "prepay-ext-1"));
+
+        servicing.Should().NotBeNull();
+        servicing!.Balances.PenaltyAccruedUnpaid.Should().Be(10_000m); // 500_000 * 0.02
+    }
+
+    [Fact]
+    public async Task ChargePrepaymentPenaltyAsync_ShouldThrowValidation_WhenPrepaymentNotAllowed()
+    {
+        var service = new InMemoryDirectLendingService();
+        var loan = await service.CreateLoanAsync(BuildCreateRequest());
+
+        // Amend terms to disallow prepayment
+        var currentTerms = loan.CurrentTerms;
+        await service.ActivateLoanAsync(loan.LoanId, new ActivateLoanRequest(new DateOnly(2026, 3, 23)));
+        await service.BookDrawdownAsync(loan.LoanId, new BookDrawdownRequest(100_000m, new DateOnly(2026, 3, 23), new DateOnly(2026, 3, 23), "wire-4"));
+        await service.AmendTermsAsync(loan.LoanId, new AmendLoanTermsRequest(
+            currentTerms with { PrepaymentAllowed = false },
+            "Prepayment blocked per covenant waiver"));
+
+        var act = () => service.ChargePrepaymentPenaltyAsync(
+            loan.LoanId,
+            new ChargePrepaymentPenaltyRequest(100_000m, new DateOnly(2026, 3, 25), null));
+
+        var ex = await Assert.ThrowsAsync<DirectLendingCommandException>(act);
+        ex.Error.Code.Should().Be(DirectLendingErrorCode.Validation);
+    }
+
 
     private static CreateLoanRequest BuildCreateRequest() =>
         new(
@@ -172,4 +210,30 @@ public sealed class DirectLendingWorkflowTests
                 DefaultRateSpreadBps: 200m,
                 PrepaymentAllowed: true,
                 CovenantsJson: "{\"leverage\": \"<= 4.0x\"}"));
+
+    private static CreateLoanRequest BuildCreateRequestWithPenaltyRate(decimal penaltyRate) =>
+        new(
+            LoanId: Guid.NewGuid(),
+            FacilityName: "Adventure Works Senior Loan",
+            Borrower: new BorrowerInfoDto(Guid.NewGuid(), "Adventure Works Borrower", Guid.NewGuid()),
+            EffectiveDate: new DateOnly(2026, 3, 22),
+            Terms: new DirectLendingTermsDto(
+                OriginationDate: new DateOnly(2026, 3, 22),
+                MaturityDate: new DateOnly(2029, 3, 22),
+                CommitmentAmount: 1_000_000m,
+                BaseCurrency: CurrencyCode.USD,
+                RateTypeKind: RateTypeKind.Fixed,
+                FixedAnnualRate: 0.08m,
+                InterestIndexName: null,
+                SpreadBps: null,
+                FloorRate: null,
+                CapRate: null,
+                DayCountBasis: DayCountBasis.Act360,
+                PaymentFrequency: PaymentFrequency.Quarterly,
+                AmortizationType: AmortizationType.InterestOnly,
+                CommitmentFeeRate: 0.03m,
+                DefaultRateSpreadBps: 200m,
+                PrepaymentAllowed: true,
+                CovenantsJson: "{\"leverage\": \"<= 4.0x\"}",
+                PrepaymentPenaltyRate: penaltyRate));
 }
