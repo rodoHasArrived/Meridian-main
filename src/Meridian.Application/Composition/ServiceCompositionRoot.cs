@@ -2,7 +2,6 @@ using System.Reflection;
 using Meridian.Application.Composition.Features;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
-using Meridian.Backtesting;
 using Meridian.Domain.Events;
 using Meridian.Infrastructure.Contracts;
 using Microsoft.Extensions.DependencyInjection;
@@ -117,8 +116,8 @@ public static class ServiceCompositionRoot
 
         TryRegisterCppTraderIntegration(services, options.ConfigPath);
 
-        // Backtesting services
-        services.AddScoped<ICorporateActionAdjustmentService, CorporateActionAdjustmentService>();
+        // Backtesting services are registered by the host project (Meridian.Backtesting references
+        // Meridian.Application, so registration here would create a circular dependency).
 
         return services;
     }

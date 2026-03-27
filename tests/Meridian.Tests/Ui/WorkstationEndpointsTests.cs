@@ -6,6 +6,7 @@ using Meridian.Application.SecurityMaster;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
+using ISecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
 using Meridian.Ledger;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;

@@ -59,7 +59,7 @@ public sealed class SecurityMasterCsvParser
             }
 
             // Parse data row
-            var record = ParseRow(values, headers, rowNumber, out var rowError);
+            var record = ParseRow(values.ToArray(), headers, rowNumber, out var rowError);
             if (rowError != null)
             {
                 errorList.Add(rowError);
