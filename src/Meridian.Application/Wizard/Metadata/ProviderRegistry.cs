@@ -54,7 +54,7 @@ public static class ProviderRegistry
                 Capabilities: new[] { "RealTime", "Historical", "Trades", "Quotes" },
                 Priority: 5,
                 SignupUrl: "https://app.alpaca.markets/signup",
-                DocsUrl: "https://docs.alpaca.markets/docs/getting-started",
+                DocsUrl: "https://docs.alpaca.markets/docs/getting-started-with-alpaca-market-data",
                 FreeTierDescription: "Free: IEX feed (~10% of trades), unlimited paper trading"
             ),
             new(
