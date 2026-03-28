@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
+using Meridian.Application.UI;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
@@ -1272,6 +1273,74 @@ public sealed class WorkstationEndpointsTests
         var ids = doc.RootElement.EnumerateArray().Select(r => r.GetProperty("runId").GetString()).ToArray();
         ids.Should().Contain("typed-run-1");
         ids.Should().NotContain("typed-run-2");
+    }
+
+    // --- Data-operations workspace ---
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_DataOperations_WithoutServices_ShouldReturnFallbackPayload()
+    {
+        await using var app = await CreateAppAsync();
+        var client = app.GetTestClient();
+
+        using var doc = await ReadJsonAsync(client, "/api/workstation/data-operations");
+
+        // Fallback payload contains hard-coded fixture rows
+        doc.RootElement.GetProperty("metrics").GetArrayLength().Should().Be(4);
+        doc.RootElement.GetProperty("providers").GetArrayLength().Should().BeGreaterThan(0);
+        doc.RootElement.GetProperty("backfills").GetArrayLength().Should().BeGreaterThan(0);
+        doc.RootElement.GetProperty("exports").GetArrayLength().Should().BeGreaterThan(0);
+
+        var providersHealthyMetric = doc.RootElement.GetProperty("metrics").EnumerateArray()
+            .Single(m => m.GetProperty("id").GetString() == "providers-healthy");
+        providersHealthyMetric.GetProperty("label").GetString().Should().Be("Providers Healthy");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_DataOperations_WithReadServiceOnly_ShouldReturnEmptyProvidersAndBackfills()
+    {
+        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services));
+        var client = app.GetTestClient();
+
+        using var doc = await ReadJsonAsync(client, "/api/workstation/data-operations");
+
+        // No ConfigStore → providers and backfills are empty; exports always empty in MVP
+        doc.RootElement.GetProperty("metrics").GetArrayLength().Should().Be(4);
+        doc.RootElement.GetProperty("providers").GetArrayLength().Should().Be(0);
+        doc.RootElement.GetProperty("backfills").GetArrayLength().Should().Be(0);
+        doc.RootElement.GetProperty("exports").GetArrayLength().Should().Be(0);
+
+        var providersHealthyMetric = doc.RootElement.GetProperty("metrics").EnumerateArray()
+            .Single(m => m.GetProperty("id").GetString() == "providers-healthy");
+        providersHealthyMetric.GetProperty("value").GetString().Should().Be("0");
+        providersHealthyMetric.GetProperty("tone").GetString().Should().Be("default");
+
+        var backfillsMetric = doc.RootElement.GetProperty("metrics").EnumerateArray()
+            .Single(m => m.GetProperty("id").GetString() == "backfills-running");
+        backfillsMetric.GetProperty("value").GetString().Should().Be("0");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_DataOperations_WithConfigStoreNoMetricsFile_ShouldReturnEmptyProvidersAndBackfills()
+    {
+        // Register a ConfigStore pointing to a nonexistent directory so TryLoad* returns null
+        var noDataPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString(), "appsettings.json");
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton(new Meridian.Application.UI.ConfigStore(noDataPath));
+        });
+        var client = app.GetTestClient();
+
+        using var doc = await ReadJsonAsync(client, "/api/workstation/data-operations");
+
+        doc.RootElement.GetProperty("providers").GetArrayLength().Should().Be(0);
+        doc.RootElement.GetProperty("backfills").GetArrayLength().Should().Be(0);
+        doc.RootElement.GetProperty("exports").GetArrayLength().Should().Be(0);
+
+        var providersHealthyMetric = doc.RootElement.GetProperty("metrics").EnumerateArray()
+            .Single(m => m.GetProperty("id").GetString() == "providers-healthy");
+        providersHealthyMetric.GetProperty("value").GetString().Should().Be("0");
     }
 
     // Helper shims to reuse StrategyRunDrillInTests factory logic directly
