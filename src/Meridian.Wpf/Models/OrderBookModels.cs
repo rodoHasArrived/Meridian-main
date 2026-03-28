@@ -14,6 +14,12 @@ public sealed class OrderBookDisplayLevel
     public decimal RawTotal { get; set; }
     public string Total { get; set; } = string.Empty;
     public double DepthWidth { get; set; }
+
+    /// <summary>
+    /// True when this level's size is at least twice the average size across the visible ladder,
+    /// indicating an unusually large resting order (potential support/resistance wall).
+    /// </summary>
+    public bool IsHighlighted { get; set; }
 }
 
 /// <summary>
