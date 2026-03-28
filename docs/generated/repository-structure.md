@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-03-28 08:08:56 UTC. Do not edit manually.
+> Auto-generated on 2026-03-28 09:15:26 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -1702,6 +1702,35 @@ Meridian-main
 │   │   ├── IRealtimeDataSource.cs
 │   │   ├── Meridian.ProviderSdk.csproj
 │   │   └── ProviderHttpUtilities.cs
+│   ├── Meridian.QuantScript
+│   │   ├── Api
+│   │   │   ├── BacktestProxy.cs
+│   │   │   ├── DataProxy.cs
+│   │   │   ├── EfficientFrontierConstraints.cs
+│   │   │   ├── IQuantDataContext.cs
+│   │   │   ├── LambdaBacktestStrategy.cs
+│   │   │   ├── PortfolioBuilder.cs
+│   │   │   ├── PriceBar.cs
+│   │   │   ├── PriceSeries.cs
+│   │   │   ├── PriceSeriesExtensions.cs
+│   │   │   ├── QuantDataContext.cs
+│   │   │   ├── ReturnSeries.cs
+│   │   │   ├── ScriptModels.cs
+│   │   │   ├── ScriptParamAttribute.cs
+│   │   │   ├── StatisticsEngine.cs
+│   │   │   └── TechnicalSeriesExtensions.cs
+│   │   ├── Compilation
+│   │   │   ├── Contracts.cs
+│   │   │   ├── QuantScriptGlobals.cs
+│   │   │   ├── RoslynScriptCompiler.cs
+│   │   │   └── ScriptRunner.cs
+│   │   ├── Plotting
+│   │   │   ├── PlotQueue.cs
+│   │   │   └── PlotRequest.cs
+│   │   ├── GlobalUsings.cs
+│   │   ├── Meridian.QuantScript.csproj
+│   │   ├── QuantScriptOptions.cs
+│   │   └── ScriptContext.cs
 │   ├── Meridian.Risk
 │   │   ├── Rules
 │   │   │   ├── DrawdownCircuitBreaker.cs
@@ -2210,6 +2239,7 @@ Meridian-main
 │       │   ├── ProviderHealthViewModel.cs
 │       │   ├── ProviderPageModels.cs
 │       │   ├── QualityArchiveViewModel.cs
+│       │   ├── QuantScriptViewModel.cs
 │       │   ├── QuoteFloatViewModel.cs
 │       │   ├── RunMatViewModel.cs
 │       │   ├── SecurityMasterDeactivateViewModel.cs
@@ -2317,6 +2347,8 @@ Meridian-main
 │       │   ├── ProviderPage.xaml.cs
 │       │   ├── QualityArchivePage.xaml
 │       │   ├── QualityArchivePage.xaml.cs
+│       │   ├── QuantScriptPage.xaml
+│       │   ├── QuantScriptPage.xaml.cs
 │       │   ├── QuoteFloatWindow.xaml
 │       │   ├── QuoteFloatWindow.xaml.cs
 │       │   ├── ResearchWorkspaceShellPage.xaml
@@ -2424,6 +2456,14 @@ Meridian-main
 │   │   │   └── StorageToolsTests.cs
 │   │   ├── GlobalUsings.cs
 │   │   └── Meridian.McpServer.Tests.csproj
+│   ├── Meridian.QuantScript.Tests
+│   │   ├── GlobalUsings.cs
+│   │   ├── Meridian.QuantScript.Tests.csproj
+│   │   ├── PlotQueueTests.cs
+│   │   ├── PriceSeriesTests.cs
+│   │   ├── RoslynScriptCompilerTests.cs
+│   │   ├── ScriptRunnerTests.cs
+│   │   └── StatisticsEngineTests.cs
 │   ├── Meridian.Tests
 │   │   ├── Application
 │   │   │   ├── Backfill
