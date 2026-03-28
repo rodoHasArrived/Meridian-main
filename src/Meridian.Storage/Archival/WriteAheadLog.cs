@@ -1,4 +1,5 @@
 using System.Buffers;
+using System.Buffers.Text;
 using System.Globalization;
 using System.IO.Compression;
 using System.Security.Cryptography;
@@ -631,71 +632,59 @@ public sealed class WriteAheadLog : IAsyncDisposable
     /// </summary>
     private static string ComputeChecksum(long sequence, DateTime timestamp, string recordType, string payload)
     {
-        // Use incremental hash to avoid concatenating a potentially large string
-        // (the payload can be several KB of serialized JSON).
-        using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
-
-        Span<byte> smallBuf = stackalloc byte[128];
-
-        // sequence|
-        if (Encoding.UTF8.TryGetBytes(sequence.ToString(), smallBuf, out var written))
-        {
-            hash.AppendData(smallBuf[..written]);
-        }
-        else
-        {
-            hash.AppendData(Encoding.UTF8.GetBytes(sequence.ToString()));
-        }
-        hash.AppendData(PipeSeparator);
-
-        // timestamp:O|
-        var tsStr = timestamp.ToString("O");
-        if (Encoding.UTF8.TryGetBytes(tsStr, smallBuf, out written))
-        {
-            hash.AppendData(smallBuf[..written]);
-        }
-        else
-        {
-            hash.AppendData(Encoding.UTF8.GetBytes(tsStr));
-        }
-        hash.AppendData(PipeSeparator);
-
-        // recordType|
-        if (Encoding.UTF8.TryGetBytes(recordType, smallBuf, out written))
-        {
-            hash.AppendData(smallBuf[..written]);
-        }
-        else
-        {
-            hash.AppendData(Encoding.UTF8.GetBytes(recordType));
-        }
-        hash.AppendData(PipeSeparator);
-
-        // payload (may be large — rent from pool when it doesn't fit on the stack)
-        var payloadByteCount = Encoding.UTF8.GetByteCount(payload);
-        if (payloadByteCount <= 1024)
-        {
-            Span<byte> payloadBuf = stackalloc byte[payloadByteCount];
-            Encoding.UTF8.GetBytes(payload, payloadBuf);
-            hash.AppendData(payloadBuf);
-        }
-        else
-        {
-            var rented = System.Buffers.ArrayPool<byte>.Shared.Rent(payloadByteCount);
-            try
-            {
-                var count = Encoding.UTF8.GetBytes(payload, 0, payload.Length, rented, 0);
-                hash.AppendData(rented.AsSpan(0, count));
-            }
-            finally
-            {
-                System.Buffers.ArrayPool<byte>.Shared.Return(rented);
-            }
-        }
-
         Span<byte> hashBytes = stackalloc byte[32]; // SHA-256 = 32 bytes
-        hash.GetHashAndReset(hashBytes);
+        ComputeChecksumCore(sequence, timestamp, recordType, payload, hashBytes);
         return Convert.ToHexStringLower(hashBytes);
+    }
+
+    private static void ComputeChecksumCore(long sequence, DateTime timestamp, string recordType, string payload, Span<byte> destination)
+    {
+        var recordTypeByteCount = Encoding.UTF8.GetByteCount(recordType);
+        var payloadByteCount = Encoding.UTF8.GetByteCount(payload);
+        var totalByteCount = 20 + 33 + 3 + recordTypeByteCount + payloadByteCount;
+
+        byte[]? rented = null;
+        var buffer = totalByteCount <= 4608
+            ? stackalloc byte[4608]
+            : (rented = ArrayPool<byte>.Shared.Rent(totalByteCount));
+
+        var recordBytes = buffer[..totalByteCount];
+
+        try
+        {
+            var written = 0;
+
+            if (!Utf8Formatter.TryFormat(sequence, recordBytes[written..], out var sequenceWritten))
+            {
+                throw new InvalidOperationException("Failed to format WAL sequence.");
+            }
+
+            written += sequenceWritten;
+            recordBytes[written++] = (byte)'|';
+
+            if (!Utf8Formatter.TryFormat(timestamp, recordBytes[written..], out var timestampWritten, 'O'))
+            {
+                throw new InvalidOperationException("Failed to format WAL timestamp.");
+            }
+
+            written += timestampWritten;
+            recordBytes[written++] = (byte)'|';
+            written += Encoding.UTF8.GetBytes(recordType, recordBytes[written..]);
+            recordBytes[written++] = (byte)'|';
+            written += Encoding.UTF8.GetBytes(payload, recordBytes[written..]);
+
+            if (!SHA256.TryHashData(recordBytes[..written], destination, out _))
+            {
+                throw new InvalidOperationException("Failed to compute WAL checksum.");
+            }
+        }
+        finally
+        {
+            if (rented is not null)
+            {
+                ArrayPool<byte>.Shared.Return(rented);
+            }
+        }
     }
 
     private static ReadOnlySpan<byte> PipeSeparator => "|"u8;
@@ -740,60 +729,62 @@ public sealed class WriteAheadLog : IAsyncDisposable
 
             // Read the raw file directly to count both valid and corrupted records,
             // rather than going through ReadWalFileAsync which filters corrupted ones out.
-            await using var stream = new FileStream(
-                walFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-            using var reader = new StreamReader(stream);
-
-            // Read and validate header
-            var header = await reader.ReadLineAsync();
-            if (header == null || !header.StartsWith(WalMagic))
+            await using (var stream = new FileStream(
+                walFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             {
-                _log.Warning("Skipping WAL file with invalid header during repair: {File}", walFile);
-                continue;
-            }
+                using var reader = new StreamReader(stream);
 
-            while (!reader.EndOfStream && !ct.IsCancellationRequested)
-            {
-                var line = await reader.ReadLineAsync();
-                if (string.IsNullOrWhiteSpace(line))
-                    continue;
-
-                totalRecords++;
-
-                var parts = line.Split('|', 5);
-                if (parts.Length < 5 ||
-                    !long.TryParse(parts[0], out var sequence) ||
-                    !DateTime.TryParse(parts[1], CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var timestamp))
+                // Read and validate header
+                var header = await reader.ReadLineAsync();
+                if (header == null || !header.StartsWith(WalMagic))
                 {
-                    fileCorruptedCount++;
-                    corruptedRecords++;
+                    _log.Warning("Skipping WAL file with invalid header during repair: {File}", walFile);
                     continue;
                 }
 
-                var recordType = parts[2];
-                var checksum = parts[3];
-                var payload = parts[4];
-
-                var expectedChecksum = ComputeChecksum(sequence, timestamp, recordType, payload);
-                if (!string.Equals(checksum, expectedChecksum, StringComparison.Ordinal))
+                while (!reader.EndOfStream && !ct.IsCancellationRequested)
                 {
-                    _log.Warning(
-                        "Repair: corrupted record with sequence {Sequence} in {File}",
-                        sequence, walFile);
-                    fileCorruptedCount++;
-                    corruptedRecords++;
-                    continue;
+                    var line = await reader.ReadLineAsync();
+                    if (string.IsNullOrWhiteSpace(line))
+                        continue;
+
+                    totalRecords++;
+
+                    var parts = line.Split('|', 5);
+                    if (parts.Length < 5 ||
+                        !long.TryParse(parts[0], out var sequence) ||
+                        !DateTime.TryParse(parts[1], CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var timestamp))
+                    {
+                        fileCorruptedCount++;
+                        corruptedRecords++;
+                        continue;
+                    }
+
+                    var recordType = parts[2];
+                    var checksum = parts[3];
+                    var payload = parts[4];
+
+                    var expectedChecksum = ComputeChecksum(sequence, timestamp, recordType, payload);
+                    if (!string.Equals(checksum, expectedChecksum, StringComparison.Ordinal))
+                    {
+                        _log.Warning(
+                            "Repair: corrupted record with sequence {Sequence} in {File}",
+                            sequence, walFile);
+                        fileCorruptedCount++;
+                        corruptedRecords++;
+                        continue;
+                    }
+
+                    validRecords++;
+                    fileValidRecords.Add(new WalRecord
+                    {
+                        Sequence = sequence,
+                        Timestamp = timestamp,
+                        RecordType = recordType,
+                        Checksum = checksum,
+                        Payload = payload
+                    });
                 }
-
-                validRecords++;
-                fileValidRecords.Add(new WalRecord
-                {
-                    Sequence = sequence,
-                    Timestamp = timestamp,
-                    RecordType = recordType,
-                    Checksum = checksum,
-                    Payload = payload
-                });
             }
 
             // Only rewrite files that are eligible for in-place repair and actually contain corruption.
@@ -801,23 +792,25 @@ public sealed class WriteAheadLog : IAsyncDisposable
             {
                 var tempPath = walFile + ".repair";
 
-                await using var outStream = new FileStream(
+                await using (var outStream = new FileStream(
                     tempPath, FileMode.Create, FileAccess.Write, FileShare.None,
-                    bufferSize: 64 * 1024, FileOptions.WriteThrough | FileOptions.Asynchronous);
-                await using var writer = new StreamWriter(outStream, Encoding.UTF8, bufferSize: 32 * 1024);
-
-                // Write header
-                await writer.WriteLineAsync($"{WalMagic}|{WalVersion}|{DateTime.UtcNow:O}");
-
-                // Write valid records
-                foreach (var record in fileValidRecords)
+                    bufferSize: 64 * 1024, FileOptions.WriteThrough | FileOptions.Asynchronous))
                 {
-                    ct.ThrowIfCancellationRequested();
-                    var recordLine = $"{record.Sequence}|{record.Timestamp:O}|{record.RecordType}|{record.Checksum}|{record.Payload}";
-                    await writer.WriteLineAsync(recordLine);
-                }
+                    await using var writer = new StreamWriter(outStream, Encoding.UTF8, bufferSize: 32 * 1024);
 
-                await writer.FlushAsync();
+                    // Write header
+                    await writer.WriteLineAsync($"{WalMagic}|{WalVersion}|{DateTime.UtcNow:O}");
+
+                    // Write valid records
+                    foreach (var record in fileValidRecords)
+                    {
+                        ct.ThrowIfCancellationRequested();
+                        var recordLine = $"{record.Sequence}|{record.Timestamp:O}|{record.RecordType}|{record.Checksum}|{record.Payload}";
+                        await writer.WriteLineAsync(recordLine);
+                    }
+
+                    await writer.FlushAsync();
+                }
 
                 // Replace original with repaired file
                 File.Delete(walFile);
@@ -888,7 +881,11 @@ public sealed class WriteAheadLog : IAsyncDisposable
     /// </summary>
     [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
     internal static string ComputeChecksumForBenchmark(long sequence, DateTime timestamp, string recordType, string payload)
-        => ComputeChecksum(sequence, timestamp, recordType, payload);
+    {
+        Span<byte> hashBytes = stackalloc byte[32];
+        ComputeChecksumCore(sequence, timestamp, recordType, payload, hashBytes);
+        return string.Empty;
+    }
 }
 
 /// <summary>

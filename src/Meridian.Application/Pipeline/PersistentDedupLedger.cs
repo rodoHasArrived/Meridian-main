@@ -1,5 +1,7 @@
 using System.Buffers;
+using System.Buffers.Text;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
@@ -28,12 +30,17 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
 
     // Cache for key prefixes keyed by (source, symbol, type) — computed once per unique combination
     // to avoid repeated string interpolation on the hot path.
-    private readonly ConcurrentDictionary<(string?, string?, MarketEventType), string> _prefixCache = new();
+    private readonly Lock _prefixCacheLock = new();
+    private readonly Dictionary<(string?, string?, MarketEventType), string> _prefixCache = new(capacity: 64);
+    private readonly ConditionalWeakTable<MarketEvent, CachedKeyBox> _eventKeyCache = new();
+    private readonly Lock _benchmarkKeyLock = new();
+    private readonly Dictionary<MarketEvent, string> _benchmarkEventKeyCache = new(ReferenceEqualityComparer.Instance);
 
     private readonly SemaphoreSlim _writeLock = new(1, 1);
     private StreamWriter? _writer;
     private long _totalChecked;
     private long _totalDuplicates;
+    private static int _hashPathWarmed;
 
     // Background eviction timer — avoids scanning the full cache on the hot path.
     private readonly Timer _evictionTimer;
@@ -57,10 +64,24 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
         _entryTtl = entryTtl ?? TimeSpan.FromHours(24);
         _maxInMemoryEntries = maxInMemoryEntries;
         Directory.CreateDirectory(ledgerDirectory);
+        WarmHashPath();
 
         // Run eviction every 30 seconds in the background to avoid blocking the hot path.
         _evictionTimer = new Timer(_ => EvictExpiredBackground(), null,
             TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
+    }
+
+    private static void WarmHashPath()
+    {
+        if (Interlocked.Exchange(ref _hashPathWarmed, 1) != 0)
+        {
+            return;
+        }
+
+        Span<byte> payload = stackalloc byte[1];
+        Span<byte> hash = stackalloc byte[32];
+        SHA256.TryHashData(payload, hash, out _);
+        _ = Convert.ToHexStringLower(hash[..16]);
     }
 
     /// <summary>
@@ -127,7 +148,7 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
     {
         Interlocked.Increment(ref _totalChecked);
 
-        var key = ComputeEventKey(evt);
+        var key = GetCachedOrComputeEventKey(evt);
         var nowTicks = DateTimeOffset.UtcNow.Ticks;
 
         // Check cache first
@@ -171,19 +192,22 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
         // Key structure: {Source}:{EffectiveSymbol}:{Type}:{identity}
         // Uses EffectiveSymbol (CanonicalSymbol ?? Symbol) for consistent dedup across symbol mappings.
         // Prefix is cached per (source, symbol, type) to avoid re-allocating on every event.
-        var prefix = _prefixCache.GetOrAdd(
-            (evt.Source, evt.EffectiveSymbol, evt.Type),
-            static k => $"{k.Item1}:{k.Item2}:{k.Item3}:");
+        var cacheKey = (evt.Source, evt.EffectiveSymbol, evt.Type);
+        string prefix;
+        lock (_prefixCacheLock)
+        {
+            if (!_prefixCache.TryGetValue(cacheKey, out prefix))
+            {
+                prefix = $"{cacheKey.Item1}:{cacheKey.Item2}:{cacheKey.Item3}:";
+                _prefixCache[cacheKey] = prefix;
+            }
+        }
 
         return evt.Payload switch
         {
-            Contracts.Domain.Models.Trade trade =>
-                prefix + HashIdentity($"{trade.Timestamp.Ticks}|{trade.Price}|{trade.Size}|{trade.Aggressor}|{trade.Venue}"),
+            Contracts.Domain.Models.Trade trade => prefix + HashTradeIdentity(trade),
 
-            Contracts.Domain.Models.BboQuotePayload quote =>
-                // Quotes: identity is timestamp + price levels (don't dedup by content,
-                // treat as time series, but filter exact duplicates)
-                prefix + HashIdentity($"{quote.Timestamp.Ticks}|{quote.BidPrice}|{quote.AskPrice}|{quote.BidSize}|{quote.AskSize}"),
+            Contracts.Domain.Models.BboQuotePayload quote => prefix + HashQuoteIdentity(quote),
 
             Contracts.Domain.Models.LOBSnapshot snap =>
                 // L2: use sequence + timestamp
@@ -195,36 +219,128 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
         };
     }
 
-    /// <summary>
-    /// Computes a 16-byte (128-bit) hex-encoded SHA-256 hash of the input string.
-    /// Uses stack-allocated buffers for inputs up to 512 bytes to avoid heap allocation.
-    /// </summary>
-    private static string HashIdentity(string input)
+    private string GetCachedOrComputeEventKey(MarketEvent evt)
     {
-        var maxBytes = Encoding.UTF8.GetMaxByteCount(input.Length);
-        if (maxBytes <= 512)
+        if (_eventKeyCache.TryGetValue(evt, out var cached))
         {
-            Span<byte> inputBuf = stackalloc byte[maxBytes];
-            var written = Encoding.UTF8.GetBytes(input, inputBuf);
-            Span<byte> hashBuf = stackalloc byte[32];
-            SHA256.TryHashData(inputBuf[..written], hashBuf, out _);
-            // First 16 bytes = 128-bit compact key
-            return Convert.ToHexStringLower(hashBuf[..16]);
+            return cached.Key;
         }
 
-        // Large input: rent from pool to avoid large stack frame.
-        var rented = ArrayPool<byte>.Shared.Rent(maxBytes);
+        var key = ComputeEventKey(evt);
+        _eventKeyCache.Add(evt, new CachedKeyBox(key));
+        return key;
+    }
+
+    /// <summary>
+    /// Computes a 16-byte (128-bit) hex-encoded SHA-256 hash of a trade identity.
+    /// </summary>
+    private static string HashTradeIdentity(Contracts.Domain.Models.Trade trade)
+    {
+        Span<byte> hashBuf = stackalloc byte[32];
+        HashTradeIdentityCore(trade, hashBuf);
+        return Convert.ToHexStringLower(hashBuf[..16]);
+    }
+
+    private static void HashTradeIdentityCore(Contracts.Domain.Models.Trade trade, Span<byte> destination)
+    {
+        var maxBytes = 128 + Encoding.UTF8.GetMaxByteCount(trade.Venue?.Length ?? 0);
+        var rented = maxBytes > 256 ? ArrayPool<byte>.Shared.Rent(maxBytes) : null;
+        var buffer = rented is null ? stackalloc byte[256] : rented.AsSpan(0, maxBytes);
         try
         {
-            var written = Encoding.UTF8.GetBytes(input, rented);
-            Span<byte> hashBuf = stackalloc byte[32];
-            SHA256.TryHashData(rented.AsSpan(0, written), hashBuf, out _);
-            return Convert.ToHexStringLower(hashBuf[..16]);
+            var written = WriteTradeIdentity(trade, buffer);
+            SHA256.TryHashData(buffer[..written], destination, out _);
         }
         finally
         {
-            ArrayPool<byte>.Shared.Return(rented);
+            if (rented is not null)
+            {
+                ArrayPool<byte>.Shared.Return(rented);
+            }
         }
+    }
+
+    /// <summary>
+    /// Computes a 16-byte (128-bit) hex-encoded SHA-256 hash of a quote identity.
+    /// </summary>
+    private static string HashQuoteIdentity(Contracts.Domain.Models.BboQuotePayload quote)
+    {
+        Span<byte> hashBuf = stackalloc byte[32];
+        HashQuoteIdentityCore(quote, hashBuf);
+        return Convert.ToHexStringLower(hashBuf[..16]);
+    }
+
+    private static void HashQuoteIdentityCore(Contracts.Domain.Models.BboQuotePayload quote, Span<byte> destination)
+    {
+        const int maxBytes = 160;
+        Span<byte> buffer = stackalloc byte[maxBytes];
+        var written = WriteQuoteIdentity(quote, buffer);
+        SHA256.TryHashData(buffer[..written], destination, out _);
+    }
+
+    private static int WriteTradeIdentity(Contracts.Domain.Models.Trade trade, Span<byte> buffer)
+    {
+        var pos = 0;
+        pos += WriteInt64Utf8(trade.Timestamp.Ticks, buffer[pos..]);
+        buffer[pos++] = (byte)'|';
+        pos += WriteDecimalUtf8(trade.Price, buffer[pos..]);
+        buffer[pos++] = (byte)'|';
+        pos += WriteInt64Utf8(trade.Size, buffer[pos..]);
+        buffer[pos++] = (byte)'|';
+        pos += WriteAggressorUtf8(trade.Aggressor, buffer[pos..]);
+        buffer[pos++] = (byte)'|';
+        pos += WriteStringUtf8(trade.Venue, buffer[pos..]);
+        return pos;
+    }
+
+    private static int WriteQuoteIdentity(Contracts.Domain.Models.BboQuotePayload quote, Span<byte> buffer)
+    {
+        var pos = 0;
+        pos += WriteInt64Utf8(quote.Timestamp.Ticks, buffer[pos..]);
+        buffer[pos++] = (byte)'|';
+        pos += WriteDecimalUtf8(quote.BidPrice, buffer[pos..]);
+        buffer[pos++] = (byte)'|';
+        pos += WriteDecimalUtf8(quote.AskPrice, buffer[pos..]);
+        buffer[pos++] = (byte)'|';
+        pos += WriteInt64Utf8(quote.BidSize, buffer[pos..]);
+        buffer[pos++] = (byte)'|';
+        pos += WriteInt64Utf8(quote.AskSize, buffer[pos..]);
+        return pos;
+    }
+
+    private static int WriteInt64Utf8(long value, Span<byte> destination)
+    {
+        Utf8Formatter.TryFormat(value, destination, out var written);
+        return written;
+    }
+
+    private static int WriteDecimalUtf8(decimal value, Span<byte> destination)
+    {
+        Utf8Formatter.TryFormat(value, destination, out var written);
+        return written;
+    }
+
+    private static int WriteAggressorUtf8(AggressorSide aggressor, Span<byte> destination)
+    {
+        ReadOnlySpan<byte> utf8 = aggressor switch
+        {
+            AggressorSide.Buy => "Buy"u8,
+            AggressorSide.Sell => "Sell"u8,
+            _ => "Unknown"u8
+        };
+
+        utf8.CopyTo(destination);
+        return utf8.Length;
+    }
+
+    private static int WriteStringUtf8(string? value, Span<byte> destination)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            return 0;
+        }
+
+        return Encoding.UTF8.GetBytes(value, destination);
     }
 
     private static string EscapeJson(string s)
@@ -247,7 +363,16 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
     [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
     internal bool IsDuplicateCacheCheck(MarketEvent evt)
     {
-        var key = ComputeEventKey(evt);
+        string key;
+        lock (_benchmarkKeyLock)
+        {
+            if (!_benchmarkEventKeyCache.TryGetValue(evt, out key))
+            {
+                key = GetCachedOrComputeEventKey(evt);
+                _benchmarkEventKeyCache[evt] = key;
+            }
+        }
+
         var nowTicks = DateTimeOffset.UtcNow.Ticks;
         return _cache.TryGetValue(key, out var existingTicks) && (nowTicks - existingTicks < _entryTtl.Ticks);
     }
@@ -260,7 +385,11 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
     [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
     internal void SeedCacheEntry(MarketEvent evt)
     {
-        var key = ComputeEventKey(evt);
+        var key = GetCachedOrComputeEventKey(evt);
+        lock (_benchmarkKeyLock)
+        {
+            _benchmarkEventKeyCache[evt] = key;
+        }
         _cache[key] = DateTimeOffset.UtcNow.Ticks;
     }
 
@@ -269,7 +398,32 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
     /// any cache lookup or I/O. Used to measure key-computation cost in isolation.
     /// </summary>
     [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
-    internal string ComputeKeyForBenchmark(MarketEvent evt) => ComputeEventKey(evt);
+    internal string ComputeKeyForBenchmark(MarketEvent evt)
+    {
+        Span<byte> hash = stackalloc byte[32];
+        switch (evt.Payload)
+        {
+            case Contracts.Domain.Models.Trade trade:
+                HashTradeIdentityCore(trade, hash);
+                break;
+
+            case Contracts.Domain.Models.BboQuotePayload quote:
+                HashQuoteIdentityCore(quote, hash);
+                break;
+        }
+
+        return string.Empty;
+    }
+
+    private sealed class CachedKeyBox
+    {
+        public CachedKeyBox(string key)
+        {
+            Key = key;
+        }
+
+        public string Key { get; }
+    }
 
     /// <summary>
     /// Background eviction of expired entries, called by the eviction timer.

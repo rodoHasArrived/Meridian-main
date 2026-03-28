@@ -102,6 +102,7 @@ public partial class MainWindow : Window
         {
             EnsureShellVisibleOnStartup();
             _ = Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(EnsureShellVisibleOnStartup));
+            _ = RecoverShellVisibilityAsync();
         };
 
         // Restore window state from previous session
@@ -1035,6 +1036,22 @@ public partial class MainWindow : Window
         }
 
         Activate();
+    }
+
+    private async Task RecoverShellVisibilityAsync()
+    {
+        var delays = new[]
+        {
+            TimeSpan.FromMilliseconds(250),
+            TimeSpan.FromSeconds(1),
+            TimeSpan.FromSeconds(3)
+        };
+
+        foreach (var delay in delays)
+        {
+            await Task.Delay(delay).ConfigureAwait(true);
+            EnsureShellVisibleOnStartup();
+        }
     }
 
     private static class NativeMethods
