@@ -309,7 +309,7 @@ public sealed class PolygonCorporateActionFetcher : IPolygonCorporateActionFetch
     {
         dto = default!;
 
-        if (!item.TryGetProperty("cash_amount", out var cashElement) || 
+        if (!item.TryGetProperty("cash_amount", out var cashElement) ||
             cashElement.GetString() == null ||
             !decimal.TryParse(cashElement.GetString()!, out var cashAmount))
         {
@@ -323,8 +323,8 @@ public sealed class PolygonCorporateActionFetcher : IPolygonCorporateActionFetch
             return false;
         }
 
-        var currency = item.TryGetProperty("currency", out var currencyElement) 
-            ? currencyElement.GetString() 
+        var currency = item.TryGetProperty("currency", out var currencyElement)
+            ? currencyElement.GetString()
             : null;
 
         var payDate = item.TryGetProperty("pay_date", out var payDateElement) &&
