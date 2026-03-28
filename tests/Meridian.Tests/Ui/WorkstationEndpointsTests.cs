@@ -6,7 +6,6 @@ using Meridian.Application.SecurityMaster;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
-using ISecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
 using Meridian.Ledger;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
@@ -18,6 +17,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using ISecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
 
 namespace Meridian.Tests.Ui;
 
@@ -1374,7 +1374,7 @@ public sealed class WorkstationEndpointsTests
         {
             ["AAPL"] = new("AAPL", 5_000m, 1_200m, 8, 45m, 20m),
             ["MSFT"] = new("MSFT", 3_000m, -200m, 4, 22m, 10m),
-            ["SPY"]  = new("SPY",  1_000m, 500m, 2, 10m, 5m)
+            ["SPY"] = new("SPY", 1_000m, 500m, 2, 10m, 5m)
         };
 
         var request = new BacktestRequest(
