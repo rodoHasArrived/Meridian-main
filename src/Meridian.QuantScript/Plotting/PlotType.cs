@@ -6,6 +6,11 @@ namespace Meridian.QuantScript.Plotting;
 public enum PlotType
 {
     Line,
+    MultiLine,
+    CumulativeReturn,
+    Drawdown,
+    Heatmap,
+    Candlestick,
     Bar,
     Scatter,
     Histogram

@@ -57,7 +57,6 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
     private readonly QuantScriptOptions _options;
     private readonly ILogger<QuantScriptViewModel> _logger;
 
-    private DispatcherTimer? _consoleDrainTimer;
     private DispatcherTimer? _elapsedTimer;
     private System.Diagnostics.Stopwatch? _runStopwatch;
     private FileSystemWatcher? _fileWatcher;
@@ -224,24 +223,29 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
     // ── Lifecycle ─────────────────────────────────────────────────────────────
 
     /// <summary>Called from code-behind on page load (UI thread).</summary>
-    internal void OnActivated()
+    /// <summary>
+    /// Called from code-behind on every page load. Returns the persisted column widths so
+    /// the view can apply them to its Grid — the ViewModel must not touch UI elements directly.
+    /// </summary>
+    internal (double LeftWidth, double RightWidth) OnActivated()
     {
         var (leftWidth, rightWidth) = _layoutService.LoadColumnWidths();
         ActiveResultsTab = _layoutService.LoadLastActiveTab();
 
-        // Timers must be created on the UI thread
-        _consoleDrainTimer ??= new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
-        _consoleDrainTimer.Tick += (_, _) => FlushConsole();
-
-        _elapsedTimer ??= new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(200) };
-        _elapsedTimer.Tick += (_, _) =>
+        // Timers must be created on the UI thread; Tick handlers are added only once.
+        if (_elapsedTimer is null)
         {
-            if (_runStopwatch?.IsRunning == true)
-                ElapsedText = $"{_runStopwatch.Elapsed.TotalSeconds:F1}s";
-        };
+            _elapsedTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(200) };
+            _elapsedTimer.Tick += (_, _) =>
+            {
+                if (_runStopwatch?.IsRunning == true)
+                    ElapsedText = $"{_runStopwatch.Elapsed.TotalSeconds:F1}s";
+            };
+        }
 
         SetupFileWatcher();
         RefreshScripts();
+        return (leftWidth, rightWidth);
     }
 
     public void SaveLayout(double leftWidth, double rightWidth)
@@ -255,9 +259,7 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         if (_disposed) return;
         _disposed = true;
 
-        _consoleDrainTimer?.Stop();
         _elapsedTimer?.Stop();
-        _runStopwatch?.Stop();
         _fileWatcher?.Dispose();
         _plotQueue.Complete();
 
@@ -273,7 +275,6 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         StatusText = "Compiling…";
         ProgressFraction = 0.0;
         _runStopwatch = System.Diagnostics.Stopwatch.StartNew();
-        _consoleDrainTimer?.Start();
         _elapsedTimer?.Start();
 
         try
@@ -317,7 +318,6 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
             {
                 _runStopwatch?.Stop();
                 _elapsedTimer?.Stop();
-                _consoleDrainTimer?.Stop();
                 IsRunning = false;
                 ProgressFraction = 1.0;
             }, DispatcherPriority.Normal);
@@ -556,11 +556,6 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         ActiveResultsTab = 0;
         ElapsedText = "--";
         MemoryText = "--";
-    }
-
-    private void FlushConsole()
-    {
-        // Drain any pending console entries during run (future channel-based approach)
     }
 
     private void AppendConsole(string text, ConsoleEntryKind kind)

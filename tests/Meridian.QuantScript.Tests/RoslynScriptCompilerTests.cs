@@ -5,15 +5,15 @@ namespace Meridian.QuantScript.Tests;
 
 public sealed class RoslynScriptCompilerTests
 {
-    private static RoslynScriptCompiler CreateCompiler()
-        => new(NullLogger<RoslynScriptCompiler>.Instance);
+    private static RoslynScriptCompiler BuildCompiler() =>
+        new(Options.Create(new QuantScriptOptions()), NullLogger<RoslynScriptCompiler>.Instance);
 
     // ── Successful compilation ────────────────────────────────────────────────
 
     [Fact]
     public async Task CompileAsync_ValidSource_ReturnsSuccess()
     {
-        var compiler = CreateCompiler();
+        var compiler = BuildCompiler();
 
         var result = await compiler.CompileAsync("var x = 1 + 1;");
 
@@ -25,27 +25,15 @@ public sealed class RoslynScriptCompilerTests
     [Fact]
     public async Task CompileAsync_ValidSource_ReturnsInUnderFiveSeconds()
     {
-        var compiler = CreateCompiler();
+        var compiler = BuildCompiler();
 
         var result = await compiler.CompileAsync("System.Math.Sqrt(4);");
 
         result.CompilationTime.Should().BeLessThan(TimeSpan.FromSeconds(5));
     }
 
-    // ── Error detection ───────────────────────────────────────────────────────
-
     [Fact]
-    public async Task CompileAsync_SyntaxError_ReturnsFailed()
-    {
-        var compiler = CreateCompiler();
-
-        var result = await compiler.CompileAsync("this is not valid csharp !!!;");
-
-    private static RoslynScriptCompiler BuildCompiler() =>
-        new(Options.Create(new QuantScriptOptions()), NullLogger<RoslynScriptCompiler>.Instance);
-
-    [Fact]
-    public async Task CompileAsync_ValidScript_ReturnsSuccess()
+    public async Task CompileAsync_ValidScript_ReturnsSuccess_Alt()
     {
         var compiler = BuildCompiler();
         var result = await compiler.CompileAsync("// empty script");
@@ -53,11 +41,15 @@ public sealed class RoslynScriptCompilerTests
         result.Diagnostics.Should().BeEmpty();
     }
 
+    // ── Error detection ───────────────────────────────────────────────────────
+
     [Fact]
     public async Task CompileAsync_SyntaxError_ReturnsFailed()
     {
         var compiler = BuildCompiler();
-        var result = await compiler.CompileAsync("this is not valid C#!!!");
+
+        var result = await compiler.CompileAsync("this is not valid csharp !!!;");
+
         result.Success.Should().BeFalse();
         result.Diagnostics.Should().NotBeEmpty();
     }
@@ -65,7 +57,7 @@ public sealed class RoslynScriptCompilerTests
     [Fact]
     public async Task CompileAsync_SyntaxError_DiagnosticsContainLineInfo()
     {
-        var compiler = CreateCompiler();
+        var compiler = BuildCompiler();
 
         var result = await compiler.CompileAsync("int x = \"oops\";");
 
@@ -76,7 +68,7 @@ public sealed class RoslynScriptCompilerTests
     [Fact]
     public async Task CompileAsync_EmptySource_ThrowsArgumentException()
     {
-        var compiler = CreateCompiler();
+        var compiler = BuildCompiler();
 
         await Assert.ThrowsAsync<ArgumentException>(
             () => compiler.CompileAsync(string.Empty));
@@ -85,7 +77,7 @@ public sealed class RoslynScriptCompilerTests
     [Fact]
     public async Task CompileAsync_WhiteSpaceOnlySource_ThrowsArgumentException()
     {
-        var compiler = CreateCompiler();
+        var compiler = BuildCompiler();
 
         await Assert.ThrowsAsync<ArgumentException>(
             () => compiler.CompileAsync("   "));
@@ -96,7 +88,7 @@ public sealed class RoslynScriptCompilerTests
     [Fact]
     public async Task CompileAsync_SameSourceTwice_SecondCallReturnsCacheHit()
     {
-        var compiler = CreateCompiler();
+        var compiler = BuildCompiler();
         const string source = "var x = 42;";
 
         var first = await compiler.CompileAsync(source);
@@ -109,9 +101,19 @@ public sealed class RoslynScriptCompilerTests
     }
 
     [Fact]
+    public async Task CompileAsync_SameSource_CachesCompilation()
+    {
+        var compiler = BuildCompiler();
+        var source = "var x = 42;";
+        await compiler.CompileAsync(source);
+        var second = await compiler.CompileAsync(source);
+        second.Success.Should().BeTrue();
+    }
+
+    [Fact]
     public async Task CompileAsync_DifferentSources_BothCompileIndependently()
     {
-        var compiler = CreateCompiler();
+        var compiler = BuildCompiler();
 
         var r1 = await compiler.CompileAsync("var a = 1;");
         var r2 = await compiler.CompileAsync("var b = 2;");
@@ -125,13 +127,11 @@ public sealed class RoslynScriptCompilerTests
     [Fact]
     public async Task CompileAsync_CancelledToken_ThrowsOrReturnsBeforeComplete()
     {
-        var compiler = CreateCompiler();
+        var compiler = BuildCompiler();
         using var cts = new CancellationTokenSource();
         cts.Cancel();
 
-        // Either throws OperationCanceledException or completes if cached
         Func<Task> act = () => compiler.CompileAsync("var z = 1;", cts.Token);
-        // We just verify it does not hang
         await act.Should().CompleteWithinAsync(TimeSpan.FromSeconds(5));
     }
 
@@ -140,19 +140,11 @@ public sealed class RoslynScriptCompilerTests
     [Fact]
     public void ExtractParameters_EmptySource_ReturnsEmpty()
     {
-        var compiler = CreateCompiler();
+        var compiler = BuildCompiler();
 
         var result = compiler.ExtractParameters("var x = 1;");
 
         result.Should().BeEmpty();
-    public async Task CompileAsync_SameSource_CachesCompilation()
-    {
-        var compiler = BuildCompiler();
-        var source = "var x = 42;";
-        await compiler.CompileAsync(source);
-        // Second compile should hit cache — no exception
-        var second = await compiler.CompileAsync(source);
-        second.Success.Should().BeTrue();
     }
 
     [Fact]
@@ -176,7 +168,7 @@ public sealed class RoslynScriptCompilerTests
         var p = result[0];
         p.Name.Should().Be("period");
         p.Label.Should().Be("Period");
-        p.DefaultValue.Should().Be("14");
+        p.DefaultValue.Should().Be(14);
         p.Min.Should().Be(5);
         p.Max.Should().Be(200);
         p.Description.Should().Be("RSI window");

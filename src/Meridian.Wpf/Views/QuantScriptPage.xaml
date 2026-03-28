@@ -12,6 +12,8 @@
   <Page.Resources>
     <conv:ConsoleEntryKindToBrushConverter x:Key="ConsoleColor"/>
     <BooleanToVisibilityConverter x:Key="BoolVis"/>
+    <conv:CountToVisibilityConverter x:Key="CountVis"/>
+    <conv:StringToBoolConverter x:Key="StringToBool"/>
 
     <!-- Parameter templates for the sidebar -->
     <DataTemplate x:Key="NumericParamTemplate" DataType="{x:Type models:ParameterViewModel}">
@@ -36,7 +38,7 @@
       <DockPanel Margin="0,2">
         <TextBlock DockPanel.Dock="Left" Text="{Binding Name}" Width="90"
                    VerticalAlignment="Center" Foreground="{StaticResource ForegroundSecondaryBrush}"/>
-        <CheckBox IsChecked="{Binding RawValue, Converter={StaticResource BoolVis}}"
+        <CheckBox IsChecked="{Binding RawValue, Converter={StaticResource StringToBool}}"
                   VerticalAlignment="Center"/>
       </DockPanel>
     </DataTemplate>
@@ -76,7 +78,7 @@
 
       <TextBlock DockPanel.Dock="Top" Text="Parameters" FontWeight="SemiBold"
                  Margin="0,0,0,4" Foreground="{StaticResource ForegroundSecondaryBrush}"
-                 Visibility="{Binding Parameters.Count, Converter={StaticResource BoolVis}}"/>
+                 Visibility="{Binding Parameters.Count, Converter={StaticResource CountVis}}"/>
 
       <ScrollViewer VerticalScrollBarVisibility="Auto">
         <ItemsControl ItemsSource="{Binding Parameters}"

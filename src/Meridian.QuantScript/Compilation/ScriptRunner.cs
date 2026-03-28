@@ -1,44 +1,40 @@
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
-using Meridian.QuantScript.API;
-using System.Diagnostics;
-using Meridian.Backtesting.Engine;
 using Meridian.QuantScript.Api;
 using Meridian.QuantScript.Plotting;
+using System.Diagnostics;
 
 namespace Meridian.QuantScript.Compilation;
 
 /// <summary>
-/// Compiles and executes QuantScript source files, returning structured results.
+/// Compiles and executes .csx scripts in a sandboxed Roslyn environment.
+/// Each run creates fresh <see cref="QuantScriptGlobals"/> with its own cancellation scope.
 /// </summary>
 public sealed class ScriptRunner : IScriptRunner
 {
-    private readonly RoslynScriptCompiler _compiler;
+    private readonly IQuantScriptCompiler _compiler;
     private readonly IQuantDataContext _dataContext;
+    private readonly PlotQueue _plotQueue;
+    private readonly Backtesting.Engine.BacktestEngine? _backtestEngine;
+    private readonly QuantScriptOptions _options;
     private readonly ILogger<ScriptRunner> _logger;
 
     public ScriptRunner(
-        RoslynScriptCompiler compiler,
+        IQuantScriptCompiler compiler,
         IQuantDataContext dataContext,
+        PlotQueue plotQueue,
+        Backtesting.Engine.BacktestEngine? backtestEngine,
+        IOptions<QuantScriptOptions> options,
         ILogger<ScriptRunner> logger)
     {
         _compiler = compiler ?? throw new ArgumentNullException(nameof(compiler));
         _dataContext = dataContext ?? throw new ArgumentNullException(nameof(dataContext));
+        _plotQueue = plotQueue ?? throw new ArgumentNullException(nameof(plotQueue));
+        _backtestEngine = backtestEngine; // null is valid — backtest is optional
+        _options = options?.Value ?? new QuantScriptOptions();
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    /// <inheritdoc />
-/// Compiles and executes .csx scripts in a sandboxed Roslyn environment.
-/// Each run creates fresh <see cref="QuantScriptGlobals"/> with its own CancellationTokenSource.
-/// </summary>
-public sealed class ScriptRunner(
-    IQuantScriptCompiler compiler,
-    IQuantDataContext dataContext,
-    PlotQueue plotQueue,
-    BacktestEngine backtestEngine,
-    IOptions<QuantScriptOptions> options,
-    ILogger<ScriptRunner> logger) : IScriptRunner
-{
     /// <inheritdoc/>
     public async Task<ScriptRunResult> RunAsync(
         string source,
@@ -48,10 +44,10 @@ public sealed class ScriptRunner(
         ArgumentException.ThrowIfNullOrWhiteSpace(source);
         parameters ??= new Dictionary<string, object?>();
 
-        var wallClock = System.Diagnostics.Stopwatch.StartNew();
+        var wallClock = Stopwatch.StartNew();
         var memBefore = GC.GetTotalMemory(false);
 
-        // Step 1 — Compile (uses SHA-256 cache)
+        // Step 1 — Compile (uses SHA-256 cache in RoslynScriptCompiler)
         var compilationResult = await _compiler.CompileAsync(source, ct).ConfigureAwait(false);
 
         if (!compilationResult.Success)
@@ -69,47 +65,68 @@ public sealed class ScriptRunner(
                 TradesSummary: Array.Empty<string>());
         }
 
-        // Step 2 — Get cached compiled script or recompile
-        var plotQueue = new PlotQueue();
-        var globals = new QuantScriptGlobals(
-            _dataContext,
-            new BacktestProxy(),
-            plotQueue,
-            parameters,
-            ct);
+        // Step 2 — Apply per-run timeout
+        using var runCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        runCts.CancelAfter(TimeSpan.FromSeconds(_options.RunTimeoutSeconds));
+        var runCt = runCts.Token;
 
+        // Step 3 — Get compiled Script<object> (from cache if available, avoids recompilation)
+        Script<object>? script = null;
+        if (_compiler is RoslynScriptCompiler rsc)
+            script = rsc.GetCachedScript(source) ?? rsc.BuildScript(source);
+        else
+        {
+            // Fallback: create a temporary RoslynScriptCompiler to build the script
+            var tmp = new RoslynScriptCompiler(
+                Microsoft.Extensions.Options.Options.Create(_options),
+                Microsoft.Extensions.Logging.Abstractions.NullLogger<RoslynScriptCompiler>.Instance);
+            script = tmp.BuildScript(source);
+        }
+
+        // Step 4 — Set up per-run globals
+        var ctProvider = () => runCt;
+        var dataProxy = new DataProxy(_dataContext, ctProvider);
+        var backtestProxy = new BacktestProxy(_backtestEngine, _options);
+        var globals = new QuantScriptGlobals(dataProxy, backtestProxy, runCt, parameters);
+
+        // Step 5 — Run on a thread-pool thread so blocking data calls don't deadlock the UI
         string? runtimeError = null;
+        var runPlotQueue = _plotQueue;
 
         await Task.Run(async () =>
         {
+            // Set the ambient plot queue so that ReturnSeries.Plot() / PriceSeries.Plot()
+            // can enqueue without needing an explicit dependency injection.
+            ScriptContext.PlotQueue = runPlotQueue;
             try
             {
-                var script = CSharpScript.Create<object>(
-                    source,
-                    RoslynScriptCompiler.GetExecutionOptions(),
-                    globalsType: typeof(QuantScriptGlobals));
-
-                await script.RunAsync(globals, ct).ConfigureAwait(false);
+                _logger.LogInformation(
+                    "Executing QuantScript (timeout {Timeout}s)", _options.RunTimeoutSeconds);
+                await script.RunAsync(globals, runCt).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
-                runtimeError = "Script was cancelled.";
+                runtimeError = ct.IsCancellationRequested
+                    ? "Script cancelled by user."
+                    : "Script timed out.";
+                _logger.LogWarning("Script run terminated: {Reason}", runtimeError);
             }
             catch (Exception ex)
             {
                 runtimeError = ex.Message;
-                _logger.LogWarning(ex, "Script execution failed with runtime error");
+                _logger.LogWarning(ex, "Script runtime exception");
             }
             finally
             {
-                plotQueue.Complete();
+                runPlotQueue.Complete();
+                // Clear the ambient reference so thread-pool threads are not polluted across runs.
+                ScriptContext.PlotQueue = null;
             }
         }, ct).ConfigureAwait(false);
 
         wallClock.Stop();
         var peakMemory = Math.Max(0, GC.GetTotalMemory(false) - memBefore);
-        var plots = plotQueue.DrainRemaining();
-        var consoleOutput = string.Join(Environment.NewLine, globals.ConsoleLines);
+        var plots = runPlotQueue.DrainRemaining();
 
         return new ScriptRunResult(
             Success: runtimeError is null,
@@ -118,77 +135,9 @@ public sealed class ScriptRunner(
             PeakMemoryBytes: peakMemory,
             CompilationErrors: Array.Empty<ScriptDiagnostic>(),
             RuntimeError: runtimeError,
-            ConsoleOutput: consoleOutput,
+            ConsoleOutput: globals.GetConsoleOutput(),
             Metrics: globals.GetMetrics(),
             Plots: plots,
             TradesSummary: Array.Empty<string>());
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(parameters);
-
-        var sw = Stopwatch.StartNew();
-
-        // Compile first; return early on error
-        var compilation = await compiler.CompileAsync(source, ct);
-        if (!compilation.Success)
-        {
-            logger.LogWarning("Script compilation failed with {Count} error(s)", compilation.Diagnostics.Count);
-            return new ScriptRunResult(false, sw.Elapsed, compilation.Diagnostics, null);
-        }
-
-        using var runCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        runCts.CancelAfter(TimeSpan.FromSeconds(options.Value.RunTimeoutSeconds));
-        var runCt = runCts.Token;
-
-        // Prepare plot queue for this run
-        plotQueue.MaxPlotsPerRun = options.Value.MaxPlotsPerRun;
-        ScriptContext.PlotQueue = plotQueue;
-
-        var ctProvider = () => runCt;
-        var dataProxy = new DataProxy(dataContext, ctProvider);
-        var backtestProxy = new BacktestProxy(backtestEngine, options.Value);
-        var globals = new QuantScriptGlobals(dataProxy, backtestProxy, runCt);
-
-        // Get the compiled Script<object> from the compiler (may hit cache)
-        var roslyn = compiler is RoslynScriptCompiler rsc
-            ? rsc.GetCachedScript(source) ?? rsc.BuildScript(source)
-            : rsc_BuildFallback(source);
-
-        string? runtimeError = null;
-        try
-        {
-            logger.LogInformation("Executing script (timeout {Timeout}s)", options.Value.RunTimeoutSeconds);
-            await roslyn.RunAsync(globals, runCt);
-        }
-        catch (OperationCanceledException)
-        {
-            runtimeError = ct.IsCancellationRequested ? "Script cancelled by user." : "Script timed out.";
-            logger.LogWarning("Script run cancelled: {Reason}", runtimeError);
-        }
-        catch (Exception ex)
-        {
-            runtimeError = ex.Message;
-            logger.LogError(ex, "Script runtime exception");
-        }
-        finally
-        {
-            globals.CompleteConsole();
-            plotQueue.Complete();
-            ScriptContext.PlotQueue = null;
-        }
-
-        return new ScriptRunResult(
-            runtimeError is null,
-            sw.Elapsed,
-            [],
-            runtimeError);
-    }
-
-    private static Microsoft.CodeAnalysis.Scripting.Script<object> rsc_BuildFallback(string source)
-    {
-        // Fallback for non-RoslynScriptCompiler implementations (used in tests)
-        var scriptCompiler = new RoslynScriptCompiler(
-            Microsoft.Extensions.Options.Options.Create(new QuantScriptOptions()),
-            Microsoft.Extensions.Logging.Abstractions.NullLogger<RoslynScriptCompiler>.Instance);
-        return scriptCompiler.BuildScript(source);
     }
 }

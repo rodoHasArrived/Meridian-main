@@ -1,7 +1,8 @@
 namespace Meridian.Wpf.Services;
 
 /// <summary>
-/// Persists QuantScript page layout settings to an isolated storage file.
+/// Stores QuantScript page layout settings (column widths, active tab) in memory
+/// for the current session. Values are reset when the application restarts.
 /// </summary>
 public sealed class QuantScriptLayoutService : IQuantScriptLayoutService
 {

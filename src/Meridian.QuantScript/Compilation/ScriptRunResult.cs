@@ -3,7 +3,7 @@ using Meridian.QuantScript.Plotting;
 namespace Meridian.QuantScript.Compilation;
 
 /// <summary>
-/// The complete result of a single script execution.
+/// The complete result of a single script execution run.
 /// </summary>
 public sealed record ScriptRunResult(
     bool Success,

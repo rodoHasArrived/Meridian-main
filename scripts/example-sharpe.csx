@@ -31,7 +31,7 @@ var fromDate = toDate.AddMonths(-lookbackMonths);
 
 Print($"Loading {symbol} from {fromDate:d} to {toDate:d} …");
 
-var prices = Data.GetPrices(symbol, fromDate, toDate);
+var prices = Data.Prices(symbol, fromDate, toDate);
 
 if (prices.Count < 5)
 {
@@ -48,10 +48,10 @@ Print($"Return observations: {returns.Count}");
 
 // ── Statistics ────────────────────────────────────────────────────────────────
 
-var sharpe     = SharpeRatio(returns, riskFreeRate);
-var sortino    = SortinoRatio(returns, riskFreeRate);
-var maxDD      = MaxDrawdown(returns);
-var annualVol  = AnnualizedVolatility(returns);
+var sharpe    = returns.SharpeRatio(riskFreeRate);
+var sortino   = returns.SortinoRatio(riskFreeRate);
+var maxDD     = returns.MaxDrawdown();
+var annualVol = returns.AnnualizedVolatility();
 
 PrintMetric("Sharpe (annualised)",  Math.Round(sharpe,    4), "Risk-Adjusted");
 PrintMetric("Sortino (annualised)", Math.Round(sortino,   4), "Risk-Adjusted");
@@ -65,40 +65,19 @@ Print($"Annual vol    : {annualVol:P2}");
 
 // ── Equity curve plot ─────────────────────────────────────────────────────────
 
-var closePrices = prices.Bars.Select(b => b.Close).ToList();
-Plots.Line(
-    title: $"{symbol} — Closing Price",
-    dates:  prices.Bars.Select(b => b.Date).ToList(),
-    values: closePrices,
-    label: symbol);
+prices.CumulativeReturns().PlotCumulative(title: $"{symbol} — Cumulative Return");
+
+// ── Daily log-returns plot ────────────────────────────────────────────────────
+
+returns.Plot(title: $"{symbol} — Daily Log Returns");
 
 // ── Rolling 20-day Sharpe (simple approximation) ─────────────────────────────
 
 const int window = 20;
 if (returns.Count >= window)
 {
-    var returnValues = returns.ToList().Select(r => r.Value).ToList();
-    var rollingDates  = new List<DateTime>();
-    var rollingSharpe = new List<double>();
-
-    for (var i = window; i <= returnValues.Count; i++)
-    {
-        var slice = returnValues.Skip(i - window).Take(window).ToArray();
-        var mean  = slice.Average();
-        var std   = Math.Sqrt(slice.Select(x => Math.Pow(x - mean, 2)).Average());
-        if (std > 0)
-        {
-            rollingDates.Add(returns.ToList()[i - 1].Date);
-            rollingSharpe.Add(mean / std * Math.Sqrt(252));
-        }
-    }
-
-    if (rollingDates.Count > 0)
-        Plots.Line(
-            title:  $"{symbol} — Rolling {window}-Day Sharpe",
-            dates:  rollingDates,
-            values: rollingSharpe,
-            label:  $"Sharpe({window}d)");
+    var rolling = returns.RollingMean(window);
+    rolling.Plot(title: $"{symbol} — Rolling {window}-Day Mean Return");
 }
 
 Print("Done.");

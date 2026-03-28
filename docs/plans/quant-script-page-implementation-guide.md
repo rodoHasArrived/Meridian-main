@@ -3,7 +3,7 @@
 **Owner:** Desktop / Research Engineering
 **Audience:** Implementers, architects, and product contributors
 **Last Updated:** 2026-03-28
-**Status:** Design-ready — implementation pending
+**Status:** Implemented — QuantScript page, ViewModel, compiler/runner, tests, and sample script delivered
 **Supersedes / extends:** `docs/plans/quant-script-environment-blueprint.md` (v1 blueprint, 2026-03-18)
 
 ---
@@ -1100,7 +1100,7 @@ User has syntax error → presses Run
 ```
 src/
 └── Meridian.QuantScript/
-    ├── Meridian.QuantScript.csproj         net9.0-windows
+    ├── Meridian.QuantScript.csproj         net9.0
     ├── QuantScriptOptions.cs
     ├── Api/
     │   ├── PriceBar.cs

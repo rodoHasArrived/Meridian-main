@@ -5,14 +5,14 @@ namespace Meridian.QuantScript.Tests.Helpers;
 /// </summary>
 public sealed class FakeQuantDataContext : IQuantDataContext
 {
-    private readonly Func<string, DateTime, DateTime, PriceSeries>? _factory;
+    private readonly Func<string, DateOnly, DateOnly, PriceSeries>? _factory;
 
-    public FakeQuantDataContext(Func<string, DateTime, DateTime, PriceSeries>? factory = null)
+    public FakeQuantDataContext(Func<string, DateOnly, DateOnly, PriceSeries>? factory = null)
     {
         _factory = factory;
     }
 
-    public Task<PriceSeries> GetPricesAsync(string symbol, DateTime from, DateTime to, CancellationToken ct = default)
+    public Task<PriceSeries> PricesAsync(string symbol, DateOnly from, DateOnly to, CancellationToken ct = default)
     {
         var series = _factory is not null
             ? _factory(symbol, from, to)
@@ -21,9 +21,15 @@ public sealed class FakeQuantDataContext : IQuantDataContext
         return Task.FromResult(series);
     }
 
-    public Task<IReadOnlyList<ScriptOrderBook>> GetOrderBookAsync(string symbol, CancellationToken ct = default)
+    public Task<PriceSeries> PricesAsync(string symbol, DateOnly from, DateOnly to, string? provider, CancellationToken ct = default)
+        => PricesAsync(symbol, from, to, ct);
+
+    public Task<IReadOnlyList<ScriptTrade>> TradesAsync(string symbol, DateOnly date, CancellationToken ct = default)
     {
-        IReadOnlyList<ScriptOrderBook> empty = Array.Empty<ScriptOrderBook>();
+        IReadOnlyList<ScriptTrade> empty = Array.Empty<ScriptTrade>();
         return Task.FromResult(empty);
     }
+
+    public Task<ScriptOrderBook?> OrderBookAsync(string symbol, DateTimeOffset timestamp, CancellationToken ct = default)
+        => Task.FromResult<ScriptOrderBook?>(null);
 }
