@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-03-28 06:28:01 UTC. Do not edit manually.
+> Auto-generated on 2026-03-28 07:05:28 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -2616,6 +2616,7 @@ Meridian-main
 │   │   │   │   ├── NyseNationalTradesCsvParserTests.cs
 │   │   │   │   ├── NyseSharedLifecycleTests.cs
 │   │   │   │   ├── NyseTaqCollectorIntegrationTests.cs
+│   │   │   │   ├── PolygonCorporateActionFetcherTests.cs
 │   │   │   │   ├── PolygonMarketDataClientTests.cs
 │   │   │   │   ├── PolygonMessageParsingTests.cs
 │   │   │   │   ├── PolygonRecordedSessionReplayTests.cs
