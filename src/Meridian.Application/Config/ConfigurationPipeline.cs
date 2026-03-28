@@ -192,7 +192,9 @@ public sealed class ConfigurationPipeline : IAsyncDisposable
         PipelineOptions options)
     {
         var appliedFixes = new List<string>();
+        var blockedFixes = new List<string>();
         var warnings = new List<string>();
+        var validationErrors = new List<string>();
 
         try
         {
@@ -222,20 +224,45 @@ public sealed class ConfigurationPipeline : IAsyncDisposable
             // Stage 5: Apply self-healing fixes (if enabled)
             if (options.ApplySelfHealing)
             {
-                var (healedConfig, fixes, healWarnings) = ApplySelfHealingFixes(config);
+                var (healedConfig, applied, refused, healWarnings) =
+                    ApplySelfHealingFixes(config, options.HealingStrictness);
                 config = healedConfig;
-                appliedFixes.AddRange(fixes);
                 warnings.AddRange(healWarnings);
 
-                if (fixes.Count > 0)
+                foreach (var fix in applied)
                 {
-                    _log.Information("Applied {FixCount} self-healing configuration fixes", fixes.Count);
+                    appliedFixes.Add(fix.Description);
+                    if (fix.Severity == SelfHealingSeverity.Warn)
+                        _log.Warning(
+                            "[Config] Self-healing applied significant change: {Fix}",
+                            fix.Description);
+                    else
+                        _log.Debug("[Config] Self-healing applied: {Fix}", fix.Description);
                 }
+
+                if (applied.Count > 0)
+                    _log.Information("Applied {FixCount} self-healing configuration fixes", applied.Count);
+
+                foreach (var fix in refused)
+                {
+                    var errorMsg =
+                        $"Configuration requires manual correction " +
+                        $"(set MDC_CONFIG_STRICTNESS=development to auto-fix): {fix.Description}";
+                    blockedFixes.Add(fix.Description);
+                    validationErrors.Add(errorMsg);
+                    _log.Error(
+                        "[Config] Self-healing refused in production mode — operator action required: {Fix}",
+                        fix.Description);
+                }
+
+                if (refused.Count > 0)
+                    _log.Error(
+                        "Startup blocked: {RefusedCount} self-healing fix(es) require manual configuration correction",
+                        refused.Count);
             }
 
             // Stage 6: Validate
-            var validationErrors = new List<string>();
-            var isValid = true;
+            var isValid = validationErrors.Count == 0;
 
             if (options.ValidateConfig)
             {
@@ -257,7 +284,7 @@ public sealed class ConfigurationPipeline : IAsyncDisposable
                     }
                 }
 
-                isValid = !results.Any(r => r.IsError);
+                isValid = validationErrors.Count == 0;
 
                 if (!isValid)
                 {
@@ -274,7 +301,8 @@ public sealed class ConfigurationPipeline : IAsyncDisposable
                 appliedFixes,
                 warnings,
                 environmentName,
-                source);
+                source,
+                blockedFixes);
         }
         catch (Exception ex)
         {
@@ -505,12 +533,53 @@ public sealed class ConfigurationPipeline : IAsyncDisposable
 
     #region Self-Healing
 
-    private (AppConfig Config, IReadOnlyList<string> AppliedFixes, IReadOnlyList<string> Warnings) ApplySelfHealingFixes(AppConfig config)
+    /// <summary>
+    /// Discovers and conditionally applies self-healing fixes to <paramref name="config"/>
+    /// based on the requested <paramref name="strictness"/> level.
+    /// </summary>
+    /// <returns>
+    /// A tuple of:
+    /// <list type="bullet">
+    /// <item><description><c>Config</c> — the (potentially modified) configuration.</description></item>
+    /// <item><description><c>Applied</c> — fixes that were applied to the config.</description></item>
+    /// <item><description><c>Refused</c> — <see cref="SelfHealingSeverity.Warn"/>-level fixes that
+    /// were <em>not</em> applied because <paramref name="strictness"/> is
+    /// <see cref="SelfHealingStrictness.Production"/>.</description></item>
+    /// <item><description><c>Warnings</c> — advisory messages that are not actionable fixes.</description></item>
+    /// </list>
+    /// </returns>
+    private (AppConfig Config,
+             IReadOnlyList<SelfHealingFix> Applied,
+             IReadOnlyList<SelfHealingFix> Refused,
+             IReadOnlyList<string> Warnings)
+        ApplySelfHealingFixes(AppConfig config, SelfHealingStrictness strictness)
     {
-        var appliedFixes = new List<string>();
+        var applied = new List<SelfHealingFix>();
+        var refused = new List<SelfHealingFix>();
         var warnings = new List<string>();
 
-        // Fix: Alpaca selected but no credentials
+        // Helper: attempt to apply a fix, routing to applied/refused based on severity + strictness.
+        void TryFix(
+            SelfHealingSeverity severity,
+            string description,
+            Func<AppConfig, AppConfig> applyFn)
+        {
+            bool apply = severity == SelfHealingSeverity.AutoFix
+                         || strictness == SelfHealingStrictness.Development;
+
+            var fix = new SelfHealingFix(description, severity);
+            if (apply)
+            {
+                config = applyFn(config);
+                applied.Add(fix);
+            }
+            else
+            {
+                refused.Add(fix);
+            }
+        }
+
+        // ── Fix: Alpaca selected but no credentials (AutoFix — safe credential injection) ──
         if (config.DataSource == DataSourceKind.Alpaca)
         {
             if (config.Alpaca == null || string.IsNullOrEmpty(config.Alpaca.KeyId))
@@ -518,29 +587,34 @@ public sealed class ConfigurationPipeline : IAsyncDisposable
                 var (keyId, secretKey) = _credentialResolver.ResolveAlpaca();
                 if (!string.IsNullOrEmpty(keyId) && !string.IsNullOrEmpty(secretKey))
                 {
-                    config = config with { Alpaca = new AlpacaOptions(keyId, secretKey) };
-                    appliedFixes.Add("Fixed: Added Alpaca credentials from environment variables");
+                    TryFix(
+                        SelfHealingSeverity.AutoFix,
+                        "Added Alpaca credentials from environment variables",
+                        c => c with { Alpaca = new AlpacaOptions(keyId, secretKey) });
                 }
                 else
                 {
-                    warnings.Add("Alpaca selected but no credentials found. Set ALPACA_KEY_ID and ALPACA_SECRET_KEY environment variables.");
+                    warnings.Add(
+                        "Alpaca selected but no credentials found. " +
+                        "Set ALPACA_KEY_ID and ALPACA_SECRET_KEY environment variables.");
                 }
             }
         }
 
-        // Fix: IB selected but gateway not available
+        // ── Fix: IB selected but gateway not available (Warn — switches active provider) ──
         if (config.DataSource == DataSourceKind.IB && !IsIBGatewayAvailable())
         {
-            // Try to find an alternative provider
             var (keyId, secretKey) = _credentialResolver.ResolveAlpaca();
             if (!string.IsNullOrEmpty(keyId) && !string.IsNullOrEmpty(secretKey))
             {
-                config = config with
-                {
-                    DataSource = DataSourceKind.Alpaca,
-                    Alpaca = new AlpacaOptions(keyId, secretKey)
-                };
-                appliedFixes.Add("Fixed: Switched from IB to Alpaca (IB Gateway not detected)");
+                TryFix(
+                    SelfHealingSeverity.Warn,
+                    "Switched active data provider from IB to Alpaca (IB Gateway not detected)",
+                    c => c with
+                    {
+                        DataSource = DataSourceKind.Alpaca,
+                        Alpaca = new AlpacaOptions(keyId, secretKey)
+                    });
             }
             else
             {
@@ -548,92 +622,103 @@ public sealed class ConfigurationPipeline : IAsyncDisposable
             }
         }
 
-        // Fix: Invalid storage naming convention
+        // ── Fix: Invalid storage naming convention (AutoFix — normalises format string) ──
         if (config.Storage != null)
         {
-            var validConventions = new[] { "flat", "bysymbol", "bydate", "bytype", "bysource", "byassetclass", "hierarchical", "canonical" };
+            var validConventions = new[]
+            {
+                "flat", "bysymbol", "bydate", "bytype",
+                "bysource", "byassetclass", "hierarchical", "canonical"
+            };
             if (!validConventions.Contains(config.Storage.NamingConvention.ToLowerInvariant()))
             {
                 var oldValue = config.Storage.NamingConvention;
-                config = config with { Storage = config.Storage with { NamingConvention = "BySymbol" } };
-                appliedFixes.Add($"Fixed: Invalid naming convention '{oldValue}' changed to 'BySymbol'");
+                TryFix(
+                    SelfHealingSeverity.AutoFix,
+                    $"Invalid naming convention '{oldValue}' changed to 'BySymbol'",
+                    c => c with { Storage = c.Storage! with { NamingConvention = "BySymbol" } });
             }
 
-            // Fix: Invalid date partition
+            // ── Fix: Invalid date partition (AutoFix — normalises format string) ──
             var validPartitions = new[] { "none", "daily", "hourly", "monthly" };
             if (!validPartitions.Contains(config.Storage.DatePartition.ToLowerInvariant()))
             {
                 var oldValue = config.Storage.DatePartition;
-                config = config with { Storage = config.Storage with { DatePartition = "Daily" } };
-                appliedFixes.Add($"Fixed: Invalid date partition '{oldValue}' changed to 'Daily'");
+                TryFix(
+                    SelfHealingSeverity.AutoFix,
+                    $"Invalid date partition '{oldValue}' changed to 'Daily'",
+                    c => c with { Storage = c.Storage! with { DatePartition = "Daily" } });
             }
         }
 
-        // Fix: Empty symbols list
+        // ── Fix: Empty symbols list (Warn — adds a default symbol the operator didn't configure) ──
         if (config.Symbols == null || config.Symbols.Length == 0)
         {
-            config = config with
-            {
-                Symbols = new[]
+            TryFix(
+                SelfHealingSeverity.Warn,
+                "Added default symbol (SPY) because no symbols were configured — set Symbols explicitly to silence this",
+                c => c with
                 {
-                    new SymbolConfig("SPY", SubscribeTrades: true, SubscribeDepth: true, DepthLevels: 10)
-                }
-            };
-            appliedFixes.Add("Fixed: Added default symbol (SPY) since none were configured");
+                    Symbols = new[]
+                    {
+                        new SymbolConfig("SPY", SubscribeTrades: true, SubscribeDepth: true, DepthLevels: 10)
+                    }
+                });
         }
 
-        // Fix: Invalid depth levels
+        // ── Fix: Invalid depth levels (AutoFix — clamps numeric range) ──
         if (config.Symbols != null)
         {
             var fixedSymbols = config.Symbols.Select(s =>
-            {
-                if (s.SubscribeDepth && (s.DepthLevels < 1 || s.DepthLevels > 50))
-                {
-                    return s with { DepthLevels = Math.Clamp(s.DepthLevels, 1, 50) };
-                }
-                return s;
-            }).ToArray();
+                s.SubscribeDepth && (s.DepthLevels < 1 || s.DepthLevels > 50)
+                    ? s with { DepthLevels = Math.Clamp(s.DepthLevels, 1, 50) }
+                    : s).ToArray();
 
             if (!config.Symbols.SequenceEqual(fixedSymbols))
             {
-                config = config with { Symbols = fixedSymbols };
-                appliedFixes.Add("Fixed: Adjusted depth levels to valid range (1-50)");
+                TryFix(
+                    SelfHealingSeverity.AutoFix,
+                    "Adjusted depth levels to valid range (1–50)",
+                    c => c with { Symbols = fixedSymbols });
             }
         }
 
-        // Fix: Backfill date range issues
+        // ── Fix: Backfill date range issues ──
         if (config.Backfill != null)
         {
             var backfill = config.Backfill;
-            var needsFix = false;
 
-            // Fix: From date after To date
+            // AutoFix: From date after To date (cosmetic swap)
             if (backfill.From.HasValue && backfill.To.HasValue && backfill.From > backfill.To)
             {
-                backfill = backfill with { From = backfill.To, To = backfill.From };
-                needsFix = true;
-                appliedFixes.Add("Fixed: Swapped backfill From/To dates (From was after To)");
+                var (swappedFrom, swappedTo) = (backfill.To, backfill.From);
+                TryFix(
+                    SelfHealingSeverity.AutoFix,
+                    "Swapped backfill From/To dates (From was after To)",
+                    c => c with
+                    {
+                        Backfill = c.Backfill! with { From = swappedFrom, To = swappedTo }
+                    });
+                // Refresh local backfill snapshot so the future-date check sees the swapped values.
+                backfill = config.Backfill!;
             }
 
-            // Fix: Future end date
+            // AutoFix: Future end date (safe adjustment)
             var today = DateOnly.FromDateTime(DateTime.UtcNow);
             if (backfill.To.HasValue && backfill.To > today)
             {
-                backfill = backfill with { To = today };
-                needsFix = true;
-                appliedFixes.Add("Fixed: Adjusted backfill To date to today (was in the future)");
-            }
-
-            if (needsFix)
-            {
-                config = config with { Backfill = backfill };
+                TryFix(
+                    SelfHealingSeverity.AutoFix,
+                    $"Adjusted backfill To date to today ({today:yyyy-MM-dd}) — was in the future",
+                    c => c with { Backfill = c.Backfill! with { To = today } });
             }
         }
 
-        _log.Debug("Self-healing applied {FixCount} fixes, {WarningCount} warnings",
-            appliedFixes.Count, warnings.Count);
+        _log.Debug(
+            "Self-healing: {AppliedCount} fix(es) applied, {RefusedCount} refused, {WarningCount} warning(s)",
+            applied.Count, refused.Count, warnings.Count);
 
-        return (config, appliedFixes, warnings);
+        return (config, applied, refused, warnings);
     }
 
     private static bool IsIBGatewayAvailable()
@@ -741,9 +826,23 @@ public sealed record PipelineOptions
     public bool ValidateConfig { get; init; } = true;
 
     /// <summary>
-    /// Default options - self-healing and validation enabled.
+    /// Controls how aggressively self-healing behaviours are applied.
+    /// <see cref="SelfHealingStrictness.Development"/> (default) applies all fixes and logs
+    /// significant ones as warnings.  <see cref="SelfHealingStrictness.Production"/> applies
+    /// only cosmetic <see cref="SelfHealingSeverity.AutoFix"/> changes and refuses
+    /// <see cref="SelfHealingSeverity.Warn"/>-level fixes with a startup error so that
+    /// operators must correct the configuration manually.
     /// </summary>
-    public static PipelineOptions Default { get; } = new();
+    public SelfHealingStrictness HealingStrictness { get; init; } = SelfHealingStrictness.Development;
+
+    /// <summary>
+    /// Default options — self-healing and validation enabled, strictness from
+    /// <c>MDC_CONFIG_STRICTNESS</c> environment variable (defaults to Development).
+    /// </summary>
+    public static PipelineOptions Default { get; } = new()
+    {
+        HealingStrictness = ParseStrictness(Environment.GetEnvironmentVariable("MDC_CONFIG_STRICTNESS"))
+    };
 
     /// <summary>
     /// Options for strict validation without self-healing.
@@ -762,4 +861,68 @@ public sealed record PipelineOptions
         ApplySelfHealing = false,
         ValidateConfig = false
     };
+
+    /// <summary>
+    /// Parses the <c>MDC_CONFIG_STRICTNESS</c> environment variable (or any string value)
+    /// into a <see cref="SelfHealingStrictness"/> level.
+    /// Recognised values: <c>production</c>, <c>prod</c>, <c>strict</c> (case-insensitive).
+    /// Everything else — including null — resolves to <see cref="SelfHealingStrictness.Development"/>.
+    /// </summary>
+    internal static SelfHealingStrictness ParseStrictness(string? value) =>
+        value?.Trim().ToLowerInvariant() switch
+        {
+            "production" or "prod" or "strict" => SelfHealingStrictness.Production,
+            _ => SelfHealingStrictness.Development
+        };
 }
+
+/// <summary>
+/// Controls how self-healing reacts to significant configuration issues.
+/// </summary>
+public enum SelfHealingStrictness : byte
+{
+    /// <summary>
+    /// All self-healing fixes are applied.  <see cref="SelfHealingSeverity.Warn"/>-level
+    /// changes are applied but logged as <c>Warning</c>.  Suitable for local development
+    /// and CI environments where operator attention is not required for every startup.
+    /// </summary>
+    Development = 0,
+
+    /// <summary>
+    /// Only safe cosmetic fixes (<see cref="SelfHealingSeverity.AutoFix"/>) are applied
+    /// silently.  <see cref="SelfHealingSeverity.Warn"/>-level fixes are <b>refused</b>
+    /// and surfaced as validation errors so that the process cannot start until a human
+    /// corrects the configuration.  Use <c>MDC_CONFIG_STRICTNESS=production</c> to enable.
+    /// </summary>
+    Production = 1
+}
+
+/// <summary>
+/// Indicates how impactful a self-healing fix is, which determines how it is handled
+/// under different <see cref="SelfHealingStrictness"/> levels.
+/// </summary>
+public enum SelfHealingSeverity : byte
+{
+    /// <summary>
+    /// Safe, cosmetic correction (e.g., clamping an out-of-range value, normalising a
+    /// format string, resolving credentials from environment variables).  Applied silently
+    /// in all environments.
+    /// </summary>
+    AutoFix = 0,
+
+    /// <summary>
+    /// Significant behavioural change (e.g., switching the active data provider, adding a
+    /// default symbol set).  Applied with a <c>Warning</c>-level log entry in
+    /// <see cref="SelfHealingStrictness.Development"/>; <b>refused</b> with a startup error
+    /// in <see cref="SelfHealingStrictness.Production"/>.
+    /// </summary>
+    Warn = 1
+}
+
+/// <summary>
+/// Describes a single self-healing change that was proposed by
+/// <see cref="ConfigurationPipeline"/>.
+/// </summary>
+/// <param name="Description">Human-readable description of the change.</param>
+/// <param name="Severity">How impactful the change is.</param>
+public sealed record SelfHealingFix(string Description, SelfHealingSeverity Severity);

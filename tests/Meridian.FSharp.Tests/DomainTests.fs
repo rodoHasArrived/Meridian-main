@@ -7,6 +7,7 @@ open FsUnit.Xunit
 open Meridian.FSharp.Domain.Sides
 open Meridian.FSharp.Domain.Integrity
 open Meridian.FSharp.Domain.MarketEvents
+open Meridian.FSharp.Domain
 
 [<Fact>]
 let ``Side.ToInt converts Buy to 0`` () =
@@ -204,3 +205,73 @@ let ``BondTerms callable bond preserves callDate`` () =
     }
     terms.IsCallable |> should equal true
     terms.CallDate |> should equal (Some callDate)
+
+// ---------------------------------------------------------------------------
+// CorpActEvent module tests
+// ---------------------------------------------------------------------------
+
+[<Fact>]
+let ``CorpActEvent.securityId extracts securityId from Dividend`` () =
+    let sid = SecurityId(Guid.NewGuid())
+    let evt = CorpActEvent.Dividend(sid, CorpActId(Guid.NewGuid()), DateOnly(2024, 2, 1), None, 1.00m, "USD")
+    CorpActEvent.securityId evt |> should equal sid
+
+[<Fact>]
+let ``CorpActEvent.securityId extracts securityId from StockSplit`` () =
+    let sid = SecurityId(Guid.NewGuid())
+    let evt = CorpActEvent.StockSplit(sid, CorpActId(Guid.NewGuid()), DateOnly(2024, 3, 1), 2m)
+    CorpActEvent.securityId evt |> should equal sid
+
+[<Fact>]
+let ``CorpActEvent.securityId extracts securityId from SpinOff`` () =
+    let sid = SecurityId(Guid.NewGuid())
+    let evt = CorpActEvent.SpinOff(sid, CorpActId(Guid.NewGuid()), DateOnly(2024, 4, 1), SecurityId(Guid.NewGuid()), 0.5m)
+    CorpActEvent.securityId evt |> should equal sid
+
+[<Fact>]
+let ``CorpActEvent.securityId extracts securityId from MergerAbsorption`` () =
+    let sid = SecurityId(Guid.NewGuid())
+    let evt = CorpActEvent.MergerAbsorption(sid, CorpActId(Guid.NewGuid()), DateOnly(2024, 5, 1), SecurityId(Guid.NewGuid()), 1.25m)
+    CorpActEvent.securityId evt |> should equal sid
+
+[<Fact>]
+let ``CorpActEvent.securityId extracts securityId from RightsIssue`` () =
+    let sid = SecurityId(Guid.NewGuid())
+    let evt = CorpActEvent.RightsIssue(sid, CorpActId(Guid.NewGuid()), DateOnly(2024, 6, 1), 15.00m, 2.0m)
+    CorpActEvent.securityId evt |> should equal sid
+
+[<Fact>]
+let ``CorpActEvent.corpActId extracts id from each case`` () =
+    let sid = SecurityId(Guid.NewGuid())
+    let id = CorpActId(Guid.NewGuid())
+    let div = CorpActEvent.Dividend(sid, id, DateOnly(2024, 2, 1), None, 1.00m, "USD")
+    let split = CorpActEvent.StockSplit(sid, id, DateOnly(2024, 3, 1), 2m)
+    CorpActEvent.corpActId div |> should equal id
+    CorpActEvent.corpActId split |> should equal id
+
+[<Fact>]
+let ``CorpActEvent.exDate extracts ex-date from all cases`` () =
+    let sid = SecurityId(Guid.NewGuid())
+    let id = CorpActId(Guid.NewGuid())
+    let exDate = DateOnly(2024, 7, 15)
+    let div = CorpActEvent.Dividend(sid, id, exDate, None, 0.50m, "USD")
+    let split = CorpActEvent.StockSplit(sid, id, exDate, 3m)
+    let spinOff = CorpActEvent.SpinOff(sid, id, exDate, SecurityId(Guid.NewGuid()), 0.25m)
+    let merger = CorpActEvent.MergerAbsorption(sid, id, exDate, SecurityId(Guid.NewGuid()), 0.8m)
+    let rights = CorpActEvent.RightsIssue(sid, id, exDate, 10.00m, 1.0m)
+    CorpActEvent.exDate div |> should equal exDate
+    CorpActEvent.exDate split |> should equal exDate
+    CorpActEvent.exDate spinOff |> should equal exDate
+    CorpActEvent.exDate merger |> should equal exDate
+    CorpActEvent.exDate rights |> should equal exDate
+
+[<Fact>]
+let ``CorpActEvent.eventType returns correct string for each case`` () =
+    let sid = SecurityId(Guid.NewGuid())
+    let id = CorpActId(Guid.NewGuid())
+    let date = DateOnly(2024, 1, 1)
+    CorpActEvent.eventType (CorpActEvent.Dividend(sid, id, date, None, 1m, "USD")) |> should equal "Dividend"
+    CorpActEvent.eventType (CorpActEvent.StockSplit(sid, id, date, 2m)) |> should equal "StockSplit"
+    CorpActEvent.eventType (CorpActEvent.SpinOff(sid, id, date, SecurityId(Guid.NewGuid()), 0.5m)) |> should equal "SpinOff"
+    CorpActEvent.eventType (CorpActEvent.MergerAbsorption(sid, id, date, SecurityId(Guid.NewGuid()), 1m)) |> should equal "MergerAbsorption"
+    CorpActEvent.eventType (CorpActEvent.RightsIssue(sid, id, date, 10m, 1m)) |> should equal "RightsIssue"

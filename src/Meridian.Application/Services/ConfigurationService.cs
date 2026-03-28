@@ -422,17 +422,40 @@ public sealed class ConfigurationService : IAsyncDisposable
 
     /// <summary>
     /// Applies self-healing fixes to a configuration and returns the fixed config
-    /// along with a list of applied fixes.
+    /// along with lists of applied fixes and advisory warnings.
     /// </summary>
-    public (AppConfig Config, IReadOnlyList<string> AppliedFixes, IReadOnlyList<string> Warnings) ApplySelfHealingFixes(AppConfig config)
+    /// <param name="config">The configuration to fix.</param>
+    /// <param name="strictness">
+    /// Controls which fixes are applied.
+    /// <see cref="SelfHealingStrictness.Development"/> (default) applies all fixes and logs
+    /// significant (<see cref="SelfHealingSeverity.Warn"/>) ones as warnings.
+    /// <see cref="SelfHealingStrictness.Production"/> applies only safe
+    /// (<see cref="SelfHealingSeverity.AutoFix"/>) changes and leaves
+    /// <see cref="SelfHealingSeverity.Warn"/>-level fixes unapplied.
+    /// </param>
+    public (AppConfig Config, IReadOnlyList<string> AppliedFixes, IReadOnlyList<string> Warnings) ApplySelfHealingFixes(
+        AppConfig config,
+        SelfHealingStrictness strictness = SelfHealingStrictness.Development)
     {
         var appliedFixes = new List<string>();
         var warnings = new List<string>();
 
+        // Helper that applies a fix only when severity + strictness permit it.
+        void TryFix(SelfHealingSeverity severity, string description, Func<AppConfig, AppConfig> fn)
+        {
+            bool apply = severity == SelfHealingSeverity.AutoFix
+                         || strictness == SelfHealingStrictness.Development;
+            if (apply)
+            {
+                config = fn(config);
+                appliedFixes.Add(description);
+            }
+        }
+
         // Fix: Resolve credentials from environment
         config = ResolveAllCredentials(config);
 
-        // Fix: Alpaca selected but no credentials
+        // Fix: Alpaca selected but no credentials (AutoFix — safe credential injection)
         if (config.DataSource == DataSourceKind.Alpaca)
         {
             if (config.Alpaca == null || string.IsNullOrEmpty(config.Alpaca.KeyId))
@@ -440,24 +463,30 @@ public sealed class ConfigurationService : IAsyncDisposable
                 var (keyId, secretKey) = ResolveAlpacaCredentials();
                 if (!string.IsNullOrEmpty(keyId) && !string.IsNullOrEmpty(secretKey))
                 {
-                    config = config with { Alpaca = new AlpacaOptions(keyId, secretKey) };
-                    appliedFixes.Add("Fixed: Added Alpaca credentials from environment variables");
+                    TryFix(
+                        SelfHealingSeverity.AutoFix,
+                        "Added Alpaca credentials from environment variables",
+                        c => c with { Alpaca = new AlpacaOptions(keyId, secretKey) });
                 }
                 else
                 {
-                    warnings.Add("Alpaca selected but no credentials found. Set ALPACA_KEY_ID and ALPACA_SECRET_KEY environment variables.");
+                    warnings.Add(
+                        "Alpaca selected but no credentials found. " +
+                        "Set ALPACA_KEY_ID and ALPACA_SECRET_KEY environment variables.");
                 }
             }
         }
 
-        // Fix: IB selected but gateway not available
+        // Fix: IB selected but gateway not available (Warn — switches active provider)
         if (config.DataSource == DataSourceKind.IB && !IsIBGatewayAvailable())
         {
             var bestProvider = GetBestRealTimeProvider();
             if (bestProvider != null && Enum.TryParse<DataSourceKind>(bestProvider.Name, out var kind))
             {
-                config = config with { DataSource = kind };
-                appliedFixes.Add($"Fixed: Switched from IB to {bestProvider.DisplayName} (IB Gateway not detected)");
+                TryFix(
+                    SelfHealingSeverity.Warn,
+                    $"Switched active data provider from IB to {bestProvider.DisplayName} (IB Gateway not detected)",
+                    c => c with { DataSource = kind });
             }
             else
             {
@@ -465,56 +494,64 @@ public sealed class ConfigurationService : IAsyncDisposable
             }
         }
 
-        // Fix: Invalid storage naming convention
+        // Fix: Invalid storage naming convention (AutoFix — normalises format string)
         if (config.Storage != null)
         {
-            var validConventions = new[] { "flat", "bysymbol", "bydate", "bytype", "bysource", "byassetclass", "hierarchical", "canonical" };
+            var validConventions = new[]
+            {
+                "flat", "bysymbol", "bydate", "bytype",
+                "bysource", "byassetclass", "hierarchical", "canonical"
+            };
             if (!validConventions.Contains(config.Storage.NamingConvention.ToLowerInvariant()))
             {
                 var oldValue = config.Storage.NamingConvention;
-                config = config with { Storage = config.Storage with { NamingConvention = "BySymbol" } };
-                appliedFixes.Add($"Fixed: Invalid naming convention '{oldValue}' changed to 'BySymbol'");
+                TryFix(
+                    SelfHealingSeverity.AutoFix,
+                    $"Invalid naming convention '{oldValue}' changed to 'BySymbol'",
+                    c => c with { Storage = c.Storage! with { NamingConvention = "BySymbol" } });
             }
 
-            // Fix: Invalid date partition
+            // Fix: Invalid date partition (AutoFix — normalises format string)
             var validPartitions = new[] { "none", "daily", "hourly", "monthly" };
             if (!validPartitions.Contains(config.Storage.DatePartition.ToLowerInvariant()))
             {
                 var oldValue = config.Storage.DatePartition;
-                config = config with { Storage = config.Storage with { DatePartition = "Daily" } };
-                appliedFixes.Add($"Fixed: Invalid date partition '{oldValue}' changed to 'Daily'");
+                TryFix(
+                    SelfHealingSeverity.AutoFix,
+                    $"Invalid date partition '{oldValue}' changed to 'Daily'",
+                    c => c with { Storage = c.Storage! with { DatePartition = "Daily" } });
             }
         }
 
-        // Fix: Empty symbols list
+        // Fix: Empty symbols list (Warn — adds a default symbol the operator didn't configure)
         if (config.Symbols == null || config.Symbols.Length == 0)
         {
-            config = config with
-            {
-                Symbols = new[]
+            TryFix(
+                SelfHealingSeverity.Warn,
+                "Added default symbol (SPY) since none were configured",
+                c => c with
                 {
-                    new SymbolConfig("SPY", SubscribeTrades: true, SubscribeDepth: true, DepthLevels: 10)
-                }
-            };
-            appliedFixes.Add("Fixed: Added default symbol (SPY) since none were configured");
+                    Symbols = new[]
+                    {
+                        new SymbolConfig("SPY", SubscribeTrades: true, SubscribeDepth: true, DepthLevels: 10)
+                    }
+                });
         }
 
-        // Fix: Invalid depth levels
+        // Fix: Invalid depth levels (AutoFix — clamps numeric range)
         if (config.Symbols != null)
         {
             var fixedSymbols = config.Symbols.Select(s =>
-            {
-                if (s.SubscribeDepth && (s.DepthLevels < 1 || s.DepthLevels > 50))
-                {
-                    return s with { DepthLevels = Math.Clamp(s.DepthLevels, 1, 50) };
-                }
-                return s;
-            }).ToArray();
+                s.SubscribeDepth && (s.DepthLevels < 1 || s.DepthLevels > 50)
+                    ? s with { DepthLevels = Math.Clamp(s.DepthLevels, 1, 50) }
+                    : s).ToArray();
 
             if (!config.Symbols.SequenceEqual(fixedSymbols))
             {
-                config = config with { Symbols = fixedSymbols };
-                appliedFixes.Add("Fixed: Adjusted depth levels to valid range (1-50)");
+                TryFix(
+                    SelfHealingSeverity.AutoFix,
+                    "Adjusted depth levels to valid range (1-50)",
+                    c => c with { Symbols = fixedSymbols });
             }
         }
 
@@ -522,28 +559,26 @@ public sealed class ConfigurationService : IAsyncDisposable
         if (config.Backfill != null)
         {
             var backfill = config.Backfill;
-            var needsFix = false;
 
-            // Fix: From date after To date
+            // AutoFix: From date after To date (cosmetic swap)
             if (backfill.From.HasValue && backfill.To.HasValue && backfill.From > backfill.To)
             {
-                backfill = backfill with { From = backfill.To, To = backfill.From };
-                needsFix = true;
-                appliedFixes.Add("Fixed: Swapped backfill From/To dates (From was after To)");
+                var (swappedFrom, swappedTo) = (backfill.To, backfill.From);
+                TryFix(
+                    SelfHealingSeverity.AutoFix,
+                    "Swapped backfill From/To dates (From was after To)",
+                    c => c with { Backfill = c.Backfill! with { From = swappedFrom, To = swappedTo } });
+                backfill = config.Backfill with { From = swappedFrom, To = swappedTo };
             }
 
-            // Fix: Future end date
+            // AutoFix: Future end date (safe adjustment)
             var today = DateOnly.FromDateTime(DateTime.UtcNow);
             if (backfill.To.HasValue && backfill.To > today)
             {
-                backfill = backfill with { To = today };
-                needsFix = true;
-                appliedFixes.Add("Fixed: Adjusted backfill To date to today (was in the future)");
-            }
-
-            if (needsFix)
-            {
-                config = config with { Backfill = backfill };
+                TryFix(
+                    SelfHealingSeverity.AutoFix,
+                    "Adjusted backfill To date to today (was in the future)",
+                    c => c with { Backfill = c.Backfill! with { To = today } });
             }
         }
 

@@ -26,6 +26,14 @@ public sealed record CompletenessScore(
         >= 0.50 => "D",
         _ => "F"
     };
+
+    /// <summary>
+    /// When true, the expected event count was derived from auto-calibration based
+    /// on observed activity during the initial calibration window, rather than from
+    /// a pre-registered liquidity profile. Scores marked as auto-calibrated may
+    /// become more accurate as more data is collected within the trading day.
+    /// </summary>
+    public bool IsAutoCalibrated { get; init; }
 }
 
 /// <summary>

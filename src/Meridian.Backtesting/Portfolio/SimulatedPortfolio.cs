@@ -116,15 +116,15 @@ internal sealed class SimulatedPortfolio
 
         if (qty > 0)
         {
-            if (!account.Lots.TryGetValue(symbol, out var queue))
+            if (!account.Lots.TryGetValue(symbol, out var lots))
             {
-                queue = new Queue<(long, decimal)>();
-                account.Lots[symbol] = queue;
+                lots = new LinkedList<(long, decimal)>();
+                account.Lots[symbol] = lots;
             }
 
             var longBuyQty = existingQty >= 0 ? qty : Math.Max(qty + existingQty, 0L);
             if (longBuyQty > 0)
-                queue.Enqueue((longBuyQty, price));
+                lots.AddLast((longBuyQty, price));
 
             account.AvgCost[symbol] = ComputeAvgCost(account, symbol);
         }
@@ -145,13 +145,13 @@ internal sealed class SimulatedPortfolio
 
         if (shortOpenQty > 0)
         {
-            if (!account.ShortLots.TryGetValue(symbol, out var shortQueue))
+            if (!account.ShortLots.TryGetValue(symbol, out var shortLots))
             {
-                shortQueue = new Queue<(long, decimal)>();
-                account.ShortLots[symbol] = shortQueue;
+                shortLots = new LinkedList<(long, decimal)>();
+                account.ShortLots[symbol] = shortLots;
             }
 
-            shortQueue.Enqueue((shortOpenQty, price));
+            shortLots.AddLast((shortOpenQty, price));
         }
 
         if (qty > 0 && existingQty < 0)
@@ -465,9 +465,9 @@ internal sealed class SimulatedPortfolio
         ? (long)Math.Floor(quantity)
         : (long)Math.Ceiling(quantity);
 
-    private static Queue<(long qty, decimal price)> TransformLots(Queue<(long qty, decimal price)>? source, decimal factor)
+    private static LinkedList<(long qty, decimal price)> TransformLots(LinkedList<(long qty, decimal price)>? source, decimal factor)
     {
-        var result = new Queue<(long qty, decimal price)>();
+        var result = new LinkedList<(long qty, decimal price)>();
         if (source is null || source.Count == 0)
             return result;
 
@@ -478,28 +478,28 @@ internal sealed class SimulatedPortfolio
                 continue;
 
             var transformedPrice = factor == 0m ? price : price / Math.Abs(factor);
-            result.Enqueue((Math.Abs(transformedQty), transformedPrice));
+            result.AddLast((Math.Abs(transformedQty), transformedPrice));
         }
 
         return result;
     }
 
     private static void MergeLots(
-        Dictionary<string, Queue<(long qty, decimal price)>> store,
+        Dictionary<string, LinkedList<(long qty, decimal price)>> store,
         string symbol,
-        Queue<(long qty, decimal price)> lots)
+        LinkedList<(long qty, decimal price)> lots)
     {
         if (lots.Count == 0)
             return;
 
         if (!store.TryGetValue(symbol, out var existing))
         {
-            store[symbol] = new Queue<(long qty, decimal price)>(lots);
+            store[symbol] = new LinkedList<(long qty, decimal price)>(lots);
             return;
         }
 
         foreach (var lot in lots)
-            existing.Enqueue(lot);
+            existing.AddLast(lot);
     }
 
     private void RemoveSymbolState(AccountState account, string symbol)
@@ -781,12 +781,12 @@ internal sealed class SimulatedPortfolio
 
     private static decimal ComputeAvgCost(AccountState account, string symbol)
     {
-        if (!account.Lots.TryGetValue(symbol, out var queue) || queue.Count == 0)
+        if (!account.Lots.TryGetValue(symbol, out var lots) || lots.Count == 0)
             return 0m;
 
         var totalQty = 0L;
         var totalCost = 0m;
-        foreach (var (q, p) in queue)
+        foreach (var (q, p) in lots)
         {
             totalQty += q;
             totalCost += q * p;
@@ -795,27 +795,38 @@ internal sealed class SimulatedPortfolio
         return totalQty == 0 ? 0m : totalCost / totalQty;
     }
 
+    /// <summary>
+    /// Realizes P&amp;L for a long position close using FIFO lot matching.
+    /// <para>
+    /// NOTE: This must stay consistent with <c>BacktestMetricsEngine.ComputeRealisedPnl</c>,
+    /// which re-implements the same FIFO logic for attribution. If you change this method,
+    /// update the metrics counterpart in parallel.
+    /// </para>
+    /// </summary>
     private static decimal RealiseFifo(AccountState account, string symbol, long closeQty, decimal sellPrice)
     {
-        if (!account.Lots.TryGetValue(symbol, out var queue))
+        if (!account.Lots.TryGetValue(symbol, out var lots))
             return 0m;
 
         var realised = 0m;
         var remaining = closeQty;
-        while (remaining > 0 && queue.Count > 0)
+        while (remaining > 0 && lots.Count > 0)
         {
-            var (lotQty, lotPrice) = queue.Peek();
+            var node = lots.First!;
+            var (lotQty, lotPrice) = node.Value;
             if (lotQty <= remaining)
             {
                 realised += lotQty * (sellPrice - lotPrice);
                 remaining -= lotQty;
-                queue.Dequeue();
+                lots.RemoveFirst();
             }
             else
             {
                 realised += remaining * (sellPrice - lotPrice);
-                queue = new Queue<(long, decimal)>(queue.Skip(1).Prepend((lotQty - remaining, lotPrice)));
-                account.Lots[symbol] = queue;
+                // Partial lot: remove front and prepend reduced entry. O(1) time; avoids
+                // reallocating the entire collection that the old Queue pattern required.
+                lots.RemoveFirst();
+                lots.AddFirst((lotQty - remaining, lotPrice));
                 remaining = 0;
             }
         }
@@ -826,16 +837,17 @@ internal sealed class SimulatedPortfolio
 
     private static (decimal realised, decimal shortSaleProceeds) RealiseShortFifo(AccountState account, string symbol, long coverQty, decimal coverPrice)
     {
-        if (!account.ShortLots.TryGetValue(symbol, out var queue))
+        if (!account.ShortLots.TryGetValue(symbol, out var lots))
             return (0m, coverQty * coverPrice);
 
         var realised = 0m;
         var shortSaleProceeds = 0m;
         var remaining = coverQty;
 
-        while (remaining > 0 && queue.Count > 0)
+        while (remaining > 0 && lots.Count > 0)
         {
-            var (lotQty, lotShortPrice) = queue.Peek();
+            var node = lots.First!;
+            var (lotQty, lotShortPrice) = node.Value;
             var lotClose = Math.Min(lotQty, remaining);
             var lotProceeds = lotClose * lotShortPrice;
             realised += lotProceeds - lotClose * coverPrice;
@@ -844,12 +856,14 @@ internal sealed class SimulatedPortfolio
             if (lotQty <= remaining)
             {
                 remaining -= lotQty;
-                queue.Dequeue();
+                lots.RemoveFirst();
             }
             else
             {
-                queue = new Queue<(long, decimal)>(queue.Skip(1).Prepend((lotQty - remaining, lotShortPrice)));
-                account.ShortLots[symbol] = queue;
+                // Partial lot: remove front and prepend reduced entry. O(1) time; avoids
+                // reallocating the entire collection that the old Queue pattern required.
+                lots.RemoveFirst();
+                lots.AddFirst((lotQty - remaining, lotShortPrice));
                 remaining = 0;
             }
         }
@@ -863,8 +877,8 @@ internal sealed class SimulatedPortfolio
         public FinancialAccountRules Rules { get; } = account.Rules ?? new FinancialAccountRules();
         public decimal Cash { get; set; } = account.InitialCash;
         public decimal MarginBalance { get; set; }
-        public Dictionary<string, Queue<(long qty, decimal price)>> Lots { get; } = new(StringComparer.OrdinalIgnoreCase);
-        public Dictionary<string, Queue<(long qty, decimal price)>> ShortLots { get; } = new(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, LinkedList<(long qty, decimal price)>> Lots { get; } = new(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, LinkedList<(long qty, decimal price)>> ShortLots { get; } = new(StringComparer.OrdinalIgnoreCase);
         public Dictionary<string, long> Positions { get; } = new(StringComparer.OrdinalIgnoreCase);
         public Dictionary<string, decimal> AvgCost { get; } = new(StringComparer.OrdinalIgnoreCase);
         public Dictionary<string, decimal> RealizedPnl { get; } = new(StringComparer.OrdinalIgnoreCase);

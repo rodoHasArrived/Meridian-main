@@ -61,6 +61,20 @@ internal static class ContingentOrderManager
         return orders;
     }
 
+    /// <summary>
+    /// Adjusts the outstanding quantity of any OCO sibling of <paramref name="filledOrder"/> after
+    /// a (partial) fill. When one leg of an OCO pair executes, the other leg's remaining quantity is
+    /// reduced by the same absolute number of shares that were filled. If the sibling's remaining
+    /// quantity reaches zero, it is cancelled immediately.
+    ///
+    /// <para>
+    /// Reduction semantics: the sibling is reduced proportionally to the fill size rather than
+    /// cancelled outright on any partial fill. This allows OCO orders that are themselves partially
+    /// filled (e.g. from an <see cref="ExecutionModel.OrderBook"/> fill model) to wind down
+    /// gracefully. A sibling with <c>RemainingQuantity == 0</c> after the reduction is set to
+    /// <see cref="OrderStatus.Cancelled"/>.
+    /// </para>
+    /// </summary>
     public static void ReconcileOcoSiblings(List<Order> pendingOrders, Order filledOrder, FillEvent fill)
     {
         if (filledOrder.OcoGroupId is not { } ocoGroupId)
