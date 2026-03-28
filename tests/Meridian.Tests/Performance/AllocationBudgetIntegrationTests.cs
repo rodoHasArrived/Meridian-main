@@ -47,6 +47,10 @@ public sealed class AllocationBudgetIntegrationTests : IDisposable
     {
         _tempDir = Path.Combine(Path.GetTempPath(), $"alloc_test_{Guid.NewGuid():N}");
         Directory.CreateDirectory(_tempDir);
+        // Pre-JIT the WAL checksum path (including the SIMD UTF-8 encoding path
+        // that triggers ~120 bytes of one-time lazy-init for medium-sized strings)
+        // before any allocation measurement window opens.
+        WriteAheadLog.WarmChecksumPath();
     }
 
     public void Dispose()
