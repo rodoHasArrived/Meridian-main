@@ -1336,6 +1336,7 @@ Meridian-main
 │   │   │   ├── CanonicalSymbol.cs
 │   │   │   ├── MarketDataModels.cs
 │   │   │   ├── ProviderId.cs
+│   │   │   ├── ProviderSymbol.cs
 │   │   │   ├── StreamId.cs
 │   │   │   ├── SubscriptionId.cs
 │   │   │   ├── SymbolId.cs

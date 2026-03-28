@@ -1,6 +1,6 @@
 # Provider Registry
 
-> Auto-generated on 2026-03-28 04:33:57 UTC. Do not edit manually.
+> Auto-generated on 2026-03-28 04:38:11 UTC. Do not edit manually.
 
 | Provider Candidate |
 |---|
@@ -18,6 +18,7 @@
 | `src/Meridian.Contracts/Api/ProviderCatalog.cs` |
 | `src/Meridian.Contracts/Credentials/ISecretProvider.cs` |
 | `src/Meridian.Contracts/Domain/ProviderId.cs` |
+| `src/Meridian.Contracts/Domain/ProviderSymbol.cs` |
 | `src/Meridian.Core/Config/IConfigurationProvider.cs` |
 | `src/Meridian.Core/Exceptions/DataProviderException.cs` |
 | `src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs` |
