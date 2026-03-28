@@ -67,8 +67,7 @@ public partial class SettingsPage : Page
 
     private void ManageCredentials_Click(object sender, RoutedEventArgs e)
     {
-        // Scroll to the Credential Vault section
-        CredentialVaultList.BringIntoView();
+        WpfServices.NavigationService.Instance.NavigateTo("CredentialManagement");
     }
 
     private void RunSetupWizard_Click(object sender, RoutedEventArgs e)
