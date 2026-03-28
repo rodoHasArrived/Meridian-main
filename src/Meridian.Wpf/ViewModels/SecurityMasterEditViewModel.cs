@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
+using Meridian.Contracts.Api;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Ui.Services;
 using WpfServices = Meridian.Wpf.Services;
@@ -344,5 +345,5 @@ public sealed class SecurityMasterEditViewModel : BindableBase
 // ── Contracts for validation errors ──────────────────────────────────────
 
 public sealed record ValidationProblemDetails(
-    [System.Text.Json.Serialization.JsonPropertyName("errors")]
+    [property: System.Text.Json.Serialization.JsonPropertyName("errors")]
     Dictionary<string, string[]>? Errors);

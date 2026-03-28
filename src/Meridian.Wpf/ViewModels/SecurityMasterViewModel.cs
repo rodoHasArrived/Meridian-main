@@ -544,7 +544,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             });
 
             // Load corporate actions
-            _ = await OnLoadCorporateActions(ct);
+            await OnLoadCorporateActions(ct);
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)
@@ -702,7 +702,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
                 });
 
                 // Reload the list
-                _ = await OnLoadCorporateActions(ct);
+                await OnLoadCorporateActions(ct);
             }
             else
             {
@@ -785,7 +785,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         }
         catch (OperationCanceledException)
         {
-            _notificationService.ShowNotification("Security Master Import", "Import cancelled.", NotificationType.Information);
+            _notificationService.ShowNotification("Security Master Import", "Import cancelled.", NotificationType.Info);
         }
         catch (Exception ex)
         {

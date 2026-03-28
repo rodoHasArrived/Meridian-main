@@ -133,6 +133,12 @@
     <PackageVersion Include="Skender.Stock.Indicators" Version="2.7.1" />
   </ItemGroup>
 
+  <ItemGroup Label="QuantScript">
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="5.0.0" />
+    <PackageVersion Include="ICSharpCode.AvalonEdit" Version="6.3.0.90" />
+    <PackageVersion Include="ScottPlot.WPF" Version="5.0.55" />
+  </ItemGroup>
+
   <ItemGroup Label="StockSharp">
     <PackageVersion Include="StockSharp.Algo" Version="5.0.229" />
     <PackageVersion Include="StockSharp.Messages" Version="5.0.223" />

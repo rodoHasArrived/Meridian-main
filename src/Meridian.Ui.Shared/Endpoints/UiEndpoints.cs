@@ -260,6 +260,9 @@ public static class UiEndpoints
         // Security Master endpoints
         app.MapSecurityMasterEndpoints(jsonOptions);
 
+        // Credential management endpoints
+        app.MapCredentialEndpoints(jsonOptions);
+
         // Map quality drops endpoints (C3/#16)
         var auditTrail = app.Services.GetService<DroppedEventAuditTrail>();
         app.MapQualityDropsEndpoints(auditTrail, jsonOptions);
@@ -366,6 +369,9 @@ public static class UiEndpoints
 
         // Security Master endpoints
         app.MapSecurityMasterEndpoints(jsonOptions);
+
+        // Credential management endpoints
+        app.MapCredentialEndpoints(jsonOptions);
 
         // Map quality drops endpoints (C3/#16 - DroppedEventAuditTrail exposure)
         var auditTrail = app.Services.GetService<DroppedEventAuditTrail>();

@@ -100,7 +100,6 @@
                 <Grid>
                     <!-- Placeholder when no loan is selected -->
                     <TextBlock Text="Select a loan to view details"
-                               Style="{StaticResource CardDescriptionStyle}"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center">
                         <TextBlock.Style>

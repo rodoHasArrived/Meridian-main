@@ -1460,6 +1460,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── OrderReplace.cs
 │   │   │   │   └── Trade.cs
 │   │   │   ├── ProviderId.cs
+│   │   │   ├── ProviderSymbol.cs
 │   │   │   ├── StreamId.cs
 │   │   │   ├── SubscriptionId.cs
 │   │   │   ├── SymbolId.cs
@@ -1951,6 +1952,35 @@ Use these documents together when planning or implementing new work:
 │   │   ├── ImplementsAdrAttribute.cs
 │   │   ├── Meridian.ProviderSdk.csproj
 │   │   └── ProviderHttpUtilities.cs
+│   ├── Meridian.QuantScript
+│   │   ├── Api
+│   │   │   ├── BacktestProxy.cs
+│   │   │   ├── DataProxy.cs
+│   │   │   ├── EfficientFrontierConstraints.cs
+│   │   │   ├── IQuantDataContext.cs
+│   │   │   ├── LambdaBacktestStrategy.cs
+│   │   │   ├── PortfolioBuilder.cs
+│   │   │   ├── PriceBar.cs
+│   │   │   ├── PriceSeries.cs
+│   │   │   ├── PriceSeriesExtensions.cs
+│   │   │   ├── QuantDataContext.cs
+│   │   │   ├── ReturnSeries.cs
+│   │   │   ├── ScriptModels.cs
+│   │   │   ├── ScriptParamAttribute.cs
+│   │   │   ├── StatisticsEngine.cs
+│   │   │   └── TechnicalSeriesExtensions.cs
+│   │   ├── Compilation
+│   │   │   ├── Contracts.cs
+│   │   │   ├── QuantScriptGlobals.cs
+│   │   │   ├── RoslynScriptCompiler.cs
+│   │   │   └── ScriptRunner.cs
+│   │   ├── GlobalUsings.cs
+│   │   ├── Meridian.QuantScript.csproj
+│   │   ├── Plotting
+│   │   │   ├── PlotQueue.cs
+│   │   │   └── PlotRequest.cs
+│   │   ├── QuantScriptOptions.cs
+│   │   └── ScriptContext.cs
 │   ├── Meridian.Risk
 │   │   ├── CompositeRiskValidator.cs
 │   │   ├── IRiskRule.cs
@@ -2304,6 +2334,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── CheckpointEndpoints.cs
 │   │   │   ├── ConfigEndpoints.cs
 │   │   │   ├── CppTraderEndpoints.cs
+│   │   │   ├── CredentialEndpoints.cs
 │   │   │   ├── CronEndpoints.cs
 │   │   │   ├── DiagnosticsEndpoints.cs
 │   │   │   ├── DirectLendingEndpoints.cs
@@ -2449,6 +2480,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── BindableBase.cs
 │       │   ├── ChartingPageViewModel.cs
 │       │   ├── ClusterStatusViewModel.cs
+│       │   ├── CredentialManagementViewModel.cs
 │       │   ├── DashboardViewModel.cs
 │       │   ├── DataQualityViewModel.cs
 │       │   ├── DiagnosticsPageViewModel.cs
@@ -2465,6 +2497,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── ProviderHealthViewModel.cs
 │       │   ├── ProviderPageModels.cs
 │       │   ├── QualityArchiveViewModel.cs
+│       │   ├── QuantScriptViewModel.cs
 │       │   ├── QuoteFloatViewModel.cs
 │       │   ├── RunMatViewModel.cs
 │       │   ├── SecurityMasterDeactivateViewModel.cs
@@ -2510,6 +2543,8 @@ Use these documents together when planning or implementing new work:
 │           ├── CollectionSessionPage.xaml.cs
 │           ├── CommandPaletteWindow.xaml
 │           ├── CommandPaletteWindow.xaml.cs
+│           ├── CredentialManagementPage.xaml
+│           ├── CredentialManagementPage.xaml.cs
 │           ├── DashboardPage.xaml
 │           ├── DashboardPage.xaml.cs
 │           ├── DataBrowserPage.xaml
@@ -2570,6 +2605,8 @@ Use these documents together when planning or implementing new work:
 │           ├── ProviderPage.xaml.cs
 │           ├── QualityArchivePage.xaml
 │           ├── QualityArchivePage.xaml.cs
+│           ├── QuantScriptPage.xaml
+│           ├── QuantScriptPage.xaml.cs
 │           ├── QuoteFloatWindow.xaml
 │           ├── QuoteFloatWindow.xaml.cs
 │           ├── ResearchWorkspaceShellPage.xaml
@@ -2670,6 +2707,14 @@ Use these documents together when planning or implementing new work:
 │   │   └── Tools
 │   │       ├── BackfillToolsTests.cs
 │   │       └── StorageToolsTests.cs
+│   ├── Meridian.QuantScript.Tests
+│   │   ├── GlobalUsings.cs
+│   │   ├── Meridian.QuantScript.Tests.csproj
+│   │   ├── PlotQueueTests.cs
+│   │   ├── PriceSeriesTests.cs
+│   │   ├── RoslynScriptCompilerTests.cs
+│   │   ├── ScriptRunnerTests.cs
+│   │   └── StatisticsEngineTests.cs
 │   ├── Meridian.Tests
 │   │   ├── Application
 │   │   │   ├── Backfill
@@ -2863,6 +2908,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── NyseNationalTradesCsvParserTests.cs
 │   │   │   │   ├── NyseSharedLifecycleTests.cs
 │   │   │   │   ├── NyseTaqCollectorIntegrationTests.cs
+│   │   │   │   ├── PolygonCorporateActionFetcherTests.cs
 │   │   │   │   ├── PolygonMarketDataClientTests.cs
 │   │   │   │   ├── PolygonMessageParsingTests.cs
 │   │   │   │   ├── PolygonRecordedSessionReplayTests.cs
@@ -3086,6 +3132,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-455 directories, 2593 files
+460 directories, 2634 files
 ```
 <!-- readme-tree end -->

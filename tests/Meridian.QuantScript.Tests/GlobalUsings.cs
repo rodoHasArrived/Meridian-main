@@ -10,3 +10,6 @@ global using Meridian.QuantScript.API;
 global using Meridian.QuantScript.Compilation;
 global using Meridian.QuantScript.Plotting;
 global using Meridian.QuantScript.Tests.Helpers;
+global using Meridian.QuantScript.Api;
+global using Meridian.QuantScript.Compilation;
+global using Meridian.QuantScript.Plotting;

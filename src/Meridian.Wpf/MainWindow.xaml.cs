@@ -10,6 +10,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Threading;
+using System.Runtime.InteropServices;
 using Microsoft.Extensions.DependencyInjection;
 using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Services;
@@ -97,12 +98,21 @@ public partial class MainWindow : Window
         // Subscribe to launch args forwarded from secondary instances (jump-list re-launches).
         WpfServices.SingleInstanceService.Instance.LaunchArgsReceived += OnLaunchArgsReceived;
 
+        SourceInitialized += (_, _) =>
+        {
+            EnsureShellVisibleOnStartup();
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(EnsureShellVisibleOnStartup));
+            _ = RecoverShellVisibilityAsync();
+        };
+
         // Restore window state from previous session
         RestoreWindowState();
     }
 
     private void OnWindowLoaded(object sender, RoutedEventArgs e)
     {
+        EnsureShellVisibleOnStartup();
+
         // Capture the HWND for taskbar progress updates (must run after Loaded).
         WpfServices.TaskbarProgressService.Instance.Initialize(this);
 
@@ -131,6 +141,10 @@ public partial class MainWindow : Window
 
         // Load the shell first; it owns the inner content frame and restores page state there.
         RootFrame.Navigate(App.Services.GetRequiredService<MainPage>());
+
+        // A few services can raise transient state changes during startup.
+        // Re-assert the shell as visible once the initial load work has been queued.
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(EnsureShellVisibleOnStartup));
     }
 
     private void OnWindowClosing(object? sender, CancelEventArgs e)
@@ -995,6 +1009,62 @@ public partial class MainWindow : Window
         {
             System.Diagnostics.Debug.WriteLine($"[MainWindow] Failed to restore window state: {ex.Message}");
         }
+    }
+
+    private void EnsureShellVisibleOnStartup()
+    {
+        if (WindowState == WindowState.Minimized)
+        {
+            WindowState = WindowState.Normal;
+        }
+
+        if (!ShowInTaskbar)
+        {
+            ShowInTaskbar = true;
+        }
+
+        if (!IsVisible)
+        {
+            Show();
+        }
+
+        var hwnd = new WindowInteropHelper(this).Handle;
+        if (hwnd != IntPtr.Zero)
+        {
+            NativeMethods.ShowWindow(hwnd, NativeMethods.SW_RESTORE);
+            NativeMethods.SetForegroundWindow(hwnd);
+        }
+
+        Activate();
+    }
+
+    private async Task RecoverShellVisibilityAsync()
+    {
+        var delays = new[]
+        {
+            TimeSpan.FromMilliseconds(250),
+            TimeSpan.FromSeconds(1),
+            TimeSpan.FromSeconds(3)
+        };
+
+        foreach (var delay in delays)
+        {
+            await Task.Delay(delay).ConfigureAwait(true);
+            EnsureShellVisibleOnStartup();
+        }
+    }
+
+    private static class NativeMethods
+    {
+        internal const int SW_RESTORE = 9;
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool SetForegroundWindow(IntPtr hWnd);
     }
 
     /// <summary>

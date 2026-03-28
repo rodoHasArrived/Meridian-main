@@ -64,6 +64,10 @@
     <!-- MVVM Framework -->
     <PackageReference Include="CommunityToolkit.Mvvm" />
 
+    <!-- QuantScript UI components -->
+    <PackageReference Include="ICSharpCode.AvalonEdit" />
+    <PackageReference Include="ScottPlot.WPF" />
+
     <!-- Modern WPF Controls -->
     <PackageReference Include="MaterialDesignThemes" />
 

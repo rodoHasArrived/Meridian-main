@@ -4,9 +4,14 @@ using System.Threading;
 using Meridian.Application.Config;
 using Meridian.Application.Exceptions;
 using Meridian.Application.Logging;
+using Meridian.Application.Serialization;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Contracts.Services;
+using Meridian.Domain.Events;
 using Meridian.Domain.Models;
+using Meridian.Storage;
+using Meridian.Storage.Archival;
+using Meridian.Storage.Policies;
 using Serilog;
 
 namespace Meridian.Infrastructure.Adapters.Core;
@@ -523,19 +528,21 @@ public sealed class BackfillWorkerService : IDisposable
             var date = dateGroup.Key;
             var dateBars = dateGroup.ToList();
 
-            // Build file path based on naming convention
-            var filePath = BuildFilePath(request.Symbol, date, request.Granularity);
+            // Route historical writes through the shared storage policy and atomic writer
+            // so backfill data lands in the same durable, predictable structure as the
+            // rest of the JSONL storage stack.
+            var exemplarEvent = MarketEvent.HistoricalBar(
+                dateBars[0].ToTimestampUtc(),
+                dateBars[0].Symbol,
+                dateBars[0],
+                dateBars[0].SequenceNumber,
+                _provider.Name);
+            var filePath = BuildFilePath(request.Granularity, exemplarEvent);
 
-            // Ensure directory exists
-            var directory = Path.GetDirectoryName(filePath);
-            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-            {
-                Directory.CreateDirectory(directory);
-            }
-
-            // Write bars as JSONL
-            var lines = dateBars.Select(b => JsonSerializer.Serialize(b));
-            await File.AppendAllLinesAsync(filePath, lines, ct).ConfigureAwait(false);
+            var lines = dateBars.Select(b => JsonSerializer.Serialize(
+                b,
+                MarketDataJsonContext.Default.HistoricalBar));
+            await AtomicFileWriter.AppendLinesAsync(filePath, lines, ct).ConfigureAwait(false);
 
             foreach (var bar in dateBars)
             {
@@ -549,7 +556,7 @@ public sealed class BackfillWorkerService : IDisposable
     /// <summary>
     /// Build the file path for storing bars.
     /// </summary>
-    private string BuildFilePath(string symbol, DateOnly date, DataGranularity granularity)
+    private string BuildFilePath(DataGranularity granularity, MarketEvent evt)
     {
         var granularityName = granularity switch
         {
@@ -562,13 +569,15 @@ public sealed class BackfillWorkerService : IDisposable
             _ => "daily"
         };
 
-        // Default: BySymbol naming convention
-        // {DataRoot}/{Symbol}/bar_{granularity}/{date}.jsonl
-        var symbolDir = Path.Combine(_dataRoot, symbol.ToUpperInvariant());
-        var typeDir = Path.Combine(symbolDir, $"bar_{granularityName}");
-        var fileName = $"{date:yyyy-MM-dd}.jsonl";
+        var policy = new JsonlStoragePolicy(new StorageOptions
+        {
+            RootPath = _dataRoot,
+            NamingConvention = FileNamingConvention.BySymbol,
+            DatePartition = DatePartition.Daily,
+            FilePrefix = $"bar_{granularityName}"
+        });
 
-        return Path.Combine(typeDir, fileName);
+        return policy.GetPath(evt);
     }
 
     /// <summary>

@@ -102,9 +102,10 @@
             <!-- Import Progress Panel -->
             <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24"
                     Visibility="{Binding IsImporting, Converter={StaticResource BoolToVisibilityConverter}}">
-                <StackPanel Orientation="Vertical" Spacing="12">
+                <StackPanel Orientation="Vertical">
                     <TextBlock Text="Importing securities from file..."
-                               Style="{StaticResource CardHeaderStyle}"/>
+                               Style="{StaticResource CardHeaderStyle}"
+                               Margin="0,0,0,12"/>
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -522,25 +523,19 @@
                                                     <DataGridTemplateColumn Header="Amount/Ratio" Width="*">
                                                         <DataGridTemplateColumn.CellTemplate>
                                                             <DataTemplate>
-                                                                <TextBlock>
-                                                                    <TextBlock.Text>
-                                                                        <MultiBinding StringFormat="{0}">
-                                                                            <Binding Path="DividendPerShare"/>
-                                                                        </MultiBinding>
-                                                                    </TextBlock.Text>
-                                                                    <TextBlock.Style>
-                                                                        <Style TargetType="TextBlock">
-                                                                            <Style.Triggers>
-                                                                                <DataTrigger Binding="{Binding EventType}" Value="Dividend">
-                                                                                    <Setter Property="Text" Value="{Binding DividendPerShare}"/>
-                                                                                </DataTrigger>
-                                                                                <DataTrigger Binding="{Binding EventType}" Value="StockSplit">
-                                                                                    <Setter Property="Text" Value="{Binding SplitRatio}"/>
-                                                                                </DataTrigger>
-                                                                            </Style.Triggers>
-                                                                        </Style>
-                                                                    </TextBlock.Style>
-                                                                </TextBlock>
+                                                                <Grid>
+                                                                    <TextBlock x:Name="DividendAmount"
+                                                                               Text="{Binding DividendPerShare}"/>
+                                                                    <TextBlock x:Name="SplitRatio"
+                                                                               Text="{Binding SplitRatio}"
+                                                                               Visibility="Collapsed"/>
+                                                                </Grid>
+                                                                <DataTemplate.Triggers>
+                                                                    <DataTrigger Binding="{Binding EventType}" Value="StockSplit">
+                                                                        <Setter TargetName="DividendAmount" Property="Visibility" Value="Collapsed"/>
+                                                                        <Setter TargetName="SplitRatio" Property="Visibility" Value="Visible"/>
+                                                                    </DataTrigger>
+                                                                </DataTemplate.Triggers>
                                                             </DataTemplate>
                                                         </DataGridTemplateColumn.CellTemplate>
                                                     </DataGridTemplateColumn>

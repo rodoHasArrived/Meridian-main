@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows.Media;
 using System.Windows.Input;
+using CommunityToolkit.Mvvm.Input;
 using Meridian.Ui.Services.Services;
 
 namespace Meridian.Wpf.ViewModels;
@@ -12,8 +13,8 @@ public sealed class QualityCalendarCell
 {
     public DateOnly Date { get; init; }
     public double Score { get; init; }
-    public string DisplayDate { get; init; }
-    public Brush Background { get; init; }
+    public string DisplayDate { get; init; } = string.Empty;
+    public Brush Background { get; init; } = Brushes.Transparent;
 }
 
 /// <summary>
@@ -145,23 +146,30 @@ public sealed class QualityArchiveViewModel : BindableBase, IDisposable
         // Grey for no data
         if (!hasData)
         {
-            return new SolidColorBrush(Colors.LightGray) { Freeze() };
+            return MakeFrozenBrush(Colors.LightGray);
         }
 
         // Green for > 90%
         if (score > 0.90)
         {
-            return new SolidColorBrush(Color.FromRgb(34, 139, 34)) { Freeze() }; // ForestGreen
+            return MakeFrozenBrush(Color.FromRgb(34, 139, 34)); // ForestGreen
         }
 
         // Amber for 70-90%
         if (score >= 0.70)
         {
-            return new SolidColorBrush(Color.FromRgb(255, 165, 0)) { Freeze() }; // Orange
+            return MakeFrozenBrush(Color.FromRgb(255, 165, 0)); // Orange
         }
 
         // Red for < 70%
-        return new SolidColorBrush(Color.FromRgb(178, 34, 34)) { Freeze() }; // FireBrick
+        return MakeFrozenBrush(Color.FromRgb(178, 34, 34)); // FireBrick
+    }
+
+    private static Brush MakeFrozenBrush(Color color)
+    {
+        var brush = new SolidColorBrush(color);
+        brush.Freeze();
+        return brush;
     }
 
     public void Dispose()
@@ -174,39 +182,3 @@ public sealed class QualityArchiveViewModel : BindableBase, IDisposable
     }
 }
 
-/// <summary>
-/// Simple async relay command implementation for WPF.
-/// </summary>
-public sealed class AsyncRelayCommand : ICommand
-{
-    private readonly Func<Task> _execute;
-    private bool _isExecuting;
-
-    public event EventHandler? CanExecuteChanged;
-
-    public AsyncRelayCommand(Func<Task> execute)
-    {
-        _execute = execute ?? throw new ArgumentNullException(nameof(execute));
-    }
-
-    public bool CanExecute(object? parameter) => !_isExecuting;
-
-    public async void Execute(object? parameter)
-    {
-        if (!CanExecute(parameter))
-            return;
-
-        _isExecuting = true;
-        CanExecuteChanged?.Invoke(this, EventArgs.Empty);
-
-        try
-        {
-            await _execute().ConfigureAwait(true);
-        }
-        finally
-        {
-            _isExecuting = false;
-            CanExecuteChanged?.Invoke(this, EventArgs.Empty);
-        }
-    }
-}
