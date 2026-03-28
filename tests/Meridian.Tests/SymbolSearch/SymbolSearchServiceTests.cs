@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Meridian.Application.Subscriptions.Models;
 using Meridian.Application.Subscriptions.Services;
+using Meridian.Contracts.Domain;
 using Meridian.Infrastructure.Adapters.Core;
 using Moq;
 using Xunit;
@@ -189,7 +190,7 @@ public class SymbolSearchServiceTests : IDisposable
         mockProvider.Setup(p => p.Name).Returns("test");
         mockProvider.Setup(p => p.Priority).Returns(1);
         mockProvider.Setup(p => p.IsAvailableAsync(It.IsAny<CancellationToken>())).ReturnsAsync(true);
-        mockProvider.Setup(p => p.GetDetailsAsync("AAPL", It.IsAny<CancellationToken>()))
+        mockProvider.Setup(p => p.GetDetailsAsync(new SymbolId("AAPL"), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new SymbolDetails(
                 Symbol: "AAPL",
                 Name: "Apple Inc.",
@@ -221,7 +222,7 @@ public class SymbolSearchServiceTests : IDisposable
         mockProvider.Setup(p => p.Name).Returns("test");
         mockProvider.Setup(p => p.Priority).Returns(1);
         mockProvider.Setup(p => p.IsAvailableAsync(It.IsAny<CancellationToken>())).ReturnsAsync(true);
-        mockProvider.Setup(p => p.GetDetailsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+        mockProvider.Setup(p => p.GetDetailsAsync(It.IsAny<SymbolId>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((SymbolDetails?)null);
 
         _service = new SymbolSearchService(
@@ -246,7 +247,7 @@ public class SymbolSearchServiceTests : IDisposable
         mockProvider1.Setup(p => p.Name).Returns("high-priority");
         mockProvider1.Setup(p => p.Priority).Returns(1);
         mockProvider1.Setup(p => p.IsAvailableAsync(It.IsAny<CancellationToken>())).ReturnsAsync(true);
-        mockProvider1.Setup(p => p.GetDetailsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+        mockProvider1.Setup(p => p.GetDetailsAsync(It.IsAny<SymbolId>(), It.IsAny<CancellationToken>()))
             .Callback(() => callOrder.Add("high-priority"))
             .ReturnsAsync(new SymbolDetails("AAPL", "Apple Inc.", Source: "high-priority"));
 
@@ -254,7 +255,7 @@ public class SymbolSearchServiceTests : IDisposable
         mockProvider2.Setup(p => p.Name).Returns("low-priority");
         mockProvider2.Setup(p => p.Priority).Returns(10);
         mockProvider2.Setup(p => p.IsAvailableAsync(It.IsAny<CancellationToken>())).ReturnsAsync(true);
-        mockProvider2.Setup(p => p.GetDetailsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+        mockProvider2.Setup(p => p.GetDetailsAsync(It.IsAny<SymbolId>(), It.IsAny<CancellationToken>()))
             .Callback(() => callOrder.Add("low-priority"))
             .ReturnsAsync(new SymbolDetails("AAPL", "Apple", Source: "low-priority"));
 
