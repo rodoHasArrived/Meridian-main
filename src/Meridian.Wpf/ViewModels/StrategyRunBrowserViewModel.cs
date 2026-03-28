@@ -72,11 +72,6 @@ public sealed class StrategyRunBrowserViewModel : BindableBase
     public IRelayCommand OpenPortfolioCommand { get; }
     public IRelayCommand OpenLedgerCommand { get; }
 
-    public StrategyRunBrowserViewModel()
-        : this(StrategyRunWorkspaceService.Instance, NavigationService.Instance, WorkspaceService.Instance)
-    {
-    }
-
     internal StrategyRunBrowserViewModel(
         StrategyRunWorkspaceService runService,
         NavigationService navigationService,

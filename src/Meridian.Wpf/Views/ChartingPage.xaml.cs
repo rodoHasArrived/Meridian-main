@@ -8,10 +8,11 @@ namespace Meridian.Wpf.Views;
 
 public partial class ChartingPage : Page
 {
-    private readonly ChartingPageViewModel _viewModel = new();
+    private readonly ChartingPageViewModel _viewModel;
 
-    public ChartingPage()
+    public ChartingPage(ChartingPageViewModel viewModel)
     {
+        _viewModel = viewModel;
         InitializeComponent();
         DataContext = _viewModel;
     }

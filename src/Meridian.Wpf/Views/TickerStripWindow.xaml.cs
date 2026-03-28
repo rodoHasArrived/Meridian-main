@@ -15,9 +15,9 @@ public partial class TickerStripWindow : Window
 {
     private readonly TickerStripViewModel _viewModel;
 
-    public TickerStripWindow()
+    public TickerStripWindow(TickerStripViewModel viewModel)
     {
-        _viewModel = new TickerStripViewModel();
+        _viewModel = viewModel;
         DataContext = _viewModel;
         InitializeComponent();
     }

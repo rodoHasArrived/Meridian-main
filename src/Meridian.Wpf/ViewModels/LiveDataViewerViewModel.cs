@@ -27,6 +27,9 @@ public sealed class LiveDataViewerViewModel : BindableBase, IDisposable
     private readonly WpfServices.ConnectionService _connectionService;
     private readonly WpfServices.LoggingService _loggingService;
     private readonly WpfServices.NotificationService _notificationService;
+    private readonly SymbolManagementService _symbolManagementService;
+    private readonly WpfServices.TearOffPanelService _tearOffPanelService;
+    private readonly WpfServices.ConfigService _configService;
 
     private readonly DispatcherTimer _refreshTimer;
     private readonly DispatcherTimer _statsTimer;
@@ -127,12 +130,18 @@ public sealed class LiveDataViewerViewModel : BindableBase, IDisposable
         WpfServices.StatusService statusService,
         WpfServices.ConnectionService connectionService,
         WpfServices.LoggingService loggingService,
-        WpfServices.NotificationService notificationService)
+        WpfServices.NotificationService notificationService,
+        SymbolManagementService symbolManagementService,
+        WpfServices.TearOffPanelService tearOffPanelService,
+        WpfServices.ConfigService configService)
     {
         _statusService = statusService;
         _connectionService = connectionService;
         _loggingService = loggingService;
         _notificationService = notificationService;
+        _symbolManagementService = symbolManagementService;
+        _tearOffPanelService = tearOffPanelService;
+        _configService = configService;
         _baseUrl = _statusService.BaseUrl;
 
         _refreshTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
@@ -229,7 +238,7 @@ public sealed class LiveDataViewerViewModel : BindableBase, IDisposable
             _cts?.Cancel();
             _cts = new CancellationTokenSource();
 
-            var symbolService = SymbolManagementService.Instance;
+            var symbolService = _symbolManagementService;
             var result = await symbolService.GetAllSymbolsAsync(_cts.Token);
             AvailableSymbols.Clear();
 
@@ -239,7 +248,7 @@ public sealed class LiveDataViewerViewModel : BindableBase, IDisposable
             }
             else
             {
-                var configSymbols = await WpfServices.ConfigService.Instance.GetConfiguredSymbolsAsync(_cts.Token);
+                var configSymbols = await _configService.GetConfiguredSymbolsAsync(_cts.Token);
                 if (configSymbols.Length > 0)
                     AvailableSymbols.AddRange(configSymbols.Select(s => s.Symbol));
             }
@@ -472,6 +481,6 @@ public sealed class LiveDataViewerViewModel : BindableBase, IDisposable
     private void TearOffCurrentSymbol()
     {
         if (!string.IsNullOrEmpty(_selectedSymbol))
-            WpfServices.TearOffPanelService.Instance.TearOff(_selectedSymbol);
+            _tearOffPanelService.TearOff(_selectedSymbol);
     }
 }

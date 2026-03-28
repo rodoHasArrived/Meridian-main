@@ -332,6 +332,13 @@ public partial class App : System.Windows.Application
         // ── Ui.Services singletons accessed via DI (no static .Instance in pages) ──
         services.AddSingleton(_ => BackfillProviderConfigService.Instance);
         services.AddSingleton(_ => BackfillCheckpointService.Instance);
+        services.AddSingleton(_ => Meridian.Ui.Services.ActivityFeedService.Instance);
+        services.AddSingleton(_ => Meridian.Ui.Services.CommandPaletteService.Instance);
+        services.AddSingleton(_ => Meridian.Ui.Services.SymbolManagementService.Instance);
+        services.AddSingleton(_ => Meridian.Ui.Services.BackfillService.Instance);
+        services.AddSingleton(_ => WpfServices.TaskbarProgressService.Instance);
+        services.AddSingleton(_ => WpfServices.TearOffPanelService.Instance);
+        services.AddSingleton(_ => WpfServices.StrategyRunWorkspaceService.Instance);
 
         // ── ViewModels (transient — new instance per page navigation) ────────
         services.AddTransient<Meridian.Wpf.ViewModels.BackfillViewModel>();
@@ -343,6 +350,9 @@ public partial class App : System.Windows.Application
         services.AddTransient<Meridian.Wpf.ViewModels.StrategyRunLedgerViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.PluginManagementViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.AgentViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.BacktestViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.ChartingPageViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.TickerStripViewModel>();
 
         // ── Plugin loader service ────────────────────────────────────────────
         services.AddSingleton<Meridian.Infrastructure.DataSources.DataSourceRegistry>();
