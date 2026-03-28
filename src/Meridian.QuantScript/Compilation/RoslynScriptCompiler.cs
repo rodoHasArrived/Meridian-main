@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
@@ -11,19 +12,43 @@ namespace Meridian.QuantScript.Compilation;
 /// </summary>
 public sealed class RoslynScriptCompiler : IQuantScriptCompiler
 {
-    private static readonly ScriptOptions _scriptOptions = ScriptOptions.Default
-        .WithImports(
-            "System",
-            "System.Linq",
-            "System.Collections.Generic",
-            "System.Threading",
-            "System.Threading.Tasks",
-            "Meridian.QuantScript.API",
-            "Meridian.QuantScript.Plotting")
-        .WithReferences(
-            typeof(object).Assembly,
-            typeof(Enumerable).Assembly,
-            typeof(RoslynScriptCompiler).Assembly);
+    // Built lazily so all transitively-loaded assemblies are included at first compile.
+    private static ScriptOptions? _scriptOptions;
+    private static readonly Lock _optionsLock = new();
+
+    private static ScriptOptions GetScriptOptions()
+    {
+        lock (_optionsLock)
+        {
+            if (_scriptOptions is not null) return _scriptOptions;
+
+            // Include all currently-loaded assemblies so that QuantScriptGlobals' transitive
+            // dependencies (Meridian.Backtesting, Meridian.Storage, etc.) are resolvable.
+            var refs = AppDomain.CurrentDomain
+                .GetAssemblies()
+                .Where(a => !a.IsDynamic && !string.IsNullOrEmpty(a.Location))
+                .ToArray();
+
+            _scriptOptions = ScriptOptions.Default
+                .WithImports(
+                    "System",
+                    "System.Linq",
+                    "System.Collections.Generic",
+                    "System.Threading",
+                    "System.Threading.Tasks",
+                    "Meridian.QuantScript.API",
+                    "Meridian.QuantScript.Plotting")
+                .WithReferences(refs);
+
+            return _scriptOptions;
+        }
+    }
+
+    /// <summary>
+    /// Returns the shared <see cref="ScriptOptions"/> used for execution.
+    /// Internal so that <see cref="ScriptRunner"/> can reuse the same options.
+    /// </summary>
+    internal static ScriptOptions GetExecutionOptions() => GetScriptOptions();
 
     // Cache compiled scripts by SHA-256 of source text.
     private readonly Dictionary<string, Script<object>> _cache = new();
@@ -56,7 +81,7 @@ public sealed class RoslynScriptCompiler : IQuantScriptCompiler
             var sw = System.Diagnostics.Stopwatch.StartNew();
             var script = CSharpScript.Create<object>(
                 source,
-                _scriptOptions,
+                GetScriptOptions(),
                 globalsType: typeof(QuantScriptGlobals));
 
             var compilation = script.GetCompilation();

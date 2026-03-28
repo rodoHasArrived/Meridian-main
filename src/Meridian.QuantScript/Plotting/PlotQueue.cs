@@ -1,4 +1,5 @@
 using System.Threading.Channels;
+using Meridian.Infrastructure.Contracts;
 
 namespace Meridian.QuantScript.Plotting;
 
@@ -10,6 +11,7 @@ namespace Meridian.QuantScript.Plotting;
 /// The channel is intentionally unbounded because scripts produce plots in bursts, not at the
 /// rate of UI rendering, and applying backpressure here would deadlock the script thread.
 /// </remarks>
+[ImplementsAdr("ADR-004", "ReadAllAsync uses IAsyncEnumerable with CancellationToken")]
 public sealed class PlotQueue
 {
     // AsyncLocal allows PlotRequest.Plot() extension methods to reach the queue without

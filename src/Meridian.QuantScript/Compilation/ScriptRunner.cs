@@ -69,23 +69,9 @@ public sealed class ScriptRunner : IScriptRunner
         {
             try
             {
-                var scriptOptions = ScriptOptions.Default
-                    .WithImports(
-                        "System",
-                        "System.Linq",
-                        "System.Collections.Generic",
-                        "System.Threading",
-                        "System.Threading.Tasks",
-                        "Meridian.QuantScript.API",
-                        "Meridian.QuantScript.Plotting")
-                    .WithReferences(
-                        typeof(object).Assembly,
-                        typeof(Enumerable).Assembly,
-                        typeof(ScriptRunner).Assembly);
-
                 var script = CSharpScript.Create<object>(
                     source,
-                    scriptOptions,
+                    RoslynScriptCompiler.GetExecutionOptions(),
                     globalsType: typeof(QuantScriptGlobals));
 
                 await script.RunAsync(globals, ct).ConfigureAwait(false);

@@ -11,6 +11,7 @@
     <ProjectReference Include="..\Meridian.Backtesting.Sdk\Meridian.Backtesting.Sdk.csproj" />
     <ProjectReference Include="..\Meridian.Application\Meridian.Application.csproj" />
     <ProjectReference Include="..\Meridian.Storage\Meridian.Storage.csproj" />
+    <ProjectReference Include="..\Meridian.ProviderSdk\Meridian.ProviderSdk.csproj" />
   </ItemGroup>
 
   <ItemGroup>
