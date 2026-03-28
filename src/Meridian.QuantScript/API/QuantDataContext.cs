@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Meridian.Application.Services;
 
 namespace Meridian.QuantScript.API;
@@ -30,29 +31,43 @@ public sealed class QuantDataContext : IQuantDataContext
         _logger.LogInformation(
             "Loading prices for {Symbol} from {From:d} to {To:d}", symbol, from, to);
 
-        var query = new Meridian.Contracts.Store.MarketDataQuery
-        {
-            Symbol = symbol,
-            From = from,
-            To = to,
-            DataType = "bars"
-        };
+        var query = new HistoricalDataQuery(
+            Symbol: symbol,
+            From: DateOnly.FromDateTime(from),
+            To: DateOnly.FromDateTime(to),
+            DataType: "bars");
 
         var result = await _queryService.QueryAsync(query, ct).ConfigureAwait(false);
 
-        var bars = result.Bars
-            .Select(b => new PriceBar(
-                b.Timestamp,
-                (double)b.Open,
-                (double)b.High,
-                (double)b.Low,
-                (double)b.Close,
-                (long)b.Volume))
-            .ToList();
+        var bars = new List<PriceBar>(result.Records.Count);
+        foreach (var record in result.Records)
+        {
+            if (string.IsNullOrEmpty(record.RawJson))
+                continue;
 
-        _logger.LogInformation(
-            "Loaded {Count} bars for {Symbol}", bars.Count, symbol);
+            try
+            {
+                using var doc = JsonDocument.Parse(record.RawJson);
+                var root = doc.RootElement;
 
+                var timestamp = record.Timestamp.UtcDateTime;
+                var open   = root.TryGetProperty("open",   out var o) ? o.GetDouble() : 0d;
+                var high   = root.TryGetProperty("high",   out var h) ? h.GetDouble() : 0d;
+                var low    = root.TryGetProperty("low",    out var l) ? l.GetDouble() : 0d;
+                var close  = root.TryGetProperty("close",  out var c) ? c.GetDouble() : 0d;
+                var volume = root.TryGetProperty("volume", out var v) ? v.GetInt64()  : 0L;
+
+                if (close > 0)
+                    bars.Add(new PriceBar(timestamp, open, high, low, close, volume));
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogWarning(ex, "Skipping malformed record in {File} line {Line}",
+                    record.SourceFile, record.LineNumber);
+            }
+        }
+
+        _logger.LogInformation("Loaded {Count} bars for {Symbol}", bars.Count, symbol);
         return new PriceSeries(symbol, "1d", bars);
     }
 
@@ -66,3 +81,4 @@ public sealed class QuantDataContext : IQuantDataContext
         return Task.FromResult(empty);
     }
 }
+

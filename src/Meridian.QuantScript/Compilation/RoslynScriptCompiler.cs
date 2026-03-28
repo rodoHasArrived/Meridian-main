@@ -51,45 +51,48 @@ public sealed class RoslynScriptCompiler : IQuantScriptCompiler
             }
         }
 
-        var sw = System.Diagnostics.Stopwatch.StartNew();
-        var script = CSharpScript.Create<object>(
-            source,
-            _scriptOptions,
-            globalsType: typeof(QuantScriptGlobals));
+        return await Task.Run(() =>
+        {
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            var script = CSharpScript.Create<object>(
+                source,
+                _scriptOptions,
+                globalsType: typeof(QuantScriptGlobals));
 
-        var compilation = script.GetCompilation();
-        var diagnostics = compilation.GetDiagnostics(ct);
-        sw.Stop();
+            var compilation = script.GetCompilation();
+            var diagnostics = compilation.GetDiagnostics(ct);
+            sw.Stop();
 
-        var errors = diagnostics
-            .Where(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error)
-            .Select(d =>
+            var errors = diagnostics
+                .Where(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error)
+                .Select(d =>
+                {
+                    var loc = d.Location.GetLineSpan();
+                    return new ScriptDiagnostic(
+                        "Error",
+                        d.GetMessage(),
+                        loc.StartLinePosition.Line + 1,
+                        loc.StartLinePosition.Character + 1);
+                })
+                .ToList();
+
+            if (errors.Count > 0)
             {
-                var loc = d.Location.GetLineSpan();
-                return new ScriptDiagnostic(
-                    "Error",
-                    d.GetMessage(),
-                    loc.StartLinePosition.Line + 1,
-                    loc.StartLinePosition.Character + 1);
-            })
-            .ToList();
+                _logger.LogWarning(
+                    "Script compilation failed with {Count} error(s)", errors.Count);
+                return new ScriptCompilationResult(false, sw.Elapsed, errors);
+            }
 
-        if (errors.Count > 0)
-        {
-            _logger.LogWarning(
-                "Script compilation failed with {Count} error(s)", errors.Count);
-            return new ScriptCompilationResult(false, sw.Elapsed, errors);
-        }
+            lock (_cacheLock)
+            {
+                _cache[hash] = script;
+            }
 
-        lock (_cacheLock)
-        {
-            _cache[hash] = script;
-        }
+            _logger.LogDebug(
+                "Script compiled successfully in {ElapsedMs}ms", sw.ElapsedMilliseconds);
 
-        _logger.LogDebug(
-            "Script compiled successfully in {ElapsedMs}ms", sw.ElapsedMilliseconds);
-
-        return new ScriptCompilationResult(true, sw.Elapsed, Array.Empty<ScriptDiagnostic>());
+            return new ScriptCompilationResult(true, sw.Elapsed, Array.Empty<ScriptDiagnostic>());
+        }, ct).ConfigureAwait(false);
     }
 
     /// <summary>

@@ -1,6 +1,9 @@
-using Meridian.Backtesting;
+using Meridian.Backtesting.Engine;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Storage;
+using Meridian.Storage.Services;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.QuantScript.API;
 
@@ -72,7 +75,12 @@ public sealed class BacktestProxy
             DataRoot: _dataRoot);
 
         var strategy = new LambdaBacktestStrategy(_onBar);
-        var engine = new BacktestEngine();
+        var catalogService = new StorageCatalogService(
+            _dataRoot,
+            new StorageOptions { RootPath = _dataRoot });
+        var engine = new BacktestEngine(
+            NullLogger<BacktestEngine>.Instance,
+            catalogService);
 
         return await engine.RunAsync(request, strategy, null, ct).ConfigureAwait(false);
     }
