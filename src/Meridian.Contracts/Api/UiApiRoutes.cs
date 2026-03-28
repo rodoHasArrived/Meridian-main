@@ -458,4 +458,9 @@ public static class UiApiRoutes
     /// </summary>
     public static string WithQuery(string route, string queryString)
         => string.IsNullOrEmpty(queryString) ? route : $"{route}?{queryString}";
+
+    // Credential management endpoints
+    public const string Credentials = "/api/credentials";
+    public const string CredentialByProvider = "/api/credentials/{provider}";
+    public const string CredentialTest = "/api/credentials/{provider}/test";
 }
