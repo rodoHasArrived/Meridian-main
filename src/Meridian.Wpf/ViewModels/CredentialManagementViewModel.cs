@@ -279,7 +279,7 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
 
             PersistToVault(provider.Id);
 
-            await Application.Current.Dispatcher.InvokeAsync(() =>
+            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 IsEditPanelVisible = false;
                 LoadCredentials();
@@ -358,7 +358,7 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
 
             RemoveFromVault(SelectedCredential.ProviderId);
 
-            await Application.Current.Dispatcher.InvokeAsync(() =>
+            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 IsEditPanelVisible = false;
                 IsTestResultVisible = false;
@@ -415,7 +415,7 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
             || provider.RequiredEnvVars.All(env =>
                 !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(env)));
 
-        await Application.Current.Dispatcher.InvokeAsync(() =>
+        await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
         {
             SelectedCredential.IsTesting = false;
             if (success)
@@ -447,7 +447,7 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
             await TestSelectedCredentialAsync().ConfigureAwait(false);
         }
 
-        await Application.Current.Dispatcher.InvokeAsync(() =>
+        await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
         {
             var ok = Credentials.Count(c => c.StatusText == "Configured");
             var total = Credentials.Count(c => c.RequiresCredentials);

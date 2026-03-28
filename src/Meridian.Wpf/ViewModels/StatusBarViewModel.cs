@@ -119,15 +119,16 @@ public sealed class StatusBarViewModel : BindableBase, IDisposable
     /// Starts the periodic status update timer (1-second interval).
     /// Call this after the window loads.
     /// </summary>
-    public async Task StartAsync(CancellationToken ct = default)
+    public Task StartAsync(CancellationToken ct = default)
     {
         if (_timer != null)
-            return;
+            return Task.CompletedTask;
 
         _cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
         _timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
 
         _ = Task.Run(async () => await UpdateLoopAsync(_cts.Token), _cts.Token);
+        return Task.CompletedTask;
     }
 
     /// <summary>

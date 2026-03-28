@@ -193,7 +193,7 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
         // Uses EffectiveSymbol (CanonicalSymbol ?? Symbol) for consistent dedup across symbol mappings.
         // Prefix is cached per (source, symbol, type) to avoid re-allocating on every event.
         var cacheKey = (evt.Source, evt.EffectiveSymbol, evt.Type);
-        string prefix;
+        string? prefix;
         lock (_prefixCacheLock)
         {
             if (!_prefixCache.TryGetValue(cacheKey, out prefix))
@@ -203,19 +203,21 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
             }
         }
 
+        var resolvedPrefix = prefix!;
+
         return evt.Payload switch
         {
-            Contracts.Domain.Models.Trade trade => prefix + HashTradeIdentity(trade),
+            Contracts.Domain.Models.Trade trade => resolvedPrefix + HashTradeIdentity(trade),
 
-            Contracts.Domain.Models.BboQuotePayload quote => prefix + HashQuoteIdentity(quote),
+            Contracts.Domain.Models.BboQuotePayload quote => resolvedPrefix + HashQuoteIdentity(quote),
 
             Contracts.Domain.Models.LOBSnapshot snap =>
                 // L2: use sequence + timestamp
-                prefix + $"seq:{snap.SequenceNumber}",
+                resolvedPrefix + $"seq:{snap.SequenceNumber}",
 
             _ =>
                 // Fallback: use sequence number
-                prefix + $"seq:{evt.Sequence}"
+                resolvedPrefix + $"seq:{evt.Sequence}"
         };
     }
 
@@ -363,7 +365,7 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
     [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
     internal bool IsDuplicateCacheCheck(MarketEvent evt)
     {
-        string key;
+        string? key;
         lock (_benchmarkKeyLock)
         {
             if (!_benchmarkEventKeyCache.TryGetValue(evt, out key))
@@ -374,7 +376,7 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
         }
 
         var nowTicks = DateTimeOffset.UtcNow.Ticks;
-        return _cache.TryGetValue(key, out var existingTicks) && (nowTicks - existingTicks < _entryTtl.Ticks);
+        return _cache.TryGetValue(key!, out var existingTicks) && (nowTicks - existingTicks < _entryTtl.Ticks);
     }
 
     /// <summary>

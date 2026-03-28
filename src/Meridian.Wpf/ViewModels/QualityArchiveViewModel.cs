@@ -13,8 +13,8 @@ public sealed class QualityCalendarCell
 {
     public DateOnly Date { get; init; }
     public double Score { get; init; }
-    public string DisplayDate { get; init; }
-    public Brush Background { get; init; }
+    public string DisplayDate { get; init; } = string.Empty;
+    public Brush Background { get; init; } = Brushes.Transparent;
 }
 
 /// <summary>
