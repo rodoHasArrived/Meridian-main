@@ -22,6 +22,8 @@ namespace Meridian.Wpf.ViewModels;
 /// </summary>
 public sealed class OrderBookViewModel : BindableBase, IDisposable
 {
+    private static readonly Random _random = new();
+
     private readonly HttpClient _httpClient = new();
     private readonly WpfServices.StatusService _statusService;
     private readonly WpfServices.ConnectionService _connectionService;
@@ -93,6 +95,14 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
     private string _imbalanceText = "--";
     public string ImbalanceText { get => _imbalanceText; private set => SetProperty(ref _imbalanceText, value); }
 
+    private string _cumulativeDeltaText = "--";
+    /// <summary>Net directional pressure from the recent trade tape (buy volume − sell volume).</summary>
+    public string CumulativeDeltaText { get => _cumulativeDeltaText; private set => SetProperty(ref _cumulativeDeltaText, value); }
+
+    private bool _cumulativeDeltaPositive = true;
+    /// <summary>True when cumulative delta is non-negative, used for green/red color binding.</summary>
+    public bool CumulativeDeltaPositive { get => _cumulativeDeltaPositive; private set => SetProperty(ref _cumulativeDeltaPositive, value); }
+
     // ── Imbalance bar column widths ───────────────────────────────────────────────
 
     private GridLength _bidBarWidth = new(0.5, GridUnitType.Star);
@@ -105,6 +115,12 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
 
     private string _selectedSymbol = string.Empty;
     private int _depthLevels = 10;
+
+    /// <summary>
+    /// Raised after the symbol list loads and the first symbol is auto-selected.
+    /// The code-behind should sync the ComboBox SelectedIndex in response.
+    /// </summary>
+    public event EventHandler? FirstSymbolAutoSelected;
 
     // ─────────────────────────────────────────────────────────────────────────────
 
@@ -191,6 +207,13 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
                 AvailableSymbols.Clear();
                 foreach (var sym in new[] { "SPY", "AAPL", "MSFT", "GOOGL", "AMZN", "QQQ", "IWM", "DIA" })
                     AvailableSymbols.Add(sym);
+            }
+
+            // Auto-select the first symbol so the page shows data on load without a manual pick.
+            if (AvailableSymbols.Count > 0 && string.IsNullOrEmpty(_selectedSymbol))
+            {
+                SetSymbol(AvailableSymbols[0]);
+                FirstSymbolAutoSelected?.Invoke(this, EventArgs.Empty);
             }
         }
         catch (OperationCanceledException)
@@ -295,6 +318,8 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
         }
 
         var maxWidth = 200.0;
+        ApplyHighlighting(newBids);
+        ApplyHighlighting(newAsks);
         foreach (var level in newBids.Concat(newAsks))
             level.DepthWidth = maxSize > 0 ? (double)level.RawSize / (double)maxSize * maxWidth : 0;
 
@@ -319,7 +344,7 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
             _ => 100.00m
         };
 
-        var random = new Random();
+        var random = _random;
         var bidList = new List<OrderBookDisplayLevel>();
         var askList = new List<OrderBookDisplayLevel>();
         decimal bidTotal = 0, askTotal = 0, maxSize = 0;
@@ -355,6 +380,8 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
         }
 
         var maxWidth = 200.0;
+        ApplyHighlighting(bidList);
+        ApplyHighlighting(askList);
         foreach (var level in bidList.Concat(askList))
             level.DepthWidth = maxSize > 0 ? (double)level.RawSize / (double)maxSize * maxWidth : 0;
 
@@ -371,23 +398,29 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
 
     private void LoadDemoTrades(decimal basePrice)
     {
-        var random = new Random();
         RecentTrades.Clear();
 
         for (int i = 0; i < 15; i++)
         {
-            var isBuy = random.Next(2) == 0;
-            var price = basePrice + (random.Next(-10, 11) * 0.01m);
+            var isBuy = _random.Next(2) == 0;
+            var price = basePrice + (_random.Next(-10, 11) * 0.01m);
             RecentTrades.Add(new RecentTradeModel
             {
-                Time = DateTime.Now.AddSeconds(-i * random.Next(1, 5)).ToString("HH:mm:ss"),
+                Time = DateTime.Now.AddSeconds(-i * _random.Next(1, 5)).ToString("HH:mm:ss"),
                 Price = price.ToString("F2"),
-                Size = FormatSize(random.Next(10, 1000)),
+                Size = FormatSize(_random.Next(10, 1000)),
                 PriceColor = new SolidColorBrush(isBuy
                     ? Color.FromRgb(63, 185, 80)
                     : Color.FromRgb(244, 67, 54))
             });
         }
+
+        // Seed a plausible demo cumulative delta.
+        var demoNetBuy = _random.Next(-5000, 5001);
+        CumulativeDeltaPositive = demoNetBuy >= 0;
+        CumulativeDeltaText = demoNetBuy >= 0
+            ? $"+{FormatSize(demoNetBuy)}"
+            : $"-{FormatSize(Math.Abs(demoNetBuy))}";
 
         NoTradesVisible = false;
     }
@@ -404,6 +437,7 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
             BidVolumeText = "--";
             AskVolumeText = "--";
             ImbalanceText = "--";
+            CumulativeDeltaText = "--";
             Heatmap.UpdateFromSnapshot(bids, asks); // clears heatmap when data is absent
             return;
         }
@@ -436,6 +470,19 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
         Heatmap.UpdateFromSnapshot(bids, asks);
     }
 
+    /// <summary>
+    /// Sets <see cref="OrderBookDisplayLevel.IsHighlighted"/> on any level whose size is at
+    /// least twice the average — these are potential liquidity walls.
+    /// </summary>
+    private static void ApplyHighlighting(List<OrderBookDisplayLevel> levels)
+    {
+        if (levels.Count == 0) return;
+        double avg = levels.Average(l => (double)l.RawSize);
+        double threshold = avg * 2.0;
+        foreach (var level in levels)
+            level.IsHighlighted = level.RawSize >= threshold;
+    }
+
     private async Task RefreshRecentTradesAsync(CancellationToken ct = default)
     {
         try
@@ -452,6 +499,8 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
                 if (data.ValueKind == JsonValueKind.Array)
                 {
                     RecentTrades.Clear();
+                    long buyVolume = 0;
+                    long sellVolume = 0;
 
                     foreach (var trade in data.EnumerateArray())
                     {
@@ -460,6 +509,9 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
                         var timestamp = trade.TryGetProperty("timestamp", out var ts) ? ts.GetDateTime() : DateTime.UtcNow;
                         var side = trade.TryGetProperty("side", out var sd) ? sd.GetString() ?? "" : "";
                         var isBuy = side.Equals("buy", StringComparison.OrdinalIgnoreCase);
+
+                        if (isBuy) buyVolume += size;
+                        else sellVolume += size;
 
                         RecentTrades.Add(new RecentTradeModel
                         {
@@ -473,6 +525,13 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
                     }
 
                     NoTradesVisible = RecentTrades.Count == 0;
+
+                    // Compute cumulative delta from the visible tape window.
+                    var netDelta = buyVolume - sellVolume;
+                    CumulativeDeltaPositive = netDelta >= 0;
+                    CumulativeDeltaText = netDelta >= 0
+                        ? $"+{FormatSize((int)netDelta)}"
+                        : $"-{FormatSize((int)Math.Abs(netDelta))}";
                 }
             }
         }
