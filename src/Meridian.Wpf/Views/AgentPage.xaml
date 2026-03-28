@@ -52,18 +52,20 @@
         </ScrollViewer>
 
         <!-- Input bar -->
-        <DockPanel Grid.Row="2" Margin="16,8" Background="{StaticResource ConsoleBackgroundLightBrush}" Padding="0,8">
-            <Button DockPanel.Dock="Right" Content="Send" 
-                    Command="{Binding SendCommand}" 
-                    Width="70" Margin="8,0,0,0"/>
-            
-            <Button DockPanel.Dock="Right" Content="Clear" 
-                    Command="{Binding ClearCommand}" 
-                    Width="70" Margin="0,0,8,0"/>
+        <Border Grid.Row="2" Margin="16,8" Background="{StaticResource ConsoleBackgroundLightBrush}" Padding="0,8">
+            <DockPanel>
+                <Button DockPanel.Dock="Right" Content="Send" 
+                        Command="{Binding SendCommand}" 
+                        Width="70" Margin="8,0,0,0"/>
+                
+                <Button DockPanel.Dock="Right" Content="Clear" 
+                        Command="{Binding ClearCommand}" 
+                        Width="70" Margin="0,0,8,0"/>
 
-            <TextBox Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}"
-                     AcceptsReturn="False" Padding="8,6"
-                     IsEnabled="{Binding IsOllamaAvailable}"/>
-        </DockPanel>
+                <TextBox Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}"
+                         AcceptsReturn="False" Padding="8,6"
+                         IsEnabled="{Binding IsOllamaAvailable}"/>
+            </DockPanel>
+        </Border>
     </Grid>
 </Page>

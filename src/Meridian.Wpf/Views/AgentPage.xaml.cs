@@ -1,3 +1,5 @@
+using Meridian.Wpf.ViewModels;
+
 namespace Meridian.Wpf.Views;
 
 /// <summary>

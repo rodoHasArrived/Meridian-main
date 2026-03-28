@@ -1,6 +1,8 @@
 using System;
 using System.Windows.Input;
+using CommunityToolkit.Mvvm.Input;
 using Meridian.Application.Monitoring;
+using Meridian.Application.Services;
 using Meridian.Contracts.Services;
 using Meridian.Wpf.ViewModels;
 
@@ -138,7 +140,7 @@ public sealed class DiagnosticsPageViewModel : BindableBase, IDisposable
         {
             try
             {
-                var stats = _latencyService.GetStatistics();
+                var stats = _latencyService.GetSummary();
                 P50Ms = Math.Round(stats.GlobalP50Ms, 2).ToString("F2");
                 P95Ms = Math.Round(stats.GlobalP95Ms, 2).ToString("F2");
                 P99Ms = Math.Round(stats.GlobalP99Ms, 2).ToString("F2");
@@ -177,36 +179,3 @@ public sealed class DiagnosticsPageViewModel : BindableBase, IDisposable
     }
 }
 
-/// <summary>
-/// Simple command implementation for WPF binding.
-/// </summary>
-public sealed class RelayCommand : ICommand
-{
-    private readonly Action _execute;
-    private readonly Func<bool>? _canExecute;
-
-    public event EventHandler? CanExecuteChanged
-    {
-        add { System.Windows.Input.CommandManager.RequerySuggested += value; }
-        remove { System.Windows.Input.CommandManager.RequerySuggested -= value; }
-    }
-
-    public RelayCommand(Action execute, Func<bool>? canExecute = null)
-    {
-        ArgumentNullException.ThrowIfNull(execute);
-        _execute = execute;
-        _canExecute = canExecute;
-    }
-
-    public bool CanExecute(object? parameter) => _canExecute?.Invoke() ?? true;
-
-    public void Execute(object? parameter) => _execute();
-
-    /// <summary>
-    /// Raises the CanExecuteChanged event to notify the UI that the command's executable state may have changed.
-    /// </summary>
-    public void RaiseCanExecuteChanged()
-    {
-        System.Windows.Input.CommandManager.InvalidateRequerySuggested();
-    }
-}

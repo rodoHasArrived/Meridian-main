@@ -188,7 +188,7 @@ public sealed class BatchBacktestViewModel : BindableBase, IDisposable
     {
         var progress = new Progress<BatchBacktestProgress>(p =>
         {
-            Application.Current.Dispatcher.InvokeAsync(() =>
+            System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 CompletedRuns = p.Completed;
                 CurrentLabel = p.CurrentLabel;
@@ -203,7 +203,7 @@ public sealed class BatchBacktestViewModel : BindableBase, IDisposable
             var label = FormatParameterLabel(paramSet);
             var completedBefore = CompletedRuns;
 
-            Application.Current.Dispatcher.InvokeAsync(() =>
+            System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 CurrentLabel = label;
             });
@@ -224,7 +224,7 @@ public sealed class BatchBacktestViewModel : BindableBase, IDisposable
                 ErrorMessage = hasError ? "Simulated error for demo" : string.Empty
             };
 
-            Application.Current.Dispatcher.InvokeAsync(() =>
+            System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 Results.Add(item);
                 CompletedRuns = completedBefore + 1;

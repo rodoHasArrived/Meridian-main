@@ -163,7 +163,7 @@ public sealed class StatusBarViewModel : BindableBase, IDisposable
         {
             // Update UTC time on every tick
             var currentTime = DateTime.UtcNow.ToString("HH:mm:ss");
-            await Application.Current.Dispatcher.InvokeAsync(() =>
+            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 UtcTime = currentTime + " UTC";
             });
@@ -173,12 +173,12 @@ public sealed class StatusBarViewModel : BindableBase, IDisposable
             if (status != null)
             {
                 // Calculate throughput: events per second
-                var throughputPerSec = (long)(status.Published * 1000.0 / (DateTime.UtcNow.Ticks / 10000.0 + 1));
+                var throughputPerSec = (long)(status.Metrics?.EventsPerSecond ?? 0);
                 var throughputLabel = throughputPerSec > 0
                     ? $"{(throughputPerSec / 1000.0):F1}K ev/s"
                     : $"{throughputPerSec} ev/s";
 
-                await Application.Current.Dispatcher.InvokeAsync(() =>
+                await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
                 {
                     ThroughputLabel = throughputLabel;
                 });
@@ -189,7 +189,7 @@ public sealed class StatusBarViewModel : BindableBase, IDisposable
             var newStatus = "Connected";
             var newDotBrush = _greenBrush;
 
-            if (status?.Provider?.IsConnected == false)
+            if (status?.IsConnected == false)
             {
                 newStatus = "Disconnected";
                 newDotBrush = _redBrush;
@@ -200,7 +200,7 @@ public sealed class StatusBarViewModel : BindableBase, IDisposable
                 newDotBrush = _amberBrush;
             }
 
-            await Application.Current.Dispatcher.InvokeAsync(() =>
+            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 BackendStatus = newStatus;
                 StatusDotBrush = newDotBrush;

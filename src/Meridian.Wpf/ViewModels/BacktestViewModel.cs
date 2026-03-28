@@ -142,7 +142,7 @@ public sealed class BacktestViewModel : BindableBase, IDisposable
 
     public BacktestViewModel()
     {
-        RunBacktestCommand = new AsyncRelayCommand(RunBacktestAsync, () => CanRun);
+        RunBacktestCommand = new AsyncRelayCommand(() => RunBacktestAsync());
         CancelBacktestCommand = new RelayCommand(CancelBacktest, () => IsRunning);
         OpenRunBrowserCommand = new RelayCommand(() => _navigationService.NavigateTo("StrategyRuns"));
         OpenRunDetailCommand = new RelayCommand(() => OpenRunSurface("RunDetail"), () => HasLatestRecordedRun);

@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using CommunityToolkit.Mvvm.Input;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
 using WpfServices = Meridian.Wpf.Services;
@@ -441,7 +442,7 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageAc
                 await _sparklineTimer.WaitForNextTickAsync();
                 if (_sparklineTimer is null) break;
 
-                _ = Application.Current?.Dispatcher.InvokeAsync(UpdateSparklineData);
+                _ = System.Windows.Application.Current?.Dispatcher.InvokeAsync(UpdateSparklineData);
             }
         }
         catch (OperationCanceledException)

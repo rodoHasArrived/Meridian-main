@@ -2,7 +2,11 @@ using System;
 using System.Drawing;
 using System.Windows;
 using System.Windows.Forms;
+using Meridian.Contracts.Domain.Enums;
 using Meridian.Ui.Services.Contracts;
+using DrawingColor = System.Drawing.Color;
+using DrawingFont = System.Drawing.Font;
+using DrawingFontStyle = System.Drawing.FontStyle;
 
 namespace Meridian.Wpf.Services;
 
@@ -44,22 +48,23 @@ public sealed class SystemTrayService : ISystemTrayService
     private NotifyIcon? _notifyIcon;
     private Window? _mainWindow;
     private bool _isDisposed;
+    private bool _allowMinimizeToTray;
 
-    private static readonly Icon GreenIcon = CreateStatusIcon(Color.Green);
-    private static readonly Icon AmberIcon = CreateStatusIcon(Color.Orange);
-    private static readonly Icon RedIcon = CreateStatusIcon(Color.Red);
-    private static readonly Icon GrayIcon = CreateStatusIcon(Color.Gray);
+    private static readonly Icon GreenIcon = CreateStatusIcon(DrawingColor.Green);
+    private static readonly Icon AmberIcon = CreateStatusIcon(DrawingColor.Orange);
+    private static readonly Icon RedIcon = CreateStatusIcon(DrawingColor.Red);
+    private static readonly Icon GrayIcon = CreateStatusIcon(DrawingColor.Gray);
 
     /// <summary>
     /// Creates a 16x16 icon filled with a solid color and labeled with 'M'.
     /// </summary>
-    private static Icon CreateStatusIcon(Color color)
+    private static Icon CreateStatusIcon(DrawingColor color)
     {
         var bmp = new Bitmap(16, 16);
         using (var g = Graphics.FromImage(bmp))
         {
             g.Clear(color);
-            g.DrawString("M", new Font("Arial", 8, FontStyle.Bold), Brushes.White, 1f, 2f);
+            g.DrawString("M", new DrawingFont("Arial", 8, DrawingFontStyle.Bold), System.Drawing.Brushes.White, 1f, 2f);
         }
 
         var handle = bmp.GetHicon();
@@ -76,6 +81,7 @@ public sealed class SystemTrayService : ISystemTrayService
             return;
 
         _mainWindow = mainWindow;
+        _allowMinimizeToTray = false;
 
         _notifyIcon = new NotifyIcon
         {
@@ -88,12 +94,13 @@ public sealed class SystemTrayService : ISystemTrayService
         var contextMenu = new ContextMenuStrip();
         contextMenu.Items.Add("Open Meridian", null, (s, e) => RestoreWindow());
         contextMenu.Items.Add(new ToolStripSeparator());
-        contextMenu.Items.Add("Exit", null, (s, e) => Application.Current.Shutdown());
+        contextMenu.Items.Add("Exit", null, (s, e) => System.Windows.Application.Current.Shutdown());
 
         _notifyIcon.ContextMenuStrip = contextMenu;
         _notifyIcon.DoubleClick += (s, e) => RestoreWindow();
 
         // Wire main window state changes
+        _mainWindow.ContentRendered += MainWindow_ContentRendered;
         _mainWindow.StateChanged += MainWindow_StateChanged;
         _mainWindow.Closing += MainWindow_Closing;
     }
@@ -118,7 +125,7 @@ public sealed class SystemTrayService : ISystemTrayService
             return;
 
         // Dispatch to UI thread to avoid threading issues with GDI
-        Application.Current.Dispatcher.InvokeAsync(() =>
+        System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
         {
             if (_notifyIcon == null)
                 return;
@@ -148,6 +155,7 @@ public sealed class SystemTrayService : ISystemTrayService
 
         if (_mainWindow != null)
         {
+            _mainWindow.ContentRendered -= MainWindow_ContentRendered;
             _mainWindow.StateChanged -= MainWindow_StateChanged;
             _mainWindow.Closing -= MainWindow_Closing;
         }
@@ -165,13 +173,19 @@ public sealed class SystemTrayService : ISystemTrayService
         GrayIcon.Dispose();
     }
 
+    private void MainWindow_ContentRendered(object? sender, EventArgs e)
+    {
+        // Ignore any transient startup state changes until the shell has rendered once.
+        _allowMinimizeToTray = true;
+    }
+
     private void MainWindow_StateChanged(object? sender, EventArgs e)
     {
         if (_mainWindow == null)
             return;
 
         // Hide from taskbar and show tray icon when minimized
-        if (_mainWindow.WindowState == WindowState.Minimized)
+        if (_allowMinimizeToTray && _mainWindow.WindowState == WindowState.Minimized)
         {
             _mainWindow.Hide();
             _mainWindow.ShowInTaskbar = false;

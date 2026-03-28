@@ -12,6 +12,7 @@ using CommunityToolkit.Mvvm.Input;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Models;
+using Meridian.Wpf.Services;
 using WpfServices = Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.ViewModels;
