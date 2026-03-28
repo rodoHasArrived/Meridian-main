@@ -1460,6 +1460,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── OrderReplace.cs
 │   │   │   │   └── Trade.cs
 │   │   │   ├── ProviderId.cs
+│   │   │   ├── ProviderSymbol.cs
 │   │   │   ├── StreamId.cs
 │   │   │   ├── SubscriptionId.cs
 │   │   │   ├── SymbolId.cs
@@ -3086,6 +3087,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-455 directories, 2593 files
+455 directories, 2594 files
 ```
 <!-- readme-tree end -->
