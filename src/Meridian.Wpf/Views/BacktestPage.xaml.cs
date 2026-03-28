@@ -10,10 +10,11 @@ namespace Meridian.Wpf.Views;
 /// </summary>
 public partial class BacktestPage : Page
 {
-    private readonly BacktestViewModel _viewModel = new();
+    private readonly BacktestViewModel _viewModel;
 
-    public BacktestPage()
+    public BacktestPage(BacktestViewModel viewModel)
     {
+        _viewModel = viewModel;
         InitializeComponent();
         DataContext = _viewModel;
     }

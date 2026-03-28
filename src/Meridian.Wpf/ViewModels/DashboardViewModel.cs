@@ -33,6 +33,10 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
     private readonly WpfServices.MessagingService _messagingService;
     private readonly WpfServices.NotificationService _notificationService;
     private readonly AlertService _alertService;
+    private readonly ActivityFeedService _activityFeedService;
+    private readonly WpfServices.TaskbarProgressService _taskbarProgressService;
+    private readonly WpfServices.LoggingService _loggingService;
+    private readonly CommandPaletteService _commandPaletteService;
 
     private readonly DispatcherTimer _refreshTimer;
     private readonly DispatcherTimer _staleCheckTimer;
@@ -316,14 +320,23 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
         WpfServices.ConnectionService connectionService,
         WpfServices.StatusService statusService,
         WpfServices.MessagingService messagingService,
-        WpfServices.NotificationService notificationService)
+        WpfServices.NotificationService notificationService,
+        AlertService alertService,
+        ActivityFeedService activityFeedService,
+        WpfServices.TaskbarProgressService taskbarProgressService,
+        WpfServices.LoggingService loggingService,
+        CommandPaletteService commandPaletteService)
     {
         _navigationService = navigationService;
         _connectionService = connectionService;
         _statusService = statusService;
         _messagingService = messagingService;
         _notificationService = notificationService;
-        _alertService = AlertService.Instance;
+        _alertService = alertService;
+        _activityFeedService = activityFeedService;
+        _taskbarProgressService = taskbarProgressService;
+        _loggingService = loggingService;
+        _commandPaletteService = commandPaletteService;
 
         // Cache brush resources once at construction time so FindResource() is never called in hot paths (P2 fix).
         _successBrush = (Brush)System.Windows.Application.Current.Resources["SuccessColorBrush"];
@@ -402,7 +415,7 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
         _activityPollTimer.Start();
         _ = RefreshStatusAsync();
         // Immediately fetch backend events so the feed is populated without waiting 10s.
-        _ = ActivityFeedService.Instance.FetchServerEventsAsync(_cts.Token);
+        _ = _activityFeedService.FetchServerEventsAsync(_cts.Token);
     }
 
     public void Stop()
@@ -468,9 +481,9 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
 
             // Reflect collection activity on the taskbar icon.
             if (e.State == ConnectionState.Connected)
-                WpfServices.TaskbarProgressService.Instance.SetIndeterminate();
+                _taskbarProgressService.SetIndeterminate();
             else
-                WpfServices.TaskbarProgressService.Instance.Clear();
+                _taskbarProgressService.Clear();
         });
     }
 
@@ -494,7 +507,7 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
     private void OnRefreshTimerTick(object? sender, EventArgs e) => _ = RefreshStatusAsync();
 
     private void OnActivityPollTimerTick(object? sender, EventArgs e) =>
-        _ = ActivityFeedService.Instance.FetchServerEventsAsync(_cts.Token);
+        _ = _activityFeedService.FetchServerEventsAsync(_cts.Token);
 
     private void OnStaleCheckTimerTick(object? sender, EventArgs e) =>
         UpdateStaleIndicator(_statusService.IsDataStale);
@@ -522,7 +535,7 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
         }
         catch (Exception ex)
         {
-            WpfServices.LoggingService.Instance.LogWarning(
+            _loggingService.LogWarning(
                 "Failed to refresh dashboard status",
                 ("Error", ex.Message));   // C1: structured logging instead of Debug.WriteLine
         }
@@ -953,14 +966,14 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
 
     public void OnActivated()
     {
-        var paletteService = CommandPaletteService.Instance;
+        var paletteService = _commandPaletteService;
         paletteService.RegisterContextualProvider(ContextKey, GetContextualCommands);
         paletteService.SetActiveContext(ContextKey);
     }
 
     public void OnDeactivated()
     {
-        var paletteService = CommandPaletteService.Instance;
+        var paletteService = _commandPaletteService;
         paletteService.ClearActiveContext();
         paletteService.UnregisterContextualProvider(ContextKey);
     }

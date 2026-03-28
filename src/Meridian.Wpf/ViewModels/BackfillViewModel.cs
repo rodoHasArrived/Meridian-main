@@ -32,6 +32,9 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
     private readonly BackfillApiService _backfillApiService;
     private readonly UiBackfillService _backfillService;
     private readonly BackfillCheckpointService _checkpointService;
+    private readonly WpfServices.TaskbarProgressService _taskbarProgressService;
+    private readonly WpfServices.ToastNotificationService _toastNotificationService;
+    private readonly CommandPaletteService _commandPaletteService;
 
     private readonly DispatcherTimer _progressPollTimer;
     private CancellationTokenSource? _backfillCts;
@@ -257,15 +260,23 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
     public BackfillViewModel(
         WpfServices.NotificationService notificationService,
         WpfServices.NavigationService navigationService,
-        WpfServices.LoggingService loggingService)
+        WpfServices.LoggingService loggingService,
+        UiBackfillService backfillService,
+        BackfillCheckpointService checkpointService,
+        WpfServices.TaskbarProgressService taskbarProgressService,
+        WpfServices.ToastNotificationService toastNotificationService,
+        CommandPaletteService commandPaletteService)
     {
         _notificationService = notificationService;
         _navigationService = navigationService;
         _loggingService = loggingService;
 
         _backfillApiService = new BackfillApiService();
-        _backfillService = UiBackfillService.Instance;
-        _checkpointService = BackfillCheckpointService.Instance;
+        _backfillService = backfillService;
+        _checkpointService = checkpointService;
+        _taskbarProgressService = taskbarProgressService;
+        _toastNotificationService = toastNotificationService;
+        _commandPaletteService = commandPaletteService;
 
         _progressPollTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
         _progressPollTimer.Tick += OnProgressPollTimerTick;
@@ -430,7 +441,7 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
         IsBackfillActive = true;
         IsProgressVisible = true;
         PauseButtonContent = "Pause";
-        WpfServices.TaskbarProgressService.Instance.SetIndeterminate();
+        _taskbarProgressService.SetIndeterminate();
 
         _notificationService.ShowNotification(
             "Backfill Started",
@@ -454,14 +465,14 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
             _progressPollTimer.Stop();
             BackfillStatusText = "Cancelled";
             IsBackfillActive = false;
-            WpfServices.TaskbarProgressService.Instance.Clear();
+            _taskbarProgressService.Clear();
         }
         catch (Exception ex)
         {
             _progressPollTimer.Stop();
             BackfillStatusText = "Failed";
             IsBackfillActive = false;
-            WpfServices.TaskbarProgressService.Instance.SetError();
+            _taskbarProgressService.SetError();
 
             _notificationService.ShowNotification(
                 "Backfill Failed",
@@ -477,7 +488,7 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
             _backfillService.Resume();
             BackfillStatusText = "Running...";
             PauseButtonContent = "Pause";
-            WpfServices.TaskbarProgressService.Instance.SetNormal(_lastCompletedSymbols, _lastTotalSymbols);
+            _taskbarProgressService.SetNormal(_lastCompletedSymbols, _lastTotalSymbols);
             _notificationService.ShowNotification("Backfill Resumed", "Backfill operation has been resumed.", NotificationType.Info);
         }
         else
@@ -485,7 +496,7 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
             _backfillService.Pause();
             BackfillStatusText = "Paused";
             PauseButtonContent = "Resume";
-            WpfServices.TaskbarProgressService.Instance.SetPaused();
+            _taskbarProgressService.SetPaused();
             _notificationService.ShowNotification("Backfill Paused", "Backfill operation has been paused.", NotificationType.Warning);
         }
     }
@@ -498,7 +509,7 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
         BackfillStatusText = "Cancelled";
         IsBackfillActive = false;
         IsProgressVisible = false;
-        WpfServices.TaskbarProgressService.Instance.Clear();
+        _taskbarProgressService.Clear();
         _notificationService.ShowNotification("Backfill Cancelled", "The backfill operation was cancelled.", NotificationType.Warning);
     }
 
@@ -519,7 +530,7 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
             IsBackfillActive = true;
             IsProgressVisible = true;
             PauseButtonContent = "Pause";
-            WpfServices.TaskbarProgressService.Instance.SetIndeterminate();
+            _taskbarProgressService.SetIndeterminate();
 
             _notificationService.ShowNotification(
                 "Resuming Backfill",
@@ -534,14 +545,14 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
             _progressPollTimer.Stop();
             BackfillStatusText = "Cancelled";
             IsBackfillActive = false;
-            WpfServices.TaskbarProgressService.Instance.Clear();
+            _taskbarProgressService.Clear();
         }
         catch (Exception ex)
         {
             _progressPollTimer.Stop();
             BackfillStatusText = "Resume Failed";
             IsBackfillActive = false;
-            WpfServices.TaskbarProgressService.Instance.SetError();
+            _taskbarProgressService.SetError();
 
             _notificationService.ShowNotification("Resume Failed", ex.Message, NotificationType.Error);
         }
@@ -582,7 +593,7 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
         // Reflect symbol-level progress on the taskbar icon.
         _lastCompletedSymbols = (ulong)Math.Max(0, completedCount);
         _lastTotalSymbols = (ulong)Math.Max(1, progress.TotalSymbols);
-        WpfServices.TaskbarProgressService.Instance.SetNormal(_lastCompletedSymbols, _lastTotalSymbols);
+        _taskbarProgressService.SetNormal(_lastCompletedSymbols, _lastTotalSymbols);
 
         if (progress.SymbolProgress == null) return;
         for (var i = 0; i < progress.SymbolProgress.Length && i < SymbolProgress.Count; i++)
@@ -612,7 +623,7 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
 
             if (e.Success)
             {
-                WpfServices.TaskbarProgressService.Instance.Clear();
+                _taskbarProgressService.Clear();
                 BackfillStatusText = "Completed";
                 _notificationService.ShowNotification(
                     "Backfill Complete",
@@ -624,16 +635,16 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
                 var duration = e.Progress?.CompletedAt.HasValue == true
                     ? e.Progress.CompletedAt.Value - e.Progress.StartedAt
                     : TimeSpan.Zero;
-                WpfServices.ToastNotificationService.Instance.ShowBackfillComplete(symbolCount, barsWritten, duration);
+                _toastNotificationService.ShowBackfillComplete(symbolCount, barsWritten, duration);
             }
             else if (e.WasCancelled)
             {
-                WpfServices.TaskbarProgressService.Instance.Clear();
+                _taskbarProgressService.Clear();
                 BackfillStatusText = "Cancelled";
             }
             else
             {
-                WpfServices.TaskbarProgressService.Instance.SetError();
+                _taskbarProgressService.SetError();
                 BackfillStatusText = "Failed";
                 _notificationService.ShowNotification(
                     "Backfill Failed",
@@ -886,14 +897,14 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
 
     public void OnActivated()
     {
-        var paletteService = CommandPaletteService.Instance;
+        var paletteService = _commandPaletteService;
         paletteService.RegisterContextualProvider(ContextKey, GetContextualCommands);
         paletteService.SetActiveContext(ContextKey);
     }
 
     public void OnDeactivated()
     {
-        var paletteService = CommandPaletteService.Instance;
+        var paletteService = _commandPaletteService;
         paletteService.ClearActiveContext();
         paletteService.UnregisterContextualProvider(ContextKey);
     }

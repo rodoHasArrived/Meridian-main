@@ -25,11 +25,6 @@ public sealed class ServiceManagerViewModel : BindableBase
     private bool _isRunning;
     private bool _isInstalled;
 
-    public ServiceManagerViewModel()
-        : this(BackendServiceManager.Instance, LoggingService.Instance)
-    {
-    }
-
     internal ServiceManagerViewModel(BackendServiceManager serviceManager, LoggingService loggingService)
     {
         _serviceManager = serviceManager;

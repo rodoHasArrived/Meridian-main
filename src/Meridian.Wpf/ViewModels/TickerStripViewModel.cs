@@ -90,6 +90,10 @@ public sealed class TickerStripViewModel : BindableBase, IDisposable
     private readonly System.Collections.Generic.Dictionary<string, decimal> _lastPrices = new();
     private CancellationTokenSource? _cts;
     private IDisposable? _watchlistSubscription;
+    private readonly WpfServices.MessagingService _messagingService;
+    private readonly SymbolManagementService _symbolManagementService;
+    private readonly WpfServices.ConfigService _configService;
+    private readonly WpfServices.StatusService _statusService;
 
     private bool _isVisible;
 
@@ -101,13 +105,22 @@ public sealed class TickerStripViewModel : BindableBase, IDisposable
         set => SetProperty(ref _isVisible, value);
     }
 
-    public TickerStripViewModel()
+    public TickerStripViewModel(
+        WpfServices.MessagingService messagingService,
+        SymbolManagementService symbolManagementService,
+        WpfServices.ConfigService configService,
+        WpfServices.StatusService statusService)
     {
+        _messagingService = messagingService;
+        _symbolManagementService = symbolManagementService;
+        _configService = configService;
+        _statusService = statusService;
+
         _pollTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(1500) };
         _pollTimer.Tick += async (_, _) => await PollAllSymbolsAsync();
 
         // Reload symbol list whenever the watchlist changes
-        _watchlistSubscription = WpfServices.MessagingService.Instance.Subscribe(
+        _watchlistSubscription = _messagingService.Subscribe(
             WpfServices.MessageTypes.WatchlistUpdated,
             _ => System.Windows.Application.Current?.Dispatcher.InvokeAsync(async () => await LoadSymbolsAsync()));
     }
@@ -153,7 +166,7 @@ public sealed class TickerStripViewModel : BindableBase, IDisposable
             _cts = new CancellationTokenSource();
 
             // Use the same symbol-loading strategy as LiveDataViewerViewModel
-            var symbolService = SymbolManagementService.Instance;
+            var symbolService = _symbolManagementService;
             var result = await symbolService.GetAllSymbolsAsync(_cts.Token);
 
             System.Collections.Generic.IEnumerable<string> symbols;
@@ -163,7 +176,7 @@ public sealed class TickerStripViewModel : BindableBase, IDisposable
             }
             else
             {
-                var configSymbols = await WpfServices.ConfigService.Instance.GetConfiguredSymbolsAsync(_cts.Token);
+                var configSymbols = await _configService.GetConfiguredSymbolsAsync(_cts.Token);
                 symbols = configSymbols.Select(s => s.Symbol);
             }
 
@@ -194,7 +207,7 @@ public sealed class TickerStripViewModel : BindableBase, IDisposable
 
     private async Task PollAllSymbolsAsync()
     {
-        var baseUrl = WpfServices.StatusService.Instance.BaseUrl;
+        var baseUrl = _statusService.BaseUrl;
         var symbols = System.Windows.Application.Current?.Dispatcher.Invoke(() => Items.Select(i => i.Symbol).ToList())
                       ?? new System.Collections.Generic.List<string>();
 

@@ -29,6 +29,7 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
     private readonly WpfServices.NotificationService _notificationService;
     private readonly WpfServices.NavigationService _navigationService;
     private readonly SymbolManagementService _symbolManagementService;
+    private readonly CommandPaletteService _commandPaletteService;
     private readonly HttpClient _httpClient = new();
 
     private CancellationTokenSource? _loadCts;
@@ -145,14 +146,18 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
         WpfServices.ConfigService configService,
         WpfServices.WatchlistService watchlistService,
         WpfServices.LoggingService loggingService,
-        WpfServices.NotificationService notificationService)
+        WpfServices.NotificationService notificationService,
+        WpfServices.NavigationService navigationService,
+        SymbolManagementService symbolManagementService,
+        CommandPaletteService commandPaletteService)
     {
         _configService = configService;
         _watchlistService = watchlistService;
         _loggingService = loggingService;
         _notificationService = notificationService;
-        _navigationService = WpfServices.NavigationService.Instance;
-        _symbolManagementService = SymbolManagementService.Instance;
+        _navigationService = navigationService;
+        _symbolManagementService = symbolManagementService;
+        _commandPaletteService = commandPaletteService;
 
         // Initialize Security Master commands
         AddToSecurityMasterCommand = new RelayCommand(
@@ -931,14 +936,14 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
 
     public void OnActivated()
     {
-        var paletteService = CommandPaletteService.Instance;
+        var paletteService = _commandPaletteService;
         paletteService.RegisterContextualProvider(ContextKey, GetContextualCommands);
         paletteService.SetActiveContext(ContextKey);
     }
 
     public void OnDeactivated()
     {
-        var paletteService = CommandPaletteService.Instance;
+        var paletteService = _commandPaletteService;
         paletteService.ClearActiveContext();
         paletteService.UnregisterContextualProvider(ContextKey);
     }

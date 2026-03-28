@@ -1,5 +1,7 @@
 using System.Windows;
+using Meridian.Wpf.ViewModels;
 using Meridian.Wpf.Views;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Wpf.Services;
 
@@ -29,7 +31,8 @@ public static class TickerStripService
             return;
         }
 
-        _window = new TickerStripWindow();
+        var viewModel = App.Services!.GetRequiredService<TickerStripViewModel>();
+        _window = new TickerStripWindow(viewModel);
         _window.Closed += (_, _) => _window = null;
         _window.Show();
     }

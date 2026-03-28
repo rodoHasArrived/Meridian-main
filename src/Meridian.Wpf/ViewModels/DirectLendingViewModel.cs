@@ -125,8 +125,6 @@ public sealed class DirectLendingViewModel : BindableBase
 
     // ── Constructor ──────────────────────────────────────────────────────────
 
-    public DirectLendingViewModel() : this(ApiClientService.Instance) { }
-
     internal DirectLendingViewModel(ApiClientService apiClient)
     {
         _apiClient = apiClient;
