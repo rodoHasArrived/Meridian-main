@@ -112,6 +112,7 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         RegisterPage("Charts", typeof(ChartingPage));
         RegisterPage("OrderBook", typeof(OrderBookPage));
         RegisterPage("DataCalendar", typeof(DataCalendarPage));
+        RegisterPage("QuantScript", typeof(QuantScriptPage));
 
         // Storage & Maintenance (3 pages)
         RegisterPage("StorageOptimization", typeof(StorageOptimizationPage));

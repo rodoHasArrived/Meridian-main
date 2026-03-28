@@ -1,0 +1,10 @@
+global using System;
+global using System.Collections.Generic;
+global using System.Linq;
+global using System.Threading;
+global using System.Threading.Tasks;
+global using FluentAssertions;
+global using Xunit;
+global using Meridian.QuantScript.Api;
+global using Meridian.QuantScript.Compilation;
+global using Meridian.QuantScript.Plotting;
