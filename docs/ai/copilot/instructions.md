@@ -2727,6 +2727,7 @@ Meridian-main
 │   │   │   │   ├── NyseNationalTradesCsvParserTests.cs
 │   │   │   │   ├── NyseSharedLifecycleTests.cs
 │   │   │   │   ├── NyseTaqCollectorIntegrationTests.cs
+│   │   │   │   ├── PolygonCorporateActionFetcherTests.cs
 │   │   │   │   ├── PolygonMarketDataClientTests.cs
 │   │   │   │   ├── PolygonMessageParsingTests.cs
 │   │   │   │   ├── PolygonRecordedSessionReplayTests.cs
