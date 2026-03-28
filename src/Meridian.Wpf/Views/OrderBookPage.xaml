@@ -124,6 +124,15 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Grid Margin="0,2">
+                                    <Grid.Style>
+                                        <Style TargetType="Grid">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsHighlighted}" Value="True">
+                                                    <Setter Property="Background" Value="#22F44336"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Grid.Style>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="100"/>
@@ -189,6 +198,15 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Grid Margin="0,2">
+                                    <Grid.Style>
+                                        <Style TargetType="Grid">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsHighlighted}" Value="True">
+                                                    <Setter Property="Background" Value="#223FBA50"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Grid.Style>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="100"/>
@@ -293,6 +311,28 @@
                             <TextBlock Grid.Column="0" Text="Imbalance" Foreground="{StaticResource ConsoleTextMutedBrush}"/>
                             <TextBlock Grid.Column="1" Text="{Binding ImbalanceText}"
                                        Foreground="{StaticResource ConsoleTextPrimaryBrush}" FontWeight="SemiBold"/>
+                        </Grid>
+
+                        <Grid Margin="0,6,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Cumul. Delta"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       ToolTip="Net directional pressure from the recent trade tape (buy volume − sell volume)."/>
+                            <TextBlock Grid.Column="1" Text="{Binding CumulativeDeltaText}" FontWeight="SemiBold">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="{StaticResource ErrorColorBrush}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding CumulativeDeltaPositive}" Value="True">
+                                                <Setter Property="Foreground" Value="{StaticResource SuccessColorBrush}"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
                         </Grid>
 
                         <!-- Imbalance Bar -->

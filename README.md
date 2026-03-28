@@ -888,6 +888,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── meridian-6-week-roadmap.md
 │   │   ├── meridian-database-blueprint.md
 │   │   ├── quant-script-environment-blueprint.md
+│   │   ├── quant-script-page-implementation-guide.md
 │   │   ├── quantscript-l3-multiinstance-round2-roadmap.md
 │   │   ├── readability-refactor-baseline.md
 │   │   ├── readability-refactor-roadmap.md
@@ -991,6 +992,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── desktop-dev.ps1
 │   │   ├── diagnose-uwp-xaml.ps1
 │   │   └── install-git-hooks.sh
+│   ├── example-sharpe.csx
 │   ├── generate-diagrams.mjs
 │   ├── lib
 │   │   ├── ui-diagram-generator.mjs
@@ -1460,6 +1462,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── OrderReplace.cs
 │   │   │   │   └── Trade.cs
 │   │   │   ├── ProviderId.cs
+│   │   │   ├── ProviderSymbol.cs
 │   │   │   ├── StreamId.cs
 │   │   │   ├── SubscriptionId.cs
 │   │   │   ├── SymbolId.cs
@@ -1951,6 +1954,39 @@ Use these documents together when planning or implementing new work:
 │   │   ├── ImplementsAdrAttribute.cs
 │   │   ├── Meridian.ProviderSdk.csproj
 │   │   └── ProviderHttpUtilities.cs
+│   ├── Meridian.QuantScript
+│   │   ├── Api
+│   │   │   ├── BacktestProxy.cs
+│   │   │   ├── DataProxy.cs
+│   │   │   ├── EfficientFrontierConstraints.cs
+│   │   │   ├── IQuantDataContext.cs
+│   │   │   ├── LambdaBacktestStrategy.cs
+│   │   │   ├── PortfolioBuilder.cs
+│   │   │   ├── PriceBar.cs
+│   │   │   ├── PriceSeries.cs
+│   │   │   ├── PriceSeriesExtensions.cs
+│   │   │   ├── QuantDataContext.cs
+│   │   │   ├── ReturnSeries.cs
+│   │   │   ├── ScriptModels.cs
+│   │   │   ├── ScriptParamAttribute.cs
+│   │   │   ├── StatisticsEngine.cs
+│   │   │   └── TechnicalSeriesExtensions.cs
+│   │   ├── Compilation
+│   │   │   ├── Contracts.cs
+│   │   │   ├── IQuantScriptCompiler.cs
+│   │   │   ├── IScriptRunner.cs
+│   │   │   ├── QuantScriptGlobals.cs
+│   │   │   ├── RoslynScriptCompiler.cs
+│   │   │   ├── ScriptRunResult.cs
+│   │   │   └── ScriptRunner.cs
+│   │   ├── GlobalUsings.cs
+│   │   ├── Meridian.QuantScript.csproj
+│   │   ├── Plotting
+│   │   │   ├── PlotQueue.cs
+│   │   │   ├── PlotRequest.cs
+│   │   │   └── PlotType.cs
+│   │   ├── QuantScriptOptions.cs
+│   │   └── ScriptContext.cs
 │   ├── Meridian.Risk
 │   │   ├── CompositeRiskValidator.cs
 │   │   ├── IRiskRule.cs
@@ -2304,6 +2340,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── CheckpointEndpoints.cs
 │   │   │   ├── ConfigEndpoints.cs
 │   │   │   ├── CppTraderEndpoints.cs
+│   │   │   ├── CredentialEndpoints.cs
 │   │   │   ├── CronEndpoints.cs
 │   │   │   ├── DiagnosticsEndpoints.cs
 │   │   │   ├── DirectLendingEndpoints.cs
@@ -2356,14 +2393,20 @@ Use these documents together when planning or implementing new work:
 │       ├── App.xaml
 │       ├── App.xaml.cs
 │       ├── AssemblyInfo.cs
+│       ├── Behaviors
+│       │   ├── ParameterTemplateSelector.cs
+│       │   └── PlotRenderBehavior.cs
 │       ├── Contracts
 │       │   ├── IConnectionService.cs
 │       │   └── INavigationService.cs
 │       ├── Converters
 │       │   ├── BoolToStringConverter.cs
 │       │   ├── BoolToVisibilityConverter.cs
+│       │   ├── ConsoleEntryKindToBrushConverter.cs
+│       │   ├── CountToVisibilityConverter.cs
 │       │   ├── InvertBoolConverter.cs
-│       │   └── NullToCollapsedConverter.cs
+│       │   ├── NullToCollapsedConverter.cs
+│       │   └── StringToBoolConverter.cs
 │       ├── GlobalUsings.cs
 │       ├── MainWindow.xaml
 │       ├── MainWindow.xaml.cs
@@ -2381,6 +2424,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── OrderBookModels.cs
 │       │   ├── PaneLayout.cs
 │       │   ├── ProviderHealthModels.cs
+│       │   ├── QuantScriptModels.cs
 │       │   ├── StorageDisplayModels.cs
 │       │   ├── SymbolsModels.cs
 │       │   ├── WorkspaceDefinition.cs
@@ -2406,6 +2450,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── FormValidationService.cs
 │       │   ├── GlobalHotkeyService.cs
 │       │   ├── ICommandContextProvider.cs
+│       │   ├── IQuantScriptLayoutService.cs
 │       │   ├── InfoBarService.cs
 │       │   ├── JumpListService.cs
 │       │   ├── KeyboardShortcutService.cs
@@ -2415,6 +2460,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── NotificationService.cs
 │       │   ├── OfflineTrackingPersistenceService.cs
 │       │   ├── PendingOperationsQueueService.cs
+│       │   ├── QuantScriptLayoutService.cs
 │       │   ├── RetentionAssuranceService.cs
 │       │   ├── RunMatService.cs
 │       │   ├── SchemaService.cs
@@ -2449,6 +2495,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── BindableBase.cs
 │       │   ├── ChartingPageViewModel.cs
 │       │   ├── ClusterStatusViewModel.cs
+│       │   ├── CredentialManagementViewModel.cs
 │       │   ├── DashboardViewModel.cs
 │       │   ├── DataQualityViewModel.cs
 │       │   ├── DiagnosticsPageViewModel.cs
@@ -2465,6 +2512,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── ProviderHealthViewModel.cs
 │       │   ├── ProviderPageModels.cs
 │       │   ├── QualityArchiveViewModel.cs
+│       │   ├── QuantScriptViewModel.cs
 │       │   ├── QuoteFloatViewModel.cs
 │       │   ├── RunMatViewModel.cs
 │       │   ├── SecurityMasterDeactivateViewModel.cs
@@ -2510,6 +2558,8 @@ Use these documents together when planning or implementing new work:
 │           ├── CollectionSessionPage.xaml.cs
 │           ├── CommandPaletteWindow.xaml
 │           ├── CommandPaletteWindow.xaml.cs
+│           ├── CredentialManagementPage.xaml
+│           ├── CredentialManagementPage.xaml.cs
 │           ├── DashboardPage.xaml
 │           ├── DashboardPage.xaml.cs
 │           ├── DataBrowserPage.xaml
@@ -2570,6 +2620,8 @@ Use these documents together when planning or implementing new work:
 │           ├── ProviderPage.xaml.cs
 │           ├── QualityArchivePage.xaml
 │           ├── QualityArchivePage.xaml.cs
+│           ├── QuantScriptPage.xaml
+│           ├── QuantScriptPage.xaml.cs
 │           ├── QuoteFloatWindow.xaml
 │           ├── QuoteFloatWindow.xaml.cs
 │           ├── ResearchWorkspaceShellPage.xaml
@@ -2670,6 +2722,18 @@ Use these documents together when planning or implementing new work:
 │   │   └── Tools
 │   │       ├── BackfillToolsTests.cs
 │   │       └── StorageToolsTests.cs
+│   ├── Meridian.QuantScript.Tests
+│   │   ├── GlobalUsings.cs
+│   │   ├── Helpers
+│   │   │   ├── FakeQuantDataContext.cs
+│   │   │   ├── FakeScriptRunner.cs
+│   │   │   └── TestPriceSeriesBuilder.cs
+│   │   ├── Meridian.QuantScript.Tests.csproj
+│   │   ├── PlotQueueTests.cs
+│   │   ├── PriceSeriesTests.cs
+│   │   ├── RoslynScriptCompilerTests.cs
+│   │   ├── ScriptRunnerTests.cs
+│   │   └── StatisticsEngineTests.cs
 │   ├── Meridian.Tests
 │   │   ├── Application
 │   │   │   ├── Backfill
@@ -2863,6 +2927,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── NyseNationalTradesCsvParserTests.cs
 │   │   │   │   ├── NyseSharedLifecycleTests.cs
 │   │   │   │   ├── NyseTaqCollectorIntegrationTests.cs
+│   │   │   │   ├── PolygonCorporateActionFetcherTests.cs
 │   │   │   │   ├── PolygonMarketDataClientTests.cs
 │   │   │   │   ├── PolygonMessageParsingTests.cs
 │   │   │   │   ├── PolygonRecordedSessionReplayTests.cs
@@ -2927,6 +2992,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── CompositeRiskValidatorTests.cs
 │   │   ├── SecurityMaster
 │   │   │   ├── SecurityEnrichmentTests.cs
+│   │   │   ├── SecurityMasterAggregateRebuilderTests.cs
 │   │   │   ├── SecurityMasterAssetClassSupportTests.cs
 │   │   │   ├── SecurityMasterDatabaseFactAttribute.cs
 │   │   │   ├── SecurityMasterDatabaseFixture.cs
@@ -3073,6 +3139,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── WpfTestThread.cs
 │   │   ├── ViewModels
 │   │   │   ├── DataQualityViewModelCharacterizationTests.cs
+│   │   │   ├── QuantScriptViewModelTests.cs
 │   │   │   ├── RunMatViewModelTests.cs
 │   │   │   └── StrategyRunBrowserViewModelTests.cs
 │   │   └── Views
@@ -3085,6 +3152,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-455 directories, 2592 files
+462 directories, 2652 files
 ```
 <!-- readme-tree end -->

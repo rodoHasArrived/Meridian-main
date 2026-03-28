@@ -128,8 +128,8 @@ public sealed class DirectLendingViewModel : BindableBase
     internal DirectLendingViewModel(ApiClientService apiClient)
     {
         _apiClient = apiClient;
-        RefreshCommand = new AsyncRelayCommand(RefreshAsync);
-        PostAccrualCommand = new AsyncRelayCommand(PostAccrualAsync, () => HasSelectedLoan);
+        RefreshCommand = new AsyncRelayCommand(() => RefreshAsync());
+        PostAccrualCommand = new AsyncRelayCommand(() => PostAccrualAsync());
     }
 
     // ── Initialisation ───────────────────────────────────────────────────────

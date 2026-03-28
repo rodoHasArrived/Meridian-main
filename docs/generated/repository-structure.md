@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-03-27 21:55:32 UTC. Do not edit manually.
+> Auto-generated on 2026-03-28 20:12:35 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -638,6 +638,7 @@ Meridian-main
 │   │   ├── meridian-6-week-roadmap.md
 │   │   ├── meridian-database-blueprint.md
 │   │   ├── quant-script-environment-blueprint.md
+│   │   ├── quant-script-page-implementation-guide.md
 │   │   ├── quantscript-l3-multiinstance-round2-roadmap.md
 │   │   ├── readability-refactor-baseline.md
 │   │   ├── readability-refactor-roadmap.md
@@ -744,6 +745,7 @@ Meridian-main
 │   │   ├── ui-diagram-generator.mjs
 │   │   └── ui-diagram-generator.test.mjs
 │   ├── compare_benchmarks.py
+│   ├── example-sharpe.csx
 │   ├── generate-diagrams.mjs
 │   └── report_canonicalization_drift.py
 ├── src
@@ -1210,6 +1212,7 @@ Meridian-main
 │   │   │   ├── CanonicalSymbol.cs
 │   │   │   ├── MarketDataModels.cs
 │   │   │   ├── ProviderId.cs
+│   │   │   ├── ProviderSymbol.cs
 │   │   │   ├── StreamId.cs
 │   │   │   ├── SubscriptionId.cs
 │   │   │   ├── SymbolId.cs
@@ -1701,6 +1704,39 @@ Meridian-main
 │   │   ├── IRealtimeDataSource.cs
 │   │   ├── Meridian.ProviderSdk.csproj
 │   │   └── ProviderHttpUtilities.cs
+│   ├── Meridian.QuantScript
+│   │   ├── Api
+│   │   │   ├── BacktestProxy.cs
+│   │   │   ├── DataProxy.cs
+│   │   │   ├── EfficientFrontierConstraints.cs
+│   │   │   ├── IQuantDataContext.cs
+│   │   │   ├── LambdaBacktestStrategy.cs
+│   │   │   ├── PortfolioBuilder.cs
+│   │   │   ├── PriceBar.cs
+│   │   │   ├── PriceSeries.cs
+│   │   │   ├── PriceSeriesExtensions.cs
+│   │   │   ├── QuantDataContext.cs
+│   │   │   ├── ReturnSeries.cs
+│   │   │   ├── ScriptModels.cs
+│   │   │   ├── ScriptParamAttribute.cs
+│   │   │   ├── StatisticsEngine.cs
+│   │   │   └── TechnicalSeriesExtensions.cs
+│   │   ├── Compilation
+│   │   │   ├── Contracts.cs
+│   │   │   ├── IQuantScriptCompiler.cs
+│   │   │   ├── IScriptRunner.cs
+│   │   │   ├── QuantScriptGlobals.cs
+│   │   │   ├── RoslynScriptCompiler.cs
+│   │   │   ├── ScriptRunner.cs
+│   │   │   └── ScriptRunResult.cs
+│   │   ├── Plotting
+│   │   │   ├── PlotQueue.cs
+│   │   │   ├── PlotRequest.cs
+│   │   │   └── PlotType.cs
+│   │   ├── GlobalUsings.cs
+│   │   ├── Meridian.QuantScript.csproj
+│   │   ├── QuantScriptOptions.cs
+│   │   └── ScriptContext.cs
 │   ├── Meridian.Risk
 │   │   ├── Rules
 │   │   │   ├── DrawdownCircuitBreaker.cs
@@ -2053,6 +2089,7 @@ Meridian-main
 │   │   │   ├── CheckpointEndpoints.cs
 │   │   │   ├── ConfigEndpoints.cs
 │   │   │   ├── CppTraderEndpoints.cs
+│   │   │   ├── CredentialEndpoints.cs
 │   │   │   ├── CronEndpoints.cs
 │   │   │   ├── DiagnosticsEndpoints.cs
 │   │   │   ├── DirectLendingEndpoints.cs
@@ -2103,14 +2140,20 @@ Meridian-main
 │   │   ├── Meridian.Ui.Shared.csproj
 │   │   └── UserProfileRegistry.cs
 │   └── Meridian.Wpf
+│       ├── Behaviors
+│       │   ├── ParameterTemplateSelector.cs
+│       │   └── PlotRenderBehavior.cs
 │       ├── Contracts
 │       │   ├── IConnectionService.cs
 │       │   └── INavigationService.cs
 │       ├── Converters
 │       │   ├── BoolToStringConverter.cs
 │       │   ├── BoolToVisibilityConverter.cs
+│       │   ├── ConsoleEntryKindToBrushConverter.cs
+│       │   ├── CountToVisibilityConverter.cs
 │       │   ├── InvertBoolConverter.cs
-│       │   └── NullToCollapsedConverter.cs
+│       │   ├── NullToCollapsedConverter.cs
+│       │   └── StringToBoolConverter.cs
 │       ├── Models
 │       │   ├── ActionEntry.cs
 │       │   ├── ActivityLogModels.cs
@@ -2124,6 +2167,7 @@ Meridian-main
 │       │   ├── OrderBookModels.cs
 │       │   ├── PaneLayout.cs
 │       │   ├── ProviderHealthModels.cs
+│       │   ├── QuantScriptModels.cs
 │       │   ├── StorageDisplayModels.cs
 │       │   ├── SymbolsModels.cs
 │       │   ├── WorkspaceDefinition.cs
@@ -2149,6 +2193,7 @@ Meridian-main
 │       │   ├── GlobalHotkeyService.cs
 │       │   ├── ICommandContextProvider.cs
 │       │   ├── InfoBarService.cs
+│       │   ├── IQuantScriptLayoutService.cs
 │       │   ├── JumpListService.cs
 │       │   ├── KeyboardShortcutService.cs
 │       │   ├── LoggingService.cs
@@ -2157,6 +2202,7 @@ Meridian-main
 │       │   ├── NotificationService.cs
 │       │   ├── OfflineTrackingPersistenceService.cs
 │       │   ├── PendingOperationsQueueService.cs
+│       │   ├── QuantScriptLayoutService.cs
 │       │   ├── RetentionAssuranceService.cs
 │       │   ├── RunMatService.cs
 │       │   ├── SchemaService.cs
@@ -2191,6 +2237,7 @@ Meridian-main
 │       │   ├── BindableBase.cs
 │       │   ├── ChartingPageViewModel.cs
 │       │   ├── ClusterStatusViewModel.cs
+│       │   ├── CredentialManagementViewModel.cs
 │       │   ├── DashboardViewModel.cs
 │       │   ├── DataQualityViewModel.cs
 │       │   ├── DiagnosticsPageViewModel.cs
@@ -2207,6 +2254,7 @@ Meridian-main
 │       │   ├── ProviderHealthViewModel.cs
 │       │   ├── ProviderPageModels.cs
 │       │   ├── QualityArchiveViewModel.cs
+│       │   ├── QuantScriptViewModel.cs
 │       │   ├── QuoteFloatViewModel.cs
 │       │   ├── RunMatViewModel.cs
 │       │   ├── SecurityMasterDeactivateViewModel.cs
@@ -2252,6 +2300,8 @@ Meridian-main
 │       │   ├── CollectionSessionPage.xaml.cs
 │       │   ├── CommandPaletteWindow.xaml
 │       │   ├── CommandPaletteWindow.xaml.cs
+│       │   ├── CredentialManagementPage.xaml
+│       │   ├── CredentialManagementPage.xaml.cs
 │       │   ├── DashboardPage.xaml
 │       │   ├── DashboardPage.xaml.cs
 │       │   ├── DataBrowserPage.xaml
@@ -2312,6 +2362,8 @@ Meridian-main
 │       │   ├── ProviderPage.xaml.cs
 │       │   ├── QualityArchivePage.xaml
 │       │   ├── QualityArchivePage.xaml.cs
+│       │   ├── QuantScriptPage.xaml
+│       │   ├── QuantScriptPage.xaml.cs
 │       │   ├── QuoteFloatWindow.xaml
 │       │   ├── QuoteFloatWindow.xaml.cs
 │       │   ├── ResearchWorkspaceShellPage.xaml
@@ -2419,6 +2471,18 @@ Meridian-main
 │   │   │   └── StorageToolsTests.cs
 │   │   ├── GlobalUsings.cs
 │   │   └── Meridian.McpServer.Tests.csproj
+│   ├── Meridian.QuantScript.Tests
+│   │   ├── Helpers
+│   │   │   ├── FakeQuantDataContext.cs
+│   │   │   ├── FakeScriptRunner.cs
+│   │   │   └── TestPriceSeriesBuilder.cs
+│   │   ├── GlobalUsings.cs
+│   │   ├── Meridian.QuantScript.Tests.csproj
+│   │   ├── PlotQueueTests.cs
+│   │   ├── PriceSeriesTests.cs
+│   │   ├── RoslynScriptCompilerTests.cs
+│   │   ├── ScriptRunnerTests.cs
+│   │   └── StatisticsEngineTests.cs
 │   ├── Meridian.Tests
 │   │   ├── Application
 │   │   │   ├── Backfill
@@ -2611,6 +2675,7 @@ Meridian-main
 │   │   │   │   ├── NyseNationalTradesCsvParserTests.cs
 │   │   │   │   ├── NyseSharedLifecycleTests.cs
 │   │   │   │   ├── NyseTaqCollectorIntegrationTests.cs
+│   │   │   │   ├── PolygonCorporateActionFetcherTests.cs
 │   │   │   │   ├── PolygonMarketDataClientTests.cs
 │   │   │   │   ├── PolygonMessageParsingTests.cs
 │   │   │   │   ├── PolygonRecordedSessionReplayTests.cs
@@ -2674,6 +2739,7 @@ Meridian-main
 │   │   │   └── CompositeRiskValidatorTests.cs
 │   │   ├── SecurityMaster
 │   │   │   ├── SecurityEnrichmentTests.cs
+│   │   │   ├── SecurityMasterAggregateRebuilderTests.cs
 │   │   │   ├── SecurityMasterAssetClassSupportTests.cs
 │   │   │   ├── SecurityMasterDatabaseFactAttribute.cs
 │   │   │   ├── SecurityMasterDatabaseFixture.cs
@@ -2820,6 +2886,7 @@ Meridian-main
 │   │   │   └── WpfTestThread.cs
 │   │   ├── ViewModels
 │   │   │   ├── DataQualityViewModelCharacterizationTests.cs
+│   │   │   ├── QuantScriptViewModelTests.cs
 │   │   │   ├── RunMatViewModelTests.cs
 │   │   │   └── StrategyRunBrowserViewModelTests.cs
 │   │   ├── Views

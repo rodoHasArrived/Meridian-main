@@ -11,6 +11,7 @@ using System.Windows.Threading;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
+using Meridian.Wpf.Services;
 using UiBackfillService = Meridian.Ui.Services.BackfillService;
 using UiBackfillProgressEventArgs = Meridian.Ui.Services.BackfillProgressEventArgs;
 using UiBackfillCompletedEventArgs = Meridian.Ui.Services.BackfillCompletedEventArgs;
@@ -290,7 +291,7 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
 
         // Populate action bar.
         Actions.Clear();
-        Actions.Add(new ActionEntry("Start Backfill", new RelayCommand(() => _ = StartBackfillAsync()), "▶", "Start a new backfill", IsPrimary: true));
+        Actions.Add(new ActionEntry("Start Backfill", new RelayCommand(() => _navigationService.NavigateTo("Backfill")), "▶", "Start a new backfill", IsPrimary: true));
         Actions.Add(new ActionEntry("View Status", new RelayCommand(() => _navigationService.NavigateTo("Backfill")), "📊", "View backfill status"));
 
         await LoadScheduledJobsAsync();

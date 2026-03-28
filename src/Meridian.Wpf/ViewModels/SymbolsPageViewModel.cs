@@ -10,6 +10,7 @@ using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
+using Meridian.Wpf.Services;
 using WpfServices = Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.ViewModels;
@@ -116,11 +117,11 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
             {
                 SelectedSymbolTicker = value?.Symbol ?? string.Empty;
                 RaisePropertyChanged(nameof(HasSelectedSymbol));
-                NavigateToLiveDataCommand?.RaiseCanExecuteChanged();
-                NavigateToOrderBookCommand?.RaiseCanExecuteChanged();
-                StartBackfillCommand?.RaiseCanExecuteChanged();
-                NavigateToChartCommand?.RaiseCanExecuteChanged();
-                ExportSymbolDataCommand?.RaiseCanExecuteChanged();
+                NavigateToLiveDataCommand?.NotifyCanExecuteChanged();
+                NavigateToOrderBookCommand?.NotifyCanExecuteChanged();
+                StartBackfillCommand?.NotifyCanExecuteChanged();
+                NavigateToChartCommand?.NotifyCanExecuteChanged();
+                ExportSymbolDataCommand?.NotifyCanExecuteChanged();
             }
         }
     }
@@ -775,7 +776,7 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
                                     SelectedSymbolSecurityId = securityId;
                                     CanViewInSecurityMaster = true;
                                     CanAddToSecurityMaster = false;
-                                    _loggingService.LogInformation("Found security in Master for {Ticker}", ticker);
+                                    _loggingService.LogInfo($"Found security in Master for {ticker}");
                                     return;
                                 }
                             }
@@ -878,7 +879,7 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
 
         // Add Symbol command
         var addCommand = new RelayCommand(async () =>
-            await AddSymbolAsync(string.Empty, true, false, 10, "XNAS"));
+            await SaveSymbolAsync(string.Empty, true, false, 10, "XNAS", null, "Stock", null, null, null, null, null, null));
         commands.Add(new CommandEntry(
             "Add Symbol",
             "Add a new symbol to subscription list",
@@ -923,7 +924,7 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
             exportCommand));
 
         // Reload Symbols command
-        var reloadCommand = new AsyncRelayCommand(LoadSymbolsFromConfigAsync);
+        var reloadCommand = new AsyncRelayCommand(() => LoadSymbolsFromConfigAsync());
         commands.Add(new CommandEntry(
             "Reload Symbols",
             "Refresh the symbol list from configuration",

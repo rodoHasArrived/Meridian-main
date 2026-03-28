@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using Meridian.Application.Config;
 using Meridian.Application.Subscriptions.Models;
 using Meridian.Contracts.Configuration;
+using Meridian.Contracts.Domain;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Events;
@@ -102,8 +103,8 @@ public sealed class SyntheticMarketDataClient : IMarketDataClient, ISymbolSearch
     public Task<IReadOnlyList<SymbolSearchResult>> SearchAsync(string query, int limit = 10, CancellationToken ct = default)
         => Task.FromResult(SyntheticReferenceDataCatalog.Search(query, limit));
 
-    public Task<SymbolDetails?> GetDetailsAsync(string symbol, CancellationToken ct = default)
-        => Task.FromResult<SymbolDetails?>(SyntheticReferenceDataCatalog.GetProfile(symbol)?.ReferenceData);
+    public Task<SymbolDetails?> GetDetailsAsync(SymbolId symbol, CancellationToken ct = default)
+        => Task.FromResult<SymbolDetails?>(SyntheticReferenceDataCatalog.GetProfile(symbol.Value)?.ReferenceData);
 
     public async ValueTask DisposeAsync()
     {

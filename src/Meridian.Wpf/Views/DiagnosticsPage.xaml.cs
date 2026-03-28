@@ -7,6 +7,7 @@ using System.Windows.Shapes;
 using System.Windows.Controls;
 using System.Windows.Media;
 using Meridian.Application.Monitoring;
+using Meridian.Application.Services;
 using Meridian.Contracts.Services;
 using Meridian.Ui.Services;
 using Meridian.Wpf.ViewModels;

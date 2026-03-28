@@ -64,6 +64,10 @@
     <!-- MVVM Framework -->
     <PackageReference Include="CommunityToolkit.Mvvm" />
 
+    <!-- QuantScript UI components -->
+    <PackageReference Include="ICSharpCode.AvalonEdit" />
+    <PackageReference Include="ScottPlot.WPF" />
+
     <!-- Modern WPF Controls -->
     <PackageReference Include="MaterialDesignThemes" />
 
@@ -86,6 +90,11 @@
     <PackageReference Include="System.Security.Cryptography.ProtectedData" />
 
     <!-- Compression -->
+    <PackageReference Include="System.IO.Compression" />
+
+    <!-- QuantScript editor and chart rendering -->
+    <PackageReference Include="ICSharpCode.AvalonEdit" />
+    <PackageReference Include="ScottPlot.WPF" />
     <PackageReference Include="ZstdSharp.Port" />
   </ItemGroup>
 
@@ -105,6 +114,7 @@
     <ProjectReference Include="..\Meridian.Ui.Shared\Meridian.Ui.Shared.csproj" />
     <ProjectReference Include="..\Meridian.Backtesting\Meridian.Backtesting.csproj" />
     <ProjectReference Include="..\Meridian.Strategies\Meridian.Strategies.csproj" />
+    <ProjectReference Include="..\Meridian.QuantScript\Meridian.QuantScript.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(IsWindows)' == 'true' AND Exists('Assets')">

@@ -1,13 +1,12 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Meridian.Application.Config;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Storage.SecurityMaster;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Serilog;
 
 namespace Meridian.Infrastructure.Adapters.Polygon;
@@ -45,7 +44,7 @@ public sealed class PolygonCorporateActionFetcher : IPolygonCorporateActionFetch
     private readonly ISecurityMasterQueryService _queryService;
     private readonly ISecurityMasterEventStore _eventStore;
     private readonly RateLimiter _rateLimiter;
-    private readonly IOptions<AppConfig> _configOptions;
+    private readonly IConfiguration _configuration;
     private readonly ILogger<PolygonCorporateActionFetcher> _logger;
 
     private string? _apiKey;
@@ -57,21 +56,20 @@ public sealed class PolygonCorporateActionFetcher : IPolygonCorporateActionFetch
         ISecurityMasterQueryService queryService,
         ISecurityMasterEventStore eventStore,
         RateLimiter rateLimiter,
-        IOptions<AppConfig> configOptions,
+        IConfiguration configuration,
         ILogger<PolygonCorporateActionFetcher> logger)
     {
         _httpClientFactory = httpClientFactory;
         _queryService = queryService;
         _eventStore = eventStore;
         _rateLimiter = rateLimiter;
-        _configOptions = configOptions;
+        _configuration = configuration;
         _logger = logger;
     }
 
     public Task StartAsync(CancellationToken ct)
     {
-        var config = _configOptions.Value;
-        _apiKey = ResolvePolygonApiKey(config);
+        _apiKey = ResolvePolygonApiKey(_configuration);
 
         if (string.IsNullOrEmpty(_apiKey))
         {
@@ -309,7 +307,7 @@ public sealed class PolygonCorporateActionFetcher : IPolygonCorporateActionFetch
     {
         dto = default!;
 
-        if (!item.TryGetProperty("cash_amount", out var cashElement) || 
+        if (!item.TryGetProperty("cash_amount", out var cashElement) ||
             cashElement.GetString() == null ||
             !decimal.TryParse(cashElement.GetString()!, out var cashAmount))
         {
@@ -323,8 +321,8 @@ public sealed class PolygonCorporateActionFetcher : IPolygonCorporateActionFetch
             return false;
         }
 
-        var currency = item.TryGetProperty("currency", out var currencyElement) 
-            ? currencyElement.GetString() 
+        var currency = item.TryGetProperty("currency", out var currencyElement)
+            ? currencyElement.GetString()
             : null;
 
         var payDate = item.TryGetProperty("pay_date", out var payDateElement) &&
@@ -394,18 +392,20 @@ public sealed class PolygonCorporateActionFetcher : IPolygonCorporateActionFetch
         return true;
     }
 
-    private static string? ResolvePolygonApiKey(AppConfig config)
+    private static string? ResolvePolygonApiKey(IConfiguration configuration)
     {
-        if (config.DataSources?.Sources != null)
-        {
-            var sources = config.DataSources.Sources;
-            var polygonSource = sources.FirstOrDefault(s => s.Provider == DataSourceKind.Polygon);
-            if (polygonSource?.Polygon?.ApiKey != null)
-            {
-                return polygonSource.Polygon.ApiKey;
-            }
-        }
+        var meridianKey = Environment.GetEnvironmentVariable("MERIDIAN_POLYGON_API_KEY");
+        if (!string.IsNullOrWhiteSpace(meridianKey))
+            return meridianKey;
 
-        return Environment.GetEnvironmentVariable("POLYGON_API_KEY");
+        var polygonKey = Environment.GetEnvironmentVariable("POLYGON_API_KEY");
+        if (!string.IsNullOrWhiteSpace(polygonKey))
+            return polygonKey;
+
+        var configuredKey = configuration["Polygon:ApiKey"];
+        if (!string.IsNullOrWhiteSpace(configuredKey))
+            return configuredKey;
+
+        return configuration["Backfill:Providers:Polygon:ApiKey"];
     }
 }

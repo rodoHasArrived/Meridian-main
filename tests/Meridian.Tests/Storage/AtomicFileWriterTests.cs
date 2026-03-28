@@ -104,6 +104,18 @@ public sealed class AtomicFileWriterTests : IDisposable
     }
 
     [Fact]
+    public async Task AppendLinesAsync_PreservesExistingContent_AndAddsNewLines()
+    {
+        var path = Path.Combine(_testRoot, "append.txt");
+        await File.WriteAllLinesAsync(path, ["first", "second"]);
+
+        await AtomicFileWriter.AppendLinesAsync(path, ["third", "fourth"]);
+
+        var lines = await File.ReadAllLinesAsync(path);
+        lines.Should().Equal("first", "second", "third", "fourth");
+    }
+
+    [Fact]
     public async Task WriteWithChecksumAsync_CreatesChecksumSidecar()
     {
         var path = Path.Combine(_testRoot, "checksummed.bin");

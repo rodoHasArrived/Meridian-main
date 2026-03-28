@@ -133,7 +133,7 @@ internal sealed class OrderBookFillModel(
         return Math.Round(price / tickSize, MidpointRounding.ToEven) * tickSize;
     }
 
-    private static List<OrderBookLevel> FilterExecutableLevels(
+    private static IReadOnlyList<OrderBookLevel> FilterExecutableLevels(
         IReadOnlyList<OrderBookLevel> levels,
         OrderType executableType,
         Order order,
@@ -141,15 +141,18 @@ internal sealed class OrderBookFillModel(
     {
         if (executableType == OrderType.Market)
         {
-            return levels.ToList();
+            // All levels are executable — return the input directly, no allocation.
+            return levels;
         }
 
-        return levels
-            .Where(level =>
-                isBuy
-                    ? level.Price <= order.LimitPrice!.Value
-                    : level.Price >= order.LimitPrice!.Value)
-            .ToList();
+        // Limit order: filter levels within the limit price.
+        var filtered = new List<OrderBookLevel>();
+        foreach (var level in levels)
+        {
+            if (isBuy ? level.Price <= order.LimitPrice!.Value : level.Price >= order.LimitPrice!.Value)
+                filtered.Add(level);
+        }
+        return filtered;
     }
 
     private static bool IsTriggered(Order order, LOBSnapshot lob, bool isBuy)
@@ -157,12 +160,17 @@ internal sealed class OrderBookFillModel(
         if (order.StopPrice is null)
             return order.Type is OrderType.Market or OrderType.Limit;
 
-        var bestAsk = lob.Asks.OrderBy(level => level.Price).FirstOrDefault()?.Price;
-        var bestBid = lob.Bids.OrderByDescending(level => level.Price).FirstOrDefault()?.Price;
-
-        return isBuy
-            ? bestAsk.HasValue && bestAsk.Value >= order.StopPrice.Value
-            : bestBid.HasValue && bestBid.Value <= order.StopPrice.Value;
+        // Use O(n) min/max scan instead of sorting the whole order book.
+        if (isBuy)
+        {
+            var bestAsk = lob.Asks.Count > 0 ? lob.Asks.Min(static l => l.Price) : (decimal?)null;
+            return bestAsk.HasValue && bestAsk.Value >= order.StopPrice.Value;
+        }
+        else
+        {
+            var bestBid = lob.Bids.Count > 0 ? lob.Bids.Max(static l => l.Price) : (decimal?)null;
+            return bestBid.HasValue && bestBid.Value <= order.StopPrice.Value;
+        }
     }
 
     private static OrderType? GetExecutableType(OrderType originalType, bool triggered)

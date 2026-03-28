@@ -119,15 +119,16 @@ public sealed class StatusBarViewModel : BindableBase, IDisposable
     /// Starts the periodic status update timer (1-second interval).
     /// Call this after the window loads.
     /// </summary>
-    public async Task StartAsync(CancellationToken ct = default)
+    public Task StartAsync(CancellationToken ct = default)
     {
         if (_timer != null)
-            return;
+            return Task.CompletedTask;
 
         _cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
         _timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
 
         _ = Task.Run(async () => await UpdateLoopAsync(_cts.Token), _cts.Token);
+        return Task.CompletedTask;
     }
 
     /// <summary>
@@ -163,7 +164,7 @@ public sealed class StatusBarViewModel : BindableBase, IDisposable
         {
             // Update UTC time on every tick
             var currentTime = DateTime.UtcNow.ToString("HH:mm:ss");
-            await Application.Current.Dispatcher.InvokeAsync(() =>
+            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 UtcTime = currentTime + " UTC";
             });
@@ -173,12 +174,12 @@ public sealed class StatusBarViewModel : BindableBase, IDisposable
             if (status != null)
             {
                 // Calculate throughput: events per second
-                var throughputPerSec = (long)(status.Published * 1000.0 / (DateTime.UtcNow.Ticks / 10000.0 + 1));
+                var throughputPerSec = (long)(status.Metrics?.EventsPerSecond ?? 0);
                 var throughputLabel = throughputPerSec > 0
                     ? $"{(throughputPerSec / 1000.0):F1}K ev/s"
                     : $"{throughputPerSec} ev/s";
 
-                await Application.Current.Dispatcher.InvokeAsync(() =>
+                await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
                 {
                     ThroughputLabel = throughputLabel;
                 });
@@ -189,7 +190,7 @@ public sealed class StatusBarViewModel : BindableBase, IDisposable
             var newStatus = "Connected";
             var newDotBrush = _greenBrush;
 
-            if (status?.Provider?.IsConnected == false)
+            if (status?.IsConnected == false)
             {
                 newStatus = "Disconnected";
                 newDotBrush = _redBrush;
@@ -200,7 +201,7 @@ public sealed class StatusBarViewModel : BindableBase, IDisposable
                 newDotBrush = _amberBrush;
             }
 
-            await Application.Current.Dispatcher.InvokeAsync(() =>
+            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 BackendStatus = newStatus;
                 StatusDotBrush = newDotBrush;

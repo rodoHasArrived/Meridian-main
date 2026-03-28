@@ -112,6 +112,7 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         RegisterPage("Charts", typeof(ChartingPage));
         RegisterPage("OrderBook", typeof(OrderBookPage));
         RegisterPage("DataCalendar", typeof(DataCalendarPage));
+        RegisterPage("QuantScript", typeof(QuantScriptPage));
 
         // Storage & Maintenance (3 pages)
         RegisterPage("StorageOptimization", typeof(StorageOptimizationPage));
@@ -134,6 +135,7 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         RegisterPage("Help", typeof(HelpPage));
         RegisterPage("Welcome", typeof(WelcomePage));
         RegisterPage("Settings", typeof(SettingsPage));
+        RegisterPage("CredentialManagement", typeof(CredentialManagementPage));
         RegisterPage("KeyboardShortcuts", typeof(KeyboardShortcutsPage));
         RegisterPage("SetupWizard", typeof(SetupWizardPage));
         RegisterPage("AddProviderWizard", typeof(AddProviderWizardPage));

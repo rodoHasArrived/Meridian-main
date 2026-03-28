@@ -50,6 +50,7 @@ public partial class ChartingPage : Page { }
 public partial class OrderBookPage : Page { }
 public partial class DataCalendarPage : Page { }
 public partial class RunMatPage : Page { }
+public partial class QuantScriptPage : Page { }
 
 // Storage & Maintenance pages
 public partial class StorageOptimizationPage : Page { }
@@ -90,6 +91,7 @@ public partial class NotificationCenterPage : Page { }
 public partial class HelpPage : Page { }
 public partial class WelcomePage : Page { }
 public partial class SettingsPage : Page { }
+public partial class CredentialManagementPage : Page { }
 public partial class KeyboardShortcutsPage : Page { }
 public partial class SetupWizardPage : Page { }
 public partial class AddProviderWizardPage : Page { }

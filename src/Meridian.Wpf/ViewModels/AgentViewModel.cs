@@ -1,3 +1,4 @@
+using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using Meridian.Wpf.Services;
 
@@ -20,6 +21,9 @@ public sealed record AgentMessageModel(string Role, string Content, DateTimeOffs
 /// </summary>
 public sealed class AgentViewModel : BindableBase
 {
+    private static readonly SolidColorBrush OllamaOnlineBrush = CreateFrozenBrush(34, 197, 94);
+    private static readonly SolidColorBrush OllamaOfflineBrush = CreateFrozenBrush(239, 68, 68);
+
     private readonly IAgentLoopService _agentLoopService;
     private readonly ILogger<AgentViewModel> _logger;
     private readonly RelayCommand _sendCommand;
@@ -30,9 +34,6 @@ public sealed class AgentViewModel : BindableBase
     private string _selectedModel = string.Empty;
     private bool _isSending;
     private bool _isOllamaAvailable;
-
-    private static readonly SolidColorBrush OllamaOnlineBrush = new(Color.FromRgb(34, 197, 94)) { IsFrozen = true };
-    private static readonly SolidColorBrush OllamaOfflineBrush = new(Color.FromRgb(239, 68, 68)) { IsFrozen = true };
 
     public ObservableCollection<AgentMessageModel> Messages
     {
@@ -82,8 +83,8 @@ public sealed class AgentViewModel : BindableBase
         _agentLoopService = agentLoopService ?? throw new ArgumentNullException(nameof(agentLoopService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-        _sendCommand = new RelayCommand(_ => { _ = SendAsync(); }, _ => CanSend);
-        _clearCommand = new RelayCommand(_ => Messages.Clear(), _ => true);
+        _sendCommand = new RelayCommand(() => { _ = SendAsync(); }, () => CanSend);
+        _clearCommand = new RelayCommand(() => Messages.Clear());
 
         _agentLoopService.MessageReceived += OnAgentMessageReceived;
 
@@ -177,29 +178,12 @@ public sealed class AgentViewModel : BindableBase
     {
         Messages.Add(new AgentMessageModel(e.Role, e.Content, e.Timestamp));
     }
+
+    private static SolidColorBrush CreateFrozenBrush(byte r, byte g, byte b)
+    {
+        var brush = new SolidColorBrush(Color.FromRgb(r, g, b));
+        brush.Freeze();
+        return brush;
+    }
 }
 
-/// <summary>
-/// Simple relay command implementation for binding.
-/// </summary>
-public sealed class RelayCommand : ICommand
-{
-    private readonly Action<object?> _execute;
-    private readonly Func<object?, bool>? _canExecute;
-
-    public event EventHandler? CanExecuteChanged
-    {
-        add => CommandManager.RequerySuggested += value;
-        remove => CommandManager.RequerySuggested -= value;
-    }
-
-    public RelayCommand(Action<object?> execute, Func<object?, bool>? canExecute = null)
-    {
-        _execute = execute ?? throw new ArgumentNullException(nameof(execute));
-        _canExecute = canExecute;
-    }
-
-    public bool CanExecute(object? parameter) => _canExecute?.Invoke(parameter) ?? true;
-
-    public void Execute(object? parameter) => _execute(parameter);
-}

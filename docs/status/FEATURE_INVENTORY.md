@@ -529,9 +529,9 @@ These areas are part of the documented implementation scope even though they are
 
 | Capability | Status | Notes |
 |------------|--------|-------|
-| QuantScript library/project | ðŸ“ | Blueprint exists; project, compiler/runtime pipeline, and public API are not yet implemented |
-| QuantScript WPF editor/surface | ðŸ“ | Planned AvalonEdit + charting-based desktop experience; not yet present in the shipping UI |
-| QuantScript tests/sample scripts/docs | ðŸ“ | Defined in the blueprint; not yet landed |
+| QuantScript library/project | ✅ | `src/Meridian.QuantScript` — Roslyn scripting API, PriceSeries/ReturnSeries domain types, StatisticsEngine, BacktestProxy, QuantDataContext, PlotQueue |
+| QuantScript WPF editor/surface | ✅ | `QuantScriptPage.xaml` + `QuantScriptViewModel` — AvalonEdit editor, three-column layout, Console/Charts/Metrics/Trades/Diagnostics result tabs, ScottPlot charting |
+| QuantScript tests/sample scripts/docs | ✅ | `tests/Meridian.QuantScript.Tests` (compiler, runner, stats, plot-queue); `scripts/example-sharpe.csx` sample script |
 | L3 reconstruction timeline | ðŸ“ | Planned deterministic replay + merged timeline for queue inference |
 | L3 inference model | ðŸ“ | Planned probabilistic queue-ahead inference with confidence scoring |
 | Queue-aware execution simulator | ðŸ“ | Planned market/limit simulation with partial fills, latency, and exported artifacts |

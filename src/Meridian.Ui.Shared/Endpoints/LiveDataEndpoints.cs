@@ -173,6 +173,76 @@ public static class LiveDataEndpoints
         .Produces(200)
         .Produces(503);
 
+        // GET /api/data/l3-orderbook/{symbol} — L3 order-book snapshot derived from order lifecycle events
+        group.MapGet(UiApiRoutes.DataL3Orderbook, (string symbol, int? levels, HttpContext ctx) =>
+        {
+            var l3Collector = ctx.RequestServices.GetService<L3OrderBookCollector>();
+            if (l3Collector is null)
+            {
+                return Results.Json(
+                    new { error = "L3 order book collector not available", symbol },
+                    jsonOptions,
+                    statusCode: StatusCodes.Status503ServiceUnavailable);
+            }
+
+            var snapshot = l3Collector.GetCurrentSnapshot(symbol);
+            if (snapshot is null)
+            {
+                return Results.Json(new OrderBookResponse(
+                    Symbol: symbol,
+                    Timestamp: DateTimeOffset.UtcNow,
+                    Bids: Array.Empty<OrderBookLevelDto>(),
+                    Asks: Array.Empty<OrderBookLevelDto>(),
+                    MidPrice: null,
+                    Imbalance: null,
+                    MarketState: "NoData",
+                    SequenceNumber: 0,
+                    IsStale: false,
+                    StreamId: null,
+                    Venue: null), jsonOptions);
+            }
+
+            var maxLevels = levels ?? 10;
+
+            var bids = snapshot.Bids
+                .Take(maxLevels)
+                .Select(l => new OrderBookLevelDto(
+                    Side: l.Side.ToString(),
+                    Level: l.Level,
+                    Price: l.Price,
+                    Size: l.Size,
+                    MarketMaker: l.MarketMaker))
+                .ToList();
+
+            var asks = snapshot.Asks
+                .Take(maxLevels)
+                .Select(l => new OrderBookLevelDto(
+                    Side: l.Side.ToString(),
+                    Level: l.Level,
+                    Price: l.Price,
+                    Size: l.Size,
+                    MarketMaker: l.MarketMaker))
+                .ToList();
+
+            var response = new OrderBookResponse(
+                Symbol: symbol,
+                Timestamp: snapshot.Timestamp,
+                Bids: bids,
+                Asks: asks,
+                MidPrice: snapshot.MidPrice,
+                Imbalance: snapshot.Imbalance,
+                MarketState: "L3",
+                SequenceNumber: snapshot.SequenceNumber,
+                IsStale: false,
+                StreamId: snapshot.StreamId,
+                Venue: snapshot.Venue);
+
+            return Results.Json(response, jsonOptions);
+        })
+        .WithName("GetL3OrderBook")
+        .Produces(200)
+        .Produces(503);
+
         // GET /api/data/bbo/{symbol} — best bid/offer
         group.MapGet(UiApiRoutes.DataBbo, (string symbol, HttpContext ctx) =>
         {

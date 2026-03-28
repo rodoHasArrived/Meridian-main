@@ -50,6 +50,12 @@
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="10.1.5" />
   </ItemGroup>
 
+  <ItemGroup Label="QuantScript">
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.13.0" />
+    <PackageVersion Include="ICSharpCode.AvalonEdit" Version="6.3.0.90" />
+    <PackageVersion Include="ScottPlot.WPF" Version="5.0.55" />
+  </ItemGroup>
+
   <ItemGroup Label="Logging - Serilog">
     <PackageVersion Include="Serilog" Version="4.3.1" />
     <PackageVersion Include="Serilog.AspNetCore" Version="10.0.0" />
@@ -125,6 +131,12 @@
 
   <ItemGroup Label="Technical Analysis">
     <PackageVersion Include="Skender.Stock.Indicators" Version="2.7.1" />
+  </ItemGroup>
+
+  <ItemGroup Label="QuantScript">
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="5.0.0" />
+    <PackageVersion Include="ICSharpCode.AvalonEdit" Version="6.3.0.90" />
+    <PackageVersion Include="ScottPlot.WPF" Version="5.0.55" />
   </ItemGroup>
 
   <ItemGroup Label="StockSharp">

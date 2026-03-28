@@ -1,6 +1,6 @@
 # Provider Registry
 
-> Auto-generated on 2026-03-27 21:36:30 UTC. Do not edit manually.
+> Auto-generated on 2026-03-28 08:08:56 UTC. Do not edit manually.
 
 | Provider Candidate |
 |---|
@@ -18,6 +18,7 @@
 | `src/Meridian.Contracts/Api/ProviderCatalog.cs` |
 | `src/Meridian.Contracts/Credentials/ISecretProvider.cs` |
 | `src/Meridian.Contracts/Domain/ProviderId.cs` |
+| `src/Meridian.Contracts/Domain/ProviderSymbol.cs` |
 | `src/Meridian.Core/Config/IConfigurationProvider.cs` |
 | `src/Meridian.Core/Exceptions/DataProviderException.cs` |
 | `src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs` |
@@ -70,3 +71,17 @@
 | `src/Meridian.Wpf/Views/AddProviderWizardPage.xaml.cs` |
 | `src/Meridian.Wpf/Views/ProviderHealthPage.xaml.cs` |
 | `src/Meridian.Wpf/Views/ProviderPage.xaml.cs` |
+
+## QuantScript Data Access
+
+`IQuantDataContext` / `QuantDataContext` in `src/Meridian.QuantScript/API/` provides the market
+data bridge used by the Roslyn scripting environment. It reads OHLCV bars from the local JSONL
+store via `JsonlMarketDataStore` and wraps results in the `PriceSeries` domain type.
+It is not a provider in the streaming or historical-backfill sense but acts as the scripting
+layer's read-only data façade.
+
+| QuantScript Data Component | Role |
+|---|---|
+| `src/Meridian.QuantScript/API/IQuantDataContext.cs` | Read-only data contract for scripts |
+| `src/Meridian.QuantScript/API/QuantDataContext.cs` | Production implementation backed by `JsonlMarketDataStore` |
+| `src/Meridian.QuantScript/API/DataProxy.cs` | Synchronous façade used inside script globals |

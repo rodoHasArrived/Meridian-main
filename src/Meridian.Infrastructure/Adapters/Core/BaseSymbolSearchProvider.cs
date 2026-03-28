@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Meridian.Application.Logging;
 using Meridian.Application.Subscriptions.Models;
+using Meridian.Contracts.Domain;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.Http;
@@ -249,11 +250,11 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
     /// <summary>
     /// Get detailed information about a specific symbol.
     /// </summary>
-    public async Task<SymbolDetails?> GetDetailsAsync(string symbol, CancellationToken ct = default)
+    public async Task<SymbolDetails?> GetDetailsAsync(SymbolId symbol, CancellationToken ct = default)
     {
         ThrowIfDisposed();
 
-        if (string.IsNullOrWhiteSpace(symbol))
+        if (string.IsNullOrWhiteSpace(symbol.Value))
             return null;
 
         if (!HasValidCredentials())
@@ -261,11 +262,11 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
 
         await RateLimiter.WaitForSlotAsync(ct).ConfigureAwait(false);
 
-        var normalizedSymbol = symbol.ToUpperInvariant();
+        var symbolValue = symbol.Value;
 
         try
         {
-            var url = BuildDetailsUrl(normalizedSymbol);
+            var url = BuildDetailsUrl(symbolValue);
             using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode)
@@ -276,7 +277,7 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
             }
 
             var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
-            return await DeserializeDetailsAsync(json, normalizedSymbol, ct).ConfigureAwait(false);
+            return await DeserializeDetailsAsync(json, symbolValue, ct).ConfigureAwait(false);
         }
         catch (Exception ex)
         {

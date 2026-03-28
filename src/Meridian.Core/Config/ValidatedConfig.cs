@@ -42,6 +42,13 @@ public sealed record ValidatedConfig
     public IReadOnlyList<string> AppliedFixes { get; init; } = Array.Empty<string>();
 
     /// <summary>
+    /// Self-healing fixes that were <b>not</b> applied because production-strictness mode
+    /// refused them (<c>MDC_CONFIG_STRICTNESS=production</c>).
+    /// Each entry is an actionable description of the required manual correction.
+    /// </summary>
+    public IReadOnlyList<string> BlockedFixes { get; init; } = Array.Empty<string>();
+
+    /// <summary>
     /// Warnings that should be surfaced to the user but don't prevent operation.
     /// </summary>
     public IReadOnlyList<string> Warnings { get; init; } = Array.Empty<string>();
@@ -72,7 +79,8 @@ public sealed record ValidatedConfig
         IReadOnlyList<string>? appliedFixes = null,
         IReadOnlyList<string>? warnings = null,
         string? environmentName = null,
-        ConfigurationOrigin source = ConfigurationOrigin.File)
+        ConfigurationOrigin source = ConfigurationOrigin.File,
+        IReadOnlyList<string>? blockedFixes = null)
     {
         return new ValidatedConfig
         {
@@ -81,6 +89,7 @@ public sealed record ValidatedConfig
             SourcePath = sourcePath,
             ValidationErrors = validationErrors ?? Array.Empty<string>(),
             AppliedFixes = appliedFixes ?? Array.Empty<string>(),
+            BlockedFixes = blockedFixes ?? Array.Empty<string>(),
             Warnings = warnings ?? Array.Empty<string>(),
             EnvironmentName = environmentName,
             Source = source,

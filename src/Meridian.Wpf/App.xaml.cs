@@ -6,7 +6,9 @@ using System.Windows.Threading;
 using System.Windows.Forms;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Meridian.Application.Services;
 using Meridian.Application.SecurityMaster;
+using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
 using Meridian.Strategies.Interfaces;
@@ -244,7 +246,7 @@ public partial class App : System.Windows.Application
         services.AddSingleton(_ => SearchService.Instance);
 
         // ── AI Agent service (local Ollama) ──────────────────────────────────
-        services.AddSingleton<IAgentLoopService, WpfServices.AgentLoopService>();
+        services.AddSingleton<WpfServices.IAgentLoopService, WpfServices.AgentLoopService>();
 
         // ── Data quality shared services ─────────────────────────────────────
         services.AddSingleton<IDataQualityApiClient, DataQualityApiClient>();
@@ -257,7 +259,7 @@ public partial class App : System.Windows.Application
         services.AddSingleton(_ => WpfServices.OfflineTrackingPersistenceService.Instance);
         services.AddSingleton(_ => WpfServices.PendingOperationsQueueService.Instance);
         services.AddSingleton(_ => WpfServices.ToastNotificationService.Instance);
-        services.AddSingleton<ISystemTrayService>(_ => new WpfServices.SystemTrayService());
+        services.AddSingleton<WpfServices.ISystemTrayService>(_ => new WpfServices.SystemTrayService());
         services.AddSingleton(_ => new WpfServices.SystemTrayService());
 
         // ── MainWindow ──────────────────────────────────────────────────────
@@ -425,7 +427,7 @@ public partial class App : System.Windows.Application
                 WpfServices.ThemeService.Instance.Initialize(mainWindow);
 
                 // Initialize system tray integration
-                var systemTrayService = Services.GetRequiredService<ISystemTrayService>();
+                var systemTrayService = Services.GetRequiredService<WpfServices.ISystemTrayService>();
                 systemTrayService.Initialize(mainWindow);
 
                 // Wire notifications to system tray balloons
@@ -801,7 +803,7 @@ public partial class App : System.Windows.Application
     /// <summary>
     /// Wires the NotificationService to the system tray to display important notifications as balloon tips.
     /// </summary>
-    private static void WireNotificationsTray(ISystemTrayService systemTrayService)
+    private static void WireNotificationsTray(WpfServices.ISystemTrayService systemTrayService)
     {
         var notificationService = WpfServices.NotificationService.Instance;
         notificationService.NotificationReceived += (sender, args) =>
@@ -826,7 +828,7 @@ public partial class App : System.Windows.Application
     /// Wires the ConnectionService status changes to the system tray icon color and tooltip.
     /// Updates the tray icon to reflect connection health: green (connected), amber (reconnecting), red (disconnected).
     /// </summary>
-    private static void WireConnectionStatusTray(ISystemTrayService systemTrayService)
+    private static void WireConnectionStatusTray(WpfServices.ISystemTrayService systemTrayService)
     {
         var connectionService = WpfServices.ConnectionService.Instance;
         connectionService.StateChanged += (sender, args) =>
@@ -837,7 +839,7 @@ public partial class App : System.Windows.Application
                 ConnectionState.Connected => ConnectionStatus.Connected,
                 ConnectionState.Reconnecting => ConnectionStatus.Reconnecting,
                 ConnectionState.Disconnected => ConnectionStatus.Disconnected,
-                _ => ConnectionStatus.Unknown
+                _ => ConnectionStatus.Faulted
             };
 
             systemTrayService.UpdateHealthStatus(status);
@@ -849,9 +851,8 @@ public partial class App : System.Windows.Application
             ConnectionState.Connected => ConnectionStatus.Connected,
             ConnectionState.Reconnecting => ConnectionStatus.Reconnecting,
             ConnectionState.Disconnected => ConnectionStatus.Disconnected,
-            _ => ConnectionStatus.Unknown
+            _ => ConnectionStatus.Faulted
         };
         systemTrayService.UpdateHealthStatus(initialStatus);
     }
 }
-

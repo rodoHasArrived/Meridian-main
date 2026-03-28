@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using Meridian.Application.Logging;
 using Meridian.Application.Subscriptions.Models;
+using Meridian.Contracts.Domain;
 using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.Finnhub;
@@ -294,7 +295,7 @@ public sealed class SymbolSearchService : IDisposable
                 if (!available)
                     continue;
 
-                details = await p.GetDetailsAsync(normalizedSymbol, ct).ConfigureAwait(false);
+                details = await p.GetDetailsAsync(new SymbolId(normalizedSymbol), ct).ConfigureAwait(false);
                 if (details is not null)
                 {
                     _log.Debug("Got details for {Symbol} from {Provider}", symbol, p.Name);
