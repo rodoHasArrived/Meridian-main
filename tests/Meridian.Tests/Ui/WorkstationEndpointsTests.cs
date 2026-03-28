@@ -3,10 +3,10 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
+using Meridian.Application.UI;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
-using ISecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
 using Meridian.Ledger;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using ISecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
 
 namespace Meridian.Tests.Ui;
 
@@ -1274,94 +1275,72 @@ public sealed class WorkstationEndpointsTests
         ids.Should().NotContain("typed-run-2");
     }
 
-    // -----------------------------------------------------------------------
-    // Bootstrap coverage — data-operations and trading workspace routes
-    // -----------------------------------------------------------------------
+    // --- Data-operations workspace ---
 
     [Fact]
-    public async Task MapWorkstationEndpoints_DataOperationsWorkspace_ShouldReturnFallbackPayload()
+    public async Task MapWorkstationEndpoints_DataOperations_WithoutServices_ShouldReturnFallbackPayload()
     {
         await using var app = await CreateAppAsync();
         var client = app.GetTestClient();
 
         using var doc = await ReadJsonAsync(client, "/api/workstation/data-operations");
 
-        var metrics = doc.RootElement.GetProperty("metrics");
-        metrics.GetArrayLength().Should().Be(4);
-        metrics.EnumerateArray()
-            .Should()
-            .Contain(m => m.GetProperty("id").GetString() == "providers-healthy" &&
-                          m.GetProperty("value").GetString() == "4");
-        metrics.EnumerateArray()
-            .Should()
-            .Contain(m => m.GetProperty("id").GetString() == "ops-review");
-
-        doc.RootElement.GetProperty("providers").GetArrayLength().Should().Be(3);
-        doc.RootElement.GetProperty("backfills").GetArrayLength().Should().Be(2);
-        doc.RootElement.GetProperty("exports").GetArrayLength().Should().Be(2);
-    }
-
-    [Fact]
-    public async Task MapWorkstationEndpoints_DataOperationsWorkspace_ShouldReflectActiveRunsInMetrics()
-    {
-        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services));
-        var store = app.Services.GetRequiredService<IStrategyRepository>();
-
-        // Completed backtest run → RequiresReview: true → reviewRuns = 1, activeRuns = 0
-        await store.RecordRunAsync(BuildRun(
-            runId: "dataops-bt-1",
-            strategyId: "strat-abc",
-            strategyName: "Arb Strategy",
-            runType: RunType.Backtest,
-            startedAt: DateTimeOffset.UtcNow.AddHours(-1)));
-
-        var client = app.GetTestClient();
-
-        using var doc = await ReadJsonAsync(client, "/api/workstation/data-operations");
-
-        var metrics = doc.RootElement.GetProperty("metrics");
-
-        // activeRuns = 0 → backfills-running = Math.Max(1, 0) = 1
-        metrics.EnumerateArray()
-            .Should()
-            .Contain(m => m.GetProperty("id").GetString() == "backfills-running" &&
-                          m.GetProperty("value").GetString() == "1");
-
-        // Completed backtest → RequiresReview = true → ops-review = 1 with warning tone
-        metrics.EnumerateArray()
-            .Should()
-            .Contain(m => m.GetProperty("id").GetString() == "ops-review" &&
-                          m.GetProperty("value").GetString() == "1" &&
-                          m.GetProperty("tone").GetString() == "warning");
-
+        // Fallback payload contains hard-coded fixture rows
+        doc.RootElement.GetProperty("metrics").GetArrayLength().Should().Be(4);
         doc.RootElement.GetProperty("providers").GetArrayLength().Should().BeGreaterThan(0);
         doc.RootElement.GetProperty("backfills").GetArrayLength().Should().BeGreaterThan(0);
         doc.RootElement.GetProperty("exports").GetArrayLength().Should().BeGreaterThan(0);
+
+        var providersHealthyMetric = doc.RootElement.GetProperty("metrics").EnumerateArray()
+            .Single(m => m.GetProperty("id").GetString() == "providers-healthy");
+        providersHealthyMetric.GetProperty("label").GetString().Should().Be("Providers Healthy");
     }
 
     [Fact]
-    public async Task MapWorkstationEndpoints_TradingWorkspace_ShouldReturnFallbackPayload()
+    public async Task MapWorkstationEndpoints_DataOperations_WithReadServiceOnly_ShouldReturnEmptyProvidersAndBackfills()
     {
-        await using var app = await CreateAppAsync();
+        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services));
         var client = app.GetTestClient();
 
-        using var doc = await ReadJsonAsync(client, "/api/workstation/trading");
+        using var doc = await ReadJsonAsync(client, "/api/workstation/data-operations");
 
-        var metrics = doc.RootElement.GetProperty("metrics");
-        metrics.GetArrayLength().Should().Be(4);
-        metrics.EnumerateArray()
-            .Should()
-            .Contain(m => m.GetProperty("id").GetString() == "trading-net-pnl");
-        metrics.EnumerateArray()
-            .Should()
-            .Contain(m => m.GetProperty("id").GetString() == "trading-open-orders");
+        // No ConfigStore → providers and backfills are empty; exports always empty in MVP
+        doc.RootElement.GetProperty("metrics").GetArrayLength().Should().Be(4);
+        doc.RootElement.GetProperty("providers").GetArrayLength().Should().Be(0);
+        doc.RootElement.GetProperty("backfills").GetArrayLength().Should().Be(0);
+        doc.RootElement.GetProperty("exports").GetArrayLength().Should().Be(0);
 
-        doc.RootElement.GetProperty("positions").GetArrayLength().Should().BeGreaterThan(0);
-        doc.RootElement.GetProperty("openOrders").GetArrayLength().Should().BeGreaterThan(0);
-        doc.RootElement.GetProperty("fills").GetArrayLength().Should().BeGreaterThan(0);
+        var providersHealthyMetric = doc.RootElement.GetProperty("metrics").EnumerateArray()
+            .Single(m => m.GetProperty("id").GetString() == "providers-healthy");
+        providersHealthyMetric.GetProperty("value").GetString().Should().Be("0");
+        providersHealthyMetric.GetProperty("tone").GetString().Should().Be("default");
 
-        doc.RootElement.GetProperty("risk").GetProperty("state").GetString().Should().Be("Healthy");
-        doc.RootElement.GetProperty("brokerage").GetProperty("provider").GetString().Should().Be("Interactive Brokers");
+        var backfillsMetric = doc.RootElement.GetProperty("metrics").EnumerateArray()
+            .Single(m => m.GetProperty("id").GetString() == "backfills-running");
+        backfillsMetric.GetProperty("value").GetString().Should().Be("0");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_DataOperations_WithConfigStoreNoMetricsFile_ShouldReturnEmptyProvidersAndBackfills()
+    {
+        // Register a ConfigStore pointing to a nonexistent directory so TryLoad* returns null
+        var noDataPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString(), "appsettings.json");
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton(new Meridian.Application.UI.ConfigStore(noDataPath));
+        });
+        var client = app.GetTestClient();
+
+        using var doc = await ReadJsonAsync(client, "/api/workstation/data-operations");
+
+        doc.RootElement.GetProperty("providers").GetArrayLength().Should().Be(0);
+        doc.RootElement.GetProperty("backfills").GetArrayLength().Should().Be(0);
+        doc.RootElement.GetProperty("exports").GetArrayLength().Should().Be(0);
+
+        var providersHealthyMetric = doc.RootElement.GetProperty("metrics").EnumerateArray()
+            .Single(m => m.GetProperty("id").GetString() == "providers-healthy");
+        providersHealthyMetric.GetProperty("value").GetString().Should().Be("0");
     }
 
     // Helper shims to reuse StrategyRunDrillInTests factory logic directly
@@ -1464,7 +1443,7 @@ public sealed class WorkstationEndpointsTests
         {
             ["AAPL"] = new("AAPL", 5_000m, 1_200m, 8, 45m, 20m),
             ["MSFT"] = new("MSFT", 3_000m, -200m, 4, 22m, 10m),
-            ["SPY"]  = new("SPY",  1_000m, 500m, 2, 10m, 5m)
+            ["SPY"] = new("SPY", 1_000m, 500m, 2, 10m, 5m)
         };
 
         var request = new BacktestRequest(

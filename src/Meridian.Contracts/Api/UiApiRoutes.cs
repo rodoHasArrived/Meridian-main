@@ -331,6 +331,7 @@ public static class UiApiRoutes
     public const string DataTrades = "/api/data/trades/{symbol}";
     public const string DataQuotes = "/api/data/quotes/{symbol}";
     public const string DataOrderbook = "/api/data/orderbook/{symbol}";
+    public const string DataL3Orderbook = "/api/data/l3-orderbook/{symbol}";
     public const string DataBbo = "/api/data/bbo/{symbol}";
     public const string DataOrderflow = "/api/data/orderflow/{symbol}";
     public const string DataHealth = "/api/data/health";
@@ -457,4 +458,9 @@ public static class UiApiRoutes
     /// </summary>
     public static string WithQuery(string route, string queryString)
         => string.IsNullOrEmpty(queryString) ? route : $"{route}?{queryString}";
+
+    // Credential management endpoints
+    public const string Credentials = "/api/credentials";
+    public const string CredentialByProvider = "/api/credentials/{provider}";
+    public const string CredentialTest = "/api/credentials/{provider}/test";
 }

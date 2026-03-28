@@ -961,40 +961,80 @@ public static class WorkstationEndpoints
     private static async Task<object> BuildDataOperationsPayloadAsync(HttpContext context)
     {
         var readService = context.RequestServices.GetService<StrategyRunReadService>();
-        if (readService is null)
+        var configStore = context.RequestServices.GetService<Meridian.Application.UI.ConfigStore>();
+
+        if (readService is null && configStore is null)
         {
             return BuildDataOperationsFallbackPayload();
         }
 
-        var runs = (await readService.GetRunsAsync(ct: context.RequestAborted).ConfigureAwait(false)).ToArray();
+        var runs = readService is not null
+            ? (await readService.GetRunsAsync(ct: context.RequestAborted).ConfigureAwait(false)).ToArray()
+            : [];
         var activeRuns = runs.Count(static run => run.Status is StrategyRunStatus.Running or StrategyRunStatus.Paused);
         var reviewRuns = runs.Count(static run => run.Promotion?.RequiresReview == true || run.Status is StrategyRunStatus.Failed or StrategyRunStatus.Cancelled);
+
+        // --- Providers (real data from metrics store when available) ---
+        var metricsStatus = configStore?.TryLoadProviderMetrics();
+        var healthyProviderCount = metricsStatus?.HealthyProviders ?? 0;
+        object[] providers = metricsStatus is { Providers.Length: > 0 }
+            ? metricsStatus.Providers.Select(static p => (object)new
+            {
+                provider = p.ProviderId,
+                status = p.IsConnected ? "Healthy" : "Offline",
+                capability = p.ProviderType,
+                latency = $"{p.AverageLatencyMs:F0}ms p50",
+                note = p.IsConnected
+                    ? $"Active subscriptions: {p.ActiveSubscriptions}. Quality score: {p.DataQualityScore:P0}."
+                    : $"Provider disconnected. Last seen: {p.Timestamp:HH:mm} UTC."
+            }).ToArray()
+            : [];
+
+        // --- Backfills (last known backfill result from status file) ---
+        var lastBackfill = configStore?.TryLoadBackfillStatus();
+        object[] backfills;
+        if (lastBackfill is not null)
+        {
+            var symbolSummary = lastBackfill.Symbols.Length > 0
+                ? string.Join(", ", lastBackfill.Symbols.Take(3)) + (lastBackfill.Symbols.Length > 3 ? " …" : "")
+                : "unknown";
+            var days = (lastBackfill.To != null && lastBackfill.From != null)
+                ? (lastBackfill.To.Value.DayNumber - lastBackfill.From.Value.DayNumber).ToString(CultureInfo.InvariantCulture) + "d"
+                : "—";
+            var age = DateTimeOffset.UtcNow - lastBackfill.CompletedUtc;
+            var updatedAt = age.TotalMinutes < 60
+                ? $"{(int)age.TotalMinutes}m ago"
+                : $"{(int)age.TotalHours}h ago";
+            backfills =
+            [
+                new
+                {
+                    jobId = $"BF-{Math.Abs(lastBackfill.GetHashCode()) % 10000:D4}",
+                    scope = $"{symbolSummary} / {days}",
+                    provider = lastBackfill.Provider,
+                    status = lastBackfill.Success ? "Completed" : "Failed",
+                    progress = lastBackfill.Success ? "100%" : "Error",
+                    updatedAt
+                }
+            ];
+        }
+        else
+        {
+            backfills = [];
+        }
 
         return new
         {
             metrics = new[]
             {
-                new { id = "providers-healthy", label = "Providers Healthy", value = "4", delta = "0", tone = "success" },
-                new { id = "backfills-running", label = "Backfills Running", value = Math.Max(1, activeRuns).ToString(CultureInfo.InvariantCulture), delta = activeRuns == 0 ? "0" : $"+{activeRuns}", tone = activeRuns > 0 ? "default" : "success" },
-                new { id = "exports-ready", label = "Exports Ready", value = "3", delta = "+1", tone = "success" },
+                new { id = "providers-healthy", label = "Providers Healthy", value = healthyProviderCount.ToString(CultureInfo.InvariantCulture), delta = "0", tone = healthyProviderCount > 0 ? "success" : "default" },
+                new { id = "backfills-running", label = "Backfills Running", value = activeRuns.ToString(CultureInfo.InvariantCulture), delta = activeRuns == 0 ? "0" : $"+{activeRuns}", tone = activeRuns > 0 ? "default" : "success" },
+                new { id = "exports-ready", label = "Exports Ready", value = "0", delta = "0", tone = "default" },
                 new { id = "ops-review", label = "Needs Review", value = reviewRuns.ToString(CultureInfo.InvariantCulture), delta = reviewRuns == 0 ? "0" : $"+{reviewRuns}", tone = reviewRuns == 0 ? "default" : "warning" }
             },
-            providers = new[]
-            {
-                new { provider = "Interactive Brokers", status = "Healthy", capability = "Execution + fills", latency = "23ms p50", note = "Paper session heartbeat and ingress are healthy." },
-                new { provider = "Polygon", status = "Healthy", capability = "Streaming equities", latency = "18ms p50", note = "Quote and trade subscriptions are within expected envelope." },
-                new { provider = "Databento", status = "Warning", capability = "Historical replay", latency = "74ms p50", note = "Backfill queue is elevated for options symbols." }
-            },
-            backfills = new[]
-            {
-                new { jobId = "BF-1042", scope = "US equities / 30d", provider = "Databento", status = activeRuns > 0 ? "Running" : "Queued", progress = activeRuns > 0 ? "62%" : "0%", updatedAt = "2m ago" },
-                new { jobId = "BF-1044", scope = "Options chains / 7d", provider = "Databento", status = "Review", progress = "95%", updatedAt = "5m ago" }
-            },
-            exports = new[]
-            {
-                new { exportId = "EX-2201", profile = "python-pandas", target = "research pack", status = "Ready", rows = "124k", updatedAt = "4m ago" },
-                new { exportId = "EX-2203", profile = "excel", target = "governance review", status = "Running", rows = "18k", updatedAt = "1m ago" }
-            }
+            providers,
+            backfills,
+            exports = Array.Empty<object>()
         };
     }
 

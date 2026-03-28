@@ -1,9 +1,9 @@
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
-using ISecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
+using ISecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
 
 namespace Meridian.Backtesting.Tests;
 
@@ -49,7 +49,7 @@ public sealed class CorporateActionAdjustmentServiceTests
         var securityId = Guid.NewGuid();
         _mockResolver.SetResolveResult(securityId);
         _mockQueryService.SetCorporateActions([]);
-        
+
         var bars = new[] { CreateBar("SPY", new DateOnly(2024, 1, 1), 100m, 110m, 90m, 105m) };
 
         var result = await _service.AdjustAsync(bars, "SPY");
@@ -63,7 +63,7 @@ public sealed class CorporateActionAdjustmentServiceTests
     {
         var securityId = Guid.NewGuid();
         _mockResolver.SetResolveResult(securityId);
-        
+
         var split = new CorporateActionDto(
             CorpActId: Guid.NewGuid(),
             SecurityId: securityId,
@@ -79,9 +79,9 @@ public sealed class CorporateActionAdjustmentServiceTests
             ExchangeRatio: null,
             SubscriptionPricePerShare: null,
             RightsPerShare: null);
-        
+
         _mockQueryService.SetCorporateActions([split]);
-        
+
         var bar = CreateBar("SPY", new DateOnly(2024, 1, 1), 100m, 110m, 90m, 105m, 1000);
 
         var result = await _service.AdjustAsync([bar], "SPY");
@@ -99,7 +99,7 @@ public sealed class CorporateActionAdjustmentServiceTests
     {
         var securityId = Guid.NewGuid();
         _mockResolver.SetResolveResult(securityId);
-        
+
         var dividend = new CorporateActionDto(
             CorpActId: Guid.NewGuid(),
             SecurityId: securityId,
@@ -115,9 +115,9 @@ public sealed class CorporateActionAdjustmentServiceTests
             ExchangeRatio: null,
             SubscriptionPricePerShare: null,
             RightsPerShare: null);
-        
+
         _mockQueryService.SetCorporateActions([dividend]);
-        
+
         var bar = CreateBar("SPY", new DateOnly(2024, 1, 1), 100m, 110m, 90m, 105m);
 
         var result = await _service.AdjustAsync([bar], "SPY");
@@ -135,7 +135,7 @@ public sealed class CorporateActionAdjustmentServiceTests
     {
         var securityId = Guid.NewGuid();
         _mockResolver.SetResolveResult(securityId);
-        
+
         var splits = new[]
         {
             new CorporateActionDto(
@@ -169,9 +169,9 @@ public sealed class CorporateActionAdjustmentServiceTests
                 SubscriptionPricePerShare: null,
                 RightsPerShare: null)
         };
-        
+
         _mockQueryService.SetCorporateActions(splits);
-        
+
         var bar = CreateBar("SPY", new DateOnly(2024, 1, 1), 600m, 660m, 540m, 630m, 1000);
 
         var result = await _service.AdjustAsync([bar], "SPY");

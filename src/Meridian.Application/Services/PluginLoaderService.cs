@@ -1,7 +1,7 @@
 using System.Reflection;
-using Microsoft.Extensions.Logging;
-using Meridian.Infrastructure.DataSources;
 using Meridian.Infrastructure.Contracts;
+using Meridian.Infrastructure.DataSources;
+using Microsoft.Extensions.Logging;
 
 namespace Meridian.Application.Services;
 

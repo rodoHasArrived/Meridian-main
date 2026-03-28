@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Application.Logging;
 using Meridian.Application.Subscriptions.Models;
+using Meridian.Contracts.Domain;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Http;
 using Serilog;
@@ -169,11 +170,11 @@ public sealed class PolygonSymbolSearchProvider : IFilterableSymbolSearchProvide
         }
     }
 
-    public async Task<SymbolDetails?> GetDetailsAsync(string symbol, CancellationToken ct = default)
+    public async Task<SymbolDetails?> GetDetailsAsync(SymbolId symbol, CancellationToken ct = default)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
 
-        if (string.IsNullOrWhiteSpace(symbol))
+        if (string.IsNullOrWhiteSpace(symbol.Value))
             return null;
 
         if (string.IsNullOrEmpty(_apiKey))
@@ -181,7 +182,7 @@ public sealed class PolygonSymbolSearchProvider : IFilterableSymbolSearchProvide
 
         await _rateLimiter.WaitForSlotAsync(ct).ConfigureAwait(false);
 
-        var normalizedSymbol = symbol.ToUpperInvariant();
+        var normalizedSymbol = symbol.Value;
         var url = $"{BaseUrl}/v3/reference/tickers/{normalizedSymbol}?apiKey={_apiKey}";
 
         try

@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-03-27 22:42:46 UTC. Do not edit manually.
+> Auto-generated on 2026-03-28 06:28:01 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -1210,6 +1210,7 @@ Meridian-main
 │   │   │   ├── CanonicalSymbol.cs
 │   │   │   ├── MarketDataModels.cs
 │   │   │   ├── ProviderId.cs
+│   │   │   ├── ProviderSymbol.cs
 │   │   │   ├── StreamId.cs
 │   │   │   ├── SubscriptionId.cs
 │   │   │   ├── SymbolId.cs
@@ -2053,6 +2054,7 @@ Meridian-main
 │   │   │   ├── CheckpointEndpoints.cs
 │   │   │   ├── ConfigEndpoints.cs
 │   │   │   ├── CppTraderEndpoints.cs
+│   │   │   ├── CredentialEndpoints.cs
 │   │   │   ├── CronEndpoints.cs
 │   │   │   ├── DiagnosticsEndpoints.cs
 │   │   │   ├── DirectLendingEndpoints.cs
@@ -2191,6 +2193,7 @@ Meridian-main
 │       │   ├── BindableBase.cs
 │       │   ├── ChartingPageViewModel.cs
 │       │   ├── ClusterStatusViewModel.cs
+│       │   ├── CredentialManagementViewModel.cs
 │       │   ├── DashboardViewModel.cs
 │       │   ├── DataQualityViewModel.cs
 │       │   ├── DiagnosticsPageViewModel.cs
@@ -2252,6 +2255,8 @@ Meridian-main
 │       │   ├── CollectionSessionPage.xaml.cs
 │       │   ├── CommandPaletteWindow.xaml
 │       │   ├── CommandPaletteWindow.xaml.cs
+│       │   ├── CredentialManagementPage.xaml
+│       │   ├── CredentialManagementPage.xaml.cs
 │       │   ├── DashboardPage.xaml
 │       │   ├── DashboardPage.xaml.cs
 │       │   ├── DataBrowserPage.xaml

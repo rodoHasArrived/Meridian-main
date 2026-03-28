@@ -1460,6 +1460,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── OrderReplace.cs
 │   │   │   │   └── Trade.cs
 │   │   │   ├── ProviderId.cs
+│   │   │   ├── ProviderSymbol.cs
 │   │   │   ├── StreamId.cs
 │   │   │   ├── SubscriptionId.cs
 │   │   │   ├── SymbolId.cs
@@ -2304,6 +2305,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── CheckpointEndpoints.cs
 │   │   │   ├── ConfigEndpoints.cs
 │   │   │   ├── CppTraderEndpoints.cs
+│   │   │   ├── CredentialEndpoints.cs
 │   │   │   ├── CronEndpoints.cs
 │   │   │   ├── DiagnosticsEndpoints.cs
 │   │   │   ├── DirectLendingEndpoints.cs
@@ -2449,6 +2451,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── BindableBase.cs
 │       │   ├── ChartingPageViewModel.cs
 │       │   ├── ClusterStatusViewModel.cs
+│       │   ├── CredentialManagementViewModel.cs
 │       │   ├── DashboardViewModel.cs
 │       │   ├── DataQualityViewModel.cs
 │       │   ├── DiagnosticsPageViewModel.cs
@@ -2510,6 +2513,8 @@ Use these documents together when planning or implementing new work:
 │           ├── CollectionSessionPage.xaml.cs
 │           ├── CommandPaletteWindow.xaml
 │           ├── CommandPaletteWindow.xaml.cs
+│           ├── CredentialManagementPage.xaml
+│           ├── CredentialManagementPage.xaml.cs
 │           ├── DashboardPage.xaml
 │           ├── DashboardPage.xaml.cs
 │           ├── DataBrowserPage.xaml
@@ -3086,6 +3091,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-455 directories, 2593 files
+455 directories, 2598 files
 ```
 <!-- readme-tree end -->
