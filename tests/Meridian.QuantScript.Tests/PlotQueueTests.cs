@@ -3,42 +3,56 @@ namespace Meridian.QuantScript.Tests;
 public sealed class PlotQueueTests
 {
     [Fact]
-    public void Enqueue_AddsItem_ReadAllAsyncDequeues()
+    public void Enqueue_And_DrainRemaining_RoundTrips()
     {
-        var queue = new PlotQueue { MaxPlotsPerRun = 10 };
-        var request = new PlotRequest("Test", PlotType.Line,
+        var queue = new PlotQueue();
+        var req = new PlotRequest("Title", PlotType.Line,
             Series: [new(new DateOnly(2024, 1, 1), 1.0)]);
-
-        queue.Enqueue(request);
+        queue.Enqueue(req);
         queue.Complete();
-
-        var items = queue.ReadAllAsync().ToBlockingEnumerable().ToList();
+        var items = queue.DrainRemaining();
         items.Should().ContainSingle();
-        items[0].Title.Should().Be("Test");
+        items[0].Title.Should().Be("Title");
     }
 
     [Fact]
-    public void Enqueue_ExceedingMaxPlotsPerRun_DropsExcess()
+    public void DrainRemaining_ReturnsEmpty_WhenNothingEnqueued()
     {
-        var queue = new PlotQueue { MaxPlotsPerRun = 3 };
-        for (var i = 0; i < 10; i++)
+        var queue = new PlotQueue();
+        queue.Complete();
+        queue.DrainRemaining().Should().BeEmpty();
+    }
+
+    [Fact]
+    public void DrainRemaining_Returns_All_Enqueued()
+    {
+        var queue = new PlotQueue();
+        for (var i = 0; i < 5; i++)
             queue.Enqueue(new PlotRequest($"Plot {i}", PlotType.Line));
-
         queue.Complete();
-        var items = queue.ReadAllAsync().ToBlockingEnumerable().ToList();
-        items.Should().HaveCount(3);
+        var drained = queue.DrainRemaining();
+        drained.Should().HaveCount(5);
     }
 
     [Fact]
-    public void Complete_AllowsDrain_NoFurtherItemsArriveAfter()
+    public void Current_ReturnsNull_WhenNoRunActive()
     {
-        var queue = new PlotQueue { MaxPlotsPerRun = 10 };
-        queue.Enqueue(new PlotRequest("A", PlotType.Line));
-        queue.Complete();
-        // Second enqueue after complete should be silently dropped
-        queue.Enqueue(new PlotRequest("B", PlotType.Line));
+        PlotQueue.Current = null;
+        PlotQueue.Current.Should().BeNull();
+    }
 
-        var items = queue.ReadAllAsync().ToBlockingEnumerable().ToList();
-        items.Should().HaveCount(1);
+    [Fact]
+    public void Current_ReflectsSetValue()
+    {
+        var queue = new PlotQueue();
+        PlotQueue.Current = queue;
+        try
+        {
+            PlotQueue.Current.Should().BeSameAs(queue);
+        }
+        finally
+        {
+            PlotQueue.Current = null;
+        }
     }
 }

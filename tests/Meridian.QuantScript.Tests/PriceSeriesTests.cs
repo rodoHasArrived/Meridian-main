@@ -1,3 +1,5 @@
+using Meridian.QuantScript.Tests.Helpers;
+
 namespace Meridian.QuantScript.Tests;
 
 public sealed class PriceSeriesTests
@@ -34,6 +36,14 @@ public sealed class PriceSeriesTests
     }
 
     [Fact]
+    public void DailyReturns_Returns_N_Minus_One_Points()
+    {
+        var series = TestPriceSeriesBuilder.Build(barCount: 10);
+        var returns = series.DailyReturns();
+        returns.Count.Should().Be(9);
+    }
+
+    [Fact]
     public void DailyReturns_ReturnsOneLessThanBars()
     {
         var series = BuildSeries(10);
@@ -43,10 +53,33 @@ public sealed class PriceSeriesTests
     }
 
     [Fact]
+    public void DailyReturns_Values_Are_Positive_For_Ascending_Prices()
+    {
+        var series = TestPriceSeriesBuilder.Build(barCount: 10);
+        var returns = series.DailyReturns().Points.ToList();
+        returns.Should().OnlyContain(r => r.Value > 0);
+    }
+
+    [Fact]
     public void DailyReturns_EmptySeriesReturnsEmpty()
     {
         var series = BuildSeries(1);
         series.DailyReturns().Count.Should().Be(0);
+    }
+
+    [Fact]
+    public void DailyReturns_Empty_For_Single_Bar_Series()
+    {
+        var series = TestPriceSeriesBuilder.Build(barCount: 1);
+        series.DailyReturns().Count.Should().Be(0);
+    }
+
+    [Fact]
+    public void LogReturns_Returns_N_Minus_One_Points()
+    {
+        var series = TestPriceSeriesBuilder.Build(barCount: 5);
+        var returns = series.LogReturns();
+        returns.Count.Should().Be(4);
     }
 
     [Fact]
@@ -65,20 +98,34 @@ public sealed class PriceSeriesTests
     [Fact]
     public void CumulativeReturns_IsMonotonicallyIncreasing_WhenAllPositive()
     {
-        // Build series with strictly increasing close prices → all arithmetic returns > 0
         var bars = Enumerable.Range(0, 20)
             .Select(i => new PriceBar(
                 DateOnly.FromDateTime(DateTime.Today.AddDays(i)),
-                100m + i,
-                100m + i + 2,
-                100m + i - 1,
-                100m + i + 1,
-                1_000_000L))
+                100m + i, 100m + i + 2, 100m + i - 1, 100m + i + 1, 1_000_000L))
             .ToList();
         var series = new PriceSeries("UP", bars);
         var cum = series.CumulativeReturns();
         for (var i = 1; i < cum.Points.Count; i++)
             cum.Points[i].Value.Should().BeGreaterThan(cum.Points[i - 1].Value);
+    }
+
+    [Fact]
+    public void PlotCumulative_EnqueuesIntoPlotQueue()
+    {
+        var series = TestPriceSeriesBuilder.Build(barCount: 5);
+        var queue = new PlotQueue();
+        PlotQueue.Current = queue;
+        try
+        {
+            series.CumulativeReturns().PlotCumulative("Test Cumulative");
+            var plots = queue.DrainRemaining();
+            plots.Should().NotBeEmpty();
+            plots[0].Title.Should().Be("Test Cumulative");
+        }
+        finally
+        {
+            PlotQueue.Current = null;
+        }
     }
 
     [Fact]
@@ -96,5 +143,16 @@ public sealed class PriceSeriesTests
         var series = BuildSeries(5);
         var act = () => series.RollingReturns(0);
         act.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    [Fact]
+    public void LogReturns_And_SimpleReturns_Differ_For_Same_Series()
+    {
+        var series = TestPriceSeriesBuilder.Build(barCount: 10);
+        var simple = series.DailyReturns().Points.ToList();
+        var log = series.LogReturns().Points.ToList();
+
+        for (var i = 0; i < simple.Count; i++)
+            simple[i].Value.Should().NotBeApproximately(log[i].Value, 1e-12);
     }
 }

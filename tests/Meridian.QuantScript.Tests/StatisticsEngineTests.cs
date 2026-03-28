@@ -53,13 +53,12 @@ public sealed class StatisticsEngineTests
     [Fact]
     public void AnnualizedVolatility_KnownDailyVol_ApproximatesAnnual()
     {
-        // σ_daily = 0.01, annualised ≈ 0.01 * sqrt(252) ≈ 0.1587
         var rng = new Random(42);
         var returns = Enumerable.Range(0, 252)
             .Select(_ => 0.01 * (rng.NextDouble() * 2 - 1))
             .ToList();
         var r = BuildReturns(returns);
-        r.AnnualizedVolatility().Should().BeInRange(0, 1.0); // sanity
+        r.AnnualizedVolatility().Should().BeInRange(0, 1.0);
     }
 
     // ── Drawdown ─────────────────────────────────────────────────────────────
@@ -109,7 +108,7 @@ public sealed class StatisticsEngineTests
         r.Correlation(neg).Should().BeApproximately(-1.0, 1e-9);
     }
 
-    // ── Skewness / Kurtosis ──────────────────────────────────────────────────
+    // ── Skewness ─────────────────────────────────────────────────────────────
 
     [Fact]
     public void Skewness_SymmetricData_NearZero()

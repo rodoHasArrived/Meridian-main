@@ -1,38 +1,18 @@
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
-using ICSharpCode.AvalonEdit;
 using Meridian.QuantScript.Plotting;
 using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Views;
 
 /// <summary>
-/// Converts <see cref="ConsoleEntryKind"/> to a WPF <see cref="Brush"/> for console text colouring.
-/// </summary>
-[System.Windows.Data.ValueConversion(typeof(ConsoleEntryKind), typeof(Brush))]
-public sealed class ConsoleKindToBrushConverter : System.Windows.Data.IValueConverter
-{
-    public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) =>
-        value is ConsoleEntryKind kind ? kind switch
-        {
-            ConsoleEntryKind.Warning => Brushes.Orange,
-            ConsoleEntryKind.Error   => Brushes.Red,
-            _                        => SystemColors.ControlTextBrush
-        } : DependencyProperty.UnsetValue;
-
-    public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) =>
-        throw new NotSupportedException();
-}
-
-/// <summary>
-/// Code-behind for QuantScriptPage.
-/// Wires AvalonEdit TextChanged → ViewModel.ScriptSource and renders ScottPlot charts
-/// imperatively in <see cref="OnPlotBorderLoaded"/> (ScottPlot WpfPlot has no binding API).
+/// Code-behind for QuantScriptPage. Intentionally thin: DI wiring, AvalonEdit synchronisation,
+/// and ScottPlot chart rendering (ScottPlot's imperative API cannot be data-bound in XAML).
 /// </summary>
 public partial class QuantScriptPage : Page
 {
     private QuantScriptViewModel? _vm;
+    private bool _suppressSync;
 
     public QuantScriptPage()
     {
@@ -44,27 +24,47 @@ public partial class QuantScriptPage : Page
     private void OnPageLoaded(object sender, RoutedEventArgs e)
     {
         _vm = DataContext as QuantScriptViewModel;
-        // AvalonEdit does not support standard Binding on its Document property.
-        // Wire TextChanged to propagate edits to the ViewModel.
+        if (_vm is null) return;
+
+        // Restore persisted column widths
+        var (leftWidth, rightWidth) = _vm.OnActivated();
+        if (leftWidth > 0)  LeftColumn.Width  = new GridLength(leftWidth,  GridUnitType.Star);
+        if (rightWidth > 0) RightColumn.Width = new GridLength(rightWidth, GridUnitType.Star);
+
         ScriptEditor.TextChanged += OnScriptEditorTextChanged;
-        ScriptEditor.Text = _vm?.ScriptSource ?? string.Empty;
+        _vm.PropertyChanged += OnVmPropertyChanged;
     }
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e)
     {
+        if (_vm is null) return;
         ScriptEditor.TextChanged -= OnScriptEditorTextChanged;
-        _vm?.Dispose();
+        _vm.PropertyChanged -= OnVmPropertyChanged;
+        _vm.SaveLayout(LeftColumn.Width.Value, RightColumn.Width.Value);
+        _vm.Dispose();
     }
 
     private void OnScriptEditorTextChanged(object? sender, EventArgs e)
     {
-        if (_vm is not null && ScriptEditor.Text != _vm.ScriptSource)
-            _vm.ScriptSource = ScriptEditor.Text;
+        if (_suppressSync || _vm is null) return;
+        _suppressSync = true;
+        _vm.ScriptSource = ScriptEditor.Text;
+        _suppressSync = false;
+    }
+
+    private void OnVmPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName != nameof(QuantScriptViewModel.ScriptSource) || _vm is null) return;
+        if (_suppressSync || ScriptEditor.Text == _vm.ScriptSource) return;
+
+        _suppressSync = true;
+        ScriptEditor.Text = _vm.ScriptSource;
+        _suppressSync = false;
     }
 
     /// <summary>
-    /// Renders a ScottPlot <see cref="ScottPlot.WPF.WpfPlot"/> into the Border declared
-    /// for each chart entry. ScottPlot's imperative API requires this code-behind approach.
+    /// Renders a ScottPlot chart imperatively into the Border declared for each chart entry.
+    /// ScottPlot's WpfPlot has no data-binding API.
     /// </summary>
     private void OnPlotBorderLoaded(object sender, RoutedEventArgs e)
     {
@@ -86,7 +86,7 @@ public partial class QuantScriptPage : Page
             case PlotType.Drawdown:
                 if (request.Series is { Count: > 0 } series)
                 {
-                    var dates = series.Select(p => p.Date.ToDateTime(TimeOnly.MinValue).ToOADate()).ToArray();
+                    var dates  = series.Select(p => p.Date.ToDateTime(TimeOnly.MinValue).ToOADate()).ToArray();
                     var values = series.Select(p => p.Value).ToArray();
                     var scatter = wpfPlot.Plot.Add.Scatter(dates, values);
                     scatter.LegendText = request.Title;
@@ -98,7 +98,7 @@ public partial class QuantScriptPage : Page
                 {
                     foreach (var (label, pts) in multi)
                     {
-                        var dates = pts.Select(p => p.Item1.ToDateTime(TimeOnly.MinValue).ToOADate()).ToArray();
+                        var dates  = pts.Select(p => p.Item1.ToDateTime(TimeOnly.MinValue).ToOADate()).ToArray();
                         var values = pts.Select(p => p.Item2).ToArray();
                         var scatter = wpfPlot.Plot.Add.Scatter(dates, values);
                         scatter.LegendText = label;
@@ -108,16 +108,12 @@ public partial class QuantScriptPage : Page
                 break;
 
             case PlotType.Heatmap:
-                // Minimal heatmap: render first row as bar chart of diagonal (correlation with self)
                 if (request.HeatmapData is { } hm && request.HeatmapLabels is { } labels)
                 {
                     var positions = Enumerable.Range(0, labels.Length).Select(i => (double)i).ToArray();
-                    var values = Enumerable.Range(0, labels.Length).Select(i => hm[i][i]).ToArray();
+                    var values    = Enumerable.Range(0, labels.Length).Select(i => hm[i][i]).ToArray();
                     wpfPlot.Plot.Add.Bars(positions, values);
                 }
-                break;
-
-            default:
                 break;
         }
 

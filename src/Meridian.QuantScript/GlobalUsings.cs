@@ -5,3 +5,5 @@ global using System.Threading;
 global using System.Threading.Tasks;
 global using Microsoft.Extensions.Logging;
 global using Microsoft.Extensions.Options;
+
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Meridian.QuantScript.Tests")]

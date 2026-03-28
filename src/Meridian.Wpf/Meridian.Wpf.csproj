@@ -90,6 +90,11 @@
     <PackageReference Include="System.Security.Cryptography.ProtectedData" />
 
     <!-- Compression -->
+    <PackageReference Include="System.IO.Compression" />
+
+    <!-- QuantScript editor and chart rendering -->
+    <PackageReference Include="ICSharpCode.AvalonEdit" />
+    <PackageReference Include="ScottPlot.WPF" />
     <PackageReference Include="ZstdSharp.Port" />
   </ItemGroup>
 

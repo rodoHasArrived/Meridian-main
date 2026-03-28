@@ -2,21 +2,8 @@ using Meridian.QuantScript.Api;
 
 namespace Meridian.QuantScript.Plotting;
 
-public enum PlotType
-{
-    Line,
-    MultiLine,
-    CumulativeReturn,
-    Drawdown,
-    Heatmap,
-    Candlestick,
-    Bar,
-    Scatter,
-    Histogram
-}
-
 /// <summary>
-/// Immutable description of a single chart produced by a script.
+/// Immutable description of a single chart produced by a script run.
 /// </summary>
 public sealed record PlotRequest(
     string Title,
