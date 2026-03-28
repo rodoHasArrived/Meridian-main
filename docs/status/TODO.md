@@ -1,6 +1,6 @@
 # TODO / FIXME / NOTE Scan
 
-Total items: **193**
+Total items: **195**
 
 | File | Line | Tag | Linked Issue | Text |
 |---|---:|---|:---:|---|
@@ -153,6 +153,8 @@ Total items: **193**
 | `src/Meridian.FSharp/Domain/SecMasterDomain.fs` | 98 | `NOTE` | ❌ | \| Note |
 | `src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs` | 87 | `NOTE` | ❌ | return !json.Contains("Note") && !json.Contains("Thank you for using Alpha Vantage"); |
 | `src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs` | 241 | `NOTE` | ❌ | return json.Contains("\"Note\"") \|\| json.Contains("Thank you for using Alpha Vantage"); |
+| `src/Meridian.QuantScript/Api/PortfolioBuilder.cs` | 135 | `TODO` | ❌ | // TODO: Implement full MV quadratic optimisation (e.g. via MathNet.Numerics or custom QP solver) |
+| `src/Meridian.QuantScript/Plotting/PlotQueue.cs` | 11 | `NOTE` | ❌ | /// ADR-013 note: This is intentionally unbounded because scripts producing thousands of |
 | `src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs` | 28 | `NOTE` | ❌ | string? Note); |
 | `src/Meridian.Storage/DirectLending/Migrations/005_direct_lending_operations.sql` | 54 | `NOTE` | ❌ | note                     text, |
 | `src/Meridian.Storage/DirectLending/Migrations/005_direct_lending_workflows.sql` | 64 | `NOTE` | ❌ | note text, |
