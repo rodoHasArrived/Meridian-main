@@ -356,6 +356,14 @@
                                             <TextBlock Text="Charts" Style="{StaticResource ShellNavLabelStyle}" />
                                         </StackPanel>
                                     </ListBoxItem>
+                                    <ListBoxItem Tag="QuantScript"
+                                                 AutomationProperties.AutomationId="ResearchNavQuantScript"
+                                                 AutomationProperties.Name="QuantScript Navigation">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{StaticResource IconCode}" Style="{StaticResource ShellNavIconStyle}" />
+                                            <TextBlock Text="QuantScript" Style="{StaticResource ShellNavLabelStyle}" />
+                                        </StackPanel>
+                                    </ListBoxItem>
                                     <ListBoxItem Tag="RunMat"
                                                  AutomationProperties.AutomationId="ResearchNavRunMat"
                                                  AutomationProperties.Name="RunMat Lab Navigation">

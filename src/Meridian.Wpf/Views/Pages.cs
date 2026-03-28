@@ -50,6 +50,7 @@ public partial class ChartingPage : Page { }
 public partial class OrderBookPage : Page { }
 public partial class DataCalendarPage : Page { }
 public partial class RunMatPage : Page { }
+public partial class QuantScriptPage : Page { }
 
 // Storage & Maintenance pages
 public partial class StorageOptimizationPage : Page { }
