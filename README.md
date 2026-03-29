@@ -3068,6 +3068,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── TestMarketEventPublisher.cs
 │   │   └── Ui
 │   │       ├── DirectLendingEndpointsTests.cs
+│   │       ├── ExecutionWriteEndpointsTests.cs
 │   │       └── WorkstationEndpointsTests.cs
 │   ├── Meridian.Ui.Tests
 │   │   ├── Collections
@@ -3171,6 +3172,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-469 directories, 2664 files
+469 directories, 2665 files
 ```
 <!-- readme-tree end -->
