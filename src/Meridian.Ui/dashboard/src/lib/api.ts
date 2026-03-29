@@ -12,6 +12,7 @@ import type {
   RunComparisonRow,
   RunDiff,
   SessionInfo,
+  TradingActionResult,
   TradingWorkspaceResponse
 } from "@/types";
 
@@ -100,7 +101,15 @@ export function submitOrder(request: OrderSubmitRequest) {
 }
 
 export function cancelOrder(orderId: string) {
-  return postJson<OrderResult>(`/api/execution/orders/${encodeURIComponent(orderId)}/cancel`);
+  return postJson<TradingActionResult>(`/api/execution/orders/${encodeURIComponent(orderId)}/cancel`);
+}
+
+export function cancelAllOrders() {
+  return postJson<TradingActionResult>("/api/execution/orders/cancel-all");
+}
+
+export function closePosition(symbol: string) {
+  return postJson<TradingActionResult>(`/api/execution/positions/${encodeURIComponent(symbol)}/close`);
 }
 
 // --- Paper session management ---

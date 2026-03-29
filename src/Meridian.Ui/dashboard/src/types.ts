@@ -251,6 +251,15 @@ export interface GovernanceWorkspaceResponse {
   reporting: GovernanceReportingSummary;
 }
 
+// --- Trading action result ---
+
+export interface TradingActionResult {
+  actionId: string;
+  status: "Accepted" | "Completed" | "Rejected" | "Failed";
+  message: string;
+  occurredAt: string;
+}
+
 // --- Multi-run comparison types ---
 
 export interface RunComparisonRow {
