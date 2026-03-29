@@ -6,6 +6,7 @@ using Meridian.Execution.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -128,14 +129,58 @@ public static class ExecutionEndpoints
             if (oms is null)
                 return Results.Problem("Order management system is not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
 
+            var logger = GetLogger(context.RequestServices);
+            var actionId = GenerateActionId();
             var result = await oms.CancelOrderAsync(orderId, context.RequestAborted).ConfigureAwait(false);
+
+            if (result.Success)
+            {
+                logger.LogInformation("Trading action {ActionId}: cancel order {OrderId} — succeeded", actionId, orderId);
+            }
+            else
+            {
+                logger.LogWarning("Trading action {ActionId}: cancel order {OrderId} — rejected: {Reason}", actionId, orderId, result.ErrorMessage);
+            }
+
+            var actionResult = new TradingActionResult(
+                ActionId: actionId,
+                Status: result.Success ? "Completed" : "Rejected",
+                Message: result.Success ? $"Order {orderId} cancelled." : (result.ErrorMessage ?? "Cancel rejected."),
+                OccurredAt: DateTimeOffset.UtcNow);
+
             return result.Success
-                ? Results.Json(result, jsonOptions)
-                : Results.Json(result, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
+                ? Results.Json(actionResult, jsonOptions)
+                : Results.Json(actionResult, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
         })
         .WithName("CancelOrder")
-        .Produces<OrderResult>(200)
-        .Produces<OrderResult>(400)
+        .Produces<TradingActionResult>(200)
+        .Produces<TradingActionResult>(400)
+        .Produces(503);
+
+        group.MapPost("/orders/cancel-all", async (HttpContext context) =>
+        {
+            var oms = context.RequestServices.GetService<IOrderManager>();
+            if (oms is null)
+                return Results.Problem("Order management system is not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
+
+            var logger = GetLogger(context.RequestServices);
+            var actionId = GenerateActionId();
+            var openCount = oms.GetOpenOrders().Count;
+
+            await oms.CancelAllAsync(context.RequestAborted).ConfigureAwait(false);
+
+            logger.LogInformation("Trading action {ActionId}: cancel-all — cancelled {Count} open orders", actionId, openCount);
+
+            var actionResult = new TradingActionResult(
+                ActionId: actionId,
+                Status: "Completed",
+                Message: $"Cancellation requested for {openCount} open order(s).",
+                OccurredAt: DateTimeOffset.UtcNow);
+
+            return Results.Json(actionResult, jsonOptions);
+        })
+        .WithName("CancelAllOrders")
+        .Produces<TradingActionResult>(200)
         .Produces(503);
 
         // --- Gateway health & capabilities ---
@@ -224,7 +269,79 @@ public static class ExecutionEndpoints
         .Produces(200)
         .Produces(404)
         .Produces(503);
+
+        // --- Position actions ---
+
+        group.MapPost("/positions/{symbol}/close", async (string symbol, HttpContext context) =>
+        {
+            var oms = context.RequestServices.GetService<IOrderManager>();
+            var portfolio = context.RequestServices.GetService<IPortfolioState>();
+            if (oms is null || portfolio is null)
+                return Results.Problem("Execution services are not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
+
+            var logger = GetLogger(context.RequestServices);
+            var actionId = GenerateActionId();
+            var symbolUpper = symbol.ToUpperInvariant();
+
+            if (!portfolio.Positions.TryGetValue(symbolUpper, out var position))
+            {
+                logger.LogWarning("Trading action {ActionId}: close position {Symbol} — position not found", actionId, symbolUpper);
+                var notFound = new TradingActionResult(
+                    ActionId: actionId,
+                    Status: "Rejected",
+                    Message: $"No open position found for {symbolUpper}.",
+                    OccurredAt: DateTimeOffset.UtcNow);
+                return Results.Json(notFound, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            var closingSide = position.IsShort ? OrderSide.Buy : OrderSide.Sell;
+            var closeRequest = new OrderRequest
+            {
+                Symbol = symbolUpper,
+                Side = closingSide,
+                Type = OrderType.Market,
+                Quantity = (decimal)position.AbsoluteQuantity,
+                ClientOrderId = $"close-{symbolUpper}-{Guid.NewGuid():N}"
+            };
+
+            var result = await oms.PlaceOrderAsync(closeRequest, context.RequestAborted).ConfigureAwait(false);
+
+            if (result.Success)
+            {
+                logger.LogInformation("Trading action {ActionId}: close position {Symbol} qty {Quantity} — order {OrderId} submitted", actionId, symbolUpper, closeRequest.Quantity, result.OrderId);
+            }
+            else
+            {
+                logger.LogWarning("Trading action {ActionId}: close position {Symbol} — order rejected: {Reason}", actionId, symbolUpper, result.ErrorMessage);
+            }
+
+            var actionResult = new TradingActionResult(
+                ActionId: actionId,
+                Status: result.Success ? "Accepted" : "Rejected",
+                Message: result.Success
+                    ? $"Close order for {symbolUpper} submitted (order {result.OrderId})."
+                    : (result.ErrorMessage ?? "Close order rejected."),
+                OccurredAt: DateTimeOffset.UtcNow);
+
+            return result.Success
+                ? Results.Json(actionResult, jsonOptions)
+                : Results.Json(actionResult, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
+        })
+        .WithName("ClosePosition")
+        .Produces<TradingActionResult>(200)
+        .Produces<TradingActionResult>(400)
+        .Produces(503);
     }
+
+    // ------------------------------------------------------------------ //
+    // Private helpers                                                     //
+    // ------------------------------------------------------------------ //
+
+    private static string GenerateActionId() => $"act-{Guid.NewGuid():N}";
+
+    private static ILogger GetLogger(IServiceProvider sp) =>
+        sp.GetRequiredService<ILoggerFactory>()
+          .CreateLogger("Meridian.Ui.Shared.Endpoints.ExecutionEndpoints");
 }
 
 // --- DTOs for execution endpoints ---
@@ -260,3 +377,13 @@ public sealed record CreatePaperSessionRequest(
     string? StrategyName,
     decimal InitialCash = 100_000m,
     IReadOnlyList<string>? Symbols = null);
+
+/// <summary>
+/// Structured result returned by every Trading write action (cancel, close, pause, etc.).
+/// Carries a correlation ID so UI and backend audit logs can be cross-referenced.
+/// </summary>
+public sealed record TradingActionResult(
+    string ActionId,
+    string Status,
+    string Message,
+    DateTimeOffset OccurredAt);

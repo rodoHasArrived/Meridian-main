@@ -1,11 +1,18 @@
-import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, Layers, PauseCircle, PlayCircle, PlusCircle, StopCircle, Wallet, XCircle } from "lucide-react";
+import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, Layers, PauseCircle, PlayCircle, PlusCircle, StopCircle, Trash2, Wallet, XCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle
+} from "@/components/ui/dialog";
 import { MetricCard } from "@/components/meridian/metric-card";
-import { cancelOrder, closePaperSession, createPaperSession, getExecutionSessions, pauseStrategy, stopStrategy, submitOrder } from "@/lib/api";
+import { cancelAllOrders, cancelOrder, closePosition, closePaperSession, createPaperSession, getExecutionSessions, pauseStrategy, stopStrategy, submitOrder } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import type { OrderSubmitRequest, PaperSessionSummary, TradingWorkspaceResponse } from "@/types";
+import type { OrderSubmitRequest, PaperSessionSummary, TradingActionResult, TradingWorkspaceResponse } from "@/types";
 
 interface TradingScreenProps {
   data: TradingWorkspaceResponse | null;
@@ -31,6 +38,22 @@ interface OrderState {
   error: string | null;
 }
 
+// --- Shared confirmation state for all write actions ---
+
+type ConfirmActionType =
+  | { kind: "cancel-order"; orderId: string }
+  | { kind: "cancel-all" }
+  | { kind: "close-position"; symbol: string }
+  | { kind: "pause-strategy"; strategyId: string }
+  | { kind: "stop-strategy"; strategyId: string };
+
+interface ConfirmState {
+  action: ConfirmActionType | null;
+  busy: boolean;
+  result: TradingActionResult | null;
+  error: string | null;
+}
+
 export function TradingScreen({ data }: TradingScreenProps) {
   const [showOrderForm, setShowOrderForm] = useState(false);
   const [orderForm, setOrderForm] = useState<OrderSubmitRequest>({
@@ -41,7 +64,63 @@ export function TradingScreen({ data }: TradingScreenProps) {
     limitPrice: null
   });
   const [orderState, setOrderState] = useState<OrderState>({ phase: "idle", orderId: null, error: null });
-  const [cancelError, setCancelError] = useState<string | null>(null);
+
+  // --- Shared confirmation dialog state ---
+  const [confirm, setConfirm] = useState<ConfirmState>({
+    action: null,
+    busy: false,
+    result: null,
+    error: null
+  });
+
+  function openConfirm(action: ConfirmActionType) {
+    setConfirm({ action, busy: false, result: null, error: null });
+  }
+
+  function closeConfirm() {
+    if (confirm.busy) return;
+    setConfirm({ action: null, busy: false, result: null, error: null });
+  }
+
+  async function executeConfirmedAction() {
+    const { action } = confirm;
+    if (!action) return;
+    setConfirm((prev) => ({ ...prev, busy: true, result: null, error: null }));
+
+    try {
+      let result: TradingActionResult;
+      if (action.kind === "cancel-order") {
+        result = await cancelOrder(action.orderId);
+      } else if (action.kind === "cancel-all") {
+        result = await cancelAllOrders();
+      } else if (action.kind === "close-position") {
+        result = await closePosition(action.symbol);
+      } else if (action.kind === "pause-strategy") {
+        const raw = await pauseStrategy(action.strategyId);
+        result = {
+          actionId: `act-${Date.now()}`,
+          status: raw.success ? "Completed" : "Rejected",
+          message: raw.reason ?? (raw.success ? "Strategy paused." : "Pause rejected."),
+          occurredAt: new Date().toISOString()
+        };
+      } else {
+        const raw = await stopStrategy(action.strategyId);
+        result = {
+          actionId: `act-${Date.now()}`,
+          status: raw.success ? "Completed" : "Rejected",
+          message: raw.reason ?? (raw.success ? "Strategy stopped." : "Stop rejected."),
+          occurredAt: new Date().toISOString()
+        };
+      }
+      setConfirm((prev) => ({ ...prev, busy: false, result }));
+    } catch (err) {
+      setConfirm((prev) => ({
+        ...prev,
+        busy: false,
+        error: err instanceof Error ? err.message : "Action failed."
+      }));
+    }
+  }
 
   // --- Paper session management ---
   const [sessions, setSessions] = useState<PaperSessionSummary[]>([]);
@@ -53,8 +132,6 @@ export function TradingScreen({ data }: TradingScreenProps) {
 
   // --- Strategy lifecycle ---
   const [strategyId, setStrategyId] = useState("");
-  const [lifecycleResult, setLifecycleResult] = useState<{ action: string; success: boolean; reason: string | null } | null>(null);
-  const [lifecycleError, setLifecycleError] = useState<string | null>(null);
 
   useEffect(() => {
     getExecutionSessions()
@@ -80,17 +157,6 @@ export function TradingScreen({ data }: TradingScreenProps) {
         orderId: null,
         error: err instanceof Error ? err.message : "Order submission failed."
       });
-    }
-  }
-
-  async function handleCancelOrder(orderId: string) {
-    setCancelError(null);
-    try {
-      await cancelOrder(orderId);
-    } catch (err) {
-      setCancelError(
-        `Cancel failed for ${orderId}: ${err instanceof Error ? err.message : "unknown error"}`
-      );
     }
   }
 
@@ -120,32 +186,6 @@ export function TradingScreen({ data }: TradingScreenProps) {
       setSessions((prev) => prev.map((s) => s.sessionId === sessionId ? { ...s, status: "Closed" } : s));
     } catch (err) {
       setSessionError(err instanceof Error ? err.message : "Failed to close session.");
-    }
-  }
-
-  async function handlePauseStrategy() {
-    const sid = strategyId.trim();
-    if (!sid) return;
-    setLifecycleError(null);
-    setLifecycleResult(null);
-    try {
-      const result = await pauseStrategy(sid);
-      setLifecycleResult(result);
-    } catch (err) {
-      setLifecycleError(err instanceof Error ? err.message : "Pause failed.");
-    }
-  }
-
-  async function handleStopStrategy() {
-    const sid = strategyId.trim();
-    if (!sid) return;
-    setLifecycleError(null);
-    setLifecycleResult(null);
-    try {
-      const result = await stopStrategy(sid);
-      setLifecycleResult(result);
-    } catch (err) {
-      setLifecycleError(err instanceof Error ? err.message : "Stop failed.");
     }
   }
 
@@ -231,43 +271,71 @@ export function TradingScreen({ data }: TradingScreenProps) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <TradingTable
-              columns={["Symbol", "Side", "Qty", "Avg", "Mark", "Day P&L", "Unrealized", "Exposure"]}
-              rows={data.positions.map((position) => [
-                position.symbol,
-                position.side,
-                position.quantity,
-                position.averagePrice,
-                position.markPrice,
-                position.dayPnl,
-                position.unrealizedPnl,
-                position.exposure
-              ])}
-            />
+            <div className="overflow-x-auto rounded-xl border border-border/70">
+              <table className="min-w-full divide-y divide-border/60 text-left text-xs sm:text-sm">
+                <thead className="bg-secondary/30">
+                  <tr>
+                    {["Symbol", "Side", "Qty", "Avg", "Mark", "Day P&L", "Unrealized", "Exposure", ""].map((col) => (
+                      <th key={col} className="px-3 py-2 font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                        {col}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/50">
+                  {data.positions.map((position, i) => (
+                    <tr key={`pos-${i}`} className="bg-background/20">
+                      <td className="px-3 py-2 font-mono text-foreground">{position.symbol}</td>
+                      <td className="px-3 py-2 font-mono text-foreground">{position.side}</td>
+                      <td className="px-3 py-2 font-mono text-foreground">{position.quantity}</td>
+                      <td className="px-3 py-2 font-mono text-foreground">{position.averagePrice}</td>
+                      <td className="px-3 py-2 font-mono text-foreground">{position.markPrice}</td>
+                      <td className="px-3 py-2 font-mono text-foreground">{position.dayPnl}</td>
+                      <td className="px-3 py-2 font-mono text-foreground">{position.unrealizedPnl}</td>
+                      <td className="px-3 py-2 font-mono text-foreground">{position.exposure}</td>
+                      <td className="px-3 py-2">
+                        <button
+                          type="button"
+                          onClick={() => openConfirm({ kind: "close-position", symbol: position.symbol })}
+                          className="rounded px-2 py-1 text-xs text-muted-foreground hover:text-danger hover:bg-danger/10 transition-colors"
+                          title="Close position"
+                        >
+                          Close
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-3">
               <CardTitle className="flex items-center gap-2 text-base">
                 <ClipboardList className="h-4 w-4 text-primary" />
                 Open orders
               </CardTitle>
-              <Button size="sm" variant="outline" onClick={() => setShowOrderForm((prev) => !prev)}>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                New order
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => openConfirm({ kind: "cancel-all" })}
+                  disabled={data.openOrders.length === 0}
+                  title="Cancel all open orders"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Cancel all
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => setShowOrderForm((prev) => !prev)}>
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  New order
+                </Button>
+              </div>
             </div>
           </CardHeader>
-          {cancelError && (
-            <CardContent className="pt-0 pb-2">
-              <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-center gap-2">
-                <XCircle className="h-4 w-4 shrink-0" />
-                {cancelError}
-              </div>
-            </CardContent>
-          )}
           {showOrderForm && (
             <CardContent className="border-b border-border/60 pb-6">
               <form onSubmit={handleSubmitOrder} className="space-y-4">
@@ -396,7 +464,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                       <td className="px-3 py-2">
                         <button
                           type="button"
-                          onClick={() => handleCancelOrder(order.orderId)}
+                          onClick={() => openConfirm({ kind: "cancel-order", orderId: order.orderId })}
                           className="rounded px-2 py-1 text-xs text-muted-foreground hover:text-danger hover:bg-danger/10 transition-colors"
                           title="Cancel order"
                         >
@@ -573,7 +641,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
               <Button
                 size="sm"
                 variant="outline"
-                onClick={handlePauseStrategy}
+                onClick={() => openConfirm({ kind: "pause-strategy", strategyId: strategyId.trim() })}
                 disabled={!strategyId.trim()}
               >
                 <PauseCircle className="mr-2 h-4 w-4" />
@@ -582,45 +650,125 @@ export function TradingScreen({ data }: TradingScreenProps) {
               <Button
                 size="sm"
                 variant="outline"
-                onClick={handleStopStrategy}
+                onClick={() => openConfirm({ kind: "stop-strategy", strategyId: strategyId.trim() })}
                 disabled={!strategyId.trim()}
               >
                 <StopCircle className="mr-2 h-4 w-4" />
                 Stop
               </Button>
             </div>
-
-            {lifecycleError && (
-              <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-center gap-2">
-                <XCircle className="h-4 w-4 shrink-0" />
-                {lifecycleError}
-              </div>
-            )}
-
-            {lifecycleResult && (
-              <div
-                className={cn(
-                  "rounded-lg border px-4 py-3 text-sm flex items-center gap-2",
-                  lifecycleResult.success
-                    ? "border-success/30 bg-success/10 text-success"
-                    : "border-warning/30 bg-warning/10 text-warning"
-                )}
-              >
-                {lifecycleResult.success ? (
-                  <CheckCircle className="h-4 w-4 shrink-0" />
-                ) : (
-                  <AlertTriangle className="h-4 w-4 shrink-0" />
-                )}
-                <span>
-                  <span className="font-semibold capitalize">{lifecycleResult.action}</span>
-                  {lifecycleResult.reason ? ` — ${lifecycleResult.reason}` : ""}
-                </span>
-              </div>
-            )}
           </CardContent>
         </Card>
       </section>
+
+      <ConfirmActionDialog
+        confirm={confirm}
+        onClose={closeConfirm}
+        onConfirm={executeConfirmedAction}
+      />
     </div>
+  );
+}
+
+function actionLabel(action: ConfirmActionType): string {
+  switch (action.kind) {
+    case "cancel-order": return `Cancel order ${action.orderId}`;
+    case "cancel-all":   return "Cancel all open orders";
+    case "close-position": return `Close position — ${action.symbol}`;
+    case "pause-strategy": return `Pause strategy — ${action.strategyId}`;
+    case "stop-strategy":  return `Stop strategy — ${action.strategyId}`;
+  }
+}
+
+function actionCopy(action: ConfirmActionType): string {
+  switch (action.kind) {
+    case "cancel-order":
+      return "This will request cancellation of the selected order. Partial fills that already occurred are not reversed.";
+    case "cancel-all":
+      return "This will request cancellation of every open order in the current session. Partial fills that already occurred are not reversed.";
+    case "close-position":
+      return "A market order will be submitted to flatten the full position at the next available price. You will remain responsible for the resulting fill.";
+    case "pause-strategy":
+      return "The strategy will stop processing new signals until manually resumed. Open positions and orders remain unchanged.";
+    case "stop-strategy":
+      return "The strategy will be stopped and its session will be closed. Open positions remain until manually flattened.";
+  }
+}
+
+function ConfirmActionDialog({
+  confirm,
+  onClose,
+  onConfirm
+}: {
+  confirm: ConfirmState;
+  onClose: () => void;
+  onConfirm: () => Promise<void>;
+}) {
+  const { action, busy, result, error } = confirm;
+
+  const title = action ? actionLabel(action) : "";
+  const copy = action ? actionCopy(action) : "";
+
+  const isCompleted = result !== null;
+  const isSuccess = result?.status === "Accepted" || result?.status === "Completed";
+
+  return (
+    <Dialog open={action !== null} onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{copy}</DialogDescription>
+        </DialogHeader>
+
+        {error && (
+          <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-center gap-2">
+            <XCircle className="h-4 w-4 shrink-0" />
+            {error}
+          </div>
+        )}
+
+        {result && (
+          <div
+            className={cn(
+              "rounded-lg border px-4 py-3 text-sm flex flex-col gap-1",
+              isSuccess
+                ? "border-success/30 bg-success/10 text-success"
+                : "border-warning/30 bg-warning/10 text-warning"
+            )}
+          >
+            <div className="flex items-center gap-2">
+              {isSuccess ? (
+                <CheckCircle className="h-4 w-4 shrink-0" />
+              ) : (
+                <AlertTriangle className="h-4 w-4 shrink-0" />
+              )}
+              <span className="font-semibold">{result.status}</span>
+            </div>
+            <p>{result.message}</p>
+            <p className="mt-1 font-mono text-xs opacity-70">Action ID: {result.actionId}</p>
+          </div>
+        )}
+
+        {!isCompleted && (
+          <div className="flex justify-end gap-3 pt-2">
+            <Button variant="outline" onClick={onClose} disabled={busy}>
+              Cancel
+            </Button>
+            <Button onClick={onConfirm} disabled={busy}>
+              {busy ? "Processing…" : "Confirm"}
+            </Button>
+          </div>
+        )}
+
+        {isCompleted && (
+          <div className="flex justify-end pt-2">
+            <Button variant="outline" onClick={onClose}>
+              Close
+            </Button>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }
 

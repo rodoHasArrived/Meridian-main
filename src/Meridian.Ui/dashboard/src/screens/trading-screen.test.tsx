@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { TradingScreen } from "@/screens/trading-screen";
 import type { TradingWorkspaceResponse } from "@/types";
 
@@ -77,4 +77,44 @@ describe("TradingScreen", () => {
     expect(screen.getByText("Execution adapter health")).toBeInTheDocument();
     expect(screen.getByText("Guardrails are active.")).toBeInTheDocument();
   });
+
+  it("renders Cancel All button and Close position affordances", () => {
+    render(<TradingScreen data={data} />);
+
+    expect(screen.getByTitle("Cancel all open orders")).toBeInTheDocument();
+    expect(screen.getByTitle("Close position")).toBeInTheDocument();
+    expect(screen.getByTitle("Cancel order")).toBeInTheDocument();
+  });
+
+  it("opens confirmation dialog when Cancel order button is clicked", () => {
+    render(<TradingScreen data={data} />);
+
+    fireEvent.click(screen.getByTitle("Cancel order"));
+
+    expect(screen.getByText(/cancel order PO-1/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /confirm/i })).toBeInTheDocument();
+  });
+
+  it("opens confirmation dialog when Close position button is clicked", () => {
+    render(<TradingScreen data={data} />);
+
+    fireEvent.click(screen.getByTitle("Close position"));
+
+    expect(screen.getByText(/close position.*AAPL/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /confirm/i })).toBeInTheDocument();
+  });
+
+  it("closes the confirmation dialog when Cancel is clicked", () => {
+    render(<TradingScreen data={data} />);
+
+    fireEvent.click(screen.getByTitle("Cancel order"));
+    expect(screen.getByRole("button", { name: /confirm/i })).toBeInTheDocument();
+
+    // The Cancel button inside the dialog closes it
+    const cancelButtons = screen.getAllByRole("button", { name: /^cancel$/i });
+    fireEvent.click(cancelButtons[cancelButtons.length - 1]);
+
+    expect(screen.queryByRole("button", { name: /confirm/i })).not.toBeInTheDocument();
+  });
 });
+
