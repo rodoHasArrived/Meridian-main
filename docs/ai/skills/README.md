@@ -123,6 +123,7 @@ static package content.
 
 - `scripts/doc_route.py` — routes catalog updates to the correct AI/agent index
 - `scripts/score_eval.py` — summarizes assurance scoring with JSON/text output
+- `python3 build/scripts/docs/validate-skill-packages.py --skill meridian-implementation-assurance` — validates packaging and references for this skill before shipping
 
 ### `meridian-test-writer`
 

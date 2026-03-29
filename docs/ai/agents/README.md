@@ -109,6 +109,12 @@ Required evidence:
 - Validation commands + outcomes (tests/builds/scripts)
 - Traceability matrix (requirement → implementation → evidence)
 - Catalog updates recorded (agents/skills) when capabilities change
+- Skill package validation when updated (`python3 build/scripts/docs/validate-skill-packages.py --skill meridian-implementation-assurance`)
+
+Quick invokes:
+- Route catalog updates: `python3 .claude/skills/meridian-implementation-assurance/scripts/doc_route.py --kind ai --topic "<topic>"`
+- Score assurance evals: `python3 .claude/skills/meridian-implementation-assurance/scripts/score_eval.py --scenario A --scores '<json>' --json`
+- Validate skill packaging: `python3 build/scripts/docs/validate-skill-packages.py --skill meridian-implementation-assurance`
 
 ---
 
