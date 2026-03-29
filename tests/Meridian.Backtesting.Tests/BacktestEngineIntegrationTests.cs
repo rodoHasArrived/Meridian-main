@@ -179,6 +179,110 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
     }
 
     // ------------------------------------------------------------------ //
+    //  UTC date boundary filtering (regression: FilterBySymbolAndDate    //
+    //  must use UtcDateTime.Date, not LocalDateTime.Date)                //
+    // ------------------------------------------------------------------ //
+
+    /// <summary>
+    /// Regression test: FilterBySymbolAndDate must use UtcDateTime.Date, not LocalDateTime.Date.
+    /// An event whose UTC date is 2024-01-16 (but whose embedded offset would produce a different
+    /// LocalDateTime on a non-UTC machine) must be excluded from a backtest requested only through
+    /// 2024-01-15.
+    /// </summary>
+    [Fact]
+    public async Task RunAsync_EventTimestampCrossesUtcMidnight_ExcludedByUtcDate()
+    {
+        // Bar whose UTC timestamp is 2024-01-16T00:00:00Z (i.e. the next day in UTC).
+        // If filtering used LocalDateTime the date on this machine would still be 2024-01-16 in UTC
+        // (no offset difference), but an offset of -01:00 shifts LocalDateTime to 2024-01-15 23:00
+        // while UtcDateTime remains 2024-01-16 00:00.  Prove the correct path is taken.
+        var ts = new DateTimeOffset(2024, 1, 16, 0, 0, 0, TimeSpan.FromHours(-1));
+        // ts.LocalDateTime = 2024-01-15 23:00:00 (offset -01:00)
+        // ts.UtcDateTime   = 2024-01-16 00:00:00
+
+        WriteEventJsonl("SPY", ts);
+
+        var request = new BacktestRequest(
+            From: new DateOnly(2024, 1, 15),
+            To: new DateOnly(2024, 1, 15),   // range is ONLY Jan 15
+            DataRoot: _dataRoot);
+
+        var strategy = new BarTrackingStrategy();
+        await _engine.RunAsync(request, strategy);
+
+        strategy.BarsReceived.Should().Be(0,
+            "the event's UTC date is 2024-01-16, which is outside the requested range ending on 2024-01-15; " +
+            "LocalDateTime would incorrectly classify it as 2024-01-15 — the filter must use UtcDateTime");
+    }
+
+    /// <summary>
+    /// Regression test: an event whose UTC date falls exactly on the last requested day must be
+    /// included even when its LocalDateTime (in a positive-offset timezone) would push it past that
+    /// boundary.
+    /// </summary>
+    [Fact]
+    public async Task RunAsync_EventTimestampOnLastDay_IncludedByUtcDate()
+    {
+        // UTC date 2024-01-15 23:00:00Z — local time on a UTC+2 machine would be 2024-01-16 01:00
+        // (next day), but the filter must include it because UtcDateTime.Date = 2024-01-15.
+        var ts = new DateTimeOffset(2024, 1, 15, 23, 0, 0, TimeSpan.Zero);
+
+        WriteEventJsonl("SPY", ts);
+
+        var request = new BacktestRequest(
+            From: new DateOnly(2024, 1, 15),
+            To: new DateOnly(2024, 1, 15),
+            DataRoot: _dataRoot);
+
+        var strategy = new BarTrackingStrategy();
+        await _engine.RunAsync(request, strategy);
+
+        strategy.BarsReceived.Should().Be(1,
+            "the event's UTC date is 2024-01-15, which is within the requested range; " +
+            "LocalDateTime in a positive-offset timezone would wrongly push it to 2024-01-16");
+    }
+
+    // ------------------------------------------------------------------ //
+    //  Fill rejection does not crash the engine (regression: domain       //
+    //  violations from ProcessFill must be caught; backtest continues)   //
+    // ------------------------------------------------------------------ //
+
+    /// <summary>
+    /// Regression test: when a strategy places a short-sell order on an account that has
+    /// AllowShortSelling=false, SimulatedPortfolio.ProcessFill throws InvalidOperationException.
+    /// The engine must catch this domain violation, log a warning, and continue the replay loop
+    /// rather than propagating the exception to the caller.
+    /// </summary>
+    [Fact]
+    public async Task RunAsync_StrategyAttemptsShortSellOnRestrictedAccount_RunCompletesWithoutException()
+    {
+        WriteBarJsonl("AAPL", new DateOnly(2024, 1, 2), new DateOnly(2024, 1, 4), basePrice: 185m);
+
+        var restrictedAccount = new FinancialAccount(
+            BacktestDefaults.DefaultBrokerageAccountId,
+            "No-Short Brokerage",
+            FinancialAccountKind.Brokerage,
+            InitialCash: 100_000m,
+            Rules: new FinancialAccountRules(AllowMargin: true, AllowShortSelling: false));
+
+        var request = new BacktestRequest(
+            From: new DateOnly(2024, 1, 2),
+            To: new DateOnly(2024, 1, 4),
+            DataRoot: _dataRoot,
+            Accounts: [restrictedAccount]);
+
+        var strategy = new ShortFirstBarStrategy("AAPL", quantity: 10);
+
+        // Must NOT throw — the engine catches InvalidOperationException from ProcessFill and
+        // discards the fill instead of surfacing it as a backtest failure.
+        var result = await _engine.RunAsync(request, strategy);
+
+        result.Should().NotBeNull("RunAsync must complete normally");
+        result.Fills.Should().BeEmpty(
+            "the short-sell fill was rejected by the account rule; no fills should be recorded");
+    }
+
+    // ------------------------------------------------------------------ //
     //  Progress reporting                                                 //
     // ------------------------------------------------------------------ //
 
@@ -296,6 +400,31 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
     // ------------------------------------------------------------------ //
     //  JSONL fixture helpers                                              //
     // ------------------------------------------------------------------ //
+
+    /// <summary>
+    /// Writes a single <see cref="HistoricalBar"/> event with the given <paramref name="timestamp"/>
+    /// (preserving its UTC offset) to a JSONL file so the engine can read it back.
+    /// Used to test date-boundary filtering with non-UTC-offset timestamps.
+    /// </summary>
+    private void WriteEventJsonl(string symbol, DateTimeOffset timestamp)
+    {
+        var utcDate = DateOnly.FromDateTime(timestamp.UtcDateTime);
+        var symbolDir = Path.Combine(_dataRoot, symbol.ToUpperInvariant());
+        Directory.CreateDirectory(symbolDir);
+        var filePath = Path.Combine(symbolDir, $"{symbol}_bars_{utcDate:yyyy-MM-dd}.jsonl");
+
+        var bar = new HistoricalBar(
+            Symbol: symbol,
+            SessionDate: utcDate,
+            Open: 100m, High: 105m, Low: 95m, Close: 100m,
+            Volume: 1_000_000L,
+            Source: "test",
+            SequenceNumber: 1L);
+
+        var evt = MarketEvent.HistoricalBar(timestamp, symbol, bar, 1, "test");
+        using var writer = new StreamWriter(filePath);
+        writer.WriteLine(JsonSerializer.Serialize(evt, MarketDataJsonContext.HighPerformanceOptions));
+    }
 
     /// <summary>
     /// Writes one <see cref="HistoricalBar"/> per day (from → to inclusive) to a JSONL file
@@ -446,4 +575,33 @@ file sealed class StubCorporateActionAdjustmentService(decimal factor) : ICorpor
             .ToList();
         return Task.FromResult<IReadOnlyList<HistoricalBar>>(adjusted);
     }
+}
+
+/// <summary>
+/// Places a single short-sell (negative quantity) market order on the very first bar.
+/// Used to exercise the engine's fill-rejection path when AllowShortSelling=false.
+/// </summary>
+file sealed class ShortFirstBarStrategy(string symbol, long quantity) : IBacktestStrategy
+{
+    private bool _shorted;
+
+    public string Name => "ShortFirstBar";
+
+    public void Initialize(IBacktestContext ctx) { }
+    public void OnTrade(Trade trade, IBacktestContext ctx) { }
+    public void OnQuote(BboQuotePayload quote, IBacktestContext ctx) { }
+
+    public void OnBar(HistoricalBar bar, IBacktestContext ctx)
+    {
+        if (!_shorted && bar.Symbol.Equals(symbol, StringComparison.OrdinalIgnoreCase))
+        {
+            ctx.PlaceMarketOrder(symbol, -quantity);   // negative quantity = short sell
+            _shorted = true;
+        }
+    }
+
+    public void OnOrderBook(LOBSnapshot snapshot, IBacktestContext ctx) { }
+    public void OnOrderFill(FillEvent fill, IBacktestContext ctx) { }
+    public void OnDayEnd(DateOnly date, IBacktestContext ctx) { }
+    public void OnFinished(IBacktestContext ctx) { }
 }
