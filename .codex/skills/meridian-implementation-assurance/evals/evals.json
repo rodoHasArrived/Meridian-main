@@ -1,0 +1,71 @@
+{
+  "skill_name": "meridian-implementation-assurance",
+  "last_updated": "2026-03-29",
+  "evals": [
+    {
+      "id": 1,
+      "scenario": "A",
+      "description": "Scenario A — refactor with existing doc update",
+      "prompt": "Use $meridian-implementation-assurance to certify this EventPipeline refactor is complete.\n\nThe change moves bounded-channel creation to EventPipelinePolicy.Default.CreateChannel<T>() (ADR-013 compliance). The existing ADR-013 doc at docs/adr/013-bounded-channel-policy.md covers the pattern and needs a note that direct Channel.CreateBounded calls are now disallowed outside the policy helper.\n\nProvide: validation commands, doc update evidence, rubric scores.",
+      "assertions": [
+        "Must run or cite dotnet build and/or dotnet test targeting the touched project",
+        "Must cite the existing ADR-013 doc and confirm it was updated in-place",
+        "Must note the hot-path risk of channel capacity and DropOldest policy",
+        "Must provide a traceable summary linking the change to the validation artifact",
+        "Must not create a new ADR when an existing one already covers the topic"
+      ]
+    },
+    {
+      "id": 2,
+      "scenario": "B",
+      "description": "Scenario B — new feature with missing docs, cross-link required",
+      "prompt": "Use $meridian-implementation-assurance to certify the new PortableDataPackager ZIP export feature.\n\nThe feature is fully implemented in src/Meridian.Storage/Packaging/PortableDataPackager.cs. No documentation exists for this feature. Identify the correct docs subtree, create a new document, and add a cross-link from the nearest README.\n\nProvide: validation commands, new doc path, cross-link evidence, rubric scores.",
+      "assertions": [
+        "Must identify docs/operations/ as the correct subtree (operational feature)",
+        "Must create a new Markdown doc (not update an existing one)",
+        "Must add a cross-link from docs/operations/README.md or nearest index",
+        "Must include exact dotnet build / dotnet test commands for the storage project",
+        "Must score Documentation Sync >= 1 (new doc created in correct location)"
+      ]
+    },
+    {
+      "id": 3,
+      "scenario": "C",
+      "description": "Scenario C — performance-sensitive hot-path change",
+      "prompt": "Use $meridian-implementation-assurance to certify optimization of the HotPathBatchSerializer.\n\nThe change eliminates per-tick List<T> allocations by reusing a fixed-size ArrayPool buffer. No behavioral change — only allocation profile improvement. Update any related performance docs.\n\nProvide: hot-path analysis notes, allocation risk assessment, validation commands, rubric scores.",
+      "assertions": [
+        "Must explicitly discuss hot-path allocation risk before and after the change",
+        "Must confirm ArrayPool usage avoids per-tick GC pressure",
+        "Must include benchmark or test command evidence (dotnet test or BenchmarkDotNet reference)",
+        "Must flag if any async blocking or unbounded buffering risk remains",
+        "Must not claim performance improvement without at least one concrete measurement command"
+      ]
+    },
+    {
+      "id": 4,
+      "scenario": "A",
+      "description": "Scenario A — provider implementation verification",
+      "prompt": "Use $meridian-implementation-assurance to verify the new FredHistoricalDataProvider implementation.\n\nThe provider is at src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs and implements IHistoricalDataProvider. The docs/providers/data-sources.md file lists available providers and needs a Fred entry added.\n\nProvide: contract compliance checks, test evidence, doc update evidence, rubric scores.",
+      "assertions": [
+        "Must verify IHistoricalDataProvider contract compliance (FetchAsync signature, CancellationToken, error handling)",
+        "Must cite or run tests in tests/Meridian.Tests/Infrastructure/Providers/",
+        "Must confirm docs/providers/data-sources.md was updated with the Fred entry",
+        "Must note DataSourceAttribute decoration requirement (ADR-005)",
+        "Must produce a traceable summary linking the provider file to the doc update"
+      ]
+    },
+    {
+      "id": 5,
+      "scenario": "B",
+      "description": "Scenario B — AI/agent catalog rollout update",
+      "prompt": "Use $meridian-implementation-assurance to certify that the new meridian-provider-builder skill is discoverable.\n\nThe skill SKILL.md exists at .codex/skills/meridian-provider-builder/SKILL.md. No entry for it exists in docs/ai/skills/README.md. Add the entry and verify the skill package validates.\n\nProvide: validation script output, doc update evidence, cross-link evidence, rubric scores.",
+      "assertions": [
+        "Must add an entry to docs/ai/skills/README.md for the new skill",
+        "Must run or cite python3 build/scripts/docs/validate-skill-packages.py to confirm the skill package is valid",
+        "Must confirm the entry includes the skill name, trigger description, and link",
+        "Must not create a duplicate entry if one already exists",
+        "Must score Traceable Summary >= 1 (summary links skill file → doc update → validation command)"
+      ]
+    }
+  ]
+}

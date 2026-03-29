@@ -1,6 +1,6 @@
 ---
 name: meridian-implementation-assurance
-description: Implement Meridian changes with built-in correctness checks, performance guardrails, documentation synchronization, and structured self-evaluation. Use when Codex is asked to build or refactor code and must also verify behavior, prevent performance regressions, update existing docs, or add new docs in the correct repository section when none exists.
+description: Implement Meridian changes with built-in correctness checks, performance guardrails, documentation synchronization, and structured self-evaluation. Use when Codex is asked to build or refactor code and must also verify behavior, prevent performance regressions, update existing docs, or add new docs in the correct repository section when none exists. Also triggers on requests to certify completeness, confirm scope alignment, gather rollout evidence, or update AI/agent catalogs after new capabilities land.
 ---
 
 # Meridian Implementation Assurance
@@ -8,6 +8,18 @@ description: Implement Meridian changes with built-in correctness checks, perfor
 Deliver production-ready code changes and leave documentation in a consistent, current state.
 
 Read `../_shared/project-context.md` before coding. Read `references/documentation-routing.md` before writing docs. Read `references/evaluation-harness.md` before finalizing output.
+
+## Definition of Done
+
+A task delivered by this skill is complete when **all** of the following are true:
+
+- **Build passes**: at least one of `dotnet build` or `dotnet test` targeting the touched project runs without errors.
+- **Tests cover the change**: tests for happy path, failure path, and cancellation/disposal exist or are cited as a gap.
+- **Validation evidence is explicit**: the final response includes exact commands and their pass/fail results.
+- **Documentation is in sync**: existing docs covering the changed behavior are updated in-place, or a new doc is created in the correct subtree with a cross-link from the nearest index.
+- **Rubric score >= 8/10, no category at 0**: `scripts/score_eval.py` is run and the report is included in the response.
+- **Performance-sensitive paths are annotated**: any hot-path touched by the change includes an explicit note on allocation, async, or buffering risk.
+- **Summary is traceable**: the closing summary links requirement → files changed → validation artifact → doc update.
 
 ## Workflow
 
@@ -50,6 +62,10 @@ Use bundled scripts to keep execution fast and consistent:
   - Example: `python3 scripts/doc_route.py --kind architecture --topic "provider orchestration retries"`
 - `scripts/score_eval.py`: compute rubric totals and generate a standardized eval report.
   - Example: `python3 scripts/score_eval.py --scenario C --scores '{"behavior_correctness":2,"validation_evidence":2,"performance_safety":2,"documentation_sync":1,"traceable_summary":2}'`
+- `scripts/run_evals.py`: run the deterministic eval harness against `evals/evals.json` cases.
+  - Dry-run (validate setup): `python3 scripts/run_evals.py --all --dry-run`
+  - Single case: `python3 scripts/run_evals.py --eval-id 1`
+  - All cases with regression check: `python3 scripts/run_evals.py --all --summary`
 
 Run these scripts from the skill directory or with full paths.
 

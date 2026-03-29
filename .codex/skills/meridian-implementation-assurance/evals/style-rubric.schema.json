@@ -1,0 +1,72 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MeridianImplementationAssuranceRubric",
+  "description": "Structured rubric output for the meridian-implementation-assurance skill. Pass to codex exec via --output-schema to obtain a scoreable, machine-readable verdict.",
+  "type": "object",
+  "properties": {
+    "overall_pass": {
+      "type": "boolean",
+      "description": "True when total >= 8/10 and no category scored 0."
+    },
+    "score": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10,
+      "description": "Sum of all category scores (5 categories × 0-2 each = 0-10)."
+    },
+    "scenario": {
+      "type": "string",
+      "enum": ["A", "B", "C"],
+      "description": "Evaluated scenario ID: A=code+existing-docs, B=code+missing-docs, C=perf-sensitive."
+    },
+    "checks": {
+      "type": "array",
+      "description": "One entry per rubric category.",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "enum": [
+              "behavior_correctness",
+              "validation_evidence",
+              "performance_safety",
+              "documentation_sync",
+              "traceable_summary"
+            ]
+          },
+          "score": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2,
+            "description": "0=missing/incorrect, 1=partial/unclear, 2=complete and concrete."
+          },
+          "pass": {
+            "type": "boolean",
+            "description": "True when score >= 1."
+          },
+          "notes": {
+            "type": "string",
+            "description": "Concise evidence or failure reason for this category."
+          }
+        },
+        "required": ["id", "score", "pass", "notes"],
+        "additionalProperties": false
+      }
+    },
+    "failed_checks": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Human-readable list of checks that scored 0. Empty when all pass."
+    },
+    "corrective_follow_ups": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Actionable follow-up items for any failed or partial checks."
+    }
+  },
+  "required": ["overall_pass", "score", "scenario", "checks", "failed_checks", "corrective_follow_ups"],
+  "additionalProperties": false
+}

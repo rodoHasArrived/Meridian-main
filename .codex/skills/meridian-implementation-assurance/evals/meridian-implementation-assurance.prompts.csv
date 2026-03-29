@@ -1,0 +1,13 @@
+id,should_trigger,prompt
+ia-01,true,"Use $meridian-implementation-assurance to verify this new Stooq historical provider implementation is complete"
+ia-02,true,"I need to prove this WAL durability refactor is complete — certify behavior, tests, and docs are in sync"
+ia-03,true,"Confirm scope alignment for the new security master snapshot feature before rollout"
+ia-04,true,"Gather rollout evidence for the updated composite historical data provider"
+ia-05,true,"Update the AI agent catalog after adding the new CppTrader provider"
+ia-06,true,"Certify completeness: the new bounded-channel backpressure change must have test evidence and updated ADR"
+ia-07,true,"Run implementation assurance on the JsonlStorageSink changes — I need validation commands and doc proof"
+ia-08,true,"The new F# validation pipeline is deployed. Collect evidence it matches the blueprint and update the skills index"
+ia-09,false,"Just review my code and tell me what looks wrong"
+ia-10,false,"Design a blueprint for the new streaming failover service"
+ia-11,false,"Write unit tests for the AlpacaMarketDataClient"
+ia-12,false,"Brainstorm improvements to the backfill scheduling system"
