@@ -124,11 +124,23 @@ Use these documents together when planning or implementing new work:
 │       │   ├── SKILL.md
 │       │   ├── agents
 │       │   │   └── openai.yaml
+│       │   ├── evals
+│       │   │   ├── artifacts
+│       │   │   │   ├── eval-1.jsonl
+│       │   │   │   ├── eval-2.jsonl
+│       │   │   │   ├── eval-3.jsonl
+│       │   │   │   ├── eval-4.jsonl
+│       │   │   │   └── eval-5.jsonl
+│       │   │   ├── benchmark_baseline.json
+│       │   │   ├── evals.json
+│       │   │   ├── meridian-implementation-assurance.prompts.csv
+│       │   │   └── style-rubric.schema.json
 │       │   ├── references
 │       │   │   ├── documentation-routing.md
 │       │   │   └── evaluation-harness.md
 │       │   └── scripts
 │       │       ├── doc_route.py
+│       │       ├── run_evals.py
 │       │       └── score_eval.py
 │       ├── meridian-provider-builder
 │       │   ├── SKILL.md
@@ -3172,6 +3184,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-469 directories, 2665 files
+471 directories, 2675 files
 ```
 <!-- readme-tree end -->
