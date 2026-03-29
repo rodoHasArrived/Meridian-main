@@ -89,35 +89,6 @@ Handles documentation maintenance and quality tasks:
 
 ---
 
-### Implementation Assurance Agent
-
-**File:** [`.github/agents/implementation-assurance-agent.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/agents/implementation-assurance-agent.md)
-**Used by:** GitHub Copilot agents
-**Claude Code equivalent / skill:** [`meridian-implementation-assurance`](https://github.com/rodoHasArrived/Meridian/blob/main/.claude/skills/meridian-implementation-assurance/SKILL.md)
-
-Certifies that implemented work matches approved requirements/blueprints and is discoverable in the
-AI catalogs. Drives requirement-to-evidence mapping, ensures validation commands are run and
-captured, and routes catalog updates (agents/skills) for new capabilities.
-
-Workflow:
-1. Identify scope and acceptance criteria; decide the validation lane.
-2. Map requirements to changed files and validation artifacts (tests/builds/logs/docs).
-3. Run mandated commands and capture outputs plus doc routing (see bundled scripts).
-4. Produce a traceable summary with explicit evidence and catalog updates.
-
-Required evidence:
-- Validation commands + outcomes (tests/builds/scripts)
-- Traceability matrix (requirement → implementation → evidence)
-- Catalog updates recorded (agents/skills) when capabilities change
-- Skill package validation when updated (`python3 build/scripts/docs/validate-skill-packages.py --skill meridian-implementation-assurance`)
-
-Quick invokes:
-- Route catalog updates: `python3 .claude/skills/meridian-implementation-assurance/scripts/doc_route.py --kind ai --topic "<topic>"`
-- Score assurance evals: `python3 .claude/skills/meridian-implementation-assurance/scripts/score_eval.py --scenario A --scores '<json>' --json`
-- Validate skill packaging: `python3 build/scripts/docs/validate-skill-packages.py --skill meridian-implementation-assurance`
-
----
-
 ### Brainstorming & Ideation Agent
 
 **File:** [`.github/agents/brainstorm-agent.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/agents/brainstorm-agent.md)
@@ -216,6 +187,18 @@ provider adapters. Operates only on **measured** bottlenecks (BenchmarkDotNet / 
 
 ---
 
+
+### Implementation Assurance Agent
+
+**File:** [`.github/agents/implementation-assurance-agent.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/agents/implementation-assurance-agent.md)
+**Used by:** GitHub Copilot agents
+**Claude Code equivalent:** [`.claude/skills/meridian-implementation-assurance/SKILL.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.claude/skills/meridian-implementation-assurance/SKILL.md)
+
+Coordinates end-to-end implementation tasks with required workflow gates for behavior correctness,
+performance safety, documentation sync, and traceable evaluation evidence.
+
+---
+
 ## Claude Code Agents (`.claude/agents/`)
 
 ### Claude Blueprint Agent
@@ -268,7 +251,7 @@ provider docs, developer guides, `CLAUDE.md`, and the `ai-known-errors.md` regis
 | Provider implementation | `provider-builder-agent.md` | Corresponding Claude Code provider-builder resources |
 | Test generation | `test-writer-agent.md` | Corresponding Claude Code test-writing resources |
 | Documentation maintenance | `documentation-agent.md` | Corresponding Claude Code documentation agent |
-| Implementation assurance | `implementation-assurance-agent.md` | `meridian-implementation-assurance` skill |
+| Implementation assurance | `implementation-assurance-agent.md` | `meridian-implementation-assurance` Claude skill |
 | Code cleanup / anti-pattern fix | `cleanup-agent.md` | Corresponding Claude Code cleanup agent |
 | Bug diagnosis & fix | `bug-fix-agent.md` | *(Copilot-only)* |
 | Performance profiling & optimisation | `performance-agent.md` | *(Copilot-only)* |

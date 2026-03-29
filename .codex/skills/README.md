@@ -11,4 +11,4 @@ Current skills:
 - `meridian-provider-builder`
 - `meridian-test-writer`
 
-Use these skills as repo-owned guidance for Meridian-specific planning, ideation, review, provider work, and test writing.
+Use these skills as repo-owned guidance for Meridian-specific planning, ideation, review, provider work, implementation assurance, and test writing.
