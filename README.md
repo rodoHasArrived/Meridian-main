@@ -2714,6 +2714,7 @@ Use these documents together when planning or implementing new work:
 │   ├── Directory.Build.props
 │   ├── Meridian.Backtesting.Tests
 │   │   ├── BacktestEngineIntegrationTests.cs
+│   │   ├── BacktestMetricsEngineTests.cs
 │   │   ├── BacktestRequestConfigTests.cs
 │   │   ├── BracketOrderTests.cs
 │   │   ├── CorporateActionAdjustmentServiceTests.cs
@@ -3187,6 +3188,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-471 directories, 2678 files
+471 directories, 2679 files
 ```
 <!-- readme-tree end -->
