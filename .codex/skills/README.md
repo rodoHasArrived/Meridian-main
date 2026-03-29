@@ -7,6 +7,7 @@ Current skills:
 - `meridian-blueprint`
 - `meridian-brainstorm`
 - `meridian-code-review`
+- `meridian-implementation-assurance`
 - `meridian-provider-builder`
 - `meridian-test-writer`
 
