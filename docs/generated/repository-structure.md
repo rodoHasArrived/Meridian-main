@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-03-29 03:22:50 UTC. Do not edit manually.
+> Auto-generated on 2026-03-29 03:42:05 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -47,6 +47,9 @@ Meridian-main
 │   │   │   ├── CHANGELOG.md
 │   │   │   └── SKILL.md
 │   │   ├── meridian-implementation-assurance
+│   │   │   ├── references
+│   │   │   │   ├── documentation-routing.md
+│   │   │   │   └── evaluation-harness.md
 │   │   │   ├── scripts
 │   │   │   │   ├── doc_route.py
 │   │   │   │   └── score_eval.py

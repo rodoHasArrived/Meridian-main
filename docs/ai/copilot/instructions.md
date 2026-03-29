@@ -158,6 +158,9 @@ Meridian-main
 │   │   │   ├── CHANGELOG.md
 │   │   │   └── SKILL.md
 │   │   ├── meridian-implementation-assurance
+│   │   │   ├── references
+│   │   │   │   ├── documentation-routing.md
+│   │   │   │   └── evaluation-harness.md
 │   │   │   ├── scripts
 │   │   │   │   ├── doc_route.py
 │   │   │   │   └── score_eval.py
