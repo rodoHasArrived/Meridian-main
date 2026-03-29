@@ -112,6 +112,16 @@ Use these documents together when planning or implementing new work:
 │       │       └── competitive-landscape.md
 │       ├── meridian-code-review
 │       │   └── SKILL.md
+│       ├── meridian-implementation-assurance
+│       │   ├── SKILL.md
+│       │   ├── agents
+│       │   │   └── openai.yaml
+│       │   ├── references
+│       │   │   ├── documentation-routing.md
+│       │   │   └── evaluation-harness.md
+│       │   └── scripts
+│       │       ├── doc_route.py
+│       │       └── score_eval.py
 │       ├── meridian-provider-builder
 │       │   ├── SKILL.md
 │       │   └── references
@@ -3152,6 +3162,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-462 directories, 2652 files
+466 directories, 2658 files
 ```
 <!-- readme-tree end -->
