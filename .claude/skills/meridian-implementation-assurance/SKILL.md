@@ -64,6 +64,17 @@ Follow this 4-step loop for every implementation-assurance task:
 
 ---
 
+## On-Demand References
+
+Load these only when the task requires the deeper context they provide:
+
+- `references/documentation-routing.md` — routing matrix for placing doc updates in the correct
+  `docs/` subtree and quality bar for doc changes.
+- `references/evaluation-harness.md` — rubric definitions (Scenarios A/B/C), per-category scoring
+  guide, passing threshold, and the canonical eval-report template.
+
+---
+
 ## Bundled Scripts
 
 ### `scripts/doc_route.py`
