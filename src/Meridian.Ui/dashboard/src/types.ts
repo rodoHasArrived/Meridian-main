@@ -489,3 +489,70 @@ export interface StrategyRunSummary {
   lastUpdatedAt: string;
   auditReference: string | null;
 }
+
+// --- Security Master workstation types ---
+
+export interface SecurityClassificationSummary {
+  assetClass: string;
+  subType: string | null;
+  primaryIdentifierKind: string | null;
+  primaryIdentifierValue: string | null;
+}
+
+export interface SecurityEconomicDefinitionSummary {
+  currency: string;
+  version: number;
+  effectiveFrom: string | null;
+  effectiveTo: string | null;
+  subType: string | null;
+  assetFamily: string | null;
+  issuerType: string | null;
+}
+
+export interface SecurityMasterEntry {
+  securityId: string;
+  displayName: string;
+  status: "Active" | "Inactive" | "Pending" | "Deactivated";
+  classification: SecurityClassificationSummary;
+  economicDefinition: SecurityEconomicDefinitionSummary;
+}
+
+export interface SecurityIdentifierEntry {
+  kind: string;
+  value: string;
+  isPrimary: boolean;
+  validFrom: string;
+  validTo: string | null;
+  provider: string | null;
+}
+
+export interface SecurityIdentityDrillIn {
+  securityId: string;
+  displayName: string;
+  assetClass: string;
+  status: string;
+  version: number;
+  effectiveFrom: string;
+  effectiveTo: string | null;
+  identifiers: SecurityIdentifierEntry[];
+}
+
+export interface SecurityMasterConflict {
+  conflictId: string;
+  securityId: string;
+  conflictKind: string;
+  fieldPath: string;
+  providerA: string;
+  valueA: string;
+  providerB: string;
+  valueB: string;
+  detectedAt: string;
+  status: "Open" | "Resolved" | "Dismissed";
+}
+
+export interface ResolveConflictRequest {
+  conflictId: string;
+  resolution: "AcceptA" | "AcceptB" | "Dismiss";
+  resolvedBy: string;
+  reason?: string;
+}

@@ -1,5 +1,5 @@
 import { ArrowUpRight, CheckCircle, FlaskConical, GitCompare, History, Layers3, ShieldAlert, TimerReset, XCircle } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -12,9 +12,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { EntityDataTable } from "@/components/meridian/entity-data-table";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { RunStatusBadge } from "@/components/meridian/run-status-badge";
-import { approvePromotion, compareRuns, diffRuns, evaluatePromotion, getPromotionHistory, rejectPromotion } from "@/lib/api";
+import { approvePromotion, compareRuns, diffRuns, evaluatePromotion, getPromotionHistory, getRunAttribution, getRunFills, rejectPromotion } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import type { MetricsDiff, ParameterDiff, PositionDiffEntry, PromotionDecisionResult, PromotionEvaluationResult, PromotionRecord, ResearchRunRecord, ResearchWorkspaceResponse, RunComparisonRow, RunDiff } from "@/types";
+import type { MetricsDiff, ParameterDiff, PositionDiffEntry, PromotionDecisionResult, PromotionEvaluationResult, PromotionRecord, ResearchRunRecord, ResearchWorkspaceResponse, RunAttributionSummary, RunComparisonRow, RunDiff, RunFillSummary } from "@/types";
 
 interface ResearchScreenProps {
   data: ResearchWorkspaceResponse | null;
@@ -74,6 +74,32 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
   const [historyError, setHistoryError] = useState<string | null>(null);
   const [showHistory, setShowHistory] = useState(false);
 
+  // --- Run detail drill-in tabs ---
+  type RunDetailTab = "overview" | "attribution" | "fills";
+  const [runDetailTab, setRunDetailTab] = useState<RunDetailTab>("overview");
+  const [attribution, setAttribution] = useState<RunAttributionSummary | null>(null);
+  const [attributionLoading, setAttributionLoading] = useState(false);
+  const [fills, setFills] = useState<RunFillSummary | null>(null);
+  const [fillsLoading, setFillsLoading] = useState(false);
+
+  useEffect(() => {
+    if (!selectedRun || runDetailTab !== "attribution") return;
+    setAttributionLoading(true);
+    getRunAttribution(selectedRun.id)
+      .then(setAttribution)
+      .catch(() => setAttribution(null))
+      .finally(() => setAttributionLoading(false));
+  }, [selectedRun, runDetailTab]);
+
+  useEffect(() => {
+    if (!selectedRun || runDetailTab !== "fills") return;
+    setFillsLoading(true);
+    getRunFills(selectedRun.id)
+      .then(setFills)
+      .catch(() => setFills(null))
+      .finally(() => setFillsLoading(false));
+  }, [selectedRun, runDetailTab]);
+
   const highlights = useMemo(
     () => [
       {
@@ -106,6 +132,9 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
       setSelectedRun(null);
       setRejectReason("");
       setPromotion({ phase: "idle", evaluation: null, decision: null, error: null });
+      setRunDetailTab("overview");
+      setAttribution(null);
+      setFills(null);
     }
   }
 
@@ -324,33 +353,139 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
                 <div className="text-sm text-muted-foreground">Last updated {selectedRun.lastUpdated}</div>
               </div>
 
-              <dl className="grid gap-4 sm:grid-cols-2">
-                <Stat label="Engine" value={selectedRun.engine} />
-                <Stat label="Dataset" value={selectedRun.dataset} />
-                <Stat label="Run window" value={selectedRun.window} />
-                <Stat label="P&L" value={selectedRun.pnl} />
-                <Stat label="Sharpe" value={selectedRun.sharpe} />
-                <Stat label="Run ID" value={selectedRun.id} />
-              </dl>
-
-              <div className="rounded-xl border border-border/80 bg-secondary/30 p-4">
-                <div className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">Operator notes</div>
-                <p className="mt-3 text-sm leading-6 text-foreground">{selectedRun.notes}</p>
+              {/* Tab bar */}
+              <div className="flex gap-1 rounded-lg border border-border/60 bg-secondary/30 p-1">
+                {(["overview", "attribution", "fills"] as const).map((tab) => (
+                  <button
+                    key={tab}
+                    type="button"
+                    onClick={() => setRunDetailTab(tab)}
+                    className={cn(
+                      "flex-1 rounded-md px-3 py-1.5 text-sm font-medium capitalize transition-colors",
+                      runDetailTab === tab
+                        ? "bg-background text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {tab}
+                  </button>
+                ))}
               </div>
 
-              {/* Promotion panel */}
-              <PromotionPanel
-                phase={promotion.phase}
-                evaluation={promotion.evaluation}
-                decision={promotion.decision}
-                error={promotion.error}
-                runStatus={selectedRun.status}
-                rejectReason={rejectReason}
-                onRejectReasonChange={setRejectReason}
-                onEvaluate={handleEvaluatePromotion}
-                onApprove={handleApprovePromotion}
-                onReject={handleRejectPromotion}
-              />
+              {runDetailTab === "overview" && (
+                <>
+                  <dl className="grid gap-4 sm:grid-cols-2">
+                    <Stat label="Engine" value={selectedRun.engine} />
+                    <Stat label="Dataset" value={selectedRun.dataset} />
+                    <Stat label="Run window" value={selectedRun.window} />
+                    <Stat label="P&L" value={selectedRun.pnl} />
+                    <Stat label="Sharpe" value={selectedRun.sharpe} />
+                    <Stat label="Run ID" value={selectedRun.id} />
+                  </dl>
+
+                  <div className="rounded-xl border border-border/80 bg-secondary/30 p-4">
+                    <div className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">Operator notes</div>
+                    <p className="mt-3 text-sm leading-6 text-foreground">{selectedRun.notes}</p>
+                  </div>
+
+                  {/* Promotion panel */}
+                  <PromotionPanel
+                    phase={promotion.phase}
+                    evaluation={promotion.evaluation}
+                    decision={promotion.decision}
+                    error={promotion.error}
+                    runStatus={selectedRun.status}
+                    rejectReason={rejectReason}
+                    onRejectReasonChange={setRejectReason}
+                    onEvaluate={handleEvaluatePromotion}
+                    onApprove={handleApprovePromotion}
+                    onReject={handleRejectPromotion}
+                  />
+                </>
+              )}
+
+              {runDetailTab === "attribution" && (
+                <div className="space-y-4">
+                  {attributionLoading && <p className="text-sm text-muted-foreground">Loading attribution…</p>}
+                  {!attributionLoading && !attribution && (
+                    <p className="text-sm text-muted-foreground">No attribution data available for this run.</p>
+                  )}
+                  {attribution && (
+                    <>
+                      <dl className="grid gap-3 sm:grid-cols-3">
+                        <Stat label="Realized P&L" value={`$${attribution.totalRealizedPnl.toLocaleString(undefined, { maximumFractionDigits: 2 })}`} />
+                        <Stat label="Unrealized P&L" value={`$${attribution.totalUnrealizedPnl.toLocaleString(undefined, { maximumFractionDigits: 2 })}`} />
+                        <Stat label="Total Commissions" value={`$${attribution.totalCommissions.toLocaleString(undefined, { maximumFractionDigits: 2 })}`} />
+                      </dl>
+                      <div className="overflow-x-auto rounded-xl border border-border/70">
+                        <table className="min-w-full divide-y divide-border/60 text-left text-xs sm:text-sm">
+                          <thead className="bg-secondary/30">
+                            <tr>
+                              {["Symbol", "Realized", "Unrealized", "Total P&L", "Trades", "Commissions"].map((col) => (
+                                <th key={col} className="px-3 py-2 font-semibold uppercase tracking-[0.14em] text-muted-foreground">{col}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-border/50">
+                            {attribution.bySymbol.map((row) => (
+                              <tr key={row.symbol} className="bg-background/20">
+                                <td className="px-3 py-2 font-mono font-semibold">{row.symbol}</td>
+                                <td className={cn("px-3 py-2 font-mono", row.realizedPnl >= 0 ? "text-success" : "text-danger")}>${row.realizedPnl.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
+                                <td className={cn("px-3 py-2 font-mono", row.unrealizedPnl >= 0 ? "text-success" : "text-danger")}>${row.unrealizedPnl.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
+                                <td className={cn("px-3 py-2 font-mono font-semibold", row.totalPnl >= 0 ? "text-success" : "text-danger")}>${row.totalPnl.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
+                                <td className="px-3 py-2 font-mono text-muted-foreground">{row.tradeCount}</td>
+                                <td className="px-3 py-2 font-mono text-muted-foreground">${row.commissions.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {runDetailTab === "fills" && (
+                <div className="space-y-4">
+                  {fillsLoading && <p className="text-sm text-muted-foreground">Loading fills…</p>}
+                  {!fillsLoading && !fills && (
+                    <p className="text-sm text-muted-foreground">No fill data available for this run.</p>
+                  )}
+                  {fills && (
+                    <>
+                      <dl className="grid gap-3 sm:grid-cols-2">
+                        <Stat label="Total fills" value={String(fills.totalFills)} />
+                        <Stat label="Total commissions" value={`$${fills.totalCommissions.toLocaleString(undefined, { maximumFractionDigits: 2 })}`} />
+                      </dl>
+                      <div className="overflow-x-auto rounded-xl border border-border/70">
+                        <table className="min-w-full divide-y divide-border/60 text-left text-xs sm:text-sm">
+                          <thead className="bg-secondary/30">
+                            <tr>
+                              {["Symbol", "Qty", "Price", "Commission", "Filled At"].map((col) => (
+                                <th key={col} className="px-3 py-2 font-semibold uppercase tracking-[0.14em] text-muted-foreground">{col}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-border/50">
+                            {fills.fills.slice(0, 50).map((fill) => (
+                              <tr key={fill.fillId} className="bg-background/20">
+                                <td className="px-3 py-2 font-mono font-semibold">{fill.symbol}</td>
+                                <td className={cn("px-3 py-2 font-mono", fill.filledQuantity >= 0 ? "text-success" : "text-danger")}>{fill.filledQuantity}</td>
+                                <td className="px-3 py-2 font-mono">${fill.fillPrice.toLocaleString(undefined, { maximumFractionDigits: 4 })}</td>
+                                <td className="px-3 py-2 font-mono text-muted-foreground">${fill.commission.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
+                                <td className="px-3 py-2 font-mono text-muted-foreground">{new Date(fill.filledAt).toLocaleString()}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                        {fills.fills.length > 50 && (
+                          <p className="px-3 py-2 text-xs text-muted-foreground">Showing first 50 of {fills.fills.length} fills.</p>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           </DialogContent>
         </Dialog>
