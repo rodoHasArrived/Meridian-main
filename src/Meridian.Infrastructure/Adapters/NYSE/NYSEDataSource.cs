@@ -198,8 +198,8 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
             using var request = new HttpRequestMessage(HttpMethod.Get, "/markets/status");
             AddAuthHeader(request);
 
-            using var nyseClient0 = CreateNyseHttpClient();
-            using var response = await nyseClient0.SendAsync(request, ct).ConfigureAwait(false);
+            using var httpClient = CreateNyseHttpClient();
+            using var response = await httpClient.SendAsync(request, ct).ConfigureAwait(false);
             return response.IsSuccessStatusCode;
         }
         catch (Exception ex)
@@ -462,8 +462,8 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
             using var request = new HttpRequestMessage(HttpMethod.Get, url);
             AddAuthHeader(request);
 
-            using var nyseClient1 = CreateNyseHttpClient();
-            using var response = await nyseClient1.SendAsync(request, token).ConfigureAwait(false);
+            using var httpClient = CreateNyseHttpClient();
+            using var response = await httpClient.SendAsync(request, token).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
 
             var json = await response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
@@ -530,8 +530,8 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
             using var request = new HttpRequestMessage(HttpMethod.Get, url);
             AddAuthHeader(request);
 
-            using var nyseClient2 = CreateNyseHttpClient();
-            using var response = await nyseClient2.SendAsync(request, token).ConfigureAwait(false);
+            using var httpClient = CreateNyseHttpClient();
+            using var response = await httpClient.SendAsync(request, token).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
 
             var json = await response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
@@ -576,8 +576,8 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
             using var request = new HttpRequestMessage(HttpMethod.Get, url);
             AddAuthHeader(request);
 
-            using var nyseClient3 = CreateNyseHttpClient();
-            using var response = await nyseClient3.SendAsync(request, token).ConfigureAwait(false);
+            using var httpClient = CreateNyseHttpClient();
+            using var response = await httpClient.SendAsync(request, token).ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -624,8 +624,8 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
             using var request = new HttpRequestMessage(HttpMethod.Get, url);
             AddAuthHeader(request);
 
-            using var nyseClient4 = CreateNyseHttpClient();
-            using var response = await nyseClient4.SendAsync(request, token).ConfigureAwait(false);
+            using var httpClient = CreateNyseHttpClient();
+            using var response = await httpClient.SendAsync(request, token).ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -691,8 +691,8 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
                 Content = authContent
             };
 
-            using var nyseClient5 = CreateNyseHttpClient();
-            using var response = await nyseClient5.SendAsync(authRequest, ct).ConfigureAwait(false);
+            using var httpClient = CreateNyseHttpClient();
+            using var response = await httpClient.SendAsync(authRequest, ct).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
 
             var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);

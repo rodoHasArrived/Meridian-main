@@ -491,7 +491,7 @@ public static class DirectLendingEndpoints
                 return ServiceUnavailable();
             }
 
-            // ADR-014: Use source-generated context for reflection-free deserialization.
+            // ADR-014: Use source-generated context to eliminate reflection overhead.
             var request = JsonSerializer.Deserialize(body.GetRawText(), DirectLendingJsonContext.Default.RequestProjectionRunRequest);
             try
             {
@@ -598,7 +598,7 @@ public static class DirectLendingEndpoints
                 return ServiceUnavailable();
             }
 
-            // ADR-014: Use source-generated context for reflection-free deserialization.
+            // ADR-014: Use source-generated context to eliminate reflection overhead.
             var request = JsonSerializer.Deserialize(body.GetRawText(), DirectLendingJsonContext.Default.ResolveReconciliationExceptionRequest);
             if (request is null)
             {
