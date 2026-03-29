@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Meridian.Application.Logging;
 using Meridian.Contracts.Services;
+using Meridian.Infrastructure.Contracts;
 using Serilog;
 
 namespace Meridian.Application.Services;
@@ -11,14 +12,14 @@ namespace Meridian.Application.Services;
 /// <summary>
 /// Sealed implementation that probes connectivity every 60 seconds using HTTP GET to Google's connectivity check endpoint.
 /// </summary>
+[ImplementsAdr("ADR-010", "IHttpClientFactory for proper HTTP client lifecycle management — never new HttpClient()")]
 public sealed class ConnectivityProbeService : IConnectivityProbeService, IDisposable
 {
     private const string ConnectivityCheckUrl = "https://connectivitycheck.gstatic.com/generate_204";
     private const int ProbeIntervalSeconds = 60;
     private const int HttpTimeoutSeconds = 10;
 
-    private readonly IHttpClientFactory? _httpClientFactory;
-    private readonly HttpClient? _httpClient;
+    private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger _log;
     private PeriodicTimer? _probeTimer;
     private bool _isOnline;
@@ -40,20 +41,15 @@ public sealed class ConnectivityProbeService : IConnectivityProbeService, IDispo
     public event EventHandler<bool>? ConnectivityChanged;
 
     /// <summary>
-    /// Initializes ConnectivityProbeService, optionally using IHttpClientFactory for HTTP calls.
+    /// Initializes ConnectivityProbeService using <see cref="IHttpClientFactory"/> for HTTP calls.
+    /// Per ADR-010, <see cref="HttpClient"/> is never instantiated directly.
     /// </summary>
     public ConnectivityProbeService(
-        IHttpClientFactory? httpClientFactory = null,
+        IHttpClientFactory httpClientFactory,
         ILogger? log = null)
     {
-        _httpClientFactory = httpClientFactory;
+        _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
         _log = log ?? LoggingSetup.ForContext<ConnectivityProbeService>();
-
-        // If no factory available, create a dedicated HttpClient with timeout
-        if (_httpClientFactory == null)
-        {
-            _httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(HttpTimeoutSeconds) };
-        }
 
         // Start offline; first probe will update state
         _isOnline = false;
@@ -102,10 +98,7 @@ public sealed class ConnectivityProbeService : IConnectivityProbeService, IDispo
     {
         try
         {
-            using var client = _httpClientFactory?.CreateClient() ?? _httpClient;
-            if (client == null)
-                return;
-
+            using var client = _httpClientFactory.CreateClient();
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(HttpTimeoutSeconds));
             var response = await client.GetAsync(ConnectivityCheckUrl, HttpCompletionOption.ResponseHeadersRead, cts.Token)
                 .ConfigureAwait(false);
@@ -145,11 +138,6 @@ public sealed class ConnectivityProbeService : IConnectivityProbeService, IDispo
             return;
 
         _probeTimer?.Dispose();
-        if (_httpClientFactory == null)
-        {
-            _httpClient?.Dispose();
-        }
-
         _disposed = true;
     }
 }

@@ -15,6 +15,7 @@ using Meridian.Domain.Models;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
+using Meridian.Infrastructure.Http;
 using Meridian.Infrastructure.Resilience;
 using Meridian.Infrastructure.Shared;
 using Serilog;
@@ -50,7 +51,7 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
     #region Fields
 
     private readonly NYSEOptions _options;
-    private readonly HttpClient _httpClient;
+    private readonly IHttpClientFactory _httpClientFactory;
 
     // WebSocket lifecycle managed by WebSocketConnectionManager (replaces _webSocket, _connectionCts, _receiveTask)
     private readonly WebSocketConnectionManager _wsManager;
@@ -143,11 +144,13 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
 
     public NYSEDataSource(
         NYSEOptions options,
+        IHttpClientFactory httpClientFactory,
         DataSourceOptions? sourceOptions = null,
         ILogger? logger = null)
         : base(sourceOptions ?? DataSourceOptions.Default, logger)
     {
         _options = options ?? throw new ArgumentNullException(nameof(options));
+        _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
 
         _wsManager = new WebSocketConnectionManager(
             providerName: "NYSE",
@@ -155,13 +158,6 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
             logger: logger ?? LoggingSetup.ForContext<NYSEDataSource>());
 
         _wsManager.ConnectionLost += OnWsConnectionLostAsync;
-
-        _httpClient = new HttpClient
-        {
-            BaseAddress = new Uri(_options.EffectiveBaseUrl),
-            Timeout = TimeSpan.FromSeconds(_options.ConnectionTimeoutSeconds)
-        };
-        _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
     }
 
     #endregion
@@ -202,7 +198,8 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
             using var request = new HttpRequestMessage(HttpMethod.Get, "/markets/status");
             AddAuthHeader(request);
 
-            using var response = await _httpClient.SendAsync(request, ct).ConfigureAwait(false);
+            using var httpClient = CreateNyseHttpClient();
+            using var response = await httpClient.SendAsync(request, ct).ConfigureAwait(false);
             return response.IsSuccessStatusCode;
         }
         catch (Exception ex)
@@ -227,7 +224,6 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
         _depthUpdates.Dispose();
 
         _authLock.Dispose();
-        _httpClient.Dispose();
         _reconnectCts.Dispose();
     }
 
@@ -466,7 +462,8 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
             using var request = new HttpRequestMessage(HttpMethod.Get, url);
             AddAuthHeader(request);
 
-            using var response = await _httpClient.SendAsync(request, token).ConfigureAwait(false);
+            using var httpClient = CreateNyseHttpClient();
+            using var response = await httpClient.SendAsync(request, token).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
 
             var json = await response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
@@ -533,7 +530,8 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
             using var request = new HttpRequestMessage(HttpMethod.Get, url);
             AddAuthHeader(request);
 
-            using var response = await _httpClient.SendAsync(request, token).ConfigureAwait(false);
+            using var httpClient = CreateNyseHttpClient();
+            using var response = await httpClient.SendAsync(request, token).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
 
             var json = await response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
@@ -578,7 +576,8 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
             using var request = new HttpRequestMessage(HttpMethod.Get, url);
             AddAuthHeader(request);
 
-            using var response = await _httpClient.SendAsync(request, token).ConfigureAwait(false);
+            using var httpClient = CreateNyseHttpClient();
+            using var response = await httpClient.SendAsync(request, token).ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -625,7 +624,8 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
             using var request = new HttpRequestMessage(HttpMethod.Get, url);
             AddAuthHeader(request);
 
-            using var response = await _httpClient.SendAsync(request, token).ConfigureAwait(false);
+            using var httpClient = CreateNyseHttpClient();
+            using var response = await httpClient.SendAsync(request, token).ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -691,7 +691,8 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
                 Content = authContent
             };
 
-            using var response = await _httpClient.SendAsync(authRequest, ct).ConfigureAwait(false);
+            using var httpClient = CreateNyseHttpClient();
+            using var response = await httpClient.SendAsync(authRequest, ct).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
 
             var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
@@ -715,6 +716,21 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
         {
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
         }
+    }
+
+    /// <summary>
+    /// Creates a named <see cref="HttpClient"/> via <see cref="IHttpClientFactory"/>, setting the
+    /// dynamic <see cref="NYSEOptions.EffectiveBaseUrl"/> as the base address.  The shared handler
+    /// pool (connection lifetime, retry pipeline) is managed entirely by the factory.
+    /// </summary>
+    private HttpClient CreateNyseHttpClient()
+    {
+        var client = _httpClientFactory.CreateClient(HttpClientNames.NYSE);
+        // BaseAddress is dynamic per NYSEOptions; it must be applied to the lightweight
+        // HttpClient wrapper.  The underlying HttpMessageHandler/connection pool is
+        // owned by IHttpClientFactory and survives beyond any single HttpClient instance.
+        client.BaseAddress = new Uri(_options.EffectiveBaseUrl);
+        return client;
     }
 
     #endregion

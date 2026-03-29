@@ -1,4 +1,5 @@
 using Meridian.Infrastructure.DataSources;
+using Meridian.Infrastructure.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
@@ -40,8 +41,9 @@ public static class NYSEServiceExtensions
         services.AddSingleton<IDataSource>(sp =>
         {
             var opts = sp.GetRequiredService<NYSEOptions>();
+            var factory = sp.GetRequiredService<IHttpClientFactory>();
             var log = sp.GetService<ILogger>()?.ForContext<NYSEDataSource>();
-            return new NYSEDataSource(opts, sourceOptions, log);
+            return new NYSEDataSource(opts, factory, sourceOptions, log);
         });
 
         services.AddSingleton<IRealtimeDataSource>(sp =>
