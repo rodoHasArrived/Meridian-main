@@ -84,6 +84,9 @@ Use these documents together when planning or implementing new work:
 │       │       └── utils.py
 │       ├── meridian-implementation-assurance
 │       │   ├── SKILL.md
+│       │   ├── references
+│       │   │   ├── documentation-routing.md
+│       │   │   └── evaluation-harness.md
 │       │   └── scripts
 │       │       ├── doc_route.py
 │       │       └── score_eval.py
@@ -3168,6 +3171,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-468 directories, 2662 files
+469 directories, 2664 files
 ```
 <!-- readme-tree end -->
