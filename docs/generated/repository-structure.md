@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-03-29 06:13:31 UTC. Do not edit manually.
+> Auto-generated on 2026-03-29 18:21:45 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -2155,6 +2155,8 @@ Meridian-main
 │   │   │   ├── SymbolMappingEndpoints.cs
 │   │   │   ├── UiEndpoints.cs
 │   │   │   └── WorkstationEndpoints.cs
+│   │   ├── Serialization
+│   │   │   └── DirectLendingJsonContext.cs
 │   │   ├── Services
 │   │   │   ├── BackfillCoordinator.cs
 │   │   │   ├── ConfigStore.cs
