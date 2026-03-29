@@ -178,6 +178,7 @@ public static class UiEndpoints
         services.TryAddSingleton<PortfolioReadService>();
         services.TryAddSingleton<LedgerReadService>();
         services.TryAddSingleton<StrategyRunReadService>();
+        services.TryAddSingleton<CashFlowProjectionService>();
     }
 
 
