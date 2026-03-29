@@ -2395,6 +2395,7 @@ Meridian-main
 │       │   ├── PluginManagementViewModel.cs
 │       │   ├── ProviderHealthViewModel.cs
 │       │   ├── ProviderPageModels.cs
+│       │   ├── ProviderViewModel.cs
 │       │   ├── QualityArchiveViewModel.cs
 │       │   ├── QuantScriptViewModel.cs
 │       │   ├── QuoteFloatViewModel.cs
@@ -2805,6 +2806,7 @@ Meridian-main
 │   │   │   │   ├── AlpacaQuoteRoutingTests.cs
 │   │   │   │   ├── BackfillRetryAfterTests.cs
 │   │   │   │   ├── FailoverAwareMarketDataClientTests.cs
+│   │   │   │   ├── FreeHistoricalProviderParsingTests.cs
 │   │   │   │   ├── FreeProviderContractTests.cs
 │   │   │   │   ├── HistoricalDataProviderContractTests.cs
 │   │   │   │   ├── IBOrderSampleTests.cs
@@ -2934,6 +2936,7 @@ Meridian-main
 │   │   │       └── alpaca-quote-pipeline.json
 │   │   ├── TestHelpers
 │   │   │   ├── PolygonStubClient.cs
+│   │   │   ├── StubHttpMessageHandler.cs
 │   │   │   └── TestMarketEventPublisher.cs
 │   │   ├── Ui
 │   │   │   ├── DirectLendingEndpointsTests.cs
