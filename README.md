@@ -2542,6 +2542,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── PluginManagementViewModel.cs
 │       │   ├── ProviderHealthViewModel.cs
 │       │   ├── ProviderPageModels.cs
+│       │   ├── ProviderViewModel.cs
 │       │   ├── QualityArchiveViewModel.cs
 │       │   ├── QuantScriptViewModel.cs
 │       │   ├── QuoteFloatViewModel.cs
@@ -2946,6 +2947,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │       ├── polygon-recorded-session-msft-edge.json
 │   │   │   │   │       ├── polygon-recorded-session-nvda-multi-batch.json
 │   │   │   │   │       └── polygon-recorded-session-spy-etf.json
+│   │   │   │   ├── FreeHistoricalProviderParsingTests.cs
 │   │   │   │   ├── FreeProviderContractTests.cs
 │   │   │   │   ├── HistoricalDataProviderContractTests.cs
 │   │   │   │   ├── IBOrderSampleTests.cs
@@ -3077,6 +3079,7 @@ Use these documents together when planning or implementing new work:
 │   │   │       └── alpaca-quote-pipeline.json
 │   │   ├── TestHelpers
 │   │   │   ├── PolygonStubClient.cs
+│   │   │   ├── StubHttpMessageHandler.cs
 │   │   │   └── TestMarketEventPublisher.cs
 │   │   └── Ui
 │   │       ├── DirectLendingEndpointsTests.cs
@@ -3184,6 +3187,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-471 directories, 2675 files
+471 directories, 2678 files
 ```
 <!-- readme-tree end -->
