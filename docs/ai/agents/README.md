@@ -91,9 +91,9 @@ Handles documentation maintenance and quality tasks:
 
 ### Implementation Assurance Agent
 
-**File:** [`.github/agents/implementation-assurance-agent.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/agents/implementation-assurance-agent.md)
+**File:** [`.github/agents/implementation-assurance-agent.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/agents/implementation-assurance-agent.md)
 **Used by:** GitHub Copilot agents
-**Claude Code equivalent / skill:** [`meridian-implementation-assurance`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.claude/skills/meridian-implementation-assurance/SKILL.md)
+**Claude Code equivalent / skill:** [`meridian-implementation-assurance`](https://github.com/rodoHasArrived/Meridian/blob/main/.claude/skills/meridian-implementation-assurance/SKILL.md)
 
 Certifies that implemented work matches approved requirements/blueprints and is discoverable in the
 AI catalogs. Drives requirement-to-evidence mapping, ensures validation commands are run and
@@ -109,6 +109,12 @@ Required evidence:
 - Validation commands + outcomes (tests/builds/scripts)
 - Traceability matrix (requirement → implementation → evidence)
 - Catalog updates recorded (agents/skills) when capabilities change
+- Skill package validation when updated (`python3 build/scripts/docs/validate-skill-packages.py --skill meridian-implementation-assurance`)
+
+Quick invokes:
+- Route catalog updates: `python3 .claude/skills/meridian-implementation-assurance/scripts/doc_route.py --kind ai --topic "<topic>"`
+- Score assurance evals: `python3 .claude/skills/meridian-implementation-assurance/scripts/score_eval.py --scenario A --scores '<json>' --json`
+- Validate skill packaging: `python3 build/scripts/docs/validate-skill-packages.py --skill meridian-implementation-assurance`
 
 ---
 
