@@ -63,16 +63,16 @@
                         <Button x:Name="ValidateConfigButtonHeader"
                                 Content="Validate"
                                 Style="{StaticResource GhostButtonStyle}"
-                                Click="ValidateConfig_Click"
+                                Command="{Binding ValidateConfigCommand}"
                                 Margin="0,0,8,0" />
                         <Button x:Name="RefreshProvidersButtonHeader"
                                 Content="Refresh"
                                 Style="{StaticResource GhostButtonStyle}"
-                                Click="RefreshProviders_Click"
+                                Command="{Binding RefreshProvidersCommand}"
                                 Margin="0,0,8,0" />
                         <Button Content="Test Connections"
                                 Style="{StaticResource PrimaryButtonStyle}"
-                                Click="TestAllConnections_Click" />
+                                Command="{Binding TestAllConnectionsCommand}" />
                     </StackPanel>
                 </Grid>
             </Border>
@@ -222,17 +222,49 @@
                         <StackPanel Grid.Column="1" Orientation="Horizontal">
                             <Button x:Name="ValidateConfigButton" Content="Validate"
                                     Style="{StaticResource SecondaryButtonStyle}"
-                                    Click="ValidateConfig_Click" Margin="0,0,8,0" />
+                                    Command="{Binding ValidateConfigCommand}" Margin="0,0,8,0" />
                             <Button x:Name="RefreshProvidersButton" Content="Refresh"
                                     Style="{StaticResource SecondaryButtonStyle}"
-                                    Click="RefreshProviders_Click" />
+                                    Command="{Binding RefreshProvidersCommand}" />
                         </StackPanel>
                     </Grid>
 
                     <!-- Validation Status Panel -->
-                    <Border x:Name="ValidationPanel" Visibility="Collapsed"
-                            CornerRadius="6" Padding="12" Margin="0,0,0,16">
-                        <TextBlock x:Name="ValidationText" TextWrapping="Wrap" FontSize="12" />
+                    <Border x:Name="ValidationPanel" CornerRadius="6" Padding="12" Margin="0,0,0,16"
+                            Visibility="{Binding IsValidationPanelVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ValidationIsSuccess}" Value="True">
+                                        <Setter Property="Background" Value="#1E00B400" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ValidationIsWarning}" Value="True">
+                                        <Setter Property="Background" Value="#1EB4B400" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ValidationIsError}" Value="True">
+                                        <Setter Property="Background" Value="#1EFF0000" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <TextBlock x:Name="ValidationText" Text="{Binding ValidationText}"
+                                   TextWrapping="Wrap" FontSize="12">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ValidationIsSuccess}" Value="True">
+                                            <Setter Property="Foreground" Value="{StaticResource SuccessColorBrush}" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding ValidationIsWarning}" Value="True">
+                                            <Setter Property="Foreground" Value="{StaticResource WarningColorBrush}" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding ValidationIsError}" Value="True">
+                                            <Setter Property="Foreground" Value="{StaticResource ErrorColorBrush}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
                     </Border>
 
                     <!-- Column Headers -->
@@ -449,7 +481,8 @@
                     <TextBlock x:Name="EmptyFallbackChainText"
                                Text="No enabled providers. Enable at least one provider above."
                                Foreground="{StaticResource WarningColorBrush}"
-                               FontSize="12" Margin="0,8,0,0" Visibility="Collapsed" />
+                               FontSize="12" Margin="0,8,0,0"
+                               Visibility="{Binding IsEmptyFallbackChain, Converter={StaticResource BooleanToVisibilityConverter}}" />
                 </StackPanel>
             </Border>
 
@@ -471,16 +504,17 @@
 
                         <TextBox x:Name="DryRunSymbolsInput"
                                  Grid.Column="0"
-                                 Text="SPY,AAPL,MSFT"
+                                 Text="{Binding DryRunSymbolsInput, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  VerticalAlignment="Center" FontSize="12" Margin="0,0,8,0" />
                         <Button x:Name="DryRunButton" Grid.Column="1"
                                 Content="Preview Plan"
                                 Style="{StaticResource PrimaryButtonStyle}"
-                                Click="DryRunPlan_Click" />
+                                Command="{Binding DryRunCommand}" />
                     </Grid>
 
                     <!-- Dry-run results -->
-                    <Border x:Name="DryRunResultsPanel" Visibility="Collapsed"
+                    <Border x:Name="DryRunResultsPanel"
+                            Visibility="{Binding IsDryRunPanelVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                             Background="{StaticResource ConsoleBackgroundMediumBrush}"
                             CornerRadius="6" Padding="12" Margin="0,4,0,0">
                         <StackPanel>
@@ -503,7 +537,9 @@
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
 
-                            <TextBlock x:Name="DryRunWarningsText" Visibility="Collapsed"
+                            <TextBlock x:Name="DryRunWarningsText"
+                                       Text="{Binding DryRunWarningsText}"
+                                       Visibility="{Binding IsDryRunWarningsVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                                        Foreground="{StaticResource WarningColorBrush}"
                                        FontSize="11" TextWrapping="Wrap" Margin="0,8,0,0" />
                         </StackPanel>
@@ -547,7 +583,7 @@
 
                     <Button Content="Test All Connections"
                             Style="{StaticResource PrimaryButtonStyle}"
-                            Click="TestAllConnections_Click"
+                            Command="{Binding TestAllConnectionsCommand}"
                             HorizontalAlignment="Left" />
                 </StackPanel>
             </Border>
@@ -594,7 +630,8 @@
                     <TextBlock x:Name="EmptyAuditText"
                                Text="No configuration changes recorded yet."
                                Foreground="{StaticResource ConsoleTextMutedBrush}"
-                               FontSize="12" Margin="0,8,0,0" Visibility="Visible" />
+                               FontSize="12" Margin="0,8,0,0"
+                               Visibility="{Binding IsEmptyAuditLog, Converter={StaticResource BooleanToVisibilityConverter}}" />
                 </StackPanel>
             </Border>
 

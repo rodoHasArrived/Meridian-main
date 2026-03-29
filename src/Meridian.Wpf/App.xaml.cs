@@ -342,6 +342,7 @@ public partial class App : System.Windows.Application
 
         // ── ViewModels (transient — new instance per page navigation) ────────
         services.AddTransient<Meridian.Wpf.ViewModels.BackfillViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.ProviderViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.DataQualityViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.RunMatViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.StrategyRunBrowserViewModel>();
