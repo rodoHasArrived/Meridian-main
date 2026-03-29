@@ -187,6 +187,18 @@ provider adapters. Operates only on **measured** bottlenecks (BenchmarkDotNet / 
 
 ---
 
+
+### Implementation Assurance Agent
+
+**File:** [`.github/agents/implementation-assurance-agent.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/agents/implementation-assurance-agent.md)
+**Used by:** GitHub Copilot agents
+**Claude Code equivalent:** [`.claude/skills/meridian-implementation-assurance/SKILL.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.claude/skills/meridian-implementation-assurance/SKILL.md)
+
+Coordinates end-to-end implementation tasks with required workflow gates for behavior correctness,
+performance safety, documentation sync, and traceable evaluation evidence.
+
+---
+
 ## Claude Code Agents (`.claude/agents/`)
 
 ### Claude Blueprint Agent
@@ -239,6 +251,7 @@ provider docs, developer guides, `CLAUDE.md`, and the `ai-known-errors.md` regis
 | Provider implementation | `provider-builder-agent.md` | Corresponding Claude Code provider-builder resources |
 | Test generation | `test-writer-agent.md` | Corresponding Claude Code test-writing resources |
 | Documentation maintenance | `documentation-agent.md` | Corresponding Claude Code documentation agent |
+| Implementation assurance | `implementation-assurance-agent.md` | `meridian-implementation-assurance` Claude skill |
 | Code cleanup / anti-pattern fix | `cleanup-agent.md` | Corresponding Claude Code cleanup agent |
 | Bug diagnosis & fix | `bug-fix-agent.md` | *(Copilot-only)* |
 | Performance profiling & optimisation | `performance-agent.md` | *(Copilot-only)* |
@@ -265,4 +278,4 @@ Copilot agents, referencing these files in the issue or prompt body improves out
 
 ---
 
-*Last Updated: 2026-03-18*
+*Last Updated: 2026-03-29*
