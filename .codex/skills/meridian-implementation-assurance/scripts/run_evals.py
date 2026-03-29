@@ -174,13 +174,23 @@ def check_ran_score_eval(cmds: list[str]) -> bool:
     return any("score_eval" in cmd for cmd in cmds)
 
 
+def _contains_key(obj: Any, key: str) -> bool:
+    """Recursively check whether a nested dict/list contains the given key name."""
+    if isinstance(obj, dict):
+        if key in obj:
+            return True
+        return any(_contains_key(v, key) for v in obj.values())
+    if isinstance(obj, list):
+        return any(_contains_key(item, key) for item in obj)
+    return False
+
+
 def check_produced_rubric_output(events: list[dict]) -> bool:
     """Did the run produce a rubric score output (via score_eval.py or inline JSON)?"""
-    for e in events:
-        content = json.dumps(e)
-        if '"behavior_correctness"' in content or '"Behavior Correctness"' in content:
-            return True
-    return False
+    return any(
+        _contains_key(e, "behavior_correctness") or _contains_key(e, "Behavior Correctness")
+        for e in events
+    )
 
 
 def check_command_count(cmds: list[str], max_commands: int = 30) -> bool:
@@ -192,11 +202,16 @@ def check_command_count(cmds: list[str], max_commands: int = 30) -> bool:
 # Core runner
 # ---------------------------------------------------------------------------
 
+_DRY_RUN_STUB = (
+    '{"type":"turn.completed","usage":{"input_tokens":100,"output_tokens":200}}\n'
+)
+
+
 def run_codex(prompt: str, trace_path: Path, dry_run: bool = False) -> tuple[int, str]:
     """Run codex exec and save JSONL trace. Returns (exit_code, stderr)."""
     if dry_run:
         trace_path.parent.mkdir(parents=True, exist_ok=True)
-        trace_path.write_text('{"type":"turn.completed","usage":{"input_tokens":100,"output_tokens":200}}\n', encoding="utf-8")
+        trace_path.write_text(_DRY_RUN_STUB, encoding="utf-8")
         return 0, "[dry-run: codex exec skipped]"
 
     ARTIFACTS_DIR.mkdir(parents=True, exist_ok=True)
@@ -232,17 +247,16 @@ def score_case(case: EvalCase, events: list[dict], cmds: list[str]) -> CaseResul
         result.failed.append(f"command thrashing detected ({len(cmds)} commands)")
 
     # Scenario-specific checks
-    if case.scenario in ("B",):
+    if case.scenario == "B":
         if check_ran_doc_route(cmds):
             result.passed.append("doc_route.py invoked for new doc placement")
         else:
             result.failed.append("doc_route.py not invoked (required for Scenario B — new doc needed)")
 
-    if case.scenario in ("A", "B", "C"):
-        if check_ran_score_eval(cmds):
-            result.passed.append("score_eval.py invoked for rubric scoring")
-        else:
-            result.skipped.append("score_eval.py not detected (recommended but not required)")
+    if check_ran_score_eval(cmds):
+        result.passed.append("score_eval.py invoked for rubric scoring")
+    else:
+        result.skipped.append("score_eval.py not detected (recommended but not required)")
 
     return result
 

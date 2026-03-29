@@ -1,6 +1,12 @@
 ---
 name: meridian-implementation-assurance
-description: Implement Meridian changes with built-in correctness checks, performance guardrails, documentation synchronization, and structured self-evaluation. Use when Codex is asked to build or refactor code and must also verify behavior, prevent performance regressions, update existing docs, or add new docs in the correct repository section when none exists. Also triggers on requests to certify completeness, confirm scope alignment, gather rollout evidence, or update AI/agent catalogs after new capabilities land.
+description: Deliver production-ready Meridian changes with correctness checks, performance guardrails, doc synchronization, and rubric-based self-evaluation. Use when a change must be verified, certified, or rolled out with traceable evidence.
+triggers:
+  - "build or refactor code and verify behavior"
+  - "certify completeness or confirm scope alignment"
+  - "gather rollout evidence before merging"
+  - "update AI/agent catalogs after new capabilities land"
+  - "prove a change matches approved blueprint or requirements"
 ---
 
 # Meridian Implementation Assurance
