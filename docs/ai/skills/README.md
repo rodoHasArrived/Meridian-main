@@ -114,6 +114,16 @@ static package content.
 - `references/provider-patterns.md` — provider skeletons, options, DI wiring, and test scaffolds
 - Companion skills referenced as needed: `meridian-code-review`, `meridian-test-writer`
 
+### `meridian-implementation-assurance`
+
+**Location:** [`.claude/skills/meridian-implementation-assurance/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.claude/skills/meridian-implementation-assurance)
+**Purpose:** Validate that implemented changes match approved requirements/blueprints and are accompanied by tests, documentation updates, and traceable evidence.
+**When it triggers:** requests to certify completeness, collect validation evidence, update AI/agent catalogs after new capabilities, or verify implementation scope against acceptance criteria.
+**On-demand resources and scripts:**
+
+- `scripts/doc_route.py` — routes catalog updates to the correct AI/agent index
+- `scripts/score_eval.py` — summarizes assurance scoring with JSON/text output
+
 ### `meridian-test-writer`
 
 **Location:** [`.claude/skills/meridian-test-writer/`](https://github.com/rodoHasArrived/Meridian/blob/main/.claude/skills/meridian-test-writer)
@@ -176,4 +186,4 @@ The validator checks for:
 
 ---
 
-_Last Updated: 2026-03-20_
+_Last Updated: 2026-03-29_

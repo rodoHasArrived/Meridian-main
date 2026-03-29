@@ -89,6 +89,29 @@ Handles documentation maintenance and quality tasks:
 
 ---
 
+### Implementation Assurance Agent
+
+**File:** [`.github/agents/implementation-assurance-agent.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/agents/implementation-assurance-agent.md)
+**Used by:** GitHub Copilot agents
+**Claude Code equivalent / skill:** [`meridian-implementation-assurance`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.claude/skills/meridian-implementation-assurance/SKILL.md)
+
+Certifies that implemented work matches approved requirements/blueprints and is discoverable in the
+AI catalogs. Drives requirement-to-evidence mapping, ensures validation commands are run and
+captured, and routes catalog updates (agents/skills) for new capabilities.
+
+Workflow:
+1. Identify scope and acceptance criteria; decide the validation lane.
+2. Map requirements to changed files and validation artifacts (tests/builds/logs/docs).
+3. Run mandated commands and capture outputs plus doc routing (see bundled scripts).
+4. Produce a traceable summary with explicit evidence and catalog updates.
+
+Required evidence:
+- Validation commands + outcomes (tests/builds/scripts)
+- Traceability matrix (requirement → implementation → evidence)
+- Catalog updates recorded (agents/skills) when capabilities change
+
+---
+
 ### Brainstorming & Ideation Agent
 
 **File:** [`.github/agents/brainstorm-agent.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/agents/brainstorm-agent.md)
@@ -239,6 +262,7 @@ provider docs, developer guides, `CLAUDE.md`, and the `ai-known-errors.md` regis
 | Provider implementation | `provider-builder-agent.md` | Corresponding Claude Code provider-builder resources |
 | Test generation | `test-writer-agent.md` | Corresponding Claude Code test-writing resources |
 | Documentation maintenance | `documentation-agent.md` | Corresponding Claude Code documentation agent |
+| Implementation assurance | `implementation-assurance-agent.md` | `meridian-implementation-assurance` skill |
 | Code cleanup / anti-pattern fix | `cleanup-agent.md` | Corresponding Claude Code cleanup agent |
 | Bug diagnosis & fix | `bug-fix-agent.md` | *(Copilot-only)* |
 | Performance profiling & optimisation | `performance-agent.md` | *(Copilot-only)* |
@@ -265,4 +289,4 @@ Copilot agents, referencing these files in the issue or prompt body improves out
 
 ---
 
-*Last Updated: 2026-03-18*
+*Last Updated: 2026-03-29*
