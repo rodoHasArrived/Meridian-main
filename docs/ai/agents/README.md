@@ -91,9 +91,9 @@ Handles documentation maintenance and quality tasks:
 
 ### Implementation Assurance Agent
 
-**File:** [`.github/agents/implementation-assurance-agent.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/agents/implementation-assurance-agent.md)
+**File:** [`.github/agents/implementation-assurance-agent.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/agents/implementation-assurance-agent.md)
 **Used by:** GitHub Copilot agents
-**Claude Code equivalent / skill:** [`meridian-implementation-assurance`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.claude/skills/meridian-implementation-assurance/SKILL.md)
+**Claude Code equivalent / skill:** [`meridian-implementation-assurance`](https://github.com/rodoHasArrived/Meridian/blob/main/.claude/skills/meridian-implementation-assurance/SKILL.md)
 
 Certifies that implemented work matches approved requirements/blueprints and is discoverable in the
 AI catalogs. Drives requirement-to-evidence mapping, ensures validation commands are run and

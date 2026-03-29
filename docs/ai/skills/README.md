@@ -116,7 +116,7 @@ static package content.
 
 ### `meridian-implementation-assurance`
 
-**Location:** [`.claude/skills/meridian-implementation-assurance/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.claude/skills/meridian-implementation-assurance)
+**Location:** [`.claude/skills/meridian-implementation-assurance/`](https://github.com/rodoHasArrived/Meridian/blob/main/.claude/skills/meridian-implementation-assurance)
 **Purpose:** Validate that implemented changes match approved requirements/blueprints and are accompanied by tests, documentation updates, and traceable evidence.
 **When it triggers:** requests to certify completeness, collect validation evidence, update AI/agent catalogs after new capabilities, or verify implementation scope against acceptance criteria.
 **On-demand resources and scripts:**
