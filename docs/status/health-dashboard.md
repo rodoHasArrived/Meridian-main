@@ -1,12 +1,12 @@
 # Documentation Health Dashboard
 
 > Auto-generated documentation health report. Do not edit manually.
-> Last updated: 2026-03-28T22:00:55.019155+00:00
+> Last updated: 2026-03-29T03:22:54.148961+00:00
 
 ## Overall Health Score
 
 ```
-  [##########################----] 88/100
+  [##########################----] 87/100
   Rating: Good
 ```
 
@@ -14,14 +14,14 @@
 
 | Metric | Value |
 |--------|-------|
-| Total documentation files | 288 |
-| Total lines | 114,769 |
-| Average file size (lines) | 398.5 |
-| Orphaned files | 80 |
+| Total documentation files | 292 |
+| Total lines | 115,216 |
+| Average file size (lines) | 394.6 |
+| Orphaned files | 84 |
 | Files without headings | 0 |
 | Stale files (>90 days) | 0 |
 | TODO/FIXME markers | 316 |
-| **Health score** | **88/100** |
+| **Health score** | **87/100** |
 
 ### Score Breakdown
 
@@ -50,6 +50,7 @@ These files are not linked from any other Markdown file in the repository:
 - `.claude/skills/meridian-code-review/agents/grader.md`
 - `.claude/skills/meridian-code-review/references/architecture.md`
 - `.claude/skills/meridian-code-review/references/schemas.md`
+- `.claude/skills/meridian-implementation-assurance/SKILL.md`
 - `.claude/skills/meridian-provider-builder/SKILL.md`
 - `.claude/skills/meridian-test-writer/SKILL.md`
 - `.codex/skills/_shared/project-context.md`
@@ -58,8 +59,7 @@ These files are not linked from any other Markdown file in the repository:
 - `.codex/skills/meridian-brainstorm/SKILL.md`
 - `.codex/skills/meridian-brainstorm/references/competitive-landscape.md`
 - `.codex/skills/meridian-code-review/SKILL.md`
-- `.codex/skills/meridian-provider-builder/SKILL.md`
-- ... and 60 more
+- ... and 64 more
 
 ## Trend
 
@@ -67,7 +67,7 @@ These files are not linked from any other Markdown file in the repository:
 
 | Date | Score | Files | Orphans | Stale |
 |------|-------|-------|---------|-------|
-| 2026-03-28 | 88 | 288 | 80 | 0 |
+| 2026-03-29 | 87 | 292 | 84 | 0 |
 
 ---
 

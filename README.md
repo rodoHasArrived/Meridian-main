@@ -82,6 +82,11 @@ Use these documents together when planning or implementing new work:
 │       │       ├── quick_validate.py
 │       │       ├── run_eval.py
 │       │       └── utils.py
+│       ├── meridian-implementation-assurance
+│       │   ├── SKILL.md
+│       │   └── scripts
+│       │       ├── doc_route.py
+│       │       └── score_eval.py
 │       ├── meridian-provider-builder
 │       │   ├── CHANGELOG.md
 │       │   ├── SKILL.md
@@ -162,6 +167,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── cleanup-specialist.agent.md
 │   │   ├── code-review-agent.md
 │   │   ├── documentation-agent.md
+│   │   ├── implementation-assurance-agent.md
 │   │   ├── performance-agent.md
 │   │   ├── provider-builder-agent.md
 │   │   └── test-writer-agent.md
@@ -3162,6 +3168,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-466 directories, 2658 files
+468 directories, 2662 files
 ```
 <!-- readme-tree end -->

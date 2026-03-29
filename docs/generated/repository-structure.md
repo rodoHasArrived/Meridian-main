@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-03-28 22:00:51 UTC. Do not edit manually.
+> Auto-generated on 2026-03-29 03:22:50 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -46,6 +46,11 @@ Meridian-main
 │   │   │   │   └── utils.py
 │   │   │   ├── CHANGELOG.md
 │   │   │   └── SKILL.md
+│   │   ├── meridian-implementation-assurance
+│   │   │   ├── scripts
+│   │   │   │   ├── doc_route.py
+│   │   │   │   └── score_eval.py
+│   │   │   └── SKILL.md
 │   │   ├── meridian-provider-builder
 │   │   │   ├── references
 │   │   │   │   └── provider-patterns.md
@@ -75,6 +80,16 @@ Meridian-main
 │   │   │   │   └── competitive-landscape.md
 │   │   │   └── SKILL.md
 │   │   ├── meridian-code-review
+│   │   │   └── SKILL.md
+│   │   ├── meridian-implementation-assurance
+│   │   │   ├── agents
+│   │   │   │   └── openai.yaml
+│   │   │   ├── references
+│   │   │   │   ├── documentation-routing.md
+│   │   │   │   └── evaluation-harness.md
+│   │   │   ├── scripts
+│   │   │   │   ├── doc_route.py
+│   │   │   │   └── score_eval.py
 │   │   │   └── SKILL.md
 │   │   ├── meridian-provider-builder
 │   │   │   ├── references
@@ -109,6 +124,7 @@ Meridian-main
 │   │   ├── cleanup-specialist.agent.md
 │   │   ├── code-review-agent.md
 │   │   ├── documentation-agent.md
+│   │   ├── implementation-assurance-agent.md
 │   │   ├── performance-agent.md
 │   │   ├── provider-builder-agent.md
 │   │   └── test-writer-agent.md
