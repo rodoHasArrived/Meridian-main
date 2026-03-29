@@ -86,14 +86,14 @@ public sealed class SecurityMasterConflictService : ISecurityMasterConflictServi
 
         // Group identifiers by (kind, value) across all securities; flag where multiple
         // distinct SecurityIds reference the same identifier from different providers.
-        var byIdentifier = new Dictionary<(string Kind, string Value), List<(Guid SecurityId, string Provider)>>(
-            StringComparer.OrdinalIgnoreCase.ToEqualityComparer());
+        var byIdentifier = new Dictionary<string, List<(Guid SecurityId, string Provider)>>(
+            StringComparer.OrdinalIgnoreCase);
 
         foreach (var record in all)
         {
             foreach (var id in record.Identifiers)
             {
-                var key = (id.Kind.ToString(), id.Value);
+                var key = $"{id.Kind}|{id.Value}";
                 if (!byIdentifier.TryGetValue(key, out var entries))
                 {
                     entries = new List<(Guid, string)>();
@@ -107,7 +107,7 @@ public sealed class SecurityMasterConflictService : ISecurityMasterConflictServi
         }
 
         var conflicts = new List<SecurityMasterConflict>();
-        foreach (var ((kind, value), entries) in byIdentifier)
+        foreach (var (key, entries) in byIdentifier)
         {
             if (entries.Count < 2)
                 continue;
@@ -115,6 +115,10 @@ public sealed class SecurityMasterConflictService : ISecurityMasterConflictServi
             var distinctSecurities = entries.DistinctBy(e => e.SecurityId).ToList();
             if (distinctSecurities.Count < 2)
                 continue;
+
+            var parts = key.Split('|', 2);
+            var kind = parts[0];
+            var value = parts.Length > 1 ? parts[1] : string.Empty;
 
             var a = distinctSecurities[0];
             var b = distinctSecurities[1];
@@ -157,25 +161,5 @@ public sealed class SecurityMasterConflictService : ISecurityMasterConflictServi
         var bytes = System.Security.Cryptography.MD5.HashData(
             System.Text.Encoding.UTF8.GetBytes(ordered));
         return new Guid(bytes);
-    }
-}
-
-/// <summary>
-/// Extension to produce an <see cref="IEqualityComparer{T}"/> from a <see cref="StringComparer"/>
-/// for use with value-tuple dictionary keys.
-/// </summary>
-file static class StringComparerExtensions
-{
-    internal static IEqualityComparer<(string, string)> ToEqualityComparer(this StringComparer comparer)
-        => new TupleStringComparer(comparer);
-
-    private sealed class TupleStringComparer : IEqualityComparer<(string, string)>
-    {
-        private readonly StringComparer _inner;
-        internal TupleStringComparer(StringComparer inner) => _inner = inner;
-        public bool Equals((string, string) x, (string, string) y)
-            => _inner.Equals(x.Item1, y.Item1) && _inner.Equals(x.Item2, y.Item2);
-        public int GetHashCode((string, string) obj)
-            => HashCode.Combine(_inner.GetHashCode(obj.Item1), _inner.GetHashCode(obj.Item2));
     }
 }

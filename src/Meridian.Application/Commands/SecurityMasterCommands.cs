@@ -18,6 +18,8 @@ internal sealed class SecurityMasterCommands : ICliCommand
     private readonly ISecurityMasterImportService? _importService;
     private readonly ILogger _log;
 
+    private const int ProgressReportInterval = 10;
+
     public SecurityMasterCommands(ISecurityMasterImportService? importService, ILogger log)
     {
         _importService = importService;
@@ -74,7 +76,7 @@ internal sealed class SecurityMasterCommands : ICliCommand
 
         var progress = new Progress<SecurityMasterImportProgress>(p =>
         {
-            if (p.Processed % 10 == 0 || p.Processed == p.Total)
+            if (p.Processed % ProgressReportInterval == 0 || p.Processed == p.Total)
                 Console.WriteLine($"  Progress: {p.Processed}/{p.Total} ({p.Imported} imported, {p.Failed} failed)");
         });
 

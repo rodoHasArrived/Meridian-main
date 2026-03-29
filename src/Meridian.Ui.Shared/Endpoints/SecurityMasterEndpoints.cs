@@ -286,7 +286,8 @@ public static class SecurityMasterEndpoints
             CancellationToken ct) =>
         {
             if (request.ConflictId != conflictId)
-                return Results.BadRequest("ConflictId in body must match route parameter");
+                return Results.BadRequest(ErrorResponse.Validation(
+                    "ConflictId in body must match the route parameter."));
 
             var updated = await conflictService.ResolveAsync(request, ct).ConfigureAwait(false);
             return updated is null
