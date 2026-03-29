@@ -2887,6 +2887,7 @@ Meridian-main
 │   │   │   └── TestMarketEventPublisher.cs
 │   │   ├── Ui
 │   │   │   ├── DirectLendingEndpointsTests.cs
+│   │   │   ├── ExecutionWriteEndpointsTests.cs
 │   │   │   └── WorkstationEndpointsTests.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── Meridian.Tests.csproj
