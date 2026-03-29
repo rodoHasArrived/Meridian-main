@@ -213,11 +213,23 @@ Meridian-main
 │   │   ├── meridian-implementation-assurance
 │   │   │   ├── agents
 │   │   │   │   └── openai.yaml
+│   │   │   ├── evals
+│   │   │   │   ├── artifacts
+│   │   │   │   │   ├── eval-1.jsonl
+│   │   │   │   │   ├── eval-2.jsonl
+│   │   │   │   │   ├── eval-3.jsonl
+│   │   │   │   │   ├── eval-4.jsonl
+│   │   │   │   │   └── eval-5.jsonl
+│   │   │   │   ├── benchmark_baseline.json
+│   │   │   │   ├── evals.json
+│   │   │   │   ├── meridian-implementation-assurance.prompts.csv
+│   │   │   │   └── style-rubric.schema.json
 │   │   │   ├── references
 │   │   │   │   ├── documentation-routing.md
 │   │   │   │   └── evaluation-harness.md
 │   │   │   ├── scripts
 │   │   │   │   ├── doc_route.py
+│   │   │   │   ├── run_evals.py
 │   │   │   │   └── score_eval.py
 │   │   │   └── SKILL.md
 │   │   ├── meridian-provider-builder

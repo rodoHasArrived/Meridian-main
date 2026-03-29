@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-03-29 04:07:57 UTC. Do not edit manually.
+> Auto-generated on 2026-03-29 05:00:04 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -87,11 +87,23 @@ Meridian-main
 │   │   ├── meridian-implementation-assurance
 │   │   │   ├── agents
 │   │   │   │   └── openai.yaml
+│   │   │   ├── evals
+│   │   │   │   ├── artifacts
+│   │   │   │   │   ├── eval-1.jsonl
+│   │   │   │   │   ├── eval-2.jsonl
+│   │   │   │   │   ├── eval-3.jsonl
+│   │   │   │   │   ├── eval-4.jsonl
+│   │   │   │   │   └── eval-5.jsonl
+│   │   │   │   ├── benchmark_baseline.json
+│   │   │   │   ├── evals.json
+│   │   │   │   ├── meridian-implementation-assurance.prompts.csv
+│   │   │   │   └── style-rubric.schema.json
 │   │   │   ├── references
 │   │   │   │   ├── documentation-routing.md
 │   │   │   │   └── evaluation-harness.md
 │   │   │   ├── scripts
 │   │   │   │   ├── doc_route.py
+│   │   │   │   ├── run_evals.py
 │   │   │   │   └── score_eval.py
 │   │   │   └── SKILL.md
 │   │   ├── meridian-provider-builder
