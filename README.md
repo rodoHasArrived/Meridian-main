@@ -2415,6 +2415,8 @@ Use these documents together when planning or implementing new work:
 │   │   ├── LeanSymbolMapper.cs
 │   │   ├── LoginSessionService.cs
 │   │   ├── Meridian.Ui.Shared.csproj
+│   │   ├── Serialization
+│   │   │   └── DirectLendingJsonContext.cs
 │   │   ├── Services
 │   │   │   ├── BackfillCoordinator.cs
 │   │   │   ├── ConfigStore.cs
@@ -3188,6 +3190,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-471 directories, 2679 files
+472 directories, 2680 files
 ```
 <!-- readme-tree end -->
