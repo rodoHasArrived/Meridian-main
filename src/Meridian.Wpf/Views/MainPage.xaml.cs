@@ -1,9 +1,8 @@
-using System.Collections.Generic;
+using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
 using WpfNavigationEventArgs = System.Windows.Navigation.NavigationEventArgs;
@@ -15,16 +14,6 @@ public partial class MainPage : Page
 {
     private readonly WpfNavigationService _navigationService;
     private readonly MainPageViewModel _viewModel;
-    private readonly Dictionary<string, (string Heading, string Description, string Summary)> _workspaceContent = new(StringComparer.OrdinalIgnoreCase)
-    {
-        ["research"] = ("Research", "Runs, charts, replay, and analysis flows.", "Focus on model exploration and investigation."),
-        ["trading"] = ("Trading", "Live monitoring, order flow, and execution tools.", "Focus on live market posture and execution."),
-        ["data-operations"] = ("Data Operations", "Providers, symbols, backfills, and storage.", "Focus on data health and ingestion operations."),
-        ["governance"] = ("Governance", "Quality, diagnostics, and policy controls.", "Focus on controls, diagnostics, and trust.")
-    };
-
-    private string _currentPageTag = "Dashboard";
-    private bool _tickerStripVisible;
 
     public MainPage() : this(WpfNavigationService.Instance)
     {
@@ -38,7 +27,8 @@ public partial class MainPage : Page
         InitializeComponent();
         DataContext = _viewModel;
 
-        ApplyWorkspace("research");
+        // Apply initial workspace
+        ApplyWorkspace(_viewModel.CurrentWorkspace);
         UpdateTickerStripLabel();
     }
 
@@ -49,8 +39,10 @@ public partial class MainPage : Page
             _navigationService.Initialize(ContentFrame);
         }
 
-        NavigateToTag(_currentPageTag);
+        NavigateToTag(_viewModel.CurrentPageTag);
     }
+
+    // ── Command palette ──────────────────────────────────────────────────
 
     private void CommandPaletteOverlay_MouseDown(object sender, MouseButtonEventArgs e) => HideCommandPalette();
 
@@ -66,9 +58,7 @@ public partial class MainPage : Page
 
         CommandPaletteResults.ItemsSource = pages;
         if (pages.Count > 0)
-        {
             CommandPaletteResults.SelectedIndex = 0;
-        }
     }
 
     private void CommandPaletteTextBox_KeyDown(object sender, KeyEventArgs e)
@@ -96,13 +86,18 @@ public partial class MainPage : Page
         }
     }
 
+    // ── Workspace selection ──────────────────────────────────────────────
+
     private void OnWorkspaceButtonClick(object sender, RoutedEventArgs e)
     {
         if (sender is FrameworkElement element && element.Tag is string workspaceKey)
         {
-            ApplyWorkspace(workspaceKey);
+            _viewModel.CurrentWorkspace = workspaceKey;
+            ApplyWorkspace(_viewModel.CurrentWorkspace);
         }
     }
+
+    // ── Navigation ───────────────────────────────────────────────────────
 
     private void OnResearchNavSelectionChanged(object sender, SelectionChangedEventArgs e) => NavigateFromSelection(sender as ListBox);
 
@@ -126,7 +121,7 @@ public partial class MainPage : Page
 
     private void OnTickerStripToggleClick(object sender, RoutedEventArgs e)
     {
-        _tickerStripVisible = !_tickerStripVisible;
+        _viewModel.TickerStripVisible = !_viewModel.TickerStripVisible;
         UpdateTickerStripLabel();
     }
 
@@ -135,29 +130,27 @@ public partial class MainPage : Page
     private void OnBackButtonClick(object sender, RoutedEventArgs e)
     {
         if (_navigationService.CanGoBack)
-        {
             _navigationService.GoBack();
-        }
     }
 
-    private void OnRefreshButtonClick(object sender, RoutedEventArgs e) => NavigateToTag(_currentPageTag);
+    private void OnRefreshButtonClick(object sender, RoutedEventArgs e) => NavigateToTag(_viewModel.CurrentPageTag);
 
     private void OnContentFrameNavigated(object sender, WpfNavigationEventArgs e)
     {
         BackButton.Visibility = _navigationService.CanGoBack ? Visibility.Visible : Visibility.Collapsed;
     }
 
+    // ── Helpers ──────────────────────────────────────────────────────────
+
     private void NavigateFromSelection(ListBox? listBox)
     {
         if (listBox?.SelectedItem is ListBoxItem item && item.Tag is string pageTag)
-        {
             NavigateToTag(pageTag);
-        }
     }
 
     private void NavigateToTag(string pageTag)
     {
-        _currentPageTag = pageTag;
+        _viewModel.CurrentPageTag = pageTag;
         _navigationService.NavigateTo(pageTag);
         PageTitleText.Text = pageTag;
         ShellAutomationStateText.Text = pageTag;
@@ -165,23 +158,20 @@ public partial class MainPage : Page
 
     private void ApplyWorkspace(string workspaceKey)
     {
-        var normalized = _workspaceContent.ContainsKey(workspaceKey) ? workspaceKey : "research";
-        var content = _workspaceContent[normalized];
+        WorkspaceHeadingText.Text = _viewModel.WorkspaceHeading;
+        WorkspaceDescriptionText.Text = _viewModel.WorkspaceDescription;
+        WorkspaceSummaryText.Text = _viewModel.WorkspaceSummary;
+        WorkspaceBadgeText.Text = _viewModel.WorkspaceHeading;
+        HeaderWorkspaceSummaryText.Text = _viewModel.WorkspaceSummary;
+        ActiveNavigationLabel.Text = $"{_viewModel.WorkspaceHeading} Navigation";
+        RecentPagesHintText.Text = $"Recent {_viewModel.WorkspaceHeading.ToLowerInvariant()} pages.";
 
-        WorkspaceHeadingText.Text = content.Heading;
-        WorkspaceDescriptionText.Text = content.Description;
-        WorkspaceSummaryText.Text = content.Summary;
-        WorkspaceBadgeText.Text = content.Heading;
-        HeaderWorkspaceSummaryText.Text = content.Summary;
-        ActiveNavigationLabel.Text = $"{content.Heading} Navigation";
-        RecentPagesHintText.Text = $"Recent {content.Heading.ToLowerInvariant()} pages.";
+        ResearchNavigationSection.Visibility = workspaceKey == "research" ? Visibility.Visible : Visibility.Collapsed;
+        TradingNavigationSection.Visibility = workspaceKey == "trading" ? Visibility.Visible : Visibility.Collapsed;
+        DataOperationsNavigationSection.Visibility = workspaceKey == "data-operations" ? Visibility.Visible : Visibility.Collapsed;
+        GovernanceNavigationSection.Visibility = workspaceKey == "governance" ? Visibility.Visible : Visibility.Collapsed;
 
-        ResearchNavigationSection.Visibility = normalized == "research" ? Visibility.Visible : Visibility.Collapsed;
-        TradingNavigationSection.Visibility = normalized == "trading" ? Visibility.Visible : Visibility.Collapsed;
-        DataOperationsNavigationSection.Visibility = normalized == "data-operations" ? Visibility.Visible : Visibility.Collapsed;
-        GovernanceNavigationSection.Visibility = normalized == "governance" ? Visibility.Visible : Visibility.Collapsed;
-
-        HighlightWorkspaceButton(normalized);
+        HighlightWorkspaceButton(workspaceKey);
     }
 
     private void HighlightWorkspaceButton(string workspaceKey)
@@ -208,6 +198,6 @@ public partial class MainPage : Page
 
     private void UpdateTickerStripLabel()
     {
-        TickerStripButtonLabel.Text = _tickerStripVisible ? "Hide Ticker Strip" : "Ticker Strip";
+        TickerStripButtonLabel.Text = _viewModel.TickerStripLabel;
     }
 }

@@ -327,7 +327,15 @@ public partial class App : System.Windows.Application
         services.AddTransient<AgentPage>();
 
         // ── Backtesting service ──────────────────────────────────────────────
-        services.AddSingleton(_ => WpfServices.BacktestService.Instance);
+        services.AddSingleton(sp =>
+        {
+            var svc = WpfServices.BacktestService.Instance;
+            svc.SecurityMasterQueryService =
+                sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>();
+            svc.CorporateActionAdjustmentService =
+                sp.GetService<Meridian.Backtesting.ICorporateActionAdjustmentService>();
+            return svc;
+        });
 
         // ── Ui.Services singletons accessed via DI (no static .Instance in pages) ──
         services.AddSingleton(_ => BackfillProviderConfigService.Instance);
@@ -387,6 +395,13 @@ public partial class App : System.Windows.Application
             // Security Master bulk import services
             services.AddSingleton<SecurityMasterCsvParser>();
             services.AddSingleton<ISecurityMasterImportService, SecurityMasterImportService>();
+
+            // Corporate action adjustment for backtesting
+            services.AddSingleton<Meridian.Backtesting.ICorporateActionAdjustmentService>(sp =>
+                new Meridian.Backtesting.CorporateActionAdjustmentService(
+                    sp.GetRequiredService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),
+                    sp.GetRequiredService<ISecurityResolver>(),
+                    sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Meridian.Backtesting.CorporateActionAdjustmentService>>()));
         }
 
         services.AddSingleton<IStrategyRepository, StrategyRunStore>();

@@ -52,7 +52,8 @@ public static class BrokerageServiceRegistration
             if (!brokerageConfig.LiveExecutionEnabled || brokerageConfig.Gateway == "paper")
             {
                 var paperLogger = sp.GetRequiredService<ILogger<Adapters.PaperTradingGateway>>();
-                return new Adapters.PaperTradingGateway(paperLogger);
+                var secMaster = sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>();
+                return new Adapters.PaperTradingGateway(paperLogger, secMaster);
             }
 
             // Resolve the named brokerage gateway via keyed registration

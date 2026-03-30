@@ -28,6 +28,20 @@ proof, and routing updates to the right AI catalogs.
 
 ---
 
+## Definition of Done
+
+A task delivered by this skill is complete when **all** of the following are true:
+
+- **Build passes:** at least one of `dotnet build` or `dotnet test` targeting the touched project runs without errors.
+- **Tests cover the change:** happy path, failure path, and cancellation/disposal exist or are cited as a gap.
+- **Validation evidence is explicit:** the final response includes exact commands and their pass/fail results.
+- **Documentation is in sync:** existing docs covering the changed behavior are updated in-place, or a new doc is created in the correct subtree with a cross-link from the nearest index.
+- **Rubric score ≥ 8/10, no category at 0:** `scripts/score_eval.py` is run and the report is included in the response.
+- **Performance-sensitive paths are annotated:** any hot-path touched by the change includes an explicit note on allocation, async, or buffering risk.
+- **Summary is traceable:** the closing summary links requirement → files changed → validation artifact → doc update.
+
+---
+
 ## Integration Pattern
 
 Follow this 4-step loop for every implementation-assurance task:
@@ -35,6 +49,7 @@ Follow this 4-step loop for every implementation-assurance task:
 ### 1 — GATHER CONTEXT
 - Identify the source of truth: blueprint / roadmap item / issue requirements.
 - Capture acceptance criteria, success metrics, and any mandated evidence.
+- Determine the scenario: **A** (code + existing docs), **B** (code + missing docs), or **C** (performance-sensitive).
 - Run `doc_route.py` to confirm which AI/agent catalog pages must be updated for discoverability.
 
 ### 2 — PLAN & TRACE
@@ -45,6 +60,7 @@ Follow this 4-step loop for every implementation-assurance task:
 ### 3 — EXECUTE & VERIFY
 - Perform the minimal changes to satisfy the mapped criteria.
 - Run the relevant tests/builds; collect logs, command lines, and outcomes.
+- For **Scenario C**: explicitly discuss allocation before/after, confirm no `.Result`/`.Wait()` introduced.
 - Use `score_eval.py` to summarize evaluation scores with JSON-ready output for audit trails.
 
 ### 4 — REPORT & ROUTE
@@ -97,6 +113,34 @@ When the change touches any execution or data-pipeline path:
 
 ---
 
+## Correctness Guardrails
+
+- Preserve existing contracts, nullability expectations, and cancellation flow.
+- Keep layer boundaries explicit (UI/service/storage/provider/execution).
+- Add or extend tests for happy path, failure path, and cancellation/disposal where relevant.
+- Prefer deterministic behavior over timing-sensitive heuristics.
+
+---
+
+## Performance Guardrails
+
+- Inspect hot paths for avoidable allocations, synchronous blocking, and unbounded buffering.
+- Avoid `.Result`/`.Wait()` on async flows.
+- Keep logging and serialization costs proportional to execution frequency.
+- When introducing loops or streams, define cancellation and backpressure behavior.
+
+---
+
+## Documentation Synchronization Rules
+
+- Update docs in the same PR as code changes when behavior, interfaces, architecture, or operations change.
+- Prefer editing an existing doc when one already covers the topic.
+- Create new docs only when no suitable home exists.
+- For new docs, choose placement using `references/documentation-routing.md` and add cross-links from the nearest index/README.
+- Keep documentation concrete: what changed, why, and how to use/operate it.
+
+---
+
 ## On-Demand References
 
 Load these only when the task requires the deeper context they provide:
@@ -104,7 +148,7 @@ Load these only when the task requires the deeper context they provide:
 - `references/documentation-routing.md` — routing matrix for placing doc updates in the correct
   `docs/` subtree and quality bar for doc changes.
 - `references/evaluation-harness.md` — rubric definitions (Scenarios A/B/C), per-category scoring
-  guide, passing threshold, and the canonical eval-report template.
+  guide, passing threshold, eval infrastructure, and the canonical eval-report template.
 
 ---
 
@@ -120,7 +164,8 @@ python3 .claude/skills/meridian-implementation-assurance/scripts/doc_route.py \
   --kind ai --topic "agent routing update"
 ```
 
-Outputs a short destination hint (e.g., docs/ai/agents catalog vs. skills catalog) plus a rationale.
+Outputs a destination hint (e.g., docs/ai/agents catalog vs. skills catalog) plus a rationale.
+Choices: `ai`, `skill`, `agent`, `workflow`.
 
 ### `scripts/score_eval.py`
 
@@ -141,6 +186,18 @@ Produces totals, averages, and a verdict string. Use the `--json` flag for machi
 ## Output Format
 
 ### Evidence Severity Levels
+## Evaluation Requirement
+
+Treat `references/evaluation-harness.md` as mandatory for this skill. Always return:
+
+- Which scenario was evaluated (A/B/C).
+- Rubric scores by category.
+- Failing checks and corrective follow-ups.
+- Exact command evidence for tests/build checks.
+
+---
+
+## Evidence Template (recommended)
 
 - **CRITICAL (always required):** build passes, tests pass, requirement ↔ file mapping documented
 - **WARNING (required for breaking/scope changes):** cross-file impact assessed, catalog updates listed
@@ -206,3 +263,18 @@ Produces totals, averages, and a verdict string. Use the `--json` flag for machi
 ```
 
 Keep the summary under 15 lines; link to detailed artifacts only as needed.
+
+---
+
+## Output Checklist
+
+Before finishing, confirm:
+
+- [ ] Scope/requirements restated and scenario (A/B/C) identified
+- [ ] Requirement → implementation → evidence matrix produced
+- [ ] Validation commands + results (build/tests/scripts) with pass/fail
+- [ ] Performance-sensitive changes reviewed with explicit notes
+- [ ] Docs updated or newly added in the correct location
+- [ ] Evaluation harness completed with a rubric score summary (≥ 8/10, no category at 0)
+- [ ] Final traceable summary (≤15 lines) with validation commands and any residual risk
+
