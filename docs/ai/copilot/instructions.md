@@ -1511,8 +1511,13 @@ Meridian-main
 │   │   │   ├── OrderGatewayCapabilities.cs
 │   │   │   ├── OrderStatus.cs
 │   │   │   └── OrderStatusUpdate.cs
+│   │   ├── Serialization
+│   │   │   └── ExecutionJsonContext.cs
 │   │   ├── Services
+│   │   │   ├── IPaperSessionStore.cs
+│   │   │   ├── JsonlFilePaperSessionStore.cs
 │   │   │   ├── OrderLifecycleManager.cs
+│   │   │   ├── PaperSessionOptions.cs
 │   │   │   ├── PaperSessionPersistenceService.cs
 │   │   │   └── PaperTradingPortfolio.cs
 │   │   ├── BrokerageServiceRegistration.cs

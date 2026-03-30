@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-03-30 15:02:36 UTC. Do not edit manually.
+> Auto-generated on 2026-03-30 16:05:58 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -1400,8 +1400,13 @@ Meridian-main
 │   │   │   ├── OrderGatewayCapabilities.cs
 │   │   │   ├── OrderStatus.cs
 │   │   │   └── OrderStatusUpdate.cs
+│   │   ├── Serialization
+│   │   │   └── ExecutionJsonContext.cs
 │   │   ├── Services
+│   │   │   ├── IPaperSessionStore.cs
+│   │   │   ├── JsonlFilePaperSessionStore.cs
 │   │   │   ├── OrderLifecycleManager.cs
+│   │   │   ├── PaperSessionOptions.cs
 │   │   │   ├── PaperSessionPersistenceService.cs
 │   │   │   └── PaperTradingPortfolio.cs
 │   │   ├── BrokerageServiceRegistration.cs
