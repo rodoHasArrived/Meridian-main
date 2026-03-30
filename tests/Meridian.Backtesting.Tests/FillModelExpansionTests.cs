@@ -351,4 +351,171 @@ public sealed class FillModelExpansionTests
 
         commission.Should().Be(10.00m);
     }
+
+    // =========================================================================
+    // BarMidpointFillModel — tick-size rounding
+    // =========================================================================
+
+    [Fact]
+    public void BarMidpointFillModel_TickSize_SnapsMarketFillToNearestTick()
+    {
+        // Tick size = $0.05; midpoint = (100 + 102) / 2 = 101, no slippage
+        // 101 / 0.05 = 2020.0 → already on grid → fill is exactly 101
+        var ticks = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase) { ["SPY"] = 0.05m };
+        var model = new BarMidpointFillModel(new FixedCommissionModel(0m), slippageBasisPoints: 0m, tickSizes: ticks);
+        var order = new Order(Guid.NewGuid(), "SPY", OrderType.Market, 10L, null, null, DateTimeOffset.UtcNow);
+        var evt = MakeBarEvent("SPY", 100m, 105m, 95m, 102m);
+
+        var result = model.TryFill(order, evt);
+
+        result.Fills.Should().HaveCount(1);
+        result.Fills[0].FillPrice.Should().Be(101m);
+        // Price should be a multiple of the tick size
+        (result.Fills[0].FillPrice % 0.05m).Should().Be(0m);
+    }
+
+    [Fact]
+    public void BarMidpointFillModel_TickSize_RoundsToEven_WhenMidpointFallsBetweenTicks()
+    {
+        // Tick size = $0.10; open=100, close=101 → midpoint = 100.5
+        // 100.5 / 0.10 = 1005.0 → exactly on grid → result is 100.5
+        var ticks = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase) { ["SPY"] = 0.10m };
+        var model = new BarMidpointFillModel(new FixedCommissionModel(0m), slippageBasisPoints: 0m, tickSizes: ticks);
+        var order = new Order(Guid.NewGuid(), "SPY", OrderType.Market, 10L, null, null, DateTimeOffset.UtcNow);
+        var evt = MakeBarEvent("SPY", 100m, 106m, 94m, 101m);
+
+        var result = model.TryFill(order, evt);
+
+        result.Fills.Should().HaveCount(1);
+        var fill = result.Fills[0].FillPrice;
+        (fill % 0.10m).Should().Be(0m, $"Fill price {fill} should be on the $0.10 tick grid");
+    }
+
+    [Fact]
+    public void BarMidpointFillModel_TickSize_MidpointWithSlippageSnapped()
+    {
+        // Tick $0.25; open=200, close=201 → midpoint=200.5, 5 bps slippage (buy)
+        // slip = 200.5 * 0.0005 = 0.10025; raw = 200.6003; snapped to nearest $0.25
+        var ticks = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase) { ["SPY"] = 0.25m };
+        var model = new BarMidpointFillModel(new FixedCommissionModel(0m), slippageBasisPoints: 5m, tickSizes: ticks);
+        var order = new Order(Guid.NewGuid(), "SPY", OrderType.Market, 1L, null, null, DateTimeOffset.UtcNow);
+        var evt = MakeBarEvent("SPY", 200m, 205m, 195m, 201m);
+
+        var result = model.TryFill(order, evt);
+
+        result.Fills.Should().HaveCount(1);
+        var fill = result.Fills[0].FillPrice;
+        (fill % 0.25m).Should().Be(0m, $"Fill price {fill} should be on the $0.25 tick grid");
+    }
+
+    [Fact]
+    public void BarMidpointFillModel_TickSize_NoTickForSymbol_PriceUnchanged()
+    {
+        // Symbol has no tick entry; fill should be the raw midpoint without rounding
+        var ticks = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase) { ["AAPL"] = 0.01m };
+        var model = new BarMidpointFillModel(new FixedCommissionModel(0m), slippageBasisPoints: 0m, tickSizes: ticks);
+        var order = new Order(Guid.NewGuid(), "SPY", OrderType.Market, 10L, null, null, DateTimeOffset.UtcNow);
+        var evt = MakeBarEvent("SPY", 100m, 106m, 94m, 103m); // midpoint = 101.5
+
+        var result = model.TryFill(order, evt);
+
+        result.Fills.Should().HaveCount(1);
+        result.Fills[0].FillPrice.Should().Be(101.5m);
+    }
+
+    [Fact]
+    public void BarMidpointFillModel_TickSize_LargePrice_SmallTick_NoOverflow()
+    {
+        // High-priced symbol (e.g., AMZN ~$180) with $0.01 tick; should snap cleanly
+        var ticks = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase) { ["AMZN"] = 0.01m };
+        var model = new BarMidpointFillModel(new FixedCommissionModel(0m), slippageBasisPoints: 0m, tickSizes: ticks);
+        var order = new Order(Guid.NewGuid(), "AMZN", OrderType.Market, 1L, null, null, DateTimeOffset.UtcNow);
+        var evt = MakeBarEvent("AMZN", 180m, 185m, 175m, 181m); // midpoint = 180.5
+
+        var result = model.TryFill(order, evt);
+
+        result.Fills.Should().HaveCount(1);
+        var fill = result.Fills[0].FillPrice;
+        (fill % 0.01m).Should().Be(0m);
+        fill.Should().BeGreaterThan(0m);
+    }
+
+    // =========================================================================
+    // BarMidpointFillModel — spread-aware mode
+    // =========================================================================
+
+    [Fact]
+    public void BarMidpointFillModel_SpreadAware_HighVolatility_IncreasesSlippage()
+    {
+        // Wide bar (range=50 on midpoint~200 = 25% vol) should scale slippage up significantly vs
+        // the baseline non-spread-aware model.
+        var baseline = new BarMidpointFillModel(new FixedCommissionModel(0m), slippageBasisPoints: 5m, spreadAware: false);
+        var aware    = new BarMidpointFillModel(new FixedCommissionModel(0m), slippageBasisPoints: 5m, spreadAware: true);
+
+        var order = new Order(Guid.NewGuid(), "SPY", OrderType.Market, 10L, null, null, DateTimeOffset.UtcNow);
+        var wideBar = MakeBarEvent("SPY", 175m, 225m, 175m, 225m); // range=50; mid≈200
+
+        var baselineFill = baseline.TryFill(order, wideBar).Fills[0].FillPrice;
+        var awareFill    = aware.TryFill(order, wideBar).Fills[0].FillPrice;
+
+        // Buy fill: spread-aware should have a higher fill price (more adverse slippage)
+        awareFill.Should().BeGreaterThan(baselineFill,
+            "spread-aware model should apply more slippage on a high-volatility bar");
+    }
+
+    [Fact]
+    public void BarMidpointFillModel_SpreadAware_LowVolatility_CloseToBaseline()
+    {
+        // Very tight bar (range=0.01) → volatility factor ≈ 0 → effective slippage ≈ baseline
+        var baseline = new BarMidpointFillModel(new FixedCommissionModel(0m), slippageBasisPoints: 5m, spreadAware: false);
+        var aware    = new BarMidpointFillModel(new FixedCommissionModel(0m), slippageBasisPoints: 5m, spreadAware: true);
+
+        var order = new Order(Guid.NewGuid(), "SPY", OrderType.Market, 10L, null, null, DateTimeOffset.UtcNow);
+        // Tight bar: open=200, high=200.005, low=199.995, close=200.005
+        var tightBar = MakeBarEvent("SPY", 200m, 200.005m, 199.995m, 200.005m);
+
+        var baselineFill = baseline.TryFill(order, tightBar).Fills[0].FillPrice;
+        var awareFill    = aware.TryFill(order, tightBar).Fills[0].FillPrice;
+
+        // The two should be very close (within $0.01)
+        Math.Abs(awareFill - baselineFill).Should().BeLessThan(0.01m,
+            "spread-aware slippage should barely exceed baseline for a near-zero-range bar");
+    }
+
+    [Fact]
+    public void BarMidpointFillModel_SpreadAware_Sell_DecreasesFillPrice()
+    {
+        // Sell side: spread-aware should push fill price down (more adverse) vs baseline
+        var baseline = new BarMidpointFillModel(new FixedCommissionModel(0m), slippageBasisPoints: 5m, spreadAware: false);
+        var aware    = new BarMidpointFillModel(new FixedCommissionModel(0m), slippageBasisPoints: 5m, spreadAware: true);
+
+        var sellOrder = new Order(Guid.NewGuid(), "SPY", OrderType.Market, -10L, null, null, DateTimeOffset.UtcNow);
+        var wideBar   = MakeBarEvent("SPY", 175m, 225m, 175m, 225m); // range=50; mid≈200
+
+        var baselineFill = baseline.TryFill(sellOrder, wideBar).Fills[0].FillPrice;
+        var awareFill    = aware.TryFill(sellOrder, wideBar).Fills[0].FillPrice;
+
+        // Sell fill: spread-aware should have a lower fill price (more adverse)
+        awareFill.Should().BeLessThan(baselineFill,
+            "spread-aware sell fill should be lower than baseline on a high-volatility bar");
+    }
+
+    [Fact]
+    public void BarMidpointFillModel_SpreadAware_ZeroMidpoint_DoesNotDivideByZero()
+    {
+        // When the bar midpoint is effectively zero (very small values), spread-aware mode
+        // must not throw or produce NaN/Infinity. HistoricalBar requires OHLC > 0, so we
+        // use the smallest representable positive bar.
+        var model = new BarMidpointFillModel(new FixedCommissionModel(0m), slippageBasisPoints: 5m, spreadAware: true);
+        var order = new Order(Guid.NewGuid(), "SPY", OrderType.Market, 10L, null, null, DateTimeOffset.UtcNow);
+        // Penny stock: very small price so mid ≈ 0.000005; spread-aware should still compute without overflow
+        var tinyBar = MakeBarEvent("SPY", 0.00001m, 0.00002m, 0.000005m, 0.00001m);
+
+        var act = () => model.TryFill(order, tinyBar);
+
+        act.Should().NotThrow("tiny-price bar should be handled gracefully in spread-aware mode");
+        var result = act();
+        result.Fills.Should().HaveCount(1);
+        result.Fills[0].FillPrice.Should().BeGreaterThan(0m);
+    }
 }

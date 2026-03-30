@@ -176,4 +176,140 @@ public sealed class BackfillStatusStoreTests : IDisposable
     }
 
     #endregion
+
+    // -----------------------------------------------------------------------
+    // Per-symbol checkpoint tests
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public void TryReadSymbolCheckpoints_WhenNoFile_ReturnsNull()
+    {
+        var store = new BackfillStatusStore(_testRoot);
+
+        var result = store.TryReadSymbolCheckpoints();
+
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task WriteSymbolCheckpointAsync_ThenTryRead_RoundTrips()
+    {
+        var store = new BackfillStatusStore(_testRoot);
+        var date = new DateOnly(2024, 6, 30);
+
+        await store.WriteSymbolCheckpointAsync("SPY", date);
+        var checkpoints = store.TryReadSymbolCheckpoints();
+
+        checkpoints.Should().NotBeNull();
+        checkpoints!.Should().ContainKey("SPY");
+        checkpoints["SPY"].Should().Be(date);
+    }
+
+    [Fact]
+    public async Task WriteSymbolCheckpointAsync_MultipleSymbols_AllPersisted()
+    {
+        var store = new BackfillStatusStore(_testRoot);
+
+        await store.WriteSymbolCheckpointAsync("SPY", new DateOnly(2024, 6, 30));
+        await store.WriteSymbolCheckpointAsync("AAPL", new DateOnly(2024, 3, 31));
+        await store.WriteSymbolCheckpointAsync("MSFT", new DateOnly(2024, 12, 31));
+
+        var checkpoints = store.TryReadSymbolCheckpoints();
+
+        checkpoints.Should().NotBeNull();
+        checkpoints!.Should().ContainKey("SPY");
+        checkpoints.Should().ContainKey("AAPL");
+        checkpoints.Should().ContainKey("MSFT");
+        checkpoints["SPY"].Should().Be(new DateOnly(2024, 6, 30));
+        checkpoints["AAPL"].Should().Be(new DateOnly(2024, 3, 31));
+        checkpoints["MSFT"].Should().Be(new DateOnly(2024, 12, 31));
+    }
+
+    [Fact]
+    public async Task WriteSymbolCheckpointAsync_UpdatesOnlyIfNewer()
+    {
+        var store = new BackfillStatusStore(_testRoot);
+        var later = new DateOnly(2024, 12, 31);
+        var earlier = new DateOnly(2024, 3, 31);
+
+        // Write later date first, then try to overwrite with earlier — should keep later
+        await store.WriteSymbolCheckpointAsync("SPY", later);
+        await store.WriteSymbolCheckpointAsync("SPY", earlier);
+
+        var checkpoints = store.TryReadSymbolCheckpoints();
+
+        checkpoints!["SPY"].Should().Be(later);
+    }
+
+    [Fact]
+    public async Task WriteSymbolCheckpointAsync_UpdatesWhenNewer()
+    {
+        var store = new BackfillStatusStore(_testRoot);
+        var first = new DateOnly(2024, 6, 30);
+        var extended = new DateOnly(2024, 12, 31);
+
+        await store.WriteSymbolCheckpointAsync("SPY", first);
+        await store.WriteSymbolCheckpointAsync("SPY", extended);
+
+        var checkpoints = store.TryReadSymbolCheckpoints();
+
+        checkpoints!["SPY"].Should().Be(extended);
+    }
+
+    [Fact]
+    public async Task WriteSymbolCheckpointAsync_IsCaseInsensitive()
+    {
+        var store = new BackfillStatusStore(_testRoot);
+        var date = new DateOnly(2024, 6, 30);
+
+        await store.WriteSymbolCheckpointAsync("spy", date);
+        var checkpoints = store.TryReadSymbolCheckpoints();
+
+        checkpoints.Should().NotBeNull();
+        // Should be readable with different casing
+        checkpoints!.Should().ContainKey("SPY");
+    }
+
+    [Fact]
+    public async Task ClearSymbolCheckpointsAsync_RemovesAllCheckpoints()
+    {
+        var store = new BackfillStatusStore(_testRoot);
+
+        await store.WriteSymbolCheckpointAsync("SPY", new DateOnly(2024, 6, 30));
+        await store.WriteSymbolCheckpointAsync("AAPL", new DateOnly(2024, 3, 31));
+
+        await store.ClearSymbolCheckpointsAsync();
+
+        var checkpoints = store.TryReadSymbolCheckpoints();
+        // After clearing the file contains "{}" — an empty dict, not null
+        checkpoints.Should().NotBeNull();
+        checkpoints!.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ClearSymbolCheckpointsAsync_WhenNoFile_DoesNotThrow()
+    {
+        var store = new BackfillStatusStore(_testRoot);
+
+        // Should not throw even when no checkpoints file exists
+        var act = async () => await store.ClearSymbolCheckpointsAsync();
+        await act.Should().NotThrowAsync();
+    }
+
+    [Fact]
+    public async Task WriteSymbolCheckpointAsync_IndependentOfAggregateResult()
+    {
+        var store = new BackfillStatusStore(_testRoot);
+
+        // Writing symbol checkpoints should not affect aggregate result and vice-versa
+        await store.WriteSymbolCheckpointAsync("SPY", new DateOnly(2024, 6, 30));
+        await store.WriteAsync(CreateTestResult());
+
+        var aggregate = store.TryRead();
+        var checkpoints = store.TryReadSymbolCheckpoints();
+
+        aggregate.Should().NotBeNull();
+        checkpoints.Should().NotBeNull();
+        checkpoints!.Should().ContainKey("SPY");
+    }
 }

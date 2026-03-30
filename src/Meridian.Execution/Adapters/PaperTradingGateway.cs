@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Execution.Exceptions;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
@@ -22,6 +23,7 @@ public sealed class PaperTradingGateway : IOrderGateway
     private const decimal ScaffoldMarketFillPrice = 1m;
 
     private readonly ILogger<PaperTradingGateway> _logger;
+    private readonly ISecurityMasterQueryService? _securityMaster;
     private readonly System.Threading.Channels.Channel<OrderStatusUpdate> _updates;
     private readonly Dictionary<string, OrderRequest> _workingOrders = new();
     private readonly Lock _lock = new();
@@ -65,9 +67,15 @@ public sealed class PaperTradingGateway : IOrderGateway
     /// <summary>
     /// Creates a new paper trading gateway.
     /// </summary>
-    public PaperTradingGateway(ILogger<PaperTradingGateway> logger)
+    /// <param name="logger">Logger.</param>
+    /// <param name="securityMaster">
+    /// Optional Security Master query service. When provided, order lot-size constraints
+    /// are validated against the instrument's <see cref="TradingParametersDto.LotSize"/>.
+    /// </param>
+    public PaperTradingGateway(ILogger<PaperTradingGateway> logger, ISecurityMasterQueryService? securityMaster = null)
     {
         _logger = logger;
+        _securityMaster = securityMaster;
         // Use EventPipelinePolicy for consistent backpressure settings across the platform (ADR-013).
         // CompletionQueue (Wait mode, 500 capacity) ensures no terminal order updates are dropped.
         _updates = EventPipelinePolicy.CompletionQueue.CreateChannel<OrderStatusUpdate>(
@@ -111,36 +119,84 @@ public sealed class PaperTradingGateway : IOrderGateway
     }
 
     /// <inheritdoc/>
-    public Task<OrderValidationResult> ValidateOrderAsync(OrderRequest request, CancellationToken ct = default)
+    public async Task<OrderValidationResult> ValidateOrderAsync(OrderRequest request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
 
         if (!Capabilities.SupportedOrderTypes.Contains((OrderType)request.Type))
         {
-            return Task.FromResult(new OrderValidationResult(false, $"Order type '{request.Type}' is not supported by the paper gateway."));
+            return new OrderValidationResult(false, $"Order type '{request.Type}' is not supported by the paper gateway.");
         }
 
         if (!Capabilities.SupportedTimeInForce.Contains(request.TimeInForce))
         {
-            return Task.FromResult(new OrderValidationResult(false, $"Time in force '{request.TimeInForce}' is not supported by the paper gateway."));
+            return new OrderValidationResult(false, $"Time in force '{request.TimeInForce}' is not supported by the paper gateway.");
         }
 
         if (request.Quantity == 0)
         {
-            return Task.FromResult(new OrderValidationResult(false, "Order quantity cannot be zero."));
+            return new OrderValidationResult(false, "Order quantity cannot be zero.");
         }
 
         if (((OrderType)request.Type is OrderType.Limit or OrderType.StopLimit) && (!request.LimitPrice.HasValue || request.LimitPrice <= 0))
         {
-            return Task.FromResult(new OrderValidationResult(false, "Limit and stop-limit orders require a positive limit price."));
+            return new OrderValidationResult(false, "Limit and stop-limit orders require a positive limit price.");
         }
 
         if (((OrderType)request.Type is OrderType.StopMarket or OrderType.StopLimit) && (!request.StopPrice.HasValue || request.StopPrice <= 0))
         {
-            return Task.FromResult(new OrderValidationResult(false, "Stop and stop-limit orders require a positive stop price."));
+            return new OrderValidationResult(false, "Stop and stop-limit orders require a positive stop price.");
         }
 
-        return Task.FromResult(new OrderValidationResult(true));
+        // Lot-size validation via Security Master (when configured).
+        if (_securityMaster is not null)
+        {
+            var lotSizeError = await ValidateLotSizeAsync(request, ct).ConfigureAwait(false);
+            if (lotSizeError is not null)
+                return new OrderValidationResult(false, lotSizeError);
+        }
+
+        return new OrderValidationResult(true);
+    }
+
+    /// <summary>
+    /// Looks up the instrument's lot-size constraint from Security Master and returns an error
+    /// message if the order quantity is not a valid multiple.  Returns <c>null</c> when the
+    /// security is not found or when no lot-size is configured.
+    /// </summary>
+    private async Task<string?> ValidateLotSizeAsync(OrderRequest request, CancellationToken ct)
+    {
+        try
+        {
+            var detail = await _securityMaster!
+                .GetByIdentifierAsync(SecurityIdentifierKind.Ticker, request.Symbol, provider: null, ct)
+                .ConfigureAwait(false);
+
+            if (detail is null)
+                return null;
+
+            var tradingParams = await _securityMaster
+                .GetTradingParametersAsync(detail.SecurityId, DateTimeOffset.UtcNow, ct)
+                .ConfigureAwait(false);
+
+            if (tradingParams?.LotSize is { } lotSize && lotSize > 0m)
+            {
+                var absQty = Math.Abs(request.Quantity);
+                if (absQty % lotSize != 0m)
+                {
+                    return $"Order quantity {absQty} is not a valid lot-size multiple for {request.Symbol} (lot size = {lotSize}).";
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            // Treat Security Master unavailability as a non-blocking advisory — log and continue.
+            _logger.LogWarning(ex,
+                "Could not validate lot size for {Symbol} from Security Master; proceeding without constraint",
+                request.Symbol);
+        }
+
+        return null;
     }
 
     /// <inheritdoc/>

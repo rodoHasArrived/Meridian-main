@@ -18,13 +18,21 @@ namespace Meridian.Application.Backfill;
 /// Optional per-symbol priority map; lower value means processed first.
 /// Keys are matched case-insensitively. Symbols not listed are treated as priority 0.
 /// </param>
+/// <param name="ResumeFromCheckpoint">
+/// When <c>true</c> and a <see cref="BackfillStatusStore"/> is provided to
+/// <see cref="HistoricalBackfillService"/>, symbols that were successfully checkpointed
+/// in a previous run are skipped. Symbols with a checkpoint have their <see cref="From"/>
+/// date advanced to the day after the last recorded checkpoint date, reducing redundant
+/// work on restart.
+/// </param>
 public sealed record BackfillRequest(
     string Provider,
     IReadOnlyList<string> Symbols,
     DateOnly? From = null,
     DateOnly? To = null,
     int? MaxConcurrentSymbols = null,
-    IReadOnlyDictionary<string, int>? SymbolPriorities = null
+    IReadOnlyDictionary<string, int>? SymbolPriorities = null,
+    bool ResumeFromCheckpoint = false
 )
 {
     public static BackfillRequest FromConfig(AppConfig cfg)
