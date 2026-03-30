@@ -2460,6 +2460,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── PaneLayout.cs
 │       │   ├── ProviderHealthModels.cs
 │       │   ├── QuantScriptModels.cs
+│       │   ├── SettingsModels.cs
 │       │   ├── StorageDisplayModels.cs
 │       │   ├── SymbolsModels.cs
 │       │   ├── WorkspaceDefinition.cs
@@ -2578,6 +2579,8 @@ Use these documents together when planning or implementing new work:
 │           ├── AnalysisExportPage.xaml.cs
 │           ├── AnalysisExportWizardPage.xaml
 │           ├── AnalysisExportWizardPage.xaml.cs
+│           ├── ApiKeyDialog.xaml
+│           ├── ApiKeyDialog.xaml.cs
 │           ├── ArchiveHealthPage.xaml
 │           ├── ArchiveHealthPage.xaml.cs
 │           ├── BackfillPage.xaml
@@ -2614,6 +2617,8 @@ Use these documents together when planning or implementing new work:
 │           ├── DiagnosticsPage.xaml.cs
 │           ├── DirectLendingPage.xaml
 │           ├── DirectLendingPage.xaml.cs
+│           ├── EditScheduledJobDialog.xaml
+│           ├── EditScheduledJobDialog.xaml.cs
 │           ├── EventReplayPage.xaml
 │           ├── EventReplayPage.xaml.cs
 │           ├── ExportPresetsPage.xaml
@@ -2672,6 +2677,8 @@ Use these documents together when planning or implementing new work:
 │           ├── RunMatPage.xaml.cs
 │           ├── RunPortfolioPage.xaml
 │           ├── RunPortfolioPage.xaml.cs
+│           ├── SaveWatchlistDialog.xaml
+│           ├── SaveWatchlistDialog.xaml.cs
 │           ├── ScheduleManagerPage.xaml
 │           ├── ScheduleManagerPage.xaml.cs
 │           ├── SecurityMasterPage.xaml
@@ -3194,6 +3201,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-472 directories, 2684 files
+472 directories, 2691 files
 ```
 <!-- readme-tree end -->
