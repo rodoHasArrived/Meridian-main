@@ -54,10 +54,22 @@ def validate_scores(raw: dict[str, object]) -> dict[str, int]:
 
     scores: dict[str, int] = {}
     for k in CATEGORIES:
-        try:
-            val = int(raw[k])
-        except Exception as exc:  # noqa: BLE001
-            raise ValueError(f"Score for '{k}' is not an integer: {raw[k]!r}") from exc
+        raw_val = raw[k]
+        # Reject booleans explicitly since bool is a subclass of int.
+        if isinstance(raw_val, bool):
+            raise ValueError(f"Score for '{k}' must be an integer 0, 1, or 2, not a boolean: {raw_val!r}")
+        if isinstance(raw_val, int):
+            val = raw_val
+        elif isinstance(raw_val, str):
+            text = raw_val.strip()
+            if not text.isdecimal():
+                raise ValueError(f"Score for '{k}' is not a valid integer string: {raw_val!r}")
+            try:
+                val = int(text)
+            except Exception as exc:  # noqa: BLE001
+                raise ValueError(f"Score for '{k}' is not an integer: {raw_val!r}") from exc
+        else:
+            raise ValueError(f"Score for '{k}' must be an integer, got {type(raw_val).__name__}: {raw_val!r}")
         if val < 0 or val > 2:
             raise ValueError(f"Score for '{k}' must be between 0 and 2. Got {val}.")
         scores[k] = val
