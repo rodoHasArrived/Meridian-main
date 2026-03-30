@@ -158,12 +158,28 @@ public sealed class BackfillCostEstimator
 
     private static int EstimateTradingDays(DateOnly from, DateOnly to)
     {
-        // Rough estimate: ~252 trading days per year, ~21 per month
-        var totalDays = to.DayNumber - from.DayNumber;
-        if (totalDays <= 0)
+        if (to <= from)
             return 0;
-        // Weekdays only (approximate)
-        return (int)(totalDays * 5.0 / 7.0);
+
+        // Count actual weekdays (Mon–Fri) in [from, to).
+        // Does not subtract US holidays — that would require a TradingCalendar dependency —
+        // but weekday counting is a significant improvement over a 5/7 approximation,
+        // which is inaccurate for short ranges (e.g., a Mon–Sat [from, to) range with 5 trading days
+        // would be approximated as 3 when using integer 5/7 scaling).
+        var totalDays = to.DayNumber - from.DayNumber;
+        var fullWeeks = totalDays / 7;
+        var remainingDays = totalDays % 7;
+        var startDow = (int)from.DayOfWeek; // 0=Sun, 1=Mon, …, 6=Sat
+
+        var partialWeekdays = 0;
+        for (var i = 0; i < remainingDays; i++)
+        {
+            var dow = (startDow + i) % 7;
+            if (dow is not 0 and not 6) // exclude Sunday and Saturday
+                partialWeekdays++;
+        }
+
+        return fullWeeks * 5 + partialWeekdays;
     }
 }
 
