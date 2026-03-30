@@ -252,7 +252,7 @@ public sealed class ParquetStorageSink : IStorageSink
             if (events[i].Payload is not Trade trade)
                 continue;
             var evt = events[i];
-            timestamps[idx] = evt.Timestamp;
+            timestamps[idx] = evt.Timestamp.UtcDateTime;
             symbols[idx] = evt.EffectiveSymbol;
             prices[idx] = trade.Price;
             sizes[idx] = trade.Size;
@@ -307,7 +307,7 @@ public sealed class ParquetStorageSink : IStorageSink
             if (events[i].Payload is not BboQuotePayload quote)
                 continue;
             var evt = events[i];
-            timestamps[idx] = evt.Timestamp;
+            timestamps[idx] = evt.Timestamp.UtcDateTime;
             symbols[idx] = evt.EffectiveSymbol;
             bidPrices[idx] = quote.BidPrice;
             bidSizes[idx] = quote.BidSize;
@@ -368,7 +368,7 @@ public sealed class ParquetStorageSink : IStorageSink
             for (var i = 0; i < count; i++)
             {
                 var (evt, snap, seq) = snapshots[i];
-                timestamps[i] = evt.Timestamp;
+                timestamps[i] = evt.Timestamp.UtcDateTime;
                 symbols[i] = evt.EffectiveSymbol;
                 bidCounts[i] = snap.Bids?.Count ?? 0;
                 askCounts[i] = snap.Asks?.Count ?? 0;
@@ -437,7 +437,7 @@ public sealed class ParquetStorageSink : IStorageSink
             if (events[i].Payload is not HistoricalBar bar)
                 continue;
             var evt = events[i];
-            timestamps[idx] = evt.Timestamp;
+            timestamps[idx] = evt.Timestamp.UtcDateTime;
             symbols[idx] = evt.EffectiveSymbol;
             opens[idx] = bar.Open;
             highs[idx] = bar.High;
@@ -489,7 +489,7 @@ public sealed class ParquetStorageSink : IStorageSink
         for (var i = 0; i < count; i++)
         {
             var e = events[i];
-            timestamps[i] = e.Timestamp;
+            timestamps[i] = e.Timestamp.UtcDateTime;
             symbols[i] = e.EffectiveSymbol;
             types[i] = e.Type.ToString();
             payloads[i] = JsonSerializer.Serialize(e, MarketDataJsonContext.Default.MarketEvent);
