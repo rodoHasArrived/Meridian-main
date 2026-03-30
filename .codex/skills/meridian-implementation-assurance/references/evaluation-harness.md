@@ -94,13 +94,13 @@ Use this exact structure in the final response when running an eval:
 - Total Score: <n>/10
 - Outcome: <Pass|Fail>
 
-| Category | Score (0-2) | Evidence |
-|---|---:|---|
-| Behavior Correctness |  |  |
-| Validation Evidence |  |  |
-| Performance Safety |  |  |
-| Documentation Sync |  |  |
-| Traceable Summary |  |  |
+| Category | Score (0-2) |
+|---|---:|
+| Behavior Correctness |  |
+| Validation Evidence |  |
+| Performance Safety |  |
+| Documentation Sync |  |
+| Traceable Summary |  |
 
 - Failed checks:
   - <none or list>
