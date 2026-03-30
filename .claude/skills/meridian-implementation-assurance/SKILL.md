@@ -6,14 +6,14 @@ description: >
   routing, and a traceable summary. Triggers on requests to certify completeness, confirm scope
   alignment, gather rollout evidence, or update AI/agent catalogs after new capabilities land.
 license: See repository LICENSE
-last_updated: 2026-03-29
+last_updated: 2026-03-30
 compatibility: >
   Portable Agent Skill package for Agent Skills-compatible hosts. Reads repository files plus the
   bundled scripts for doc routing and lightweight evaluation scoring. No external network access
   required.
 metadata:
   owner: meridian-ai
-  version: "1.0"
+  version: "1.1"
   spec: open-agent-skills-v1
 ---
 # Meridian — Implementation Assurance Skill
@@ -51,6 +51,39 @@ Follow this 4-step loop for every implementation-assurance task:
 - Produce a traceable summary: requirement ↔ implementation ↔ evidence.
 - Include validation commands, outcomes, and links to updated docs/agents.
 - Update AI/agent catalogs and skills indexes per `doc_route.py` guidance.
+
+---
+
+## Requirement Type Detection
+
+Use this decision tree before starting any task to pick the right validation lane:
+
+```
+What are you assuring?
+├── Feature completeness vs. blueprint/acceptance criteria
+│   → Lane: requirement matrix + targeted unit/integration tests
+├── Scope alignment to an issue or roadmap item
+│   → Lane: requirement matrix + file mapping + acceptance criteria check
+├── Documentation sync after a code change
+│   → Lane: doc routing matrix + cross-reference validation
+├── Capability discovery / AI catalog update
+│   → Lane: agent/skill symmetry check (docs/ai/agents/ + docs/ai/skills/)
+└── Rollout readiness
+    → Lane: build gate + test gate + deployment gates (all CRITICAL)
+```
+
+Each lane produces different required artifacts — match the lane to the task before collecting evidence.
+
+---
+
+## Performance Guardrails
+
+When the change touches any execution or data-pipeline path:
+
+- Inspect hot paths for avoidable allocations, synchronous blocking, and unbounded buffering.
+- Avoid `.Result`/`.Wait()` on async flows.
+- Keep logging and serialization costs proportional to execution frequency.
+- When introducing loops or streams, define cancellation and backpressure behavior.
 
 ---
 
@@ -105,21 +138,71 @@ Produces totals, averages, and a verdict string. Use the `--json` flag for machi
 
 ---
 
-## Evidence Template (recommended)
+## Output Format
 
+### Evidence Severity Levels
+
+- **CRITICAL (always required):** build passes, tests pass, requirement ↔ file mapping documented
+- **WARNING (required for breaking/scope changes):** cross-file impact assessed, catalog updates listed
+- **INFO (recommended):** performance annotation for hot-path changes, coverage delta noted
+
+### Standard Output Template
+
+```markdown
+## Requirement ↔ Implementation ↔ Evidence
+
+| Requirement | Implementing File(s) | Evidence |
+|---|---|---|
+| R1: <statement> | `path/to/file.cs` | `<test class>.<test method>` passes |
+| R2: ... | ... | ... |
+
+## Validation Commands
+- `dotnet build Meridian.sln -c Release /p:EnableWindowsTargeting=true` — PASS (12.4s)
+- `dotnet test tests/Meridian.Tests -c Release --filter "Category=X"` — PASS (8 passed, 0 failed)
+- `python3 .../doc_route.py --kind ai --topic "<topic>"` — routed to docs/ai/skills/
+
+## Documentation Updates
+- Updated: `docs/ai/skills/README.md` (added skill entry)
+- Updated: `docs/ai/agents/README.md` (symmetry map row)
+
+## Catalog Updates
+- [ ] Agent: `.github/agents/<name>-agent.md` present
+- [ ] Skill: `.claude/skills/<name>/SKILL.md` present
+- [ ] Both indexed in `docs/ai/agents/README.md` symmetry map
+
+## Traceable Summary (≤ 15 lines)
+- Feature: <one sentence>
+- R1 → `path/to/file.cs` → `TestClass.TestMethod`: PASS
+- Build: PASS  |  Tests: N/N  |  Docs: updated  |  Score: 9/10
+- Risks: <none | list>
 ```
-Requirement ↔ Implementation ↔ Evidence
-- R1: <statement> → <files touched> → <test/log/doc link>
-- R2: ...
 
-Validation Commands
-- dotnet build ... (pass/fail, duration)
-- dotnet test ... (pass/fail, duration)
-- python scripts/... (pass/fail, key output)
+### Concrete Example (Catalog Update — Scenario B)
 
-Documentation Updates
-- Updated: docs/ai/skills/README.md (added skill entry)
-- Updated: docs/ai/agents/README.md (symmetry map)
+```markdown
+## Requirement ↔ Implementation ↔ Evidence
+
+| Requirement | Implementing File(s) | Evidence |
+|---|---|---|
+| R1: New provider skill discoverable in Claude | `.claude/skills/meridian-provider-builder/SKILL.md` | File present, YAML frontmatter valid |
+| R2: Symmetry map updated | `docs/ai/agents/README.md` | Entry added at line 210 |
+| R3: Skills index updated | `docs/ai/skills/README.md` | Entry added under provider-builder section |
+
+## Validation Commands
+- `python3 build/scripts/docs/validate-skill-packages.py` — PASS (3 skill packages validated)
+- `python3 .claude/skills/meridian-implementation-assurance/scripts/doc_route.py --kind skill --topic "provider builder"` — destination: docs/ai/skills/
+
+## Documentation Updates
+- Updated: `docs/ai/agents/README.md` (symmetry map row for meridian-provider-builder)
+- Updated: `docs/ai/skills/README.md` (new skill entry with on-demand resources)
+
+## Traceable Summary
+- Feature: meridian-provider-builder skill added to both Claude and GitHub agent catalogs
+- R1 → `.claude/skills/meridian-provider-builder/SKILL.md` → file present: PASS
+- R2 → `docs/ai/agents/README.md` → symmetry row at line 210: PASS
+- R3 → `docs/ai/skills/README.md` → entry present: PASS
+- Build: N/A  |  Tests: N/A  |  Docs: updated  |  Score: 10/10
+- Risks: none
 ```
 
 Keep the summary under 15 lines; link to detailed artifacts only as needed.
