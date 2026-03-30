@@ -175,8 +175,8 @@
   </ItemGroup>
 
   <ItemGroup Label="Model Context Protocol (MCP)">
-    <PackageVersion Include="ModelContextProtocol" Version="1.1.0" />
-    <PackageVersion Include="ModelContextProtocol.AspNetCore" Version="1.1.0" />
+    <PackageVersion Include="ModelContextProtocol" Version="1.2.0" />
+    <PackageVersion Include="ModelContextProtocol.AspNetCore" Version="1.2.0" />
   </ItemGroup>
 
   <ItemGroup Label="Security - Transitive Dependency Version Overrides">
