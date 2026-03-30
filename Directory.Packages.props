@@ -164,7 +164,7 @@
   </ItemGroup>
 
   <ItemGroup Label="FSharp Event Sourcing">
-    <PackageVersion Include="Sharpino" Version="4.7.4" />
+    <PackageVersion Include="Sharpino" Version="4.9.1" />
   </ItemGroup>
 
   <ItemGroup Label="WinUI / Desktop">
