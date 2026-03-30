@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-03-30 16:30:17 UTC. Do not edit manually.
+> Auto-generated on 2026-03-30 17:55:47 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -2821,6 +2821,7 @@ Meridian-main
 │   │   │   ├── MemoryMappedJsonlReaderTests.cs
 │   │   │   ├── MetadataTagServiceTests.cs
 │   │   │   ├── ParquetConversionServiceTests.cs
+│   │   │   ├── ParquetStorageSinkTests.cs
 │   │   │   ├── PortableDataPackagerTests.cs
 │   │   │   ├── QuotaEnforcementServiceTests.cs
 │   │   │   ├── StorageCatalogServiceTests.cs

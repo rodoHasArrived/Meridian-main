@@ -2932,6 +2932,7 @@ Meridian-main
 │   │   │   ├── MemoryMappedJsonlReaderTests.cs
 │   │   │   ├── MetadataTagServiceTests.cs
 │   │   │   ├── ParquetConversionServiceTests.cs
+│   │   │   ├── ParquetStorageSinkTests.cs
 │   │   │   ├── PortableDataPackagerTests.cs
 │   │   │   ├── QuotaEnforcementServiceTests.cs
 │   │   │   ├── StorageCatalogServiceTests.cs
