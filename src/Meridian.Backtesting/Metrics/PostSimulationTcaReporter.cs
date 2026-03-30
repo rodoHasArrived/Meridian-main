@@ -8,7 +8,9 @@ namespace Meridian.Backtesting.Metrics;
 /// </summary>
 internal static class PostSimulationTcaReporter
 {
-    // Fills whose commission rate exceeds this multiplier × the run mean are flagged as outliers.
+    // Fills whose commission rate exceeds this multiplier × the median per-fill rate are flagged.
+    // The median (not the aggregate mean) is used so that a single outlier fill cannot inflate
+    // the baseline threshold enough to avoid detection.
     private const double OutlierThresholdMultiplier = 3.0;
 
     // Suppress outlier flagging for fills below this minimum rate (bps) to avoid noise on
@@ -133,6 +135,27 @@ internal static class PostSimulationTcaReporter
         symbolSummaries.Sort((a, b) => b.TotalCommission.CompareTo(a.TotalCommission));
 
         // ── Outlier detection ──────────────────────────────────────────────
+        // Compute per-fill BPS rates for all fills with positive notional.
+        // The median (not the aggregate mean) is used as the baseline so that a single high-cost
+        // fill cannot inflate the threshold enough to avoid detection.
+        var perFillBps = new List<double>(fills.Count);
+        foreach (var fill in fills)
+        {
+            var n = Math.Abs(fill.FilledQuantity) * fill.FillPrice;
+            if (n > 0m)
+                perFillBps.Add((double)(fill.Commission / n) * 10_000.0);
+        }
+
+        double medianBps = 0.0;
+        if (perFillBps.Count > 0)
+        {
+            perFillBps.Sort();
+            var mid = perFillBps.Count / 2;
+            medianBps = perFillBps.Count % 2 == 0
+                ? (perFillBps[mid - 1] + perFillBps[mid]) / 2.0
+                : perFillBps[mid];
+        }
+
         var outliers = new List<TcaFillOutlier>();
         foreach (var fill in fills)
         {
@@ -141,7 +164,7 @@ internal static class PostSimulationTcaReporter
                 continue;
 
             var fillBps = (double)(fill.Commission / notional) * 10_000.0;
-            if (fillBps > avgCommissionRateBps * OutlierThresholdMultiplier
+            if (fillBps > medianBps * OutlierThresholdMultiplier
                 && fillBps > OutlierMinimumRateBps)
             {
                 outliers.Add(new TcaFillOutlier(
