@@ -1,5 +1,6 @@
-import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, Layers, PauseCircle, PlayCircle, PlusCircle, StopCircle, Trash2, Wallet, XCircle } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, Layers, PauseCircle, PlayCircle, PlusCircle, RadioTower, ShieldCheck, StopCircle, Trash2, Wallet, XCircle } from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -30,6 +31,21 @@ const wiringTone: Record<TradingWorkspaceResponse["brokerage"]["connection"], st
   Disconnected: "text-danger"
 };
 
+const focusCopy: Record<string, { title: string; description: string }> = {
+  orders: {
+    title: "Orders blotter",
+    description: "Working and partially filled orders remain visible in real time so you can cancel, replace, or monitor fill progress without leaving the cockpit."
+  },
+  positions: {
+    title: "Position book",
+    description: "Open positions with mark prices, exposure, and unrealized P&L are refreshed from the live execution layer each time the workspace loads."
+  },
+  risk: {
+    title: "Risk guardrails",
+    description: "Paper thresholds, drawdown limits, and buying-power constraints are evaluated on every order submission and displayed here for operator review."
+  }
+};
+
 type OrderPhase = "idle" | "submitting" | "submitted" | "error";
 
 interface OrderState {
@@ -55,6 +71,13 @@ interface ConfirmState {
 }
 
 export function TradingScreen({ data }: TradingScreenProps) {
+  const { pathname } = useLocation();
+  const workstream = useMemo(() => {
+    if (pathname.includes("/positions")) return "positions";
+    if (pathname.includes("/risk")) return "risk";
+    return "orders";
+  }, [pathname]);
+
   const [showOrderForm, setShowOrderForm] = useState(false);
   const [orderForm, setOrderForm] = useState<OrderSubmitRequest>({
     symbol: "",
@@ -206,6 +229,54 @@ export function TradingScreen({ data }: TradingScreenProps) {
         {data.metrics.map((metric) => (
           <MetricCard key={metric.id} {...metric} />
         ))}
+      </section>
+
+      <section className="grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
+        <Card>
+          <CardHeader>
+            <div className="eyebrow-label">Trading Lane</div>
+            <CardTitle className="flex items-center gap-2">
+              <RadioTower className="h-5 w-5 text-primary" />
+              {focusCopy[workstream].title}
+            </CardTitle>
+            <CardDescription>{focusCopy[workstream].description}</CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-4 md:grid-cols-3">
+            <TradingHighlight
+              icon={ClipboardList}
+              title="Blotter management"
+              description="Working and partial orders stay visible so you can act on fill progress without context-switching."
+            />
+            <TradingHighlight
+              icon={Wallet}
+              title="Position exposure"
+              description="Live exposure, marks, and unrealized P&L for every open position in the active paper session."
+            />
+            <TradingHighlight
+              icon={ShieldCheck}
+              title="Guardrail state"
+              description="Paper thresholds and drawdown limits are evaluated on every order and surfaced here for review."
+            />
+          </CardContent>
+        </Card>
+
+        <Card className="bg-panel-strong text-slate-50">
+          <CardHeader>
+            <div className="eyebrow-label">Route Context</div>
+            <CardTitle>Current workstream</CardTitle>
+            <CardDescription className="text-slate-300">
+              Deep links under{" "}
+              <code className="rounded bg-white/10 px-1 py-0.5 text-xs text-foreground">{pathname}</code>{" "}
+              reuse the same prefetched cockpit payload.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm text-slate-200">
+            <ContextRow label="Open positions" value={String(data.positions.length)} />
+            <ContextRow label="Working orders" value={String(data.openOrders.length)} />
+            <ContextRow label="Completed fills" value={String(data.fills.length)} />
+            <ContextRow label="Risk state" value={data.risk.state} />
+          </CardContent>
+        </Card>
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
@@ -815,6 +886,27 @@ function WiringRow({ label, value, tone }: { label: string; value: string; tone?
     <div className="flex items-center justify-between gap-4 rounded-lg bg-white/10 px-3 py-2">
       <span className="text-slate-300">{label}</span>
       <span className={cn("font-mono text-slate-100", tone)}>{value}</span>
+    </div>
+  );
+}
+
+function TradingHighlight({ icon: Icon, title, description }: { icon: React.ElementType; title: string; description: string }) {
+  return (
+    <div className="rounded-xl border border-border/70 bg-secondary/30 p-4">
+      <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+        <Icon className="h-4 w-4 text-primary shrink-0" />
+        {title}
+      </div>
+      <p className="mt-2 text-xs leading-5 text-muted-foreground">{description}</p>
+    </div>
+  );
+}
+
+function ContextRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between gap-4 rounded-lg bg-white/10 px-3 py-2">
+      <span className="text-slate-300">{label}</span>
+      <span className="font-mono text-slate-100">{value}</span>
     </div>
   );
 }
