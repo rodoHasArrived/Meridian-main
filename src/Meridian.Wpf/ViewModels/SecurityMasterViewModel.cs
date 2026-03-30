@@ -261,6 +261,23 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     public IAsyncRelayCommand BackfillTradingParamsCommand { get; }
     public IAsyncRelayCommand ImportFromFileCommand { get; }
     public IRelayCommand CloseImportResultCommand { get; }
+    public IAsyncRelayCommand RefreshConflictCountCommand { get; }
+
+    // ── Conflict badge ───────────────────────────────────────────────────────
+    private int _openConflictCount;
+    /// <summary>Number of open identifier conflicts detected in Security Master. Drives the badge.</summary>
+    public int OpenConflictCount
+    {
+        get => _openConflictCount;
+        private set
+        {
+            if (SetProperty(ref _openConflictCount, value))
+                OnPropertyChanged(nameof(HasOpenConflicts));
+        }
+    }
+
+    /// <summary>True when at least one open conflict exists. Drives badge visibility.</summary>
+    public bool HasOpenConflicts => _openConflictCount > 0;
 
     // ── Constructor ─────────────────────────────────────────────────────────
     public SecurityMasterViewModel(
@@ -284,6 +301,10 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         BackfillTradingParamsCommand = new AsyncRelayCommand(OnBackfillTradingParams);
         ImportFromFileCommand = new AsyncRelayCommand(OnImportFromFile, () => !IsImporting);
         CloseImportResultCommand = new RelayCommand(OnCloseImportResult);
+        RefreshConflictCountCommand = new AsyncRelayCommand(RefreshConflictCountAsync);
+
+        // Fire-and-forget initial conflict count load; failures are suppressed
+        _ = RefreshConflictCountAsync();
     }
 
     private void OnCreateNew()
@@ -714,6 +735,24 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         {
             _loggingService.LogError("Failed to record corporate action", ex);
             _notificationService.ShowNotification("Corporate Actions", "An error occurred while recording the corporate action.", NotificationType.Error);
+        }
+    }
+
+    // ── Conflict badge ───────────────────────────────────────────────────────
+    private async Task RefreshConflictCountAsync(CancellationToken ct = default)
+    {
+        try
+        {
+            var conflicts = await ApiClientService.Instance
+                .GetAsync<SecurityMasterConflict[]>("/api/security-master/conflicts", ct)
+                .ConfigureAwait(false);
+
+            var count = conflicts?.Length ?? 0;
+            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() => OpenConflictCount = count);
+        }
+        catch (Exception ex)
+        {
+            _loggingService.LogError("Failed to load Security Master conflict count", ex);
         }
     }
 
