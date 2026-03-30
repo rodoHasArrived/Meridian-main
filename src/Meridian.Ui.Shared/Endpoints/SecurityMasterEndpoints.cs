@@ -4,6 +4,7 @@ using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using AppSecurityMaster = Meridian.Application.SecurityMaster;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -265,5 +266,53 @@ public static class SecurityMasterEndpoints
         .Accepts<CorporateActionDto>("application/json")
         .Produces(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest);
+
+        // GET /api/security-master/conflicts
+        group.MapGet(UiApiRoutes.SecurityMasterConflicts, async (
+            AppSecurityMaster.ISecurityMasterConflictService conflictService,
+            CancellationToken ct) =>
+        {
+            var conflicts = await conflictService.GetOpenConflictsAsync(ct).ConfigureAwait(false);
+            return Results.Json(conflicts, jsonOptions);
+        })
+        .WithName("GetSecurityMasterConflicts")
+        .Produces<IReadOnlyList<SecurityMasterConflict>>(StatusCodes.Status200OK);
+
+        // POST /api/security-master/conflicts/{conflictId}/resolve
+        group.MapPost(UiApiRoutes.SecurityMasterConflictResolve, async (
+            Guid conflictId,
+            ResolveConflictRequest request,
+            AppSecurityMaster.ISecurityMasterConflictService conflictService,
+            CancellationToken ct) =>
+        {
+            if (request.ConflictId != conflictId)
+                return Results.BadRequest(ErrorResponse.Validation(
+                    "ConflictId in body must match the route parameter."));
+
+            var updated = await conflictService.ResolveAsync(request, ct).ConfigureAwait(false);
+            return updated is null
+                ? Results.NotFound()
+                : Results.Json(updated, jsonOptions);
+        })
+        .WithName("ResolveSecurityMasterConflict")
+        .Produces<SecurityMasterConflict>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status404NotFound);
+
+        // POST /api/security-master/import
+        group.MapPost(UiApiRoutes.SecurityMasterImport, async (
+            SecurityMasterImportRequest request,
+            AppSecurityMaster.ISecurityMasterImportService importService,
+            CancellationToken ct) =>
+        {
+            var result = await importService.ImportAsync(
+                request.FileContent,
+                request.FileExtension,
+                progress: null,
+                ct: ct).ConfigureAwait(false);
+            return Results.Json(result, jsonOptions);
+        })
+        .WithName("ImportSecurityMaster")
+        .Produces<AppSecurityMaster.SecurityMasterImportResult>(StatusCodes.Status200OK);
     }
 }

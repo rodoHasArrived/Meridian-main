@@ -33,6 +33,30 @@ public sealed record SecurityDetailDto(
     DateTimeOffset EffectiveFrom,
     DateTimeOffset? EffectiveTo);
 
+/// <summary>
+/// A field-level or identifier-level conflict detected between providers for the same security.
+/// </summary>
+public sealed record SecurityMasterConflict(
+    Guid ConflictId,
+    Guid SecurityId,
+    string ConflictKind,
+    string FieldPath,
+    string ProviderA,
+    string ValueA,
+    string ProviderB,
+    string ValueB,
+    DateTimeOffset DetectedAt,
+    string Status);
+
+/// <summary>
+/// Request to resolve or dismiss a golden record conflict.
+/// </summary>
+public sealed record ResolveConflictRequest(
+    Guid ConflictId,
+    string Resolution,
+    string ResolvedBy,
+    string? Reason = null);
+
 public sealed record SecurityProjectionRecord(
     Guid SecurityId,
     string AssetClass,

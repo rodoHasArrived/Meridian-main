@@ -129,6 +129,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         // Security Master bulk import services
         services.AddSingleton<SecurityMasterCsvParser>();
         services.AddSingleton<ISecurityMasterImportService, SecurityMasterImportService>();
+        services.AddSingleton<ISecurityMasterConflictService, SecurityMasterConflictService>();
 
         return services;
     }

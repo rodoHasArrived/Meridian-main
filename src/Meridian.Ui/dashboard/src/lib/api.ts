@@ -1,5 +1,6 @@
 import type {
   DataOperationsWorkspaceResponse,
+  EquityCurveSummary,
   GovernanceWorkspaceResponse,
   OrderResult,
   OrderSubmitRequest,
@@ -9,8 +10,14 @@ import type {
   PromotionRecord,
   ResearchRunRecord,
   ResearchWorkspaceResponse,
+  ResolveConflictRequest,
+  RunAttributionSummary,
   RunComparisonRow,
   RunDiff,
+  RunFillSummary,
+  SecurityIdentityDrillIn,
+  SecurityMasterConflict,
+  SecurityMasterEntry,
   SessionInfo,
   TradingActionResult,
   TradingWorkspaceResponse
@@ -159,4 +166,51 @@ export function compareRuns(runIds: string[]) {
 
 export function diffRuns(baseRunId: string, targetRunId: string) {
   return postJson<RunDiff>("/api/workstation/runs/diff", { baseRunId, targetRunId });
+}
+
+// --- Run detail drill-ins ---
+
+export function getRunAttribution(runId: string) {
+  return getJson<RunAttributionSummary>(`/api/workstation/runs/${encodeURIComponent(runId)}/attribution`);
+}
+
+export function getRunFills(runId: string, symbol?: string) {
+  const params = symbol ? `?symbol=${encodeURIComponent(symbol)}` : "";
+  return getJson<RunFillSummary>(`/api/workstation/runs/${encodeURIComponent(runId)}/fills${params}`);
+}
+
+export function getRunEquityCurve(runId: string) {
+  return getJson<EquityCurveSummary>(`/api/workstation/runs/${encodeURIComponent(runId)}/equity-curve`);
+}
+
+// --- Security Master search ---
+
+export function searchSecurities(query: string, take = 25, activeOnly = true) {
+  const params = new URLSearchParams({
+    query,
+    take: String(take),
+    activeOnly: String(activeOnly)
+  });
+  return getJson<SecurityMasterEntry[]>(`/api/workstation/security-master/securities?${params.toString()}`);
+}
+
+export function getSecurityDetail(securityId: string) {
+  return getJson<SecurityMasterEntry>(`/api/workstation/security-master/securities/${encodeURIComponent(securityId)}`);
+}
+
+export function getSecurityIdentity(securityId: string) {
+  return getJson<SecurityIdentityDrillIn>(`/api/workstation/security-master/securities/${encodeURIComponent(securityId)}/identity`);
+}
+
+// --- Security Master conflicts ---
+
+export function getSecurityConflicts() {
+  return getJson<SecurityMasterConflict[]>("/api/security-master/conflicts");
+}
+
+export function resolveSecurityConflict(request: ResolveConflictRequest) {
+  return postJson<SecurityMasterConflict>(
+    `/api/security-master/conflicts/${encodeURIComponent(request.conflictId)}/resolve`,
+    request
+  );
 }
