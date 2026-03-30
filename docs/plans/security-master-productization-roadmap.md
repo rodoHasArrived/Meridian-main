@@ -90,11 +90,14 @@ The following capabilities were implemented as foundational work for this wave a
 - Backtest P&L curves match expected split-adjusted prices when `AdjustForCorporateActions = true`.
 - Backtest engine: integrate adjustment service so fill prices are split-adjusted automatically.
 
-### Acceptance Criteria
+### What Was Delivered
 
-- `SecurityMasterAggregateRebuilder` correctly folds `CorpActEvent` records into the aggregate.
-- `BacktestEngine` replay produces adjusted bar prices when corporate actions are present.
-- At least one provider (Polygon or Alpha Vantage) feeds corporate action data into the event store.
+- `CorpActEvent` discriminated union in `SecurityMasterEvents.fs`: `Dividend`, `StockSplit`, `SpinOff`, `MergerAbsorption`, `RightsIssue`. Each case carries `CorpActId of Guid`, `securityId`, `exDate: DateOnly`, `payDate: DateOnly option`, and event-specific fields.
+- `ISecurityMasterEventStore.LoadCorporateActionsAsync` and `PostgresSecurityMasterEventStore` persist/replay `CorpActEvent` records (separate event stream keyed by `security_id`, returned in ascending ex-date order).
+- `CorporateActionAdjustmentService` applies split/dividend adjustments to `HistoricalBar` data via `AdjustAsync`.
+- `GET /api/security-master/{id}/corporate-actions` endpoint returns time-ordered `CorporateActionDto` list.
+- `BacktestEngine` integrates `ICorporateActionAdjustmentService` (optional injection); activated when `BacktestRequest.AdjustForCorporateActions = true`.
+- Full unit-test coverage in `CorporateActionAdjustmentServiceTests`: split factor combination, dividend price adjustment, no-op when security not found.
 
 ---
 
@@ -212,14 +215,14 @@ All modules are optional fields on `SecurityTermModules`, so equities continue t
 
 ### Remaining Detail Panel Work
 
-The corporate action timeline and trading parameters detail panel (originally scoped in Idea 6) depend on Ideas 1 and 3 being completed first. The ViewModel is structured to accept those fields once the APIs exist.
+The corporate action timeline and trading parameters detail panel are fully backed by the APIs delivered in Ideas 1 and 3. The ViewModel is structured to present those fields; a dedicated drill-in panel can be wired in a follow-on UI sprint.
 
 ---
 
 ## Sequencing
 
-| Order | Idea | Status | Reason |
-|-------|------|--------|--------|
+| Order | Idea | Status | Notes |
+|-------|------|--------|-------|
 | 1 | Bond Term Richness | ✅ Done | Data model foundation; enables fixed-income workflows downstream |
 | 2 | WPF Security Master Browser | ✅ Done | UI surface on top of completed backend capabilities |
 | 3 | Trading Parameters | ✅ Done | All six fields exposed; PaperTradingGateway validates lot size and snaps to tick grid |
