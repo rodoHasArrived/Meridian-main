@@ -1988,10 +1988,12 @@ Use these documents together when planning or implementing new work:
 │   │       ├── StorageTools.cs
 │   │       └── SymbolTools.cs
 │   ├── Meridian.ProviderSdk
+│   │   ├── AttributeCredentialResolver.cs
 │   │   ├── CredentialValidator.cs
 │   │   ├── DataSourceAttribute.cs
 │   │   ├── DataSourceRegistry.cs
 │   │   ├── HistoricalDataCapabilities.cs
+│   │   ├── ICredentialContext.cs
 │   │   ├── IDataSource.cs
 │   │   ├── IHistoricalBarWriter.cs
 │   │   ├── IHistoricalDataSource.cs
@@ -2002,7 +2004,8 @@ Use these documents together when planning or implementing new work:
 │   │   ├── IRealtimeDataSource.cs
 │   │   ├── ImplementsAdrAttribute.cs
 │   │   ├── Meridian.ProviderSdk.csproj
-│   │   └── ProviderHttpUtilities.cs
+│   │   ├── ProviderHttpUtilities.cs
+│   │   └── RequiresCredentialAttribute.cs
 │   ├── Meridian.QuantScript
 │   │   ├── Api
 │   │   │   ├── BacktestProxy.cs
@@ -3049,6 +3052,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Performance
 │   │   │   └── AllocationBudgetIntegrationTests.cs
 │   │   ├── ProviderSdk
+│   │   │   ├── AttributeCredentialResolverTests.cs
 │   │   │   ├── CredentialValidatorTests.cs
 │   │   │   ├── DataSourceAttributeTests.cs
 │   │   │   ├── DataSourceRegistryTests.cs
@@ -3227,6 +3231,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-477 directories, 2712 files
+477 directories, 2716 files
 ```
 <!-- readme-tree end -->
