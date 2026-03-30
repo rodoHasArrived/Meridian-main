@@ -230,7 +230,7 @@ Treat `references/evaluation-harness.md` as mandatory for this skill. Always ret
 ## Traceable Summary (≤ 15 lines)
 - Feature: <one sentence>
 - R1 → `path/to/file.cs` → `TestClass.TestMethod`: PASS
-- Build: PASS  |  Tests: N/N  |  Docs: updated  |  Score: 9/10
+- Build: PASS  |  Tests: 8/8  |  Docs: updated  |  Score: 9/10
 - Risks: <none | list>
 ```
 
