@@ -67,7 +67,7 @@ Runs each case in `evals/evals.json` through `codex exec --json --full-auto`, sa
 
 ```shell
 # Validate infrastructure without running codex
-python3 scripts/run_evals.py --all --dry-run
+python3 .claude/skills/meridian-implementation-assurance/scripts/run_evals.py --all --dry-run
 
 # Run all cases and check regressions vs baseline
 python3 scripts/run_evals.py --all --summary
