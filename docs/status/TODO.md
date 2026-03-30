@@ -22,7 +22,7 @@ Total items: **205**
 | `.claude/skills/meridian-code-review/scripts/aggregate_benchmark.py` | 332 | `NOTE` | ❌ | for note in benchmark["notes"]: |
 | `.claude/skills/meridian-code-review/scripts/aggregate_benchmark.py` | 333 | `NOTE` | ❌ | lines.append(f"- {note}") |
 | `.claude/skills/meridian-implementation-assurance/SKILL.md` | 40 | `NOTE` | ❌ | - **Performance-sensitive paths are annotated:** any hot-path touched by the change includes an explicit note on allocation, async, or buffering risk. |
-| `.codex/skills/meridian-implementation-assurance/SKILL.md` | 27 | `NOTE` | ❌ | - **Performance-sensitive paths are annotated**: any hot-path touched by the change includes an explicit note on allocation, async, or buffering risk. |
+| `.codex/skills/meridian-implementation-assurance/SKILL.md` | 31 | `NOTE` | ❌ | - **Performance-sensitive paths are annotated**: any hot-path touched by the change includes an explicit note on allocation, async, or buffering risk. |
 | `.codex/skills/meridian-implementation-assurance/evals/evals.json` | 9 | `NOTE` | ❌ | "prompt": "Use $meridian-implementation-assurance to certify this EventPipeline refactor is complete.\n\nThe change moves bounded-channel creation to EventPipelinePolicy.Default.CreateChannel<T>() (ADR-013 compliance). The existing ADR-013 doc at docs/adr/013-bounded-channel-policy.md covers the pattern and needs a note that direct Channel.CreateBounded calls are now disallowed outside the policy helper.\n\nProvide: validation commands, doc update evidence, rubric scores.", |
 | `.codex/skills/meridian-implementation-assurance/evals/evals.json` | 13 | `NOTE` | ❌ | "Must note the hot-path risk of channel capacity and DropOldest policy", |
 | `.codex/skills/meridian-implementation-assurance/evals/evals.json` | 53 | `NOTE` | ❌ | "Must note DataSourceAttribute decoration requirement (ADR-005)", |
@@ -36,8 +36,8 @@ Total items: **205**
 | `.github/agents/cleanup-agent.md` | 438 | `NOTE` | ❌ | - **No ViewModel extraction** — flag it as a note; full MVVM refactors belong in code review. |
 | `.github/agents/documentation-agent.md` | 361 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
 | `.github/agents/documentation-agent.md` | 814 | `TODO` | ❌ | │   │   └── TODO.md |
-| `.github/agents/documentation-agent.md` | 3159 | `TODO` | ❌ | - `TODO.md` - Pending work items |
-| `.github/agents/implementation-assurance-agent.md` | 28 | `NOTE` | ❌ | - **Performance-sensitive paths are noted:** any hot-path touched by the change includes an explicit note on allocation, async, or buffering risk. |
+| `.github/agents/documentation-agent.md` | 3164 | `TODO` | ❌ | - `TODO.md` - Pending work items |
+| `.github/agents/implementation-assurance-agent.md` | 65 | `NOTE` | ❌ | - **Performance-sensitive paths are noted:** any hot-path touched by the change includes an explicit note on allocation, async, or buffering risk. |
 | `.github/agents/performance-agent.md` | 248 | `NOTE` | ❌ | - **No new features** — if a performance win requires a new feature, note it but defer it. |
 | `.github/workflows/README.md` | 11 | `TODO` | ❌ | \| `documentation.yml` \| `docs-comprehensive.yml`, `docs-auto-update.yml`, `docs-structure-sync.yml`, `ai-instructions-sync.yml`, `todo-automation.yml`, `docs-check.yml` \| AI documentation quality review, AI TODO triage \| |
 | `.github/workflows/README.md` | 136 | `TODO` | ❌ | - **Purpose**: Centralized documentation quality checks, generation, AI instruction sync, and TODO tracking |
@@ -69,10 +69,8 @@ Total items: **205**
 | `build/scripts/run/start-collector.sh` | 114 | `NOTE` | ❌ | print("[NOTE] L2 depth requires provider depth subscription for venues.") |
 | `config/appsettings.sample.json` | 364 | `NOTE` | ❌ | // NOTE: Credentials are resolved from environment variables - do NOT add them here. |
 | `config/appsettings.sample.json` | 484 | `NOTE` | ❌ | //   4. Note the port (default 7497 for TWS paper, 7496 for live) |
-| `docs/HELP.md` | 413 | `NOTE` | ❌ | **Note:** Environment variables override values in `appsettings.json`. |
-| `docs/HELP.md` | 439 | `NOTE` | ❌ | - Note the Socket Port (default: 7497 for TWS, 4001 for Gateway) |
-| `docs/adr/016-platform-architecture-migration.md` | 1 | `NOTE` | ❌ | > **Note:** WPF desktop app references in this document reflect a delayed implementation. `src/Meridian.Wpf/` is preserved but not in the active solution build. |
-| `docs/adr/ADR-015-platform-restructuring.md` | 1 | `NOTE` | ❌ | > **Note:** WPF desktop app references in this document reflect a delayed implementation. `src/Meridian.Wpf/` is preserved but not in the active solution build. |
+| `docs/HELP.md` | 422 | `NOTE` | ❌ | **Note:** Environment variables override values in `appsettings.json`. |
+| `docs/HELP.md` | 450 | `NOTE` | ❌ | - Note the Socket Port (default: 7497 for TWS, 4001 for Gateway) |
 | `docs/ai/ai-known-errors.md` | 239 | `NOTE` | ❌ | - **Note**: This issue regressed multiple times (1e2ea1d, 5756479, 1802ea9, bf67ed5, e920c34) when using workarounds. The structural fix eliminates the problem at the API design level. |
 | `docs/ai/claude/CLAUDE.actions.md` | 23 | `TODO` | ❌ | \| Documentation \| `documentation.yml` \| Push/PRs (docs/source), weekly, issues, manual \| Doc generation, structure sync, TODO scan \| |
 | `docs/ai/claude/CLAUDE.actions.md` | 92 | `TODO` | ❌ | - **Documentation** - AI documentation quality review, AI TODO triage |
@@ -83,7 +81,7 @@ Total items: **205**
 | `docs/ai/copilot/instructions.md` | 5 | `NOTE` | ❌ | > **Note:** For comprehensive project context, see [CLAUDE.md](https://github.com/rodoHasArrived/Meridian/blob/main/CLAUDE.md) in the repository root. For the master AI resource index, see [docs/ai/README.md](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/README.md). |
 | `docs/ai/copilot/instructions.md` | 399 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
 | `docs/ai/copilot/instructions.md` | 852 | `TODO` | ❌ | │   │   └── TODO.md |
-| `docs/ai/copilot/instructions.md` | 3105 | `TODO` | ❌ | - `documentation.yml` — Doc generation, TODO scanning, AI error intake |
+| `docs/ai/copilot/instructions.md` | 3110 | `TODO` | ❌ | - `documentation.yml` — Doc generation, TODO scanning, AI error intake |
 | `docs/ai/skills/README.md` | 164 | `NOTE` | ❌ | > **Note:** The Direct Lending module (`src/Meridian.FSharp/Domain/DirectLending.fs`, |
 | `docs/architecture/deterministic-canonicalization.md` | 365 | `NOTE` | ❌ | Note: Polygon does not define buyer-initiated codes. Only ~5% of trades carry definitive aggressor inference. The canonicalization layer preserves `Unknown` as a valid canonical value rather than attempting inference. |
 | `docs/architecture/domains.md` | 111 | `NOTE` | ❌ | > Note: not every enum member is currently emitted by the three core collectors (`TradeDataCollector`, `MarketDepthCollector`, `QuoteCollector`); several are used by adapters, backfill paths, or the `L3OrderBookCollector`. |
@@ -154,7 +152,7 @@ Total items: **205**
 | `src/Meridian.Application/Http/HtmlTemplates.cs` | 242 | `NOTE` | ❌ | <p><strong>Note:</strong> External templates not found. Using minimal fallback UI.</p> |
 | `src/Meridian.Application/Services/GovernanceExceptionService.cs` | 111 | `NOTE` | ❌ | /// <summary>Marks an exception as resolved with an optional closing note.</summary> |
 | `src/Meridian.Application/Wizard/Steps/ConfigureDataSourceStep.cs` | 155 | `NOTE` | ❌ | _output.WriteLine("  Note: IB requires TWS or IB Gateway to be running.\n"); |
-| `src/Meridian.Backtesting/Metrics/BacktestMetricsEngine.cs` | 268 | `NOTE` | ❌ | /// NOTE: This is an independent computation over fill events for metric attribution purposes. |
+| `src/Meridian.Backtesting/Metrics/BacktestMetricsEngine.cs` | 270 | `NOTE` | ❌ | /// NOTE: This is an independent computation over fill events for metric attribution purposes. |
 | `src/Meridian.Backtesting/Portfolio/SimulatedPortfolio.cs` | 801 | `NOTE` | ❌ | /// NOTE: This must stay consistent with <c>BacktestMetricsEngine.ComputeRealisedPnl</c>, |
 | `src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs` | 29 | `NOTE` | ❌ | string? Note); |
 | `src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs` | 70 | `NOTE` | ❌ | string? Note, |
@@ -164,7 +162,7 @@ Total items: **205**
 | `src/Meridian.FSharp/Domain/SecMasterDomain.fs` | 98 | `NOTE` | ❌ | \| Note |
 | `src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs` | 87 | `NOTE` | ❌ | return !json.Contains("Note") && !json.Contains("Thank you for using Alpha Vantage"); |
 | `src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs` | 241 | `NOTE` | ❌ | return json.Contains("\"Note\"") \|\| json.Contains("Thank you for using Alpha Vantage"); |
-| `src/Meridian.QuantScript/Api/PortfolioBuilder.cs` | 135 | `TODO` | ❌ | // TODO: Implement full MV quadratic optimisation (e.g. via MathNet.Numerics or custom QP solver) |
+| `src/Meridian.QuantScript/Api/PortfolioBuilder.cs` | 136 | `TODO` | ❌ | // TODO: Implement full MV quadratic optimisation (e.g. via MathNet.Numerics or custom QP solver) |
 | `src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs` | 28 | `NOTE` | ❌ | string? Note); |
 | `src/Meridian.Storage/DirectLending/Migrations/005_direct_lending_operations.sql` | 54 | `NOTE` | ❌ | note                     text, |
 | `src/Meridian.Storage/DirectLending/Migrations/005_direct_lending_workflows.sql` | 64 | `NOTE` | ❌ | note text, |
