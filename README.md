@@ -1828,6 +1828,9 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── PolygonSecurityMasterIngestProvider.cs
 │   │   │   │   ├── PolygonSymbolSearchProvider.cs
 │   │   │   │   └── TradingParametersBackfillService.cs
+│   │   │   ├── Robinhood
+│   │   │   │   ├── RobinhoodHistoricalDataProvider.cs
+│   │   │   │   └── RobinhoodSymbolSearchProvider.cs
 │   │   │   ├── StockSharp
 │   │   │   │   ├── Converters
 │   │   │   │   │   ├── MessageConverter.cs
@@ -2984,6 +2987,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── PolygonRecordedSessionReplayTests.cs
 │   │   │   │   ├── PolygonSubscriptionTests.cs
 │   │   │   │   ├── ProviderResilienceTests.cs
+│   │   │   │   ├── RobinhoodHistoricalDataProviderTests.cs
+│   │   │   │   ├── RobinhoodSymbolSearchProviderTests.cs
 │   │   │   │   ├── StockSharpConnectorFactoryTests.cs
 │   │   │   │   ├── StockSharpMessageConversionTests.cs
 │   │   │   │   ├── StockSharpSubscriptionTests.cs
@@ -3208,6 +3213,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-473 directories, 2697 files
+474 directories, 2701 files
 ```
 <!-- readme-tree end -->
