@@ -42,7 +42,7 @@ Pick the right validation lane before starting:
 dotnet build Meridian.sln -c Release /p:EnableWindowsTargeting=true
 
 # Gate 2: Tests for touched projects
-dotnet test tests/Meridian.Tests -c Release
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release /p:EnableWindowsTargeting=true
 
 # Gate 3: AI catalog routing (when updating docs/catalogs)
 python3 .claude/skills/meridian-implementation-assurance/scripts/doc_route.py \
