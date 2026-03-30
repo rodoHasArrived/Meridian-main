@@ -20,6 +20,10 @@ namespace Meridian.Infrastructure.Adapters.Fred;
 [ImplementsAdr("ADR-001", "FRED historical provider implementation")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
+[RequiresCredential("FRED_API_KEY",
+    EnvironmentVariables = new[] { "FRED_API_KEY", "FRED__APIKEY" },
+    DisplayName = "API Key",
+    Description = "FRED API key from https://fred.stlouisfed.org/docs/api/api_key.html")]
 public sealed class FredHistoricalDataProvider : BaseHistoricalDataProvider
 {
     private const string ApiBaseUrl = "https://api.stlouisfed.org/fred";

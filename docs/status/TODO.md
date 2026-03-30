@@ -161,8 +161,8 @@ Total items: **206**
 | `src/Meridian.Core/Serialization/MarketDataJsonContext.cs` | 179 | `NOTE` | ❌ | /// NOTE: Alpaca payloads use both "T" and "t" keys in the same object. |
 | `src/Meridian.Execution/BrokerageServiceRegistration.cs` | 139 | `NOTE` | ❌ | // NOTE: We intentionally use GetRequiredKeyedService here rather than |
 | `src/Meridian.FSharp/Domain/SecMasterDomain.fs` | 98 | `NOTE` | ❌ | \| Note |
-| `src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs` | 87 | `NOTE` | ❌ | return !json.Contains("Note") && !json.Contains("Thank you for using Alpha Vantage"); |
-| `src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs` | 241 | `NOTE` | ❌ | return json.Contains("\"Note\"") \|\| json.Contains("Thank you for using Alpha Vantage"); |
+| `src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs` | 91 | `NOTE` | ❌ | return !json.Contains("Note") && !json.Contains("Thank you for using Alpha Vantage"); |
+| `src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs` | 245 | `NOTE` | ❌ | return json.Contains("\"Note\"") \|\| json.Contains("Thank you for using Alpha Vantage"); |
 | `src/Meridian.QuantScript/Api/PortfolioBuilder.cs` | 136 | `TODO` | ❌ | // TODO: Implement full MV quadratic optimisation (e.g. via MathNet.Numerics or custom QP solver) |
 | `src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs` | 28 | `NOTE` | ❌ | string? Note); |
 | `src/Meridian.Storage/DirectLending/Migrations/005_direct_lending_operations.sql` | 54 | `NOTE` | ❌ | note                     text, |

@@ -1811,10 +1811,12 @@ Meridian-main
 │   │   ├── Meridian.McpServer.csproj
 │   │   └── Program.cs
 │   ├── Meridian.ProviderSdk
+│   │   ├── AttributeCredentialResolver.cs
 │   │   ├── CredentialValidator.cs
 │   │   ├── DataSourceAttribute.cs
 │   │   ├── DataSourceRegistry.cs
 │   │   ├── HistoricalDataCapabilities.cs
+│   │   ├── ICredentialContext.cs
 │   │   ├── IDataSource.cs
 │   │   ├── IHistoricalBarWriter.cs
 │   │   ├── IHistoricalDataSource.cs
@@ -1825,7 +1827,8 @@ Meridian-main
 │   │   ├── IProviderModule.cs
 │   │   ├── IRealtimeDataSource.cs
 │   │   ├── Meridian.ProviderSdk.csproj
-│   │   └── ProviderHttpUtilities.cs
+│   │   ├── ProviderHttpUtilities.cs
+│   │   └── RequiresCredentialAttribute.cs
 │   ├── Meridian.QuantScript
 │   │   ├── Api
 │   │   │   ├── BacktestProxy.cs
@@ -2869,6 +2872,7 @@ Meridian-main
 │   │   ├── Performance
 │   │   │   └── AllocationBudgetIntegrationTests.cs
 │   │   ├── ProviderSdk
+│   │   │   ├── AttributeCredentialResolverTests.cs
 │   │   │   ├── CredentialValidatorTests.cs
 │   │   │   ├── DataSourceAttributeTests.cs
 │   │   │   ├── DataSourceRegistryTests.cs

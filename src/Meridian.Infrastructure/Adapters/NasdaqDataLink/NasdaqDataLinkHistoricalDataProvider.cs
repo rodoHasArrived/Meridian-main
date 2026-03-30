@@ -23,6 +23,10 @@ namespace Meridian.Infrastructure.Adapters.NasdaqDataLink;
 [ImplementsAdr("ADR-001", "Nasdaq Data Link historical data provider implementation")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
+[RequiresCredential("NASDAQ_DATA_LINK_API_KEY",
+    EnvironmentVariables = new[] { "NASDAQ_DATA_LINK_API_KEY", "NASDAQ__APIKEY" },
+    DisplayName = "API Key",
+    Description = "Nasdaq Data Link API key from https://data.nasdaq.com/account/profile")]
 public sealed class NasdaqDataLinkHistoricalDataProvider : BaseHistoricalDataProvider
 {
     private const string ApiBaseUrl = "https://data.nasdaq.com/api/v3";
