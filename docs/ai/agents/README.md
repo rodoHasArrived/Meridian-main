@@ -255,6 +255,7 @@ provider docs, developer guides, `CLAUDE.md`, and the `ai-known-errors.md` regis
 | Code cleanup / anti-pattern fix | `cleanup-agent.md` | Corresponding Claude Code cleanup agent |
 | Bug diagnosis & fix | `bug-fix-agent.md` | *(Copilot-only)* |
 | Performance profiling & optimisation | `performance-agent.md` | *(Copilot-only)* |
+| Direct lending domain (IO, grace period, rate bounds, prepayment) | *(use bug-fix-agent or code-review-agent)* | *(use meridian-code-review skill)* |
 
 ---
 

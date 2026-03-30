@@ -168,6 +168,16 @@ Available resource:
 
 - `doc-health-summary` — live doc-health snapshot
 
+### `meridian-implementation-assurance` (second entry — direct lending notes)
+
+> **Note:** The Direct Lending module (`src/Meridian.FSharp/Domain/DirectLending.fs`,
+> `src/Meridian.FSharp.DirectLending.Aggregates/`) implements interest-only periods, grace
+> periods, effective rate floor/cap, and prepayment penalties. When reviewing or extending
+> this domain, the `meridian-code-review` and `meridian-implementation-assurance` skills
+> are the primary tools. Key domain functions: `isInterestOnlyPeriod`,
+> `isWithinGracePeriod`, `applyRateBounds`, `estimatePrepaymentPenalty`.
+> Tests live in `tests/Meridian.FSharp.Tests/DirectLendingInteropTests.fs`.
+
 ---
 
 ## Validation

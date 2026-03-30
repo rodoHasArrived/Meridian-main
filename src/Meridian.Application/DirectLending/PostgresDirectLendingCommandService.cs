@@ -316,7 +316,7 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
             return DirectLendingCommandResult<LoanServicingStateDto>.Failure(DirectLendingErrorCode.NotFound, $"Loan '{loanId}' was not found.");
         }
 
-        var decision = DirectLendingAggregateInterop.ApplyMixedPayment(stored.Servicing, request);
+        var decision = DirectLendingAggregateInterop.ApplyMixedPayment(stored.Servicing, stored.Contract.CurrentTerms, request);
         var servicing = decision.Servicing;
         var resolution = decision.Resolution;
         var cashTransactionId = decision.CashTransactionId;
