@@ -115,6 +115,41 @@ public static class LedgerAccounts
     }
 
     /// <summary>
+    /// Returns the asset account representing dividends declared but not yet received for
+    /// <paramref name="symbol"/> (ex-date passed; pay-date still pending).
+    /// Post: Dr DividendReceivable / Cr DividendIncome on declaration.
+    ///        Dr Cash / Cr DividendReceivable when payment arrives.
+    /// The symbol is normalized to upper-case.
+    /// </summary>
+    public static LedgerAccount DividendReceivable(string symbol, string? financialAccountId = null)
+    {
+        var normalizedSymbol = NormalizeSymbol(symbol);
+        return new("Dividend Receivable", LedgerAccountType.Asset, normalizedSymbol, NormalizeOptionalAccountId(financialAccountId));
+    }
+
+    /// <summary>
+    /// Returns the asset account representing bond or fund coupon interest accrued but not yet
+    /// received for <paramref name="symbol"/>.
+    /// The symbol is normalized to upper-case.
+    /// </summary>
+    public static LedgerAccount AccruedInterestReceivable(string symbol, string? financialAccountId = null)
+    {
+        var normalizedSymbol = NormalizeSymbol(symbol);
+        return new("Accrued Interest Receivable", LedgerAccountType.Asset, normalizedSymbol, NormalizeOptionalAccountId(financialAccountId));
+    }
+
+    /// <summary>
+    /// Returns the revenue account for non-dividend corporate action distributions
+    /// (spin-off proceeds, rights issue income, merger cash, etc.) for <paramref name="symbol"/>.
+    /// The symbol is normalized to upper-case.
+    /// </summary>
+    public static LedgerAccount CorpActionDistribution(string symbol, string? financialAccountId = null)
+    {
+        var normalizedSymbol = NormalizeSymbol(symbol);
+        return new("Corporate Action Distribution", LedgerAccountType.Revenue, normalizedSymbol, NormalizeOptionalAccountId(financialAccountId));
+    }
+
+    /// <summary>
     /// Returns the liability account representing the obligation to return borrowed shares for
     /// a short position in <paramref name="symbol"/>.
     /// Each symbol has its own short payable account. The symbol is normalized to upper-case.

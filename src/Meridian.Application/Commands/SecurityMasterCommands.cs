@@ -125,7 +125,7 @@ internal sealed class SecurityMasterCommands : ICliCommand
                 Console.WriteLine($"  Progress: {i + 1}/{requests.Count} ({imported} imported, {failed} failed, {skipped} skipped)");
         }
 
-        PrintSummary(imported, skipped, failed, errors);
+        PrintSummary(imported, skipped, failed, 0, errors);
         _log.Information("Polygon ingest: {Imported} imported, {Skipped} skipped, {Failed} failed",
             imported, skipped, failed);
 
@@ -180,7 +180,7 @@ internal sealed class SecurityMasterCommands : ICliCommand
             .ConfigureAwait(false);
 
         Console.WriteLine();
-        PrintSummary(result.Imported, result.Skipped, result.Failed, result.Errors);
+        PrintSummary(result.Imported, result.Skipped, result.Failed, result.ConflictsDetected, result.Errors);
         _log.Information(
             "Security Master ingest completed: {Imported} imported, {Skipped} skipped, {Failed} failed",
             result.Imported, result.Skipped, result.Failed);
@@ -188,13 +188,14 @@ internal sealed class SecurityMasterCommands : ICliCommand
         return result.Failed == 0 ? CliResult.Ok() : CliResult.Fail(ErrorCode.ValidationFailed);
     }
 
-    private static void PrintSummary(int imported, int skipped, int failed, IReadOnlyList<string> errors)
+    private static void PrintSummary(int imported, int skipped, int failed, int conflictsDetected, IReadOnlyList<string> errors)
     {
         Console.WriteLine();
         Console.WriteLine("Import complete:");
-        Console.WriteLine($"  Imported : {imported}");
-        Console.WriteLine($"  Skipped  : {skipped}");
-        Console.WriteLine($"  Failed   : {failed}");
+        Console.WriteLine($"  Imported  : {imported}");
+        Console.WriteLine($"  Skipped   : {skipped}");
+        Console.WriteLine($"  Failed    : {failed}");
+        Console.WriteLine($"  Conflicts : {conflictsDetected}");
 
         if (errors.Count > 0)
         {

@@ -255,6 +255,75 @@ public sealed class LedgerIntegrationTests
     }
 
     [Fact]
+    public void GetJournalEntries_WithAccountTypeFilter_ReturnsOnlyEntriesTouchingThatType()
+    {
+        var ledger = new Meridian.Ledger.Ledger();
+        var timestamp = DateTimeOffset.UtcNow;
+        var cash = new LedgerAccount("Cash", LedgerAccountType.Asset);
+        var revenue = new LedgerAccount("Revenue", LedgerAccountType.Revenue);
+        var expense = new LedgerAccount("Commission", LedgerAccountType.Expense);
+
+        // Entry 1: Asset + Revenue
+        ledger.PostLines(timestamp, "sale", new[]
+        {
+            (cash, 100m, 0m),
+            (revenue, 0m, 100m),
+        });
+
+        // Entry 2: Expense + Asset
+        ledger.PostLines(timestamp, "commission", new[]
+        {
+            (expense, 5m, 0m),
+            (cash, 0m, 5m),
+        });
+
+        // Filter to Revenue-touching entries only
+        var revenueEntries = ledger.GetJournalEntries(new LedgerQuery(AccountType: LedgerAccountType.Revenue));
+        revenueEntries.Should().HaveCount(1);
+        revenueEntries[0].Description.Should().Be("sale");
+
+        // Filter to Expense-touching entries only
+        var expenseEntries = ledger.GetJournalEntries(new LedgerQuery(AccountType: LedgerAccountType.Expense));
+        expenseEntries.Should().HaveCount(1);
+        expenseEntries[0].Description.Should().Be("commission");
+
+        // No filter — both returned
+        var all = ledger.GetJournalEntries(new LedgerQuery());
+        all.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public void LedgerAccounts_DividendReceivable_IsNormalizedAndScopedPerSymbol()
+    {
+        var aapl = LedgerAccounts.DividendReceivable("aapl");
+        var msft = LedgerAccounts.DividendReceivable("MSFT");
+        var aaplScoped = LedgerAccounts.DividendReceivable("aapl", "broker-1");
+
+        aapl.Symbol.Should().Be("AAPL");
+        aapl.AccountType.Should().Be(LedgerAccountType.Asset);
+        msft.Symbol.Should().Be("MSFT");
+        aapl.Should().NotBe(msft);
+        aaplScoped.FinancialAccountId.Should().Be("broker-1");
+        aapl.Should().NotBe(aaplScoped);
+    }
+
+    [Fact]
+    public void LedgerAccounts_AccruedInterestReceivable_IsAssetAccount()
+    {
+        var account = LedgerAccounts.AccruedInterestReceivable("USTBILL");
+        account.AccountType.Should().Be(LedgerAccountType.Asset);
+        account.Symbol.Should().Be("USTBILL");
+    }
+
+    [Fact]
+    public void LedgerAccounts_CorpActionDistribution_IsRevenueAccount()
+    {
+        var account = LedgerAccounts.CorpActionDistribution("AAPL");
+        account.AccountType.Should().Be(LedgerAccountType.Revenue);
+        account.Symbol.Should().Be("AAPL");
+    }
+
+    [Fact]
     public void GetJournalEntries_CanFilterByProjectSecurityAndLedgerViewMetadata()
     {
         var ledger = new Meridian.Ledger.Ledger();

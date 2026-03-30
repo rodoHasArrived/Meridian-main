@@ -12,6 +12,7 @@ public sealed record SecurityMasterImportResult(
     int Imported,
     int Skipped,
     int Failed,
+    int ConflictsDetected,
     IReadOnlyList<string> Errors);
 
 /// <summary>
@@ -51,6 +52,7 @@ public sealed class SecurityMasterImportService : ISecurityMasterImportService
 {
     private readonly ISecurityMasterService _securityMasterService;
     private readonly SecurityMasterCsvParser _csvParser;
+    private readonly ISecurityMasterConflictService? _conflictService;
     private readonly ILogger<SecurityMasterImportService> _logger;
 
     private const int ProgressReportInterval = 10;
@@ -59,10 +61,12 @@ public sealed class SecurityMasterImportService : ISecurityMasterImportService
     public SecurityMasterImportService(
         ISecurityMasterService securityMasterService,
         SecurityMasterCsvParser csvParser,
-        ILogger<SecurityMasterImportService> logger)
+        ILogger<SecurityMasterImportService> logger,
+        ISecurityMasterConflictService? conflictService = null)
     {
         _securityMasterService = securityMasterService;
         _csvParser = csvParser;
+        _conflictService = conflictService;
         _logger = logger;
     }
 
@@ -94,14 +98,22 @@ public sealed class SecurityMasterImportService : ISecurityMasterImportService
             else
             {
                 errors = new List<string> { $"Unsupported file extension: {fileExtension}" };
-                return new SecurityMasterImportResult(0, 0, 0, errors);
+                return new SecurityMasterImportResult(0, 0, 0, 0, errors);
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to parse import file");
             errors = new List<string> { $"Parse error: {ex.Message}" };
-            return new SecurityMasterImportResult(0, 0, 0, errors);
+            return new SecurityMasterImportResult(0, 0, 0, 0, errors);
+        }
+
+        // Snapshot open conflict count before import so we can report the delta.
+        int conflictsBefore = 0;
+        if (_conflictService is not null)
+        {
+            var openBefore = await _conflictService.GetOpenConflictsAsync(ct).ConfigureAwait(false);
+            conflictsBefore = openBefore.Count;
         }
 
         int imported = 0;
@@ -147,14 +159,22 @@ public sealed class SecurityMasterImportService : ISecurityMasterImportService
             }
         }
 
+        int conflictsDetected = 0;
+        if (_conflictService is not null)
+        {
+            var openAfter = await _conflictService.GetOpenConflictsAsync(ct).ConfigureAwait(false);
+            conflictsDetected = Math.Max(0, openAfter.Count - conflictsBefore);
+        }
+
         _logger.LogInformation(
-            "Imported {Imported} securities from {Format} ({Failed} failed, {Skipped} skipped)",
+            "Imported {Imported} securities from {Format} ({Failed} failed, {Skipped} skipped, {Conflicts} new conflicts)",
             imported,
             fileExtension,
             failed,
-            skipped);
+            skipped,
+            conflictsDetected);
 
-        return new SecurityMasterImportResult(imported, skipped, failed, errors);
+        return new SecurityMasterImportResult(imported, skipped, failed, conflictsDetected, errors);
     }
 }
 

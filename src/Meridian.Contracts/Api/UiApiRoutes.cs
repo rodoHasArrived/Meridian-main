@@ -306,6 +306,7 @@ public static class UiApiRoutes
     public const string SecurityMasterConflicts = "/api/security-master/conflicts";
     public const string SecurityMasterConflictResolve = "/api/security-master/conflicts/{conflictId:guid}/resolve";
     public const string SecurityMasterImport = "/api/security-master/import";
+    public const string SecurityMasterIngestStatus = "/api/security-master/ingest/status";
 
     // Messaging endpoints
     public const string MessagingConfig = "/api/messaging/config";
