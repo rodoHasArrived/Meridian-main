@@ -1643,6 +1643,7 @@ Meridian-main
 │   │   │   │   ├── PolygonCorporateActionFetcher.cs
 │   │   │   │   ├── PolygonHistoricalDataProvider.cs
 │   │   │   │   ├── PolygonMarketDataClient.cs
+│   │   │   │   ├── PolygonSecurityMasterIngestProvider.cs
 │   │   │   │   ├── PolygonSymbolSearchProvider.cs
 │   │   │   │   └── TradingParametersBackfillService.cs
 │   │   │   ├── StockSharp
