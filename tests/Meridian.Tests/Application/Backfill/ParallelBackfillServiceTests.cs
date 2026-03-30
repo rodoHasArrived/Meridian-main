@@ -593,6 +593,153 @@ public sealed class ParallelBackfillServiceTests : IAsyncLifetime
     }
 
     // =========================================================================
+    // Checkpoint / resume tests
+    // =========================================================================
+
+    [Fact]
+    public async Task RunAsync_WithCheckpointStore_WritesPerSymbolCheckpoint()
+    {
+        var testRoot = Path.Combine(Path.GetTempPath(), $"mdc_cp_{Guid.NewGuid():N}");
+        try
+        {
+            // Arrange
+            var provider = new ControllableProvider("test", (symbol, ct) =>
+                Task.FromResult<IReadOnlyList<HistoricalBar>>(new[] { MakeBar(symbol) }));
+
+            var checkpointStore = new BackfillStatusStore(testRoot);
+            var svc = new HistoricalBackfillService(new[] { provider }, checkpointStore: checkpointStore);
+            var request = new AppBackfillRequest("test", new[] { "SPY", "AAPL" },
+                From: new DateOnly(2024, 1, 1), To: new DateOnly(2024, 1, 2));
+
+            // Act
+            await svc.RunAsync(request, _pipeline);
+
+            // Assert — both symbols should have a checkpoint for the bar's date
+            var checkpoints = checkpointStore.TryReadSymbolCheckpoints();
+            checkpoints.Should().NotBeNull();
+            checkpoints!.Should().ContainKey("SPY");
+            checkpoints.Should().ContainKey("AAPL");
+        }
+        finally
+        {
+            if (Directory.Exists(testRoot))
+                Directory.Delete(testRoot, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task RunAsync_ResumeFromCheckpoint_SkipsFullyCoveredSymbol()
+    {
+        var testRoot = Path.Combine(Path.GetTempPath(), $"mdc_cp_{Guid.NewGuid():N}");
+        try
+        {
+            var fetchedSymbols = new ConcurrentBag<string>();
+
+            var provider = new ControllableProvider("test", (symbol, ct) =>
+            {
+                fetchedSymbols.Add(symbol);
+                return Task.FromResult<IReadOnlyList<HistoricalBar>>(new[] { MakeBar(symbol) });
+            });
+
+            var checkpointStore = new BackfillStatusStore(testRoot);
+
+            // Pre-populate checkpoint: SPY is already fully covered through the requested To date
+            var toDate = new DateOnly(2024, 1, 31);
+            await checkpointStore.WriteSymbolCheckpointAsync("SPY", toDate);
+
+            var svc = new HistoricalBackfillService(new[] { provider }, checkpointStore: checkpointStore);
+            var request = new AppBackfillRequest("test", new[] { "SPY", "AAPL" },
+                From: new DateOnly(2024, 1, 1), To: toDate,
+                ResumeFromCheckpoint: true);
+
+            await svc.RunAsync(request, _pipeline);
+
+            // SPY should be skipped; AAPL should be fetched
+            fetchedSymbols.Should().NotContain("SPY");
+            fetchedSymbols.Should().Contain("AAPL");
+        }
+        finally
+        {
+            if (Directory.Exists(testRoot))
+                Directory.Delete(testRoot, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task RunAsync_ResumeFromCheckpoint_AdvancesFromDateForPartialSymbol()
+    {
+        var testRoot = Path.Combine(Path.GetTempPath(), $"mdc_cp_{Guid.NewGuid():N}");
+        try
+        {
+            DateOnly? capturedFrom = null;
+
+            var provider = new ControllableProvider("test", (symbol, from, to, ct) =>
+            {
+                capturedFrom = from;
+                return Task.FromResult<IReadOnlyList<HistoricalBar>>(new[] { MakeBar(symbol) });
+            });
+
+            var checkpointStore = new BackfillStatusStore(testRoot);
+
+            // SPY has checkpoint through Jan 15 but request covers until Jan 31 — partial coverage
+            await checkpointStore.WriteSymbolCheckpointAsync("SPY", new DateOnly(2024, 1, 15));
+
+            var svc = new HistoricalBackfillService(new[] { provider }, checkpointStore: checkpointStore);
+            var request = new AppBackfillRequest("test", new[] { "SPY" },
+                From: new DateOnly(2024, 1, 1), To: new DateOnly(2024, 1, 31),
+                ResumeFromCheckpoint: true);
+
+            await svc.RunAsync(request, _pipeline);
+
+            // From should be advanced to Jan 16 (day after last checkpoint)
+            capturedFrom.Should().Be(new DateOnly(2024, 1, 16));
+        }
+        finally
+        {
+            if (Directory.Exists(testRoot))
+                Directory.Delete(testRoot, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task RunAsync_WithoutResumeFlag_ClearsExistingCheckpoints()
+    {
+        var testRoot = Path.Combine(Path.GetTempPath(), $"mdc_cp_{Guid.NewGuid():N}");
+        try
+        {
+            var provider = new ControllableProvider("test", (symbol, ct) =>
+                Task.FromResult<IReadOnlyList<HistoricalBar>>(new[] { MakeBar(symbol) }));
+
+            var checkpointStore = new BackfillStatusStore(testRoot);
+
+            // Pre-populate checkpoints from a previous run
+            await checkpointStore.WriteSymbolCheckpointAsync("SPY", new DateOnly(2024, 1, 15));
+            await checkpointStore.WriteSymbolCheckpointAsync("AAPL", new DateOnly(2024, 1, 10));
+
+            var svc = new HistoricalBackfillService(new[] { provider }, checkpointStore: checkpointStore);
+            // Fresh run — ResumeFromCheckpoint defaults to false
+            var request = new AppBackfillRequest("test", new[] { "SPY" },
+                From: new DateOnly(2024, 1, 1), To: new DateOnly(2024, 1, 31));
+
+            await svc.RunAsync(request, _pipeline);
+
+            // Old checkpoints should have been cleared at start of fresh run;
+            // new checkpoint for SPY should exist after completion
+            var checkpoints = checkpointStore.TryReadSymbolCheckpoints();
+            checkpoints.Should().NotBeNull();
+            // AAPL should be gone (cleared by the fresh run)
+            checkpoints!.Should().NotContainKey("AAPL");
+            // SPY should have a new checkpoint from this run's bar
+            checkpoints.Should().ContainKey("SPY");
+        }
+        finally
+        {
+            if (Directory.Exists(testRoot))
+                Directory.Delete(testRoot, recursive: true);
+        }
+    }
+
+    // =========================================================================
     // Helpers
     // =========================================================================
 
@@ -606,19 +753,35 @@ public sealed class ParallelBackfillServiceTests : IAsyncLifetime
     /// <summary>
     /// Minimal <see cref="IHistoricalDataProvider"/> whose <see cref="GetDailyBarsAsync"/>
     /// delegates to a caller-supplied function, giving tests full control over timing and failures.
+    /// Supports two delegate signatures: with or without explicit <c>from</c>/<c>to</c> parameters.
     /// </summary>
-    private sealed class ControllableProvider(
-        string name,
-        Func<string, CancellationToken, Task<IReadOnlyList<HistoricalBar>>> fetch)
-        : IHistoricalDataProvider
+    private sealed class ControllableProvider : IHistoricalDataProvider
     {
-        public string Name { get; } = name;
-        public string DisplayName { get; } = name;
+        private readonly Func<string, DateOnly?, DateOnly?, CancellationToken, Task<IReadOnlyList<HistoricalBar>>> _fetch;
+
+        public ControllableProvider(
+            string name,
+            Func<string, CancellationToken, Task<IReadOnlyList<HistoricalBar>>> fetch)
+        {
+            Name = DisplayName = name;
+            _fetch = (s, _, _, ct) => fetch(s, ct);
+        }
+
+        public ControllableProvider(
+            string name,
+            Func<string, DateOnly?, DateOnly?, CancellationToken, Task<IReadOnlyList<HistoricalBar>>> fetch)
+        {
+            Name = DisplayName = name;
+            _fetch = fetch;
+        }
+
+        public string Name { get; }
+        public string DisplayName { get; }
         public string Description => string.Empty;
 
         public Task<IReadOnlyList<HistoricalBar>> GetDailyBarsAsync(
             string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default)
-            => fetch(symbol, ct);
+            => _fetch(symbol, from, to, ct);
     }
 
     /// <summary>No-op storage sink that discards all events without I/O.</summary>

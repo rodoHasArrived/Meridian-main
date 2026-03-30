@@ -22,8 +22,8 @@ module DirectLendingAggregateInterop =
     let ApplyPrincipalPayment (servicing: LoanServicingStateDto) (request: ApplyPrincipalPaymentRequest) =
         ServicingAggregate.applyPrincipalPayment servicing request.Amount request.EffectiveDate
 
-    let ApplyMixedPayment (servicing: LoanServicingStateDto) (request: ApplyMixedPaymentRequest) =
-        ServicingAggregate.applyMixedPayment servicing request.Amount request.Breakdown request.EffectiveDate
+    let ApplyMixedPayment (servicing: LoanServicingStateDto) (terms: DirectLendingTermsDto) (request: ApplyMixedPaymentRequest) =
+        ServicingAggregate.applyMixedPayment servicing terms request.Amount request.Breakdown request.EffectiveDate
 
     let AssessFee (servicing: LoanServicingStateDto) (request: AssessFeeRequest) =
         ServicingAggregate.assessFee servicing request.Amount request.EffectiveDate

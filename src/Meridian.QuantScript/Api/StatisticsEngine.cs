@@ -9,7 +9,8 @@ internal static class StatisticsEngine
 
     internal static double Sharpe(IReadOnlyList<double> dailyReturns, double annualRfr)
     {
-        if (dailyReturns.Count == 0) return 0;
+        if (dailyReturns.Count == 0)
+            return 0;
         var dailyRfr = annualRfr / TradingDaysPerYear;
         var excess = dailyReturns.Select(r => r - dailyRfr).ToList();
         var mean = excess.Average();
@@ -19,25 +20,29 @@ internal static class StatisticsEngine
 
     internal static double Sortino(IReadOnlyList<double> dailyReturns, double annualRfr)
     {
-        if (dailyReturns.Count == 0) return 0;
+        if (dailyReturns.Count == 0)
+            return 0;
         var dailyRfr = annualRfr / TradingDaysPerYear;
         var excess = dailyReturns.Select(r => r - dailyRfr).ToList();
         var mean = excess.Average();
         var downside = excess.Where(r => r < 0).ToList();
-        if (downside.Count == 0) return double.PositiveInfinity;
+        if (downside.Count == 0)
+            return double.PositiveInfinity;
         var downsideDev = Math.Sqrt(downside.Select(r => r * r).Average());
         return downsideDev == 0 ? 0 : mean * Math.Sqrt(TradingDaysPerYear) / downsideDev;
     }
 
     internal static double AnnualizedVolatility(IReadOnlyList<double> dailyReturns)
     {
-        if (dailyReturns.Count < 2) return 0;
+        if (dailyReturns.Count < 2)
+            return 0;
         return StdDev(dailyReturns) * Math.Sqrt(TradingDaysPerYear);
     }
 
     internal static double MaxDrawdown(IReadOnlyList<double> dailyReturns)
     {
-        if (dailyReturns.Count == 0) return 0;
+        if (dailyReturns.Count == 0)
+            return 0;
         var dd = DrawdownSeries(dailyReturns);
         return dd.Count == 0 ? 0 : dd.Min();
     }
@@ -50,7 +55,8 @@ internal static class StatisticsEngine
         for (var i = 0; i < dailyReturns.Count; i++)
         {
             cumulative *= (1.0 + dailyReturns[i]);
-            if (cumulative > peak) peak = cumulative;
+            if (cumulative > peak)
+                peak = cumulative;
             result[i] = peak == 0 ? 0 : (cumulative - peak) / peak;
         }
         return result;
@@ -58,15 +64,18 @@ internal static class StatisticsEngine
 
     internal static double Beta(IReadOnlyList<double> returns, IReadOnlyList<double> benchmarkReturns)
     {
-        if (returns.Count < 2) return 0;
+        if (returns.Count < 2)
+            return 0;
         var varBenchmark = Variance(benchmarkReturns);
-        if (varBenchmark == 0) return 0;
+        if (varBenchmark == 0)
+            return 0;
         return Covariance(returns, benchmarkReturns) / varBenchmark;
     }
 
     internal static double Alpha(IReadOnlyList<double> returns, IReadOnlyList<double> benchmarkReturns, double annualRfr)
     {
-        if (returns.Count == 0) return 0;
+        if (returns.Count == 0)
+            return 0;
         var dailyRfr = annualRfr / TradingDaysPerYear;
         var beta = Beta(returns, benchmarkReturns);
         var meanReturn = returns.Average() - dailyRfr;
@@ -76,19 +85,23 @@ internal static class StatisticsEngine
 
     internal static double Correlation(IReadOnlyList<double> a, IReadOnlyList<double> b)
     {
-        if (a.Count < 2) return 0;
+        if (a.Count < 2)
+            return 0;
         var stdA = StdDev(a);
         var stdB = StdDev(b);
-        if (stdA == 0 || stdB == 0) return 0;
+        if (stdA == 0 || stdB == 0)
+            return 0;
         return Covariance(a, b) / (stdA * stdB);
     }
 
     internal static double Skewness(IReadOnlyList<double> values)
     {
-        if (values.Count < 3) return 0;
+        if (values.Count < 3)
+            return 0;
         var mean = values.Average();
         var std = StdDev(values);
-        if (std == 0) return 0;
+        if (std == 0)
+            return 0;
         var n = values.Count;
         var sum = values.Sum(v => Math.Pow((v - mean) / std, 3));
         return (double)n / ((n - 1) * (n - 2)) * sum;
@@ -96,10 +109,12 @@ internal static class StatisticsEngine
 
     internal static double Kurtosis(IReadOnlyList<double> values)
     {
-        if (values.Count < 4) return 0;
+        if (values.Count < 4)
+            return 0;
         var mean = values.Average();
         var std = StdDev(values);
-        if (std == 0) return 0;
+        if (std == 0)
+            return 0;
         var n = values.Count;
         var sum = values.Sum(v => Math.Pow((v - mean) / std, 4));
         var kurtosis = (double)n * (n + 1) / ((n - 1) * (n - 2) * (n - 3)) * sum;
@@ -112,7 +127,8 @@ internal static class StatisticsEngine
         var result = new double[values.Count];
         for (var i = 0; i < values.Count; i++)
         {
-            if (i < window - 1) { result[i] = double.NaN; continue; }
+            if (i < window - 1)
+            { result[i] = double.NaN; continue; }
             result[i] = values.Skip(i - window + 1).Take(window).Average();
         }
         return result;
@@ -123,7 +139,8 @@ internal static class StatisticsEngine
         var result = new double[values.Count];
         for (var i = 0; i < values.Count; i++)
         {
-            if (i < window - 1) { result[i] = double.NaN; continue; }
+            if (i < window - 1)
+            { result[i] = double.NaN; continue; }
             result[i] = StdDev(values.Skip(i - window + 1).Take(window).ToList());
         }
         return result;
@@ -134,8 +151,8 @@ internal static class StatisticsEngine
         var n = returnStreams.Count;
         var matrix = new double[n, n];
         for (var i = 0; i < n; i++)
-        for (var j = 0; j < n; j++)
-            matrix[i, j] = i == j ? 1.0 : Correlation(returnStreams[i], returnStreams[j]);
+            for (var j = 0; j < n; j++)
+                matrix[i, j] = i == j ? 1.0 : Correlation(returnStreams[i], returnStreams[j]);
         return matrix;
     }
 
@@ -144,8 +161,8 @@ internal static class StatisticsEngine
         var n = returnStreams.Count;
         var matrix = new double[n, n];
         for (var i = 0; i < n; i++)
-        for (var j = 0; j < n; j++)
-            matrix[i, j] = Covariance(returnStreams[i], returnStreams[j]);
+            for (var j = 0; j < n; j++)
+                matrix[i, j] = Covariance(returnStreams[i], returnStreams[j]);
         return matrix;
     }
 
@@ -161,21 +178,24 @@ internal static class StatisticsEngine
     private static double StdDev(IEnumerable<double> values)
     {
         var list = values.ToList();
-        if (list.Count < 2) return 0;
+        if (list.Count < 2)
+            return 0;
         var mean = list.Average();
         return Math.Sqrt(list.Sum(v => (v - mean) * (v - mean)) / (list.Count - 1));
     }
 
     private static double Variance(IReadOnlyList<double> values)
     {
-        if (values.Count < 2) return 0;
+        if (values.Count < 2)
+            return 0;
         var mean = values.Average();
         return values.Sum(v => (v - mean) * (v - mean)) / (values.Count - 1);
     }
 
     private static double Covariance(IReadOnlyList<double> a, IReadOnlyList<double> b)
     {
-        if (a.Count < 2 || b.Count < 2) return 0;
+        if (a.Count < 2 || b.Count < 2)
+            return 0;
         var n = Math.Min(a.Count, b.Count);
         var meanA = a.Take(n).Average();
         var meanB = b.Take(n).Average();

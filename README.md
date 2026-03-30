@@ -1657,8 +1657,13 @@ Use these documents together when planning or implementing new work:
 │   │   ├── OrderManagementSystem.cs
 │   │   ├── PaperExecutionContext.cs
 │   │   ├── PaperTradingGateway.cs
+│   │   ├── Serialization
+│   │   │   └── ExecutionJsonContext.cs
 │   │   └── Services
+│   │       ├── IPaperSessionStore.cs
+│   │       ├── JsonlFilePaperSessionStore.cs
 │   │       ├── OrderLifecycleManager.cs
+│   │       ├── PaperSessionOptions.cs
 │   │       ├── PaperSessionPersistenceService.cs
 │   │       └── PaperTradingPortfolio.cs
 │   ├── Meridian.Execution.Sdk
@@ -1820,6 +1825,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── PolygonCorporateActionFetcher.cs
 │   │   │   │   ├── PolygonHistoricalDataProvider.cs
 │   │   │   │   ├── PolygonMarketDataClient.cs
+│   │   │   │   ├── PolygonSecurityMasterIngestProvider.cs
 │   │   │   │   ├── PolygonSymbolSearchProvider.cs
 │   │   │   │   └── TradingParametersBackfillService.cs
 │   │   │   ├── StockSharp
@@ -2460,6 +2466,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── PaneLayout.cs
 │       │   ├── ProviderHealthModels.cs
 │       │   ├── QuantScriptModels.cs
+│       │   ├── SettingsModels.cs
 │       │   ├── StorageDisplayModels.cs
 │       │   ├── SymbolsModels.cs
 │       │   ├── WorkspaceDefinition.cs
@@ -2578,6 +2585,8 @@ Use these documents together when planning or implementing new work:
 │           ├── AnalysisExportPage.xaml.cs
 │           ├── AnalysisExportWizardPage.xaml
 │           ├── AnalysisExportWizardPage.xaml.cs
+│           ├── ApiKeyDialog.xaml
+│           ├── ApiKeyDialog.xaml.cs
 │           ├── ArchiveHealthPage.xaml
 │           ├── ArchiveHealthPage.xaml.cs
 │           ├── BackfillPage.xaml
@@ -2614,6 +2623,8 @@ Use these documents together when planning or implementing new work:
 │           ├── DiagnosticsPage.xaml.cs
 │           ├── DirectLendingPage.xaml
 │           ├── DirectLendingPage.xaml.cs
+│           ├── EditScheduledJobDialog.xaml
+│           ├── EditScheduledJobDialog.xaml.cs
 │           ├── EventReplayPage.xaml
 │           ├── EventReplayPage.xaml.cs
 │           ├── ExportPresetsPage.xaml
@@ -2672,6 +2683,8 @@ Use these documents together when planning or implementing new work:
 │           ├── RunMatPage.xaml.cs
 │           ├── RunPortfolioPage.xaml
 │           ├── RunPortfolioPage.xaml.cs
+│           ├── SaveWatchlistDialog.xaml
+│           ├── SaveWatchlistDialog.xaml.cs
 │           ├── ScheduleManagerPage.xaml
 │           ├── ScheduleManagerPage.xaml.cs
 │           ├── SecurityMasterPage.xaml
@@ -2991,6 +3004,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── AuthEndpointTests.cs
 │   │   │   │   ├── BackfillEndpointTests.cs
 │   │   │   │   ├── CatalogEndpointTests.cs
+│   │   │   │   ├── CheckpointEndpointTests.cs
 │   │   │   │   ├── ConfigEndpointTests.cs
 │   │   │   │   ├── EndpointIntegrationTestBase.cs
 │   │   │   │   ├── EndpointTestCollection.cs
@@ -3060,6 +3074,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── MemoryMappedJsonlReaderTests.cs
 │   │   │   ├── MetadataTagServiceTests.cs
 │   │   │   ├── ParquetConversionServiceTests.cs
+│   │   │   ├── ParquetStorageSinkTests.cs
 │   │   │   ├── PortableDataPackagerTests.cs
 │   │   │   ├── QuotaEnforcementServiceTests.cs
 │   │   │   ├── StorageCatalogServiceTests.cs
@@ -3193,6 +3208,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-472 directories, 2683 files
+473 directories, 2697 files
 ```
 <!-- readme-tree end -->

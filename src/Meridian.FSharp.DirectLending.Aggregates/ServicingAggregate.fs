@@ -30,7 +30,7 @@ module internal ServicingAggregate =
 
         updated
 
-    let private autoAllocate (servicing: LoanServicingStateDto) amount =
+    let private autoAllocate (servicing: LoanServicingStateDto) (terms: DirectLendingTermsDto) amount (effectiveDate: DateOnly) =
         let mutable remaining = amount
         let take available =
             if remaining <= 0m || available <= 0m then
@@ -44,7 +44,12 @@ module internal ServicingAggregate =
         let toCommitmentFee = take servicing.Balances.CommitmentFeeAccruedUnpaid
         let toFees = take servicing.Balances.FeesAccruedUnpaid
         let toPenalty = take servicing.Balances.PenaltyAccruedUnpaid
-        let toPrincipal = take servicing.Balances.PrincipalOutstanding
+        // During the interest-only period, scheduled principal is 0 in auto-allocation.
+        let toPrincipal =
+            if DirectLendingInterop.IsInterestOnlyPeriod(terms.OriginationDate, terms.InterestOnlyMonths, effectiveDate) then
+                0m
+            else
+                take servicing.Balances.PrincipalOutstanding
         PaymentBreakdownDto(toInterest, toCommitmentFee, toFees, toPenalty, toPrincipal)
 
     let private buildResolution (servicing: LoanServicingStateDto) amount (requestedBreakdown: PaymentBreakdownDto) =
@@ -162,10 +167,10 @@ module internal ServicingAggregate =
 
         { Servicing = updated; AppliedAmount = appliedAmount }
 
-    let applyMixedPayment (servicing: LoanServicingStateDto) amount breakdown effectiveDate =
+    let applyMixedPayment (servicing: LoanServicingStateDto) (terms: DirectLendingTermsDto) amount breakdown effectiveDate =
         let resolution =
             match box breakdown with
-            | null -> MixedPaymentResolutionDto(autoAllocate servicing amount, "WaterfallAuto", "waterfall-v1", amount - (autoAllocate servicing amount).TotalAllocated)
+            | null -> MixedPaymentResolutionDto(autoAllocate servicing terms amount effectiveDate, "WaterfallAuto", "waterfall-v1", amount - (autoAllocate servicing terms amount effectiveDate).TotalAllocated)
             | _ -> buildResolution servicing amount breakdown
 
         let updatedBalances =
@@ -286,6 +291,10 @@ module internal ServicingAggregate =
                 match box servicing.CurrentRateReset with
                 | null -> 0m
                 | _ -> servicing.CurrentRateReset.AllInRate
+
+        // Clamp the effective rate within the contractual floor/cap bounds.
+        let annualRate =
+            DirectLendingInterop.ApplyRateBounds(terms.EffectiveRateFloor, terms.EffectiveRateCap, annualRate)
 
         let interestAmount =
             if servicing.Balances.PrincipalOutstanding > 0m then

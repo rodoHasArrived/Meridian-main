@@ -222,8 +222,10 @@ internal static class BacktestMetricsEngine
                     // Only record a completed round-trip if at least some lots were consumed
                     if (remaining < closeQty)
                     {
-                        if (roundTripPnl > 0) { grossWins += roundTripPnl; wins++; }
-                        else if (roundTripPnl < 0) { grossLosses += -roundTripPnl; losses++; }
+                        if (roundTripPnl > 0)
+                        { grossWins += roundTripPnl; wins++; }
+                        else if (roundTripPnl < 0)
+                        { grossLosses += -roundTripPnl; losses++; }
                     }
                 }
             }

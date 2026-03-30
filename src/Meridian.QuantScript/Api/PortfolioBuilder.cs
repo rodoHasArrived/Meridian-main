@@ -113,7 +113,8 @@ public static class PortfolioBuilder
     public static PortfolioResult EqualWeight(params PriceSeries[] series)
     {
         ArgumentNullException.ThrowIfNull(series);
-        if (series.Length == 0) throw new ArgumentException("At least one series is required", nameof(series));
+        if (series.Length == 0)
+            throw new ArgumentException("At least one series is required", nameof(series));
         var w = 1.0 / series.Length;
         var weights = series.ToDictionary(s => s.Symbol, _ => w);
         return new PortfolioResult(weights, series);

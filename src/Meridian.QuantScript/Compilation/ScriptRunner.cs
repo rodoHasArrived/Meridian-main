@@ -1,8 +1,8 @@
-using Microsoft.CodeAnalysis.CSharp.Scripting;
-using Microsoft.CodeAnalysis.Scripting;
+using System.Diagnostics;
 using Meridian.QuantScript.Api;
 using Meridian.QuantScript.Plotting;
-using System.Diagnostics;
+using Microsoft.CodeAnalysis.CSharp.Scripting;
+using Microsoft.CodeAnalysis.Scripting;
 
 namespace Meridian.QuantScript.Compilation;
 

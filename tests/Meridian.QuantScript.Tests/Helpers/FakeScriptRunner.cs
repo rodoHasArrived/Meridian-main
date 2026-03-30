@@ -33,7 +33,8 @@ public sealed class FakeScriptRunner : IScriptRunner
         LastSource = source;
         LastParameters = parameters;
 
-        if (_exception is not null) throw _exception;
+        if (_exception is not null)
+            throw _exception;
 
         return Task.FromResult(_result ?? BuildDefault(source));
     }
