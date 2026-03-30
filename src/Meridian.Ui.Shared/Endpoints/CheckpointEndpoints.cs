@@ -156,7 +156,8 @@ public static class CheckpointEndpoints
                     status.Provider ?? "composite",
                     status.Symbols ?? Array.Empty<string>(),
                     status.From,
-                    status.To ?? DateOnly.FromDateTime(DateTime.Today));
+                    status.To ?? DateOnly.FromDateTime(DateTime.Today),
+                    ResumeFromCheckpoint: true);
 
                 var result = await backfill.RunAsync(request, CancellationToken.None);
 
