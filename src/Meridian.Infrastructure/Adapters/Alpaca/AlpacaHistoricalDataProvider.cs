@@ -23,6 +23,14 @@ namespace Meridian.Infrastructure.Adapters.Alpaca;
 /// </summary>
 [ImplementsAdr("ADR-001", "Alpaca historical data provider implementation")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
+[RequiresCredential("ALPACA_KEY_ID",
+    EnvironmentVariables = new[] { "ALPACA_KEY_ID", "ALPACA__KEYID" },
+    DisplayName = "API Key ID",
+    Description = "Alpaca API key ID from https://app.alpaca.markets/brokerage/papers")]
+[RequiresCredential("ALPACA_SECRET_KEY",
+    EnvironmentVariables = new[] { "ALPACA_SECRET_KEY", "ALPACA__SECRETKEY" },
+    DisplayName = "API Secret Key",
+    Description = "Alpaca API secret key from https://app.alpaca.markets/brokerage/papers")]
 public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
 {
     private const string BaseUrl = "https://data.alpaca.markets/v2/stocks";

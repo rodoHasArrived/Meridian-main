@@ -28,6 +28,10 @@ namespace Meridian.Infrastructure.Adapters.Finnhub;
 [ImplementsAdr("ADR-001", "Finnhub historical data provider implementation")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
+[RequiresCredential("FINNHUB_API_KEY",
+    EnvironmentVariables = new[] { "FINNHUB_API_KEY", "FINNHUB__APIKEY" },
+    DisplayName = "API Key",
+    Description = "Finnhub API key from https://finnhub.io/dashboard")]
 public sealed class FinnhubHistoricalDataProvider : BaseHistoricalDataProvider
 {
     private const string BaseUrl = "https://finnhub.io/api/v1";
