@@ -1323,6 +1323,10 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── EventTraceContext.cs
 │   │   │   ├── OpenTelemetrySetup.cs
 │   │   │   └── TracedEventMetrics.cs
+│   │   ├── Treasury
+│   │   │   ├── IMmfLiquidityService.cs
+│   │   │   ├── IMoneyMarketFundService.cs
+│   │   │   └── InMemoryMoneyMarketFundService.cs
 │   │   └── Wizard
 │   │       ├── Core
 │   │       │   ├── IWizardStep.cs
@@ -1535,6 +1539,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── CollectionSession.cs
 │   │   ├── Store
 │   │   │   └── MarketDataQuery.cs
+│   │   ├── Treasury
+│   │   │   └── MoneyMarketFundDtos.cs
 │   │   └── Workstation
 │   │       ├── ReconciliationDtos.cs
 │   │       ├── SecurityMasterWorkstationDtos.cs
@@ -2399,6 +2405,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── LoginSessionMiddleware.cs
 │   │   │   ├── MaintenanceScheduleEndpoints.cs
 │   │   │   ├── MessagingEndpoints.cs
+│   │   │   ├── MoneyMarketFundEndpoints.cs
 │   │   │   ├── OptionsEndpoints.cs
 │   │   │   ├── PathValidation.cs
 │   │   │   ├── PromotionEndpoints.cs
@@ -3107,6 +3114,11 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── PolygonStubClient.cs
 │   │   │   ├── StubHttpMessageHandler.cs
 │   │   │   └── TestMarketEventPublisher.cs
+│   │   ├── Treasury
+│   │   │   ├── MmfFamilyNormalizationTests.cs
+│   │   │   ├── MmfLiquidityServiceTests.cs
+│   │   │   ├── MmfRebuildTests.cs
+│   │   │   └── MoneyMarketFundServiceTests.cs
 │   │   └── Ui
 │   │       ├── DirectLendingEndpointsTests.cs
 │   │       ├── ExecutionWriteEndpointsTests.cs
@@ -3213,6 +3225,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-474 directories, 2701 files
+477 directories, 2710 files
 ```
 <!-- readme-tree end -->
