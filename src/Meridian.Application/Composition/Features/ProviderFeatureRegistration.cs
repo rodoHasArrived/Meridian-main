@@ -162,14 +162,8 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
             if (!typeof(IMarketDataClient).IsAssignableFrom(source.ImplementationType))
                 continue;
 
-            if (!TryMapToDataSourceKind(source.Id, out var kind))
-            {
-                log.Debug("Skipping attribute-discovered provider {Id}: no matching DataSourceKind", source.Id);
-                continue;
-            }
-
             var implType = source.ImplementationType;
-            registry.RegisterStreamingFactory(kind, () =>
+            registry.RegisterStreamingFactory(source.Id, () =>
             {
                 var instance = sp.GetService(implType) as IMarketDataClient;
                 if (instance != null)
@@ -178,28 +172,12 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
                 return (IMarketDataClient)ActivatorUtilities.CreateInstance(sp, implType);
             });
 
-            log.Information("Auto-registered streaming factory for {Kind} from [DataSource(\"{Id}\")] on {Type}",
-                kind, source.Id, implType.Name);
+            log.Information("Auto-registered streaming factory for \"{Id}\" from [DataSource] on {Type}",
+                source.Id, implType.Name);
         }
 
         log.Information("Attribute-based discovery registered {Count} streaming factories",
             registry.SupportedStreamingSources.Count);
-    }
-
-    private static bool TryMapToDataSourceKind(string id, out DataSourceKind kind)
-    {
-        kind = id.ToLowerInvariant() switch
-        {
-            "ib" or "interactivebrokers" => DataSourceKind.IB,
-            "alpaca" => DataSourceKind.Alpaca,
-            "polygon" => DataSourceKind.Polygon,
-            "stocksharp" => DataSourceKind.StockSharp,
-            "nyse" => DataSourceKind.NYSE,
-            "synthetic" => DataSourceKind.Synthetic,
-            _ => default
-        };
-
-        return id.ToLowerInvariant() is "ib" or "interactivebrokers" or "alpaca" or "polygon" or "stocksharp" or "nyse" or "synthetic";
     }
 
     private static void RegisterBackfillProviders(

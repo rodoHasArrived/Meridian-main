@@ -24,11 +24,11 @@ public sealed class MarketDataClientFactoryTests
         // Arrange
         var registry = CreateRegistryWithFactories();
 
-        // Assert
-        registry.SupportedStreamingSources.Should().Contain(DataSourceKind.IB);
-        registry.SupportedStreamingSources.Should().Contain(DataSourceKind.Alpaca);
-        registry.SupportedStreamingSources.Should().Contain(DataSourceKind.Polygon);
-        registry.SupportedStreamingSources.Should().Contain(DataSourceKind.StockSharp);
+        // Assert — SupportedStreamingSources is now IReadOnlyList<string>
+        registry.SupportedStreamingSources.Should().Contain("ib");
+        registry.SupportedStreamingSources.Should().Contain("alpaca");
+        registry.SupportedStreamingSources.Should().Contain("polygon");
+        registry.SupportedStreamingSources.Should().Contain("stocksharp");
     }
 
     [Fact]

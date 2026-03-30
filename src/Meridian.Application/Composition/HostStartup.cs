@@ -145,7 +145,7 @@ public sealed class HostStartup : IAsyncDisposable
 
     /// <summary>
     /// Creates the streaming market data client based on configuration.
-    /// Delegates to <see cref="ProviderRegistry.CreateStreamingClient"/> which uses
+    /// Delegates to <see cref="ProviderRegistry.CreateStreamingClient(string)"/> which uses
     /// dictionary-based factory lookup instead of switch statements.
     /// </summary>
     /// <param name="config">Application configuration.</param>
