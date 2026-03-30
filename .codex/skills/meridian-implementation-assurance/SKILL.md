@@ -1,6 +1,18 @@
 ---
 name: meridian-implementation-assurance
-description: Implement Meridian changes with built-in correctness checks, performance guardrails, documentation synchronization, and structured self-evaluation. Use when Codex is asked to build or refactor code and must also verify behavior, prevent performance regressions, update existing docs, or add new docs in the correct repository section when none exists.
+description: >
+  Implement Meridian changes with built-in correctness checks, performance guardrails,
+  documentation synchronization, and structured self-evaluation. Use when Codex is asked
+  to build or refactor code and must also verify behavior, prevent performance regressions,
+  update existing docs, or add new docs in the correct repository section when none exists.
+license: See repository LICENSE
+compatibility: >
+  Portable Agent Skill package for Agent Skills-compatible hosts. Requires markdown frontmatter
+  support and optional Python 3 execution for bundled helper scripts.
+metadata:
+  owner: meridian-ai
+  version: "1.0"
+  spec: open-agent-skills-v1
 ---
 
 # Meridian Implementation Assurance
