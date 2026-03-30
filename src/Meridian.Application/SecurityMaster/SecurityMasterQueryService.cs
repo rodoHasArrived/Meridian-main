@@ -57,21 +57,25 @@ public sealed class SecurityMasterQueryService : ISecurityMasterQueryService, Me
             return null;
 
         var common = detail.CommonTerms;
-        decimal? lotSize = common.TryGetProperty("lotSize", out var lotProp) && lotProp.ValueKind != System.Text.Json.JsonValueKind.Null
-            ? lotProp.GetDecimal() : null;
-        decimal? tickSize = common.TryGetProperty("tickSize", out var tickProp) && tickProp.ValueKind != System.Text.Json.JsonValueKind.Null
-            ? tickProp.GetDecimal() : null;
 
         return new TradingParametersDto(
             SecurityId: securityId,
-            LotSize: lotSize,
-            TickSize: tickSize,
-            ContractMultiplier: null,
-            MarginRequirementPct: null,
-            TradingHoursUtc: null,
-            CircuitBreakerThresholdPct: null,
+            LotSize: ReadDecimal(common, "lotSize"),
+            TickSize: ReadDecimal(common, "tickSize"),
+            ContractMultiplier: ReadDecimal(common, "contractMultiplier"),
+            MarginRequirementPct: ReadDecimal(common, "marginRequirementPct"),
+            TradingHoursUtc: ReadString(common, "tradingHoursUtc"),
+            CircuitBreakerThresholdPct: ReadDecimal(common, "circuitBreakerThresholdPct"),
             AsOf: asOf);
     }
+
+    private static decimal? ReadDecimal(System.Text.Json.JsonElement element, string propertyName)
+        => element.TryGetProperty(propertyName, out var prop) && prop.ValueKind == System.Text.Json.JsonValueKind.Number
+            ? prop.GetDecimal() : null;
+
+    private static string? ReadString(System.Text.Json.JsonElement element, string propertyName)
+        => element.TryGetProperty(propertyName, out var prop) && prop.ValueKind == System.Text.Json.JsonValueKind.String
+            ? prop.GetString() : null;
 
     public Task<IReadOnlyList<CorporateActionDto>> GetCorporateActionsAsync(Guid securityId, CancellationToken ct = default)
         => _eventStore.LoadCorporateActionsAsync(securityId, ct);
