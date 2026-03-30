@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-03-29 18:21:45 UTC. Do not edit manually.
+> Auto-generated on 2026-03-30 00:06:27 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -836,6 +836,7 @@ Meridian-main
 │   │   │   ├── PackageCommands.cs
 │   │   │   ├── QueryCommand.cs
 │   │   │   ├── SchemaCheckCommand.cs
+│   │   │   ├── SecurityMasterCommands.cs
 │   │   │   ├── SelfTestCommand.cs
 │   │   │   ├── SymbolCommands.cs
 │   │   │   ├── ValidateConfigCommand.cs
@@ -1005,6 +1006,7 @@ Meridian-main
 │   │   │   ├── ISecurityResolver.cs
 │   │   │   ├── SecurityEconomicDefinitionAdapter.cs
 │   │   │   ├── SecurityMasterAggregateRebuilder.cs
+│   │   │   ├── SecurityMasterConflictService.cs
 │   │   │   ├── SecurityMasterCsvParser.cs
 │   │   │   ├── SecurityMasterImportService.cs
 │   │   │   ├── SecurityMasterMapping.cs
@@ -2777,6 +2779,7 @@ Meridian-main
 │   │   │   ├── SecurityEnrichmentTests.cs
 │   │   │   ├── SecurityMasterAggregateRebuilderTests.cs
 │   │   │   ├── SecurityMasterAssetClassSupportTests.cs
+│   │   │   ├── SecurityMasterConflictServiceTests.cs
 │   │   │   ├── SecurityMasterDatabaseFactAttribute.cs
 │   │   │   ├── SecurityMasterDatabaseFixture.cs
 │   │   │   ├── SecurityMasterMigrationRunnerTests.cs
