@@ -283,6 +283,40 @@ public sealed class CompositeHistoricalDataProviderTests : IDisposable
         result.Should().HaveCount(2, "should fail over to p2 after rate limit hit on p1");
     }
 
+    [Fact]
+    public async Task GetDailyBarsAsync_ThreeProviderCascade_P1DataException_P2RateLimit_P3Succeeds()
+    {
+        // Arrange – three providers with distinct failure modes, only the third returns data
+        var bars = CreateBars("SPY", 7);
+
+        var p1 = CreateMockProvider("p1", priority: 1);
+        p1.Setup(p => p.GetDailyBarsAsync("SPY", It.IsAny<DateOnly?>(), It.IsAny<DateOnly?>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new DataProviderException("p1 connection failed", provider: "p1"));
+
+        var p2 = CreateMockProvider("p2", priority: 2);
+        p2.Setup(p => p.GetDailyBarsAsync("SPY", It.IsAny<DateOnly?>(), It.IsAny<DateOnly?>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new RateLimitException("p2 rate limited", provider: "p2", retryAfter: TimeSpan.FromMinutes(5)));
+
+        var p3 = CreateMockProvider("p3", priority: 3);
+        p3.Setup(p => p.GetDailyBarsAsync("SPY", It.IsAny<DateOnly?>(), It.IsAny<DateOnly?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(bars);
+
+        using var composite = CreateComposite(p1, p2, p3);
+
+        // Act
+        var result = await composite.GetDailyBarsAsync("SPY", null, null);
+
+        // Assert
+        result.Should().HaveCount(7, "composite must return p3 data after p1 and p2 fail");
+
+        p1.Verify(p => p.GetDailyBarsAsync("SPY", It.IsAny<DateOnly?>(), It.IsAny<DateOnly?>(), It.IsAny<CancellationToken>()), Times.Once,
+            "p1 should be tried exactly once");
+        p2.Verify(p => p.GetDailyBarsAsync("SPY", It.IsAny<DateOnly?>(), It.IsAny<DateOnly?>(), It.IsAny<CancellationToken>()), Times.Once,
+            "p2 should be tried exactly once after p1 fails");
+        p3.Verify(p => p.GetDailyBarsAsync("SPY", It.IsAny<DateOnly?>(), It.IsAny<DateOnly?>(), It.IsAny<CancellationToken>()), Times.Once,
+            "p3 should be tried exactly once after p2 fails");
+    }
+
     #region Helpers
 
     private Mock<IHistoricalDataProvider> CreateMockProvider(string name, int priority)

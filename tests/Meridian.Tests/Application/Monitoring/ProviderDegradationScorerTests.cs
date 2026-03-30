@@ -235,6 +235,79 @@ public sealed class ProviderDegradationScorerTests : IDisposable
     }
 
     [Fact]
+    public void EvaluateNow_DegradedProvider_FiresOnProviderDegradedEvent()
+    {
+        // Arrange
+        _healthMonitor.RegisterConnection("alpha-conn", "recovering-provider");
+        _healthMonitor.MarkDisconnected("alpha-conn", "simulated outage");
+
+        for (var i = 0; i < 100; i++)
+            _scorer.RecordError("recovering-provider", "connection_failed");
+
+        ProviderDegradedEvent? degradedEvent = null;
+        _scorer.OnProviderDegraded += e => degradedEvent = e;
+
+        // Act
+        _scorer.EvaluateNow();
+
+        // Assert
+        _scorer.IsDegraded("recovering-provider").Should().BeTrue();
+        degradedEvent.Should().NotBeNull();
+        degradedEvent!.Value.ProviderName.Should().Be("recovering-provider");
+        degradedEvent.Value.CompositeScore.Should().BeGreaterThanOrEqualTo(_scorer.GetScore("recovering-provider").CompositeScore - 0.01);
+    }
+
+    [Fact]
+    public void EvaluateNow_ProviderRecovery_FiresOnProviderRecoveredEvent()
+    {
+        // Arrange – first, make the provider degrade
+        _healthMonitor.RegisterConnection("recovery-conn", "recovering-provider");
+        _healthMonitor.MarkDisconnected("recovery-conn", "simulated outage");
+
+        for (var i = 0; i < 100; i++)
+            _scorer.RecordError("recovering-provider", "connection_failed");
+
+        _scorer.EvaluateNow(); // mark as previously degraded
+
+        // Now simulate recovery: reconnect and clear errors
+        _healthMonitor.MarkConnected("recovery-conn");
+
+        // Replace error history with successes to drop score below threshold
+        for (var i = 0; i < 300; i++)
+            _scorer.RecordSuccess("recovering-provider");
+
+        ProviderRecoveredEvent? recoveredEvent = null;
+        _scorer.OnProviderRecovered += e => recoveredEvent = e;
+
+        // Act
+        _scorer.EvaluateNow();
+
+        // Assert
+        _scorer.IsDegraded("recovering-provider").Should().BeFalse();
+        recoveredEvent.Should().NotBeNull("recovery event should fire when provider transitions from degraded to healthy");
+        recoveredEvent!.Value.ProviderName.Should().Be("recovering-provider");
+    }
+
+    [Fact]
+    public void EvaluateNow_AlwaysHealthy_DoesNotFireRecoveredEvent()
+    {
+        // Arrange – a healthy provider that was never degraded
+        _healthMonitor.RegisterConnection("stable-conn", "stable-provider");
+        _latencyService.RecordLatency("stable-provider", 10.0);
+        _scorer.RecordSuccess("stable-provider");
+
+        bool recoveredFired = false;
+        _scorer.OnProviderRecovered += _ => recoveredFired = true;
+
+        // Act – two evaluations; no degradation ever happened
+        _scorer.EvaluateNow();
+        _scorer.EvaluateNow();
+
+        // Assert
+        recoveredFired.Should().BeFalse("recovered event must not fire when provider was never degraded");
+    }
+
+    [Fact]
     public void Config_DefaultValues_AreReasonable()
     {
         // Act

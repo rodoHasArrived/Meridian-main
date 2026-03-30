@@ -263,17 +263,20 @@ public sealed class ParquetStorageSink : IStorageSink
             idx++;
         }
 
-        using var groupWriter = await ParquetWriter.CreateAsync(TradeSchema, File.Create(path));
-        using var rowGroupWriter = groupWriter.CreateRowGroup();
+        await WriteAtomicallyAsync(path, async tempStream =>
+        {
+            using var groupWriter = await ParquetWriter.CreateAsync(TradeSchema, tempStream);
+            using var rowGroupWriter = groupWriter.CreateRowGroup();
 
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(TradeSchema.DataFields[0], timestamps));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(TradeSchema.DataFields[1], symbols));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(TradeSchema.DataFields[2], prices));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(TradeSchema.DataFields[3], sizes));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(TradeSchema.DataFields[4], aggressors));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(TradeSchema.DataFields[5], sequences));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(TradeSchema.DataFields[6], venues));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(TradeSchema.DataFields[7], sources));
+            await rowGroupWriter.WriteColumnAsync(new DataColumn(TradeSchema.DataFields[0], timestamps));
+            await rowGroupWriter.WriteColumnAsync(new DataColumn(TradeSchema.DataFields[1], symbols));
+            await rowGroupWriter.WriteColumnAsync(new DataColumn(TradeSchema.DataFields[2], prices));
+            await rowGroupWriter.WriteColumnAsync(new DataColumn(TradeSchema.DataFields[3], sizes));
+            await rowGroupWriter.WriteColumnAsync(new DataColumn(TradeSchema.DataFields[4], aggressors));
+            await rowGroupWriter.WriteColumnAsync(new DataColumn(TradeSchema.DataFields[5], sequences));
+            await rowGroupWriter.WriteColumnAsync(new DataColumn(TradeSchema.DataFields[6], venues));
+            await rowGroupWriter.WriteColumnAsync(new DataColumn(TradeSchema.DataFields[7], sources));
+        });
     }
 
     private async Task WriteQuotesAsync(string path, IReadOnlyList<MarketEvent> events, CancellationToken ct)
@@ -316,18 +319,21 @@ public sealed class ParquetStorageSink : IStorageSink
             idx++;
         }
 
-        using var groupWriter = await ParquetWriter.CreateAsync(QuoteSchema, File.Create(path));
-        using var rowGroupWriter = groupWriter.CreateRowGroup();
+        await WriteAtomicallyAsync(path, async tempStream =>
+        {
+            using var groupWriter = await ParquetWriter.CreateAsync(QuoteSchema, tempStream);
+            using var rowGroupWriter = groupWriter.CreateRowGroup();
 
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(QuoteSchema.DataFields[0], timestamps));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(QuoteSchema.DataFields[1], symbols));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(QuoteSchema.DataFields[2], bidPrices));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(QuoteSchema.DataFields[3], bidSizes));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(QuoteSchema.DataFields[4], askPrices));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(QuoteSchema.DataFields[5], askSizes));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(QuoteSchema.DataFields[6], spreads));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(QuoteSchema.DataFields[7], sequences));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(QuoteSchema.DataFields[8], sources));
+            await rowGroupWriter.WriteColumnAsync(new DataColumn(QuoteSchema.DataFields[0], timestamps));
+            await rowGroupWriter.WriteColumnAsync(new DataColumn(QuoteSchema.DataFields[1], symbols));
+            await rowGroupWriter.WriteColumnAsync(new DataColumn(QuoteSchema.DataFields[2], bidPrices));
+            await rowGroupWriter.WriteColumnAsync(new DataColumn(QuoteSchema.DataFields[3], bidSizes));
+            await rowGroupWriter.WriteColumnAsync(new DataColumn(QuoteSchema.DataFields[4], askPrices));
+            await rowGroupWriter.WriteColumnAsync(new DataColumn(QuoteSchema.DataFields[5], askSizes));
+            await rowGroupWriter.WriteColumnAsync(new DataColumn(QuoteSchema.DataFields[6], spreads));
+            await rowGroupWriter.WriteColumnAsync(new DataColumn(QuoteSchema.DataFields[7], sequences));
+            await rowGroupWriter.WriteColumnAsync(new DataColumn(QuoteSchema.DataFields[8], sources));
+        });
     }
 
     private async Task WriteL2SnapshotsAsync(string path, IReadOnlyList<MarketEvent> events, CancellationToken ct)
@@ -341,49 +347,52 @@ public sealed class ParquetStorageSink : IStorageSink
         if (snapshots.Count is 0)
             return;
 
-        using var groupWriter = await ParquetWriter.CreateAsync(L2Schema, File.Create(path));
-        using var rowGroupWriter = groupWriter.CreateRowGroup();
-
-        var count = snapshots.Count;
-        var timestamps = new DateTimeOffset[count];
-        var symbols = new string[count];
-        var bidCounts = new int[count];
-        var askCounts = new int[count];
-        var bestBids = new decimal?[count];
-        var bestAsks = new decimal?[count];
-        var spreads = new decimal?[count];
-        var seqNums = new long[count];
-        var sources = new string[count];
-        var bidsJson = new string[count];
-        var asksJson = new string[count];
-
-        for (var i = 0; i < count; i++)
+        await WriteAtomicallyAsync(path, async tempStream =>
         {
-            var (evt, snap, seq) = snapshots[i];
-            timestamps[i] = evt.Timestamp;
-            symbols[i] = evt.EffectiveSymbol;
-            bidCounts[i] = snap.Bids?.Count ?? 0;
-            askCounts[i] = snap.Asks?.Count ?? 0;
-            bestBids[i] = snap.Bids is { Count: > 0 } bids ? bids[0].Price : 0m;
-            bestAsks[i] = snap.Asks is { Count: > 0 } asks ? asks[0].Price : 0m;
-            spreads[i] = ComputeSpread(snap);
-            seqNums[i] = seq;
-            sources[i] = evt.Source;
-            bidsJson[i] = JsonSerializer.Serialize(snap.Bids ?? EmptyBookLevels, MarketDataJsonContext.HighPerformanceOptions);
-            asksJson[i] = JsonSerializer.Serialize(snap.Asks ?? EmptyBookLevels, MarketDataJsonContext.HighPerformanceOptions);
-        }
+            using var groupWriter = await ParquetWriter.CreateAsync(L2Schema, tempStream);
+            using var rowGroupWriter = groupWriter.CreateRowGroup();
 
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[0], timestamps));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[1], symbols));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[2], bidCounts));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[3], askCounts));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[4], bestBids));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[5], bestAsks));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[6], spreads));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[7], seqNums));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[8], sources));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[9], bidsJson));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[10], asksJson));
+            var count = snapshots.Count;
+            var timestamps = new DateTimeOffset[count];
+            var symbols = new string[count];
+            var bidCounts = new int[count];
+            var askCounts = new int[count];
+            var bestBids = new decimal?[count];
+            var bestAsks = new decimal?[count];
+            var spreads = new decimal?[count];
+            var seqNums = new long[count];
+            var sources = new string[count];
+            var bidsJson = new string[count];
+            var asksJson = new string[count];
+
+            for (var i = 0; i < count; i++)
+            {
+                var (evt, snap, seq) = snapshots[i];
+                timestamps[i] = evt.Timestamp;
+                symbols[i] = evt.EffectiveSymbol;
+                bidCounts[i] = snap.Bids?.Count ?? 0;
+                askCounts[i] = snap.Asks?.Count ?? 0;
+                bestBids[i] = snap.Bids is { Count: > 0 } bids ? bids[0].Price : 0m;
+                bestAsks[i] = snap.Asks is { Count: > 0 } asks ? asks[0].Price : 0m;
+                spreads[i] = ComputeSpread(snap);
+                seqNums[i] = seq;
+                sources[i] = evt.Source;
+                bidsJson[i] = JsonSerializer.Serialize(snap.Bids ?? EmptyBookLevels, MarketDataJsonContext.HighPerformanceOptions);
+                asksJson[i] = JsonSerializer.Serialize(snap.Asks ?? EmptyBookLevels, MarketDataJsonContext.HighPerformanceOptions);
+            }
+
+            await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[0], timestamps));
+            await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[1], symbols));
+            await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[2], bidCounts));
+            await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[3], askCounts));
+            await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[4], bestBids));
+            await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[5], bestAsks));
+            await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[6], spreads));
+            await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[7], seqNums));
+            await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[8], sources));
+            await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[9], bidsJson));
+            await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[10], asksJson));
+        });
     }
 
     private static (LOBSnapshot? Snapshot, long SequenceNumber) ExtractL2Data(MarketEvent evt) => evt.Payload switch
@@ -440,18 +449,21 @@ public sealed class ParquetStorageSink : IStorageSink
             idx++;
         }
 
-        using var groupWriter = await ParquetWriter.CreateAsync(BarSchema, File.Create(path));
-        using var rowGroupWriter = groupWriter.CreateRowGroup();
+        await WriteAtomicallyAsync(path, async tempStream =>
+        {
+            using var groupWriter = await ParquetWriter.CreateAsync(BarSchema, tempStream);
+            using var rowGroupWriter = groupWriter.CreateRowGroup();
 
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(BarSchema.DataFields[0], timestamps));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(BarSchema.DataFields[1], symbols));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(BarSchema.DataFields[2], opens));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(BarSchema.DataFields[3], highs));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(BarSchema.DataFields[4], lows));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(BarSchema.DataFields[5], closes));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(BarSchema.DataFields[6], volumes));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(BarSchema.DataFields[7], sequences));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(BarSchema.DataFields[8], sources));
+            await rowGroupWriter.WriteColumnAsync(new DataColumn(BarSchema.DataFields[0], timestamps));
+            await rowGroupWriter.WriteColumnAsync(new DataColumn(BarSchema.DataFields[1], symbols));
+            await rowGroupWriter.WriteColumnAsync(new DataColumn(BarSchema.DataFields[2], opens));
+            await rowGroupWriter.WriteColumnAsync(new DataColumn(BarSchema.DataFields[3], highs));
+            await rowGroupWriter.WriteColumnAsync(new DataColumn(BarSchema.DataFields[4], lows));
+            await rowGroupWriter.WriteColumnAsync(new DataColumn(BarSchema.DataFields[5], closes));
+            await rowGroupWriter.WriteColumnAsync(new DataColumn(BarSchema.DataFields[6], volumes));
+            await rowGroupWriter.WriteColumnAsync(new DataColumn(BarSchema.DataFields[7], sequences));
+            await rowGroupWriter.WriteColumnAsync(new DataColumn(BarSchema.DataFields[8], sources));
+        });
     }
 
     private async Task WriteGenericEventsAsync(string path, IReadOnlyList<MarketEvent> events, CancellationToken ct)
@@ -485,15 +497,66 @@ public sealed class ParquetStorageSink : IStorageSink
             sources[i] = e.Source;
         }
 
-        using var groupWriter = await ParquetWriter.CreateAsync(genericSchema, File.Create(path));
-        using var rowGroupWriter = groupWriter.CreateRowGroup();
+        await WriteAtomicallyAsync(path, async tempStream =>
+        {
+            using var groupWriter = await ParquetWriter.CreateAsync(genericSchema, tempStream);
+            using var rowGroupWriter = groupWriter.CreateRowGroup();
 
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(genericSchema.DataFields[0], timestamps));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(genericSchema.DataFields[1], symbols));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(genericSchema.DataFields[2], types));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(genericSchema.DataFields[3], payloads));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(genericSchema.DataFields[4], sequences));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(genericSchema.DataFields[5], sources));
+            await rowGroupWriter.WriteColumnAsync(new DataColumn(genericSchema.DataFields[0], timestamps));
+            await rowGroupWriter.WriteColumnAsync(new DataColumn(genericSchema.DataFields[1], symbols));
+            await rowGroupWriter.WriteColumnAsync(new DataColumn(genericSchema.DataFields[2], types));
+            await rowGroupWriter.WriteColumnAsync(new DataColumn(genericSchema.DataFields[3], payloads));
+            await rowGroupWriter.WriteColumnAsync(new DataColumn(genericSchema.DataFields[4], sequences));
+            await rowGroupWriter.WriteColumnAsync(new DataColumn(genericSchema.DataFields[5], sources));
+        });
+    }
+
+    /// <summary>
+    /// Writes Parquet data atomically using a temp-file-then-rename strategy.
+    /// Prevents partially written files from appearing at the destination on crash or I/O error.
+    /// </summary>
+    private static async Task WriteAtomicallyAsync(string path, Func<Stream, Task> writeAsync)
+    {
+        var tempPath = GetAtomicTempPath(path);
+        try
+        {
+            {
+                await using var tempStream = new FileStream(
+                    tempPath,
+                    FileMode.Create,
+                    FileAccess.Write,
+                    FileShare.None,
+                    bufferSize: 65536,
+                    FileOptions.Asynchronous);
+                await writeAsync(tempStream);
+            }
+            File.Move(tempPath, path, overwrite: true);
+        }
+        catch
+        {
+            TryDeleteTempFile(tempPath);
+            throw;
+        }
+    }
+
+    private static string GetAtomicTempPath(string destinationPath)
+    {
+        var directory = Path.GetDirectoryName(destinationPath) ?? ".";
+        var fileName = Path.GetFileName(destinationPath);
+        return Path.Combine(directory, $".{fileName}.{Guid.NewGuid():N}.tmp");
+    }
+
+    private static void TryDeleteTempFile(string path)
+    {
+        try
+        {
+            if (File.Exists(path))
+                File.Delete(path);
+        }
+        catch
+        {
+            // best-effort: do not mask the original exception
+        }
     }
 
     private string GetBufferKey(MarketEvent evt)

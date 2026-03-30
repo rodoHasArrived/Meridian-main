@@ -19,6 +19,8 @@ public sealed class ProviderDegradationScorer : IDisposable
     private readonly Timer _scoringTimer;
     private volatile bool _isDisposed;
 
+    private readonly ConcurrentDictionary<string, bool> _previouslyDegraded = new();
+
     /// <summary>
     /// Raised when a provider's degradation score crosses the configured threshold.
     /// </summary>
@@ -27,9 +29,7 @@ public sealed class ProviderDegradationScorer : IDisposable
     /// <summary>
     /// Raised when a provider recovers from a degraded state.
     /// </summary>
-#pragma warning disable CS0067 // Event will be raised when recovery detection is implemented
     public event Action<ProviderRecoveredEvent>? OnProviderRecovered;
-#pragma warning restore CS0067
 
     public ProviderDegradationScorer(
         ConnectionHealthMonitor healthMonitor,
@@ -212,6 +212,11 @@ public sealed class ProviderDegradationScorer : IDisposable
             EvaluatedAt: DateTimeOffset.UtcNow);
     }
 
+    /// <summary>
+    /// Triggers an immediate scoring evaluation. Exposed for testing purposes.
+    /// </summary>
+    internal void EvaluateNow() => EvaluateScores(null);
+
     private void EvaluateScores(object? state)
     {
         if (_isDisposed)
@@ -223,6 +228,8 @@ public sealed class ProviderDegradationScorer : IDisposable
 
             foreach (var score in scores)
             {
+                var wasDegrade = _previouslyDegraded.GetValueOrDefault(score.ProviderName, false);
+
                 if (score.IsDegraded)
                 {
                     _log.Warning(
@@ -240,6 +247,30 @@ public sealed class ProviderDegradationScorer : IDisposable
                     {
                         _log.Error(ex, "Error in provider degraded event handler");
                     }
+
+                    _previouslyDegraded[score.ProviderName] = true;
+                }
+                else if (wasDegrade)
+                {
+                    _log.Information(
+                        "Provider {Provider} has recovered: composite={Score:F3}",
+                        score.ProviderName, score.CompositeScore);
+
+                    try
+                    {
+                        OnProviderRecovered?.Invoke(new ProviderRecoveredEvent(
+                            score.ProviderName, score.CompositeScore, DateTimeOffset.UtcNow));
+                    }
+                    catch (Exception ex)
+                    {
+                        _log.Error(ex, "Error in provider recovered event handler");
+                    }
+
+                    _previouslyDegraded[score.ProviderName] = false;
+                }
+                else
+                {
+                    _previouslyDegraded[score.ProviderName] = false;
                 }
             }
         }
@@ -256,6 +287,7 @@ public sealed class ProviderDegradationScorer : IDisposable
         _isDisposed = true;
         _scoringTimer.Dispose();
         _errorTrackers.Clear();
+        _previouslyDegraded.Clear();
     }
 
     /// <summary>
