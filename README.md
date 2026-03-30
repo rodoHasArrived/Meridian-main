@@ -1086,6 +1086,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── PackageCommands.cs
 │   │   │   ├── QueryCommand.cs
 │   │   │   ├── SchemaCheckCommand.cs
+│   │   │   ├── SecurityMasterCommands.cs
 │   │   │   ├── SelfTestCommand.cs
 │   │   │   ├── SymbolCommands.cs
 │   │   │   ├── ValidateConfigCommand.cs
@@ -1257,6 +1258,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── ISecurityResolver.cs
 │   │   │   ├── SecurityEconomicDefinitionAdapter.cs
 │   │   │   ├── SecurityMasterAggregateRebuilder.cs
+│   │   │   ├── SecurityMasterConflictService.cs
 │   │   │   ├── SecurityMasterCsvParser.cs
 │   │   │   ├── SecurityMasterImportService.cs
 │   │   │   ├── SecurityMasterMapping.cs
@@ -3030,6 +3032,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── SecurityEnrichmentTests.cs
 │   │   │   ├── SecurityMasterAggregateRebuilderTests.cs
 │   │   │   ├── SecurityMasterAssetClassSupportTests.cs
+│   │   │   ├── SecurityMasterConflictServiceTests.cs
 │   │   │   ├── SecurityMasterDatabaseFactAttribute.cs
 │   │   │   ├── SecurityMasterDatabaseFixture.cs
 │   │   │   ├── SecurityMasterMigrationRunnerTests.cs
@@ -3190,6 +3193,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-472 directories, 2680 files
+472 directories, 2683 files
 ```
 <!-- readme-tree end -->
