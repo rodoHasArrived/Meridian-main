@@ -14,6 +14,43 @@ evidence, and is discoverable in the AI catalogs (agents + skills).
 - Update AI discovery surfaces after new capabilities (agents/skills symmetry)
 - Produce a traceable requirement → implementation → evidence summary
 
+**Requirement Type Detection**
+
+Pick the right validation lane before starting:
+- Feature completeness vs. blueprint → requirement matrix + targeted tests
+- Scope alignment to issue/roadmap → file mapping + acceptance criteria check
+- Documentation sync after code change → doc routing + cross-reference validation
+- Catalog/discovery update → agents/skills symmetry check
+- Rollout readiness → build + test + deployment gates (all CRITICAL)
+
+**Required Workflow**
+1. **Gather inputs:** Identify source of truth (blueprint/issue), acceptance criteria, and expected evidence.
+2. **Plan mapping:** Map each requirement to implementing files and intended validation artifacts.
+3. **Execute & validate:** Apply minimal changes, run required commands (build/tests/scripts), and capture outputs.
+4. **Report & route:** Summarize traceability, list validation commands + outcomes, and update AI catalogs.
+
+**Required Evidence**
+
+- **CRITICAL (always):** build passes, tests pass for touched areas, requirement ↔ file matrix documented
+- **WARNING (breaking/scope changes):** cross-file impact assessed, catalog updates listed
+- **INFO (recommended):** performance annotation for hot-path changes, coverage delta noted
+
+**Quality Gates**
+
+```bash
+# Gate 1: Build (always)
+dotnet build Meridian.sln -c Release /p:EnableWindowsTargeting=true
+
+# Gate 2: Tests for touched projects
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release /p:EnableWindowsTargeting=true
+
+# Gate 3: AI catalog routing (when updating docs/catalogs)
+python3 .claude/skills/meridian-implementation-assurance/scripts/doc_route.py \
+  --kind ai --topic "<topic>"
+
+# Gate 4: Skill packaging integrity (when agents/skills change)
+python3 build/scripts/docs/validate-skill-packages.py
+```
 ---
 
 ## Definition of Done
@@ -70,12 +107,12 @@ A task is complete when **all** of the following are true:
 
 ## Output Checklist
 
-- [ ] Scope/requirements restated and scenario (A/B/C) identified
-- [ ] Requirement → implementation → evidence matrix
-- [ ] Validation commands + results (build/tests/scripts) with pass/fail
-- [ ] Performance risk noted for any hot-path touched
+**Output Checklist**
+- [ ] Requirement type identified and correct validation lane selected
+- [ ] Scope/requirements restated
+- [ ] Requirement → implementation → evidence matrix (table format)
+- [ ] Validation commands + results with CRITICAL/WARNING/INFO severity noted
 - [ ] Catalog/doc updates noted (agents/skills) if applicable
-- [ ] `score_eval.py` rubric report (≥ 8/10, no category at 0)
 - [ ] Final traceable summary (≤15 lines) with risks or follow-ups
 
 *Last Updated: 2026-03-30*

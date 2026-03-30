@@ -14,7 +14,7 @@ Use this harness to evaluate whether outputs from `meridian-implementation-assur
 
 - Use `scripts/score_eval.py` to enforce rubric key coverage, compute totals, and emit a report block.
 - Use `scripts/doc_route.py` before documentation edits when placement is unclear.
-- Use `.codex/skills/meridian-implementation-assurance/scripts/run_evals.py` to run deterministic checks against eval cases and compare against the baseline.
+- Use `.codex/skills/meridian-implementation-assurance/scripts/run_evals.py` to run deterministic checks against `.codex/skills/meridian-implementation-assurance/evals/evals.json` cases and compare against `evals/benchmark_baseline.json`.
 
 ## Prompt-Based Eval Infrastructure
 
@@ -77,16 +77,18 @@ If a run drops more than `regression_threshold_pp` (default 10 pp) below baselin
 emits a regression warning.
 
 After intentionally improving the skill, update the baseline:
-1. Run `python3 scripts/run_evals.py --all --summary --json` and inspect output quality.
+1. Run `python3 .codex/skills/meridian-implementation-assurance/scripts/run_evals.py --all --summary --json` and inspect output quality.
 2. Update `accepted_pass_rate` values to match the verified run.
 3. Update `_last_updated`.
 
 ### Growing Coverage
 
-Add new rows to `evals/evals.json` and corresponding baselines when:
+Add new rows to `.codex/skills/meridian-implementation-assurance/evals/evals.json` and corresponding baselines to `benchmark_baseline.json` when:
 - A prompt that should trigger the skill was observed **not** triggering it.
 - A prompt that should **not** trigger the skill was incorrectly activating it.
 - A real fix was made to address a skill regression.
+
+Every manual correction to the skill is a candidate for a new eval case so the behavior is locked in.
 
 ## Scenario Set
 
