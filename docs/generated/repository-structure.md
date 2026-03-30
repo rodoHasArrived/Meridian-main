@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-03-30 22:49:16 UTC. Do not edit manually.
+> Auto-generated on 2026-03-30 22:57:50 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -1738,10 +1738,12 @@ Meridian-main
 │   │   ├── Meridian.McpServer.csproj
 │   │   └── Program.cs
 │   ├── Meridian.ProviderSdk
+│   │   ├── AttributeCredentialResolver.cs
 │   │   ├── CredentialValidator.cs
 │   │   ├── DataSourceAttribute.cs
 │   │   ├── DataSourceRegistry.cs
 │   │   ├── HistoricalDataCapabilities.cs
+│   │   ├── ICredentialContext.cs
 │   │   ├── IDataSource.cs
 │   │   ├── IHistoricalBarWriter.cs
 │   │   ├── IHistoricalDataSource.cs
@@ -1752,7 +1754,8 @@ Meridian-main
 │   │   ├── IProviderModule.cs
 │   │   ├── IRealtimeDataSource.cs
 │   │   ├── Meridian.ProviderSdk.csproj
-│   │   └── ProviderHttpUtilities.cs
+│   │   ├── ProviderHttpUtilities.cs
+│   │   └── RequiresCredentialAttribute.cs
 │   ├── Meridian.QuantScript
 │   │   ├── Api
 │   │   │   ├── BacktestProxy.cs
@@ -2796,6 +2799,7 @@ Meridian-main
 │   │   ├── Performance
 │   │   │   └── AllocationBudgetIntegrationTests.cs
 │   │   ├── ProviderSdk
+│   │   │   ├── AttributeCredentialResolverTests.cs
 │   │   │   ├── CredentialValidatorTests.cs
 │   │   │   ├── DataSourceAttributeTests.cs
 │   │   │   ├── DataSourceRegistryTests.cs
