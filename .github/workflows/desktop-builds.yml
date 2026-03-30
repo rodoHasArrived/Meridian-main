@@ -217,7 +217,7 @@ jobs:
           cache-suffix: 'wpf'
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: wpf-build-output
           path: src/Meridian.Wpf/bin/${{ env.BUILD_CONFIG }}/
@@ -249,7 +249,7 @@ jobs:
 
     steps:
       - name: Download build logs
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: '*-build-logs-*'
           path: build-logs/
