@@ -2,7 +2,6 @@ using FluentAssertions;
 using Meridian.Application.Backfill;
 using Meridian.Infrastructure.Adapters.Stooq;
 using Meridian.Infrastructure.Adapters.Core;
-using Moq;
 
 namespace Meridian.Tests.Application.Backfill;
 
