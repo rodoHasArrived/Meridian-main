@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-03-30 21:26:02 UTC. Do not edit manually.
+> Auto-generated on 2026-03-30 21:30:28 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -1009,6 +1009,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterConflictService.cs
 │   │   │   ├── SecurityMasterCsvParser.cs
 │   │   │   ├── SecurityMasterImportService.cs
+│   │   │   ├── SecurityMasterLedgerBridge.cs
 │   │   │   ├── SecurityMasterMapping.cs
 │   │   │   ├── SecurityMasterOptionsValidator.cs
 │   │   │   ├── SecurityMasterProjectionService.cs
@@ -2808,6 +2809,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterConflictServiceTests.cs
 │   │   │   ├── SecurityMasterDatabaseFactAttribute.cs
 │   │   │   ├── SecurityMasterDatabaseFixture.cs
+│   │   │   ├── SecurityMasterLedgerBridgeTests.cs
 │   │   │   ├── SecurityMasterMigrationRunnerTests.cs
 │   │   │   ├── SecurityMasterPostgresRoundTripTests.cs
 │   │   │   ├── SecurityMasterProjectionServiceSnapshotTests.cs
