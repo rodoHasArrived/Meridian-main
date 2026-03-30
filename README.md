@@ -3074,6 +3074,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── MemoryMappedJsonlReaderTests.cs
 │   │   │   ├── MetadataTagServiceTests.cs
 │   │   │   ├── ParquetConversionServiceTests.cs
+│   │   │   ├── ParquetStorageSinkTests.cs
 │   │   │   ├── PortableDataPackagerTests.cs
 │   │   │   ├── QuotaEnforcementServiceTests.cs
 │   │   │   ├── StorageCatalogServiceTests.cs
@@ -3207,6 +3208,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-473 directories, 2696 files
+473 directories, 2697 files
 ```
 <!-- readme-tree end -->
