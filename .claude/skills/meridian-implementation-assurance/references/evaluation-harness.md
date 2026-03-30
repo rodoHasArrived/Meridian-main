@@ -14,81 +14,7 @@ Use this harness to evaluate whether outputs from `meridian-implementation-assur
 
 - Use `scripts/score_eval.py` to enforce rubric key coverage, compute totals, and emit a report block.
 - Use `scripts/doc_route.py` before documentation edits when placement is unclear.
-- Use `scripts/run_evals.py` to run deterministic checks against `evals/evals.json` cases and compare against `evals/benchmark_baseline.json`.
-
-## Prompt-Based Eval Infrastructure
-
-The `evals/` directory contains a prompt set and structured rubric schema for systematic regression testing using `codex exec`.
-
-### Trigger Classification (`evals/meridian-implementation-assurance.prompts.csv`)
-
-A small CSV of prompts labelled `should_trigger=true/false`. Use this to verify that changes to the skill name or description don't break invocation:
-
-| Column | Description |
-|---|---|
-| `id` | Unique case identifier |
-| `should_trigger` | `true` if the prompt should invoke this skill; `false` if it should not |
-| `prompt` | The prompt text to send to the agent |
-
-Use `python3 scripts/run_evals.py --all --dry-run` to validate CSV structure without invoking `codex exec`.
-
-**Negative controls** (`should_trigger=false`) catch false positives — prompts that match adjacent skills (code-review, blueprint, test-writer) but should not invoke implementation assurance.
-
-### Structured Rubric Output (`evals/style-rubric.schema.json`)
-
-Pass this schema to `codex exec --output-schema` for a second qualitative grading pass after the skill completes:
-
-```shell
-codex exec \
-  "Evaluate this implementation-assurance output against the rubric:
-   - behavior_correctness: change satisfies request, contracts preserved
-   - validation_evidence: exact commands and pass/fail included
-   - performance_safety: hot-path risks identified and handled
-   - documentation_sync: docs updated or new doc in correct subtree
-   - traceable_summary: requirement linked to implementation and evidence
-   Return structured rubric result." \
-  --output-schema ./evals/style-rubric.schema.json \
-  -o ./evals/artifacts/rubric-result.json
-```
-
-The schema enforces `overall_pass`, `score` (0-10), `scenario`, and one `checks` entry per category.
-
-### Deterministic Runner (`scripts/run_evals.py`)
-
-Runs each case in `evals/evals.json` through `codex exec --json --full-auto`, saves JSONL traces to `evals/artifacts/`, and applies deterministic checks:
-
-| Check | Description |
-|---|---|
-| `ran build/test command` | At least one `dotnet build`, `dotnet test`, `make test`, or script validation command |
-| `produced rubric output` | Rubric score block detected in the trace |
-| `command count within budget` | ≤ 30 command executions (guards against thrashing) |
-| `doc_route.py invoked` | Required for Scenario B (new doc needed) |
-| `score_eval.py invoked` | Recommended for all scenarios |
-
-```shell
-# Validate infrastructure without running codex
-python3 .claude/skills/meridian-implementation-assurance/scripts/run_evals.py --all --dry-run
-
-# Run all cases and check regressions vs baseline
-python3 scripts/run_evals.py --all --summary
-
-# Run a single case
-python3 scripts/run_evals.py --eval-id 3
-
-# Machine-readable output for CI
-python3 scripts/run_evals.py --all --summary --json
-```
-
-Traces are saved to `evals/artifacts/eval-<id>.jsonl` for inspection. Open them to see every `command_execution` event in order — regressions become immediately explainable.
-
-### Baseline Management (`evals/benchmark_baseline.json`)
-
-Each eval case has an `accepted_pass_rate`. If a run drops more than `regression_threshold_pp` (default 10) percentage points below baseline, the runner emits a regression warning.
-
-After intentionally improving the skill, update the baseline:
-1. Run `python3 scripts/run_evals.py --all --summary --json` and inspect output quality.
-2. Update `accepted_pass_rate` values in `benchmark_baseline.json` to match the verified run.
-- Use `.codex/skills/meridian-implementation-assurance/scripts/run_evals.py` to run deterministic checks against eval cases and compare against the baseline.
+- Use `.codex/skills/meridian-implementation-assurance/scripts/run_evals.py` to run deterministic checks against `.codex/skills/meridian-implementation-assurance/evals/evals.json` cases and compare against `evals/benchmark_baseline.json`.
 
 ## Prompt-Based Eval Infrastructure
 
@@ -151,13 +77,13 @@ If a run drops more than `regression_threshold_pp` (default 10 pp) below baselin
 emits a regression warning.
 
 After intentionally improving the skill, update the baseline:
-1. Run `python3 scripts/run_evals.py --all --summary --json` and inspect output quality.
+1. Run `python3 .codex/skills/meridian-implementation-assurance/scripts/run_evals.py --all --summary --json` and inspect output quality.
 2. Update `accepted_pass_rate` values to match the verified run.
 3. Update `_last_updated`.
 
 ### Growing Coverage
 
-Add new rows to `evals/evals.json` and corresponding baselines to `benchmark_baseline.json` when:
+Add new rows to `.codex/skills/meridian-implementation-assurance/evals/evals.json` and corresponding baselines to `benchmark_baseline.json` when:
 - A prompt that should trigger the skill was observed **not** triggering it.
 - A prompt that should **not** trigger the skill was incorrectly activating it.
 - A real fix was made to address a skill regression.
