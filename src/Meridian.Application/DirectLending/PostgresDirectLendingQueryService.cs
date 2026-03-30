@@ -242,16 +242,21 @@ public sealed partial class PostgresDirectLendingQueryService : IDirectLendingQu
 
         var active = summaries.Count(s => s.Status == LoanStatus.Active);
         var defaulted = summaries.Count(s => s.Status == LoanStatus.Defaulted);
+        var nonPerforming = summaries.Count(s => s.Status == LoanStatus.NonPerforming);
+        var workout = summaries.Count(s => s.Status == LoanStatus.Workout);
 
         return new LoanPortfolioSummaryDto(
             summaries.Count,
             active,
             defaulted,
+            nonPerforming,
+            workout,
             summaries.Sum(s => s.CommitmentAmount),
             summaries.Sum(s => s.PrincipalOutstanding),
             summaries.Sum(s => s.InterestAccruedUnpaid),
             summaries.Sum(s => s.PenaltyAccruedUnpaid),
             summaries.Sum(s => s.AvailableToDraw),
+            0m,
             summaries);
     }
 }

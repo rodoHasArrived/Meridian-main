@@ -140,5 +140,30 @@ public sealed partial class PostgresDirectLendingService : IDirectLendingService
 
     public Task<LoanPortfolioSummaryDto> GetPortfolioSummaryAsync(CancellationToken ct = default)
         => _queryService.GetPortfolioSummaryAsync(ct);
+
+    // Collateral management — not yet persisted in Postgres; use in-memory fallback
+    public Task<LoanServicingStateDto?> AddCollateralAsync(Guid loanId, AddCollateralRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
+        => Task.FromResult<LoanServicingStateDto?>(null);
+
+    public Task<LoanServicingStateDto?> RemoveCollateralAsync(Guid loanId, RemoveCollateralRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
+        => Task.FromResult<LoanServicingStateDto?>(null);
+
+    public Task<LoanServicingStateDto?> UpdateCollateralValueAsync(Guid loanId, UpdateCollateralValueRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
+        => Task.FromResult<LoanServicingStateDto?>(null);
+
+    public Task<IReadOnlyList<CollateralDto>> GetCollateralAsync(Guid loanId, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<CollateralDto>>(Array.Empty<CollateralDto>());
+
+    public Task<LoanServicingStateDto?> TransitionLoanStatusAsync(Guid loanId, TransitionLoanStatusRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
+        => Task.FromResult<LoanServicingStateDto?>(null);
+
+    public Task<LoanServicingStateDto?> TogglePikAsync(Guid loanId, TogglePikRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
+        => Task.FromResult<LoanServicingStateDto?>(null);
+
+    public Task<LoanContractDetailDto?> RestructureLoanAsync(Guid loanId, RestructureLoanRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
+        => Task.FromResult<LoanContractDetailDto?>(null);
+
+    public Task<LoanServicingStateDto?> AmortizeDiscountPremiumAsync(Guid loanId, AmortizeDiscountPremiumRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
+        => Task.FromResult<LoanServicingStateDto?>(null);
 }
 

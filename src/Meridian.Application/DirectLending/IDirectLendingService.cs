@@ -87,5 +87,23 @@ public interface IDirectLendingService
     Task<IReadOnlyList<LoanAggregateSnapshotDto>> RebuildAllAsync(CancellationToken ct = default);
 
     Task<LoanPortfolioSummaryDto> GetPortfolioSummaryAsync(CancellationToken ct = default);
+
+    // Collateral management
+    Task<LoanServicingStateDto?> AddCollateralAsync(Guid loanId, AddCollateralRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);
+    Task<LoanServicingStateDto?> RemoveCollateralAsync(Guid loanId, RemoveCollateralRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);
+    Task<LoanServicingStateDto?> UpdateCollateralValueAsync(Guid loanId, UpdateCollateralValueRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);
+    Task<IReadOnlyList<CollateralDto>> GetCollateralAsync(Guid loanId, CancellationToken ct = default);
+
+    // Status transitions
+    Task<LoanServicingStateDto?> TransitionLoanStatusAsync(Guid loanId, TransitionLoanStatusRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);
+
+    // PIK toggle
+    Task<LoanServicingStateDto?> TogglePikAsync(Guid loanId, TogglePikRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);
+
+    // Restructuring
+    Task<LoanContractDetailDto?> RestructureLoanAsync(Guid loanId, RestructureLoanRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);
+
+    // Discount / premium amortization
+    Task<LoanServicingStateDto?> AmortizeDiscountPremiumAsync(Guid loanId, AmortizeDiscountPremiumRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);
 }
 
