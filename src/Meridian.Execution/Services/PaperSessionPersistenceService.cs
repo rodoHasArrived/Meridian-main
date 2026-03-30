@@ -8,21 +8,88 @@ namespace Meridian.Execution.Services;
 /// <summary>
 /// Manages paper trading session lifecycle and persistence.
 /// Tracks session metadata, portfolio snapshots, and order history
-/// across session boundaries. Sessions are persisted in-memory with
-/// support for future durable storage backends.
+/// across session boundaries.
 /// </summary>
+/// <remarks>
+/// When constructed with an <see cref="IPaperSessionStore"/> all session
+/// metadata, fills, and order updates are written to durable storage.
+/// Call <see cref="InitialiseAsync"/> on startup to reload sessions and
+/// reconstruct portfolio state from the persisted fill log.
+/// Without a store the service falls back to in-memory operation and
+/// sessions are lost on process restart.
+/// </remarks>
 public sealed class PaperSessionPersistenceService
 {
     private readonly ConcurrentDictionary<string, PaperSession> _sessions = new(StringComparer.Ordinal);
+    private readonly IPaperSessionStore? _store;
     private readonly ILogger<PaperSessionPersistenceService> _logger;
+    private int _initialised; // 0 = not yet, 1 = done
 
-    public PaperSessionPersistenceService(ILogger<PaperSessionPersistenceService> logger)
+    public PaperSessionPersistenceService(
+        ILogger<PaperSessionPersistenceService> logger,
+        IPaperSessionStore? store = null)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _store = store;
     }
 
+    // ------------------------------------------------------------------
+    // Lifecycle
+    // ------------------------------------------------------------------
+
+    /// <summary>
+    /// Loads all sessions from the durable store and reconstructs portfolio
+    /// state by replaying the persisted fill log.  Safe to call multiple times;
+    /// only executes once.  No-op when no <see cref="IPaperSessionStore"/> was
+    /// provided.
+    /// </summary>
+    public async Task InitialiseAsync(CancellationToken ct = default)
+    {
+        if (_store is null || Interlocked.Exchange(ref _initialised, 1) != 0)
+            return;
+
+        var records = await _store.LoadAllSessionsAsync(ct).ConfigureAwait(false);
+        foreach (var record in records)
+        {
+            ct.ThrowIfCancellationRequested();
+
+            // Reconstruct portfolio by replaying the persisted fill log.
+            var fills = await _store.LoadFillsAsync(record.SessionId, ct).ConfigureAwait(false);
+            var portfolio = new PaperTradingPortfolio(record.InitialCash);
+            foreach (var fill in fills)
+                portfolio.ApplyFill(fill);
+
+            // Load persisted order history.
+            var orders = await _store.LoadOrderHistoryAsync(record.SessionId, ct).ConfigureAwait(false);
+
+            var session = new PaperSession
+            {
+                SessionId = record.SessionId,
+                StrategyId = record.StrategyId,
+                StrategyName = record.StrategyName,
+                InitialCash = record.InitialCash,
+                CreatedAt = record.CreatedAt,
+                ClosedAt = record.ClosedAt,
+                IsActive = record.IsActive,
+                Symbols = record.Symbols.ToList(),
+                Portfolio = portfolio,
+            };
+            foreach (var order in orders)
+                session.OrderHistory.Add(order);
+
+            _sessions[record.SessionId] = session;
+        }
+
+        _logger.LogInformation(
+            "Initialised paper session store: loaded {Count} session(s)", records.Count);
+    }
+
+    // ------------------------------------------------------------------
+    // CRUD
+    // ------------------------------------------------------------------
+
     /// <summary>Creates a new paper trading session and returns its summary.</summary>
-    public Task<PaperSessionSummaryDto> CreateSessionAsync(CreatePaperSessionDto request, CancellationToken ct = default)
+    public async Task<PaperSessionSummaryDto> CreateSessionAsync(CreatePaperSessionDto request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
 
@@ -40,29 +107,39 @@ public sealed class PaperSessionPersistenceService
 
         _sessions[sessionId] = session;
 
+        if (_store is not null)
+        {
+            await _store.SaveSessionMetadataAsync(ToPersistedRecord(session), ct).ConfigureAwait(false);
+        }
+
         _logger.LogInformation(
             "Created paper session {SessionId} for strategy {StrategyId} with {InitialCash:C} initial capital",
             sessionId, request.StrategyId, request.InitialCash);
 
-        return Task.FromResult(ToSummary(session));
+        return ToSummary(session);
     }
 
     /// <summary>Closes a paper trading session and snapshots its final state.</summary>
-    public Task<bool> CloseSessionAsync(string sessionId, CancellationToken ct = default)
+    public async Task<bool> CloseSessionAsync(string sessionId, CancellationToken ct = default)
     {
         if (!_sessions.TryGetValue(sessionId, out var session))
         {
-            return Task.FromResult(false);
+            return false;
         }
 
         session.ClosedAt = DateTimeOffset.UtcNow;
         session.IsActive = false;
 
+        if (_store is not null)
+        {
+            await _store.SaveSessionMetadataAsync(ToPersistedRecord(session), ct).ConfigureAwait(false);
+        }
+
         _logger.LogInformation(
             "Closed paper session {SessionId} — final equity: {Equity:C}",
             sessionId, session.Portfolio?.PortfolioValue ?? 0m);
 
-        return Task.FromResult(true);
+        return true;
     }
 
     /// <summary>Returns summaries of all tracked sessions.</summary>
@@ -116,6 +193,79 @@ public sealed class PaperSessionPersistenceService
         {
             session.OrderHistory.Add(orderState);
         }
+
+        if (_store is not null)
+        {
+            // Fire-and-forget — order-history persistence is best-effort.
+            _ = _store.AppendOrderUpdateAsync(sessionId, orderState)
+                .ContinueWith(
+                    t => _logger.LogWarning(t.Exception, "Failed to persist order update for session {SessionId}", sessionId),
+                    default,
+                    TaskContinuationOptions.OnlyOnFaulted,
+                    TaskScheduler.Default);
+        }
+    }
+
+    /// <summary>
+    /// Applies a fill execution report to the session portfolio and persists
+    /// the fill event to the durable store for future replay.
+    /// No-op for non-fill reports (accepted, cancelled, rejected).
+    /// </summary>
+    public async Task RecordFillAsync(string sessionId, ExecutionReport fill, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(fill);
+
+        if (_sessions.TryGetValue(sessionId, out var session) && session.IsActive)
+        {
+            session.Portfolio?.ApplyFill(fill);
+        }
+
+        if (_store is not null)
+        {
+            await _store.AppendFillAsync(sessionId, fill, ct).ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
+    /// Replays the persisted fill log for <paramref name="sessionId"/> through a
+    /// fresh <see cref="PaperTradingPortfolio"/> and returns the reconstructed
+    /// portfolio snapshot.
+    /// </summary>
+    /// <remarks>
+    /// When no durable store is configured the current in-memory portfolio state
+    /// is returned instead.
+    /// Returns <see langword="null"/> when the session does not exist.
+    /// </remarks>
+    public async Task<ExecutionPortfolioSnapshotDto?> ReplaySessionAsync(
+        string sessionId,
+        CancellationToken ct = default)
+    {
+        if (_store is null)
+        {
+            // Fall back to current in-memory state.
+            return GetSession(sessionId)?.Portfolio;
+        }
+
+        // Load session metadata to get initial cash.
+        var allRecords = await _store.LoadAllSessionsAsync(ct).ConfigureAwait(false);
+        var meta = allRecords.FirstOrDefault(r => r.SessionId == sessionId);
+        if (meta is null)
+            return null;
+
+        // Replay fills through a fresh portfolio.
+        var fills = await _store.LoadFillsAsync(sessionId, ct).ConfigureAwait(false);
+        var portfolio = new PaperTradingPortfolio(meta.InitialCash);
+        foreach (var fill in fills)
+            portfolio.ApplyFill(fill);
+
+        var positions = portfolio.Positions.Values.ToArray();
+        return new ExecutionPortfolioSnapshotDto(
+            Cash: portfolio.Cash,
+            PortfolioValue: portfolio.PortfolioValue,
+            UnrealisedPnl: portfolio.UnrealisedPnl,
+            RealisedPnl: portfolio.RealisedPnl,
+            Positions: positions,
+            AsOf: DateTimeOffset.UtcNow);
     }
 
     private static PaperSessionSummaryDto ToSummary(PaperSession session) => new(
@@ -126,6 +276,16 @@ public sealed class PaperSessionPersistenceService
         CreatedAt: session.CreatedAt,
         ClosedAt: session.ClosedAt,
         IsActive: session.IsActive);
+
+    private static PersistedSessionRecord ToPersistedRecord(PaperSession session) => new(
+        SessionId: session.SessionId,
+        StrategyId: session.StrategyId,
+        StrategyName: session.StrategyName,
+        InitialCash: session.InitialCash,
+        CreatedAt: session.CreatedAt,
+        ClosedAt: session.ClosedAt,
+        IsActive: session.IsActive,
+        Symbols: session.Symbols);
 
     private sealed class PaperSession
     {
