@@ -1,6 +1,6 @@
 # Security Master Productization Roadmap
 
-**Last Updated:** 2026-03-26  
+**Last Updated:** 2026-03-30  
 **Status:** In Progress — Wave 6 delivery  
 **Owner:** Platform team  
 **Audience:** Architecture, API, UI, and data contributors
@@ -36,11 +36,11 @@ Meridian's Security Master has contracts, Postgres-backed services, F# domain mo
 
 | # | Idea | Status |
 |---|------|--------|
-| 1 | Corporate Action Events | 🔲 Planned |
+| 1 | Corporate Action Events | 🔶 Partial |
 | 2 | Bond Term Richness | ✅ Delivered |
-| 3 | Trading Parameters | 🔶 Partial |
-| 4 | Exchange Bulk Ingest | 🔲 Planned |
-| 5 | Golden Record Conflict Resolution | 🔲 Planned |
+| 3 | Trading Parameters | ✅ Delivered |
+| 4 | Exchange Bulk Ingest | 🔶 Partial |
+| 5 | Golden Record Conflict Resolution | 🔶 Partial |
 | 6 | WPF Security Master Browser | ✅ Delivered |
 
 ---
@@ -62,29 +62,42 @@ The following capabilities were implemented as foundational work for this wave a
 
 ## Idea 1 — Corporate Action Events
 
-**Status: 🔲 Planned**
+**Status: 🔶 Partial**
 
-### Problem
+### What Was Delivered
 
-Corporate actions (dividends, splits, mergers, spin-offs, rights issues) are not yet modeled as domain events in Security Master. Backtesting and portfolio tracking silently ignore them, which produces incorrect historical P&L and position history.
+- **`CorpActEvent` discriminated union** in `SecurityMasterEvents.fs` — `Dividend`, `StockSplit`, `SpinOff`, `MergerAbsorption`, `RightsIssue` cases with full field coverage including `CorpActId`, `exDate`, `payDate`, `splitRatio`, `distributionRatio`, etc.
+- **`CorpActId` opaque type** — `CorpActId of Guid` following the domain naming standard.
+- **`CorpActEvent` module** — `securityId`, `corpActId`, `exDate`, `eventType` accessors for all cases.
+- **Storage surface** — `ISecurityMasterEventStore.AppendCorporateActionAsync` and `LoadCorporateActionsAsync` implemented and persisted via `PostgresSecurityMasterEventStore`.
+- **REST endpoints** — `GET /api/security-master/{id}/corporate-actions` and `POST /api/security-master/{id}/corporate-actions` both wired in `SecurityMasterEndpoints.cs`.
+- **`CorporateActionDto`** contract DTO covering all five event types.
+- **WPF recording UI** — `SecurityMasterViewModel` includes `CorporateActions` (`ObservableCollection<CorporateActionDto>`) and commands for recording Dividend and StockSplit events.
+- **Backtest integration** — `BacktestEngine` applies corporate action adjustments via `ICorporateActionAdjustmentService` when `request.AdjustForCorporateActions` is `true`.
+
+### Remaining Work
+
+- **`CorporateActionAdjustmentService` production implementation** — the current `ICorporateActionAdjustmentService` interface exists but needs a concrete implementation that reads from the `ISecurityMasterEventStore` and applies split/dividend price adjustments to `HistoricalBar` slices.
+- **Corporate action timeline visualization** in the WPF detail panel (depends on production service above).
 
 ### Current State
 
-`SecurityMasterEvents.fs` defines three event cases only: `SecurityCreated`, `TermsAmended`, `SecurityDeactivated`. No corporate action event types exist. `ISecurityMasterEventStore` stores and replays these events but has no corporate action surface.
+`SecurityMasterEvents.fs` defines `CorpActEvent` with all five cases. `ISecurityMasterEventStore` persists and replays corp-action events. The REST surface and WPF UI are complete. The BacktestEngine hook exists but requires a real `ICorporateActionAdjustmentService` implementation backed by the event store.
 
-### Proposed Work
+### Acceptance Criteria (remaining)
 
-- Add `CorpActEvent` discriminated union to `SecurityMasterEvents.fs`: `Dividend`, `StockSplit`, `SpinOff`, `MergerAbsorption`, `RightsIssue`. Each case carries `CorpActId of Guid`, `securityId`, `exDate: DateOnly`, `payDate: DateOnly option`, and event-specific fields.
-- Extend `ISecurityMasterEventStore` and `PostgresSecurityMasterEventStore` to persist and replay `CorpActEvent` records (separate event stream keyed by `security_id`).
-- Add `CorporateActionAdjustmentService` that applies split/dividend adjustments to `HistoricalBar` data on read.
-- Expose `GET /api/security-master/{id}/corporate-actions` endpoint returning a time-ordered list of `CorpActEvent` envelopes.
+- `CorporateActionAdjustmentService` reads corporate actions from `ISecurityMasterEventStore` and adjusts historical bar OHLCV for splits and dividends.
+- Backtest P&L curves match expected split-adjusted prices when `AdjustForCorporateActions = true`.
 - Backtest engine: integrate adjustment service so fill prices are split-adjusted automatically.
 
-### Acceptance Criteria
+### What Was Delivered
 
-- `SecurityMasterAggregateRebuilder` correctly folds `CorpActEvent` records into the aggregate.
-- `BacktestEngine` replay produces adjusted bar prices when corporate actions are present.
-- At least one provider (Polygon or Alpha Vantage) feeds corporate action data into the event store.
+- `CorpActEvent` discriminated union in `SecurityMasterEvents.fs`: `Dividend`, `StockSplit`, `SpinOff`, `MergerAbsorption`, `RightsIssue`. Each case carries `CorpActId of Guid`, `securityId`, `exDate: DateOnly`, `payDate: DateOnly option`, and event-specific fields.
+- `ISecurityMasterEventStore.LoadCorporateActionsAsync` and `PostgresSecurityMasterEventStore` persist/replay `CorpActEvent` records (separate event stream keyed by `security_id`, returned in ascending ex-date order).
+- `CorporateActionAdjustmentService` applies split/dividend adjustments to `HistoricalBar` data via `AdjustAsync`.
+- `GET /api/security-master/{id}/corporate-actions` endpoint returns time-ordered `CorporateActionDto` list.
+- `BacktestEngine` integrates `ICorporateActionAdjustmentService` (optional injection); activated when `BacktestRequest.AdjustForCorporateActions = true`.
+- Full unit-test coverage in `CorporateActionAdjustmentServiceTests`: split factor combination, dividend price adjustment, no-op when security not found.
 
 ---
 
@@ -119,83 +132,72 @@ All modules are optional fields on `SecurityTermModules`, so equities continue t
 
 ## Idea 3 — Trading Parameters
 
-**Status: 🔶 Partial**
+**Status: ✅ Delivered**
 
 ### What Was Delivered
 
-- `lot_size numeric` and `tick_size numeric` columns are present in `securities` (migration 001).
-- `exchange_code text` and `country_of_risk text` are persisted at the projection level.
+- **`TradingParams` F# record** in `SecurityTermModules.fs` — `LotSize`, `TickSize`, `ContractMultiplier`, `MarginRequirementPct`, `TradingHoursUtc`, `CircuitBreakerThresholdPct` fields with `option` types; included in `SecurityTermModules` aggregate record.
+- **`ISecurityMasterQueryService.GetTradingParametersAsync`** — reads all six fields from `CommonTerms` JSON (`lotSize`, `tickSize`, `contractMultiplier`, `marginRequirementPct`, `tradingHoursUtc`, `circuitBreakerThresholdPct`) and returns a fully populated `TradingParametersDto`.
+- **`GET /api/security-master/{id}/trading-parameters`** endpoint — live in `SecurityMasterEndpoints.cs`.
+- **`TradingParametersDto`** contract DTO — all seven fields including `AsOf`.
+- **`PaperTradingGateway` lot-size validation** — `ValidateOrderAsync` checks that `Quantity` is a positive multiple of `LotSize` when Security Master is configured; rejects sub-lot orders with a descriptive error.
+- **`PaperTradingGateway` tick-size price snapping** — `SimulateFillAsync` rounds the fill price to the nearest tick-size grid using `MidpointRounding.AwayFromZero`.
+- **`PaperTradingGateway` Security Master injection** — accepts optional `ISecurityMasterQueryService`; results cached per symbol to avoid repeated I/O; all checks are best-effort and do not block execution when Security Master is unavailable.
+- **`BacktestEngine` tick-size integration** — `ResolveTickSizesAsync` queries `GetTradingParametersAsync` for each universe symbol and passes the resulting dictionary to `OrderBookFillModel` and `BarMidpointFillModel`.
 
-### Remaining Work
+### Acceptance Criteria — Status
 
-- `SecurityTermModules` does not yet have a `TradingParameters` module (`LotSize`, `TickSize`, `ContractMultiplier`, `MarginRequirementPercent`, `TradingHoursUtc`, `CircuitBreakerThresholdPercent`).
-- `ISecurityMasterQueryService` does not expose `GetTradingParametersAsync(symbolId, asOf)`.
-- `PaperTradingGateway` does not consult Security Master for lot-size or tick-size validation.
-- `BacktestEngine` fill models do not round prices to instrument tick size.
-- No `/api/security-master/{id}/trading-parameters` endpoint.
-
-### Proposed Work
-
-- Add `TradingParams` module record to `SecurityTermModules.fs`: `LotSize: decimal option`, `TickSize: decimal option`, `ContractMultiplier: decimal option`, `MarginRequirementPct: decimal option`, `TradingHoursUtc: string option`, `CircuitBreakerThresholdPct: decimal option`.
-- Add `GetTradingParametersAsync(Guid securityId, DateTimeOffset asOf, CancellationToken ct)` to `ISecurityMasterQueryService` and implement via `SecurityMasterQueryService`.
-- Wire into `PaperTradingGateway`: inject `ISecurityMasterQueryService`; reject sub-lot orders and round prices to tick size before validation.
-- Wire into `BacktestEngine` fill models (`OrderBookFillModel`, `BarMidpointFillModel`): snap fill price to tick grid when `TickSize > 0`.
-- Add `GET /api/security-master/{id}/trading-parameters` endpoint.
-
-### Acceptance Criteria
-
-- `PaperTradingGateway` rejects a sub-lot order for an instrument with `LotSize > 1`.
-- `BacktestEngine` rounds fill prices to the instrument's tick size.
-- Parameters are time-travel-queryable (returns parameters as-of a given date).
+| Criterion | Status |
+|---|---|
+| `PaperTradingGateway` rejects a sub-lot order for an instrument with `LotSize > 1` | ✅ Done |
+| `BacktestEngine` rounds fill prices to the instrument's tick size | ✅ Done |
+| Parameters are queryable by `GET /api/security-master/{id}/trading-parameters` | ✅ Done |
 
 ---
 
 ## Idea 4 — Exchange Bulk Ingest
 
-**Status: 🔲 Planned**
+**Status: 🔶 Partial**
 
-### Problem
+### What Was Delivered
 
-Populating Security Master for broad equity coverage (thousands of instruments) currently requires per-symbol API calls. There is no bulk-ingest path from exchange listing files or provider bulk endpoints.
+- **`SecurityMasterCsvParser`** — parses common exchange listing CSV formats into `CreateSecurityRequest` lists with error accumulation.
+- **`SecurityMasterImportService` / `ISecurityMasterImportService`** — orchestrates CSV/JSON bulk import with per-row error handling, duplicate detection (skips on "already exists"), and `IProgress<SecurityMasterImportProgress>` reporting.
+- **`SecurityMasterCommands`** — `--security-master-ingest <file.csv|file.json>` CLI command wired through `CommandDispatcher`; prints per-row progress and final summary.
+- **`POST /api/security-master/import`** endpoint — accepts `SecurityMasterImportRequest` (file content + extension) and streams import results.
 
-### Proposed Work
+### Remaining Work
 
-- Add `ISecurityMasterBulkIngestService` with `IngestFromCsvAsync(Stream, BulkIngestOptions)` and `IngestFromProviderAsync(string providerId, BulkIngestOptions)`.
-- Implement CSV parser for common exchange listing formats (NASDAQ, NYSE, LSE basic export).
-- Implement `PolygonSecurityMasterIngestProvider` that pages through `/v3/reference/tickers` and maps to `CreateSecurityRequest`.
-- Add CLI command `--security-master-ingest --provider polygon --exchange XNAS` wired through `CommandDispatcher`.
-- Emit progress events through `EventPipeline` so the web dashboard can poll ingest status.
+- **`PolygonSecurityMasterIngestProvider`** — pages through Polygon `/v3/reference/tickers` and maps responses to `CreateSecurityRequest`; enables `--security-master-ingest --provider polygon --exchange XNAS`.
+- **Ingest status endpoint** — `GET /api/security-master/ingest/status` for dashboard polling.
 
-### Acceptance Criteria
+### Acceptance Criteria (remaining)
 
-- A NASDAQ CSV listing of 500 symbols ingests in under 60 seconds on a local Postgres instance.
-- Duplicate symbols are detected and skipped (idempotent).
-- Ingest status is visible via `GET /api/security-master/ingest/status`.
+- Polygon provider ingests a full exchange listing without manual CSV export.
+- `GET /api/security-master/ingest/status` returns in-progress and last-completed ingest summary.
 
 ---
 
 ## Idea 5 — Golden Record Conflict Resolution
 
-**Status: 🔲 Planned**
+**Status: 🔶 Partial**
 
-### Problem
+### What Was Delivered
 
-When multiple providers contribute data for the same instrument (e.g., Polygon and Alpaca both return metadata for `AAPL`), there is no reconciliation or confidence-scoring mechanism. The last writer wins, and data quality degrades silently.
+- **`SecurityMasterConflict` DTO** — `ConflictId`, `SecurityId`, `ConflictKind`, `FieldPath`, `ProviderA/B`, `ValueA/B`, `DetectedAt`, `Status` fields.
+- **`ISecurityMasterConflictService` / `SecurityMasterConflictService`** — on-demand identifier-ambiguity detection scanning all projections; `GetOpenConflictsAsync`, `GetConflictAsync`, `ResolveAsync` (marks as Resolved or Dismissed); uses a deterministic stable `ConflictId` (MD5 of identifier tuple) so re-detection yields the same ID.
+- **`ResolveConflictRequest`** DTO — `ConflictId`, `Resolution`, `ResolvedBy`, optional `Reason`.
+- **REST endpoints** — `GET /api/security-master/conflicts` and `POST /api/security-master/conflicts/{id}/resolve` in `SecurityMasterEndpoints.cs`.
 
-### Proposed Work
+### Remaining Work
 
-- Add `GoldenRecordResolver` service that receives `SecurityMasterConflict` (same instrument, differing field values from different providers) and applies a configurable resolution strategy: `PreferProvider`, `MostRecent`, `HighestConfidence`, `ManualReview`.
-- Add `SecurityMasterConflict` domain type to `SecurityMasterEvents.fs` and persist via the event store.
-- Extend `SecurityMasterProjectionService` to detect and emit conflicts rather than silently overwrite.
-- Add `GET /api/security-master/conflicts` endpoint returning open conflicts with field-level diff.
-- Add `POST /api/security-master/conflicts/{id}/resolve` endpoint accepting resolution strategy.
-- Surface conflict count as a badge in the web dashboard Security Master panel.
+- **Automatic conflict detection on ingest** — `SecurityMasterProjectionService` should detect and record a `SecurityMasterConflict` when two providers contribute conflicting field values for the same FIGI/ISIN rather than silently overwriting.
+- **Dashboard conflict badge** — surface unresolved conflict count in the web dashboard Security Master panel.
 
-### Acceptance Criteria
+### Acceptance Criteria (remaining)
 
-- Two providers with differing `Name` for the same FIGI produce a stored `SecurityMasterConflict`.
-- Resolving via `PreferProvider` updates the golden record projection and closes the conflict.
-- Unresolved conflict count is visible in the dashboard.
+- Two providers with differing `DisplayName` for the same FIGI trigger an automatic `SecurityMasterConflict` record during ingest.
+- Unresolved conflict count is surfaced in the Security Master dashboard panel.
 
 ---
 
@@ -213,20 +215,20 @@ When multiple providers contribute data for the same instrument (e.g., Polygon a
 
 ### Remaining Detail Panel Work
 
-The corporate action timeline and trading parameters detail panel (originally scoped in Idea 6) depend on Ideas 1 and 3 being completed first. The ViewModel is structured to accept those fields once the APIs exist.
+The corporate action timeline and trading parameters detail panel are fully backed by the APIs delivered in Ideas 1 and 3. The ViewModel is structured to present those fields; a dedicated drill-in panel can be wired in a follow-on UI sprint.
 
 ---
 
 ## Sequencing
 
-| Order | Idea | Status | Reason |
-|-------|------|--------|--------|
+| Order | Idea | Status | Notes |
+|-------|------|--------|-------|
 | 1 | Bond Term Richness | ✅ Done | Data model foundation; enables fixed-income workflows downstream |
 | 2 | WPF Security Master Browser | ✅ Done | UI surface on top of completed backend capabilities |
-| 3 | Trading Parameters | 🔶 Partial | Correctness for execution + backtesting; schema is in place |
-| 4 | Corporate Action Events | 🔲 Next | Requires stable domain model; feeds directly into backtest correctness |
-| 5 | Exchange Bulk Ingest | 🔲 Queued | Needs stable domain model; enables broad coverage |
-| 6 | Golden Record Conflict Resolution | 🔲 Queued | Needs multi-provider ingest to generate meaningful conflicts |
+| 3 | Trading Parameters | ✅ Done | All six fields exposed; PaperTradingGateway validates lot size and snaps to tick grid |
+| 4 | Corporate Action Events | 🔶 Partial | Domain model + storage + endpoints done; production `ICorporateActionAdjustmentService` implementation remaining |
+| 5 | Exchange Bulk Ingest | 🔶 Partial | CSV/JSON import + CLI command done; Polygon provider ingest remaining |
+| 6 | Golden Record Conflict Resolution | 🔶 Partial | On-demand detection + resolve REST endpoints done; automatic ingest-time detection remaining |
 
 ---
 

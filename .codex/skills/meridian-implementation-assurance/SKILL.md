@@ -13,6 +13,10 @@ triggers:
 
 Deliver production-ready code changes and leave documentation in a consistent, current state.
 
+> **GitHub Copilot equivalent:** [`.github/agents/implementation-assurance-agent.md`](../../../.github/agents/implementation-assurance-agent.md)
+> **Claude Code equivalent:** [`.claude/skills/meridian-implementation-assurance/SKILL.md`](../../../.claude/skills/meridian-implementation-assurance/SKILL.md)
+> **Navigation index:** [`docs/ai/skills/README.md`](../../../docs/ai/skills/README.md)
+
 Read `../_shared/project-context.md` before coding. Read `references/documentation-routing.md` before writing docs. Read `references/evaluation-harness.md` before finalizing output.
 
 ## Definition of Done
@@ -36,6 +40,26 @@ A task delivered by this skill is complete when **all** of the following are tru
 5. Update related documentation; if missing, add docs in the correct doc area.
 6. Run the evaluation harness and report pass/fail with evidence.
 7. Summarize code + docs updates and call out residual risk.
+
+## Requirement Type Detection
+
+Use this decision tree before starting any task to pick the right validation lane:
+
+```
+What are you assuring?
+├── Feature completeness vs. blueprint/acceptance criteria
+│   → Lane: requirement matrix + targeted unit/integration tests
+├── Scope alignment to an issue or roadmap item
+│   → Lane: requirement matrix + file mapping + acceptance criteria check
+├── Documentation sync after a code change
+│   → Lane: doc routing matrix + cross-reference validation
+├── Capability discovery / AI catalog update
+│   → Lane: agent/skill symmetry check (docs/ai/agents/ + docs/ai/skills/)
+└── Rollout readiness
+    → Lane: build gate + test gate + deployment gates (all CRITICAL)
+```
+
+Each lane produces different required artifacts — match the lane to the task before collecting evidence.
 
 ## Correctness Guardrails
 

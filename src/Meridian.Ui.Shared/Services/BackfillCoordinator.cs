@@ -95,6 +95,11 @@ public sealed class BackfillCoordinator : IDisposable
     public BackfillResult? TryReadLast() => _core.TryReadLast();
 
     /// <summary>
+    /// Returns the per-symbol checkpoint map, or <c>null</c> when no checkpoints exist.
+    /// </summary>
+    public IReadOnlyDictionary<string, DateOnly>? TryReadSymbolCheckpoints() => _core.TryReadSymbolCheckpoints();
+
+    /// <summary>
     /// Runs a backfill operation for the specified request.
     /// </summary>
     public Task<BackfillResult> RunAsync(BackfillRequest request, CancellationToken ct = default)

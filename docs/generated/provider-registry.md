@@ -1,6 +1,6 @@
 # Provider Registry
 
-> Auto-generated on 2026-03-30 04:05:17 UTC. Do not edit manually.
+> Auto-generated on 2026-03-30 14:19:17 UTC. Do not edit manually.
 
 | Provider Candidate |
 |---|
@@ -43,6 +43,7 @@
 | `src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs` |
+| `src/Meridian.Infrastructure/Adapters/Polygon/PolygonSecurityMasterIngestProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpHistoricalDataProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpSymbolSearchProvider.cs` |

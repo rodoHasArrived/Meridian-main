@@ -1,9 +1,9 @@
-using Moq;
-using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Logging.Abstractions;
-using Meridian.QuantScript.Compilation;
 using Meridian.QuantScript.Api;
+using Meridian.QuantScript.Compilation;
 using Meridian.QuantScript.Plotting;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
+using Moq;
 
 namespace Meridian.QuantScript.Tests;
 

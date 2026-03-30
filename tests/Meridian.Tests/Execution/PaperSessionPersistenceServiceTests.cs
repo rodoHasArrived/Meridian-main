@@ -294,3 +294,375 @@ public sealed class PaperSessionPersistenceServiceTests
         action.Should().NotThrow();
     }
 }
+
+// ---------------------------------------------------------------------------
+// File-backed durable persistence tests
+// ---------------------------------------------------------------------------
+
+/// <summary>
+/// Tests for <see cref="PaperSessionPersistenceService"/> backed by
+/// <see cref="JsonlFilePaperSessionStore"/>.  Uses a temp directory that is
+/// deleted after each test class run.
+/// </summary>
+public sealed class PaperSessionDurablePersistenceTests : IDisposable
+{
+    private readonly string _tempDir;
+
+    public PaperSessionDurablePersistenceTests()
+    {
+        _tempDir = Path.Combine(Path.GetTempPath(), "meridian_paper_tests_" + Guid.NewGuid().ToString("N")[..8]);
+        Directory.CreateDirectory(_tempDir);
+    }
+
+    public void Dispose()
+    {
+        try { Directory.Delete(_tempDir, recursive: true); } catch { /* best-effort */ }
+    }
+
+    private JsonlFilePaperSessionStore BuildStore() =>
+        new(_tempDir, NullLogger<JsonlFilePaperSessionStore>.Instance);
+
+    private static PaperSessionPersistenceService Build(IPaperSessionStore store) =>
+        new(NullLogger<PaperSessionPersistenceService>.Instance, store);
+
+    private static ExecutionReport BuildFill(string symbol, OrderSide side, decimal qty, decimal price) =>
+        new()
+        {
+            OrderId = Guid.NewGuid().ToString("N"),
+            ReportType = ExecutionReportType.Fill,
+            Symbol = symbol,
+            Side = side,
+            OrderStatus = OrderStatus.Filled,
+            OrderQuantity = qty,
+            FilledQuantity = qty,
+            FillPrice = price
+        };
+
+    // ---- CreateSession persists to disk ----
+
+    [Fact]
+    public async Task CreateSessionAsync_WithStore_WritesSessionJsonToDisk()
+    {
+        var store = BuildStore();
+        var service = Build(store);
+        var dto = new CreatePaperSessionDto("strat-1", "Durable Test", 10_000m);
+
+        var summary = await service.CreateSessionAsync(dto);
+
+        var sessionDir = Path.Combine(_tempDir, summary.SessionId);
+        File.Exists(Path.Combine(sessionDir, "session.json")).Should().BeTrue();
+    }
+
+    // ---- CloseSession updates disk ----
+
+    [Fact]
+    public async Task CloseSessionAsync_WithStore_UpdatesSessionJsonOnDisk()
+    {
+        var store = BuildStore();
+        var service = Build(store);
+        var dto = new CreatePaperSessionDto("strat-2", null, 10_000m);
+        var summary = await service.CreateSessionAsync(dto);
+
+        await service.CloseSessionAsync(summary.SessionId);
+
+        var records = await store.LoadAllSessionsAsync();
+        var record = records.Single(r => r.SessionId == summary.SessionId);
+        record.IsActive.Should().BeFalse();
+        record.ClosedAt.Should().NotBeNull();
+    }
+
+    // ---- RecordFillAsync persists fills to JSONL ----
+
+    [Fact]
+    public async Task RecordFillAsync_WithStore_AppendsFillToJsonlFile()
+    {
+        var store = BuildStore();
+        var service = Build(store);
+        var dto = new CreatePaperSessionDto("strat-3", null, 100_000m);
+        var summary = await service.CreateSessionAsync(dto);
+        var fill = BuildFill("AAPL", OrderSide.Buy, qty: 10m, price: 200m);
+
+        await service.RecordFillAsync(summary.SessionId, fill);
+
+        var fills = await store.LoadFillsAsync(summary.SessionId);
+        fills.Should().ContainSingle(f => f.Symbol == "AAPL" && f.FillPrice == 200m);
+    }
+
+    [Fact]
+    public async Task RecordFillAsync_MultipleFills_AllPersistedInOrder()
+    {
+        var store = BuildStore();
+        var service = Build(store);
+        var dto = new CreatePaperSessionDto("strat-4", null, 100_000m);
+        var summary = await service.CreateSessionAsync(dto);
+
+        await service.RecordFillAsync(summary.SessionId, BuildFill("AAPL", OrderSide.Buy, 10m, 200m));
+        await service.RecordFillAsync(summary.SessionId, BuildFill("MSFT", OrderSide.Buy, 5m, 400m));
+
+        var fills = await store.LoadFillsAsync(summary.SessionId);
+        fills.Should().HaveCount(2);
+        fills[0].Symbol.Should().Be("AAPL");
+        fills[1].Symbol.Should().Be("MSFT");
+    }
+
+    // ---- InitialiseAsync reloads sessions after restart ----
+
+    [Fact]
+    public async Task InitialiseAsync_AfterRestart_ReloadsAllSessions()
+    {
+        var store = BuildStore();
+
+        // First "process": create sessions and record fills.
+        var svc1 = Build(store);
+        var dto = new CreatePaperSessionDto("strat-reload", null, 50_000m);
+        var summary = await svc1.CreateSessionAsync(dto);
+        await svc1.RecordFillAsync(summary.SessionId, BuildFill("AAPL", OrderSide.Buy, 10m, 150m));
+
+        // Second "process": create a fresh service with the same store.
+        var svc2 = Build(store);
+        await svc2.InitialiseAsync();
+
+        var sessions = svc2.GetSessions();
+        sessions.Should().ContainSingle(s => s.SessionId == summary.SessionId);
+    }
+
+    [Fact]
+    public async Task InitialiseAsync_AfterRestart_ReconstructsPortfolioFromFills()
+    {
+        var store = BuildStore();
+        const decimal InitialCash = 100_000m;
+        const decimal FillPrice = 200m;
+        const decimal FillQty = 10m;
+
+        // First "process": create session and record a buy fill.
+        var svc1 = Build(store);
+        var summary = await svc1.CreateSessionAsync(
+            new CreatePaperSessionDto("strat-pf", null, InitialCash));
+        await svc1.RecordFillAsync(summary.SessionId,
+            BuildFill("AAPL", OrderSide.Buy, FillQty, FillPrice));
+
+        // Second "process": fresh service, initialise from store.
+        var svc2 = Build(store);
+        await svc2.InitialiseAsync();
+
+        var detail = svc2.GetSession(summary.SessionId);
+        detail.Should().NotBeNull();
+        detail!.Portfolio.Should().NotBeNull();
+        // Cash should be reduced by the buy cost.
+        detail.Portfolio!.Cash.Should().Be(InitialCash - FillQty * FillPrice);
+    }
+
+    [Fact]
+    public async Task InitialiseAsync_CalledTwice_OnlyLoadsOnce()
+    {
+        var store = BuildStore();
+        var svc1 = Build(store);
+        await svc1.CreateSessionAsync(new CreatePaperSessionDto("strat-once", null, 10_000m));
+
+        var svc2 = Build(store);
+        await svc2.InitialiseAsync();
+        await svc2.InitialiseAsync(); // Second call is a no-op.
+
+        svc2.GetSessions().Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task InitialiseAsync_RestoresClosedSessions_WithIsActiveFalse()
+    {
+        var store = BuildStore();
+        var svc1 = Build(store);
+        var summary = await svc1.CreateSessionAsync(new CreatePaperSessionDto("strat-closed", null, 10_000m));
+        await svc1.CloseSessionAsync(summary.SessionId);
+
+        var svc2 = Build(store);
+        await svc2.InitialiseAsync();
+
+        var sessions = svc2.GetSessions();
+        sessions.Should().ContainSingle(s => s.SessionId == summary.SessionId && !s.IsActive);
+    }
+
+    [Fact]
+    public async Task InitialiseAsync_RestoresOrderHistory()
+    {
+        var store = BuildStore();
+        var svc1 = Build(store);
+        var summary = await svc1.CreateSessionAsync(new CreatePaperSessionDto("strat-orders", null, 10_000m));
+        var order = new OrderState
+        {
+            OrderId = "O-1",
+            Symbol = "TSLA",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 5m,
+            Status = OrderStatus.Accepted,
+            CreatedAt = DateTimeOffset.UtcNow
+        };
+        svc1.RecordOrderUpdate(summary.SessionId, order);
+
+        // Give the fire-and-forget a moment to complete.
+        await Task.Delay(50);
+
+        var svc2 = Build(store);
+        await svc2.InitialiseAsync();
+
+        var detail = svc2.GetSession(summary.SessionId);
+        detail!.OrderHistory.Should().ContainSingle(o => o.OrderId == "O-1");
+    }
+}
+
+// ---------------------------------------------------------------------------
+// ReplaySessionAsync tests
+// ---------------------------------------------------------------------------
+
+public sealed class PaperSessionReplayTests : IDisposable
+{
+    private readonly string _tempDir;
+
+    public PaperSessionReplayTests()
+    {
+        _tempDir = Path.Combine(Path.GetTempPath(), "meridian_replay_tests_" + Guid.NewGuid().ToString("N")[..8]);
+        Directory.CreateDirectory(_tempDir);
+    }
+
+    public void Dispose()
+    {
+        try { Directory.Delete(_tempDir, recursive: true); } catch { /* best-effort */ }
+    }
+
+    private JsonlFilePaperSessionStore BuildStore() =>
+        new(_tempDir, NullLogger<JsonlFilePaperSessionStore>.Instance);
+
+    private static PaperSessionPersistenceService Build(IPaperSessionStore? store = null) =>
+        new(NullLogger<PaperSessionPersistenceService>.Instance, store);
+
+    private static ExecutionReport BuyFill(string symbol, decimal qty, decimal price) => new()
+    {
+        OrderId = Guid.NewGuid().ToString("N"),
+        ReportType = ExecutionReportType.Fill,
+        Symbol = symbol,
+        Side = OrderSide.Buy,
+        OrderStatus = OrderStatus.Filled,
+        OrderQuantity = qty,
+        FilledQuantity = qty,
+        FillPrice = price
+    };
+
+    private static ExecutionReport SellFill(string symbol, decimal qty, decimal price) => new()
+    {
+        OrderId = Guid.NewGuid().ToString("N"),
+        ReportType = ExecutionReportType.Fill,
+        Symbol = symbol,
+        Side = OrderSide.Sell,
+        OrderStatus = OrderStatus.Filled,
+        OrderQuantity = qty,
+        FilledQuantity = qty,
+        FillPrice = price
+    };
+
+    // ---- In-memory fallback ----
+
+    [Fact]
+    public async Task ReplaySessionAsync_NoStore_ReturnsSameAsGetSession()
+    {
+        var service = Build(store: null);
+        var dto = new CreatePaperSessionDto("strat-A", null, 100_000m);
+        var summary = await service.CreateSessionAsync(dto);
+        await service.RecordFillAsync(summary.SessionId, BuyFill("AAPL", 10m, 200m));
+
+        var replay = await service.ReplaySessionAsync(summary.SessionId);
+        var detail = service.GetSession(summary.SessionId);
+
+        replay.Should().NotBeNull();
+        replay!.Cash.Should().Be(detail!.Portfolio!.Cash);
+    }
+
+    [Fact]
+    public async Task ReplaySessionAsync_NoStore_UnknownSession_ReturnsNull()
+    {
+        var service = Build(store: null);
+
+        var result = await service.ReplaySessionAsync("unknown-session");
+
+        result.Should().BeNull();
+    }
+
+    // ---- File-backed replay ----
+
+    [Fact]
+    public async Task ReplaySessionAsync_WithStore_ReconstructsCashFromBuyFill()
+    {
+        var store = BuildStore();
+        var service = Build(store);
+        const decimal InitialCash = 100_000m;
+        var summary = await service.CreateSessionAsync(new CreatePaperSessionDto("strat-B", null, InitialCash));
+
+        await service.RecordFillAsync(summary.SessionId, BuyFill("AAPL", 10m, 200m));
+
+        var replay = await service.ReplaySessionAsync(summary.SessionId);
+
+        replay.Should().NotBeNull();
+        replay!.Cash.Should().Be(InitialCash - 10m * 200m);
+    }
+
+    [Fact]
+    public async Task ReplaySessionAsync_WithStore_ReflectsOpenPosition()
+    {
+        var store = BuildStore();
+        var service = Build(store);
+        var summary = await service.CreateSessionAsync(new CreatePaperSessionDto("strat-C", null, 100_000m));
+
+        await service.RecordFillAsync(summary.SessionId, BuyFill("TSLA", 5m, 300m));
+
+        var replay = await service.ReplaySessionAsync(summary.SessionId);
+
+        replay!.Positions.Should().Contain(p => p.Symbol == "TSLA");
+    }
+
+    [Fact]
+    public async Task ReplaySessionAsync_WithStore_BuyThenSell_ReflectsRoundTripPnl()
+    {
+        var store = BuildStore();
+        var service = Build(store);
+        var summary = await service.CreateSessionAsync(new CreatePaperSessionDto("strat-D", null, 100_000m));
+
+        await service.RecordFillAsync(summary.SessionId, BuyFill("AAPL", 10m, 150m));
+        await service.RecordFillAsync(summary.SessionId, SellFill("AAPL", 10m, 200m));
+
+        var replay = await service.ReplaySessionAsync(summary.SessionId);
+
+        // Cash = 100_000 − 1_500 + 2_000 = 100_500
+        replay!.Cash.Should().Be(100_500m);
+        replay.RealisedPnl.Should().Be(500m); // (200 − 150) × 10
+    }
+
+    [Fact]
+    public async Task ReplaySessionAsync_WithStore_UnknownSession_ReturnsNull()
+    {
+        var store = BuildStore();
+        var service = Build(store);
+
+        var result = await service.ReplaySessionAsync("does-not-exist");
+
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ReplaySessionAsync_MatchesLivePortfolio()
+    {
+        var store = BuildStore();
+        var service = Build(store);
+        var summary = await service.CreateSessionAsync(new CreatePaperSessionDto("strat-E", null, 100_000m));
+
+        await service.RecordFillAsync(summary.SessionId, BuyFill("AAPL", 20m, 180m));
+        await service.RecordFillAsync(summary.SessionId, BuyFill("MSFT", 15m, 300m));
+
+        // Live state.
+        var liveDetail = service.GetSession(summary.SessionId);
+
+        // Replay.
+        var replay = await service.ReplaySessionAsync(summary.SessionId);
+
+        replay!.Cash.Should().Be(liveDetail!.Portfolio!.Cash);
+        replay.RealisedPnl.Should().Be(liveDetail.Portfolio.RealisedPnl);
+    }
+}

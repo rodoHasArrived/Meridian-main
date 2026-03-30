@@ -194,8 +194,19 @@ provider adapters. Operates only on **measured** bottlenecks (BenchmarkDotNet / 
 **Used by:** GitHub Copilot agents
 **Claude Code equivalent:** [`.claude/skills/meridian-implementation-assurance/SKILL.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.claude/skills/meridian-implementation-assurance/SKILL.md)
 
-Coordinates end-to-end implementation tasks with required workflow gates for behavior correctness,
-performance safety, documentation sync, and traceable evaluation evidence.
+Certifies that changes match approved requirements/blueprints and are validated with explicit
+evidence (builds, tests, docs). Operates across three scenarios:
+
+| Scenario | When | Key Requirement |
+|----------|------|----------------|
+| **A** | Code change + existing docs | Update existing docs in-place |
+| **B** | Code change + missing docs | Create new doc with cross-link from nearest index |
+| **C** | Performance-sensitive hot-path | Allocation/async risk analysis + benchmark evidence |
+
+**Passing threshold:** rubric score ≥ 8/10 and no category scored 0.
+
+**Bundled tooling:** `doc_route.py` (catalog routing), `score_eval.py` (rubric scoring),
+`run_evals.py` (deterministic eval runner), `validate-skill-packages.py` (package integrity).
 
 ---
 
@@ -255,6 +266,7 @@ provider docs, developer guides, `CLAUDE.md`, and the `ai-known-errors.md` regis
 | Code cleanup / anti-pattern fix | `cleanup-agent.md` | Corresponding Claude Code cleanup agent |
 | Bug diagnosis & fix | `bug-fix-agent.md` | *(Copilot-only)* |
 | Performance profiling & optimisation | `performance-agent.md` | *(Copilot-only)* |
+| Direct lending domain (IO, grace period, rate bounds, prepayment) | *(use bug-fix-agent or code-review-agent)* | *(use meridian-code-review skill)* |
 
 ---
 
@@ -278,4 +290,4 @@ Copilot agents, referencing these files in the issue or prompt body improves out
 
 ---
 
-*Last Updated: 2026-03-29*
+*Last Updated: 2026-03-30*

@@ -136,7 +136,8 @@ public sealed class RoslynScriptCompiler : IQuantScriptCompiler
         foreach (var line in lines)
         {
             var m = ParamRegex.Match(line);
-            if (!m.Success) continue;
+            if (!m.Success)
+                continue;
 
             var name = m.Groups[1].Value.Trim();
             var label = m.Groups[2].Value.Trim();

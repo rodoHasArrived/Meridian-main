@@ -126,7 +126,7 @@ jobs:
 
       - name: Upload coverage
         if: inputs.collect-coverage && success()
-        uses: codecov/codecov-action@v5.5.3
+        uses: codecov/codecov-action@v6.0.0
         with:
           directory: ./artifacts/test-results
           fail_ci_if_error: false
