@@ -450,13 +450,13 @@ public sealed class FillModelExpansionTests
         // Wide bar (range=50 on midpoint~200 = 25% vol) should scale slippage up significantly vs
         // the baseline non-spread-aware model.
         var baseline = new BarMidpointFillModel(new FixedCommissionModel(0m), slippageBasisPoints: 5m, spreadAware: false);
-        var aware    = new BarMidpointFillModel(new FixedCommissionModel(0m), slippageBasisPoints: 5m, spreadAware: true);
+        var aware = new BarMidpointFillModel(new FixedCommissionModel(0m), slippageBasisPoints: 5m, spreadAware: true);
 
         var order = new Order(Guid.NewGuid(), "SPY", OrderType.Market, 10L, null, null, DateTimeOffset.UtcNow);
         var wideBar = MakeBarEvent("SPY", 175m, 225m, 175m, 225m); // range=50; mid≈200
 
         var baselineFill = baseline.TryFill(order, wideBar).Fills[0].FillPrice;
-        var awareFill    = aware.TryFill(order, wideBar).Fills[0].FillPrice;
+        var awareFill = aware.TryFill(order, wideBar).Fills[0].FillPrice;
 
         // Buy fill: spread-aware should have a higher fill price (more adverse slippage)
         awareFill.Should().BeGreaterThan(baselineFill,
@@ -468,14 +468,14 @@ public sealed class FillModelExpansionTests
     {
         // Very tight bar (range=0.01) → volatility factor ≈ 0 → effective slippage ≈ baseline
         var baseline = new BarMidpointFillModel(new FixedCommissionModel(0m), slippageBasisPoints: 5m, spreadAware: false);
-        var aware    = new BarMidpointFillModel(new FixedCommissionModel(0m), slippageBasisPoints: 5m, spreadAware: true);
+        var aware = new BarMidpointFillModel(new FixedCommissionModel(0m), slippageBasisPoints: 5m, spreadAware: true);
 
         var order = new Order(Guid.NewGuid(), "SPY", OrderType.Market, 10L, null, null, DateTimeOffset.UtcNow);
         // Tight bar: open=200, high=200.005, low=199.995, close=200.005
         var tightBar = MakeBarEvent("SPY", 200m, 200.005m, 199.995m, 200.005m);
 
         var baselineFill = baseline.TryFill(order, tightBar).Fills[0].FillPrice;
-        var awareFill    = aware.TryFill(order, tightBar).Fills[0].FillPrice;
+        var awareFill = aware.TryFill(order, tightBar).Fills[0].FillPrice;
 
         // The two should be very close (within $0.01)
         Math.Abs(awareFill - baselineFill).Should().BeLessThan(0.01m,
@@ -487,13 +487,13 @@ public sealed class FillModelExpansionTests
     {
         // Sell side: spread-aware should push fill price down (more adverse) vs baseline
         var baseline = new BarMidpointFillModel(new FixedCommissionModel(0m), slippageBasisPoints: 5m, spreadAware: false);
-        var aware    = new BarMidpointFillModel(new FixedCommissionModel(0m), slippageBasisPoints: 5m, spreadAware: true);
+        var aware = new BarMidpointFillModel(new FixedCommissionModel(0m), slippageBasisPoints: 5m, spreadAware: true);
 
         var sellOrder = new Order(Guid.NewGuid(), "SPY", OrderType.Market, -10L, null, null, DateTimeOffset.UtcNow);
-        var wideBar   = MakeBarEvent("SPY", 175m, 225m, 175m, 225m); // range=50; mid≈200
+        var wideBar = MakeBarEvent("SPY", 175m, 225m, 175m, 225m); // range=50; mid≈200
 
         var baselineFill = baseline.TryFill(sellOrder, wideBar).Fills[0].FillPrice;
-        var awareFill    = aware.TryFill(sellOrder, wideBar).Fills[0].FillPrice;
+        var awareFill = aware.TryFill(sellOrder, wideBar).Fills[0].FillPrice;
 
         // Sell fill: spread-aware should have a lower fill price (more adverse)
         awareFill.Should().BeLessThan(baselineFill,

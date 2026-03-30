@@ -92,11 +92,14 @@ public sealed class QuantScriptGlobals
     public T Param<T>(string name, T defaultValue = default!, double min = double.MinValue,
         double max = double.MaxValue, string? description = null)
     {
-        if (!_parameters.TryGetValue(name, out var val)) return defaultValue;
-        if (val is T typed) return typed;
+        if (!_parameters.TryGetValue(name, out var val))
+            return defaultValue;
+        if (val is T typed)
+            return typed;
         if (val is not null)
         {
-            try { return (T)Convert.ChangeType(val, typeof(T)); }
+            try
+            { return (T)Convert.ChangeType(val, typeof(T)); }
             catch { /* fall through to default */ }
         }
         return defaultValue;

@@ -17,7 +17,8 @@ public static class PriceSeriesExtensions
         {
             var prev = (double)series.Bars[i - 1].Close;
             var curr = (double)series.Bars[i].Close;
-            if (prev == 0) continue;
+            if (prev == 0)
+                continue;
             pts.Add(new ReturnPoint(series.Bars[i].Date, (curr - prev) / prev));
         }
         return new ReturnSeries(series.Symbol, ReturnKind.Arithmetic, pts);
@@ -35,7 +36,8 @@ public static class PriceSeriesExtensions
         {
             var prev = (double)series.Bars[i - 1].Close;
             var curr = (double)series.Bars[i].Close;
-            if (prev <= 0 || curr <= 0) continue;
+            if (prev <= 0 || curr <= 0)
+                continue;
             pts.Add(new ReturnPoint(series.Bars[i].Date, Math.Log(curr / prev)));
         }
         return new ReturnSeries(series.Symbol, ReturnKind.Log, pts);
@@ -54,7 +56,8 @@ public static class PriceSeriesExtensions
         {
             var prev = (double)series.Bars[i - 1].Close;
             var curr = (double)series.Bars[i].Close;
-            if (prev == 0) continue;
+            if (prev == 0)
+                continue;
             running *= curr / prev;
             pts.Add(new ReturnPoint(series.Bars[i].Date, running - 1.0));
         }
@@ -65,7 +68,8 @@ public static class PriceSeriesExtensions
     public static ReturnSeries RollingReturns(this PriceSeries series, int window)
     {
         ArgumentNullException.ThrowIfNull(series);
-        if (window < 1) throw new ArgumentOutOfRangeException(nameof(window), "Window must be >= 1");
+        if (window < 1)
+            throw new ArgumentOutOfRangeException(nameof(window), "Window must be >= 1");
         if (series.Count <= window)
             return new ReturnSeries(series.Symbol, ReturnKind.Rolling, []);
 
@@ -74,7 +78,8 @@ public static class PriceSeriesExtensions
         {
             var start = (double)series.Bars[i - window].Close;
             var end = (double)series.Bars[i].Close;
-            if (start == 0) continue;
+            if (start == 0)
+                continue;
             pts.Add(new ReturnPoint(series.Bars[i].Date, (end - start) / start));
         }
         return new ReturnSeries(series.Symbol, ReturnKind.Rolling, pts);
