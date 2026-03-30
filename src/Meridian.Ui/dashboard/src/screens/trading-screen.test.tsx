@@ -1,4 +1,5 @@
 import { render, screen, fireEvent } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 import { TradingScreen } from "@/screens/trading-screen";
 import type { TradingWorkspaceResponse } from "@/types";
 
@@ -69,7 +70,7 @@ const data: TradingWorkspaceResponse = {
 
 describe("TradingScreen", () => {
   it("renders cockpit tables and wiring state", () => {
-    render(<TradingScreen data={data} />);
+    render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
 
     expect(screen.getByText("Live positions")).toBeInTheDocument();
     expect(screen.getByText("Open orders")).toBeInTheDocument();
@@ -79,7 +80,7 @@ describe("TradingScreen", () => {
   });
 
   it("renders Cancel All button and Close position affordances", () => {
-    render(<TradingScreen data={data} />);
+    render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
 
     expect(screen.getByTitle("Cancel all open orders")).toBeInTheDocument();
     expect(screen.getByTitle("Close position")).toBeInTheDocument();
@@ -87,7 +88,7 @@ describe("TradingScreen", () => {
   });
 
   it("opens confirmation dialog when Cancel order button is clicked", () => {
-    render(<TradingScreen data={data} />);
+    render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
 
     fireEvent.click(screen.getByTitle("Cancel order"));
 
@@ -96,7 +97,7 @@ describe("TradingScreen", () => {
   });
 
   it("opens confirmation dialog when Close position button is clicked", () => {
-    render(<TradingScreen data={data} />);
+    render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
 
     fireEvent.click(screen.getByTitle("Close position"));
 
@@ -105,7 +106,7 @@ describe("TradingScreen", () => {
   });
 
   it("closes the confirmation dialog when Cancel is clicked", () => {
-    render(<TradingScreen data={data} />);
+    render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
 
     fireEvent.click(screen.getByTitle("Cancel order"));
     expect(screen.getByRole("button", { name: /confirm/i })).toBeInTheDocument();
@@ -115,6 +116,33 @@ describe("TradingScreen", () => {
     fireEvent.click(cancelButtons[cancelButtons.length - 1]);
 
     expect(screen.queryByRole("button", { name: /confirm/i })).not.toBeInTheDocument();
+  });
+
+  it("shows orders blotter focus copy on default trading route", () => {
+    render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
+
+    expect(screen.getByText("Orders blotter")).toBeInTheDocument();
+    expect(screen.getByText("Trading Lane")).toBeInTheDocument();
+  });
+
+  it("adapts hero copy for /trading/positions deep link", () => {
+    render(<MemoryRouter initialEntries={["/trading/positions"]}><TradingScreen data={data} /></MemoryRouter>);
+
+    expect(screen.getByText("Position book")).toBeInTheDocument();
+  });
+
+  it("adapts hero copy for /trading/risk deep link", () => {
+    render(<MemoryRouter initialEntries={["/trading/risk"]}><TradingScreen data={data} /></MemoryRouter>);
+
+    expect(screen.getByText("Risk guardrails")).toBeInTheDocument();
+  });
+
+  it("shows route context counters from workspace data", () => {
+    render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
+
+    expect(screen.getByText("Open positions")).toBeInTheDocument();
+    expect(screen.getByText("Risk state")).toBeInTheDocument();
+    expect(screen.getByText("Working orders")).toBeInTheDocument();
   });
 });
 

@@ -305,7 +305,7 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
 
         if (IsConnected)
         {
-            SendSubscriptionMessageAsync(config.Symbol, "trades", "subscribe")
+            SendSubscriptionMessageAsync(config.Symbol, "trades", "subscribe", _reconnectCts.Token)
                 .ObserveException(Log, $"NYSE subscribe trades for {config.Symbol}");
         }
 
@@ -320,7 +320,7 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
 
             if (IsConnected)
             {
-                SendSubscriptionMessageAsync(info.Symbol, "trades", "unsubscribe")
+                SendSubscriptionMessageAsync(info.Symbol, "trades", "unsubscribe", _reconnectCts.Token)
                     .ObserveException(Log, $"NYSE unsubscribe trades for {info.Symbol}");
             }
         }
@@ -338,7 +338,7 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
 
         if (IsConnected)
         {
-            SendSubscriptionMessageAsync(config.Symbol, "quotes", "subscribe")
+            SendSubscriptionMessageAsync(config.Symbol, "quotes", "subscribe", _reconnectCts.Token)
                 .ObserveException(Log, $"NYSE subscribe quotes for {config.Symbol}");
         }
 
@@ -353,7 +353,7 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
 
             if (IsConnected)
             {
-                SendSubscriptionMessageAsync(info.Symbol, "quotes", "unsubscribe")
+                SendSubscriptionMessageAsync(info.Symbol, "quotes", "unsubscribe", _reconnectCts.Token)
                     .ObserveException(Log, $"NYSE unsubscribe quotes for {info.Symbol}");
             }
         }
@@ -376,7 +376,7 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
 
         if (IsConnected)
         {
-            SendSubscriptionMessageAsync(config.Symbol, "depth", "subscribe")
+            SendSubscriptionMessageAsync(config.Symbol, "depth", "subscribe", _reconnectCts.Token)
                 .ObserveException(Log, $"NYSE subscribe depth for {config.Symbol}");
         }
 
@@ -391,7 +391,7 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
 
             if (IsConnected)
             {
-                SendSubscriptionMessageAsync(info.Symbol, "depth", "unsubscribe")
+                SendSubscriptionMessageAsync(info.Symbol, "depth", "unsubscribe", _reconnectCts.Token)
                     .ObserveException(Log, $"NYSE unsubscribe depth for {info.Symbol}");
             }
         }
