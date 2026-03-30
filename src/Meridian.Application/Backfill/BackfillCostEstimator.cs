@@ -164,7 +164,8 @@ public sealed class BackfillCostEstimator
         // Count actual weekdays (Mon–Fri) in [from, to).
         // Does not subtract US holidays — that would require a TradingCalendar dependency —
         // but weekday counting is a significant improvement over a 5/7 approximation,
-        // which is inaccurate for short ranges (e.g., Mon–Fri gives 3 instead of 5).
+        // which is inaccurate for short ranges (e.g., a Mon–Sat [from, to) range with 5 trading days
+        // would be approximated as 3 when using integer 5/7 scaling).
         var totalDays = to.DayNumber - from.DayNumber;
         var fullWeeks = totalDays / 7;
         var remainingDays = totalDays % 7;
