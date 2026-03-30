@@ -100,12 +100,32 @@ public static class CheckpointEndpoints
                 return Results.Json(new { jobId, pendingSymbols = Array.Empty<string>(), count = 0 }, jsonOptions);
             }
 
-            // Return all symbols as potentially pending since we don't have per-symbol status
+            // Use per-symbol checkpoints when available to return only the genuinely pending symbols.
+            var allSymbols = status.Symbols ?? Array.Empty<string>();
+            var symbolCheckpoints = backfill.TryReadSymbolCheckpoints();
+            string[] pendingSymbols;
+
+            if (symbolCheckpoints is { Count: > 0 })
+            {
+                // A symbol is still pending when either (a) it has no checkpoint at all, or
+                // (b) its checkpoint date is before the requested To date, meaning bars are outstanding.
+                pendingSymbols = allSymbols
+                    .Where(s => !symbolCheckpoints.ContainsKey(s) ||
+                                (status.To.HasValue && symbolCheckpoints[s] < status.To.Value))
+                    .ToArray();
+            }
+            else
+            {
+                // No per-symbol data — fall back to reporting all symbols as potentially pending.
+                pendingSymbols = allSymbols;
+            }
+
             return Results.Json(new
             {
                 jobId,
-                pendingSymbols = status.Symbols ?? Array.Empty<string>(),
-                count = status.Symbols?.Length ?? 0
+                pendingSymbols,
+                count = pendingSymbols.Length,
+                completedCount = allSymbols.Length - pendingSymbols.Length
             }, jsonOptions);
         })
         .WithName("GetPendingSymbols")
