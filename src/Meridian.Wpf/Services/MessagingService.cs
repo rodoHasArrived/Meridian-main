@@ -247,6 +247,7 @@ public static class MessageTypes
     public const string NavigationRequested = "NavigationRequested";
     public const string WatchlistUpdated = "WatchlistUpdated";
     public const string ScheduleUpdated = "ScheduleUpdated";
+    public const string TickerUpdate = "TickerUpdate";
 }
 
 /// <summary>
@@ -280,4 +281,17 @@ public sealed class ConfigurationChangedMessage
     public string Key { get; set; } = string.Empty;
     public object? OldValue { get; set; }
     public object? NewValue { get; set; }
+}
+
+/// <summary>
+/// Message payload for a live price tick, published by any component that receives quote/trade data.
+/// Subscribers (e.g. TickerStripViewModel) can consume this instead of polling the HTTP API.
+/// </summary>
+public sealed class TickerUpdateMessage
+{
+    public string Symbol { get; set; } = string.Empty;
+    public decimal Bid { get; set; }
+    public decimal Ask { get; set; }
+    public decimal Last { get; set; }
+    public bool Uptick { get; set; }
 }

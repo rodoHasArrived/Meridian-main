@@ -301,6 +301,11 @@ public static class UiApiRoutes
     public const string SecurityMasterAmend = "/api/security-master/amend";
     public const string SecurityMasterDeactivate = "/api/security-master/deactivate";
     public const string SecurityMasterAliasesUpsert = "/api/security-master/aliases/upsert";
+    public const string SecurityMasterTradingParameters = "/api/security-master/{securityId:guid}/trading-parameters";
+    public const string SecurityMasterCorporateActions = "/api/security-master/{securityId:guid}/corporate-actions";
+    public const string SecurityMasterConflicts = "/api/security-master/conflicts";
+    public const string SecurityMasterConflictResolve = "/api/security-master/conflicts/{conflictId:guid}/resolve";
+    public const string SecurityMasterImport = "/api/security-master/import";
 
     // Messaging endpoints
     public const string MessagingConfig = "/api/messaging/config";
@@ -329,6 +334,7 @@ public static class UiApiRoutes
     public const string DataTrades = "/api/data/trades/{symbol}";
     public const string DataQuotes = "/api/data/quotes/{symbol}";
     public const string DataOrderbook = "/api/data/orderbook/{symbol}";
+    public const string DataL3Orderbook = "/api/data/l3-orderbook/{symbol}";
     public const string DataBbo = "/api/data/bbo/{symbol}";
     public const string DataOrderflow = "/api/data/orderflow/{symbol}";
     public const string DataHealth = "/api/data/health";
@@ -403,6 +409,7 @@ public static class UiApiRoutes
     public const string AuthLoginPage = "/login";
     public const string AuthApiLogin = "/api/auth/login";
     public const string AuthApiLogout = "/api/auth/logout";
+    public const string AuthApiMe = "/api/auth/me";
 
     // Execution / Paper Trading Cockpit endpoints
     public const string ExecutionAccount = "/api/execution/account";
@@ -431,6 +438,9 @@ public static class UiApiRoutes
     public const string RunsReconciliation = "/api/workstation/runs/{runId}/reconciliation";
     public const string RunsLedger = "/api/workstation/runs/{runId}/ledger";
 
+    // Portfolio cash-flow projection endpoints
+    public const string PortfolioCashFlows = "/api/portfolio/{runId}/cash-flows";
+
     // Resilience endpoints
     public const string ResilienceCircuitBreakers = "/api/resilience/circuit-breakers";
 
@@ -451,4 +461,9 @@ public static class UiApiRoutes
     /// </summary>
     public static string WithQuery(string route, string queryString)
         => string.IsNullOrEmpty(queryString) ? route : $"{route}?{queryString}";
+
+    // Credential management endpoints
+    public const string Credentials = "/api/credentials";
+    public const string CredentialByProvider = "/api/credentials/{provider}";
+    public const string CredentialTest = "/api/credentials/{provider}/test";
 }

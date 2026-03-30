@@ -9,6 +9,10 @@ Blueprint Mode. Every pattern here is grounded in the actual Meridian codebase.
 
 ## Naming Conventions
 
+> **Domain model naming full spec:** [`CLAUDE.domain-naming.md`](../../../docs/ai/claude/CLAUDE.domain-naming.md)
+> Apply those rules whenever designing types in `Meridian.FSharp`, `Meridian.Contracts` (domain
+> sub-namespace), or any financial-instrument definition layer.
+
 ### Namespaces
 
 | Layer | Namespace Pattern | Example |
@@ -211,6 +215,67 @@ public partial class XxxPage : Page
 ---
 
 ## F# Domain Type Patterns
+
+> **Full domain naming standard:** [`CLAUDE.domain-naming.md`](../../../docs/ai/claude/CLAUDE.domain-naming.md)
+> The rules below are a concise primer; use the full spec when creating new domain types.
+
+### Identifier types — single-case DU, `Id` suffix
+
+```fsharp
+// Always a single-case discriminated union — never a type alias
+type SecurityId = SecurityId of Guid
+type CorpActId  = CorpActId  of Guid
+type OptChainId = OptChainId of Guid
+```
+
+### Definition records — `Def` suffix
+
+Instrument term-sheet payloads for a specific subtype:
+
+```fsharp
+type BondDef   = { Coupon: CouponTerms; Maturity: MaturityTerms; IsCallable: bool; ... }
+type EquityDef = { ShareClass: string option; HasVoting: bool; ... }
+type OptDef    = { Underlying: SecurityId; Strike: decimal; ExpiryDt: DateOnly; Right: OptRight }
+type FutDef    = { Underlying: SecurityId; ExpiryDt: DateOnly; NotionalAmt: decimal option }
+```
+
+### Trait records — `Tr` suffix
+
+Cross-cutting economic characteristics that apply across instrument categories:
+
+```fsharp
+type OwnTr  = { HasVoting: bool; IsRestricted: bool }
+type IncTr  = { IsIncomeProducing: bool; DivRate: decimal option }
+type ConvTr = { IsConvertible: bool; ConvRatio: decimal option; ConvPx: decimal option }
+type RedTr  = { IsRedeemable: bool; FirstRedDt: DateOnly option; RedPx: decimal option }
+```
+
+### Link records — `Lnk` suffix
+
+Many-to-many or role-based relationships between entities:
+
+```fsharp
+type SecIssLnk   = { SecurityId: SecurityId; IssuerId: IssId; Role: IssuanceRole }
+type SecExchLnk  = { SecurityId: SecurityId; ExchId: ExchId; IsPrimary: bool }
+type CorpActSecLnk = { CorpActId: CorpActId; SecurityId: SecurityId; Role: CorpActSecRole }
+```
+
+### Category unions — `[<RequireQualifiedAccess>]` + semantic suffix
+
+```fsharp
+// Existing — already correctly named
+[<RequireQualifiedAccess>]
+type AssetClass =
+    | Equity | FixedIncome | Fund | CashEquivalent | Financing | Derivative | ...
+
+// New pattern for subcategories
+[<RequireQualifiedAccess>]
+type CorpActStat  = Announced | Confirmed | Settled | Cancelled
+type ExerciseStyle = American | European | Bermuda
+type OptRight     = Call | Put
+```
+
+### Standard F# domain record pattern
 
 ```fsharp
 // Discriminated union for status (ADR-009)

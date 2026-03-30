@@ -25,8 +25,10 @@ public partial class ScheduleManagerPage : Page { }
 
 // Monitoring pages
 public partial class DataQualityPage : Page { }
+public partial class QualityArchivePage : Page { }
 public partial class CollectionSessionPage : Page { }
 public partial class ArchiveHealthPage : Page { }
+public partial class ClusterStatusPage : UserControl { }
 public partial class ServiceManagerPage : Page { }
 public partial class SystemHealthPage : Page { }
 public partial class DiagnosticsPage : Page { }
@@ -48,6 +50,7 @@ public partial class ChartingPage : Page { }
 public partial class OrderBookPage : Page { }
 public partial class DataCalendarPage : Page { }
 public partial class RunMatPage : Page { }
+public partial class QuantScriptPage : Page { }
 
 // Storage & Maintenance pages
 public partial class StorageOptimizationPage : Page { }
@@ -67,6 +70,12 @@ public partial class RunDetailPage : Page { }
 public partial class RunPortfolioPage : Page { }
 public partial class RunLedgerPage : Page { }
 
+// Security Master workstation page
+public partial class SecurityMasterPage : Page { }
+
+// Direct Lending workstation page
+public partial class DirectLendingPage : Page { }
+
 // Data Browser page
 public partial class DataBrowserPage : Page { }
 
@@ -82,9 +91,17 @@ public partial class NotificationCenterPage : Page { }
 public partial class HelpPage : Page { }
 public partial class WelcomePage : Page { }
 public partial class SettingsPage : Page { }
+public partial class CredentialManagementPage : Page { }
 public partial class KeyboardShortcutsPage : Page { }
 public partial class SetupWizardPage : Page { }
 public partial class AddProviderWizardPage : Page { }
 
 // Activity Log page
 public partial class ActivityLogPage : Page { }
+
+// Plugin Management page
+public partial class PluginManagementPage : Page { }
+
+// AI Agent page
+public partial class AgentPage : Page { }
+

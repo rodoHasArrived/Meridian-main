@@ -44,7 +44,8 @@ public class ExportPresetServiceBase
     /// </summary>
     public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
-        if (_initialized) return;
+        if (_initialized)
+            return;
 
         await LoadPresetsAsync(cancellationToken);
         _initialized = true;

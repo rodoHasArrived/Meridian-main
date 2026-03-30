@@ -131,7 +131,8 @@ public sealed class SymbolGroupService
         var groups = (await GetGroupsAsync()).ToList();
         var index = groups.FindIndex(g => g.Id == group.Id);
 
-        if (index < 0) return false;
+        if (index < 0)
+            return false;
 
         group.UpdatedAt = DateTime.UtcNow;
         groups[index] = group;
@@ -151,7 +152,8 @@ public sealed class SymbolGroupService
         var groups = (await GetGroupsAsync()).ToList();
         var group = groups.FirstOrDefault(g => g.Id == id);
 
-        if (group == null) return false;
+        if (group == null)
+            return false;
 
         groups.RemoveAll(g => g.Id == id);
         await SaveGroupsAsync(groups.ToArray());
@@ -167,7 +169,8 @@ public sealed class SymbolGroupService
     public async Task<bool> AddSymbolToGroupAsync(string groupId, string symbol, CancellationToken ct = default)
     {
         var group = await GetGroupByIdAsync(groupId);
-        if (group == null) return false;
+        if (group == null)
+            return false;
 
         if (group.Symbols.Contains(symbol, StringComparer.OrdinalIgnoreCase))
             return true; // Already in group
@@ -185,7 +188,8 @@ public sealed class SymbolGroupService
     public async Task<bool> RemoveSymbolFromGroupAsync(string groupId, string symbol, CancellationToken ct = default)
     {
         var group = await GetGroupByIdAsync(groupId);
-        if (group == null) return false;
+        if (group == null)
+            return false;
 
         var symbols = group.Symbols.ToList();
         symbols.RemoveAll(s => s.Equals(symbol, StringComparison.OrdinalIgnoreCase));

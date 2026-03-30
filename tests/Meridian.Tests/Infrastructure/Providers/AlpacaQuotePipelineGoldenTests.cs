@@ -31,26 +31,27 @@ public sealed class AlpacaQuotePipelineGoldenTests : IDisposable
     {
         var options = new StorageOptions { RootPath = _root };
         var policy = new SingleFilePolicy(_root);
-        await using var sink = new JsonlStorageSink(options, policy, JsonlBatchOptions.NoBatching);
-        await using var pipeline = new EventPipeline(
+        await using (var sink = new JsonlStorageSink(options, policy, JsonlBatchOptions.NoBatching))
+        await using (var pipeline = new EventPipeline(
             sink,
             capacity: 128,
             batchSize: 1,
-            enablePeriodicFlush: false);
+            enablePeriodicFlush: false))
+        {
+            var collector = new QuoteCollector(pipeline);
+            var timestamp = new DateTimeOffset(2026, 3, 19, 14, 30, 0, TimeSpan.Zero);
+            collector.OnQuote(new MarketQuoteUpdate(
+                Timestamp: timestamp,
+                Symbol: "AAPL",
+                BidPrice: 185.50m,
+                BidSize: 500,
+                AskPrice: 185.55m,
+                AskSize: 300,
+                StreamId: "ALPACA",
+                Venue: "ALPACA"));
 
-        var collector = new QuoteCollector(pipeline);
-        var timestamp = new DateTimeOffset(2026, 3, 19, 14, 30, 0, TimeSpan.Zero);
-        collector.OnQuote(new MarketQuoteUpdate(
-            Timestamp: timestamp,
-            Symbol: "AAPL",
-            BidPrice: 185.50m,
-            BidSize: 500,
-            AskPrice: 185.55m,
-            AskSize: 300,
-            StreamId: "ALPACA",
-            Venue: "ALPACA"));
-
-        await pipeline.FlushAsync();
+            await pipeline.FlushAsync();
+        }
 
         var actualLine = File.ReadAllLines(Directory.GetFiles(_root, "*.jsonl", SearchOption.AllDirectories).Single()).Single();
         using var actualDoc = JsonDocument.Parse(actualLine);

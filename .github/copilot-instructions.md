@@ -100,5 +100,5 @@ Relevant examples:
 - [`docs/ai/README.md`](../docs/ai/README.md) — master AI resource index with reading order by task type
 - [`docs/ai/ai-known-errors.md`](../docs/ai/ai-known-errors.md) — mandatory error prevention registry
 - [`docs/ai/copilot/instructions.md`](../docs/ai/copilot/instructions.md) — extended Copilot guide with project structure and decision tree
-- [`agents/code-review-agent.md`](agents/code-review-agent.md) — 6-lens code review framework
+- [`agents/code-review-agent.md`](agents/code-review-agent.md) — 7-lens code review framework
 - [`prompts/`](prompts/) — 16 reusable prompt templates

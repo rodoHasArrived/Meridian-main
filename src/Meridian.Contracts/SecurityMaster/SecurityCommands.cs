@@ -36,6 +36,13 @@ public sealed record DeactivateSecurityRequest(
     string? SourceRecordId,
     string? Reason);
 
+/// <summary>
+/// Request for bulk importing securities via the HTTP API.
+/// </summary>
+public sealed record SecurityMasterImportRequest(
+    string FileContent,
+    string FileExtension);
+
 public sealed record UpsertSecurityAliasRequest(
     Guid AliasId,
     Guid SecurityId,

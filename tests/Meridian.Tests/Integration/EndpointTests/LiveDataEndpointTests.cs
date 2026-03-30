@@ -34,6 +34,7 @@ public sealed class LiveDataEndpointTests
     [InlineData("/api/data/trades/SPY")]
     [InlineData("/api/data/quotes/SPY")]
     [InlineData("/api/data/orderbook/SPY")]
+    [InlineData("/api/data/l3-orderbook/SPY")]
     public async Task DataEndpoint_ForConfiguredSymbol_ReturnsJsonOrServiceUnavailable(string url)
     {
         var response = await _client.GetAsync(url);

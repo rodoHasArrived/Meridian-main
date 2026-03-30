@@ -6,8 +6,10 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
+using CommunityToolkit.Mvvm.Input;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
 using WpfServices = Meridian.Wpf.Services;
@@ -25,6 +27,9 @@ public sealed class LiveDataViewerViewModel : BindableBase, IDisposable
     private readonly WpfServices.ConnectionService _connectionService;
     private readonly WpfServices.LoggingService _loggingService;
     private readonly WpfServices.NotificationService _notificationService;
+    private readonly SymbolManagementService _symbolManagementService;
+    private readonly WpfServices.TearOffPanelService _tearOffPanelService;
+    private readonly WpfServices.ConfigService _configService;
 
     private readonly DispatcherTimer _refreshTimer;
     private readonly DispatcherTimer _statsTimer;
@@ -55,6 +60,8 @@ public sealed class LiveDataViewerViewModel : BindableBase, IDisposable
     // ── Bindable properties ─────────────────────────────────────────────
     private string _connectionStatusText = "Disconnected";
     public string ConnectionStatusText { get => _connectionStatusText; private set => SetProperty(ref _connectionStatusText, value); }
+
+    public string SelectedSymbol => string.IsNullOrWhiteSpace(_selectedSymbol) ? "No symbol" : _selectedSymbol;
 
     private SolidColorBrush _connectionIndicatorColor = new(Color.FromRgb(139, 148, 158));
     public SolidColorBrush ConnectionIndicatorColor { get => _connectionIndicatorColor; private set => SetProperty(ref _connectionIndicatorColor, value); }
@@ -116,16 +123,25 @@ public sealed class LiveDataViewerViewModel : BindableBase, IDisposable
     // Fired when a new event is added and auto-scroll is desired
     public event EventHandler? AutoScrollRequested;
 
+    /// <summary>Tears off the current symbol into a floating quote panel.</summary>
+    public ICommand TearOffCommand { get; }
+
     public LiveDataViewerViewModel(
         WpfServices.StatusService statusService,
         WpfServices.ConnectionService connectionService,
         WpfServices.LoggingService loggingService,
-        WpfServices.NotificationService notificationService)
+        WpfServices.NotificationService notificationService,
+        SymbolManagementService symbolManagementService,
+        WpfServices.TearOffPanelService tearOffPanelService,
+        WpfServices.ConfigService configService)
     {
         _statusService = statusService;
         _connectionService = connectionService;
         _loggingService = loggingService;
         _notificationService = notificationService;
+        _symbolManagementService = symbolManagementService;
+        _tearOffPanelService = tearOffPanelService;
+        _configService = configService;
         _baseUrl = _statusService.BaseUrl;
 
         _refreshTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
@@ -133,6 +149,8 @@ public sealed class LiveDataViewerViewModel : BindableBase, IDisposable
 
         _statsTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
         _statsTimer.Tick += (_, _) => UpdateStats();
+
+        TearOffCommand = new RelayCommand(TearOffCurrentSymbol);
     }
 
     public async Task StartAsync(CancellationToken ct = default)
@@ -174,6 +192,7 @@ public sealed class LiveDataViewerViewModel : BindableBase, IDisposable
     public void SelectSymbol(string symbol)
     {
         _selectedSymbol = symbol;
+        RaisePropertyChanged(nameof(SelectedSymbol));
         ResetSessionStats();
         LiveEvents.Clear();
         NoDataVisible = true;
@@ -219,7 +238,7 @@ public sealed class LiveDataViewerViewModel : BindableBase, IDisposable
             _cts?.Cancel();
             _cts = new CancellationTokenSource();
 
-            var symbolService = SymbolManagementService.Instance;
+            var symbolService = _symbolManagementService;
             var result = await symbolService.GetAllSymbolsAsync(_cts.Token);
             AvailableSymbols.Clear();
 
@@ -229,7 +248,7 @@ public sealed class LiveDataViewerViewModel : BindableBase, IDisposable
             }
             else
             {
-                var configSymbols = await WpfServices.ConfigService.Instance.GetConfiguredSymbolsAsync(_cts.Token);
+                var configSymbols = await _configService.GetConfiguredSymbolsAsync(_cts.Token);
                 if (configSymbols.Length > 0)
                     AvailableSymbols.AddRange(configSymbols.Select(s => s.Symbol));
             }
@@ -458,4 +477,10 @@ public sealed class LiveDataViewerViewModel : BindableBase, IDisposable
     }
 
     public void Dispose() => Stop();
+
+    private void TearOffCurrentSymbol()
+    {
+        if (!string.IsNullOrEmpty(_selectedSymbol))
+            _tearOffPanelService.TearOff(_selectedSymbol);
+    }
 }

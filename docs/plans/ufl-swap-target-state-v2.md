@@ -2,9 +2,13 @@
 
 **Owner:** Core Team  
 **Audience:** Product, architecture, domain, storage, and application contributors  
-**Last Updated:** 2026-03-22  
+**Last Updated:** 2026-03-26  
 **Status:** active  
-**Reviewed:** 2026-03-22
+**Reviewed:** 2026-03-26
+
+> **Naming standard:** All new F# types and DTOs in this package must follow the
+> [Domain Naming Standard](../ai/claude/CLAUDE.domain-naming.md).
+> Swaps: definition record → `SwapDef`; fixed leg rate → `FixedRate: decimal option`; floating index → `FloatIdx: string option`; notional → `NotionalAmt: decimal option`.
 
 ## Summary
 

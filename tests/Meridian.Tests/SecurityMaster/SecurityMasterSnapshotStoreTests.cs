@@ -60,7 +60,7 @@ public sealed class SecurityMasterSnapshotStoreTests
                 schemaVersion = 1
             }));
 
-        await eventStore.AppendAsync(securityId, expectedVersion: 0, [ tailEvent ]);
+        await eventStore.AppendAsync(securityId, expectedVersion: 0, [tailEvent]);
 
         var loadedSnapshot = await snapshotStore.LoadAsync(securityId);
         loadedSnapshot.Should().NotBeNull();

@@ -34,7 +34,6 @@ public static class PipelinePolicyConstants
     /// </summary>
     public const int FullModeDropWrite = 3;
 
-    #region Preset: Default
 
     /// <summary>
     /// Default preset capacity for general-purpose event pipelines.
@@ -46,9 +45,7 @@ public static class PipelinePolicyConstants
     /// </summary>
     public const int DefaultFullMode = FullModeDropOldest;
 
-    #endregion
 
-    #region Preset: HighThroughput
 
     /// <summary>
     /// HighThroughput preset capacity for streaming data pipelines.
@@ -60,9 +57,7 @@ public static class PipelinePolicyConstants
     /// </summary>
     public const int HighThroughputFullMode = FullModeDropOldest;
 
-    #endregion
 
-    #region Preset: MessageBuffer
 
     /// <summary>
     /// MessageBuffer preset capacity for internal message buffering.
@@ -74,9 +69,7 @@ public static class PipelinePolicyConstants
     /// </summary>
     public const int MessageBufferFullMode = FullModeDropOldest;
 
-    #endregion
 
-    #region Preset: MaintenanceQueue
 
     /// <summary>
     /// MaintenanceQueue preset capacity for background tasks.
@@ -88,9 +81,7 @@ public static class PipelinePolicyConstants
     /// </summary>
     public const int MaintenanceQueueFullMode = FullModeWait;
 
-    #endregion
 
-    #region Preset: Logging
 
     /// <summary>
     /// Logging preset capacity for log channels.
@@ -102,9 +93,7 @@ public static class PipelinePolicyConstants
     /// </summary>
     public const int LoggingFullMode = FullModeDropOldest;
 
-    #endregion
 
-    #region Preset: CompletionQueue
 
     /// <summary>
     /// CompletionQueue preset capacity for completion notifications.
@@ -116,5 +105,4 @@ public static class PipelinePolicyConstants
     /// </summary>
     public const int CompletionQueueFullMode = FullModeWait;
 
-    #endregion
 }

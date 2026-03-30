@@ -330,9 +330,12 @@ public sealed class OrderBookVisualizationService : IDisposable
 
     private static decimal CalculateTickSize(decimal price)
     {
-        if (price >= 1000) return 0.1m;
-        if (price >= 100) return 0.05m;
-        if (price >= 10) return 0.01m;
+        if (price >= 1000)
+            return 0.1m;
+        if (price >= 100)
+            return 0.05m;
+        if (price >= 10)
+            return 0.01m;
         return 0.001m;
     }
 
@@ -345,7 +348,8 @@ public sealed class OrderBookVisualizationService : IDisposable
 
     private static double CalculateIntensity(decimal size, decimal maxSize)
     {
-        if (maxSize <= 0) return 0;
+        if (maxSize <= 0)
+            return 0;
         return Math.Min(1.0, (double)(size / maxSize));
     }
 

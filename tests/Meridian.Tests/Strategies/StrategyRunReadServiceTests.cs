@@ -618,4 +618,120 @@ public sealed class StrategyRunReadServiceTests
             return Task.FromResult<WorkstationSecurityReference?>(reference);
         }
     }
+
+    [Fact]
+    public async Task GetRunsAsync_WithRunTypeFilter_ReturnsOnlyMatchingRunType()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(BuildCompletedRun(
+            runId: "backtest-run",
+            strategyId: "momentum-1",
+            strategyName: "Momentum",
+            finalEquity: 125_000m,
+            netPnl: 25_000m,
+            totalReturn: 0.25m,
+            realizedPnl: 9_000m,
+            unrealizedPnl: 16_000m,
+            fillCount: 2,
+            sharpeRatio: 1.42,
+            maxDrawdown: 5_500m));
+
+        await store.RecordRunAsync(new StrategyRunEntry(
+            RunId: "paper-run",
+            StrategyId: "momentum-1",
+            StrategyName: "Momentum",
+            RunType: RunType.Paper,
+            StartedAt: new DateTimeOffset(2026, 3, 21, 15, 0, 0, TimeSpan.Zero),
+            EndedAt: new DateTimeOffset(2026, 3, 21, 17, 0, 0, TimeSpan.Zero),
+            Metrics: null,
+            FeedReference: "synthetic:stocks",
+            PortfolioId: "momentum-1-paper-portfolio",
+            LedgerReference: "momentum-1-paper-ledger",
+            Engine: "BrokerPaper"));
+
+        await store.RecordRunAsync(new StrategyRunEntry(
+            RunId: "live-run",
+            StrategyId: "momentum-1",
+            StrategyName: "Momentum",
+            RunType: RunType.Live,
+            StartedAt: new DateTimeOffset(2026, 3, 22, 9, 30, 0, TimeSpan.Zero),
+            EndedAt: null,
+            Metrics: null,
+            FeedReference: "ib:stocks",
+            PortfolioId: "momentum-1-live-portfolio",
+            Engine: "BrokerLive"));
+
+        var service = new StrategyRunReadService(
+            store,
+            new PortfolioReadService(),
+            new LedgerReadService());
+
+        var backtestRuns = await service.GetRunsAsync(runType: RunType.Backtest);
+        var paperRuns = await service.GetRunsAsync(runType: RunType.Paper);
+        var liveRuns = await service.GetRunsAsync(runType: RunType.Live);
+        var allRuns = await service.GetRunsAsync();
+
+        backtestRuns.Should().ContainSingle(r => r.RunId == "backtest-run");
+        backtestRuns.Should().AllSatisfy(r => r.Mode.Should().Be(StrategyRunMode.Backtest));
+
+        paperRuns.Should().ContainSingle(r => r.RunId == "paper-run");
+        paperRuns.Should().AllSatisfy(r => r.Mode.Should().Be(StrategyRunMode.Paper));
+
+        liveRuns.Should().ContainSingle(r => r.RunId == "live-run");
+        liveRuns.Should().AllSatisfy(r => r.Mode.Should().Be(StrategyRunMode.Live));
+
+        allRuns.Should().HaveCount(3);
+    }
+
+    [Fact]
+    public async Task GetRunsAsync_WithStrategyIdAndRunTypeFilter_NarrowsByBoth()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(BuildCompletedRun(
+            runId: "s1-backtest",
+            strategyId: "strategy-1",
+            strategyName: "Strategy 1",
+            finalEquity: 110_000m,
+            netPnl: 10_000m,
+            totalReturn: 0.10m,
+            realizedPnl: 8_000m,
+            unrealizedPnl: 2_000m,
+            fillCount: 1,
+            sharpeRatio: 0.9,
+            maxDrawdown: 3_000m));
+
+        await store.RecordRunAsync(new StrategyRunEntry(
+            RunId: "s1-paper",
+            StrategyId: "strategy-1",
+            StrategyName: "Strategy 1",
+            RunType: RunType.Paper,
+            StartedAt: new DateTimeOffset(2026, 3, 21, 15, 0, 0, TimeSpan.Zero),
+            EndedAt: new DateTimeOffset(2026, 3, 21, 17, 0, 0, TimeSpan.Zero),
+            Metrics: null,
+            Engine: "BrokerPaper"));
+
+        await store.RecordRunAsync(new StrategyRunEntry(
+            RunId: "s2-paper",
+            StrategyId: "strategy-2",
+            StrategyName: "Strategy 2",
+            RunType: RunType.Paper,
+            StartedAt: new DateTimeOffset(2026, 3, 22, 10, 0, 0, TimeSpan.Zero),
+            EndedAt: null,
+            Metrics: null,
+            Engine: "BrokerPaper"));
+
+        var service = new StrategyRunReadService(
+            store,
+            new PortfolioReadService(),
+            new LedgerReadService());
+
+        var result = await service.GetRunsAsync(strategyId: "strategy-1", runType: RunType.Paper);
+
+        result.Should().ContainSingle(r => r.RunId == "s1-paper");
+        result.Should().AllSatisfy(r =>
+        {
+            r.Mode.Should().Be(StrategyRunMode.Paper);
+            r.StrategyId.Should().Be("strategy-1");
+        });
+    }
 }

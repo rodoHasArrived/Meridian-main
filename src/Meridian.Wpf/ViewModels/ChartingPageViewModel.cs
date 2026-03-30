@@ -12,8 +12,7 @@ namespace Meridian.Wpf.ViewModels;
 public sealed class ChartingPageViewModel : BindableBase
 {
     private readonly ChartingService _chartingService = new();
-    private readonly SymbolManagementService _symbolService = SymbolManagementService.Instance;
-    private CandlestickData? _chartData;
+    private readonly SymbolManagementService _symbolService;
     private string? _selectedSymbol;
     private ChartTimeframe _selectedTimeframe = ChartTimeframe.Daily;
     private DateOnly? _fromDate;
@@ -82,6 +81,11 @@ public sealed class ChartingPageViewModel : BindableBase
 
     public string NoChartDataMessage { get => _noChartDataMessage; private set => SetProperty(ref _noChartDataMessage, value); }
     private string _noChartDataMessage = "Select a symbol to view chart";
+
+    public ChartingPageViewModel(SymbolManagementService symbolService)
+    {
+        _symbolService = symbolService;
+    }
 
     public void Initialize()
     {

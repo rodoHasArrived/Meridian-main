@@ -3,17 +3,24 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:local="clr-namespace:Meridian.Wpf.Converters"
       mc:Ignorable="d"
       d:DesignHeight="900" d:DesignWidth="1400"
       Background="{DynamicResource ShellWindowBackgroundBrush}"
       Loaded="OnPageLoaded"
       AutomationProperties.Name="Symbols">
 
+    <Page.Resources>
+        <local:NullToCollapsedConverter x:Key="NullToCollapsedConverter" />
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </Page.Resources>
+
     <Grid Margin="24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
@@ -241,6 +248,16 @@
                               Background="Transparent"
                               BorderThickness="0"
                               SelectionChanged="SymbolsListView_SelectionChanged">
+                        <ListView.ContextMenu>
+                            <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                                <MenuItem Header="View Live Data" Command="{Binding NavigateToLiveDataCommand}"/>
+                                <MenuItem Header="View Order Book" Command="{Binding NavigateToOrderBookCommand}"/>
+                                <MenuItem Header="Backfill Data" Command="{Binding StartBackfillCommand}"/>
+                                <MenuItem Header="Chart" Command="{Binding NavigateToChartCommand}"/>
+                                <Separator/>
+                                <MenuItem Header="Export Data..." Command="{Binding ExportSymbolDataCommand}"/>
+                            </ContextMenu>
+                        </ListView.ContextMenu>
                         <ListView.ItemTemplate>
                             <DataTemplate>
                                 <Grid Margin="0,4">
@@ -455,6 +472,25 @@
                         </StackPanel>
                     </Border>
 
+                    <!-- Security Master Integration Panel -->
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16"
+                                Visibility="{Binding SelectedSymbolTicker, Converter={StaticResource NullToCollapsedConverter}}">
+                        <TextBlock Text="Security Master:"
+                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                   FontWeight="SemiBold"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,12,0" />
+                        <Button Content="View in Master"
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                Command="{Binding ViewInSecurityMasterCommand}"
+                                Visibility="{Binding CanViewInSecurityMaster, Converter={StaticResource BoolToVisibilityConverter}}"
+                                Margin="0,0,8,0" />
+                        <Button Content="Add to Master"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Command="{Binding AddToSecurityMasterCommand}"
+                                Visibility="{Binding CanAddToSecurityMaster, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    </StackPanel>
+
                     <!-- Subscription Templates -->
                     <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
                         <StackPanel>
@@ -637,8 +673,33 @@
             </ScrollViewer>
         </Grid>
 
+        <!-- Action Strip - shown when a symbol is selected -->
+        <Border Grid.Row="3" Background="{StaticResource PremiumPanelBrush}" 
+                Padding="16,12"
+                Margin="0,12,0,0"
+                CornerRadius="8"
+                BorderBrush="{StaticResource ConsoleBorderBrush}" 
+                BorderThickness="1"
+                Visibility="{Binding HasSelectedSymbol, Converter={StaticResource BoolToVisibilityConverter}}">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="{Binding SelectedItem.Symbol}" FontWeight="SemiBold" 
+                           Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                           VerticalAlignment="Center" Margin="0,0,16,0" FontSize="13"/>
+                <Button Content="📊 Live Data" Command="{Binding NavigateToLiveDataCommand}" 
+                        Style="{StaticResource GhostButtonStyle}" Margin="0,0,6,0" Padding="10,4" FontSize="12"/>
+                <Button Content="📖 Order Book" Command="{Binding NavigateToOrderBookCommand}" 
+                        Style="{StaticResource GhostButtonStyle}" Margin="0,0,6,0" Padding="10,4" FontSize="12"/>
+                <Button Content="⬇ Backfill" Command="{Binding StartBackfillCommand}" 
+                        Style="{StaticResource GhostButtonStyle}" Margin="0,0,6,0" Padding="10,4" FontSize="12"/>
+                <Button Content="📈 Chart" Command="{Binding NavigateToChartCommand}" 
+                        Style="{StaticResource GhostButtonStyle}" Margin="0,0,6,0" Padding="10,4" FontSize="12"/>
+                <Button Content="💾 Export" Command="{Binding ExportSymbolDataCommand}" 
+                        Style="{StaticResource GhostButtonStyle}" Padding="10,4" FontSize="12"/>
+            </StackPanel>
+        </Border>
+
         <!-- Bottom Actions -->
-        <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,16,0,0">
+        <StackPanel Grid.Row="4" Orientation="Horizontal" Margin="0,16,0,0">
             <Button Content="Refresh List"
                     Style="{StaticResource SecondaryButtonStyle}"
                     Click="RefreshList_Click"

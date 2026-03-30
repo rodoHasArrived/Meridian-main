@@ -93,7 +93,8 @@ public abstract class ConfigServiceBase
 
             foreach (var (providerId, options) in providerEntries)
             {
-                if (options == null) continue;
+                if (options == null)
+                    continue;
 
                 if (options.Priority is < 0)
                 {
@@ -386,15 +387,32 @@ public abstract class ConfigServiceBase
     {
         switch (NormalizeProviderId(providerId))
         {
-            case "alpaca": providers.Alpaca = options; break;
-            case "polygon": providers.Polygon = options; break;
-            case "tiingo": providers.Tiingo = options; break;
-            case "finnhub": providers.Finnhub = options; break;
-            case "stooq": providers.Stooq = options; break;
-            case "yahoo": providers.Yahoo = options; break;
-            case "alphavantage": providers.AlphaVantage = options; break;
-            case "nasdaqdatalink": providers.NasdaqDataLink = options; break;
-            default: throw new ArgumentOutOfRangeException(nameof(providerId), providerId, "Unknown backfill provider id");
+            case "alpaca":
+                providers.Alpaca = options;
+                break;
+            case "polygon":
+                providers.Polygon = options;
+                break;
+            case "tiingo":
+                providers.Tiingo = options;
+                break;
+            case "finnhub":
+                providers.Finnhub = options;
+                break;
+            case "stooq":
+                providers.Stooq = options;
+                break;
+            case "yahoo":
+                providers.Yahoo = options;
+                break;
+            case "alphavantage":
+                providers.AlphaVantage = options;
+                break;
+            case "nasdaqdatalink":
+                providers.NasdaqDataLink = options;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(providerId), providerId, "Unknown backfill provider id");
         }
     }
 

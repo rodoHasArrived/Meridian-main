@@ -33,6 +33,7 @@ public class BackfillWorkerServiceTests
                 null!,
                 null!,
                 config,
+                new AppConfig(DataRoot: _testDataRoot),
                 _testDataRoot));
 
         ex.ParamName.Should().Be("config");
@@ -60,6 +61,7 @@ public class BackfillWorkerServiceTests
                 null!,
                 null!,
                 config,
+                new AppConfig(DataRoot: _testDataRoot),
                 _testDataRoot));
 
         ex.ParamName.Should().Be("config");
@@ -93,6 +95,7 @@ public class BackfillWorkerServiceTests
                     null!,
                     null!,
                     config,
+                    new AppConfig(DataRoot: _testDataRoot),
                     _testDataRoot);
             }
             catch (ArgumentOutOfRangeException)
@@ -126,6 +129,7 @@ public class BackfillWorkerServiceTests
                     null!,
                     null!,
                     config,
+                    new AppConfig(DataRoot: _testDataRoot),
                     _testDataRoot);
             }
             catch (ArgumentOutOfRangeException)

@@ -11,7 +11,7 @@ Quick start guide for the Meridian. For comprehensive documentation, see [HELP.m
 
 ```bash
 # Clone and build
-git clone <repository-url>
+git clone https://github.com/rodoHasArrived/Meridian.git
 cd Meridian
 dotnet build
 
@@ -26,7 +26,7 @@ The wizard guides you through provider selection, symbol configuration, and stor
 You need at least one data provider. Choose based on your needs:
 
 | Provider | Free Tier | Setup Guide | Best For |
-|----------|-----------|-------------|----------|
+| ---------- | ----------- | ------------- | ---------- |
 | **Alpaca** | Yes (with account) | [Alpaca Setup](../providers/alpaca-setup.md) | Easiest to start, real-time US equities |
 | **Interactive Brokers** | Yes (with account) | [IB Setup](../providers/interactive-brokers-setup.md) | Full L2 depth, options, broad coverage |
 | **Polygon** | Limited | [Provider Comparison](../providers/provider-comparison.md) | High-quality aggregated data |
@@ -45,7 +45,7 @@ See [Environment Variables](../reference/environment-variables.md) for the full 
 ## Alternative Setup Methods
 
 | Method | Command | Best For |
-|--------|---------|----------|
+| -------- | --------- | ---------- |
 | **Configuration Wizard** | `--wizard` | New users, interactive setup |
 | **Auto-Configuration** | `--auto-config` | Users with env vars already set |
 | **Web Dashboard** | `--mode web` | Visual configuration via browser |
@@ -82,7 +82,7 @@ dotnet run --project src/Meridian/Meridian.csproj -- --mode headless
 
 By default, collected data goes to the `data/` directory:
 
-```
+```text
 data/
 ├── live/           # Real-time streaming data (hot tier)
 ├── historical/     # Backfill data from historical providers

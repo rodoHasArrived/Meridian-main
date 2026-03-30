@@ -1,10 +1,12 @@
 using Meridian.Application.Config;
 using Meridian.Application.DirectLending;
 using Meridian.Application.SecurityMaster;
+using Meridian.Application.UI;
 using Meridian.Contracts.DirectLending;
 using Meridian.Contracts.SecurityMaster;
-using Meridian.Application.UI;
 using Meridian.Contracts.Store;
+using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Storage;
 using Meridian.Storage.DirectLending;
 using Meridian.Storage.Export;
@@ -52,6 +54,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.AddSingleton<IDataQualityService, DataQualityService>();
         services.AddSingleton<IStorageSearchService, StorageSearchService>();
         services.AddSingleton<ITierMigrationService, TierMigrationService>();
+        services.AddSingleton<IAuditChainService, AuditChainService>();
+        services.AddSingleton<StorageChecksumService>(sp => new StorageChecksumService(null, sp.GetRequiredService<IAuditChainService>()));
         services.AddSingleton<ISymbolRegistryService>(sp =>
         {
             var storageOptions = sp.GetRequiredService<StorageOptions>();
@@ -102,7 +106,9 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.AddSingleton<SecurityMasterProjectionService>();
         services.AddSingleton<SecurityMasterRebuildOrchestrator>();
         services.AddSingleton<ISecurityMasterService, SecurityMasterService>();
-        services.AddSingleton<ISecurityMasterQueryService, SecurityMasterQueryService>();
+        services.AddSingleton<SecurityMasterQueryService>();
+        services.AddSingleton<Meridian.Application.SecurityMaster.ISecurityMasterQueryService>(sp => sp.GetRequiredService<SecurityMasterQueryService>());
+        services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(sp => sp.GetRequiredService<SecurityMasterQueryService>());
         services.AddSingleton<ISecurityResolver, SecurityResolver>();
         services.AddHostedService<SecurityMasterProjectionWarmupService>();
         services.AddSingleton<DirectLendingEventRebuilder>();
@@ -113,6 +119,17 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.AddSingleton<IDirectLendingCommandService, PostgresDirectLendingCommandService>();
         services.AddSingleton<IDirectLendingService, PostgresDirectLendingService>();
         services.AddHostedService<DirectLendingOutboxDispatcher>();
+        services.AddHostedService<DailyAccrualWorker>();
+        services.AddSingleton<RateLimiter>(sp => new RateLimiter(5, TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(0.5)));
+        services.AddSingleton<IPolygonCorporateActionFetcher, PolygonCorporateActionFetcher>();
+        services.AddSingleton<PolygonCorporateActionFetcher>(sp => (PolygonCorporateActionFetcher)sp.GetRequiredService<IPolygonCorporateActionFetcher>());
+        services.AddHostedService<PolygonCorporateActionFetcher>(sp => sp.GetRequiredService<PolygonCorporateActionFetcher>());
+        services.AddSingleton<ITradingParametersBackfillService, TradingParametersBackfillService>();
+
+        // Security Master bulk import services
+        services.AddSingleton<SecurityMasterCsvParser>();
+        services.AddSingleton<ISecurityMasterImportService, SecurityMasterImportService>();
+        services.AddSingleton<ISecurityMasterConflictService, SecurityMasterConflictService>();
 
         return services;
     }

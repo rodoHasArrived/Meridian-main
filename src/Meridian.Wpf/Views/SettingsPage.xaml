@@ -800,6 +800,82 @@
                         </ListView>
                     </StackPanel>
                 </Border>
+
+                <!-- Global Hotkeys -->
+                <Border Style="{StaticResource CardStyle}" Margin="0,24,0,0">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                            <TextBlock Text="&#xE92E;"
+                                       FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                       FontSize="20"
+                                       Foreground="{StaticResource InfoColorBrush}"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text="Global Hotkeys"
+                                       Style="{StaticResource CardHeaderStyle}"
+                                       Margin="8,0,0,0" />
+                        </StackPanel>
+
+                        <TextBlock Text="System-wide shortcuts that activate even when Meridian is not in focus."
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,0,0,12" />
+
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                            <CheckBox x:Name="GlobalHotkeysEnabledCheckBox"
+                                      Content="Enable global hotkeys"
+                                      IsChecked="True"
+                                      Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                      VerticalAlignment="Center"
+                                      Click="GlobalHotkeysEnabled_Click" />
+                        </StackPanel>
+
+                        <ListView x:Name="GlobalHotkeysList"
+                                  Background="Transparent"
+                                  BorderThickness="0"
+                                  IsHitTestVisible="False">
+                            <ListView.ItemContainerStyle>
+                                <Style TargetType="ListViewItem">
+                                    <Setter Property="Background" Value="Transparent" />
+                                    <Setter Property="Padding" Value="0" />
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                </Style>
+                            </ListView.ItemContainerStyle>
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                                            CornerRadius="8"
+                                            Padding="12,8"
+                                            Margin="0,3">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="130" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <Border Grid.Column="0"
+                                                    Background="{StaticResource ConsoleBackgroundDarkBrush}"
+                                                    CornerRadius="4"
+                                                    Padding="6,2"
+                                                    HorizontalAlignment="Left">
+                                                <TextBlock Text="{Binding KeyGesture}"
+                                                           FontFamily="Consolas, Courier New, monospace"
+                                                           FontSize="12"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{StaticResource InfoColorBrush}" />
+                                            </Border>
+                                            <TextBlock Grid.Column="1"
+                                                       Text="{Binding Description}"
+                                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                       VerticalAlignment="Center"
+                                                       Margin="12,0,0,0"
+                                                       TextTrimming="CharacterEllipsis" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </StackPanel>
+                </Border>
+
             </StackPanel>
         </ScrollViewer>
     </Grid>

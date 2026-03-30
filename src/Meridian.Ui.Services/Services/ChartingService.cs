@@ -473,7 +473,8 @@ public sealed class ChartingService
     private List<decimal> CalculateEmaValues(List<decimal> values, int period)
     {
         var results = new List<decimal>();
-        if (values.Count < period) return results;
+        if (values.Count < period)
+            return results;
 
         var multiplier = 2.0m / (period + 1);
         var ema = values.Take(period).Average();
@@ -490,7 +491,8 @@ public sealed class ChartingService
 
     private decimal CalculateStdDev(List<decimal> values)
     {
-        if (values.Count == 0) return 0;
+        if (values.Count == 0)
+            return 0;
         var avg = values.Average();
         var sumOfSquares = values.Sum(v => (v - avg) * (v - avg));
         return (decimal)Math.Sqrt((double)(sumOfSquares / values.Count));

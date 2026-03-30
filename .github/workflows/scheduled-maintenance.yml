@@ -100,7 +100,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup .NET with Cache
         uses: ./.github/actions/setup-dotnet-cache
@@ -177,7 +177,7 @@ jobs:
   dependency-health:
     name: Dependency Health Check
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     if: github.event_name == 'schedule' || github.event.inputs.run_dependency_check == 'true'
     outputs:
       outdated_summary: ${{ steps.outdated.outputs.summary }}
@@ -187,7 +187,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup .NET with Cache
         uses: ./.github/actions/setup-dotnet-cache
@@ -248,7 +248,7 @@ jobs:
   repository-health:
     name: Repository Health Audit
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     if: github.event_name == 'schedule' || github.event.inputs.run_repo_health == 'true'
     outputs:
       cs_file_count: ${{ steps.metrics.outputs.cs_file_count }}
@@ -262,7 +262,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -390,7 +390,7 @@ jobs:
   workflow-hygiene:
     name: Workflow Hygiene
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
     if: github.event_name == 'schedule' || github.event.inputs.run_workflow_hygiene == 'true'
     outputs:
       yaml_valid: ${{ steps.yaml-check.outputs.valid }}
@@ -399,7 +399,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -580,7 +580,7 @@ jobs:
   documentation-check:
     name: Documentation Link Validation
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
     if: github.event_name == 'schedule' || github.event.inputs.run_docs_check == 'true'
     outputs:
       broken_link_count: ${{ steps.check-links.outputs.broken_count }}
@@ -588,7 +588,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Check internal markdown links
         id: check-links
@@ -720,7 +720,7 @@ jobs:
   stale-branch-cleanup:
     name: Stale Branch Cleanup
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
     if: github.event_name == 'schedule' || github.event.inputs.run_branch_cleanup == 'true'
     outputs:
       merged_count: ${{ steps.merged.outputs.merged_count }}
@@ -728,7 +728,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -858,7 +858,7 @@ jobs:
   build-size-tracking:
     name: Build Size Tracking
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     if: github.event_name == 'schedule' || github.event.inputs.run_build_tracking == 'true'
     outputs:
       total_build_size_mb: ${{ steps.measure.outputs.total_size_mb }}
@@ -867,7 +867,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup .NET with Cache
         uses: ./.github/actions/setup-dotnet-cache
@@ -966,11 +966,11 @@ jobs:
   cache-management:
     name: Cache Management
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: List caches
         if: |
@@ -1071,7 +1071,7 @@ jobs:
   ai-health-report:
     name: AI Project Health Report
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
     needs:
       - full-test-suite
       - dependency-health
@@ -1164,7 +1164,7 @@ jobs:
   maintenance-summary:
     name: Maintenance Summary
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 30
     needs:
       - full-test-suite
       - dependency-health

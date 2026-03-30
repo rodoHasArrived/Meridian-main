@@ -297,7 +297,8 @@ public sealed class BrokerageGatewayAdapterTests
         Func<Task> act = async () =>
         {
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-            await foreach (var _ in adapter.StreamOrderUpdatesAsync(cts.Token)) { }
+            await foreach (var _ in adapter.StreamOrderUpdatesAsync(cts.Token))
+            { }
         };
 
         await act.Should().ThrowAsync<MeridianException>()

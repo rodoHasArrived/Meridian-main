@@ -8,12 +8,21 @@ public sealed class SecurityMasterAggregateRebuilder
     private readonly ISecurityMasterEventStore _eventStore;
     private readonly ISecurityMasterSnapshotStore _snapshotStore;
 
+    /// <summary>
+    /// Returns all corporate action events for a security in ascending ex-date order,
+    /// folding the separate CorpActEvent stream into the aggregate view for a security.
+    /// </summary>
+    public Task<IReadOnlyList<CorporateActionDto>> GetCorporateActionsAsync(
+        Guid securityId,
+        CancellationToken ct = default)
+        => _eventStore.LoadCorporateActionsAsync(securityId, ct);
+
     public SecurityMasterAggregateRebuilder(
         ISecurityMasterEventStore eventStore,
         ISecurityMasterSnapshotStore snapshotStore)
     {
-        _eventStore = eventStore;
-        _snapshotStore = snapshotStore;
+        _eventStore = eventStore ?? throw new ArgumentNullException(nameof(eventStore));
+        _snapshotStore = snapshotStore ?? throw new ArgumentNullException(nameof(snapshotStore));
     }
 
     public async Task<SecurityEconomicDefinitionRecord?> RebuildEconomicDefinitionAsync(

@@ -221,6 +221,167 @@ public sealed class CompletenessScoreCalculatorTests : IDisposable
         config.TradingEndHour.Should().Be(20);
         config.TradingEndMinute.Should().Be(0);
         config.RetentionDays.Should().Be(30);
+        config.EnableAutoCalibration.Should().BeTrue();
+        config.CalibrationWindowMinutes.Should().Be(60);
+        config.CalibrationMinEvents.Should().Be(10);
+    }
+
+    #endregion
+
+    #region AutoCalibration
+
+    [Fact]
+    public void AutoCalibration_AfterWindowElapsesWithEnoughEvents_AdjustsExpectedRate()
+    {
+        // High default of 5000/hour deliberately chosen so the default score is terrible.
+        using var sut = new CompletenessScoreCalculator(new CompletenessConfig
+        {
+            ExpectedEventsPerHour = 5000,
+            TradingStartHour = 13,
+            TradingStartMinute = 30,
+            TradingEndHour = 20,
+            TradingEndMinute = 0,
+            EnableAutoCalibration = true,
+            CalibrationWindowMinutes = 60,
+            CalibrationMinEvents = 5
+        });
+
+        // Symbol actually trades at ~6 events/hour.
+        // Simulate 5 events in the first 50 minutes (not enough time yet).
+        var t0 = new DateTimeOffset(2026, 2, 11, 14, 0, 0, TimeSpan.Zero);
+        var date = DateOnly.FromDateTime(t0.UtcDateTime);
+
+        for (int i = 0; i < 5; i++)
+            sut.RecordEvent("LOWVOL", t0.AddMinutes(i * 10), "trade");
+
+        var scoreBefore = sut.GetScore("LOWVOL", date)!;
+        scoreBefore.IsAutoCalibrated.Should().BeFalse("calibration window has not elapsed yet");
+        scoreBefore.Score.Should().BeLessThan(0.05, "default of 5000/hr makes 5 events look terrible");
+
+        // 6th event arrives 61 minutes after the first → triggers calibration.
+        sut.RecordEvent("LOWVOL", t0.AddMinutes(61), "trade");
+
+        var scoreAfter = sut.GetScore("LOWVOL", date)!;
+        scoreAfter.IsAutoCalibrated.Should().BeTrue("calibration window has now elapsed with enough events");
+        scoreAfter.Score.Should().BeGreaterThan(scoreBefore.Score,
+            "expected rate was adjusted down to match observed activity");
+    }
+
+    [Fact]
+    public void AutoCalibration_ExplicitProfileRegistered_PreventsCalibration()
+    {
+        using var sut = new CompletenessScoreCalculator(new CompletenessConfig
+        {
+            ExpectedEventsPerHour = 5000,
+            TradingStartHour = 13,
+            TradingStartMinute = 30,
+            TradingEndHour = 20,
+            TradingEndMinute = 0,
+            EnableAutoCalibration = true,
+            CalibrationWindowMinutes = 60,
+            CalibrationMinEvents = 5
+        });
+
+        // Explicitly configure liquidity before any events arrive.
+        sut.RegisterSymbolLiquidity("LOWVOL", Meridian.Contracts.Domain.Enums.LiquidityProfile.VeryLow);
+
+        var t0 = new DateTimeOffset(2026, 2, 11, 14, 0, 0, TimeSpan.Zero);
+        var date = DateOnly.FromDateTime(t0.UtcDateTime);
+
+        // Simulate 10 events spanning 90 minutes — would normally trigger auto-calibration.
+        for (int i = 0; i < 10; i++)
+            sut.RecordEvent("LOWVOL", t0.AddMinutes(i * 9), "trade");
+
+        var score = sut.GetScore("LOWVOL", date)!;
+        score.IsAutoCalibrated.Should().BeFalse(
+            "explicit RegisterSymbolLiquidity suppresses auto-calibration");
+    }
+
+    [Fact]
+    public void AutoCalibration_TooFewEventsInWindow_DoesNotCalibrate()
+    {
+        using var sut = new CompletenessScoreCalculator(new CompletenessConfig
+        {
+            ExpectedEventsPerHour = 5000,
+            TradingStartHour = 13,
+            TradingStartMinute = 30,
+            TradingEndHour = 20,
+            TradingEndMinute = 0,
+            EnableAutoCalibration = true,
+            CalibrationWindowMinutes = 60,
+            CalibrationMinEvents = 10 // Requires at least 10 events
+        });
+
+        var t0 = new DateTimeOffset(2026, 2, 11, 14, 0, 0, TimeSpan.Zero);
+        var date = DateOnly.FromDateTime(t0.UtcDateTime);
+
+        // Only 3 events over 90 minutes — below CalibrationMinEvents threshold.
+        sut.RecordEvent("SPARSE", t0, "trade");
+        sut.RecordEvent("SPARSE", t0.AddMinutes(45), "trade");
+        sut.RecordEvent("SPARSE", t0.AddMinutes(91), "trade");
+
+        var score = sut.GetScore("SPARSE", date)!;
+        score.IsAutoCalibrated.Should().BeFalse(
+            "fewer than CalibrationMinEvents events observed — calibration should not fire");
+    }
+
+    [Fact]
+    public void AutoCalibration_Disabled_NeverCalibrates()
+    {
+        using var sut = new CompletenessScoreCalculator(new CompletenessConfig
+        {
+            ExpectedEventsPerHour = 5000,
+            TradingStartHour = 13,
+            TradingStartMinute = 30,
+            TradingEndHour = 20,
+            TradingEndMinute = 0,
+            EnableAutoCalibration = false,
+            CalibrationWindowMinutes = 60,
+            CalibrationMinEvents = 5
+        });
+
+        var t0 = new DateTimeOffset(2026, 2, 11, 14, 0, 0, TimeSpan.Zero);
+        var date = DateOnly.FromDateTime(t0.UtcDateTime);
+
+        for (int i = 0; i < 20; i++)
+            sut.RecordEvent("SPY", t0.AddMinutes(i * 5), "trade");
+
+        var score = sut.GetScore("SPY", date)!;
+        score.IsAutoCalibrated.Should().BeFalse(
+            "EnableAutoCalibration=false means calibration is never applied");
+    }
+
+    [Fact]
+    public void AutoCalibration_SetExpectedEventsPerHour_PreventsCalibration()
+    {
+        using var sut = new CompletenessScoreCalculator(new CompletenessConfig
+        {
+            ExpectedEventsPerHour = 5000,
+            TradingStartHour = 13,
+            TradingStartMinute = 30,
+            TradingEndHour = 20,
+            TradingEndMinute = 0,
+            EnableAutoCalibration = true,
+            CalibrationWindowMinutes = 60,
+            CalibrationMinEvents = 5
+        });
+
+        var t0 = new DateTimeOffset(2026, 2, 11, 14, 0, 0, TimeSpan.Zero);
+        var date = DateOnly.FromDateTime(t0.UtcDateTime);
+
+        // Record first event to create the state, then override expected rate explicitly.
+        sut.RecordEvent("SPY", t0, "trade");
+        sut.SetExpectedEventsPerHour("SPY", 300);
+
+        // Record more events spanning 90 minutes — would normally trigger auto-calibration.
+        for (int i = 1; i < 15; i++)
+            sut.RecordEvent("SPY", t0.AddMinutes(i * 6), "trade");
+
+        var score = sut.GetScore("SPY", date)!;
+        score.IsAutoCalibrated.Should().BeFalse(
+            "SetExpectedEventsPerHour marks the state as explicitly configured");
+        score.ExpectedEvents.Should().Be(300L * 65 / 10, // 300/hr * 6.5 hr
+            "explicitly set rate should be preserved");
     }
 
     #endregion

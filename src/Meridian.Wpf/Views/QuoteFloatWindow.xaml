@@ -1,0 +1,80 @@
+<Window x:Class="Meridian.Wpf.Views.QuoteFloatWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        WindowStyle="SingleBorderWindow"
+        ResizeMode="CanResize"
+        MinWidth="280" MinHeight="160"
+        Width="320" Height="210"
+        Title="{Binding Symbol}"
+        ShowInTaskbar="False"
+        Background="#0A0A12"
+        Topmost="True">
+    <Grid Background="#0A0A12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Title bar: drag to move, shows symbol name and close button -->
+        <Border Grid.Row="0" Background="#1A2A4A" Padding="8,5"
+                MouseLeftButtonDown="TitleBar_MouseLeftButtonDown"
+                Cursor="SizeAll">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0"
+                           Text="{Binding Symbol}"
+                           FontSize="14" FontWeight="Bold"
+                           Foreground="White"
+                           VerticalAlignment="Center"/>
+                <Button Grid.Column="1"
+                        Content="✕"
+                        Foreground="#888888" Background="Transparent"
+                        BorderThickness="0" Padding="6,2"
+                        Cursor="Arrow"
+                        FontSize="12"
+                        Click="Close_Click"/>
+            </Grid>
+        </Border>
+
+        <!-- Quote data grid -->
+        <Grid Grid.Row="1" Margin="12,10,12,10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="60"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Last price: large, color-coded by direction -->
+            <TextBlock Grid.Row="0" Grid.ColumnSpan="2"
+                       Text="{Binding LastPrice, StringFormat=N4}"
+                       FontFamily="Consolas" FontSize="22" FontWeight="Bold"
+                       Foreground="{Binding PriceDirectionBrush}"
+                       HorizontalAlignment="Left" VerticalAlignment="Center"/>
+
+            <!-- Bid -->
+            <TextBlock Grid.Row="1" Grid.Column="0"
+                       Text="Bid:" Foreground="#888888" FontSize="12"
+                       VerticalAlignment="Center" Margin="0,6,0,0"/>
+            <TextBlock Grid.Row="1" Grid.Column="1"
+                       Text="{Binding BidPrice, StringFormat=N4}"
+                       Foreground="#44CC44" FontFamily="Consolas" FontSize="12"
+                       VerticalAlignment="Center" Margin="0,6,0,0"/>
+
+            <!-- Ask -->
+            <TextBlock Grid.Row="2" Grid.Column="0"
+                       Text="Ask:" Foreground="#888888" FontSize="12"
+                       VerticalAlignment="Center" Margin="0,4,0,0"/>
+            <TextBlock Grid.Row="2" Grid.Column="1"
+                       Text="{Binding AskPrice, StringFormat=N4}"
+                       Foreground="#CC4444" FontFamily="Consolas" FontSize="12"
+                       VerticalAlignment="Center" Margin="0,4,0,0"/>
+        </Grid>
+    </Grid>
+</Window>

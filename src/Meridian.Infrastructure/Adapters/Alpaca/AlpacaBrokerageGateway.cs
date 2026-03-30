@@ -11,8 +11,8 @@ using Meridian.Infrastructure.DataSources;
 using Microsoft.Extensions.Logging;
 using AlpacaOptions = Meridian.Application.Config.AlpacaOptions;
 using OrderSide = Meridian.Execution.Sdk.OrderSide;
-using OrderType = Meridian.Execution.Sdk.OrderType;
 using OrderStatus = Meridian.Execution.Sdk.OrderStatus;
+using OrderType = Meridian.Execution.Sdk.OrderType;
 using TimeInForce = Meridian.Execution.Sdk.TimeInForce;
 
 namespace Meridian.Infrastructure.Adapters.Alpaca;
@@ -91,7 +91,8 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway
     public async Task ConnectAsync(CancellationToken ct = default)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        if (_connected) return;
+        if (_connected)
+            return;
 
         if (string.IsNullOrWhiteSpace(_options.KeyId) || string.IsNullOrWhiteSpace(_options.SecretKey))
             throw new InvalidOperationException(
@@ -305,7 +306,8 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway
         var positions = await response.Content.ReadFromJsonAsync(
             AlpacaBrokerageSerializerContext.Default.AlpacaPositionResponseArray, ct).ConfigureAwait(false);
 
-        if (positions is null) return Array.Empty<BrokerPosition>();
+        if (positions is null)
+            return Array.Empty<BrokerPosition>();
 
         return positions.Select(p => new BrokerPosition
         {
@@ -329,7 +331,8 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway
         var orders = await response.Content.ReadFromJsonAsync(
             AlpacaBrokerageSerializerContext.Default.AlpacaOrderResponseArray, ct).ConfigureAwait(false);
 
-        if (orders is null) return Array.Empty<BrokerOrder>();
+        if (orders is null)
+            return Array.Empty<BrokerOrder>();
 
         return orders.Select(o => new BrokerOrder
         {
@@ -352,7 +355,8 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway
     {
         try
         {
-            if (!_connected) return BrokerHealthStatus.Unhealthy("Not connected");
+            if (!_connected)
+                return BrokerHealthStatus.Unhealthy("Not connected");
             var account = await GetAccountInfoAsync(ct).ConfigureAwait(false);
             return account.Status == "active"
                 ? BrokerHealthStatus.Healthy($"Account {account.AccountId} active")
@@ -368,7 +372,8 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway
     /// <inheritdoc />
     public ValueTask DisposeAsync()
     {
-        if (_disposed) return ValueTask.CompletedTask;
+        if (_disposed)
+            return ValueTask.CompletedTask;
         _disposed = true;
         _connected = false;
         _reportChannel.Writer.TryComplete();

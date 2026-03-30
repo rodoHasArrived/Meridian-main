@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media;
+using CommunityToolkit.Mvvm.Input;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.Contracts;
 using Meridian.Ui.Services.DataQuality;
@@ -27,7 +28,7 @@ public readonly struct TrendStatistics
     public double ScoreChange { get; init; }
 }
 
-public sealed class DataQualityViewModel : BindableBase, IDisposable
+public sealed class DataQualityViewModel : BindableBase, IDisposable, IPageActionBarProvider
 {
     private static readonly string[] s_anomalyTypeNames =
     {
@@ -43,6 +44,11 @@ public sealed class DataQualityViewModel : BindableBase, IDisposable
     private readonly DataQualityRefreshCoordinator _refreshCoordinator;
     private CancellationTokenSource? _refreshCts;
     private double _lastOverallScore = 98.5;
+    /// <summary>
+    /// Score from the previous snapshot; -1 means no prior reading yet.
+    /// Used to detect significant drops that warrant a toast notification.
+    /// </summary>
+    private double _previousQualityScore = -1.0;
     private string _timeRange = "7d";
     private string _symbolFilter = string.Empty;
     private string _severityFilter = "All";
@@ -170,6 +176,10 @@ public sealed class DataQualityViewModel : BindableBase, IDisposable
     private bool _hasNoDrilldownIssues = true;
     public bool HasNoDrilldownIssues { get => _hasNoDrilldownIssues; private set => SetProperty(ref _hasNoDrilldownIssues, value); }
 
+    // ── IPageActionBarProvider implementation ──────────────────────────────────────
+    public string PageTitle => "Data Quality";
+    public ObservableCollection<ActionEntry> Actions { get; } = new();
+
     public DataQualityViewModel(WpfServices.StatusService statusService, WpfServices.LoggingService loggingService, WpfServices.NotificationService notificationService, IRefreshScheduler? refreshScheduler = null)
     {
         _loggingService = loggingService;
@@ -181,7 +191,15 @@ public sealed class DataQualityViewModel : BindableBase, IDisposable
         UpdateTrendState();
     }
 
-    public Task StartAsync(CancellationToken ct = default) => _refreshCoordinator.StartAsync(TimeSpan.FromSeconds(30), ct);
+    public Task StartAsync(CancellationToken ct = default)
+    {
+        // Populate action bar.
+        Actions.Clear();
+        Actions.Add(new ActionEntry("Refresh", new RelayCommand(() => _ = RefreshAsync()), "↻", "Refresh data quality metrics", IsPrimary: true));
+        Actions.Add(new ActionEntry("Export Report", new RelayCommand(() => _notificationService.NotifyInfo("Export", "Report export started")), "📄", "Export quality report"));
+
+        return _refreshCoordinator.StartAsync(TimeSpan.FromSeconds(30), ct);
+    }
 
     public void Stop()
     {
@@ -476,6 +494,9 @@ public sealed class DataQualityViewModel : BindableBase, IDisposable
 
     private void ApplySnapshot(DataQualityPresentationSnapshot snapshot)
     {
+        // Track the previous score before overwriting it so we can detect drops.
+        var prevScore = _previousQualityScore < 0 ? snapshot.OverallScore : _lastOverallScore;
+
         _lastOverallScore = snapshot.OverallScore;
         LastUpdateText = snapshot.LastUpdateText;
         OverallScoreText = snapshot.OverallScoreText;
@@ -556,6 +577,19 @@ public sealed class DataQualityViewModel : BindableBase, IDisposable
         ApplyAlertFilter(_severityFilter);
         ApplyAnomalyFilter(_anomalyTypeFilter);
         UpdateTrendState();
+
+        // Fire a Windows toast when the overall quality score drops below 90 %
+        // by 2 or more points relative to the previous reading.
+        const double WarningThreshold = 90.0;
+        const double MinDropToAlert = 2.0;
+        if (_previousQualityScore >= 0
+            && snapshot.OverallScore < WarningThreshold
+            && (prevScore - snapshot.OverallScore) >= MinDropToAlert)
+        {
+            WpfServices.ToastNotificationService.Instance.ShowDataQualityAlert("Overall", snapshot.OverallScore);
+        }
+
+        _previousQualityScore = snapshot.OverallScore;
     }
 
     private void UpdateTrendState()

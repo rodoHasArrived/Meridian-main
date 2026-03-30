@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -12,7 +13,6 @@ using Meridian.Storage.Archival;
 using Meridian.Storage.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using System.Collections.Generic;
 
 namespace Meridian.Application.Pipeline;
 
@@ -446,15 +446,13 @@ public sealed class EventPipeline : IMarketEventPublisher, IBackpressureSignal, 
     /// </summary>
     /// <remarks>
     /// When WAL is enabled, the WAL write occurs in the consumer task (not at publish time)
-    /// to preserve the non-blocking contract of this method. Events are WAL-protected
-    /// once they reach the consumer. For full publish-time WAL protection, use
-    /// <see cref="PublishAsync"/> instead.
+    /// to preserve the non-blocking contract of this method. When WAL is enabled,
+    /// the method performs a synchronous WAL append before queue handoff so an
+    /// accepted event cannot be lost between ingress and the consumer loop.
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool TryPublish(in MarketEvent evt)
     {
-        var tracedEvent = CaptureTraceContext(evt);
-
         // For DropWrite mode, TryWrite returns true even when the new item is
         // silently discarded. Pre-check capacity to detect these silent drops.
         // (DropOldest/DropNewest evict old items, so the new item IS accepted.)
@@ -463,12 +461,48 @@ public sealed class EventPipeline : IMarketEventPublisher, IBackpressureSignal, 
             // Channel is at capacity — the item will be silently discarded by the
             // bounded channel. Still call TryWrite so the channel can apply its
             // policy, but track the event as dropped.
-            _channel.Writer.TryWrite(tracedEvent);
+            _channel.Writer.TryWrite(CaptureTraceContext(evt));
             RecordDrop(in evt);
             return false;
         }
 
+        TracedMarketEvent tracedEvent;
+        try
+        {
+            tracedEvent = PrepareTracedEventForPublishAsync(evt, CancellationToken.None)
+                .AsTask()
+                .GetAwaiter()
+                .GetResult();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex,
+                "Failed to persist event {EventType}/{Symbol} to the WAL before queue handoff",
+                evt.Type,
+                evt.EffectiveSymbol);
+            return false;
+        }
+
         var written = _channel.Writer.TryWrite(tracedEvent);
+
+        if (!written && _wal != null && _fullMode == BoundedChannelFullMode.Wait)
+        {
+            try
+            {
+                _channel.Writer.WriteAsync(tracedEvent, CancellationToken.None)
+                    .AsTask()
+                    .GetAwaiter()
+                    .GetResult();
+                written = true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "Failed to enqueue WAL-persisted event {EventType}/{Symbol}",
+                    evt.Type,
+                    evt.EffectiveSymbol);
+            }
+        }
 
         if (written)
         {
@@ -568,12 +602,13 @@ public sealed class EventPipeline : IMarketEventPublisher, IBackpressureSignal, 
 
     /// <summary>
     /// Publishes an event to the pipeline, waiting if necessary.
-    /// When WAL is enabled, the WAL write is performed by the consumer task
-    /// to avoid duplicate records during recovery.
+    /// When WAL is enabled, the event is appended to the WAL before the queue handoff
+    /// so a successful publish is crash-safe even if the consumer has not run yet.
     /// </summary>
     public async ValueTask PublishAsync(MarketEvent evt, CancellationToken ct = default)
     {
-        await _channel.Writer.WriteAsync(CaptureTraceContext(evt), ct).ConfigureAwait(false);
+        var tracedEvent = await PrepareTracedEventForPublishAsync(evt, ct).ConfigureAwait(false);
+        await _channel.Writer.WriteAsync(tracedEvent, ct).ConfigureAwait(false);
         Interlocked.Increment(ref _publishedCount);
         if (_metricsEnabled)
         {
@@ -745,7 +780,11 @@ public sealed class EventPipeline : IMarketEventPublisher, IBackpressureSignal, 
                             }
                         }
 
-                        if (_wal != null)
+                        if (tracedEvent.WalSequence > 0)
+                        {
+                            maxWalSequence = Math.Max(maxWalSequence, tracedEvent.WalSequence);
+                        }
+                        else if (_wal != null)
                         {
                             var walRecord = await _wal.AppendAsync(evt, GetEventTypeName(evt.Type), _cts.Token).ConfigureAwait(false);
                             maxWalSequence = Math.Max(maxWalSequence, walRecord.Sequence);
@@ -1006,6 +1045,22 @@ public sealed class EventPipeline : IMarketEventPublisher, IBackpressureSignal, 
         return new TracedMarketEvent(tracedEvent, traceContext);
     }
 
+    private async ValueTask<TracedMarketEvent> PrepareTracedEventForPublishAsync(MarketEvent evt, CancellationToken ct)
+    {
+        var tracedEvent = CaptureTraceContext(evt);
+        if (_wal == null)
+        {
+            return tracedEvent;
+        }
+
+        var walRecord = await _wal.AppendAsync(
+            tracedEvent.Event,
+            GetEventTypeName(tracedEvent.Event.Type),
+            ct).ConfigureAwait(false);
+
+        return tracedEvent with { WalSequence = walRecord.Sequence };
+    }
+
     private static Dictionary<string, object?> CreateLogScope(
         MarketEvent evt,
         EventTraceContext traceContext,
@@ -1025,7 +1080,8 @@ public sealed class EventPipeline : IMarketEventPublisher, IBackpressureSignal, 
 
     private readonly record struct TracedMarketEvent(
         MarketEvent Event,
-        EventTraceContext TraceContext);
+        EventTraceContext TraceContext,
+        long WalSequence = 0);
 }
 
 /// <summary>

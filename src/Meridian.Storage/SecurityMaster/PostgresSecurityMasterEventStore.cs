@@ -198,4 +198,114 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
     }
 
     private string Qualified(string table) => $"{_options.Schema}.{table}";
+
+    public async Task AppendCorporateActionAsync(CorporateActionDto action, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(action);
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            $"""
+            insert into {Qualified("corporate_actions")} (
+                corp_act_id,
+                security_id,
+                event_type,
+                ex_date,
+                pay_date,
+                dividend_per_share,
+                currency,
+                split_ratio,
+                new_security_id,
+                distribution_ratio,
+                acquirer_security_id,
+                exchange_ratio,
+                subscription_price_per_share,
+                rights_per_share)
+            values (
+                @corp_act_id,
+                @security_id,
+                @event_type,
+                @ex_date,
+                @pay_date,
+                @dividend_per_share,
+                @currency,
+                @split_ratio,
+                @new_security_id,
+                @distribution_ratio,
+                @acquirer_security_id,
+                @exchange_ratio,
+                @subscription_price_per_share,
+                @rights_per_share)
+            on conflict (corp_act_id) do nothing;
+            """;
+
+        command.Parameters.AddWithValue("corp_act_id", action.CorpActId);
+        command.Parameters.AddWithValue("security_id", action.SecurityId);
+        command.Parameters.AddWithValue("event_type", action.EventType);
+        command.Parameters.AddWithValue("ex_date", action.ExDate.ToDateTime(TimeOnly.MinValue));
+        command.Parameters.AddWithValue("pay_date", (object?)action.PayDate?.ToDateTime(TimeOnly.MinValue) ?? DBNull.Value);
+        command.Parameters.AddWithValue("dividend_per_share", (object?)action.DividendPerShare ?? DBNull.Value);
+        command.Parameters.AddWithValue("currency", (object?)action.Currency ?? DBNull.Value);
+        command.Parameters.AddWithValue("split_ratio", (object?)action.SplitRatio ?? DBNull.Value);
+        command.Parameters.AddWithValue("new_security_id", (object?)action.NewSecurityId ?? DBNull.Value);
+        command.Parameters.AddWithValue("distribution_ratio", (object?)action.DistributionRatio ?? DBNull.Value);
+        command.Parameters.AddWithValue("acquirer_security_id", (object?)action.AcquirerSecurityId ?? DBNull.Value);
+        command.Parameters.AddWithValue("exchange_ratio", (object?)action.ExchangeRatio ?? DBNull.Value);
+        command.Parameters.AddWithValue("subscription_price_per_share", (object?)action.SubscriptionPricePerShare ?? DBNull.Value);
+        command.Parameters.AddWithValue("rights_per_share", (object?)action.RightsPerShare ?? DBNull.Value);
+
+        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+    }
+
+    public async Task<IReadOnlyList<CorporateActionDto>> LoadCorporateActionsAsync(Guid securityId, CancellationToken ct = default)
+    {
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            $"""
+            select corp_act_id,
+                   security_id,
+                   event_type,
+                   ex_date,
+                   pay_date,
+                   dividend_per_share,
+                   currency,
+                   split_ratio,
+                   new_security_id,
+                   distribution_ratio,
+                   acquirer_security_id,
+                   exchange_ratio,
+                   subscription_price_per_share,
+                   rights_per_share
+            from {Qualified("corporate_actions")}
+            where security_id = @security_id
+            order by ex_date;
+            """;
+        command.Parameters.AddWithValue("security_id", securityId);
+
+        var results = new List<CorporateActionDto>();
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        while (await reader.ReadAsync(ct).ConfigureAwait(false))
+        {
+            var exDateRaw = reader.GetDateTime(3);
+            var payDateRaw = reader.IsDBNull(4) ? (DateTime?)null : reader.GetDateTime(4);
+            results.Add(new CorporateActionDto(
+                CorpActId: reader.GetGuid(0),
+                SecurityId: reader.GetGuid(1),
+                EventType: reader.GetString(2),
+                ExDate: DateOnly.FromDateTime(exDateRaw),
+                PayDate: payDateRaw.HasValue ? DateOnly.FromDateTime(payDateRaw.Value) : null,
+                DividendPerShare: reader.IsDBNull(5) ? null : reader.GetDecimal(5),
+                Currency: reader.IsDBNull(6) ? null : reader.GetString(6),
+                SplitRatio: reader.IsDBNull(7) ? null : reader.GetDecimal(7),
+                NewSecurityId: reader.IsDBNull(8) ? null : reader.GetGuid(8),
+                DistributionRatio: reader.IsDBNull(9) ? null : reader.GetDecimal(9),
+                AcquirerSecurityId: reader.IsDBNull(10) ? null : reader.GetGuid(10),
+                ExchangeRatio: reader.IsDBNull(11) ? null : reader.GetDecimal(11),
+                SubscriptionPricePerShare: reader.IsDBNull(12) ? null : reader.GetDecimal(12),
+                RightsPerShare: reader.IsDBNull(13) ? null : reader.GetDecimal(13)));
+        }
+
+        return results;
+    }
 }

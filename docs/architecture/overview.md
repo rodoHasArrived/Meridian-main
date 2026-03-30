@@ -1,6 +1,6 @@
 # Meridian - System Architecture
 
-**Last Updated:** 2026-03-21
+**Last Updated:** 2026-03-26
 
 Meridian is a modular, event-driven trading platform that is being productized as a comprehensive fund management system. The architecture already supports ingestion, storage, replay, backtesting, export, portfolio, ledger, and desktop workflows. The current roadmap extends that baseline into a connected front-, middle-, and back-office product with stronger governance and fund-operations capabilities.
 

@@ -85,8 +85,8 @@ public sealed record OptionContractSpec
         if (Multiplier == 0)
             throw new ArgumentOutOfRangeException(nameof(Multiplier), Multiplier, "Multiplier must be greater than 0");
 
-        if (InstrumentType is not (InstrumentType.EquityOption or InstrumentType.IndexOption))
-            throw new ArgumentException("InstrumentType must be EquityOption or IndexOption for an option contract", nameof(InstrumentType));
+        if (InstrumentType is not (InstrumentType.EquityOption or InstrumentType.IndexOption or InstrumentType.FuturesOption))
+            throw new ArgumentException("InstrumentType must be EquityOption, IndexOption, or FuturesOption for an option contract", nameof(InstrumentType));
 
         this.UnderlyingSymbol = UnderlyingSymbol;
         this.Strike = Strike;

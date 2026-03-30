@@ -1,7 +1,7 @@
 # Alpaca Market Data Setup Guide
 
-**Last Updated:** 2026-01-30
-**Version:** 1.6.1
+**Last Updated:** 2026-03-28
+**Version:** 1.7.2
 
 This document provides instructions for setting up Alpaca market data with the Meridian.
 
@@ -249,11 +249,9 @@ var bars = await provider.GetBarsAsync(
 ### File Locations
 
 ```
-src/Meridian/Infrastructure/Adapters/
-├── Alpaca/
-│   └── AlpacaMarketDataClient.cs     # Real-time streaming
-└── Backfill/
-    └── AlpacaHistoricalDataProvider.cs  # Historical data
+src/Meridian.Infrastructure/Adapters/Alpaca/
+├── AlpacaMarketDataClient.cs          # Real-time streaming
+└── AlpacaHistoricalDataProvider.cs    # Historical data
 ```
 
 ### Features Implemented
@@ -346,8 +344,8 @@ src/Meridian/Infrastructure/Adapters/
 ### Official Documentation
 
 - **API Docs**: https://docs.alpaca.markets/
-- **Market Data API**: https://docs.alpaca.markets/docs/market-data-api
-- **WebSocket Reference**: https://docs.alpaca.markets/docs/real-time-market-data
+- **Market Data API**: https://docs.alpaca.markets/docs/about-market-data-api
+- **WebSocket Reference**: https://docs.alpaca.markets/docs/real-time-stock-pricing-data
 - **Historical Data**: https://docs.alpaca.markets/docs/historical-stock-data
 
 ### SDKs (Not Required)

@@ -1,6 +1,6 @@
 // C4 Level 1: System Context Diagram
-// Meridian v1.6.1
-// Last Updated: 2026-02-21
+// Meridian v1.7.2
+// Last Updated: 2026-03-26
 //
 // This diagram shows the Meridian in context with its users
 // and external systems. It answers: "What is the system and who uses it?"
@@ -16,7 +16,7 @@ digraph C4_Context {
 
   // Title
   labelloc="t";
-  label="Meridian - System Context (C4 Level 1)\nv1.6.1";
+  label="Meridian - System Context (C4 Level 1)\nv1.7.2";
 
   // Actors
   subgraph cluster_actors {
@@ -27,14 +27,14 @@ digraph C4_Context {
     Operator [shape=oval, style="filled", fillcolor="#08427b", fontcolor="white",
               label="Operator\n[Person]\n\nConfigures collection,\nmonitors health,\nmanages backfill"];
     Quant [shape=oval, style="filled", fillcolor="#08427b", fontcolor="white",
-           label="Quant/Analyst\n[Person]\n\nAnalyzes data,\nruns backtests,\nbuilds strategies"];
+           label="Quant/Analyst\n[Person]\n\nRuns backtests,\nbuilds strategies,\nanalyzes portfolio"];
     DevOps [shape=oval, style="filled", fillcolor="#08427b", fontcolor="white",
             label="DevOps\n[Person]\n\nDeploys, scales,\nmonitors infrastructure"];
   }
 
   // Main System
   Meridian [shape=box, style="rounded,filled", fillcolor="#438dd5", fontcolor="white", width=4,
-       label="Meridian\n[Software System]\n\n.NET 9.0 | C# 13 | F# 8\n\nCollects, validates, stores, and exports\nreal-time and historical market data\nfrom multiple providers with\narchival-first persistence"];
+       label="Meridian\n[Software System]\n\n.NET 9.0 | C# 13 | F# 8\n\nCollects, validates, stores and exports\nreal-time and historical market data.\nBacktests strategies at tick level.\nExecutes strategies via paper and\nbrokerage gateways. Tracks portfolio\nperformance and strategy lifecycle."];
 
   // External Systems - Streaming Data Providers
   subgraph cluster_streaming {
@@ -52,12 +52,12 @@ digraph C4_Context {
     POL_STREAM [shape=box, style="rounded,filled", fillcolor="#4a90d9", fontcolor="white",
          label="Polygon.io\n[External System]\n\nWebSocket Streaming\nTrades, Quotes"];
     SS [shape=box, style="rounded,filled", fillcolor="#4a90d9", fontcolor="white",
-        label="StockSharp\n[External System]\n\nMulti-Exchange Adapter\nGlobal Markets"];
+        label="StockSharp\n[External System]\n\nMulti-Exchange Adapter\n90+ Global Sources"];
   }
 
   // External Systems - Historical Data Providers
   subgraph cluster_historical {
-    label="Historical Data Providers (10 Implemented)";
+    label="Historical Data Providers (14 Implemented)";
     color="#2c7a7b";
     style="rounded";
     bgcolor="#e6fffa";
@@ -71,12 +71,27 @@ digraph C4_Context {
     POL [shape=box, style="rounded,filled", fillcolor="#38a169", fontcolor="white",
          label="Polygon.io\n[External System]\n\nHistorical Bars\nMinute/Day"];
     STOOQ [shape=box, style="rounded,filled", fillcolor="#38a169", fontcolor="white",
-           label="Stooq + Others\n[External System]\n\nNasdaq, Alpha Vantage\nIB, StockSharp, EOD Data"];
+           label="Stooq + Others\n[External System]\n\nNasdaq, Alpha Vantage\nTwelve Data, FRED\nIB, StockSharp"];
+  }
+
+  // External Systems - Brokerage Gateways
+  subgraph cluster_brokerage {
+    label="Brokerage Order Gateways";
+    color="#744210";
+    style="rounded";
+    bgcolor="#fffbeb";
+
+    ALP_BROK [shape=box, style="rounded,filled", fillcolor="#d69e2e", fontcolor="white",
+              label="Alpaca Brokerage\n[External System]\n\nFractional Shares\nOrder Routing"];
+    IB_BROK [shape=box, style="rounded,filled", fillcolor="#d69e2e", fontcolor="white",
+             label="IB Brokerage\n[External System]\n\nFull Order Types\nLive Execution"];
+    SS_BROK [shape=box, style="rounded,filled", fillcolor="#d69e2e", fontcolor="white",
+             label="StockSharp Gateway\n[External System]\n\nMulti-Broker Routing\nOrder Management"];
   }
 
   // External Systems - Downstream
   subgraph cluster_downstream {
-    label="Analysis & Trading Systems";
+    label="Analysis & Integration";
     color="#805ad5";
     style="rounded";
     bgcolor="#faf5ff";
@@ -85,8 +100,8 @@ digraph C4_Context {
           label="QuantConnect Lean\n[External System]\n\nAlgorithmic Trading Engine\nBacktesting + Live"];
     PYTHON [shape=box, style="rounded,filled", fillcolor="#805ad5", fontcolor="white",
             label="Python/R Analytics\n[External System]\n\nPandas, NumPy\nData Science"];
-    PGSQL [shape=box, style="rounded,filled", fillcolor="#805ad5", fontcolor="white",
-           label="PostgreSQL/TimescaleDB\n[External System]\n\nTime-Series Analytics\nSQL Queries"];
+    AI_TOOLS [shape=box, style="rounded,filled", fillcolor="#805ad5", fontcolor="white",
+              label="AI / MCP Clients\n[External System]\n\nClaude, Copilot\nAI-assisted workflows"];
   }
 
   // Infrastructure
@@ -97,7 +112,9 @@ digraph C4_Context {
     bgcolor="#fff5f5";
 
     DISK [shape=cylinder, style="filled", fillcolor="#e53e3e", fontcolor="white",
-          label="Storage\n[Infrastructure]\n\nJSONL (Hot) + Parquet (Archive)\nLocal/Cloud/S3"];
+          label="File Storage\n[Infrastructure]\n\nJSONL (Hot) + Parquet (Archive)\nLocal/Cloud/S3"];
+    PGSQL [shape=cylinder, style="filled", fillcolor="#e53e3e", fontcolor="white",
+           label="PostgreSQL\n[Infrastructure]\n\nSecurity Master\nDirect Lending\nTime-Series Analytics"];
     PROM [shape=box, style="rounded,filled", fillcolor="#e53e3e", fontcolor="white",
           label="Prometheus + Grafana\n[Infrastructure]\n\nMetrics, Dashboards\nAlerting"];
     MQ [shape=box, style="rounded,filled", fillcolor="#e53e3e", fontcolor="white",
@@ -106,7 +123,7 @@ digraph C4_Context {
 
   // Relationships - Users to System
   Operator -> Meridian [label="Configures via\nWPF/Web/CLI"];
-  Quant -> Meridian [label="Exports data\nfor analysis"];
+  Quant -> Meridian [label="Backtests strategies,\nmonitors portfolio"];
   DevOps -> PROM [label="Monitors\ninfrastructure"];
 
   // Relationships - Streaming Providers to System
@@ -123,12 +140,18 @@ digraph C4_Context {
   POL -> Meridian [color="#2c7a7b", label="REST\nhistorical"];
   STOOQ -> Meridian [color="#2c7a7b", label="REST\nEOD data"];
 
-  // Relationships - System to Downstream
+  // Relationships - Brokerage Gateways
+  Meridian -> ALP_BROK [color="#744210", label="Order routing\nfractional shares"];
+  Meridian -> IB_BROK [color="#744210", label="Order routing\nlive execution"];
+  Meridian -> SS_BROK [color="#744210", label="Multi-broker\nrouting"];
+
+  // Relationships - System to Downstream / Infrastructure
   Meridian -> DISK [color="#c53030", label="Persists events\nWAL + JSONL"];
+  Meridian -> PGSQL [color="#c53030", label="Security Master\nDirect Lending\npersistence"];
   Meridian -> MQ [color="#c53030", label="Publishes\nMassTransit events"];
   Meridian -> LEAN [color="#805ad5", label="Exports Lean\nformat data"];
   Meridian -> PYTHON [color="#805ad5", label="Exports Parquet\nCSV, Excel"];
-  Meridian -> PGSQL [color="#805ad5", label="Exports CSV\nwith DDL"];
+  Meridian -> AI_TOOLS [color="#805ad5", label="MCP Server\nAI tooling API"];
   Meridian -> PROM [color="#c53030", label="Exposes /metrics\nPrometheus format"];
 
   // Legend
@@ -142,7 +165,8 @@ digraph C4_Context {
     L2 [shape=box, style="rounded,filled", fillcolor="#438dd5", fontcolor="white", label="System"];
     L3 [shape=box, style="rounded,filled", fillcolor="#4a90d9", fontcolor="white", label="Streaming Provider"];
     L4 [shape=box, style="rounded,filled", fillcolor="#38a169", fontcolor="white", label="Historical Provider"];
-    L5 [shape=box, style="rounded,filled", fillcolor="#805ad5", fontcolor="white", label="Downstream System"];
-    L6 [shape=cylinder, style="filled", fillcolor="#e53e3e", fontcolor="white", label="Infrastructure"];
+    L5 [shape=box, style="rounded,filled", fillcolor="#d69e2e", fontcolor="white", label="Brokerage Gateway"];
+    L6 [shape=box, style="rounded,filled", fillcolor="#805ad5", fontcolor="white", label="Downstream/Integration"];
+    L7 [shape=cylinder, style="filled", fillcolor="#e53e3e", fontcolor="white", label="Infrastructure"];
   }
 }

@@ -9,14 +9,17 @@ import type { ResearchRunRecord } from "@/types";
 interface EntityDataTableProps {
   rows: ResearchRunRecord[];
   onSelectRun: (run: ResearchRunRecord) => void;
+  selectedRunIds?: Set<string>;
+  onToggleSelection?: (runId: string) => void;
 }
 
 type SortKey = "strategyName" | "engine" | "pnl" | "lastUpdated";
 
-export function EntityDataTable({ rows, onSelectRun }: EntityDataTableProps) {
+export function EntityDataTable({ rows, onSelectRun, selectedRunIds, onToggleSelection }: EntityDataTableProps) {
   const [query, setQuery] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("lastUpdated");
   const deferredQuery = useDeferredValue(query);
+  const multiSelectEnabled = onToggleSelection !== undefined;
 
   const filteredRows = useMemo(() => {
     const normalized = deferredQuery.trim().toLowerCase();
@@ -40,7 +43,12 @@ export function EntityDataTable({ rows, onSelectRun }: EntityDataTableProps) {
       <CardHeader className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div className="space-y-1">
           <CardTitle>Research runs</CardTitle>
-          <CardDescription>Filter, sort, and drill into active and recent strategy runs.</CardDescription>
+          <CardDescription>
+            Filter, sort, and drill into active and recent strategy runs.
+            {multiSelectEnabled && (
+              <span className="ml-1 text-muted-foreground">Check rows to compare.</span>
+            )}
+          </CardDescription>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row">
           <Input
@@ -61,6 +69,7 @@ export function EntityDataTable({ rows, onSelectRun }: EntityDataTableProps) {
           <table className="min-w-full border-separate border-spacing-y-2 text-left text-sm">
             <thead className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
               <tr>
+                {multiSelectEnabled && <th className="px-4 py-2 font-medium w-8" />}
                 <th className="px-4 py-2 font-medium">Strategy</th>
                 <th className="px-4 py-2 font-medium">Engine</th>
                 <th className="px-4 py-2 font-medium">Status</th>
@@ -73,28 +82,45 @@ export function EntityDataTable({ rows, onSelectRun }: EntityDataTableProps) {
               </tr>
             </thead>
             <tbody>
-              {filteredRows.map((row) => (
-                <tr key={row.id} className="rounded-xl bg-background/55 shadow-sm">
-                  <td className="rounded-l-xl px-4 py-4">
-                    <div className="font-semibold">{row.strategyName}</div>
-                  </td>
-                  <td className="px-4 py-4">{row.engine}</td>
-                  <td className="px-4 py-4">
-                    <RunStatusBadge status={row.status} mode={row.mode} />
-                  </td>
-                  <td className="px-4 py-4 text-muted-foreground">{row.dataset}</td>
-                  <td className="px-4 py-4 text-muted-foreground">{row.window}</td>
-                  <td className="px-4 py-4 font-mono font-semibold">{row.pnl}</td>
-                  <td className="px-4 py-4">{row.sharpe}</td>
-                  <td className="px-4 py-4 text-muted-foreground">{row.lastUpdated}</td>
-                  <td className="rounded-r-xl px-4 py-4 text-right">
-                    <Button variant="ghost" size="sm" onClick={() => onSelectRun(row)}>
-                      Open
-                      <ChevronRight className="ml-1 h-4 w-4" />
-                    </Button>
-                  </td>
-                </tr>
-              ))}
+              {filteredRows.map((row) => {
+                const isChecked = selectedRunIds?.has(row.id) ?? false;
+                return (
+                  <tr
+                    key={row.id}
+                    className={`rounded-xl bg-background/55 shadow-sm${isChecked ? " ring-1 ring-primary/40" : ""}`}
+                  >
+                    {multiSelectEnabled && (
+                      <td className="rounded-l-xl px-4 py-4">
+                        <input
+                          type="checkbox"
+                          aria-label={`Select run ${row.strategyName}`}
+                          checked={isChecked}
+                          onChange={() => onToggleSelection(row.id)}
+                          className="h-4 w-4 rounded border-border accent-primary cursor-pointer"
+                        />
+                      </td>
+                    )}
+                    <td className={`${multiSelectEnabled ? "" : "rounded-l-xl "}px-4 py-4`}>
+                      <div className="font-semibold">{row.strategyName}</div>
+                    </td>
+                    <td className="px-4 py-4">{row.engine}</td>
+                    <td className="px-4 py-4">
+                      <RunStatusBadge status={row.status} mode={row.mode} />
+                    </td>
+                    <td className="px-4 py-4 text-muted-foreground">{row.dataset}</td>
+                    <td className="px-4 py-4 text-muted-foreground">{row.window}</td>
+                    <td className="px-4 py-4 font-mono font-semibold">{row.pnl}</td>
+                    <td className="px-4 py-4">{row.sharpe}</td>
+                    <td className="px-4 py-4 text-muted-foreground">{row.lastUpdated}</td>
+                    <td className="rounded-r-xl px-4 py-4 text-right">
+                      <Button variant="ghost" size="sm" onClick={() => onSelectRun(row)}>
+                        Open
+                        <ChevronRight className="ml-1 h-4 w-4" />
+                      </Button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

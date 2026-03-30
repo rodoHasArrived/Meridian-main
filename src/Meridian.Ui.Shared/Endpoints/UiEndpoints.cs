@@ -5,11 +5,11 @@ using Meridian.Application.Monitoring;
 using Meridian.Application.Monitoring.DataQuality;
 using Meridian.Application.Pipeline;
 using Meridian.Application.UI;
-using Meridian.Ui.Shared;
-using Meridian.Ui.Shared.Services;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
+using Meridian.Ui.Shared;
+using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.RateLimiting;
@@ -26,7 +26,6 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// </summary>
 public static class UiEndpoints
 {
-    #region Consolidated Host Setup
 
     /// <summary>
     /// Configures the application with all UI services and endpoints.
@@ -95,9 +94,7 @@ public static class UiEndpoints
         return app;
     }
 
-    #endregion
 
-    #region Service Registration
 
     /// <summary>
     /// Registers all shared services required by UI endpoints using the centralized composition root.
@@ -111,7 +108,8 @@ public static class UiEndpoints
         var options = CompositionOptions.WebDashboard with { ConfigPath = configPath };
         services.AddMarketDataServices(options);
 
-        // Register session-based authentication service
+        // Register user profile registry (multi-user RBAC) and session-based auth service
+        services.AddSingleton<UserProfileRegistry>();
         services.AddSingleton<LoginSessionService>();
 
         // Replace core BackfillCoordinator with UI-extended version that includes PreviewAsync
@@ -146,7 +144,8 @@ public static class UiEndpoints
         var options = CompositionOptions.WebDashboard with { ConfigPath = configPath };
         services.AddMarketDataServices(options);
 
-        // Register session-based authentication service
+        // Register user profile registry (multi-user RBAC) and session-based auth service
+        services.AddSingleton<UserProfileRegistry>();
         services.AddSingleton<LoginSessionService>();
 
         // Replace core BackfillCoordinator with UI-extended version that includes PreviewAsync
@@ -179,11 +178,10 @@ public static class UiEndpoints
         services.TryAddSingleton<PortfolioReadService>();
         services.TryAddSingleton<LedgerReadService>();
         services.TryAddSingleton<StrategyRunReadService>();
+        services.TryAddSingleton<CashFlowProjectionService>();
     }
 
-    #endregion
 
-    #region Endpoint Mapping
 
     /// <summary>
     /// Maps all UI API endpoints using default JSON serializer options.
@@ -263,6 +261,9 @@ public static class UiEndpoints
         // Security Master endpoints
         app.MapSecurityMasterEndpoints(jsonOptions);
 
+        // Credential management endpoints
+        app.MapCredentialEndpoints(jsonOptions);
+
         // Map quality drops endpoints (C3/#16)
         var auditTrail = app.Services.GetService<DroppedEventAuditTrail>();
         app.MapQualityDropsEndpoints(auditTrail, jsonOptions);
@@ -295,6 +296,9 @@ public static class UiEndpoints
 
         // Promotion workflow endpoints (Backtest → Paper → Live)
         app.MapPromotionEndpoints(jsonOptions);
+
+        // Strategy lifecycle control endpoints (pause/stop/status)
+        app.MapStrategyLifecycleEndpoints(jsonOptions);
 
         return app;
     }
@@ -367,6 +371,9 @@ public static class UiEndpoints
         // Security Master endpoints
         app.MapSecurityMasterEndpoints(jsonOptions);
 
+        // Credential management endpoints
+        app.MapCredentialEndpoints(jsonOptions);
+
         // Map quality drops endpoints (C3/#16 - DroppedEventAuditTrail exposure)
         var auditTrail = app.Services.GetService<DroppedEventAuditTrail>();
         app.MapQualityDropsEndpoints(auditTrail, jsonOptions);
@@ -400,6 +407,9 @@ public static class UiEndpoints
         // Promotion workflow endpoints (Backtest → Paper → Live)
         app.MapPromotionEndpoints(jsonOptions);
 
+        // Strategy lifecycle control endpoints (pause/stop/status)
+        app.MapStrategyLifecycleEndpoints(jsonOptions);
+
         return app;
     }
 
@@ -428,9 +438,7 @@ public static class UiEndpoints
         return app;
     }
 
-    #endregion
 
-    #region Rate Limiting
 
     /// <summary>
     /// Rate limiting policy name applied to mutation (POST/PUT/DELETE) endpoints.
@@ -461,5 +469,4 @@ public static class UiEndpoints
         return services;
     }
 
-    #endregion
 }

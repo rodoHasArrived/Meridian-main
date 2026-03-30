@@ -1,0 +1,47 @@
+<UserControl x:Class="Meridian.Wpf.Views.StatusBarControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             Height="32"
+             Background="{StaticResource ConsoleBackgroundMediumBrush}">
+    <DockPanel LastChildFill="False" Margin="12,0">
+        <!-- Left side: status dot + provider count -->
+        <Ellipse DockPanel.Dock="Left" Width="8" Height="8" Margin="0,0,6,0"
+                 Fill="{Binding StatusDotBrush}"
+                 VerticalAlignment="Center"/>
+        <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" FontSize="11"
+                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                   Text="{Binding ActiveProviderCount, StringFormat='Providers: {0}'}"/>
+        
+        <Separator DockPanel.Dock="Left" Width="1" Margin="12,4" 
+                   Background="{StaticResource ConsoleBorderBrush}"/>
+        
+        <!-- Throughput -->
+        <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" FontSize="11"
+                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                   Text="{Binding ThroughputLabel}"/>
+        
+        <Separator DockPanel.Dock="Left" Width="1" Margin="12,4" 
+                   Background="{StaticResource ConsoleBorderBrush}"/>
+        
+        <!-- Backfills -->
+        <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" FontSize="11"
+                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                   Text="{Binding ActiveBackfillCount, StringFormat='Backfills: {0}'}"/>
+        
+        <!-- Right side: errors badge + UTC clock -->
+        <TextBlock DockPanel.Dock="Right" VerticalAlignment="Center" FontSize="11"
+                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                   Opacity="0.7"
+                   Text="{Binding UtcTime}" />
+        
+        <Border DockPanel.Dock="Right" Margin="12,4,4,4" CornerRadius="8" Padding="6,2"
+                Background="{Binding ErrorBadgeBrush}"
+                Visibility="{Binding HasErrors, Converter={StaticResource BoolToVisibilityConverter}}">
+            <TextBlock FontSize="10" FontWeight="SemiBold" Foreground="White"
+                       Text="{Binding ErrorCount, StringFormat='{}{0} errors'}"/>
+        </Border>
+    </DockPanel>
+</UserControl>

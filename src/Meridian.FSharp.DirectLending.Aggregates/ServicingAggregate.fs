@@ -30,7 +30,7 @@ module internal ServicingAggregate =
 
         updated
 
-    let private autoAllocate (servicing: LoanServicingStateDto) amount =
+    let private autoAllocate (servicing: LoanServicingStateDto) (terms: DirectLendingTermsDto) amount (effectiveDate: DateOnly) =
         let mutable remaining = amount
         let take available =
             if remaining <= 0m || available <= 0m then
@@ -44,7 +44,12 @@ module internal ServicingAggregate =
         let toCommitmentFee = take servicing.Balances.CommitmentFeeAccruedUnpaid
         let toFees = take servicing.Balances.FeesAccruedUnpaid
         let toPenalty = take servicing.Balances.PenaltyAccruedUnpaid
-        let toPrincipal = take servicing.Balances.PrincipalOutstanding
+        // During the interest-only period, scheduled principal is 0 in auto-allocation.
+        let toPrincipal =
+            if DirectLendingInterop.IsInterestOnlyPeriod(terms.OriginationDate, terms.InterestOnlyMonths, effectiveDate) then
+                0m
+            else
+                take servicing.Balances.PrincipalOutstanding
         PaymentBreakdownDto(toInterest, toCommitmentFee, toFees, toPenalty, toPrincipal)
 
     let private buildResolution (servicing: LoanServicingStateDto) amount (requestedBreakdown: PaymentBreakdownDto) =
@@ -162,10 +167,10 @@ module internal ServicingAggregate =
 
         { Servicing = updated; AppliedAmount = appliedAmount }
 
-    let applyMixedPayment (servicing: LoanServicingStateDto) amount breakdown effectiveDate =
+    let applyMixedPayment (servicing: LoanServicingStateDto) (terms: DirectLendingTermsDto) amount breakdown effectiveDate =
         let resolution =
             match box breakdown with
-            | null -> MixedPaymentResolutionDto(autoAllocate servicing amount, "WaterfallAuto", "waterfall-v1", amount - (autoAllocate servicing amount).TotalAllocated)
+            | null -> MixedPaymentResolutionDto(autoAllocate servicing terms amount effectiveDate, "WaterfallAuto", "waterfall-v1", amount - (autoAllocate servicing terms amount effectiveDate).TotalAllocated)
             | _ -> buildResolution servicing amount breakdown
 
         let updatedBalances =
@@ -287,6 +292,10 @@ module internal ServicingAggregate =
                 | null -> 0m
                 | _ -> servicing.CurrentRateReset.AllInRate
 
+        // Clamp the effective rate within the contractual floor/cap bounds.
+        let annualRate =
+            DirectLendingInterop.ApplyRateBounds(terms.EffectiveRateFloor, terms.EffectiveRateCap, annualRate)
+
         let interestAmount =
             if servicing.Balances.PrincipalOutstanding > 0m then
                 Math.Round(
@@ -353,3 +362,43 @@ module internal ServicingAggregate =
                 accrualEntries)
 
         { Servicing = updated; Entry = entry }
+
+    let chargePrepaymentPenalty (servicing: LoanServicingStateDto) (terms: DirectLendingTermsDto) (outstandingPrincipal: decimal) (effectiveDate: DateOnly) =
+        if not terms.PrepaymentAllowed then
+            failwith "Prepayment is not permitted under the current loan terms."
+
+        let penaltyRate =
+            if terms.PrepaymentPenaltyRate.HasValue then terms.PrepaymentPenaltyRate.Value else 0m
+
+        let penaltyAmount =
+            if penaltyRate > 0m then
+                Math.Round(outstandingPrincipal * penaltyRate, 2, MidpointRounding.AwayFromZero)
+            else
+                0m
+
+        let nextRevision = servicing.ServicingRevision + 1L
+        let balances =
+            OutstandingBalancesDto(
+                servicing.Balances.PrincipalOutstanding,
+                servicing.Balances.InterestAccruedUnpaid,
+                servicing.Balances.CommitmentFeeAccruedUnpaid,
+                servicing.Balances.FeesAccruedUnpaid,
+                servicing.Balances.PenaltyAccruedUnpaid + penaltyAmount)
+
+        let updated =
+            LoanServicingStateDto(
+                servicing.LoanId,
+                servicing.Status,
+                servicing.CurrentCommitment,
+                servicing.TotalDrawn,
+                servicing.AvailableToDraw,
+                balances,
+                servicing.DrawdownLots,
+                servicing.CurrentRateReset,
+                servicing.LastAccrualDate,
+                servicing.LastPaymentDate,
+                nextRevision,
+                prependRevision nextRevision "InternalEvent" effectiveDate (sprintf "Prepayment penalty charged for %.2f." penaltyAmount) servicing.RevisionHistory,
+                servicing.AccrualEntries)
+
+        { Servicing = updated; PenaltyAmount = penaltyAmount }

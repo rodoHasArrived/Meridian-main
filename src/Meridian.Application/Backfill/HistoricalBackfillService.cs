@@ -21,17 +21,20 @@ public sealed class HistoricalBackfillService
     private readonly ILogger _log;
     private readonly IEventMetrics _metrics;
     private readonly BackfillJobsConfig _jobsConfig;
+    private readonly BackfillStatusStore? _checkpointStore;
 
     public HistoricalBackfillService(
         IEnumerable<IHistoricalDataProvider> providers,
         ILogger? logger = null,
         IEventMetrics? metrics = null,
-        BackfillJobsConfig? jobsConfig = null)
+        BackfillJobsConfig? jobsConfig = null,
+        BackfillStatusStore? checkpointStore = null)
     {
         _providers = providers.ToDictionary(p => p.Name.ToLowerInvariant());
         _log = logger ?? LoggingSetup.ForContext<HistoricalBackfillService>();
         _metrics = metrics ?? new DefaultEventMetrics();
         _jobsConfig = jobsConfig ?? new BackfillJobsConfig();
+        _checkpointStore = checkpointStore;
     }
 
     public IReadOnlyCollection<IHistoricalDataProvider> Providers => _providers.Values.ToList();
@@ -48,6 +51,20 @@ public sealed class HistoricalBackfillService
 
         if (!_providers.TryGetValue(request.Provider.ToLowerInvariant(), out var provider))
             throw new InvalidOperationException($"Unknown backfill provider '{request.Provider}'.");
+
+        // Load per-symbol checkpoints when the caller opts into resume mode.
+        IReadOnlyDictionary<string, DateOnly>? symbolCheckpoints = null;
+        if (request.ResumeFromCheckpoint && _checkpointStore is not null)
+        {
+            symbolCheckpoints = _checkpointStore.TryReadSymbolCheckpoints();
+            if (symbolCheckpoints is { Count: > 0 })
+                _log.Information("Resume mode: {Count} symbol checkpoints loaded", symbolCheckpoints.Count);
+        }
+        else if (!request.ResumeFromCheckpoint && _checkpointStore is not null)
+        {
+            // Fresh run — clear any stale checkpoints so a subsequent resume starts clean.
+            await _checkpointStore.ClearSymbolCheckpointsAsync(ct).ConfigureAwait(false);
+        }
 
         // Determine concurrency: per-request override → config default (floor: 1)
         int maxConcurrent = Math.Max(1, request.MaxConcurrentSymbols ?? _jobsConfig.MaxConcurrentRequests);
@@ -82,14 +99,46 @@ public sealed class HistoricalBackfillService
             try
             {
                 ct.ThrowIfCancellationRequested();
-                _log.Information("Starting backfill for {Symbol} via {Provider}", symbol, provider.DisplayName);
-                var bars = await provider.GetDailyBarsAsync(symbol, request.From, request.To, ct).ConfigureAwait(false);
+
+                // Determine effective date range: resume from checkpoint if available.
+                var effectiveFrom = request.From;
+                if (symbolCheckpoints is not null &&
+                    symbolCheckpoints.TryGetValue(symbol, out var lastCompleted))
+                {
+                    var resumeFrom = lastCompleted.AddDays(1);
+                    // If the entire requested range was already covered, skip this symbol.
+                    if (request.To.HasValue && resumeFrom > request.To.Value)
+                    {
+                        _log.Debug("Skipping {Symbol}: fully covered by checkpoint through {LastCompleted}", symbol, lastCompleted);
+                        return;
+                    }
+                    // Advance the start date to the day after the last checkpoint.
+                    if (effectiveFrom is null || resumeFrom > effectiveFrom.Value)
+                        effectiveFrom = resumeFrom;
+
+                    _log.Information("Resuming {Symbol} from {ResumeFrom} (checkpoint: {LastCompleted})", symbol, effectiveFrom, lastCompleted);
+                }
+                else
+                {
+                    _log.Information("Starting backfill for {Symbol} via {Provider}", symbol, provider.DisplayName);
+                }
+
+                var bars = await provider.GetDailyBarsAsync(symbol, effectiveFrom, request.To, ct).ConfigureAwait(false);
+                DateOnly? lastBarDate = null;
                 foreach (var bar in bars)
                 {
                     var evt = MarketEvent.HistoricalBar(bar.ToTimestampUtc(), bar.Symbol, bar, bar.SequenceNumber, provider.Name);
                     await pipeline.PublishAsync(evt, ct).ConfigureAwait(false);
                     _metrics.IncHistoricalBars();
                     Interlocked.Increment(ref barsWritten);
+                    if (lastBarDate is null || bar.SessionDate > lastBarDate.Value)
+                        lastBarDate = bar.SessionDate;
+                }
+
+                // Persist per-symbol checkpoint after successful completion.
+                if (_checkpointStore is not null && lastBarDate.HasValue)
+                {
+                    await _checkpointStore.WriteSymbolCheckpointAsync(symbol, lastBarDate.Value, ct).ConfigureAwait(false);
                 }
             }
             catch (OperationCanceledException) { throw; }
@@ -122,7 +171,7 @@ public sealed class HistoricalBackfillService
             }
         }
 
-        var tasks = sortedSymbols.Select(s => ProcessSymbolAsync(s)).ToArray();
+        var tasks = sortedSymbols.Select(s => ProcessSymbolAsync(s, ct)).ToArray();
         await Task.WhenAll(tasks).ConfigureAwait(false);
 
         try

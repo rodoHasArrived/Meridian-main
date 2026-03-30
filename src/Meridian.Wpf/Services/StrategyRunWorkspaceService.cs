@@ -1,9 +1,11 @@
+using System.Windows.Media;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
+using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.Services;
 
@@ -56,7 +58,7 @@ public sealed class StrategyRunWorkspaceService
     public event EventHandler<StrategyRunSummary>? RunRecorded;
 
     public Task<IReadOnlyList<StrategyRunSummary>> GetRunsAsync(string? strategyId = null, CancellationToken ct = default) =>
-        _readService.GetRunsAsync(strategyId, ct);
+        _readService.GetRunsAsync(strategyId, ct: ct);
 
     public Task<StrategyRunDetail?> GetRunDetailAsync(string runId, CancellationToken ct = default) =>
         _readService.GetRunDetailAsync(runId, ct);
@@ -75,9 +77,128 @@ public sealed class StrategyRunWorkspaceService
 
     public async Task<StrategyRunSummary?> GetLatestRunAsync(CancellationToken ct = default)
     {
-        var runs = await _readService.GetRunsAsync(null, ct).ConfigureAwait(false);
+        var runs = await _readService.GetRunsAsync(null, ct: ct).ConfigureAwait(false);
         return runs.FirstOrDefault();
     }
+
+    public async Task<TradingWorkspaceSummary> GetTradingSummaryAsync(CancellationToken ct = default)
+    {
+        var runs = await _readService.GetRunsAsync(null, ct: ct).ConfigureAwait(false);
+
+        var paperRuns = runs.Where(r => r.Mode == StrategyRunMode.Paper).ToList();
+        var liveRuns = runs.Where(r => r.Mode == StrategyRunMode.Live).ToList();
+
+        var totalEquity = runs
+            .Where(r => r.Mode is StrategyRunMode.Paper or StrategyRunMode.Live)
+            .Sum(r => r.FinalEquity ?? 0m);
+
+        var positions = new List<TradingActivePositionItem>();
+
+        foreach (var run in runs.Where(r =>
+            r.Mode is StrategyRunMode.Paper or StrategyRunMode.Live &&
+            r.Status == StrategyRunStatus.Running))
+        {
+            var detail = await _readService.GetRunDetailAsync(run.RunId, ct).ConfigureAwait(false);
+            if (detail?.Portfolio?.Positions is null) continue;
+
+            foreach (var pos in detail.Portfolio.Positions)
+            {
+                var unrealizedBrush = pos.UnrealizedPnl >= 0 ? BrushRegistry.Success : BrushRegistry.Error;
+                var realizedBrush = pos.RealizedPnl >= 0 ? BrushRegistry.Success : BrushRegistry.Error;
+                var modeBrush = run.Mode == StrategyRunMode.Live ? BrushRegistry.Error : BrushRegistry.Info;
+                positions.Add(new TradingActivePositionItem
+                {
+                    Symbol = pos.Symbol,
+                    StrategyName = run.StrategyName,
+                    QuantityLabel = pos.IsShort
+                        ? $"Short {Math.Abs(pos.Quantity):N0}"
+                        : $"Long {pos.Quantity:N0}",
+                    UnrealizedPnlFormatted = $"{pos.UnrealizedPnl:+#,##0.00;-#,##0.00;0.00}",
+                    UnrealizedPnlBrush = unrealizedBrush,
+                    RealizedPnlFormatted = $"{pos.RealizedPnl:+#,##0.00;-#,##0.00;0.00}",
+                    RealizedPnlBrush = realizedBrush,
+                    ModeBadgeBackground = modeBrush,
+                    ModeLabel = run.Mode == StrategyRunMode.Live ? "Live" : "Paper"
+                });
+            }
+        }
+
+        return new TradingWorkspaceSummary
+        {
+            PaperRunCount = paperRuns.Count,
+            LiveRunCount = liveRuns.Count,
+            TotalEquityFormatted = totalEquity == 0m ? "—" : $"{totalEquity:C0}",
+            MaxDrawdownFormatted = "—",
+            PositionLimitLabel = "—",
+            OrderRateLabel = "—",
+            ActivePositions = positions
+        };
+    }
+
+    public async Task<ResearchWorkspaceSummary> GetResearchSummaryAsync(CancellationToken ct = default)
+    {
+        var runs = await _readService.GetRunsAsync(null, ct: ct).ConfigureAwait(false);
+
+        var promoted = runs.Count(r =>
+            r.Mode is StrategyRunMode.Paper or StrategyRunMode.Live);
+
+        var promotionCandidates = runs
+            .Where(r =>
+                r.Mode == StrategyRunMode.Backtest &&
+                r.Status == StrategyRunStatus.Completed &&
+                r.Promotion?.RequiresReview == true)
+            .Take(10)
+            .ToList();
+
+        var recentRuns = runs
+            .Take(10)
+            .Select(r => new ResearchRunSummaryItem
+            {
+                RunId = r.RunId,
+                StrategyName = r.StrategyName,
+                NetPnlFormatted = r.NetPnl.HasValue
+                    ? $"{r.NetPnl.Value:+#,##0.00;-#,##0.00;0.00}"
+                    : "—",
+                NetPnlBrush = r.NetPnl is null ? BrushRegistry.MutedText
+                    : r.NetPnl >= 0 ? BrushRegistry.Success
+                    : BrushRegistry.Error,
+                TotalReturnFormatted = r.TotalReturn.HasValue
+                    ? $"{r.TotalReturn.Value:P2}"
+                    : "—",
+                StatusBadgeBackground = MapStatusBrush(r.Status),
+                StatusLabel = r.Status.ToString()
+            })
+            .ToList();
+
+        var candidateItems = promotionCandidates
+            .Select(r => new ResearchPromotionCandidateItem
+            {
+                RunId = r.RunId,
+                StrategyName = r.StrategyName,
+                PromotionReason = r.Promotion?.Reason ?? "Completed backtest",
+                NextModeLabel = r.Promotion?.SuggestedNextMode?.ToString() ?? "Paper"
+            })
+            .ToList();
+
+        return new ResearchWorkspaceSummary
+        {
+            TotalRuns = runs.Count,
+            PromotedCount = promoted,
+            PendingReviewCount = promotionCandidates.Count,
+            RecentRuns = recentRuns,
+            PromotionCandidates = candidateItems
+        };
+    }
+
+    private static SolidColorBrush MapStatusBrush(StrategyRunStatus status) => status switch
+    {
+        StrategyRunStatus.Running => BrushRegistry.Info,
+        StrategyRunStatus.Completed => BrushRegistry.Success,
+        StrategyRunStatus.Failed => BrushRegistry.Error,
+        StrategyRunStatus.Cancelled or StrategyRunStatus.Stopped => BrushRegistry.Inactive,
+        StrategyRunStatus.Paused => BrushRegistry.Warning,
+        _ => BrushRegistry.MutedText
+    };
 
     public async Task<string> RecordBacktestRunAsync(
         BacktestRequest request,

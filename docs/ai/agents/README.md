@@ -134,17 +134,19 @@ and selects from 8 named patterns (A–H) based on the component type.
 **Claude Code equivalent:** the corresponding cleanup agent in `.claude/agents/`.
 
 Removes dead code, duplication, anti-patterns, and stale documentation without changing
-observable behaviour. Covers 7 categories:
+observable behaviour. Covers 9 categories:
 
 | # | Category |
 |---|---------|
 | 1 | Dead code removal (C# / F#) |
 | 2 | Anti-pattern correction (Meridian-specific) |
 | 3 | Duplication consolidation |
-| 4 | WPF code-behind mechanical cleanup *(delayed — WPF not in active build)* |
+| 4 | WPF code-behind mechanical cleanup |
 | 5 | Documentation cleanup (stale refs, broken links) |
 | 6 | Central Package Management (CPM) compliance |
 | 7 | ADR attribute cleanup (`[DataSource]`, `[ImplementsAdr]`) |
+| 8 | Deprecated and obsolete member cleanup |
+| 9 | Log hygiene (Console.Write, string-interpolated log calls) |
 
 ---
 
@@ -185,6 +187,29 @@ provider adapters. Operates only on **measured** bottlenecks (BenchmarkDotNet / 
 
 ---
 
+
+### Implementation Assurance Agent
+
+**File:** [`.github/agents/implementation-assurance-agent.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/agents/implementation-assurance-agent.md)
+**Used by:** GitHub Copilot agents
+**Claude Code equivalent:** [`.claude/skills/meridian-implementation-assurance/SKILL.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.claude/skills/meridian-implementation-assurance/SKILL.md)
+
+Certifies that changes match approved requirements/blueprints and are validated with explicit
+evidence (builds, tests, docs). Operates across three scenarios:
+
+| Scenario | When | Key Requirement |
+|----------|------|----------------|
+| **A** | Code change + existing docs | Update existing docs in-place |
+| **B** | Code change + missing docs | Create new doc with cross-link from nearest index |
+| **C** | Performance-sensitive hot-path | Allocation/async risk analysis + benchmark evidence |
+
+**Passing threshold:** rubric score ≥ 8/10 and no category scored 0.
+
+**Bundled tooling:** `doc_route.py` (catalog routing), `score_eval.py` (rubric scoring),
+`run_evals.py` (deterministic eval runner), `validate-skill-packages.py` (package integrity).
+
+---
+
 ## Claude Code Agents (`.claude/agents/`)
 
 ### Claude Blueprint Agent
@@ -208,9 +233,9 @@ and implementation checklists — grounded in Meridian's actual stack.
 
 Cleanup specialist for the Meridian repository. Removes dead code, duplication,
 anti-patterns, and stale documentation across C# 13, F# 8, and .NET 9 source files —
-without changing observable behaviour. Covers 7 categories: dead code, anti-pattern correction,
-duplication consolidation, WPF code-behind cleanup (delayed — code preserved), documentation cleanup, CPM compliance,
-and ADR attribute cleanup.
+without changing observable behaviour. Covers 9 categories: dead code, anti-pattern correction,
+duplication consolidation, WPF code-behind cleanup, documentation cleanup, CPM compliance,
+ADR attribute cleanup, deprecated/obsolete member cleanup, and log hygiene.
 
 ---
 
@@ -237,9 +262,11 @@ provider docs, developer guides, `CLAUDE.md`, and the `ai-known-errors.md` regis
 | Provider implementation | `provider-builder-agent.md` | Corresponding Claude Code provider-builder resources |
 | Test generation | `test-writer-agent.md` | Corresponding Claude Code test-writing resources |
 | Documentation maintenance | `documentation-agent.md` | Corresponding Claude Code documentation agent |
+| Implementation assurance | `implementation-assurance-agent.md` | `meridian-implementation-assurance` Claude skill |
 | Code cleanup / anti-pattern fix | `cleanup-agent.md` | Corresponding Claude Code cleanup agent |
 | Bug diagnosis & fix | `bug-fix-agent.md` | *(Copilot-only)* |
 | Performance profiling & optimisation | `performance-agent.md` | *(Copilot-only)* |
+| Direct lending domain (IO, grace period, rate bounds, prepayment) | *(use bug-fix-agent or code-review-agent)* | *(use meridian-code-review skill)* |
 
 ---
 
@@ -263,4 +290,4 @@ Copilot agents, referencing these files in the issue or prompt body improves out
 
 ---
 
-*Last Updated: 2026-03-18*
+*Last Updated: 2026-03-30*

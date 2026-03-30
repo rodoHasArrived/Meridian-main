@@ -268,7 +268,11 @@ public sealed class PaperTradingPortfolio : IPortfolioState
         string orderId)
     {
         var proceeds = qty * price;
-        pos.Quantity -= qty; // goes negative
+        var newQty = pos.Quantity - qty; // goes negative
+        pos.CostBasis = newQty == 0m
+            ? 0m
+            : (pos.CostBasis * Math.Abs(pos.Quantity) + proceeds) / Math.Abs(newQty);
+        pos.Quantity = newQty;
         _cash += proceeds - commission;
 
         if (_ledger is not null)

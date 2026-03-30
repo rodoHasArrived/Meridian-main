@@ -16,9 +16,9 @@ namespace Meridian.Wpf.ViewModels;
 /// </summary>
 public sealed class BacktestViewModel : BindableBase, IDisposable
 {
-    private readonly BacktestService _backtestService = BacktestService.Instance;
-    private readonly NavigationService _navigationService = NavigationService.Instance;
-    private readonly StrategyRunWorkspaceService _strategyRunWorkspaceService = StrategyRunWorkspaceService.Instance;
+    private readonly BacktestService _backtestService;
+    private readonly NavigationService _navigationService;
+    private readonly StrategyRunWorkspaceService _strategyRunWorkspaceService;
 
     // ── Configuration properties ─────────────────────────────────────────────
 
@@ -140,8 +140,14 @@ public sealed class BacktestViewModel : BindableBase, IDisposable
     public IRelayCommand OpenRunPortfolioCommand { get; }
     public IRelayCommand OpenRunLedgerCommand { get; }
 
-    public BacktestViewModel()
+    public BacktestViewModel(
+        BacktestService backtestService,
+        NavigationService navigationService,
+        StrategyRunWorkspaceService strategyRunWorkspaceService)
     {
+        _backtestService = backtestService;
+        _navigationService = navigationService;
+        _strategyRunWorkspaceService = strategyRunWorkspaceService;
         RunBacktestCommand = new AsyncRelayCommand(RunBacktestAsync, () => CanRun);
         CancelBacktestCommand = new RelayCommand(CancelBacktest, () => IsRunning);
         OpenRunBrowserCommand = new RelayCommand(() => _navigationService.NavigateTo("StrategyRuns"));

@@ -144,6 +144,91 @@ public static partial class AtomicFileWriter
     }
 
     /// <summary>
+    /// Atomically appends binary content to an existing file using copy-on-write semantics.
+    /// The original file is preserved until the new file containing both the original and
+    /// appended bytes has been fully written and renamed into place.
+    /// </summary>
+    public static async Task AppendAsync(
+        string destinationPath,
+        Func<Stream, Task> appendAction,
+        CancellationToken ct = default)
+    {
+        var directory = Path.GetDirectoryName(destinationPath);
+        if (!string.IsNullOrEmpty(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+
+        var tempPath = GetTempPath(destinationPath);
+
+        try
+        {
+            await using (var tempStream = new FileStream(
+                tempPath,
+                FileMode.Create,
+                FileAccess.Write,
+                FileShare.None,
+                bufferSize: 65536,
+                FileOptions.Asynchronous))
+            {
+                if (File.Exists(destinationPath))
+                {
+                    await using var sourceStream = new FileStream(
+                        destinationPath,
+                        FileMode.Open,
+                        FileAccess.Read,
+                        FileShare.Read,
+                        bufferSize: 65536,
+                        FileOptions.Asynchronous);
+                    await sourceStream.CopyToAsync(tempStream, 65536, ct);
+                }
+
+                await appendAction(tempStream);
+                await tempStream.FlushAsync(ct);
+            }
+
+            await SyncFileAsync(tempPath, ct);
+            File.Move(tempPath, destinationPath, overwrite: true);
+            await SyncDirectoryAsync(directory!, ct);
+        }
+        catch
+        {
+            TryDeleteFile(tempPath);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Atomically appends UTF-8 lines to an existing text file using copy-on-write semantics.
+    /// </summary>
+    public static Task AppendLinesAsync(
+        string destinationPath,
+        IEnumerable<string> lines,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(lines);
+
+        return AppendAsync(
+            destinationPath,
+            async stream =>
+            {
+                await using var writer = new StreamWriter(
+                    stream,
+                    new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
+                    bufferSize: 65536,
+                    leaveOpen: true);
+
+                foreach (var line in lines)
+                {
+                    await writer.WriteLineAsync(line);
+                }
+
+                await writer.FlushAsync();
+            },
+            ct);
+    }
+
+    /// <summary>
     /// Atomically writes content with checksum verification.
     /// </summary>
     public static async Task<string> WriteWithChecksumAsync(

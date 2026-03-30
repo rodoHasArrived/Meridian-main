@@ -15,6 +15,7 @@ internal sealed class HelpCommand : ICliCommand
         ["package"] = ShowPackageHelp,
         ["diagnostics"] = ShowDiagnosticsHelp,
         ["providers"] = ShowProvidersHelp,
+        ["security-master"] = ShowSecurityMasterHelp,
     };
 
     public bool CanHandle(string[] args)
@@ -51,12 +52,13 @@ internal sealed class HelpCommand : ICliCommand
     private static void ShowTopicList()
     {
         Console.WriteLine("Available help topics:");
-        Console.WriteLine("  --help backfill       Historical data backfill options and examples");
-        Console.WriteLine("  --help symbols        Symbol management commands");
-        Console.WriteLine("  --help config         Configuration and environment variables");
-        Console.WriteLine("  --help package        Data packaging and import/export");
-        Console.WriteLine("  --help diagnostics    Diagnostics and troubleshooting");
-        Console.WriteLine("  --help providers      Data provider information");
+        Console.WriteLine("  --help backfill         Historical data backfill options and examples");
+        Console.WriteLine("  --help symbols          Symbol management commands");
+        Console.WriteLine("  --help config           Configuration and environment variables");
+        Console.WriteLine("  --help package          Data packaging and import/export");
+        Console.WriteLine("  --help diagnostics      Diagnostics and troubleshooting");
+        Console.WriteLine("  --help providers        Data provider information");
+        Console.WriteLine("  --help security-master  Security Master bulk ingest and conflict resolution");
         Console.WriteLine();
         Console.WriteLine("Run --help without a topic for the full reference.");
     }
@@ -606,6 +608,55 @@ SUPPORT:
 ║  START UI:     Run: ./Meridian --mode web                 ║
 ║  Then open http://localhost:8080 in your browser                     ║
 ╚══════════════════════════════════════════════════════════════════════╝
+");
+    }
+
+    private static void ShowSecurityMasterHelp()
+    {
+        Console.WriteLine(@"
+SECURITY MASTER - Bulk Ingest & Conflict Resolution
+═════════════════════════════════════════════════════
+
+Import securities from CSV or JSON files and manage golden record conflicts.
+
+BULK INGEST:
+    --security-master-ingest <file>   Import securities from a CSV or JSON file.
+                                      Requires MERIDIAN_SECURITY_MASTER_CONNECTION_STRING
+                                      to be configured.
+
+    Supported formats:
+      .csv   Header row + data rows. See docs/providers/security-master-guide.md
+             for the expected column names.
+      .json  Array of CreateSecurityRequest objects.
+
+    Examples:
+      Meridian --security-master-ingest ./securities.csv
+      Meridian --security-master-ingest ./equities.json
+
+    Output:
+      Imported  : number of new records written
+      Skipped   : duplicate records that already exist
+      Failed    : records that could not be imported (errors listed below)
+
+HTTP API ENDPOINTS (when running --mode web):
+    GET  /api/security-master/conflicts
+         Returns all open golden record conflicts detected between providers.
+
+    POST /api/security-master/conflicts/{conflictId}/resolve
+         Resolves or dismisses a conflict.
+         Body: { ""conflictId"": ""<guid>"", ""resolution"": ""AcceptA|AcceptB|Dismiss"",
+                 ""resolvedBy"": ""user"", ""reason"": ""optional"" }
+
+    POST /api/security-master/import
+         Bulk-imports securities via the HTTP API.
+         Body: { ""fileContent"": ""<raw CSV or JSON>"", ""fileExtension"": "".csv"" }
+
+ENVIRONMENT VARIABLES:
+    MERIDIAN_SECURITY_MASTER_CONNECTION_STRING   PostgreSQL connection string (required)
+    MERIDIAN_SECURITY_MASTER_SCHEMA              Schema name (default: security_master)
+
+DOCUMENTATION:
+    docs/providers/security-master-guide.md
 ");
     }
 }

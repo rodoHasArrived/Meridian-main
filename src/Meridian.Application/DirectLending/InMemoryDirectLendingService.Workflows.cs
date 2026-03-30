@@ -67,7 +67,8 @@ public sealed partial class InMemoryDirectLendingService
 
             void AddAllocation(decimal amount, string targetType)
             {
-                if (amount <= 0m) return;
+                if (amount <= 0m)
+                    return;
                 allocations.Add(new PaymentAllocationDto(Guid.NewGuid(), loanId, cashTxn.CashTransactionId, seq++, targetType, Guid.NewGuid().ToString("D"), amount, "Waterfall", stored.History[^1].EventId, DateTimeOffset.UtcNow));
             }
         }
@@ -134,6 +135,44 @@ public sealed partial class InMemoryDirectLendingService
         }
     }
 
+    public Task<LoanServicingStateDto?> ChargePrepaymentPenaltyAsync(Guid loanId, ChargePrepaymentPenaltyRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        if (request.OutstandingPrincipal <= 0m)
+        {
+            throw new DirectLendingCommandException(new DirectLendingCommandError(DirectLendingErrorCode.Validation, "Outstanding principal must be positive."));
+        }
+
+        lock (_gate)
+        {
+            if (!_loans.TryGetValue(loanId, out var stored))
+            {
+                return Task.FromResult<LoanServicingStateDto?>(null);
+            }
+
+            if (!stored.TermsVersions[^1].Terms.PrepaymentAllowed)
+            {
+                throw new DirectLendingCommandException(new DirectLendingCommandError(DirectLendingErrorCode.Validation, "Prepayment is not permitted under the current loan terms."));
+            }
+
+            var penaltyRate = stored.TermsVersions[^1].Terms.PrepaymentPenaltyRate ?? 0m;
+            var penaltyAmount = penaltyRate > 0m
+                ? Math.Round(request.OutstandingPrincipal * penaltyRate, 2, MidpointRounding.AwayFromZero)
+                : 0m;
+
+            stored.Servicing = stored.Servicing with
+            {
+                Balances = stored.Servicing.Balances with
+                {
+                    PenaltyAccruedUnpaid = stored.Servicing.Balances.PenaltyAccruedUnpaid + penaltyAmount
+                }
+            };
+            AppendRevision(stored, "InternalEvent", request.EffectiveDate, $"Prepayment penalty charged for {penaltyAmount:0.00}.");
+            AppendEvent(stored, "loan.prepayment-penalty-charged", request.EffectiveDate, new { loanId, request.OutstandingPrincipal, PenaltyAmount = penaltyAmount, request.EffectiveDate, request.ExternalRef }, metadata);
+            return Task.FromResult<LoanServicingStateDto?>(ToServicingState(stored));
+        }
+    }
+
     public Task<IReadOnlyList<CashTransactionDto>> GetCashTransactionsAsync(Guid loanId, CancellationToken ct = default) => Task.FromResult<IReadOnlyList<CashTransactionDto>>(GetList(_cashTransactions, loanId).ToArray());
     public Task<IReadOnlyList<PaymentAllocationDto>> GetPaymentAllocationsAsync(Guid loanId, CancellationToken ct = default) => Task.FromResult<IReadOnlyList<PaymentAllocationDto>>(GetList(_paymentAllocations, loanId).ToArray());
     public Task<IReadOnlyList<FeeBalanceDto>> GetFeeBalancesAsync(Guid loanId, CancellationToken ct = default) => Task.FromResult<IReadOnlyList<FeeBalanceDto>>(GetList(_feeBalances, loanId).ToArray());
@@ -142,16 +181,23 @@ public sealed partial class InMemoryDirectLendingService
     {
         lock (_gate)
         {
-            if (!_loans.TryGetValue(loanId, out var stored))
-            {
-                throw new DirectLendingCommandException(new DirectLendingCommandError(DirectLendingErrorCode.NotFound, $"Loan '{loanId}' was not found."));
-            }
-            var run = new ProjectionRunDto(Guid.NewGuid(), loanId, stored.TermsVersions[^1].VersionNumber, stored.Servicing.ServicingRevision, projectionAsOf ?? stored.TermsVersions[^1].Terms.MaturityDate, null, stored.History.LastOrDefault()?.EventId, "manual.request", ComputeTermsHash(stored.TermsVersions[^1].Terms), "in-memory", ProjectionRunStatus.Completed, GetList(_projectionRuns, loanId).LastOrDefault()?.ProjectionRunId, DateTimeOffset.UtcNow);
-            var flows = BuildFlows(stored, run);
-            GetList(_projectionRuns, loanId).Add(run);
-            _projectedCashFlows[run.ProjectionRunId] = flows.ToList();
-            return Task.FromResult(run);
+            return Task.FromResult(CreateProjectionLocked(loanId, projectionAsOf));
         }
+    }
+
+    // Requires _gate to be held by the caller.
+    private ProjectionRunDto CreateProjectionLocked(Guid loanId, DateOnly? projectionAsOf)
+    {
+        System.Diagnostics.Debug.Assert(Monitor.IsEntered(_gate), "CreateProjectionLocked must be called while holding _gate.");
+        if (!_loans.TryGetValue(loanId, out var stored))
+        {
+            throw new DirectLendingCommandException(new DirectLendingCommandError(DirectLendingErrorCode.NotFound, $"Loan '{loanId}' was not found."));
+        }
+        var run = new ProjectionRunDto(Guid.NewGuid(), loanId, stored.TermsVersions[^1].VersionNumber, stored.Servicing.ServicingRevision, projectionAsOf ?? stored.TermsVersions[^1].Terms.MaturityDate, null, stored.History.LastOrDefault()?.EventId, "manual.request", ComputeTermsHash(stored.TermsVersions[^1].Terms), "in-memory", ProjectionRunStatus.Completed, GetList(_projectionRuns, loanId).LastOrDefault()?.ProjectionRunId, DateTimeOffset.UtcNow);
+        var flows = BuildFlows(stored, run);
+        GetList(_projectionRuns, loanId).Add(run);
+        _projectedCashFlows[run.ProjectionRunId] = flows.ToList();
+        return run;
     }
 
     public Task<IReadOnlyList<ProjectionRunDto>> GetProjectionsAsync(Guid loanId, CancellationToken ct = default) => Task.FromResult<IReadOnlyList<ProjectionRunDto>>(GetList(_projectionRuns, loanId).OrderByDescending(static x => x.GeneratedAt).ToArray());
@@ -188,7 +234,7 @@ public sealed partial class InMemoryDirectLendingService
             var latestProjection = GetList(_projectionRuns, loanId).OrderByDescending(static x => x.GeneratedAt).FirstOrDefault();
             if (latestProjection is null)
             {
-                latestProjection = RequestProjectionAsync(loanId, null, ct).Result;
+                latestProjection = CreateProjectionLocked(loanId, null);
             }
 
             var runId = Guid.NewGuid();
@@ -323,6 +369,48 @@ public sealed partial class InMemoryDirectLendingService
         }
     }
 
+    public Task<LoanPortfolioSummaryDto> GetPortfolioSummaryAsync(CancellationToken ct = default)
+    {
+        lock (_gate)
+        {
+            var summaries = _loans.Values.Select(stored =>
+            {
+                var contract = ToContractDetail(stored);
+                var servicing = ToServicingState(stored);
+                return new LoanSummaryDto(
+                    stored.LoanId,
+                    contract.FacilityName,
+                    contract.Borrower.BorrowerId,
+                    contract.Borrower.BorrowerName,
+                    contract.Status,
+                    contract.CurrentTerms.BaseCurrency,
+                    contract.CurrentTerms.CommitmentAmount,
+                    servicing.Balances.PrincipalOutstanding,
+                    servicing.Balances.InterestAccruedUnpaid,
+                    servicing.Balances.PenaltyAccruedUnpaid,
+                    servicing.AvailableToDraw,
+                    contract.CurrentTerms.OriginationDate,
+                    contract.CurrentTerms.MaturityDate,
+                    servicing.LastAccrualDate,
+                    servicing.LastPaymentDate);
+            }).ToList();
+
+            var active = summaries.Count(s => s.Status == LoanStatus.Active);
+            var defaulted = summaries.Count(s => s.Status == LoanStatus.Defaulted);
+
+            return Task.FromResult(new LoanPortfolioSummaryDto(
+                summaries.Count,
+                active,
+                defaulted,
+                summaries.Sum(s => s.CommitmentAmount),
+                summaries.Sum(s => s.PrincipalOutstanding),
+                summaries.Sum(s => s.InterestAccruedUnpaid),
+                summaries.Sum(s => s.PenaltyAccruedUnpaid),
+                summaries.Sum(s => s.AvailableToDraw),
+                summaries));
+        }
+    }
+
     private static List<T> GetList<T>(Dictionary<Guid, List<T>> source, Guid key)
     {
         if (!source.TryGetValue(key, out var list))
@@ -343,7 +431,8 @@ public sealed partial class InMemoryDirectLendingService
         while (currentDate < stored.TermsVersions[^1].Terms.MaturityDate && currentDate < run.ProjectionAsOf)
         {
             var nextDate = currentDate.AddMonths(1);
-            if (nextDate > stored.TermsVersions[^1].Terms.MaturityDate) nextDate = stored.TermsVersions[^1].Terms.MaturityDate;
+            if (nextDate > stored.TermsVersions[^1].Terms.MaturityDate)
+                nextDate = stored.TermsVersions[^1].Terms.MaturityDate;
             var amount = Meridian.FSharp.DirectLendingInterop.DirectLendingInterop.CalculateDailyAccrualAmount(stored.Servicing.Balances.PrincipalOutstanding, annualRate, (int)stored.TermsVersions[^1].Terms.DayCountBasis) * Math.Max(1, nextDate.DayNumber - currentDate.DayNumber);
             flows.Add(new ProjectedCashFlowDto(Guid.NewGuid(), run.ProjectionRunId, stored.LoanId, seq++, "Interest", nextDate, currentDate, nextDate, decimal.Round(amount, 2, MidpointRounding.AwayFromZero), stored.TermsVersions[^1].Terms.BaseCurrency, stored.Servicing.Balances.PrincipalOutstanding, annualRate, JsonSerializer.Serialize(new { type = "interest" }), DateTimeOffset.UtcNow));
             currentDate = nextDate;

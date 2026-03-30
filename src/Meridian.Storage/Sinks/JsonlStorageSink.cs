@@ -8,6 +8,7 @@ using System.Threading;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Serialization;
 using Meridian.Domain.Events;
+using Meridian.Storage.Archival;
 using Meridian.Storage.Interfaces;
 using Meridian.Storage.Services;
 using Microsoft.Extensions.Logging;
@@ -394,42 +395,25 @@ public sealed class JsonlStorageSink : IStorageSink
 
     private sealed class WriterState : IAsyncDisposable
     {
-        private readonly Stream _stream;
-        private readonly StreamWriter _writer;
+        private readonly string _path;
         private readonly SemaphoreSlim _gate = new(1, 1);
         private readonly bool _compressed;
 
-        private WriterState(Stream stream, StreamWriter writer, bool compressed)
+        private WriterState(string path, bool compressed)
         {
-            _stream = stream;
-            _writer = writer;
+            _path = path;
             _compressed = compressed;
         }
 
         public static WriterState Create(string path, bool compress)
         {
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-
-            Stream fs = new FileStream(path, FileMode.Append, FileAccess.Write, FileShare.Read, 1 << 16, useAsync: true);
-            if (compress)
-                fs = new GZipStream(fs, CompressionLevel.Fastest);
-
-            var writer = new StreamWriter(fs, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false), 1 << 16, leaveOpen: true);
-            writer.AutoFlush = false;
-            return new WriterState(fs, writer, compress);
+            return new WriterState(path, compress);
         }
 
         public async ValueTask WriteLineAsync(string line, CancellationToken ct)
         {
-            await _gate.WaitAsync(ct).ConfigureAwait(false);
-            try
-            {
-                await _writer.WriteLineAsync(line).ConfigureAwait(false);
-            }
-            finally
-            {
-                _gate.Release();
-            }
+            await WriteBatchAsync([line], ct).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -443,18 +427,34 @@ public sealed class JsonlStorageSink : IStorageSink
             await _gate.WaitAsync(ct).ConfigureAwait(false);
             try
             {
-                // Write all lines in a single lock acquisition
-                foreach (var line in lines)
-                {
-                    await _writer.WriteLineAsync(line).ConfigureAwait(false);
-                }
-                // Flush writer and underlying stream after batch to ensure durability.
-                // For compressed streams (GZipStream), the StreamWriter only flushes to the
-                // GZipStream buffer; the second flush propagates compressed data to the FileStream.
-                // For uncompressed streams, the second flush is skipped (redundant syscall).
-                await _writer.FlushAsync().ConfigureAwait(false);
-                if (_compressed)
-                    await _stream.FlushAsync(ct).ConfigureAwait(false);
+                await AtomicFileWriter.AppendAsync(
+                    _path,
+                    async stream =>
+                    {
+                        Stream writeStream = stream;
+                        if (_compressed)
+                        {
+                            writeStream = new GZipStream(stream, CompressionLevel.Fastest, leaveOpen: true);
+                        }
+
+                        await using var writer = new StreamWriter(
+                            writeStream,
+                            new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
+                            1 << 16,
+                            leaveOpen: true);
+
+                        foreach (var line in lines)
+                        {
+                            await writer.WriteLineAsync(line).ConfigureAwait(false);
+                        }
+
+                        await writer.FlushAsync().ConfigureAwait(false);
+                        if (_compressed && writeStream is GZipStream gzipStream)
+                        {
+                            await gzipStream.FlushAsync(ct).ConfigureAwait(false);
+                        }
+                    },
+                    ct).ConfigureAwait(false);
             }
             finally
             {
@@ -467,8 +467,7 @@ public sealed class JsonlStorageSink : IStorageSink
             await _gate.WaitAsync(ct).ConfigureAwait(false);
             try
             {
-                await _writer.FlushAsync().ConfigureAwait(false);
-                await _stream.FlushAsync(ct).ConfigureAwait(false);
+                ct.ThrowIfCancellationRequested();
             }
             finally
             {
@@ -481,9 +480,7 @@ public sealed class JsonlStorageSink : IStorageSink
             await _gate.WaitAsync().ConfigureAwait(false);
             try
             {
-                await _writer.FlushAsync().ConfigureAwait(false);
-                await _writer.DisposeAsync().ConfigureAwait(false);
-                await _stream.DisposeAsync().ConfigureAwait(false);
+                // No persistent stream state is held between writes.
             }
             finally
             {

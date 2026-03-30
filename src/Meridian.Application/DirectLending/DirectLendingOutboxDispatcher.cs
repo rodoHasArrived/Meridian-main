@@ -153,6 +153,16 @@ public sealed class DirectLendingOutboxDispatcher : BackgroundService
                 lines.Add(new JournalLineDto(Guid.NewGuid(), 1, "WriteOffExpense", writeOffAmount, 0m, contract.CurrentTerms.BaseCurrency, null));
                 lines.Add(new JournalLineDto(Guid.NewGuid(), 2, "LoanPrincipal", 0m, writeOffAmount, contract.CurrentTerms.BaseCurrency, null));
                 break;
+
+            case "loan.prepayment-penalty-charged":
+                var prepaymentPenaltyAmount = payload.RootElement.GetProperty("PenaltyAmount").GetDecimal();
+                description = "Prepayment penalty";
+                if (prepaymentPenaltyAmount > 0m)
+                {
+                    lines.Add(new JournalLineDto(Guid.NewGuid(), 1, "PenaltyReceivable", prepaymentPenaltyAmount, 0m, contract.CurrentTerms.BaseCurrency, null));
+                    lines.Add(new JournalLineDto(Guid.NewGuid(), 2, "PenaltyIncome", 0m, prepaymentPenaltyAmount, contract.CurrentTerms.BaseCurrency, null));
+                }
+                break;
         }
 
         if (lines.Count == 0)

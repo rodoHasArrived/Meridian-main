@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "K9qjU03c52Q=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.FSharp.Ledger\\Meridian.FSharp.Ledger.fsproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Andrew James Rowden\\.nuget\\packages\\fsharp.core\\11.0.100\\fsharp.core.11.0.100.nupkg.sha512"
+  ],
+  "logs": []
+}

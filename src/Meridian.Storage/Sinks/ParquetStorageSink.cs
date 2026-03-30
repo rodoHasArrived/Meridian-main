@@ -1,7 +1,9 @@
 using System.Collections.Concurrent;
+using System.Text.Json;
 using System.Threading;
 using Meridian.Application.Logging;
 using Meridian.Application.Monitoring;
+using Meridian.Application.Serialization;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Events;
 using Meridian.Domain.Models;
@@ -29,10 +31,12 @@ public sealed class ParquetStorageSink : IStorageSink
     private readonly StorageOptions _options;
     private readonly ParquetStorageOptions _parquetOptions;
     private readonly ConcurrentDictionary<string, MarketEventBuffer> _buffers = new(StringComparer.OrdinalIgnoreCase);
-    private readonly Timer _flushTimer;
+    private readonly Task _flushLoopTask;
     private readonly CancellationTokenSource _disposalCts = new();
     private readonly SemaphoreSlim _flushGate = new(1, 1);
     private int _disposed;
+
+    private static readonly IReadOnlyList<OrderBookLevel> EmptyBookLevels = Array.Empty<OrderBookLevel>();
 
     // Trade event schema
     private static readonly ParquetSchema TradeSchema = new(
@@ -92,12 +96,7 @@ public sealed class ParquetStorageSink : IStorageSink
         _options = options ?? throw new ArgumentNullException(nameof(options));
         _parquetOptions = parquetOptions ?? ParquetStorageOptions.Default;
 
-        // Setup periodic flush timer with safe async wrapper to prevent silent data loss
-        _flushTimer = new Timer(
-            _ => FlushAllBuffersSafelyAsync(),
-            null,
-            _parquetOptions.FlushInterval,
-            _parquetOptions.FlushInterval);
+        _flushLoopTask = RunPeriodicFlushLoopAsync(_disposalCts.Token);
 
         _log.Information("ParquetStorageSink initialized with buffer size {BufferSize}, flush interval {FlushInterval}s",
             _parquetOptions.BufferSize, _parquetOptions.FlushInterval.TotalSeconds);
@@ -127,13 +126,30 @@ public sealed class ParquetStorageSink : IStorageSink
         await FlushAllBuffersAsync(ct);
     }
 
-    private async void FlushAllBuffersSafelyAsync()
+    private async Task RunPeriodicFlushLoopAsync(CancellationToken ct)
+    {
+        using var periodicTimer = new PeriodicTimer(_parquetOptions.FlushInterval);
+
+        try
+        {
+            while (await periodicTimer.WaitForNextTickAsync(ct).ConfigureAwait(false))
+            {
+                await FlushAllBuffersSafelyAsync(ct).ConfigureAwait(false);
+            }
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            // Disposal in progress, stop flushing
+        }
+    }
+
+    private async Task FlushAllBuffersSafelyAsync(CancellationToken ct)
     {
         try
         {
-            await FlushAllBuffersAsync(_disposalCts.Token).ConfigureAwait(false);
+            await FlushAllBuffersAsync(ct).ConfigureAwait(false);
         }
-        catch (OperationCanceledException) when (_disposalCts.IsCancellationRequested)
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
             // Disposal in progress, stop flushing
         }
@@ -328,17 +344,46 @@ public sealed class ParquetStorageSink : IStorageSink
         using var groupWriter = await ParquetWriter.CreateAsync(L2Schema, File.Create(path));
         using var rowGroupWriter = groupWriter.CreateRowGroup();
 
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[0], snapshots.Select(s => s.Event.Timestamp).ToArray()));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[1], snapshots.Select(s => s.Event.EffectiveSymbol).ToArray()));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[2], snapshots.Select(s => s.Snapshot.Bids?.Count ?? 0).ToArray()));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[3], snapshots.Select(s => s.Snapshot.Asks?.Count ?? 0).ToArray()));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[4], snapshots.Select(s => s.Snapshot.Bids?.FirstOrDefault()?.Price ?? 0m).ToArray()));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[5], snapshots.Select(s => s.Snapshot.Asks?.FirstOrDefault()?.Price ?? 0m).ToArray()));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[6], snapshots.Select(s => ComputeSpread(s.Snapshot)).ToArray()));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[7], snapshots.Select(s => s.SequenceNumber).ToArray()));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[8], snapshots.Select(s => s.Event.Source).ToArray()));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[9], snapshots.Select(s => System.Text.Json.JsonSerializer.Serialize(s.Snapshot.Bids ?? (IReadOnlyList<OrderBookLevel>)[])).ToArray()));
-        await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[10], snapshots.Select(s => System.Text.Json.JsonSerializer.Serialize(s.Snapshot.Asks ?? (IReadOnlyList<OrderBookLevel>)[])).ToArray()));
+        var count = snapshots.Count;
+        var timestamps = new DateTimeOffset[count];
+        var symbols = new string[count];
+        var bidCounts = new int[count];
+        var askCounts = new int[count];
+        var bestBids = new decimal?[count];
+        var bestAsks = new decimal?[count];
+        var spreads = new decimal?[count];
+        var seqNums = new long[count];
+        var sources = new string[count];
+        var bidsJson = new string[count];
+        var asksJson = new string[count];
+
+        for (var i = 0; i < count; i++)
+        {
+            var (evt, snap, seq) = snapshots[i];
+            timestamps[i] = evt.Timestamp;
+            symbols[i] = evt.EffectiveSymbol;
+            bidCounts[i] = snap.Bids?.Count ?? 0;
+            askCounts[i] = snap.Asks?.Count ?? 0;
+            bestBids[i] = snap.Bids is { Count: > 0 } bids ? bids[0].Price : 0m;
+            bestAsks[i] = snap.Asks is { Count: > 0 } asks ? asks[0].Price : 0m;
+            spreads[i] = ComputeSpread(snap);
+            seqNums[i] = seq;
+            sources[i] = evt.Source;
+            bidsJson[i] = JsonSerializer.Serialize(snap.Bids ?? EmptyBookLevels, MarketDataJsonContext.HighPerformanceOptions);
+            asksJson[i] = JsonSerializer.Serialize(snap.Asks ?? EmptyBookLevels, MarketDataJsonContext.HighPerformanceOptions);
+        }
+
+        await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[0], timestamps));
+        await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[1], symbols));
+        await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[2], bidCounts));
+        await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[3], askCounts));
+        await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[4], bestBids));
+        await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[5], bestAsks));
+        await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[6], spreads));
+        await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[7], seqNums));
+        await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[8], sources));
+        await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[9], bidsJson));
+        await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[10], asksJson));
     }
 
     private static (LOBSnapshot? Snapshot, long SequenceNumber) ExtractL2Data(MarketEvent evt) => evt.Payload switch
@@ -421,12 +466,24 @@ public sealed class ParquetStorageSink : IStorageSink
             new DataField<string>("Source")
         );
 
-        var timestamps = events.Select(e => e.Timestamp).ToArray();
-        var symbols = events.Select(e => e.EffectiveSymbol).ToArray();
-        var types = events.Select(e => e.Type.ToString()).ToArray();
-        var payloads = events.Select(e => System.Text.Json.JsonSerializer.Serialize(e.Payload)).ToArray();
-        var sequences = events.Select(e => e.Sequence).ToArray();
-        var sources = events.Select(e => e.Source).ToArray();
+        var count = events.Count;
+        var timestamps = new DateTimeOffset[count];
+        var symbols = new string[count];
+        var types = new string[count];
+        var payloads = new string[count];
+        var sequences = new long[count];
+        var sources = new string[count];
+
+        for (var i = 0; i < count; i++)
+        {
+            var e = events[i];
+            timestamps[i] = e.Timestamp;
+            symbols[i] = e.EffectiveSymbol;
+            types[i] = e.Type.ToString();
+            payloads[i] = JsonSerializer.Serialize(e, MarketDataJsonContext.Default.MarketEvent);
+            sequences[i] = e.Sequence;
+            sources[i] = e.Source;
+        }
 
         using var groupWriter = await ParquetWriter.CreateAsync(genericSchema, File.Create(path));
         using var rowGroupWriter = groupWriter.CreateRowGroup();
@@ -465,13 +522,13 @@ public sealed class ParquetStorageSink : IStorageSink
         if (Interlocked.Exchange(ref _disposed, 1) != 0)
             return;
 
-        // 1. Signal cancellation to stop any in-flight timer callbacks
+        // 1. Signal cancellation to stop the background flush loop
         _disposalCts.Cancel();
 
-        // 2. Dispose timer — waits for any pending callback to complete
-        await _flushTimer.DisposeAsync().ConfigureAwait(false);
+        // 2. Await the background loop so no fire-and-forget flush remains detached from disposal
+        await _flushLoopTask.ConfigureAwait(false);
 
-        // 3. Final flush — guaranteed no concurrent timer flushes after timer disposal
+        // 3. Final flush — guaranteed no concurrent background flushes after loop completion
         try
         {
             await _flushGate.WaitAsync().ConfigureAwait(false);

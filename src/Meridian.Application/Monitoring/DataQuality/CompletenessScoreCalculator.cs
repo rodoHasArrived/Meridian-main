@@ -278,6 +278,16 @@ public sealed class CompletenessScoreCalculator : IDisposable
         private long _expectedEventsPerHour;
         private readonly HashSet<int> _coveredMinutes = new();
 
+        // Calibration state -------------------------------------------------------
+        // Tracks whether the expected rate was set via an explicit liquidity profile
+        // or SetExpectedEventsPerHour call (which should suppress auto-calibration).
+        private bool _isExplicitlyConfigured;
+        // Set to true once auto-calibration has been applied for this day/symbol.
+        private bool _isAutoCalibrated;
+        // Events observed so far within the calibration window.
+        private long _calibrationWindowEventCount;
+        // -------------------------------------------------------------------------
+
         public string Symbol { get; }
         public DateOnly Date { get; }
 
@@ -303,6 +313,29 @@ public sealed class CompletenessScoreCalculator : IDisposable
                 // Track which minutes have data
                 var minuteOfDay = timestamp.Hour * 60 + timestamp.Minute;
                 _coveredMinutes.Add(minuteOfDay);
+
+                // Auto-calibrate expected events per hour from observed activity.
+                // Only applies when: auto-calibration is enabled, no explicit
+                // liquidity profile has been registered, and calibration has not
+                // already been performed for this symbol/date.
+                if (_config.EnableAutoCalibration
+                    && !_isExplicitlyConfigured
+                    && !_isAutoCalibrated
+                    && _firstEvent != DateTimeOffset.MaxValue)
+                {
+                    _calibrationWindowEventCount++;
+                    var elapsed = timestamp - _firstEvent;
+
+                    if (elapsed.TotalMinutes >= _config.CalibrationWindowMinutes
+                        && _calibrationWindowEventCount >= _config.CalibrationMinEvents)
+                    {
+                        // Compute observed events-per-hour over the calibration window
+                        // and use it as the expected rate going forward.
+                        var observedRatePerHour = (long)(_calibrationWindowEventCount / elapsed.TotalHours);
+                        _expectedEventsPerHour = Math.Max(1, observedRatePerHour);
+                        _isAutoCalibrated = true;
+                    }
+                }
             }
         }
 
@@ -311,6 +344,9 @@ public sealed class CompletenessScoreCalculator : IDisposable
             lock (_lock)
             {
                 _expectedEventsPerHour = expectedPerHour;
+                // Mark as explicitly configured so auto-calibration never overrides
+                // a deliberately chosen liquidity profile.
+                _isExplicitlyConfigured = true;
             }
         }
 
@@ -363,7 +399,7 @@ public sealed class CompletenessScoreCalculator : IDisposable
                     CoveredDuration: coveredDuration,
                     CoveragePercent: Math.Round(coveragePercent, 2),
                     CalculatedAt: DateTimeOffset.UtcNow
-                );
+                ) { IsAutoCalibrated = _isAutoCalibrated };
             }
         }
     }
@@ -376,6 +412,8 @@ public sealed record CompletenessConfig
 {
     /// <summary>
     /// Expected events per hour for average symbols.
+    /// Used as the initial baseline until a liquidity profile is registered
+    /// or auto-calibration determines the symbol's actual rate.
     /// </summary>
     public long ExpectedEventsPerHour { get; init; } = 1000;
 
@@ -403,6 +441,30 @@ public sealed record CompletenessConfig
     /// Number of days to retain historical completeness data.
     /// </summary>
     public int RetentionDays { get; init; } = 30;
+
+    /// <summary>
+    /// Enables automatic calibration of expected events per hour based on the
+    /// observed event rate after the initial calibration window has elapsed.
+    /// When enabled and no explicit liquidity profile has been registered for a
+    /// symbol, the calculator will adjust its expectation to match the symbol's
+    /// observed activity, preventing grossly incorrect scores for symbols whose
+    /// actual rate differs from <see cref="ExpectedEventsPerHour"/>.
+    /// </summary>
+    public bool EnableAutoCalibration { get; init; } = true;
+
+    /// <summary>
+    /// Minimum elapsed minutes from the first observed event before
+    /// auto-calibration is triggered for a symbol.
+    /// </summary>
+    public int CalibrationWindowMinutes { get; init; } = 60;
+
+    /// <summary>
+    /// Minimum number of events that must have been observed within the
+    /// calibration window before auto-calibration is applied.
+    /// Prevents calibration on symbols with very sparse, possibly anomalous
+    /// early-day activity.
+    /// </summary>
+    public int CalibrationMinEvents { get; init; } = 10;
 
     public static CompletenessConfig Default => new();
 }

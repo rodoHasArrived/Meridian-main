@@ -1,9 +1,7 @@
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.ViewModels;
 using WpfServices = Meridian.Wpf.Services;
@@ -152,6 +150,9 @@ public partial class SymbolsPage : Page
             _selectedSymbol = symbol;
             _isEditMode = true;
 
+            // Update the ViewModel's selected item for action strip
+            _vm.SelectedItem = symbol;
+
             SymbolBox.Text = symbol.Symbol;
             SubscribeTradesToggle.IsChecked = symbol.SubscribeTrades;
             SubscribeDepthToggle.IsChecked = symbol.SubscribeDepth;
@@ -241,6 +242,8 @@ public partial class SymbolsPage : Page
     {
         _selectedSymbol = null;
         _isEditMode = false;
+        _vm.SelectedItem = null;
+        _vm.SelectedSymbolTicker = string.Empty; // Clear the Security Master bridge state
         SymbolBox.Text = string.Empty;
         SubscribeTradesToggle.IsChecked = true;
         SubscribeDepthToggle.IsChecked = false;
@@ -322,76 +325,4 @@ public partial class SymbolsPage : Page
 
     private static string? GetComboSelectedTag(ComboBox combo) =>
         (combo.SelectedItem as ComboBoxItem)?.Tag?.ToString();
-}
-
-/// <summary>Dialog for saving watchlists.</summary>
-public sealed class SaveWatchlistDialog : Window
-{
-    private readonly TextBox _nameBox;
-    private readonly ComboBox _existingCombo;
-    private readonly CheckBox _saveAsNewCheck;
-    private readonly List<string> _existingWatchlists;
-
-    public string WatchlistName => _nameBox.Text;
-    public bool SaveAsNew => _saveAsNewCheck.IsChecked ?? true;
-    public string? SelectedWatchlistId { get; private set; }
-
-    public SaveWatchlistDialog(List<string> existingWatchlists)
-    {
-        _existingWatchlists = existingWatchlists;
-        Title = "Save Watchlist";
-        Width = 400;
-        Height = 220;
-        WindowStartupLocation = WindowStartupLocation.CenterOwner;
-        ResizeMode = ResizeMode.NoResize;
-        Background = new SolidColorBrush((System.Windows.Media.Color)ColorConverter.ConvertFromString("#1E1E2E"));
-
-        var grid = new Grid { Margin = new Thickness(16) };
-        for (var i = 0; i < 6; i++)
-            grid.RowDefinitions.Add(new RowDefinition { Height = i == 4 ? new GridLength(1, GridUnitType.Star) : GridLength.Auto });
-
-        _saveAsNewCheck = new CheckBox { Content = "Create new watchlist", IsChecked = true, Foreground = Brushes.White, Margin = new Thickness(0, 0, 0, 12) };
-        _saveAsNewCheck.Checked += (_, _) => UpdateUIState();
-        _saveAsNewCheck.Unchecked += (_, _) => UpdateUIState();
-        Grid.SetRow(_saveAsNewCheck, 0); grid.Children.Add(_saveAsNewCheck);
-
-        var nameLabel = new TextBlock { Text = "Watchlist Name:", Foreground = Brushes.White, Margin = new Thickness(0, 0, 0, 4) };
-        Grid.SetRow(nameLabel, 1); grid.Children.Add(nameLabel);
-
-        _nameBox = new TextBox { Margin = new Thickness(0, 0, 0, 12), Background = new SolidColorBrush((System.Windows.Media.Color)ColorConverter.ConvertFromString("#2A2A3E")), Foreground = Brushes.White, Padding = new Thickness(8, 4, 8, 4) };
-        Grid.SetRow(_nameBox, 2); grid.Children.Add(_nameBox);
-
-        var existingLabel = new TextBlock { Text = "Or update existing:", Foreground = Brushes.Gray, Margin = new Thickness(0, 0, 0, 4) };
-        Grid.SetRow(existingLabel, 3); grid.Children.Add(existingLabel);
-
-        _existingCombo = new ComboBox { Margin = new Thickness(0, 0, 0, 16), IsEnabled = false, Foreground = Brushes.White };
-        foreach (var name in existingWatchlists) _existingCombo.Items.Add(name);
-        Grid.SetRow(_existingCombo, 4); grid.Children.Add(_existingCombo);
-
-        var buttonPanel = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right };
-        Grid.SetRow(buttonPanel, 5);
-        var cancelButton = new Button { Content = "Cancel", Width = 80, Margin = new Thickness(0, 0, 8, 0), Background = new SolidColorBrush((System.Windows.Media.Color)ColorConverter.ConvertFromString("#3A3A4E")), Foreground = Brushes.White, BorderThickness = new Thickness(0), Padding = new Thickness(8, 4, 8, 4) };
-        cancelButton.Click += (_, _) => { DialogResult = false; Close(); };
-        buttonPanel.Children.Add(cancelButton);
-        var saveButton = new Button { Content = "Save", Width = 80, Background = new SolidColorBrush((System.Windows.Media.Color)ColorConverter.ConvertFromString("#4CAF50")), Foreground = Brushes.White, BorderThickness = new Thickness(0), Padding = new Thickness(8, 4, 8, 4) };
-        saveButton.Click += OnSaveClick;
-        buttonPanel.Children.Add(saveButton);
-        grid.Children.Add(buttonPanel);
-        Content = grid;
-    }
-
-    private void UpdateUIState()
-    {
-        var isNew = _saveAsNewCheck.IsChecked ?? true;
-        _nameBox.IsEnabled = isNew;
-        _existingCombo.IsEnabled = !isNew && _existingWatchlists.Count > 0;
-    }
-
-    private void OnSaveClick(object sender, RoutedEventArgs e)
-    {
-        if (SaveAsNew && string.IsNullOrWhiteSpace(_nameBox.Text)) { MessageBox.Show("Please enter a watchlist name.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
-        else if (!SaveAsNew && _existingCombo.SelectedItem == null) { MessageBox.Show("Please select an existing watchlist.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
-        DialogResult = true;
-        Close();
-    }
 }

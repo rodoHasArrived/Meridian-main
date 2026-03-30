@@ -1,7 +1,3 @@
-> **⚠️ DELAYED IMPLEMENTATION** — The WPF desktop app (`src/Meridian.Wpf/`) is not included in the active solution build. Code is preserved for future use. This document is retained as a reference for when WPF development resumes.
-
----
-
 # Desktop Support Policy
 
 ## Scope

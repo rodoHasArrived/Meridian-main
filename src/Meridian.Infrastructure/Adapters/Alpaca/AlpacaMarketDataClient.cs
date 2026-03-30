@@ -1,8 +1,5 @@
-using System.Net.WebSockets;
-using System.Text;
 using System.Text.Json;
 using System.Threading;
-using Meridian.Application.Logging;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Collectors;
 using Meridian.Domain.Models;
@@ -11,13 +8,15 @@ using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
 using Meridian.Infrastructure.Resilience;
 using Meridian.Infrastructure.Shared;
-using Serilog;
 using AlpacaOptions = Meridian.Application.Config.AlpacaOptions;
 
 namespace Meridian.Infrastructure.Adapters.Alpaca;
 
 /// <summary>
 /// Alpaca Market Data client (WebSocket) that implements the IMarketDataClient abstraction.
+/// Extends <see cref="WebSocketProviderBase"/>, which centralises connection lifecycle,
+/// resilience (retry + circuit breaker), heartbeat monitoring, and automatic reconnection.
+/// ~80 LOC of WebSocket boilerplate removed compared to the previous direct implementation.
 ///
 /// Current support:
 /// - Trades: YES (streams "t" messages and forwards to TradeDataCollector)
@@ -26,25 +25,18 @@ namespace Meridian.Infrastructure.Adapters.Alpaca;
 /// Notes:
 /// - Alpaca typically limits to 1 active stream connection per user per endpoint.
 /// - Authentication is performed by sending an "auth" message immediately after connect.
+///   The auth response arrives in the main receive loop (no separate handshake step).
 /// </summary>
 [DataSource("alpaca", "Alpaca Markets", Infrastructure.DataSources.DataSourceType.Realtime, DataSourceCategory.Broker,
     Priority = 10, Description = "WebSocket streaming from Alpaca Markets")]
 [ImplementsAdr("ADR-001", "Alpaca streaming data provider implementation")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
-public sealed class AlpacaMarketDataClient : IMarketDataClient
+public sealed class AlpacaMarketDataClient : WebSocketProviderBase
 {
-    private readonly ILogger _log = LoggingSetup.ForContext<AlpacaMarketDataClient>();
     private readonly TradeDataCollector _tradeCollector;
     private readonly QuoteCollector _quoteCollector;
     private readonly AlpacaOptions _opt;
-
-    // Connection management - uses centralized WebSocketConnectionManager
-    private readonly WebSocketConnectionManager _connectionManager;
-    private Uri? _wsUri;
-
-    // Centralized subscription management with provider-specific ID range
-    private readonly Infrastructure.Shared.SubscriptionManager _subscriptionManager = new(startingId: ProviderSubscriptionRanges.AlpacaStart);
 
     // Content-based trade deduplication: sliding window keyed on (symbol, price, size, timestamp).
     // Alpaca's WebSocket is known to re-deliver identical trade messages during reconnections and
@@ -62,41 +54,37 @@ public sealed class AlpacaMarketDataClient : IMarketDataClient
     };
 
     public AlpacaMarketDataClient(TradeDataCollector tradeCollector, QuoteCollector quoteCollector, AlpacaOptions opt)
+        : base(
+            providerName: "Alpaca",
+            config: WebSocketConnectionConfig.Default,
+            subscriptionStartId: ProviderSubscriptionRanges.AlpacaStart)
     {
         _tradeCollector = tradeCollector ?? throw new ArgumentNullException(nameof(tradeCollector));
         _quoteCollector = quoteCollector ?? throw new ArgumentNullException(nameof(quoteCollector));
         _opt = opt ?? throw new ArgumentNullException(nameof(opt));
         if (string.IsNullOrWhiteSpace(_opt.KeyId) || string.IsNullOrWhiteSpace(_opt.SecretKey))
             throw new ArgumentException("Alpaca KeyId/SecretKey required.");
-
-        // Use centralized connection manager with default resilience configuration
-        _connectionManager = new WebSocketConnectionManager(
-            providerName: "Alpaca",
-            config: WebSocketConnectionConfig.Default,
-            logger: _log);
-
-        // Set up reconnection handler
-        _connectionManager.ConnectionLost += OnConnectionLostAsync;
     }
-
-    public bool IsEnabled => true;
 
     #region IProviderMetadata
 
     /// <inheritdoc/>
-    public string ProviderId => "alpaca";
+    public override bool IsEnabled => true;
 
     /// <inheritdoc/>
-    public string ProviderDisplayName => "Alpaca Markets Streaming";
+    public override string ProviderId => "alpaca";
 
     /// <inheritdoc/>
-    public string ProviderDescription => "Real-time trades and quotes via Alpaca WebSocket API";
+    public override string ProviderDisplayName => "Alpaca Markets Streaming";
 
     /// <inheritdoc/>
-    public int ProviderPriority => 10;
+    public override string ProviderDescription => "Real-time trades and quotes via Alpaca WebSocket API";
 
     /// <inheritdoc/>
-    public ProviderCapabilities ProviderCapabilities { get; } = ProviderCapabilities.Streaming(
+    public override int ProviderPriority => 10;
+
+    /// <inheritdoc/>
+    public override ProviderCapabilities ProviderCapabilities { get; } = ProviderCapabilities.Streaming(
         trades: true,
         quotes: true,
         depth: false) with
@@ -124,177 +112,42 @@ public sealed class AlpacaMarketDataClient : IMarketDataClient
 
     #endregion
 
-    public async Task ConnectAsync(CancellationToken ct = default)
-    {
-        if (_connectionManager.IsConnected)
-            return;
+    #region WebSocketProviderBase template methods
 
+    /// <inheritdoc/>
+    protected override Uri BuildWebSocketUri()
+    {
         var host = _opt.UseSandbox ? "stream.data.sandbox.alpaca.markets" : "stream.data.alpaca.markets";
-        _wsUri = new Uri($"wss://{host}/v2/{_opt.Feed}");
+        var uri = new Uri($"wss://{host}/v2/{_opt.Feed}");
+        Log.Information("Connecting to Alpaca WebSocket at {Uri} (Sandbox: {UseSandbox})", uri, _opt.UseSandbox);
+        return uri;
+    }
 
-        _log.Information("Connecting to Alpaca WebSocket at {Uri} (Sandbox: {UseSandbox})", _wsUri, _opt.UseSandbox);
-
-        await _connectionManager.ConnectAsync(_wsUri, configureSocket: null, ct).ConfigureAwait(false);
-
-        // Authenticate via message (must be within ~10 seconds of connection)
+    /// <inheritdoc/>
+    /// <remarks>
+    /// Alpaca does not use a pre-loop handshake. Authentication is performed by sending a
+    /// single "auth" message; the auth success/failure response arrives in
+    /// <see cref="HandleMessageAsync"/> as a status message (type "success" or "error").
+    /// </remarks>
+    protected override Task AuthenticateAsync(CancellationToken ct)
+    {
         var authMsg = JsonSerializer.Serialize(new { action = "auth", key = _opt.KeyId, secret = _opt.SecretKey });
-        await _connectionManager.SendAsync(authMsg, ct).ConfigureAwait(false);
-        _log.Debug("Authentication message sent to Alpaca");
-
-        // Start receive loop with message handler
-        _connectionManager.StartReceiveLoop(HandleMessageAsync, ct);
+        Log.Debug("Sending authentication message to Alpaca");
+        return SendAsync(authMsg, ct);
     }
 
-    /// <summary>
-    /// Handles automatic reconnection when connection is lost.
-    /// Delegates to WebSocketConnectionManager for gated reconnection.
-    /// </summary>
-    private async Task OnConnectionLostAsync()
+    /// <inheritdoc/>
+    protected override Task HandleMessageAsync(string message)
     {
-        if (_wsUri == null)
-            return;
-
-        var success = await _connectionManager.TryReconnectAsync(
-            _wsUri,
-            configureSocket: null,
-            onReconnected: async () =>
-            {
-                // Re-authenticate after reconnection
-                var authMsg = JsonSerializer.Serialize(new { action = "auth", key = _opt.KeyId, secret = _opt.SecretKey });
-                await _connectionManager.SendAsync(authMsg, CancellationToken.None).ConfigureAwait(false);
-
-                // Restart receive loop
-                _connectionManager.StartReceiveLoop(HandleMessageAsync, CancellationToken.None);
-
-                // Resubscribe to all active subscriptions
-                await TrySendSubscribeAsync();
-                _log.Information("Successfully reconnected and resubscribed to Alpaca WebSocket");
-            },
-            ct: CancellationToken.None).ConfigureAwait(false);
-
-        if (!success)
-        {
-            _log.Error("Failed to reconnect to Alpaca WebSocket. Manual intervention may be required.");
-        }
-    }
-
-    public async Task DisconnectAsync(CancellationToken ct = default)
-    {
-        await _connectionManager.DisconnectAsync(ct).ConfigureAwait(false);
-    }
-
-    public int SubscribeTrades(SymbolConfig cfg)
-    {
-        if (cfg is null)
-            throw new ArgumentNullException(nameof(cfg));
-        var id = _subscriptionManager.Subscribe(cfg.Symbol, "trades");
-        if (id == -1)
-            return -1;
-
-        SendSubscribeWithLoggingAsync("SubscribeTrades", cfg.Symbol)
-            .ObserveException(_log, $"Alpaca subscribe trades for {cfg.Symbol}");
-        return id;
-    }
-
-    public void UnsubscribeTrades(int subscriptionId)
-    {
-        var subscription = _subscriptionManager.Unsubscribe(subscriptionId);
-        if (subscription != null)
-        {
-            SendSubscribeWithLoggingAsync("UnsubscribeTrades", subscription.Symbol)
-                .ObserveException(_log, $"Alpaca unsubscribe trades for {subscription.Symbol}");
-        }
-    }
-
-    public int SubscribeMarketDepth(SymbolConfig cfg)
-    {
-        // Not supported for stocks: Alpaca provides quotes, not full L2 depth updates.
-        // If you later add QuoteCollector -> L2Snapshot mapping, wire it here.
-        if (!_opt.SubscribeQuotes)
-            return -1;
-
-        if (cfg is null)
-            throw new ArgumentNullException(nameof(cfg));
-        var id = _subscriptionManager.Subscribe(cfg.Symbol, "quotes");
-        if (id == -1)
-            return -1;
-
-        SendSubscribeWithLoggingAsync("SubscribeMarketDepth", cfg.Symbol)
-            .ObserveException(_log, $"Alpaca subscribe depth for {cfg.Symbol}");
-        return id;
-    }
-
-    public void UnsubscribeMarketDepth(int subscriptionId)
-    {
-        var subscription = _subscriptionManager.Unsubscribe(subscriptionId);
-        if (subscription != null)
-        {
-            SendSubscribeWithLoggingAsync("UnsubscribeMarketDepth", subscription.Symbol)
-                .ObserveException(_log, $"Alpaca unsubscribe depth for {subscription.Symbol}");
-        }
-    }
-
-    private async Task SendSubscribeWithLoggingAsync(string operation, string symbol, CancellationToken ct = default)
-    {
-        try
-        {
-            await TrySendSubscribeAsync().ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            _log.Error(ex, "Fire-and-forget subscription update failed during {Operation} for {Symbol}. " +
-                "The subscription state may be inconsistent.", operation, symbol);
-        }
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        _connectionManager.ConnectionLost -= OnConnectionLostAsync;
-        await _connectionManager.DisposeAsync().ConfigureAwait(false);
-        _subscriptionManager.Dispose();
-    }
-
-    private async Task TrySendSubscribeAsync(CancellationToken ct = default)
-    {
-        try
-        {
-            if (!_connectionManager.IsConnected)
-                return;
-
-            var trades = _subscriptionManager.GetSymbolsByKind("trades");
-            var quotes = _subscriptionManager.GetSymbolsByKind("quotes");
-
-            var msg = new Dictionary<string, object?>
-            {
-                ["action"] = "subscribe",
-                ["trades"] = trades.Length == 0 ? null : trades
-            };
-
-            if (_opt.SubscribeQuotes && quotes.Length > 0)
-                msg["quotes"] = quotes;
-
-            var json = JsonSerializer.Serialize(msg, s_serializerOptions);
-            await _connectionManager.SendAsync(json, CancellationToken.None).ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            _log.Error(ex, "Failed to send subscription update to Alpaca WebSocket. " +
-                "This may indicate a connection issue. Check network connectivity and Alpaca service status.");
-        }
-    }
-
-    /// <summary>
-    /// Handles incoming WebSocket messages. Called by WebSocketConnectionManager.
-    /// </summary>
-    private Task HandleMessageAsync(string json)
-    {
-        if (string.IsNullOrWhiteSpace(json))
+        if (string.IsNullOrWhiteSpace(message))
             return Task.CompletedTask;
+
+        RecordActivity();
 
         // Alpaca sends arrays of objects: [{"T":"success",...}, {"T":"t",...}]
         try
         {
-            using var doc = JsonDocument.Parse(json);
+            using var doc = JsonDocument.Parse(message);
             if (doc.RootElement.ValueKind == JsonValueKind.Array)
             {
                 foreach (var el in doc.RootElement.EnumerateArray())
@@ -307,17 +160,110 @@ public sealed class AlpacaMarketDataClient : IMarketDataClient
         }
         catch (JsonException ex)
         {
-            _log.Warning(ex, "Failed to parse Alpaca WebSocket message. Raw JSON: {RawJson}. " +
+            Log.Warning(ex, "Failed to parse Alpaca WebSocket message. Raw JSON: {RawJson}. " +
                 "This may indicate a protocol change or malformed message.",
-                json.Length > 500 ? json[..500] + "..." : json);
+                message.Length > 500 ? message[..500] + "..." : message);
         }
         catch (Exception ex)
         {
-            _log.Error(ex, "Unexpected error processing Alpaca WebSocket message");
+            Log.Error(ex, "Unexpected error processing Alpaca WebSocket message");
         }
 
         return Task.CompletedTask;
     }
+
+    /// <inheritdoc/>
+    protected override async Task ResubscribeAsync(CancellationToken ct)
+    {
+        try
+        {
+            if (!Connected)
+                return;
+
+            var trades = Subscriptions.GetSymbolsByKind("trades");
+            var quotes = Subscriptions.GetSymbolsByKind("quotes");
+
+            var msg = new Dictionary<string, object?>
+            {
+                ["action"] = "subscribe",
+                ["trades"] = trades.Length == 0 ? null : trades
+            };
+
+            if (_opt.SubscribeQuotes && quotes.Length > 0)
+                msg["quotes"] = quotes;
+
+            var json = JsonSerializer.Serialize(msg, s_serializerOptions);
+            await SendAsync(json, ct).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Failed to send subscription update to Alpaca WebSocket. " +
+                "This may indicate a connection issue. Check network connectivity and Alpaca service status.");
+        }
+    }
+
+    #endregion
+
+    #region IMarketDataClient – subscriptions
+
+    /// <inheritdoc/>
+    public override int SubscribeTrades(SymbolConfig cfg)
+    {
+        if (cfg is null)
+            throw new ArgumentNullException(nameof(cfg));
+        var id = Subscriptions.Subscribe(cfg.Symbol, "trades");
+        if (id == -1)
+            return -1;
+
+        ResubscribeAsync(CancellationToken.None)
+            .ObserveException(Log, $"Alpaca subscribe trades for {cfg.Symbol}");
+        return id;
+    }
+
+    /// <inheritdoc/>
+    public override void UnsubscribeTrades(int subscriptionId)
+    {
+        var subscription = Subscriptions.Unsubscribe(subscriptionId);
+        if (subscription != null)
+        {
+            ResubscribeAsync(CancellationToken.None)
+                .ObserveException(Log, $"Alpaca unsubscribe trades for {subscription.Symbol}");
+        }
+    }
+
+    /// <inheritdoc/>
+    public override int SubscribeMarketDepth(SymbolConfig cfg)
+    {
+        // Not supported for stocks: Alpaca provides quotes, not full L2 depth updates.
+        // If you later add QuoteCollector -> L2Snapshot mapping, wire it here.
+        if (!_opt.SubscribeQuotes)
+            return -1;
+
+        if (cfg is null)
+            throw new ArgumentNullException(nameof(cfg));
+        var id = Subscriptions.Subscribe(cfg.Symbol, "quotes");
+        if (id == -1)
+            return -1;
+
+        ResubscribeAsync(CancellationToken.None)
+            .ObserveException(Log, $"Alpaca subscribe depth for {cfg.Symbol}");
+        return id;
+    }
+
+    /// <inheritdoc/>
+    public override void UnsubscribeMarketDepth(int subscriptionId)
+    {
+        var subscription = Subscriptions.Unsubscribe(subscriptionId);
+        if (subscription != null)
+        {
+            ResubscribeAsync(CancellationToken.None)
+                .ObserveException(Log, $"Alpaca unsubscribe depth for {subscription.Symbol}");
+        }
+    }
+
+    #endregion
+
+    #region Private message processing
 
     private void HandleMessage(JsonElement el)
     {
@@ -342,7 +288,7 @@ public sealed class AlpacaMarketDataClient : IMarketDataClient
             // Substituting UtcNow silently corrupts time-series integrity.
             if (!DateTimeOffset.TryParse(ts, null, System.Globalization.DateTimeStyles.RoundtripKind, out var dto))
             {
-                _log.Warning("Alpaca trade message for {Symbol} has unparseable timestamp {Timestamp}, skipping", sym, ts);
+                Log.Warning("Alpaca trade message for {Symbol} has unparseable timestamp {Timestamp}, skipping", sym, ts);
                 return;
             }
 
@@ -354,7 +300,7 @@ public sealed class AlpacaMarketDataClient : IMarketDataClient
             {
                 if (!_recentTrades.Add(dedupKey))
                 {
-                    _log.Debug("Alpaca duplicate trade suppressed: {Symbol} @ {Price} x {Size} at {Timestamp}",
+                    Log.Debug("Alpaca duplicate trade suppressed: {Symbol} @ {Price} x {Size} at {Timestamp}",
                         sym, price, size, dto);
                     return;
                 }
@@ -402,7 +348,7 @@ public sealed class AlpacaMarketDataClient : IMarketDataClient
             // Reject events with unparseable timestamps rather than recording the wrong time.
             if (!DateTimeOffset.TryParse(ts, null, System.Globalization.DateTimeStyles.RoundtripKind, out var dto))
             {
-                _log.Warning("Alpaca quote message for {Symbol} has unparseable timestamp {Timestamp}, skipping", sym, ts);
+                Log.Warning("Alpaca quote message for {Symbol} has unparseable timestamp {Timestamp}, skipping", sym, ts);
                 return;
             }
 
@@ -421,4 +367,6 @@ public sealed class AlpacaMarketDataClient : IMarketDataClient
             _quoteCollector.OnQuote(quoteUpdate);
         }
     }
+
+    #endregion
 }

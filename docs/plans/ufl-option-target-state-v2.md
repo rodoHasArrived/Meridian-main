@@ -2,9 +2,15 @@
 
 **Owner:** Core Team  
 **Audience:** Product, architecture, domain, storage, and application contributors  
-**Last Updated:** 2026-03-22  
+**Last Updated:** 2026-03-26  
 **Status:** active  
-**Reviewed:** 2026-03-22
+**Reviewed:** 2026-03-26
+
+> **Naming standard:** All new F# types and DTOs in this package must follow the
+> [Domain Naming Standard](../ai/claude/CLAUDE.domain-naming.md).
+> For options: definition record → `OptDef`; chain identifier → `OptChainId = OptChainId of Guid`;
+> option right union → `OptRight = Call | Put`; exercise style → `ExerciseStyle = American | European | Bermuda`;
+> expiry field → `ExpiryDt: DateOnly`; strike field → `StrikePx: decimal`.
 
 ## Summary
 

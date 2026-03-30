@@ -33,6 +33,30 @@ public sealed record SecurityDetailDto(
     DateTimeOffset EffectiveFrom,
     DateTimeOffset? EffectiveTo);
 
+/// <summary>
+/// A field-level or identifier-level conflict detected between providers for the same security.
+/// </summary>
+public sealed record SecurityMasterConflict(
+    Guid ConflictId,
+    Guid SecurityId,
+    string ConflictKind,
+    string FieldPath,
+    string ProviderA,
+    string ValueA,
+    string ProviderB,
+    string ValueB,
+    DateTimeOffset DetectedAt,
+    string Status);
+
+/// <summary>
+/// Request to resolve or dismiss a golden record conflict.
+/// </summary>
+public sealed record ResolveConflictRequest(
+    Guid ConflictId,
+    string Resolution,
+    string ResolvedBy,
+    string? Reason = null);
+
 public sealed record SecurityProjectionRecord(
     Guid SecurityId,
     string AssetClass,
@@ -77,3 +101,35 @@ public sealed record SecuritySnapshotRecord(
     long Version,
     DateTimeOffset SnapshotTimestamp,
     JsonElement Payload);
+
+/// <summary>
+/// Trading parameters for an instrument, used for order validation and fill-price rounding.
+/// </summary>
+public sealed record TradingParametersDto(
+    Guid SecurityId,
+    decimal? LotSize,
+    decimal? TickSize,
+    decimal? ContractMultiplier,
+    decimal? MarginRequirementPct,
+    string? TradingHoursUtc,
+    decimal? CircuitBreakerThresholdPct,
+    DateTimeOffset AsOf);
+
+/// <summary>
+/// A single corporate action event envelope returned by the corporate actions query.
+/// </summary>
+public sealed record CorporateActionDto(
+    Guid CorpActId,
+    Guid SecurityId,
+    string EventType,
+    DateOnly ExDate,
+    DateOnly? PayDate,
+    decimal? DividendPerShare,
+    string? Currency,
+    decimal? SplitRatio,
+    Guid? NewSecurityId,
+    decimal? DistributionRatio,
+    Guid? AcquirerSecurityId,
+    decimal? ExchangeRatio,
+    decimal? SubscriptionPricePerShare,
+    decimal? RightsPerShare);

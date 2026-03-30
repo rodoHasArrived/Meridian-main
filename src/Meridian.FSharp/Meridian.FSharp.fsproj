@@ -24,11 +24,17 @@
     <Compile Include="Domain/SecurityTermModules.fs" />
     <Compile Include="Domain/SecurityMaster.fs" />
     <Compile Include="Domain/SecurityEconomicDefinition.fs" />
+    <!-- Cash-flow projection and break classification — depend on Security Master types above -->
+    <Compile Include="Domain/CashFlowProjection.fs" />
+    <Compile Include="Domain/CashFlowRules.fs" />
     <Compile Include="Domain/SecurityMasterLegacyUpgrade.fs" />
     <Compile Include="Domain/SecurityMasterEvents.fs" />
     <Compile Include="Domain/SecurityMasterCommands.fs" />
     <Compile Include="Domain/FundStructure.fs" />
     <Compile Include="Domain/DirectLending.fs" />
+
+    <!-- Comprehensive security master domain — self-contained, no inter-domain dependencies -->
+    <Compile Include="Domain/SecMasterDomain.fs" />
 
     <!-- Validation layer: depends on Domain -->
     <Compile Include="Validation/ValidationTypes.fs" />
@@ -55,6 +61,7 @@
     <Compile Include="Pipeline/Transforms.fs" />
 
     <!-- C# interop helpers -->
+    <Compile Include="Interop.CashFlow.fs" />
     <Compile Include="Interop.SecurityMaster.fs" />
     <Compile Include="Interop.DirectLending.fs" />
     <Compile Include="Interop.fs" />

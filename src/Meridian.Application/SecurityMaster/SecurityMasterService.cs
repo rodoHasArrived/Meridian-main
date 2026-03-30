@@ -13,6 +13,7 @@ public sealed class SecurityMasterService : ISecurityMasterService
     private readonly SecurityMasterAggregateRebuilder _rebuilder;
     private readonly SecurityMasterOptions _options;
     private readonly ILogger<SecurityMasterService> _logger;
+    private readonly ISecurityMasterConflictService? _conflictService;
 
     public SecurityMasterService(
         ISecurityMasterEventStore eventStore,
@@ -20,7 +21,8 @@ public sealed class SecurityMasterService : ISecurityMasterService
         ISecurityMasterStore store,
         SecurityMasterAggregateRebuilder rebuilder,
         SecurityMasterOptions options,
-        ILogger<SecurityMasterService> logger)
+        ILogger<SecurityMasterService> logger,
+        ISecurityMasterConflictService? conflictService = null)
     {
         _eventStore = eventStore;
         _snapshotStore = snapshotStore;
@@ -28,6 +30,7 @@ public sealed class SecurityMasterService : ISecurityMasterService
         _rebuilder = rebuilder;
         _options = options;
         _logger = logger;
+        _conflictService = conflictService;
     }
 
     public Task<SecurityDetailDto> CreateAsync(CreateSecurityRequest request, CancellationToken ct = default)
@@ -41,7 +44,7 @@ public sealed class SecurityMasterService : ISecurityMasterService
 
         var currentProjection = SecurityEconomicDefinitionAdapter.ToProjection(current, aliasProjection?.Aliases);
         var currentRecord = SecurityMasterMapping.ToRecord(currentProjection);
-        var result = SecurityMasterAggregate.Amend(currentRecord, SecurityMasterMapping.ToAmendCommand(request, currentProjection));
+        var result = SecurityMasterCommandFacade.Amend(currentRecord, SecurityMasterMapping.ToAmendCommand(request, currentProjection));
         var projection = CreateProjectionFromResult(result, currentProjection.Aliases);
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
         var envelope = SecurityMasterMapping.ToEventEnvelope(
@@ -52,9 +55,10 @@ public sealed class SecurityMasterService : ISecurityMasterService
             request.Reason,
             projection.Version);
 
-        await _eventStore.AppendAsync(request.SecurityId, request.ExpectedVersion, [ envelope ], ct).ConfigureAwait(false);
+        await _eventStore.AppendAsync(request.SecurityId, request.ExpectedVersion, [envelope], ct).ConfigureAwait(false);
         await _store.UpsertProjectionAsync(projection, ct).ConfigureAwait(false);
         await SaveSnapshotIfNeededAsync(economic, ct).ConfigureAwait(false);
+        await TryRecordConflictsAsync(projection, request.SecurityId, ct).ConfigureAwait(false);
 
         return SecurityMasterMapping.ToDetail(projection);
     }
@@ -67,7 +71,7 @@ public sealed class SecurityMasterService : ISecurityMasterService
 
         var currentProjection = SecurityEconomicDefinitionAdapter.ToProjection(current, aliasProjection?.Aliases);
         var currentRecord = SecurityMasterMapping.ToRecord(currentProjection);
-        var result = SecurityMasterAggregate.Deactivate(currentRecord, SecurityMasterMapping.ToDeactivateCommand(request));
+        var result = SecurityMasterCommandFacade.Deactivate(currentRecord, SecurityMasterMapping.ToDeactivateCommand(request));
         var projection = CreateProjectionFromResult(result, currentProjection.Aliases);
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
         var envelope = SecurityMasterMapping.ToEventEnvelope(
@@ -78,7 +82,7 @@ public sealed class SecurityMasterService : ISecurityMasterService
             request.Reason,
             projection.Version);
 
-        await _eventStore.AppendAsync(request.SecurityId, request.ExpectedVersion, [ envelope ], ct).ConfigureAwait(false);
+        await _eventStore.AppendAsync(request.SecurityId, request.ExpectedVersion, [envelope], ct).ConfigureAwait(false);
         await _store.UpsertProjectionAsync(projection, ct).ConfigureAwait(false);
         await SaveSnapshotIfNeededAsync(economic, ct).ConfigureAwait(false);
     }
@@ -104,7 +108,7 @@ public sealed class SecurityMasterService : ISecurityMasterService
 
     private async Task<SecurityDetailDto> ExecuteCreateAsync(CreateSecurityRequest request, CancellationToken ct)
     {
-        var result = SecurityMasterAggregate.Create(SecurityMasterMapping.ToCreateCommand(request));
+        var result = SecurityMasterCommandFacade.Create(SecurityMasterMapping.ToCreateCommand(request));
         var projection = CreateProjectionFromResult(result);
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
         var envelope = SecurityMasterMapping.ToEventEnvelope(
@@ -115,11 +119,38 @@ public sealed class SecurityMasterService : ISecurityMasterService
             request.Reason,
             projection.Version);
 
-        await _eventStore.AppendAsync(request.SecurityId, expectedVersion: 0, [ envelope ], ct).ConfigureAwait(false);
+        await _eventStore.AppendAsync(request.SecurityId, expectedVersion: 0, [envelope], ct).ConfigureAwait(false);
         await _store.UpsertProjectionAsync(projection, ct).ConfigureAwait(false);
         await SaveSnapshotIfNeededAsync(economic, ct).ConfigureAwait(false);
 
+        // Ingest-time conflict detection — best-effort, never blocks the create
+        if (_conflictService is not null)
+        {
+            try
+            {
+                await _conflictService.RecordConflictsForProjectionAsync(projection, ct).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Conflict detection failed for new security {SecurityId}", request.SecurityId);
+            }
+        }
+
         return SecurityMasterMapping.ToDetail(projection);
+    }
+
+    private async Task TryRecordConflictsAsync(SecurityProjectionRecord projection, Guid securityId, CancellationToken ct)
+    {
+        if (_conflictService is null)
+            return;
+        try
+        {
+            await _conflictService.RecordConflictsForProjectionAsync(projection, ct).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Conflict detection failed for security {SecurityId}", securityId);
+        }
     }
 
     private static SecurityProjectionRecord CreateProjectionFromResult(
@@ -128,7 +159,8 @@ public sealed class SecurityMasterService : ISecurityMasterService
     {
         if (!result.IsSuccess || result.Snapshot is null)
         {
-            throw new InvalidOperationException(string.Join("; ", result.Errors));
+            var errorText = string.Join("; ", result.ErrorDetails.Select(e => $"[{e.Code}] {e.Message}"));
+            throw new InvalidOperationException(errorText);
         }
 
         return SecurityMasterMapping.ToProjection(result.Snapshot, aliases);

@@ -362,6 +362,79 @@ Complete the lifecycle with approval and control hooks.
 - `src/Meridian.FSharp/`
 - `src/Meridian.Contracts/`
 
+### PR-23: Post-Trade Allocation Rule Engine
+
+**Goal**
+
+Introduce rules-based post-trade allocation so fills are distributed to the correct strategy, account, tax lot, or trader ledger line before posting.
+
+**Primary anchors**
+
+- `src/Meridian.FSharp/Domain/` — new `TradeAllocation.fs` kernel
+- `src/Meridian.Application/` — new `PostTradeAllocationService.cs`
+- `src/Meridian.Contracts/Workstation/` — allocation DTOs
+- `src/Meridian.Wpf/ViewModels/` — allocation review view model and page
+
+**Depends on**
+
+- PR-04 (account/entity contracts)
+- PR-11 (trading cockpit)
+- PR-12 (ledger surfaces)
+
+### PR-24: Pre/Post-Trade Compliance Hard-Stops
+
+**Goal**
+
+Wire pre-trade mandate checks into the order submission path and add post-trade compliance flagging with governance exception surfacing.
+
+**Primary anchors**
+
+- `src/Meridian.FSharp/` — compliance rule evaluation
+- `src/Meridian.Application/` — `ComplianceCheckService.cs`
+- `src/Meridian.Execution/` — order submission guard
+- `src/Meridian.Contracts/` — compliance breach DTOs
+
+**Depends on**
+
+- PR-22 (policy hook infrastructure)
+- PR-08 (Security Master enrichment for classification-aware rules)
+
+### PR-25: Model Portfolio Management and Drift Monitoring
+
+**Goal**
+
+Introduce model portfolio target weights, drift monitoring, and a rebalancing signal generator with operator review.
+
+**Primary anchors**
+
+- `src/Meridian.FSharp/Domain/` — new `ModelPortfolio.fs`
+- `src/Meridian.Application/` — `ModelPortfolioDriftMonitor.cs`, `RebalancingSignalService.cs`
+- `src/Meridian.Contracts/` — model portfolio DTOs
+- `src/Meridian.Wpf/ViewModels/` — new `ModelPortfolioViewModel.cs`
+
+**Depends on**
+
+- PR-24 (compliance constraints on rebalancing)
+- PR-06 (Security Master for mandate-aware constraints)
+
+### PR-26: Regulatory Reporting Shell (MiFID II + AIFMD)
+
+**Goal**
+
+Add the regulatory reporting data models, `RegulatoryReportingService` shell, MiFID II RTS 28 best-execution generation, and shadow-NAV path.
+
+**Primary anchors**
+
+- `src/Meridian.Application/` — new `RegulatoryReportingService.cs`
+- `src/Meridian.FSharp/Domain/` — new `RegulatoryReporting.fs`
+- `src/Meridian.Contracts/` — new `RegulatoryReportingDtos.cs`
+- `src/Meridian.Storage/Export/AnalysisExportService.cs` — regulated export profiles
+
+**Depends on**
+
+- PR-18 (report-pack foundation)
+- PR-23 (fill-level allocation records required for cost/charges disclosures)
+
 ## Recommended Concurrency Plan
 
 ### Stage 1
@@ -441,13 +514,35 @@ Why:
 
 ### Stage 7
 
-Final dependent slice:
+Run in parallel after Stage 6:
 
 - PR-22
+- PR-23
 
 Why:
 
-- approval/policy hooks should land after the core trade, governance, reconciliation, and reporting workflows exist
+- approval/policy hooks (PR-22) and post-trade allocation (PR-23) are both unblocked after core trade, governance, reconciliation, and reporting workflows exist; they have mostly disjoint write scopes
+
+### Stage 8
+
+Run in parallel after Stage 7:
+
+- PR-24
+- PR-25
+
+Why:
+
+- pre/post-trade compliance checks (PR-24) depend on policy infrastructure from PR-22; model portfolio management (PR-25) depends on compliance constraints from PR-24, but PR-25 can begin parallel preparation once PR-23 fills data is available
+
+### Stage 9
+
+Final slice, after Stage 8:
+
+- PR-26
+
+Why:
+
+- regulatory reporting (PR-26) requires both allocation records from PR-23 and the report-pack foundation from PR-18; should land as a complete but minimal shell so subsequent regulatory jurisdictions can be added incrementally
 
 ## Conflict-Avoidance Notes
 

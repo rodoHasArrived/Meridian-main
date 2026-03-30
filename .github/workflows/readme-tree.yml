@@ -15,12 +15,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
       - name: Update repository tree markers
-        uses: RavelloH/readme-tree@latest
+        uses: RavelloH/readme-tree@main
         with:
           ignoregit: 'yes'
 

@@ -406,6 +406,8 @@ tests/
 
 ## 10. Naming & Coding Conventions
 
+### General Rules
+
 | Rule | Example |
 |---|---|
 | Async methods end with `Async` | `LoadDataAsync`, `StopCollectorAsync` |
@@ -419,6 +421,35 @@ tests/
 | JSON source generators | `[JsonSerializable(typeof(T))]` — no reflection serialization |
 | Hot reload settings | `IOptionsMonitor<T>` for runtime-changeable settings |
 | UWP code | Legacy only — no new features, no WinRT in shared projects |
+
+### Domain Model Naming (Financial Instrument / Security Master Layer)
+
+> **Full spec:** [`CLAUDE.domain-naming.md`](../../../docs/ai/claude/CLAUDE.domain-naming.md)
+> Apply when reviewing any code in `Meridian.FSharp`, `Meridian.Contracts` (domain sub-namespace),
+> or `Meridian.Application.SecurityMaster`.
+
+**Flag as WARNING in code reviews:**
+
+| Violation | Correct Form |
+|---|---|
+| Identifier type NOT ending in `Id` | `SecurityId`, `CorpActId`, `OptChainId` |
+| Definition record NOT ending in `Def` (new types) | `BondDef`, `EquityDef`, `OptDef` |
+| Trait record NOT ending in `Tr` (new types) | `OwnTr`, `IncTr`, `ConvTr`, `RedTr` |
+| Link record NOT ending in `Lnk` (new types) | `SecIssLnk`, `SecExchLnk` |
+| Boolean field without `Is`/`Has` prefix | `IsCallable`, `HasVoting`, `IsPrimary` |
+| Decorative suffixes: `Data`, `Info`, `Model`, `Record`, `Object` | Remove decoration — use plain noun |
+| `Manager`, `Container`, `Processor` on aggregate types | Use noun that describes the structure |
+| `Db`, `Api`, `Json`, `Ef` prefix on core domain types | Move prefix to adapter class in infrastructure layer |
+| Mixing `Date` and `Dt` suffixes in same layer | Prefer `Dt` in new F# code |
+| Parallel abbreviation (`SecId` beside `SecurityId`) | Establish one root and use it everywhere |
+
+**Do NOT flag** (these are established Meridian vocabulary, not violations):
+- `SecurityId` — full-word form is the established name; `SecId` would be the deviation
+- `AssetClass` — correct (not `AssetCls`)
+- `AssetFamily` — correct (not `AssetFam`)
+- `IdentifierKind` — correct (uses `Kind` suffix)
+- `SecurityTermModules` — container record (keep as is)
+- Existing `MaturityTerms`, `CouponTerms`, etc. — sub-records within term containers (keep)
 
 ---
 

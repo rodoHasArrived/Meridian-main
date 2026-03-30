@@ -478,20 +478,20 @@ public sealed class WorkspaceService
                 continue;
             }
 
-            if (workspace.IsBuiltIn)
+            if (workspace.IsBuiltIn && !string.IsNullOrWhiteSpace(workspace.Id))
             {
                 var normalizedId = NormalizeWorkspaceId(workspace.Id);
                 if (!string.Equals(workspace.Id, normalizedId, StringComparison.Ordinal))
                 {
-                    workspace.Id = normalizedId;
+                    workspace.Id = normalizedId!;
                     changed = true;
                 }
             }
         }
 
-        if (_lastSession != null)
+        if (!string.IsNullOrWhiteSpace(_lastSession?.ActiveWorkspaceId))
         {
-            var normalizedActiveWorkspaceId = NormalizeWorkspaceId(_lastSession.ActiveWorkspaceId);
+            var normalizedActiveWorkspaceId = NormalizeWorkspaceId(_lastSession!.ActiveWorkspaceId);
             if (!string.Equals(_lastSession.ActiveWorkspaceId, normalizedActiveWorkspaceId, StringComparison.Ordinal))
             {
                 _lastSession.ActiveWorkspaceId = normalizedActiveWorkspaceId;
@@ -524,8 +524,14 @@ public sealed class WorkspaceService
             : workspaceId;
     }
 
-    private static bool TryMapLegacyBuiltIn(string workspaceId, out WorkspaceTemplate builtIn)
+    private static bool TryMapLegacyBuiltIn(string? workspaceId, out WorkspaceTemplate builtIn)
     {
+        if (string.IsNullOrWhiteSpace(workspaceId))
+        {
+            builtIn = null!;
+            return false;
+        }
+
         var currentBuiltIn = GetDefaultWorkspaces()
             .FirstOrDefault(workspace => string.Equals(workspace.Id, workspaceId, StringComparison.OrdinalIgnoreCase));
         if (currentBuiltIn != null)

@@ -49,7 +49,8 @@ public sealed class ArchiveBrowserService
             ct.ThrowIfCancellationRequested();
 
             var info = ParseFilePath(file, rootPath);
-            if (info == null) continue;
+            if (info == null)
+                continue;
 
             var yearNode = years.FirstOrDefault(y => y.Year == info.Year);
             if (yearNode == null)
@@ -433,7 +434,8 @@ public sealed class ArchiveBrowserService
 
             // Try to get date from filename
             var fileName = Path.GetFileNameWithoutExtension(filePath);
-            if (fileName.EndsWith(".jsonl")) fileName = Path.GetFileNameWithoutExtension(fileName);
+            if (fileName.EndsWith(".jsonl"))
+                fileName = Path.GetFileNameWithoutExtension(fileName);
             if (DateOnly.TryParse(fileName, out var fileDate))
             {
                 date = fileDate;
@@ -467,10 +469,14 @@ public sealed class ArchiveBrowserService
     private static string DetermineEventType(string filePath)
     {
         var lower = filePath.ToLowerInvariant();
-        if (lower.Contains("trade")) return "Trade";
-        if (lower.Contains("quote") || lower.Contains("bbo")) return "Quote";
-        if (lower.Contains("depth") || lower.Contains("lob")) return "Depth";
-        if (lower.Contains("bar")) return "Bar";
+        if (lower.Contains("trade"))
+            return "Trade";
+        if (lower.Contains("quote") || lower.Contains("bbo"))
+            return "Quote";
+        if (lower.Contains("depth") || lower.Contains("lob"))
+            return "Depth";
+        if (lower.Contains("bar"))
+            return "Bar";
         return "Unknown";
     }
 
@@ -530,12 +536,15 @@ public sealed class ArchiveBrowserService
         try
         {
             var idx = line.IndexOf("\"Timestamp\":", StringComparison.OrdinalIgnoreCase);
-            if (idx < 0) idx = line.IndexOf("\"timestamp\":");
-            if (idx < 0) return false;
+            if (idx < 0)
+                idx = line.IndexOf("\"timestamp\":");
+            if (idx < 0)
+                return false;
 
             var start = line.IndexOf('"', idx + 12);
             var end = line.IndexOf('"', start + 1);
-            if (start < 0 || end < 0) return false;
+            if (start < 0 || end < 0)
+                return false;
 
             return DateTime.TryParse(line.Substring(start + 1, end - start - 1), out timestamp);
         }

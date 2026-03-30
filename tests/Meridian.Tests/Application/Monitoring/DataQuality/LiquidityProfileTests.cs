@@ -210,7 +210,10 @@ public sealed class LiquidityProfileTests
         {
             ExpectedEventsPerHour = 1000
         });
-        // No liquidity registration => uses default 1000 events/hour
+
+        // Explicitly register SPY as a High-liquidity symbol (1000 events/hour expected).
+        // This suppresses auto-calibration so the declared expectation is respected.
+        calculator.RegisterSymbolLiquidity("SPY", LiquidityProfile.High);
 
         var date = DateOnly.FromDateTime(DateTime.UtcNow);
         var tradingStart = new DateTimeOffset(date.Year, date.Month, date.Day, 13, 30, 0, TimeSpan.Zero);
@@ -223,7 +226,8 @@ public sealed class LiquidityProfileTests
 
         var score = calculator.GetScore("SPY", date);
         score.Should().NotBeNull();
-        score!.Score.Should().BeLessThan(0.5, "30 events out of ~6500 expected should score poorly");
+        score!.IsAutoCalibrated.Should().BeFalse("explicit profile was registered");
+        score.Score.Should().BeLessThan(0.5, "30 events out of ~6500 expected should score poorly");
     }
 
     #endregion

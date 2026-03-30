@@ -252,7 +252,9 @@ internal static class CommandDispatchPlanner
             new QueryCommand(new HistoricalDataQueryService(cfg.DataRoot), log),
             new CatalogCommand(storageSearchService, log),
             new GenerateLoaderCommand(cfg.DataRoot, log),
-            new WalRepairCommand(cfg, log)));
+            new WalRepairCommand(cfg, log),
+            // Security Master ingest: importService is null until the full host configures Postgres.
+            new SecurityMasterCommands(importService: null, log)));
     }
 }
 

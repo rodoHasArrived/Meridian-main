@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -7,12 +8,17 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Interop;
+using System.Windows.Threading;
+using System.Runtime.InteropServices;
 using Microsoft.Extensions.DependencyInjection;
 using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Services;
+using Meridian.Wpf.ViewModels;
 using WpfServices = Meridian.Wpf.Services;
 using Meridian.Wpf.Views;
 using Meridian.Ui.Services;
+using Meridian.Ui.Services.Contracts;
 using Meridian.Ui.Services.Services;
 using SysNavigation = System.Windows.Navigation;
 
@@ -34,6 +40,13 @@ public partial class MainWindow : Window
     private readonly AlertService _alertService;
     private readonly WpfServices.WorkspaceService _workspaceService;
     private readonly FixtureModeDetector _fixtureModeDetector;
+
+    // Clipboard watcher state
+    private DispatcherTimer? _clipboardBannerTimer;
+    private IReadOnlyList<string> _pendingClipboardSymbols = [];
+
+    // Status bar view model (lifetime tied to window)
+    private StatusBarViewModel? _statusBarVM;
 
     private static readonly string WindowStateFilePath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -61,6 +74,10 @@ public partial class MainWindow : Window
         _workspaceService = WpfServices.WorkspaceService.Instance;
         _fixtureModeDetector = FixtureModeDetector.Instance;
 
+        // Create status bar view model with injected services
+        var statusService = App.Services.GetRequiredService<IStatusService>();
+        _statusBarVM = new StatusBarViewModel(statusService, _notificationService);
+
         // Subscribe to fixture/offline mode changes
         _fixtureModeDetector.ModeChanged += OnFixtureModeChanged;
         UpdateFixtureModeBanner();
@@ -78,20 +95,56 @@ public partial class MainWindow : Window
         // Subscribe to alert events for guided remediation
         _alertService.AlertRaised += OnAlertRaised;
 
+        // Subscribe to launch args forwarded from secondary instances (jump-list re-launches).
+        WpfServices.SingleInstanceService.Instance.LaunchArgsReceived += OnLaunchArgsReceived;
+
+        SourceInitialized += (_, _) =>
+        {
+            EnsureShellVisibleOnStartup();
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(EnsureShellVisibleOnStartup));
+            _ = RecoverShellVisibilityAsync();
+        };
+
         // Restore window state from previous session
         RestoreWindowState();
     }
 
     private void OnWindowLoaded(object sender, RoutedEventArgs e)
     {
+        EnsureShellVisibleOnStartup();
+
+        // Capture the HWND for taskbar progress updates (must run after Loaded).
+        WpfServices.TaskbarProgressService.Instance.Initialize(this);
+
         // Initialize navigation service with the frame
         _navigationService.Initialize(RootFrame);
 
         // Initialize keyboard shortcuts
         _keyboardShortcutService.Initialize(this);
 
+        // Set up window DataContext to expose StatusBar property
+        DataContext = new MainWindowContext { StatusBar = _statusBarVM };
+
+        // Start status bar update loop
+        _ = _statusBarVM?.StartAsync();
+
+        // Register clipboard watcher using this window's HWND (must be called after Loaded)
+        var hwnd = new WindowInteropHelper(this).Handle;
+        ClipboardWatcherService.Instance.Initialize(hwnd);
+        ClipboardWatcherService.Instance.SymbolsDetected += OnSymbolsDetected;
+
+        // Register global (system-wide) hotkeys via WndProc hook.
+        var hwndSource = HwndSource.FromHwnd(hwnd);
+        hwndSource?.AddHook(WndProc);
+        GlobalHotkeyService.Instance.GlobalHotkeyFired += OnGlobalHotkeyFired;
+        GlobalHotkeyService.Instance.Initialize(hwnd);
+
         // Load the shell first; it owns the inner content frame and restores page state there.
         RootFrame.Navigate(App.Services.GetRequiredService<MainPage>());
+
+        // A few services can raise transient state changes during startup.
+        // Re-assert the shell as visible once the initial load work has been queued.
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(EnsureShellVisibleOnStartup));
     }
 
     private void OnWindowClosing(object? sender, CancelEventArgs e)
@@ -102,6 +155,9 @@ public partial class MainWindow : Window
         // Save workspace session state for next launch
         SaveWorkspaceSession();
 
+        // Dispose status bar view model
+        _statusBarVM?.Dispose();
+
         // Unsubscribe from all events to prevent memory leaks
         _keyboardShortcutService.ShortcutInvoked -= OnShortcutInvoked;
         _notificationService.NotificationReceived -= OnNotificationReceived;
@@ -109,6 +165,16 @@ public partial class MainWindow : Window
         _tourService.TourCompleted -= OnTourCompleted;
         _alertService.AlertRaised -= OnAlertRaised;
         _fixtureModeDetector.ModeChanged -= OnFixtureModeChanged;
+        WpfServices.SingleInstanceService.Instance.LaunchArgsReceived -= OnLaunchArgsReceived;
+
+        // Clipboard watcher cleanup
+        ClipboardWatcherService.Instance.SymbolsDetected -= OnSymbolsDetected;
+        _clipboardBannerTimer?.Stop();
+        ClipboardWatcherService.Instance.Dispose();
+
+        // Shutdown global hotkeys to free Win32 registrations immediately.
+        GlobalHotkeyService.Instance.GlobalHotkeyFired -= OnGlobalHotkeyFired;
+        GlobalHotkeyService.Instance.Shutdown();
     }
 
     private void OnRootFrameNavigated(object sender, SysNavigation.NavigationEventArgs e)
@@ -117,6 +183,47 @@ public partial class MainWindow : Window
         if (sender is System.Windows.Controls.Frame frame && frame.Content is FrameworkElement element)
         {
             _keyboardShortcutService.Initialize(element);
+        }
+    }
+
+    /// <summary>
+    /// WndProc hook that forwards WM_HOTKEY messages to <see cref="GlobalHotkeyService"/>.
+    /// </summary>
+    private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+    {
+        const int WM_HOTKEY = 0x0312;
+        if (msg == WM_HOTKEY)
+        {
+            GlobalHotkeyService.Instance.HandleHotkeyMessage(wParam.ToInt32());
+            handled = true;
+        }
+        return IntPtr.Zero;
+    }
+
+    private void OnGlobalHotkeyFired(object? sender, GlobalHotkeyFiredEventArgs e)
+    {
+        // WM_HOTKEY arrives on the UI thread in standard WPF, but guard for safety.
+        if (!Dispatcher.CheckAccess())
+        {
+            _ = Dispatcher.InvokeAsync(() => OnGlobalHotkeyFired(sender, e));
+            return;
+        }
+
+        switch (e.ActionId)
+        {
+            case "BringToFront":
+                Show();
+                Activate();
+                WindowState = WindowState.Normal;
+                break;
+
+            case "PauseResumeCollector":
+                _messagingService.Send("PauseResumeCollector");
+                break;
+
+            case "ToggleTickerStrip":
+                _messagingService.Send("ToggleTickerStrip");
+                break;
         }
     }
 
@@ -351,11 +458,136 @@ public partial class MainWindow : Window
         }
     }
 
+    private void OnLaunchArgsReceived(object? sender, string[] args) => HandleLaunchArgs(args);
+
+    /// <summary>
+    /// Handles launch arguments forwarded from a secondary instance via the single-instance
+    /// named pipe (e.g. when the user clicks a taskbar jump list item while the app is
+    /// already running). Always called on the UI thread.
+    /// </summary>
+    private void HandleLaunchArgs(string[] args)
+    {
+        if (args.Length == 0) return;
+
+        foreach (var arg in args)
+        {
+            if (arg.StartsWith("--page=", StringComparison.OrdinalIgnoreCase))
+            {
+                var pageTag = arg["--page=".Length..];
+                if (!string.IsNullOrWhiteSpace(pageTag))
+                    _ = _navigationService.NavigateTo(pageTag);
+            }
+            else if (arg.Equals("--start-collector", StringComparison.OrdinalIgnoreCase))
+            {
+                _ = StartCollectorAsync();
+            }
+        }
+    }
+
     private void OnNotificationReceived(object? sender, NotificationEventArgs e)
     {
         // In-app notification handling can be added here
         // For now, notifications are handled by the NotificationService
     }
+
+    #region Clipboard Symbol Watcher
+
+    private void OnSymbolsDetected(object? sender, SymbolsDetectedEventArgs e)
+    {
+        // Only surface the banner when Meridian is the active window to avoid
+        // interrupting the user's work in other applications.
+        if (!IsActive) return;
+
+        _pendingClipboardSymbols = e.Symbols;
+
+        var symbolList = string.Join(", ", e.Symbols);
+        var count = e.Symbols.Count;
+        ClipboardBannerText.Text = count == 1
+            ? $"Symbol detected in clipboard: {symbolList} — Add to Watchlist?"
+            : $"{count} symbols detected in clipboard: {symbolList} — Add to Watchlist?";
+
+        ClipboardSymbolBanner.Visibility = Visibility.Visible;
+
+        // Restart the auto-dismiss timer on every new detection
+        if (_clipboardBannerTimer is null)
+        {
+            _clipboardBannerTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(8) };
+            _clipboardBannerTimer.Tick += (_, _) => HideClipboardBanner();
+        }
+
+        _clipboardBannerTimer.Stop();
+        _clipboardBannerTimer.Start();
+    }
+
+    private void ClipboardAdd_Click(object sender, RoutedEventArgs e)
+    {
+        var symbols = _pendingClipboardSymbols;
+        HideClipboardBanner();
+
+        if (symbols.Count == 0) return;
+        _ = AddSymbolsToWatchlistAsync(symbols);
+    }
+
+    private void ClipboardDismiss_Click(object sender, RoutedEventArgs e)
+    {
+        HideClipboardBanner();
+    }
+
+    private void HideClipboardBanner()
+    {
+        _clipboardBannerTimer?.Stop();
+        ClipboardSymbolBanner.Visibility = Visibility.Collapsed;
+        _pendingClipboardSymbols = [];
+    }
+
+    private async Task AddSymbolsToWatchlistAsync(IReadOnlyList<string> symbols)
+    {
+        try
+        {
+            var watchlistService = WpfServices.WatchlistService.Instance;
+            var watchlists = await watchlistService.GetAllWatchlistsAsync();
+
+            int added;
+            string targetName;
+
+            if (watchlists.Count > 0)
+            {
+                // Add to the first (highest-priority) watchlist
+                var target = watchlists[0];
+                added = await watchlistService.AddSymbolsAsync(target.Id, symbols);
+                targetName = target.Name;
+            }
+            else
+            {
+                // No watchlist yet — create a default one containing these symbols
+                var created = await watchlistService.CreateWatchlistAsync("My Watchlist", symbols);
+                added = symbols.Count;
+                targetName = created.Name;
+            }
+
+            var symbolList = string.Join(", ", symbols);
+            _notificationService.ShowNotification(
+                "Watchlist Updated",
+                added > 0
+                    ? $"Added {added} symbol(s) to \"{targetName}\": {symbolList}"
+                    : $"All symbols already in \"{targetName}\".",
+                added > 0 ? NotificationType.Success : NotificationType.Info,
+                5000);
+
+            // Navigate to the watchlist so the user sees the result
+            _navigationService.NavigateTo("Watchlist");
+        }
+        catch (Exception ex)
+        {
+            _notificationService.ShowNotification(
+                "Watchlist Error",
+                $"Could not add symbols: {ex.Message}",
+                NotificationType.Error,
+                0);
+        }
+    }
+
+    #endregion
 
     #region Fixture/Offline Mode Banner
 
@@ -779,6 +1011,62 @@ public partial class MainWindow : Window
         }
     }
 
+    private void EnsureShellVisibleOnStartup()
+    {
+        if (WindowState == WindowState.Minimized)
+        {
+            WindowState = WindowState.Normal;
+        }
+
+        if (!ShowInTaskbar)
+        {
+            ShowInTaskbar = true;
+        }
+
+        if (!IsVisible)
+        {
+            Show();
+        }
+
+        var hwnd = new WindowInteropHelper(this).Handle;
+        if (hwnd != IntPtr.Zero)
+        {
+            NativeMethods.ShowWindow(hwnd, NativeMethods.SW_RESTORE);
+            NativeMethods.SetForegroundWindow(hwnd);
+        }
+
+        Activate();
+    }
+
+    private async Task RecoverShellVisibilityAsync()
+    {
+        var delays = new[]
+        {
+            TimeSpan.FromMilliseconds(250),
+            TimeSpan.FromSeconds(1),
+            TimeSpan.FromSeconds(3)
+        };
+
+        foreach (var delay in delays)
+        {
+            await Task.Delay(delay).ConfigureAwait(true);
+            EnsureShellVisibleOnStartup();
+        }
+    }
+
+    private static class NativeMethods
+    {
+        internal const int SW_RESTORE = 9;
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool SetForegroundWindow(IntPtr hWnd);
+    }
+
     /// <summary>
     /// Checks if a position is visible on the virtual screen area.
     /// Uses WPF SystemParameters to avoid a WinForms dependency.
@@ -825,4 +1113,95 @@ public partial class MainWindow : Window
     private sealed partial class WindowStateJsonContext : JsonSerializerContext;
 
     #endregion
+
+    #region Drag-and-Drop file import
+
+    private void OnRootFrameDragEnter(object sender, DragEventArgs e)
+    {
+        if (!e.Data.GetDataPresent(DataFormats.FileDrop))
+        {
+            e.Effects = DragDropEffects.None;
+            e.Handled = true;
+            return;
+        }
+
+        e.Effects = DragDropEffects.Copy;
+        e.Handled = true;
+
+        UpdateDropOverlay(e);
+        DropOverlay.Visibility = Visibility.Visible;
+    }
+
+    private void OnRootFrameDragOver(object sender, DragEventArgs e)
+    {
+        if (!e.Data.GetDataPresent(DataFormats.FileDrop))
+        {
+            e.Effects = DragDropEffects.None;
+            e.Handled = true;
+            return;
+        }
+
+        e.Effects = DragDropEffects.Copy;
+        e.Handled = true;
+    }
+
+    private void OnRootFrameDragLeave(object sender, DragEventArgs e)
+    {
+        DropOverlay.Visibility = Visibility.Collapsed;
+        e.Handled = true;
+    }
+
+    private void OnRootFrameDrop(object sender, DragEventArgs e)
+    {
+        DropOverlay.Visibility = Visibility.Collapsed;
+        e.Handled = true;
+
+        if (e.Data.GetData(DataFormats.FileDrop) is not string[] files || files.Length == 0)
+            return;
+
+        RouteDroppedFile(files[0]);
+    }
+
+    /// <summary>
+    /// Updates the overlay subtitle with the detected file type of the first dragged file.
+    /// </summary>
+    private void UpdateDropOverlay(DragEventArgs e)
+    {
+        if (e.Data.GetData(DataFormats.FileDrop) is not string[] files || files.Length == 0)
+            return;
+
+        var fileType = DropImportService.Instance.DetectFileType(files[0]);
+        var label = DropImportService.Instance.GetTypeFriendlyName(fileType);
+        DropOverlaySubtitle.Text = label;
+    }
+
+    /// <summary>
+    /// Detects the file type and navigates to the appropriate import page,
+    /// passing the file path as a parameter so the destination can pre-populate its UI.
+    /// </summary>
+    private void RouteDroppedFile(string filePath)
+    {
+        try
+        {
+            var fileType = DropImportService.Instance.DetectFileType(filePath);
+            var pageKey = DropImportService.Instance.GetTargetPageKey(fileType);
+
+            _navigationService.NavigateTo(pageKey, filePath);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[MainWindow] Drop routing failed for '{filePath}': {ex.Message}");
+        }
+    }
+
+    #endregion
 }
+
+/// <summary>
+/// Data context for MainWindow, exposing the StatusBar view model.
+/// </summary>
+internal sealed class MainWindowContext
+{
+    public StatusBarViewModel? StatusBar { get; set; }
+}
+

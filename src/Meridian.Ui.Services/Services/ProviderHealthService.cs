@@ -60,7 +60,8 @@ public sealed class ProviderHealthService : IDisposable
 
     private async void OnTimerElapsed(object? sender, ElapsedEventArgs e)
     {
-        if (_disposed) return;
+        if (_disposed)
+            return;
 
         try
         {
@@ -418,7 +419,8 @@ public sealed class ProviderHealthService : IDisposable
 
     public void Dispose()
     {
-        if (_disposed) return;
+        if (_disposed)
+            return;
         _disposed = true; // Set before stopping so in-flight callbacks exit early
         _updateTimer.Stop();
         _updateTimer.Elapsed -= OnTimerElapsed;

@@ -167,7 +167,8 @@ public sealed class SettingsConfigurationService
     public bool RemoveProfile(string profileId)
     {
         var profile = _profiles.FirstOrDefault(p => p.Id == profileId);
-        if (profile == null || profile.IsBuiltIn) return false;
+        if (profile == null || profile.IsBuiltIn)
+            return false;
         return _profiles.Remove(profile);
     }
 
@@ -178,11 +179,15 @@ public sealed class SettingsConfigurationService
     {
         // Rough estimates per symbol per day (compressed gzip)
         long bytesPerSymbol = 0;
-        if (trades) bytesPerSymbol += 2 * 1024 * 1024;  // ~2 MB trades
-        if (quotes) bytesPerSymbol += 5 * 1024 * 1024;  // ~5 MB quotes
-        if (depth) bytesPerSymbol += 15 * 1024 * 1024;  // ~15 MB L2 depth
+        if (trades)
+            bytesPerSymbol += 2 * 1024 * 1024;  // ~2 MB trades
+        if (quotes)
+            bytesPerSymbol += 5 * 1024 * 1024;  // ~5 MB quotes
+        if (depth)
+            bytesPerSymbol += 15 * 1024 * 1024;  // ~15 MB L2 depth
 
-        if (bytesPerSymbol == 0) bytesPerSymbol = 1024 * 1024; // fallback 1 MB
+        if (bytesPerSymbol == 0)
+            bytesPerSymbol = 1024 * 1024; // fallback 1 MB
 
         var totalBytes = bytesPerSymbol * symbolCount;
         return FormatHelpers.FormatBytes(totalBytes);

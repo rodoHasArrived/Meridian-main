@@ -114,6 +114,20 @@ static package content.
 - `references/provider-patterns.md` — provider skeletons, options, DI wiring, and test scaffolds
 - Companion skills referenced as needed: `meridian-code-review`, `meridian-test-writer`
 
+### `meridian-implementation-assurance`
+
+**Location:** [`.claude/skills/meridian-implementation-assurance/`](https://github.com/rodoHasArrived/Meridian/blob/main/.claude/skills/meridian-implementation-assurance)
+**Purpose:** Certify that implemented changes match approved requirements/blueprints, are validated with explicit evidence (builds, tests, docs), and are discoverable in the AI catalogs.
+**When it triggers:** requests to certify completeness, collect validation evidence, update AI/agent catalogs after new capabilities, or verify implementation scope against acceptance criteria.
+**Passing threshold:** rubric score ≥ 8/10 and no category scored 0.
+**On-demand resources and scripts:**
+
+- `references/documentation-routing.md` — docs placement matrix and cross-linking rules
+- `references/evaluation-harness.md` — scenario set (A/B/C), rubric definitions, and pass/fail criteria
+- `scripts/doc_route.py` — routes catalog updates to the correct AI/agent index
+- `scripts/score_eval.py` — summarizes assurance scoring with JSON/text output
+- `python3 build/scripts/docs/validate-skill-packages.py` — validates skill packaging and references
+
 ### `meridian-test-writer`
 
 **Location:** [`.claude/skills/meridian-test-writer/`](https://github.com/rodoHasArrived/Meridian/blob/main/.claude/skills/meridian-test-writer)
@@ -144,6 +158,16 @@ Available scripts:
 Available resource:
 
 - `doc-health-summary` — live doc-health snapshot
+
+### `meridian-implementation-assurance` (second entry — direct lending notes)
+
+> **Note:** The Direct Lending module (`src/Meridian.FSharp/Domain/DirectLending.fs`,
+> `src/Meridian.FSharp.DirectLending.Aggregates/`) implements interest-only periods, grace
+> periods, effective rate floor/cap, and prepayment penalties. When reviewing or extending
+> this domain, the `meridian-code-review` and `meridian-implementation-assurance` skills
+> are the primary tools. Key domain functions: `isInterestOnlyPeriod`,
+> `isWithinGracePeriod`, `applyRateBounds`, `estimatePrepaymentPenalty`.
+> Tests live in `tests/Meridian.FSharp.Tests/DirectLendingInteropTests.fs`.
 
 ---
 
@@ -176,4 +200,4 @@ The validator checks for:
 
 ---
 
-_Last Updated: 2026-03-20_
+_Last Updated: 2026-03-30_

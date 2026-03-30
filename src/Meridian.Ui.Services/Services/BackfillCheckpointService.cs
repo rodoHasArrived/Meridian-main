@@ -84,7 +84,8 @@ public sealed class BackfillCheckpointService
         CancellationToken ct = default)
     {
         var checkpoint = await LoadCheckpointAsync(jobId, ct);
-        if (checkpoint == null) return;
+        if (checkpoint == null)
+            return;
 
         var symbolCp = checkpoint.SymbolCheckpoints.FirstOrDefault(
             s => string.Equals(s.Symbol, symbol, StringComparison.OrdinalIgnoreCase));
@@ -138,7 +139,8 @@ public sealed class BackfillCheckpointService
         CancellationToken ct = default)
     {
         var checkpoint = await LoadCheckpointAsync(jobId, ct);
-        if (checkpoint == null) return;
+        if (checkpoint == null)
+            return;
 
         checkpoint.Status = CheckpointStatus.Failed;
         checkpoint.ErrorMessage = errorMessage;
@@ -155,7 +157,8 @@ public sealed class BackfillCheckpointService
     {
         var resumable = new List<BackfillCheckpoint>();
 
-        if (!Directory.Exists(_checkpointDir)) return resumable;
+        if (!Directory.Exists(_checkpointDir))
+            return resumable;
 
         foreach (var file in Directory.GetFiles(_checkpointDir, "*.json"))
         {
@@ -189,7 +192,8 @@ public sealed class BackfillCheckpointService
         CancellationToken ct = default)
     {
         var checkpoint = await LoadCheckpointAsync(jobId, ct);
-        if (checkpoint == null) return Array.Empty<string>();
+        if (checkpoint == null)
+            return Array.Empty<string>();
 
         return checkpoint.SymbolCheckpoints
             .Where(s => s.Status is SymbolCheckpointStatus.Pending or SymbolCheckpointStatus.Failed)
@@ -216,7 +220,8 @@ public sealed class BackfillCheckpointService
     {
         var all = new List<BackfillCheckpoint>();
 
-        if (!Directory.Exists(_checkpointDir)) return all;
+        if (!Directory.Exists(_checkpointDir))
+            return all;
 
         foreach (var file in Directory.GetFiles(_checkpointDir, "*.json"))
         {
@@ -247,7 +252,8 @@ public sealed class BackfillCheckpointService
         int retentionDays = 30,
         CancellationToken ct = default)
     {
-        if (!Directory.Exists(_checkpointDir)) return Task.CompletedTask;
+        if (!Directory.Exists(_checkpointDir))
+            return Task.CompletedTask;
 
         var cutoff = DateTime.UtcNow.AddDays(-retentionDays);
 
@@ -284,7 +290,8 @@ public sealed class BackfillCheckpointService
 
     private async Task<BackfillCheckpoint?> LoadCheckpointFromFileAsync(string path, CancellationToken ct)
     {
-        if (!File.Exists(path)) return null;
+        if (!File.Exists(path))
+            return null;
 
         try
         {

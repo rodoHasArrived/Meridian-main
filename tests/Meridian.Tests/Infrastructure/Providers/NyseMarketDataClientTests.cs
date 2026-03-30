@@ -1,3 +1,4 @@
+using System.Net.Http;
 using System.Reflection;
 using FluentAssertions;
 using Meridian.Contracts.Domain.Enums;
@@ -8,6 +9,7 @@ using Meridian.Domain.Models;
 using Meridian.Infrastructure.Adapters.NYSE;
 using Meridian.Infrastructure.DataSources;
 using Meridian.Tests.TestHelpers;
+using NSubstitute;
 using Xunit;
 
 namespace Meridian.Tests.Infrastructure.Providers;
@@ -30,6 +32,7 @@ public sealed class NyseMarketDataClientTests : IAsyncDisposable
             _tradeCollector,
             _depthCollector,
             _quoteCollector,
+            CreateMockHttpClientFactory(),
             new NYSEOptions());
     }
 
@@ -121,6 +124,7 @@ public sealed class NyseMarketDataClientTests : IAsyncDisposable
             _tradeCollector,
             _depthCollector,
             _quoteCollector,
+            CreateMockHttpClientFactory(),
             new NYSEOptions { MaxReconnectAttempts = 0 });
 
         reconnectClient.SubscribeTrades(new SymbolConfig("AAPL"));
@@ -141,6 +145,7 @@ public sealed class NyseMarketDataClientTests : IAsyncDisposable
             _tradeCollector,
             _depthCollector,
             _quoteCollector,
+            CreateMockHttpClientFactory(),
             new NYSEOptions { MaxReconnectAttempts = 0 });
 
         var source = GetSource(reconnectClient);
@@ -151,6 +156,13 @@ public sealed class NyseMarketDataClientTests : IAsyncDisposable
         var after = GetReconnectCts(source);
         after.Should().NotBeSameAs(before,
             because: "each reconnect session should get a fresh cancellation source");
+    }
+
+    private static IHttpClientFactory CreateMockHttpClientFactory()
+    {
+        var factory = Substitute.For<IHttpClientFactory>();
+        factory.CreateClient(Arg.Any<string>()).Returns(_ => new HttpClient());
+        return factory;
     }
 
     private NYSEDataSource GetSource()

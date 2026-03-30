@@ -144,11 +144,11 @@ jobs:
       (github.event_name == 'issues' && contains(github.event.issue.labels.*.name, 'ai-known-error')) ||
       (github.event_name == 'workflow_dispatch' && github.event.inputs.issue_number && github.event.inputs.issue_number != '')
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Resolve issue payload for workflow_dispatch
         if: github.event_name == 'workflow_dispatch'
@@ -323,7 +323,7 @@ jobs:
     name: Detect Documentation & Structure Changes
     if: github.event_name != 'issues'
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
     outputs:
       any_changed: ${{ steps.aggregate.outputs.any_changed }}
       docs_changed: ${{ steps.filter.outputs.docs }}
@@ -338,7 +338,7 @@ jobs:
       src_changed: ${{ steps.filter.outputs.src }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 2
 
@@ -404,13 +404,13 @@ jobs:
   validate-docs:
     name: Validate Documentation Quality
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     needs: detect-changes
     if: |
       needs.detect-changes.outputs.any_changed == 'true'
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -549,7 +549,7 @@ jobs:
       changed_files: ${{ steps.changes.outputs.changed_files }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -969,7 +969,7 @@ jobs:
         (github.event_name == 'workflow_dispatch' && github.event.inputs.scan_todos != 'false')
       )
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     outputs:
       total_count: ${{ steps.scan.outputs.total_count }}
       new_todos: ${{ steps.scan.outputs.new_todos }}
@@ -977,7 +977,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -1266,11 +1266,11 @@ jobs:
       github.event.inputs.create_issues == 'true' &&
       needs.scan-todos.outputs.new_todos > 0
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Download scan results
         uses: actions/download-artifact@v4
@@ -1316,10 +1316,10 @@ jobs:
         (github.event_name == 'workflow_dispatch' && github.event.inputs.run_expansion != 'false')
       )
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -1357,10 +1357,10 @@ jobs:
         (github.event_name == 'workflow_dispatch' && github.event.inputs.run_expansion != 'false')
       )
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -1392,10 +1392,10 @@ jobs:
         (github.event_name == 'workflow_dispatch' && github.event.inputs.run_expansion != 'false')
       )
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -1426,10 +1426,10 @@ jobs:
         (github.event_name == 'workflow_dispatch' && github.event.inputs.run_expansion != 'false')
       )
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -1466,10 +1466,10 @@ jobs:
         (github.event_name == 'workflow_dispatch' && github.event.inputs.run_expansion != 'false')
       )
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -1502,10 +1502,10 @@ jobs:
         (github.event_name == 'workflow_dispatch' && github.event.inputs.run_expansion != 'false')
       )
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -1539,10 +1539,10 @@ jobs:
         (github.event_name == 'workflow_dispatch' && github.event.inputs.run_expansion != 'false')
       )
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -1575,10 +1575,10 @@ jobs:
         (github.event_name == 'workflow_dispatch' && github.event.inputs.run_expansion != 'false')
       )
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -1605,7 +1605,7 @@ jobs:
   build-docfx:
     name: Build DocFX Documentation Site
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     needs: detect-changes
     if: |
       github.event_name != 'issues' &&
@@ -1614,7 +1614,7 @@ jobs:
       pages_configured: ${{ steps.configure-pages.outcome == 'success' }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -1647,14 +1647,14 @@ jobs:
         if: steps.configure-pages.outcome == 'success'
         uses: actions/upload-pages-artifact@v4
         with:
-          path: _site
+          path: docs/_site
         continue-on-error: true
 
   # ─── Deploy to GitHub Pages ──────────────────────────────────────────
   deploy-pages:
     name: Deploy Documentation to GitHub Pages
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
     needs: build-docfx
     if: |
       needs.build-docfx.result == 'success' &&
@@ -1677,7 +1677,7 @@ jobs:
   ai-docs-maintenance:
     name: AI Documentation Health Check
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
     needs: [detect-changes]
     if: |
       github.event_name != 'issues' &&
@@ -1690,7 +1690,7 @@ jobs:
       )
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 2
 
@@ -1753,7 +1753,7 @@ jobs:
   report:
     name: Documentation Automation Report
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
     needs: [detect-changes, validate-docs, regenerate-docs, scan-todos, create-todo-issues, link-repair, validate-examples, coverage-report, generate-changelog, validate-api-docs, generate-dependency-graph, sync-readme-badges, generate-metrics-dashboard, build-docfx, deploy-pages, ai-docs-maintenance]
     if: github.event_name != 'issues' && always()
     steps:

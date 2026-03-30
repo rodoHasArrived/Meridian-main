@@ -6,10 +6,10 @@ using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.Core.SymbolResolution;
+using Meridian.Infrastructure.Adapters.Fred;
 using Meridian.Infrastructure.Adapters.NasdaqDataLink;
 using Meridian.Infrastructure.Adapters.OpenFigi;
 using Meridian.Infrastructure.Adapters.Stooq;
-using Meridian.Infrastructure.Adapters.Fred;
 using Meridian.Infrastructure.Adapters.YahooFinance;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Storage;
@@ -77,6 +77,17 @@ public sealed class BackfillCoordinator : IDisposable
     }
 
     public BackfillResult? TryReadLast() => _lastRun ?? _store.TryLoadBackfillStatus();
+
+    /// <summary>
+    /// Returns the per-symbol checkpoint map saved during the last backfill run,
+    /// or <c>null</c> when no checkpoints have been persisted yet.
+    /// </summary>
+    public IReadOnlyDictionary<string, DateOnly>? TryReadSymbolCheckpoints()
+    {
+        var cfg = _store.Load();
+        var statusStore = new BackfillStatusStore(_store.GetDataRoot(cfg));
+        return statusStore.TryReadSymbolCheckpoints();
+    }
 
     /// <summary>
     /// Gets current backfill progress. Returns null if no active backfill.
@@ -163,10 +174,10 @@ public sealed class BackfillCoordinator : IDisposable
             // Keep pipeline counters scoped per run
             _metrics.Reset();
 
-            var service = CreateService();
+            var statusStore = new BackfillStatusStore(_store.GetDataRoot(cfg));
+            var service = CreateService(statusStore);
             var result = await service.RunAsync(request, pipeline, ct).ConfigureAwait(false);
 
-            var statusStore = new BackfillStatusStore(_store.GetDataRoot(cfg));
             await statusStore.WriteAsync(result).ConfigureAwait(false);
             _lastRun = result;
             return result;
@@ -280,7 +291,7 @@ public sealed class BackfillCoordinator : IDisposable
             .ToList();
     }
 
-    private HistoricalBackfillService CreateService()
+    private HistoricalBackfillService CreateService(BackfillStatusStore? checkpointStore = null)
     {
         var cfg = _store.Load();
         var backfillCfg = cfg.Backfill;
@@ -304,7 +315,7 @@ public sealed class BackfillCoordinator : IDisposable
             providers = combined;
         }
 
-        return new HistoricalBackfillService(providers, _log);
+        return new HistoricalBackfillService(providers, _log, checkpointStore: checkpointStore);
     }
 
     public void Dispose()

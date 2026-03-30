@@ -1,0 +1,166 @@
+@startuml Sequence Diagram - Paper Trading Order Execution
+!theme plain
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+
+title Meridian - Paper Trading Order Execution (ADR-015)
+
+' ==================== PARTICIPANTS ====================
+participant "IBacktestStrategy\n/ ILiveStrategy" as Strategy
+participant "IExecutionContext\n(PaperExecutionContext)" as ExecCtx
+participant "PaperTradingGateway\n(IOrderGateway)" as Gateway
+participant "PaperTradingPortfolio" as Portfolio
+participant "PaperSessionPersistence\nService" as Persist
+participant "IOrderManager\n(listener)" as OMS
+participant "CompositeRiskValidator" as Risk
+
+' ==================== SESSION START ====================
+== Session Start ==
+
+participant "StrategyLifecycleManager" as LCMgr
+
+LCMgr -> ExecCtx: Initialize(gateway=PaperTradingGateway,\nportfolio, initialCash)
+activate ExecCtx
+ExecCtx -> Gateway: (inject)
+ExecCtx --> LCMgr: ready
+deactivate ExecCtx
+
+LCMgr -> Persist: CreateSessionAsync(strategyId, initialCash, ct)
+activate Persist
+Persist --> LCMgr: sessionId
+deactivate Persist
+
+' ==================== ORDER PLACEMENT ====================
+== Order Placement (per market event) ==
+
+Strategy -> ExecCtx: PlaceOrder(request {\n  symbol: "SPY",\n  quantity: 100,\n  type: Limit,\n  limitPrice: 450.00,\n  timeInForce: Day\n})
+activate ExecCtx
+
+ExecCtx -> Risk: ValidateAsync(request, portfolio, ct)
+activate Risk
+Risk -> Risk: PositionLimitRule.Validate()\n[check max position size]
+Risk -> Risk: DrawdownCircuitBreaker.Validate()\n[check cumulative loss vs threshold]
+Risk -> Risk: OrderRateThrottle.Validate()\n[check orders/minute rate]
+
+alt Risk rule violation
+    Risk --> ExecCtx: ValidationResult(false,\n"Position limit exceeded")
+    ExecCtx --> Strategy: throw InvalidOperationException\n("Risk check failed: ...")
+else All rules pass
+    Risk --> ExecCtx: ValidationResult(true)
+end
+deactivate Risk
+
+ExecCtx -> Gateway: SubmitAsync(request, ct)
+activate Gateway
+
+Gateway -> Gateway: ValidateOrderAsync(request)\n[check type, TIF, quantity, prices]
+
+alt Validation fails
+    Gateway --> ExecCtx: throw UnsupportedOrderRequestException\n("Order type not supported")
+    ExecCtx --> Strategy: exception propagated
+else Validation passes
+    Gateway -> Gateway: orderId = request.ClientOrderId\n?? "paper-{Guid}"
+    Gateway -> Gateway: _workingOrders[orderId] = request\n[register in pending orders dict]
+
+    Gateway --> ExecCtx: OrderAcknowledgement {\n  orderId, clientOrderId,\n  symbol, status: Accepted,\n  acknowledgedAt: UtcNow\n}
+    ExecCtx --> Strategy: acknowledgement (synchronous return)
+end
+deactivate Gateway
+
+' ==================== SYNTHETIC FILL SIMULATION ====================
+== Synthetic Fill Simulation (background, fire-and-forget) ==
+
+Gateway -> Gateway: SimulateFillAsync(request,\nCancellationToken.None)\n[spawned as background task]
+activate Gateway #DarkGreen
+
+note right of Gateway
+  CancellationToken.None ensures fill
+  always completes even if caller cancels,
+  preventing orphaned working orders.
+end note
+
+alt Market order
+    Gateway -> Gateway: fillPrice = lastTradedPrice\n(or scaffold: 1.00 if feed unavailable)
+else Limit order
+    Gateway -> Gateway: fillPrice = request.LimitPrice.Value\n[assume immediate fill at limit]
+else Stop-market order
+    Gateway -> Gateway: fillPrice = request.StopPrice.Value
+else Stop-limit order
+    Gateway -> Gateway: fillPrice = request.LimitPrice.Value
+end
+
+Gateway -> Portfolio: RecordFillAsync(\norderId, symbol, qty, fillPrice, ct)
+activate Portfolio
+Portfolio -> Portfolio: UpdatePosition(symbol, qty)
+Portfolio -> Portfolio: AdjustCash(−(qty * fillPrice + commission))
+Portfolio --> Gateway: fill recorded
+deactivate Portfolio
+
+Gateway -> Gateway: Remove order from _workingOrders
+Gateway -> Gateway: channel.WriteAsync(\nOrderStatusUpdate {\n  orderId,\n  status: Filled,\n  filledQty: request.Quantity,\n  averagePrice: fillPrice,\n  updatedAt: UtcNow\n})
+note right: Uses EventPipelinePolicy\n.CompletionQueue channel\n(Wait mode, 500 capacity)
+
+deactivate Gateway
+
+' ==================== ORDER STATUS NOTIFICATION ====================
+== Order Status Notification ==
+
+Gateway -> OMS: (OrderStatusUpdate streamed via IAsyncEnumerable)
+activate OMS
+
+OMS -> OMS: Dispatch to registered listeners
+OMS -> Strategy: OnOrderUpdate(update)
+activate Strategy #DarkOrange
+Strategy -> Strategy: Handle fill:\n- Update internal position tracking\n- Place follow-on orders if needed
+Strategy --> OMS: (handled)
+deactivate Strategy
+deactivate OMS
+
+' ==================== ORDER CANCELLATION ====================
+== Order Cancellation ==
+
+Strategy -> ExecCtx: CancelOrder(orderId, ct)
+ExecCtx -> Gateway: CancelAsync(orderId, ct)
+activate Gateway
+
+Gateway -> Gateway: _workingOrders.Remove(orderId, out request)
+
+alt Order found
+    Gateway -> Gateway: channel.WriteAsync(\nOrderStatusUpdate {\n  status: Cancelled\n})
+    Gateway --> ExecCtx: true (cancelled)
+else Order not found (already filled)
+    Gateway --> ExecCtx: false (not found)
+end
+deactivate Gateway
+
+ExecCtx --> Strategy: bool (wasCancelled)
+
+' ==================== SESSION PERSISTENCE ====================
+== Periodic Session Persistence ==
+
+LCMgr -> Persist: SaveSessionSnapshotAsync(\nsessionId, portfolio.Snapshot(), ct)
+activate Persist
+Persist -> Persist: Serialize positions, cash,\nopen orders, P&L summary
+Persist --> LCMgr: saved
+deactivate Persist
+
+' ==================== SHUTDOWN ====================
+== Graceful Shutdown ==
+
+LCMgr -> Gateway: DisposeAsync()
+activate Gateway
+
+Gateway -> Gateway: _disposed = true
+Gateway -> Gateway: Cancel all _workingOrders:\nforeach → channel.WriteAsync(Cancelled)
+Gateway -> Gateway: channel.Writer.Complete()
+note right: Signals IAsyncEnumerable\nlisteners that no more updates
+Gateway -> Gateway: Drain update channel\nuntil Empty
+Gateway --> LCMgr: disposed
+deactivate Gateway
+
+LCMgr -> Persist: CloseSessionAsync(sessionId,\nclosedAt: UtcNow, ct)
+activate Persist
+Persist --> LCMgr: session persisted
+deactivate Persist
+
+@enduml

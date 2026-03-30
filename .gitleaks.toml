@@ -1,0 +1,31 @@
+title = "Meridian gitleaks configuration"
+
+[extend]
+# Extend the default ruleset so all built-in detectors remain active.
+useDefault = true
+
+# ---------------------------------------------------------------------------
+# Global allowlist
+#
+# Findings whose secret value contains any of the stopwords below are
+# suppressed.  Every entry here is a deliberately fake placeholder used
+# exclusively in unit-test source files or public documentation examples.
+# None of these strings represent real credentials.
+# ---------------------------------------------------------------------------
+[[allowlists]]
+id          = "placeholder-credentials"
+description = "Placeholder and test-only credential strings used in unit tests and documentation"
+stopwords   = [
+    # docs/reference/api-reference.md – documentation curl example
+    "your-api-key",
+
+    # tests/…/Config/ConfigValidationPipelineTests.cs – fake Alpaca secrets
+    "VALIDSECRET",
+    "VALIDKEYID",
+
+    # tests/…/Providers/PolygonMarketDataClientTests.cs
+    "valid_environment_api_key",
+
+    # tests/…/Providers/PolygonSubscriptionTests.cs
+    "valid_polygon_api_key",
+]

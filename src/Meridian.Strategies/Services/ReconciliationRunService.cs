@@ -1,3 +1,4 @@
+using Meridian.Contracts.Banking;
 using Meridian.Contracts.Workstation;
 using Meridian.FSharp.Ledger;
 
@@ -8,15 +9,18 @@ public sealed class ReconciliationRunService : IReconciliationRunService
     private readonly StrategyRunReadService _runReadService;
     private readonly ReconciliationProjectionService _projectionService;
     private readonly IReconciliationRunRepository _repository;
+    private readonly IBankTransactionSource? _bankTransactionSource;
 
     public ReconciliationRunService(
         StrategyRunReadService runReadService,
         ReconciliationProjectionService projectionService,
-        IReconciliationRunRepository repository)
+        IReconciliationRunRepository repository,
+        IBankTransactionSource? bankTransactionSource = null)
     {
         _runReadService = runReadService ?? throw new ArgumentNullException(nameof(runReadService));
         _projectionService = projectionService ?? throw new ArgumentNullException(nameof(projectionService));
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+        _bankTransactionSource = bankTransactionSource;
     }
 
     public async Task<ReconciliationRunDetail?> RunAsync(ReconciliationRunRequest request, CancellationToken ct = default)
@@ -29,8 +33,33 @@ public sealed class ReconciliationRunService : IReconciliationRunService
             return null;
         }
 
+        // --- Portfolio / Ledger checks (existing) ---------------------------
         var checks = _projectionService.BuildChecks(runDetail, request);
-        var results = LedgerInterop.ReconcilePortfolioLedgerChecks(request.AmountTolerance, request.MaxAsOfDriftMinutes, checks);
+
+        // --- Banking checks (new, optional) ---------------------------------
+        IReadOnlyList<BankTransactionDto> bankTransactions = Array.Empty<BankTransactionDto>();
+        if (request.BankEntityId.HasValue && _bankTransactionSource is not null)
+        {
+            bankTransactions = await _bankTransactionSource
+                .GetBankTransactionsAsync(request.BankEntityId.Value, ct)
+                .ConfigureAwait(false);
+        }
+
+        var bankChecks = request.BankEntityId.HasValue
+            ? _projectionService.BuildBankingChecks(bankTransactions, runDetail.Ledger)
+            : Array.Empty<PortfolioLedgerCheckDto>();
+
+        // Combine all checks and run through the F# reconciliation engine
+        var allChecks = checks.Count > 0 || bankChecks.Count > 0
+            ? [.. checks, .. bankChecks]
+            : checks;
+
+        var results = LedgerInterop.ReconcilePortfolioLedgerChecks(
+            request.AmountTolerance, request.MaxAsOfDriftMinutes, allChecks);
+
+        // Track which check IDs originated from the banking layer
+        var bankCheckIds = new HashSet<string>(
+            bankChecks.Select(static c => c.CheckId), StringComparer.Ordinal);
 
         var matches = new List<ReconciliationMatchDto>(results.Length);
         var breaks = new List<ReconciliationBreakDto>();
@@ -54,7 +83,7 @@ public sealed class ReconciliationRunService : IReconciliationRunService
             breaks.Add(new ReconciliationBreakDto(
                 result.CheckId,
                 result.Label,
-                MapCategory(result.Category),
+                MapCategory(result.Category, result.MissingSource),
                 MapStatus(result.Status),
                 MapSource(result.MissingSource),
                 result.HasExpectedAmount ? result.ExpectedAmount : null,
@@ -66,6 +95,7 @@ public sealed class ReconciliationRunService : IReconciliationRunService
         }
 
         var securityCoverageIssues = BuildSecurityCoverageIssues(runDetail);
+        var bankBreakCount = breaks.Count(b => bankCheckIds.Contains(b.CheckId));
 
         var summary = new ReconciliationRunSummary(
             Guid.NewGuid().ToString("N"),
@@ -80,9 +110,12 @@ public sealed class ReconciliationRunService : IReconciliationRunService
             request.AmountTolerance,
             request.MaxAsOfDriftMinutes,
             securityCoverageIssues.Count,
-            securityCoverageIssues.Count > 0);
+            securityCoverageIssues.Count > 0,
+            bankTransactions.Count,
+            bankBreakCount);
 
-        var detail = new ReconciliationRunDetail(summary, matches, breaks, securityCoverageIssues);
+        var detail = new ReconciliationRunDetail(summary, matches, breaks, securityCoverageIssues,
+            bankTransactions.Count > 0 ? bankTransactions : null);
         await _repository.SaveAsync(detail, ct).ConfigureAwait(false);
         return detail;
     }
@@ -96,10 +129,12 @@ public sealed class ReconciliationRunService : IReconciliationRunService
     public Task<IReadOnlyList<ReconciliationRunSummary>> GetHistoryForRunAsync(string runId, CancellationToken ct = default) =>
         _repository.GetHistoryForRunAsync(runId, ct);
 
-    private static ReconciliationBreakCategory MapCategory(string category) => category switch
+    private static ReconciliationBreakCategory MapCategory(string category, string missingSource = "") => category switch
     {
         "amount_mismatch" => ReconciliationBreakCategory.AmountMismatch,
         "missing_ledger_coverage" => ReconciliationBreakCategory.MissingLedgerCoverage,
+        "missing_portfolio_coverage" when string.Equals(missingSource, "bank", StringComparison.OrdinalIgnoreCase)
+            => ReconciliationBreakCategory.MissingBankCoverage,
         "missing_portfolio_coverage" => ReconciliationBreakCategory.MissingPortfolioCoverage,
         "classification_gap" => ReconciliationBreakCategory.ClassificationGap,
         "timing_mismatch" => ReconciliationBreakCategory.TimingMismatch,
@@ -118,6 +153,7 @@ public sealed class ReconciliationRunService : IReconciliationRunService
     {
         "portfolio" => ReconciliationSourceKind.Portfolio,
         "ledger" => ReconciliationSourceKind.Ledger,
+        "bank" => ReconciliationSourceKind.Bank,
         _ => ReconciliationSourceKind.Unknown
     };
 

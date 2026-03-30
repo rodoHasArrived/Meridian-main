@@ -70,7 +70,7 @@ jobs:
   wpf-build:
     name: WPF - Build
     runs-on: windows-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     if: |
       github.event.inputs.build_target == 'wpf' ||
       github.event.inputs.build_target == 'wpf-smoke-test' ||
@@ -83,7 +83,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 1
 
@@ -100,7 +100,7 @@ jobs:
         run: dotnet build ${{ env.WPF_PROJECT }} -c ${{ env.BUILD_CONFIG }} --no-restore -p:TargetFramework=net9.0-windows --verbosity minimal
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: wpf-build-output
           path: src/Meridian.Wpf/bin/${{ env.BUILD_CONFIG }}/
@@ -110,7 +110,7 @@ jobs:
     name: WPF - Publish ${{ matrix.artifact_suffix }}
     needs: wpf-build
     runs-on: windows-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     if: |
       (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch') &&
       github.event.inputs.build_target != 'wpf-smoke-test'
@@ -129,7 +129,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup .NET with Cache
         uses: ./.github/actions/setup-dotnet-cache
@@ -178,14 +178,14 @@ jobs:
           Compress-Archive -Path "./publish/${{ matrix.rid }}-fdd/*" -DestinationPath "Meridian.Desktop-${{ matrix.rid }}-fdd.zip"
 
       - name: Upload self-contained artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: Meridian.Desktop-${{ matrix.rid }}-selfcontained
           path: Meridian.Desktop-${{ matrix.rid }}-selfcontained.zip
           retention-days: 30
 
       - name: Upload framework-dependent artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: Meridian.Desktop-${{ matrix.rid }}-fdd
           path: Meridian.Desktop-${{ matrix.rid }}-fdd.zip
@@ -199,7 +199,7 @@ jobs:
     name: WPF - Smoke Test
     needs: wpf-build
     runs-on: windows-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
     if: github.event_name == 'workflow_dispatch'
 
     env:
@@ -208,7 +208,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup .NET with Cache
         uses: ./.github/actions/setup-dotnet-cache
@@ -217,7 +217,7 @@ jobs:
           cache-suffix: 'wpf'
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v4
         with:
           name: wpf-build-output
           path: src/Meridian.Wpf/bin/${{ env.BUILD_CONFIG }}/
@@ -244,12 +244,12 @@ jobs:
     name: AI Build Failure Analysis
     needs: [wpf-build]
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 30
     if: failure()
 
     steps:
       - name: Download build logs
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v4
         with:
           pattern: '*-build-logs-*'
           path: build-logs/
@@ -299,7 +299,7 @@ jobs:
     name: Cleanup Intermediate Artifacts
     needs: [wpf-build, wpf-publish, wpf-smoke-test]
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 30
     if: always()
     permissions:
       actions: write

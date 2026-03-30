@@ -6,6 +6,7 @@ using StockSharp.Messages;
 using Meridian.Application.Config;
 using Meridian.Application.Logging;
 using Meridian.Application.Subscriptions.Models;
+using Meridian.Contracts.Domain;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
@@ -221,17 +222,18 @@ public sealed class StockSharpSymbolSearchProvider : ISymbolSearchProvider, IDis
     /// <summary>
     /// Get detailed information about a specific symbol.
     /// </summary>
-    public async Task<SymbolDetails?> GetDetailsAsync(string symbol, CancellationToken ct = default)
+    public async Task<SymbolDetails?> GetDetailsAsync(SymbolId symbol, CancellationToken ct = default)
     {
         ThrowIfDisposed();
 
-        if (string.IsNullOrWhiteSpace(symbol))
+        if (string.IsNullOrWhiteSpace(symbol.Value))
             return null;
 
         // Search for the exact symbol
-        var results = await SearchAsync(symbol, 1, ct).ConfigureAwait(false);
+        var symbolStr = symbol.Value;
+        var results = await SearchAsync(symbolStr, 1, ct).ConfigureAwait(false);
         var match = results.FirstOrDefault(r =>
-            r.Symbol.Equals(symbol, StringComparison.OrdinalIgnoreCase));
+            r.Symbol.Equals(symbolStr, StringComparison.OrdinalIgnoreCase));
 
         if (match == null)
             return null;
@@ -391,7 +393,7 @@ public sealed class StockSharpSymbolSearchProvider : ISymbolSearchProvider, IDis
     /// <summary>
     /// Stub: StockSharp packages not installed.
     /// </summary>
-    public Task<SymbolDetails?> GetDetailsAsync(string symbol, CancellationToken ct = default)
+    public Task<SymbolDetails?> GetDetailsAsync(SymbolId symbol, CancellationToken ct = default)
     {
         _log.Debug("StockSharp packages not installed, returning null");
         return Task.FromResult<SymbolDetails?>(null);

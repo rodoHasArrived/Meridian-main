@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Meridian.ProviderSdk\Meridian.ProviderSdk.csproj" />
+    <ProjectReference Include="..\Meridian.Backtesting\Meridian.Backtesting.csproj" />
+    <ProjectReference Include="..\Meridian.Backtesting.Sdk\Meridian.Backtesting.Sdk.csproj" />
+    <ProjectReference Include="..\Meridian.Application\Meridian.Application.csproj" />
+    <ProjectReference Include="..\Meridian.Storage\Meridian.Storage.csproj" />
+    <ProjectReference Include="..\Meridian.Contracts\Meridian.Contracts.csproj" />
+    <ProjectReference Include="..\Meridian.Domain\Meridian.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" />
+    <PackageReference Include="Skender.Stock.Indicators" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
+  </ItemGroup>
+
+</Project>

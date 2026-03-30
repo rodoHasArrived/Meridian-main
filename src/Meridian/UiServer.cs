@@ -6,6 +6,12 @@ using Meridian.Application.Monitoring.DataQuality;
 using Meridian.Application.Pipeline;
 using Meridian.Application.UI;
 using Meridian.Domain.Collectors;
+using Meridian.Execution;
+using Meridian.Execution.Adapters;
+using Meridian.Execution.Interfaces;
+using Meridian.Execution.Models;
+using Meridian.Execution.Sdk;
+using Meridian.Execution.Services;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Services;
@@ -85,9 +91,27 @@ public sealed class UiServer : IAsyncDisposable
         builder.Services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
         builder.Services.AddSingleton<ReconciliationProjectionService>();
         builder.Services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        builder.Services.AddSingleton<CashFlowProjectionService>();
         builder.Services.AddSingleton<Meridian.Strategies.Promotions.BacktestToLivePromoter>();
         builder.Services.AddSingleton<Meridian.Strategies.Services.PromotionService>();
-        builder.Services.AddSingleton<Meridian.Execution.Services.PaperSessionPersistenceService>();
+        builder.Services.AddSingleton<PaperSessionPersistenceService>();
+        builder.Services.AddSingleton<StrategyLifecycleManager>();
+
+        // Execution layer — paper trading gateway wired for cockpit endpoints
+        builder.Services.AddSingleton<IOrderGateway>(sp =>
+            new Meridian.Execution.Adapters.PaperTradingGateway(
+                sp.GetRequiredService<ILogger<Meridian.Execution.Adapters.PaperTradingGateway>>()));
+        builder.Services.AddSingleton<IPortfolioState>(_ => new PaperTradingPortfolio(100_000m));
+        builder.Services.AddSingleton<IOrderManager>(sp =>
+        {
+            var gateway = sp.GetRequiredService<IExecutionGateway>();
+            var logger = sp.GetRequiredService<ILogger<OrderManagementSystem>>();
+            var risk = sp.GetService<IRiskValidator>();
+            return new OrderManagementSystem(gateway, logger, risk);
+        });
+        builder.Services.AddSingleton<IExecutionGateway>(sp =>
+            new Meridian.Execution.PaperTradingGateway(
+                sp.GetRequiredService<ILogger<Meridian.Execution.PaperTradingGateway>>()));
 
         // Register OpenAPI/Swagger services
         builder.Services.AddEndpointsApiExplorer();
@@ -154,6 +178,12 @@ public sealed class UiServer : IAsyncDisposable
                     return ["Historical"];
                 if (path.StartsWith("api/options"))
                     return ["Options"];
+                if (path.StartsWith("api/strategies"))
+                    return ["Strategies"];
+                if (path.StartsWith("api/execution"))
+                    return ["Execution"];
+                if (path.StartsWith("api/promotion"))
+                    return ["Promotion"];
                 return ["General"];
             });
         });

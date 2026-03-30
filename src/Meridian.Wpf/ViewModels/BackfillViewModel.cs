@@ -1,12 +1,17 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
+using CommunityToolkit.Mvvm.Input;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
+using Meridian.Wpf.Services;
 using UiBackfillService = Meridian.Ui.Services.BackfillService;
 using UiBackfillProgressEventArgs = Meridian.Ui.Services.BackfillProgressEventArgs;
 using UiBackfillCompletedEventArgs = Meridian.Ui.Services.BackfillCompletedEventArgs;
@@ -18,8 +23,9 @@ namespace Meridian.Wpf.ViewModels;
 /// ViewModel for the Backfill page.
 /// All state, collections, timer management, and backfill orchestration live here;
 /// the code-behind is thinned to lifecycle wiring and form-input delegation.
+/// Provides contextual commands for the command palette when activated.
 /// </summary>
-public sealed class BackfillViewModel : BindableBase, IDisposable
+public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandContextProvider, IPageActionBarProvider
 {
     private readonly WpfServices.NotificationService _notificationService;
     private readonly WpfServices.NavigationService _navigationService;
@@ -27,9 +33,16 @@ public sealed class BackfillViewModel : BindableBase, IDisposable
     private readonly BackfillApiService _backfillApiService;
     private readonly UiBackfillService _backfillService;
     private readonly BackfillCheckpointService _checkpointService;
+    private readonly WpfServices.TaskbarProgressService _taskbarProgressService;
+    private readonly WpfServices.ToastNotificationService _toastNotificationService;
+    private readonly CommandPaletteService _commandPaletteService;
 
     private readonly DispatcherTimer _progressPollTimer;
     private CancellationTokenSource? _backfillCts;
+
+    // Last known symbol counts — used to restore taskbar progress after a resume.
+    private ulong _lastCompletedSymbols;
+    private ulong _lastTotalSymbols;
 
     // ── Public collections ──────────────────────────────────────────────────
     public ObservableCollection<SymbolProgressInfo> SymbolProgress { get; } = new();
@@ -164,18 +177,107 @@ public sealed class BackfillViewModel : BindableBase, IDisposable
         private set => SetProperty(ref _isOpenFigiKeyClearVisible, value);
     }
 
+    private Meridian.Contracts.Api.BackfillResultDto? _lastApiStatus;
+    public Meridian.Contracts.Api.BackfillResultDto? LastApiStatus
+    {
+        get => _lastApiStatus;
+        private set => SetProperty(ref _lastApiStatus, value);
+    }
+
+    private bool _hasApiStatus;
+    public bool HasApiStatus
+    {
+        get => _hasApiStatus;
+        private set => SetProperty(ref _hasApiStatus, value);
+    }
+
+    private Visibility _lastStatusVisibility = Visibility.Collapsed;
+    public Visibility LastStatusVisibility
+    {
+        get => _lastStatusVisibility;
+        private set => SetProperty(ref _lastStatusVisibility, value);
+    }
+
+    private Visibility _emptyStatusVisibility = Visibility.Visible;
+    public Visibility EmptyStatusVisibility
+    {
+        get => _emptyStatusVisibility;
+        private set => SetProperty(ref _emptyStatusVisibility, value);
+    }
+
+    private string _lastRunStatusText = string.Empty;
+    public string LastRunStatusText
+    {
+        get => _lastRunStatusText;
+        private set => SetProperty(ref _lastRunStatusText, value);
+    }
+
+    private Brush _lastRunStatusBrush = Brushes.Transparent;
+    public Brush LastRunStatusBrush
+    {
+        get => _lastRunStatusBrush;
+        private set => SetProperty(ref _lastRunStatusBrush, value);
+    }
+
+    private string _lastRunProviderText = "Unknown";
+    public string LastRunProviderText
+    {
+        get => _lastRunProviderText;
+        private set => SetProperty(ref _lastRunProviderText, value);
+    }
+
+    private string _lastRunSymbolsText = "N/A";
+    public string LastRunSymbolsText
+    {
+        get => _lastRunSymbolsText;
+        private set => SetProperty(ref _lastRunSymbolsText, value);
+    }
+
+    private string _lastRunBarsWrittenText = "0";
+    public string LastRunBarsWrittenText
+    {
+        get => _lastRunBarsWrittenText;
+        private set => SetProperty(ref _lastRunBarsWrittenText, value);
+    }
+
+    private string _lastRunStartedText = "Unknown";
+    public string LastRunStartedText
+    {
+        get => _lastRunStartedText;
+        private set => SetProperty(ref _lastRunStartedText, value);
+    }
+
+    private string _lastRunCompletedText = "N/A";
+    public string LastRunCompletedText
+    {
+        get => _lastRunCompletedText;
+        private set => SetProperty(ref _lastRunCompletedText, value);
+    }
+
+    // ── IPageActionBarProvider implementation ──────────────────────────────────────
+    public string PageTitle => "Backfill";
+    public ObservableCollection<ActionEntry> Actions { get; } = new();
+
     public BackfillViewModel(
         WpfServices.NotificationService notificationService,
         WpfServices.NavigationService navigationService,
-        WpfServices.LoggingService loggingService)
+        WpfServices.LoggingService loggingService,
+        UiBackfillService backfillService,
+        BackfillCheckpointService checkpointService,
+        WpfServices.TaskbarProgressService taskbarProgressService,
+        WpfServices.ToastNotificationService toastNotificationService,
+        CommandPaletteService commandPaletteService)
     {
         _notificationService = notificationService;
         _navigationService = navigationService;
         _loggingService = loggingService;
 
         _backfillApiService = new BackfillApiService();
-        _backfillService = UiBackfillService.Instance;
-        _checkpointService = BackfillCheckpointService.Instance;
+        _backfillService = backfillService;
+        _checkpointService = checkpointService;
+        _taskbarProgressService = taskbarProgressService;
+        _toastNotificationService = toastNotificationService;
+        _commandPaletteService = commandPaletteService;
 
         _progressPollTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
         _progressPollTimer.Tick += OnProgressPollTimerTick;
@@ -186,6 +288,11 @@ public sealed class BackfillViewModel : BindableBase, IDisposable
     {
         _backfillService.ProgressUpdated += OnBackfillProgressUpdated;
         _backfillService.BackfillCompleted += OnBackfillCompleted;
+
+        // Populate action bar.
+        Actions.Clear();
+        Actions.Add(new ActionEntry("Start Backfill", new RelayCommand(() => _navigationService.NavigateTo("Backfill")), "▶", "Start a new backfill", IsPrimary: true));
+        Actions.Add(new ActionEntry("View Status", new RelayCommand(() => _navigationService.NavigateTo("Backfill")), "📊", "View backfill status"));
 
         await LoadScheduledJobsAsync();
         await LoadResumableJobsAsync();
@@ -261,28 +368,54 @@ public sealed class BackfillViewModel : BindableBase, IDisposable
             var lastStatus = await _backfillApiService.GetLastStatusAsync();
             if (lastStatus != null)
             {
-                LastApiStatus = lastStatus;
-                HasApiStatus = true;
+                UpdateLastApiStatus(lastStatus);
             }
             else
             {
-                HasApiStatus = false;
+                ClearLastApiStatus();
             }
         }
         catch
         {
-            HasApiStatus = false;
+            ClearLastApiStatus();
         }
-
-        RaisePropertyChanged(nameof(LastApiStatus));
-        RaisePropertyChanged(nameof(HasApiStatus));
     }
 
-    // Status from API (exposed for code-behind to render into named elements)
-    public Meridian.Contracts.Api.BackfillResultDto? LastApiStatus { get; private set; }
-    public bool HasApiStatus { get; private set; }
-
     // ── Backfill control ────────────────────────────────────────────────────
+    private void UpdateLastApiStatus(Meridian.Contracts.Api.BackfillResultDto status)
+    {
+        LastApiStatus = status;
+        HasApiStatus = true;
+        LastStatusVisibility = Visibility.Visible;
+        EmptyStatusVisibility = Visibility.Collapsed;
+        LastRunStatusText = status.Success ? "Completed" : "Failed";
+        LastRunStatusBrush = status.Success
+            ? new SolidColorBrush(Color.FromRgb(63, 185, 80))
+            : new SolidColorBrush(Color.FromRgb(244, 67, 54));
+        LastRunProviderText = status.Provider ?? "Unknown";
+        LastRunSymbolsText = status.Symbols is { Length: > 0 }
+            ? string.Join(", ", status.Symbols)
+            : "N/A";
+        LastRunBarsWrittenText = status.BarsWritten.ToString("N0");
+        LastRunStartedText = status.StartedUtc?.LocalDateTime.ToString("g") ?? "Unknown";
+        LastRunCompletedText = status.CompletedUtc?.LocalDateTime.ToString("g") ?? "N/A";
+    }
+
+    private void ClearLastApiStatus()
+    {
+        LastApiStatus = null;
+        HasApiStatus = false;
+        LastStatusVisibility = Visibility.Collapsed;
+        EmptyStatusVisibility = Visibility.Visible;
+        LastRunStatusText = string.Empty;
+        LastRunStatusBrush = Brushes.Transparent;
+        LastRunProviderText = "Unknown";
+        LastRunSymbolsText = "N/A";
+        LastRunBarsWrittenText = "0";
+        LastRunStartedText = "Unknown";
+        LastRunCompletedText = "N/A";
+    }
+
     public async Task StartBackfillAsync(
         string[] symbols,
         string provider,
@@ -309,6 +442,7 @@ public sealed class BackfillViewModel : BindableBase, IDisposable
         IsBackfillActive = true;
         IsProgressVisible = true;
         PauseButtonContent = "Pause";
+        _taskbarProgressService.SetIndeterminate();
 
         _notificationService.ShowNotification(
             "Backfill Started",
@@ -332,12 +466,14 @@ public sealed class BackfillViewModel : BindableBase, IDisposable
             _progressPollTimer.Stop();
             BackfillStatusText = "Cancelled";
             IsBackfillActive = false;
+            _taskbarProgressService.Clear();
         }
         catch (Exception ex)
         {
             _progressPollTimer.Stop();
             BackfillStatusText = "Failed";
             IsBackfillActive = false;
+            _taskbarProgressService.SetError();
 
             _notificationService.ShowNotification(
                 "Backfill Failed",
@@ -353,6 +489,7 @@ public sealed class BackfillViewModel : BindableBase, IDisposable
             _backfillService.Resume();
             BackfillStatusText = "Running...";
             PauseButtonContent = "Pause";
+            _taskbarProgressService.SetNormal(_lastCompletedSymbols, _lastTotalSymbols);
             _notificationService.ShowNotification("Backfill Resumed", "Backfill operation has been resumed.", NotificationType.Info);
         }
         else
@@ -360,6 +497,7 @@ public sealed class BackfillViewModel : BindableBase, IDisposable
             _backfillService.Pause();
             BackfillStatusText = "Paused";
             PauseButtonContent = "Resume";
+            _taskbarProgressService.SetPaused();
             _notificationService.ShowNotification("Backfill Paused", "Backfill operation has been paused.", NotificationType.Warning);
         }
     }
@@ -372,6 +510,7 @@ public sealed class BackfillViewModel : BindableBase, IDisposable
         BackfillStatusText = "Cancelled";
         IsBackfillActive = false;
         IsProgressVisible = false;
+        _taskbarProgressService.Clear();
         _notificationService.ShowNotification("Backfill Cancelled", "The backfill operation was cancelled.", NotificationType.Warning);
     }
 
@@ -392,6 +531,7 @@ public sealed class BackfillViewModel : BindableBase, IDisposable
             IsBackfillActive = true;
             IsProgressVisible = true;
             PauseButtonContent = "Pause";
+            _taskbarProgressService.SetIndeterminate();
 
             _notificationService.ShowNotification(
                 "Resuming Backfill",
@@ -406,12 +546,14 @@ public sealed class BackfillViewModel : BindableBase, IDisposable
             _progressPollTimer.Stop();
             BackfillStatusText = "Cancelled";
             IsBackfillActive = false;
+            _taskbarProgressService.Clear();
         }
         catch (Exception ex)
         {
             _progressPollTimer.Stop();
             BackfillStatusText = "Resume Failed";
             IsBackfillActive = false;
+            _taskbarProgressService.SetError();
 
             _notificationService.ShowNotification("Resume Failed", ex.Message, NotificationType.Error);
         }
@@ -449,6 +591,11 @@ public sealed class BackfillViewModel : BindableBase, IDisposable
         var completedCount = progress.CompletedSymbols;
         OverallProgressText = $"Overall: {completedCount} / {progress.TotalSymbols} symbols complete";
 
+        // Reflect symbol-level progress on the taskbar icon.
+        _lastCompletedSymbols = (ulong)Math.Max(0, completedCount);
+        _lastTotalSymbols = (ulong)Math.Max(1, progress.TotalSymbols);
+        _taskbarProgressService.SetNormal(_lastCompletedSymbols, _lastTotalSymbols);
+
         if (progress.SymbolProgress == null) return;
         for (var i = 0; i < progress.SymbolProgress.Length && i < SymbolProgress.Count; i++)
         {
@@ -477,18 +624,28 @@ public sealed class BackfillViewModel : BindableBase, IDisposable
 
             if (e.Success)
             {
+                _taskbarProgressService.Clear();
                 BackfillStatusText = "Completed";
                 _notificationService.ShowNotification(
                     "Backfill Complete",
                     $"Successfully downloaded data for {e.Progress?.CompletedSymbols ?? 0} symbols.",
                     NotificationType.Success);
+
+                var symbolCount = e.Progress?.CompletedSymbols ?? 0;
+                var barsWritten = e.Progress?.DownloadedBars ?? 0L;
+                var duration = e.Progress?.CompletedAt.HasValue == true
+                    ? e.Progress.CompletedAt.Value - e.Progress.StartedAt
+                    : TimeSpan.Zero;
+                _toastNotificationService.ShowBackfillComplete(symbolCount, barsWritten, duration);
             }
             else if (e.WasCancelled)
             {
+                _taskbarProgressService.Clear();
                 BackfillStatusText = "Cancelled";
             }
             else
             {
+                _taskbarProgressService.SetError();
                 BackfillStatusText = "Failed";
                 _notificationService.ShowNotification(
                     "Backfill Failed",
@@ -670,6 +827,88 @@ public sealed class BackfillViewModel : BindableBase, IDisposable
     // ── Navigation helper ───────────────────────────────────────────────────
     public void NavigateToWizard() => _navigationService.NavigateTo("AnalysisExportWizard");
     public void NavigateToBrowser() => _navigationService.NavigateTo("DataBrowser");
+
+    // ── ICommandContextProvider implementation ──────────────────────────────
+
+    public string ContextKey => "Backfill";
+
+    public IReadOnlyList<CommandEntry> GetContextualCommands()
+    {
+        var commands = new List<CommandEntry>();
+
+        // Start/resume backfill command
+        var startCommand = new RelayCommand(() =>
+        {
+            // Open the backfill start dialog via UI interaction
+            _navigationService.NavigateTo("Backfill");
+        });
+        commands.Add(new CommandEntry(
+            "Start Backfill",
+            "Begin a new backfill operation for selected symbols",
+            "Backfill",
+            startCommand,
+            "Ctrl+B"));
+
+        // Pause/Resume command
+        var pauseResumeCommand = new RelayCommand(PauseOrResumeBackfill);
+        commands.Add(new CommandEntry(
+            IsBackfillActive && !(_backfillService?.IsPaused ?? false) ? "Pause Backfill" : "Resume Backfill",
+            IsBackfillActive && !(_backfillService?.IsPaused ?? false)
+                ? "Pause the currently running backfill operation"
+                : "Resume a paused backfill operation",
+            "Backfill",
+            pauseResumeCommand));
+
+        // Cancel command
+        if (IsBackfillActive)
+        {
+            var cancelCommand = new RelayCommand(CancelBackfill);
+            commands.Add(new CommandEntry(
+                "Cancel Backfill",
+                "Stop and cancel the current backfill operation",
+                "Backfill",
+                cancelCommand));
+        }
+
+        // View status command
+        var viewStatusCommand = new RelayCommand(() =>
+        {
+            _notificationService.ShowNotification(
+                "Backfill Status",
+                BackfillStatusText,
+                NotificationType.Info);
+        });
+        commands.Add(new CommandEntry(
+            "View Backfill Status",
+            "Display current backfill job status and progress",
+            "Backfill",
+            viewStatusCommand));
+
+        // View backfill schedule command
+        var scheduleCommand = new RelayCommand(() =>
+            _navigationService.NavigateTo("Schedules"));
+        commands.Add(new CommandEntry(
+            "View Backfill Schedule",
+            "Open backfill schedule settings",
+            "Backfill",
+            scheduleCommand));
+
+        return commands.AsReadOnly();
+    }
+
+    public void OnActivated()
+    {
+        var paletteService = _commandPaletteService;
+        paletteService.RegisterContextualProvider(ContextKey, GetContextualCommands);
+        paletteService.SetActiveContext(ContextKey);
+    }
+
+    public void OnDeactivated()
+    {
+        var paletteService = _commandPaletteService;
+        paletteService.ClearActiveContext();
+        paletteService.UnregisterContextualProvider(ContextKey);
+    }
 
     public void Dispose() => Stop();
 }

@@ -78,6 +78,9 @@ public sealed partial class PostgresDirectLendingService : IDirectLendingService
     public async Task<LoanServicingStateDto?> ApplyWriteOffAsync(Guid loanId, ApplyWriteOffRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
         => DirectLendingServiceSupport.RequireSuccess(await _commandService.ApplyWriteOffAsync(loanId, request, metadata, ct).ConfigureAwait(false));
 
+    public async Task<LoanServicingStateDto?> ChargePrepaymentPenaltyAsync(Guid loanId, ChargePrepaymentPenaltyRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
+        => DirectLendingServiceSupport.RequireSuccess(await _commandService.ChargePrepaymentPenaltyAsync(loanId, request, metadata, ct).ConfigureAwait(false));
+
     public Task<IReadOnlyList<CashTransactionDto>> GetCashTransactionsAsync(Guid loanId, CancellationToken ct = default)
         => _queryService.GetCashTransactionsAsync(loanId, ct);
 
@@ -134,4 +137,8 @@ public sealed partial class PostgresDirectLendingService : IDirectLendingService
 
     public async Task<IReadOnlyList<LoanAggregateSnapshotDto>> RebuildAllAsync(CancellationToken ct = default)
         => DirectLendingServiceSupport.RequireSuccess(await _commandService.RebuildAllAsync(ct).ConfigureAwait(false));
+
+    public Task<LoanPortfolioSummaryDto> GetPortfolioSummaryAsync(CancellationToken ct = default)
+        => _queryService.GetPortfolioSummaryAsync(ct);
 }
+

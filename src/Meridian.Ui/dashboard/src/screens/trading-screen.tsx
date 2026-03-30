@@ -1,8 +1,19 @@
-import { Activity, AlertTriangle, Cable, CandlestickChart, ClipboardList, Wallet } from "lucide-react";
+import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, Layers, PauseCircle, PlayCircle, PlusCircle, RadioTower, ShieldCheck, StopCircle, Trash2, Wallet, XCircle } from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle
+} from "@/components/ui/dialog";
 import { MetricCard } from "@/components/meridian/metric-card";
+import { cancelAllOrders, cancelOrder, closePosition, closePaperSession, createPaperSession, getExecutionSessions, pauseStrategy, stopStrategy, submitOrder } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import type { TradingWorkspaceResponse } from "@/types";
+import type { OrderSubmitRequest, PaperSessionSummary, TradingActionResult, TradingWorkspaceResponse } from "@/types";
 
 interface TradingScreenProps {
   data: TradingWorkspaceResponse | null;
@@ -20,7 +31,187 @@ const wiringTone: Record<TradingWorkspaceResponse["brokerage"]["connection"], st
   Disconnected: "text-danger"
 };
 
+const focusCopy: Record<string, { title: string; description: string }> = {
+  orders: {
+    title: "Orders blotter",
+    description: "Working and partially filled orders remain visible in real time so you can cancel, replace, or monitor fill progress without leaving the cockpit."
+  },
+  positions: {
+    title: "Position book",
+    description: "Open positions with mark prices, exposure, and unrealized P&L are refreshed from the live execution layer each time the workspace loads."
+  },
+  risk: {
+    title: "Risk guardrails",
+    description: "Paper thresholds, drawdown limits, and buying-power constraints are evaluated on every order submission and displayed here for operator review."
+  }
+};
+
+type OrderPhase = "idle" | "submitting" | "submitted" | "error";
+
+interface OrderState {
+  phase: OrderPhase;
+  orderId: string | null;
+  error: string | null;
+}
+
+// --- Shared confirmation state for all write actions ---
+
+type ConfirmActionType =
+  | { kind: "cancel-order"; orderId: string }
+  | { kind: "cancel-all" }
+  | { kind: "close-position"; symbol: string }
+  | { kind: "pause-strategy"; strategyId: string }
+  | { kind: "stop-strategy"; strategyId: string };
+
+interface ConfirmState {
+  action: ConfirmActionType | null;
+  busy: boolean;
+  result: TradingActionResult | null;
+  error: string | null;
+}
+
 export function TradingScreen({ data }: TradingScreenProps) {
+  const { pathname } = useLocation();
+  const workstream = useMemo(() => {
+    if (pathname.includes("/positions")) return "positions";
+    if (pathname.includes("/risk")) return "risk";
+    return "orders";
+  }, [pathname]);
+
+  const [showOrderForm, setShowOrderForm] = useState(false);
+  const [orderForm, setOrderForm] = useState<OrderSubmitRequest>({
+    symbol: "",
+    side: "Buy",
+    type: "Market",
+    quantity: 0,
+    limitPrice: null
+  });
+  const [orderState, setOrderState] = useState<OrderState>({ phase: "idle", orderId: null, error: null });
+
+  // --- Shared confirmation dialog state ---
+  const [confirm, setConfirm] = useState<ConfirmState>({
+    action: null,
+    busy: false,
+    result: null,
+    error: null
+  });
+
+  function openConfirm(action: ConfirmActionType) {
+    setConfirm({ action, busy: false, result: null, error: null });
+  }
+
+  function closeConfirm() {
+    if (confirm.busy) return;
+    setConfirm({ action: null, busy: false, result: null, error: null });
+  }
+
+  async function executeConfirmedAction() {
+    const { action } = confirm;
+    if (!action) return;
+    setConfirm((prev) => ({ ...prev, busy: true, result: null, error: null }));
+
+    try {
+      let result: TradingActionResult;
+      if (action.kind === "cancel-order") {
+        result = await cancelOrder(action.orderId);
+      } else if (action.kind === "cancel-all") {
+        result = await cancelAllOrders();
+      } else if (action.kind === "close-position") {
+        result = await closePosition(action.symbol);
+      } else if (action.kind === "pause-strategy") {
+        const raw = await pauseStrategy(action.strategyId);
+        result = {
+          actionId: `act-${Date.now()}`,
+          status: raw.success ? "Completed" : "Rejected",
+          message: raw.reason ?? (raw.success ? "Strategy paused." : "Pause rejected."),
+          occurredAt: new Date().toISOString()
+        };
+      } else {
+        const raw = await stopStrategy(action.strategyId);
+        result = {
+          actionId: `act-${Date.now()}`,
+          status: raw.success ? "Completed" : "Rejected",
+          message: raw.reason ?? (raw.success ? "Strategy stopped." : "Stop rejected."),
+          occurredAt: new Date().toISOString()
+        };
+      }
+      setConfirm((prev) => ({ ...prev, busy: false, result }));
+    } catch (err) {
+      setConfirm((prev) => ({
+        ...prev,
+        busy: false,
+        error: err instanceof Error ? err.message : "Action failed."
+      }));
+    }
+  }
+
+  // --- Paper session management ---
+  const [sessions, setSessions] = useState<PaperSessionSummary[]>([]);
+  const [sessionLoading, setSessionLoading] = useState(false);
+  const [sessionError, setSessionError] = useState<string | null>(null);
+  const [showSessionForm, setShowSessionForm] = useState(false);
+  const [newSessionStrategyId, setNewSessionStrategyId] = useState("");
+  const [newSessionCash, setNewSessionCash] = useState("100000");
+
+  // --- Strategy lifecycle ---
+  const [strategyId, setStrategyId] = useState("");
+
+  useEffect(() => {
+    getExecutionSessions()
+      .then(setSessions)
+      .catch(() => { /* sessions unavailable — silently skip */ });
+  }, []);
+
+  async function handleSubmitOrder(e: React.FormEvent) {
+    e.preventDefault();
+    setOrderState({ phase: "submitting", orderId: null, error: null });
+    try {
+      const result = await submitOrder(orderForm);
+      if (result.success) {
+        setOrderState({ phase: "submitted", orderId: result.orderId, error: null });
+        setShowOrderForm(false);
+        setOrderForm({ symbol: "", side: "Buy", type: "Market", quantity: 0, limitPrice: null });
+      } else {
+        setOrderState({ phase: "error", orderId: null, error: result.reason ?? "Order failed." });
+      }
+    } catch (err) {
+      setOrderState({
+        phase: "error",
+        orderId: null,
+        error: err instanceof Error ? err.message : "Order submission failed."
+      });
+    }
+  }
+
+  async function handleCreateSession(e: React.FormEvent) {
+    e.preventDefault();
+    setSessionLoading(true);
+    setSessionError(null);
+    try {
+      const sid = newSessionStrategyId.trim() || `strat-${Date.now()}`;
+      const cash = parseFloat(newSessionCash) || 100_000;
+      const summary = await createPaperSession(sid, null, cash);
+      setSessions((prev) => [summary, ...prev]);
+      setShowSessionForm(false);
+      setNewSessionStrategyId("");
+      setNewSessionCash("100000");
+    } catch (err) {
+      setSessionError(err instanceof Error ? err.message : "Failed to create session.");
+    } finally {
+      setSessionLoading(false);
+    }
+  }
+
+  async function handleCloseSession(sessionId: string) {
+    setSessionError(null);
+    try {
+      await closePaperSession(sessionId);
+      setSessions((prev) => prev.map((s) => s.sessionId === sessionId ? { ...s, status: "Closed" } : s));
+    } catch (err) {
+      setSessionError(err instanceof Error ? err.message : "Failed to close session.");
+    }
+  }
+
   if (!data) {
     return (
       <Card>
@@ -38,6 +229,54 @@ export function TradingScreen({ data }: TradingScreenProps) {
         {data.metrics.map((metric) => (
           <MetricCard key={metric.id} {...metric} />
         ))}
+      </section>
+
+      <section className="grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
+        <Card>
+          <CardHeader>
+            <div className="eyebrow-label">Trading Lane</div>
+            <CardTitle className="flex items-center gap-2">
+              <RadioTower className="h-5 w-5 text-primary" />
+              {focusCopy[workstream].title}
+            </CardTitle>
+            <CardDescription>{focusCopy[workstream].description}</CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-4 md:grid-cols-3">
+            <TradingHighlight
+              icon={ClipboardList}
+              title="Blotter management"
+              description="Working and partial orders stay visible so you can act on fill progress without context-switching."
+            />
+            <TradingHighlight
+              icon={Wallet}
+              title="Position exposure"
+              description="Live exposure, marks, and unrealized P&L for every open position in the active paper session."
+            />
+            <TradingHighlight
+              icon={ShieldCheck}
+              title="Guardrail state"
+              description="Paper thresholds and drawdown limits are evaluated on every order and surfaced here for review."
+            />
+          </CardContent>
+        </Card>
+
+        <Card className="bg-panel-strong text-slate-50">
+          <CardHeader>
+            <div className="eyebrow-label">Route Context</div>
+            <CardTitle>Current workstream</CardTitle>
+            <CardDescription className="text-slate-300">
+              Deep links under{" "}
+              <code className="rounded bg-white/10 px-1 py-0.5 text-xs text-foreground">{pathname}</code>{" "}
+              reuse the same prefetched cockpit payload.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm text-slate-200">
+            <ContextRow label="Open positions" value={String(data.positions.length)} />
+            <ContextRow label="Working orders" value={String(data.openOrders.length)} />
+            <ContextRow label="Completed fills" value={String(data.fills.length)} />
+            <ContextRow label="Risk state" value={data.risk.state} />
+          </CardContent>
+        </Card>
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
@@ -103,43 +342,211 @@ export function TradingScreen({ data }: TradingScreenProps) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <TradingTable
-              columns={["Symbol", "Side", "Qty", "Avg", "Mark", "Day P&L", "Unrealized", "Exposure"]}
-              rows={data.positions.map((position) => [
-                position.symbol,
-                position.side,
-                position.quantity,
-                position.averagePrice,
-                position.markPrice,
-                position.dayPnl,
-                position.unrealizedPnl,
-                position.exposure
-              ])}
-            />
+            <div className="overflow-x-auto rounded-xl border border-border/70">
+              <table className="min-w-full divide-y divide-border/60 text-left text-xs sm:text-sm">
+                <thead className="bg-secondary/30">
+                  <tr>
+                    {["Symbol", "Side", "Qty", "Avg", "Mark", "Day P&L", "Unrealized", "Exposure", ""].map((col) => (
+                      <th key={col} className="px-3 py-2 font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                        {col}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/50">
+                  {data.positions.map((position, i) => (
+                    <tr key={`pos-${i}`} className="bg-background/20">
+                      <td className="px-3 py-2 font-mono text-foreground">{position.symbol}</td>
+                      <td className="px-3 py-2 font-mono text-foreground">{position.side}</td>
+                      <td className="px-3 py-2 font-mono text-foreground">{position.quantity}</td>
+                      <td className="px-3 py-2 font-mono text-foreground">{position.averagePrice}</td>
+                      <td className="px-3 py-2 font-mono text-foreground">{position.markPrice}</td>
+                      <td className="px-3 py-2 font-mono text-foreground">{position.dayPnl}</td>
+                      <td className="px-3 py-2 font-mono text-foreground">{position.unrealizedPnl}</td>
+                      <td className="px-3 py-2 font-mono text-foreground">{position.exposure}</td>
+                      <td className="px-3 py-2">
+                        <button
+                          type="button"
+                          onClick={() => openConfirm({ kind: "close-position", symbol: position.symbol })}
+                          className="rounded px-2 py-1 text-xs text-muted-foreground hover:text-danger hover:bg-danger/10 transition-colors"
+                          title="Close position"
+                        >
+                          Close
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <ClipboardList className="h-4 w-4 text-primary" />
-              Open orders
-            </CardTitle>
+            <div className="flex items-center justify-between gap-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <ClipboardList className="h-4 w-4 text-primary" />
+                Open orders
+              </CardTitle>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => openConfirm({ kind: "cancel-all" })}
+                  disabled={data.openOrders.length === 0}
+                  title="Cancel all open orders"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Cancel all
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => setShowOrderForm((prev) => !prev)}>
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  New order
+                </Button>
+              </div>
+            </div>
           </CardHeader>
+          {showOrderForm && (
+            <CardContent className="border-b border-border/60 pb-6">
+              <form onSubmit={handleSubmitOrder} className="space-y-4">
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Symbol</label>
+                    <input
+                      type="text"
+                      placeholder="AAPL"
+                      value={orderForm.symbol}
+                      onChange={(e) => setOrderForm((prev) => ({ ...prev, symbol: e.target.value }))}
+                      onBlur={(e) => setOrderForm((prev) => ({ ...prev, symbol: e.target.value.toUpperCase() }))}
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Side</label>
+                    <select
+                      value={orderForm.side}
+                      onChange={(e) => setOrderForm((prev) => ({ ...prev, side: e.target.value as "Buy" | "Sell" }))}
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    >
+                      <option value="Buy">Buy</option>
+                      <option value="Sell">Sell</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Type</label>
+                    <select
+                      value={orderForm.type}
+                      onChange={(e) => setOrderForm((prev) => ({ ...prev, type: e.target.value as "Market" | "Limit" | "Stop" }))}
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    >
+                      <option value="Market">Market</option>
+                      <option value="Limit">Limit</option>
+                      <option value="Stop">Stop</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Quantity</label>
+                    <input
+                      type="number"
+                      min={1}
+                      step={1}
+                      value={orderForm.quantity || ""}
+                      onChange={(e) => setOrderForm((prev) => ({ ...prev, quantity: Number(e.target.value) }))}
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                      required
+                    />
+                  </div>
+                  {(orderForm.type === "Limit" || orderForm.type === "Stop") && (
+                    <div className="space-y-1">
+                      <label className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                        {orderForm.type} Price
+                      </label>
+                      <input
+                        type="number"
+                        min={0}
+                        step={0.01}
+                        value={orderForm.limitPrice ?? ""}
+                        onChange={(e) => setOrderForm((prev) => ({ ...prev, limitPrice: e.target.value ? Number(e.target.value) : null }))}
+                        className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                        required
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {orderState.error && (
+                  <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-center gap-2">
+                    <XCircle className="h-4 w-4 shrink-0" />
+                    {orderState.error}
+                  </div>
+                )}
+
+                {orderState.phase === "submitted" && (
+                  <div className="rounded-lg border border-success/30 bg-success/10 px-4 py-3 text-sm text-success flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 shrink-0" />
+                    Order submitted{orderState.orderId ? ` — ${orderState.orderId}` : ""}.
+                  </div>
+                )}
+
+                <div className="flex gap-3">
+                  <Button type="submit" size="sm" disabled={orderState.phase === "submitting"}>
+                    {orderState.phase === "submitting" ? "Submitting…" : "Submit order"}
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setShowOrderForm(false);
+                      setOrderState({ phase: "idle", orderId: null, error: null });
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          )}
           <CardContent>
-            <TradingTable
-              columns={["Order", "Symbol", "Side", "Type", "Qty", "Limit", "Status", "Submitted"]}
-              rows={data.openOrders.map((order) => [
-                order.orderId,
-                order.symbol,
-                order.side,
-                order.type,
-                order.quantity,
-                order.limitPrice,
-                order.status,
-                order.submittedAt
-              ])}
-            />
+            <div className="overflow-x-auto rounded-xl border border-border/70">
+              <table className="min-w-full divide-y divide-border/60 text-left text-xs sm:text-sm">
+                <thead className="bg-secondary/30">
+                  <tr>
+                    {["Order", "Symbol", "Side", "Type", "Qty", "Limit", "Status", "Submitted", ""].map((col) => (
+                      <th key={col} className="px-3 py-2 font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                        {col}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/50">
+                  {data.openOrders.map((order, i) => (
+                    <tr key={`order-${i}`} className="bg-background/20">
+                      <td className="px-3 py-2 font-mono text-foreground">{order.orderId}</td>
+                      <td className="px-3 py-2 font-mono text-foreground">{order.symbol}</td>
+                      <td className="px-3 py-2 font-mono text-foreground">{order.side}</td>
+                      <td className="px-3 py-2 font-mono text-foreground">{order.type}</td>
+                      <td className="px-3 py-2 font-mono text-foreground">{order.quantity}</td>
+                      <td className="px-3 py-2 font-mono text-foreground">{order.limitPrice}</td>
+                      <td className="px-3 py-2 font-mono text-foreground">{order.status}</td>
+                      <td className="px-3 py-2 font-mono text-foreground">{order.submittedAt}</td>
+                      <td className="px-3 py-2">
+                        <button
+                          type="button"
+                          onClick={() => openConfirm({ kind: "cancel-order", orderId: order.orderId })}
+                          className="rounded px-2 py-1 text-xs text-muted-foreground hover:text-danger hover:bg-danger/10 transition-colors"
+                          title="Cancel order"
+                        >
+                          Cancel
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </CardContent>
         </Card>
       </section>
@@ -167,7 +574,272 @@ export function TradingScreen({ data }: TradingScreenProps) {
           />
         </CardContent>
       </Card>
+
+      <section className="grid gap-4 xl:grid-cols-2">
+        {/* Paper session management */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Layers className="h-4 w-4 text-primary" />
+                Paper sessions
+              </CardTitle>
+              <Button size="sm" variant="outline" onClick={() => setShowSessionForm((prev) => !prev)}>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                New session
+              </Button>
+            </div>
+            <CardDescription>Manage paper trading sessions and initial capital allocation.</CardDescription>
+          </CardHeader>
+
+          {sessionError && (
+            <CardContent className="pt-0 pb-2">
+              <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-center gap-2">
+                <XCircle className="h-4 w-4 shrink-0" />
+                {sessionError}
+              </div>
+            </CardContent>
+          )}
+
+          {showSessionForm && (
+            <CardContent className="border-b border-border/60 pb-6">
+              <form onSubmit={handleCreateSession} className="space-y-4">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                      Strategy ID
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="my-strategy-01"
+                      value={newSessionStrategyId}
+                      onChange={(e) => setNewSessionStrategyId(e.target.value)}
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                      Initial cash ($)
+                    </label>
+                    <input
+                      type="number"
+                      min={1000}
+                      step={1000}
+                      value={newSessionCash}
+                      onChange={(e) => setNewSessionCash(e.target.value)}
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <Button type="submit" size="sm" disabled={sessionLoading}>
+                    {sessionLoading ? "Creating…" : "Create session"}
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setShowSessionForm(false)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          )}
+
+          <CardContent>
+            {sessions.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4 text-center">
+                No paper sessions active. Create one above to start tracking execution.
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {sessions.map((session) => (
+                  <div
+                    key={session.sessionId}
+                    className="flex items-center justify-between rounded-lg border border-border/70 bg-secondary/20 px-4 py-3"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="font-mono text-sm text-foreground truncate">{session.sessionId}</div>
+                      <div className="text-xs text-muted-foreground mt-0.5">
+                        {session.strategyId} · ${session.initialCash.toLocaleString()} · {session.status}
+                      </div>
+                    </div>
+                    {session.status !== "Closed" && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="ml-4 shrink-0"
+                        onClick={() => handleCloseSession(session.sessionId)}
+                      >
+                        Close
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Strategy lifecycle controls */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <PlayCircle className="h-4 w-4 text-primary" />
+              Strategy lifecycle
+            </CardTitle>
+            <CardDescription>
+              Pause or stop a running strategy by its registered ID. Changes take effect immediately.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-1">
+              <label className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                Strategy ID
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. mean-reversion-fx-01"
+                value={strategyId}
+                onChange={(e) => setStrategyId(e.target.value)}
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+              />
+            </div>
+            <div className="flex gap-3">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => openConfirm({ kind: "pause-strategy", strategyId: strategyId.trim() })}
+                disabled={!strategyId.trim()}
+              >
+                <PauseCircle className="mr-2 h-4 w-4" />
+                Pause
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => openConfirm({ kind: "stop-strategy", strategyId: strategyId.trim() })}
+                disabled={!strategyId.trim()}
+              >
+                <StopCircle className="mr-2 h-4 w-4" />
+                Stop
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </section>
+
+      <ConfirmActionDialog
+        confirm={confirm}
+        onClose={closeConfirm}
+        onConfirm={executeConfirmedAction}
+      />
     </div>
+  );
+}
+
+function actionLabel(action: ConfirmActionType): string {
+  switch (action.kind) {
+    case "cancel-order": return `Cancel order ${action.orderId}`;
+    case "cancel-all":   return "Cancel all open orders";
+    case "close-position": return `Close position — ${action.symbol}`;
+    case "pause-strategy": return `Pause strategy — ${action.strategyId}`;
+    case "stop-strategy":  return `Stop strategy — ${action.strategyId}`;
+  }
+}
+
+function actionCopy(action: ConfirmActionType): string {
+  switch (action.kind) {
+    case "cancel-order":
+      return "This will request cancellation of the selected order. Partial fills that already occurred are not reversed.";
+    case "cancel-all":
+      return "This will request cancellation of every open order in the current session. Partial fills that already occurred are not reversed.";
+    case "close-position":
+      return "A market order will be submitted to flatten the full position at the next available price. You will remain responsible for the resulting fill.";
+    case "pause-strategy":
+      return "The strategy will stop processing new signals until manually resumed. Open positions and orders remain unchanged.";
+    case "stop-strategy":
+      return "The strategy will be stopped and its session will be closed. Open positions remain until manually flattened.";
+  }
+}
+
+function ConfirmActionDialog({
+  confirm,
+  onClose,
+  onConfirm
+}: {
+  confirm: ConfirmState;
+  onClose: () => void;
+  onConfirm: () => Promise<void>;
+}) {
+  const { action, busy, result, error } = confirm;
+
+  const title = action ? actionLabel(action) : "";
+  const copy = action ? actionCopy(action) : "";
+
+  const isCompleted = result !== null;
+  const isSuccess = result?.status === "Accepted" || result?.status === "Completed";
+
+  return (
+    <Dialog open={action !== null} onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{copy}</DialogDescription>
+        </DialogHeader>
+
+        {error && (
+          <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-center gap-2">
+            <XCircle className="h-4 w-4 shrink-0" />
+            {error}
+          </div>
+        )}
+
+        {result && (
+          <div
+            className={cn(
+              "rounded-lg border px-4 py-3 text-sm flex flex-col gap-1",
+              isSuccess
+                ? "border-success/30 bg-success/10 text-success"
+                : "border-warning/30 bg-warning/10 text-warning"
+            )}
+          >
+            <div className="flex items-center gap-2">
+              {isSuccess ? (
+                <CheckCircle className="h-4 w-4 shrink-0" />
+              ) : (
+                <AlertTriangle className="h-4 w-4 shrink-0" />
+              )}
+              <span className="font-semibold">{result.status}</span>
+            </div>
+            <p>{result.message}</p>
+            <p className="mt-1 font-mono text-xs opacity-70">Action ID: {result.actionId}</p>
+          </div>
+        )}
+
+        {!isCompleted && (
+          <div className="flex justify-end gap-3 pt-2">
+            <Button variant="outline" onClick={onClose} disabled={busy}>
+              Cancel
+            </Button>
+            <Button onClick={onConfirm} disabled={busy}>
+              {busy ? "Processing…" : "Confirm"}
+            </Button>
+          </div>
+        )}
+
+        {isCompleted && (
+          <div className="flex justify-end pt-2">
+            <Button variant="outline" onClick={onClose}>
+              Close
+            </Button>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -214,6 +886,27 @@ function WiringRow({ label, value, tone }: { label: string; value: string; tone?
     <div className="flex items-center justify-between gap-4 rounded-lg bg-white/10 px-3 py-2">
       <span className="text-slate-300">{label}</span>
       <span className={cn("font-mono text-slate-100", tone)}>{value}</span>
+    </div>
+  );
+}
+
+function TradingHighlight({ icon: Icon, title, description }: { icon: React.ElementType; title: string; description: string }) {
+  return (
+    <div className="rounded-xl border border-border/70 bg-secondary/30 p-4">
+      <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+        <Icon className="h-4 w-4 text-primary shrink-0" />
+        {title}
+      </div>
+      <p className="mt-2 text-xs leading-5 text-muted-foreground">{description}</p>
+    </div>
+  );
+}
+
+function ContextRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between gap-4 rounded-lg bg-white/10 px-3 py-2">
+      <span className="text-slate-300">{label}</span>
+      <span className="font-mono text-slate-100">{value}</span>
     </div>
   );
 }

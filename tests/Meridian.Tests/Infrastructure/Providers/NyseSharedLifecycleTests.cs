@@ -1,3 +1,4 @@
+using System.Net.Http;
 using System.Reflection;
 using FluentAssertions;
 using Meridian.Contracts.Domain.Enums;
@@ -8,6 +9,7 @@ using Meridian.Domain.Models;
 using Meridian.Infrastructure.Adapters.NYSE;
 using Meridian.Infrastructure.DataSources;
 using Meridian.Tests.TestHelpers;
+using NSubstitute;
 using Xunit;
 
 namespace Meridian.Tests.Infrastructure.Providers;
@@ -30,6 +32,7 @@ public sealed class NyseSharedLifecycleTests : IAsyncDisposable
             _tradeCollector,
             _depthCollector,
             _quoteCollector,
+            CreateMockHttpClientFactory(),
             new NYSEOptions());
     }
 
@@ -248,8 +251,70 @@ public sealed class NyseSharedLifecycleTests : IAsyncDisposable
     }
 
     // -------------------------------------------------------------------------
+    // Test 11: DuplicateSubscribe_SameSymbolType_ReturnsSameId
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void DuplicateSubscribe_SameSymbolType_ReturnsSameId()
+    {
+        var firstId = _client.SubscribeTrades(new SymbolConfig("AAPL"));
+        var source = GetSource();
+        var countAfterFirst = source.ActiveSubscriptions.Count;
+
+        var secondId = _client.SubscribeTrades(new SymbolConfig("AAPL"));
+
+        secondId.Should().Be(firstId,
+            because: "subscribing the same symbol and type again must return the existing subscription ID");
+        source.ActiveSubscriptions.Should().HaveCount(countAfterFirst,
+            because: "a duplicate subscribe must not add new subscription entries");
+    }
+
+    // -------------------------------------------------------------------------
+    // Test 12: UnsubscribeAll_ClearsAllSubscriptions
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void UnsubscribeAll_ClearsAllSubscriptions()
+    {
+        _client.SubscribeTrades(new SymbolConfig("AAPL"));
+        _client.SubscribeTrades(new SymbolConfig("MSFT"));
+        _client.SubscribeTrades(new SymbolConfig("GOOG"));
+
+        var source = GetSource();
+        source.UnsubscribeAll();
+
+        source.ActiveSubscriptions.Should().BeEmpty(
+            because: "UnsubscribeAll must remove every registered subscription");
+        source.SubscribedSymbols.Should().BeEmpty(
+            because: "UnsubscribeAll must clear the symbol tracking set");
+    }
+
+    // -------------------------------------------------------------------------
+    // Test 13: UnsubscribeUnknownId_IsNoOp
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void UnsubscribeUnknownId_IsNoOp()
+    {
+        var source = GetSource();
+
+        var act = () => _client.UnsubscribeTrades(int.MaxValue);
+
+        act.Should().NotThrow(
+            because: "unsubscribing an unknown ID must be silently ignored");
+        source.ActiveSubscriptions.Should().BeEmpty();
+    }
+
+    // -------------------------------------------------------------------------
     // Private helpers (mirroring NyseMarketDataClientTests)
     // -------------------------------------------------------------------------
+
+    private static IHttpClientFactory CreateMockHttpClientFactory()
+    {
+        var factory = Substitute.For<IHttpClientFactory>();
+        factory.CreateClient(Arg.Any<string>()).Returns(_ => new HttpClient());
+        return factory;
+    }
 
     private NYSEDataSource GetSource()
     {

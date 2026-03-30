@@ -10,11 +10,11 @@ jobs:
   drift-report:
     name: Fixture Drift Report
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 30
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: Generate canonicalization drift report
       run: |

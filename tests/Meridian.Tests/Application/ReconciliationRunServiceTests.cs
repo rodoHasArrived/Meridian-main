@@ -1,5 +1,7 @@
 using FluentAssertions;
+using Meridian.Application.Banking;
 using Meridian.Backtesting.Sdk;
+using Meridian.Contracts.Banking;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
@@ -109,6 +111,15 @@ public sealed class ReconciliationRunServiceTests
         IReconciliationRunRepository repository,
         ISecurityReferenceLookup? securityReferenceLookup)
     {
+        return CreateService(store, repository, securityReferenceLookup, bankTransactionSource: null);
+    }
+
+    private static IReconciliationRunService CreateService(
+        StrategyRunStore store,
+        IReconciliationRunRepository repository,
+        ISecurityReferenceLookup? securityReferenceLookup,
+        IBankTransactionSource? bankTransactionSource)
+    {
         IStrategyRepository strategyRepository = store;
         var portfolioReadService = securityReferenceLookup is null
             ? new PortfolioReadService()
@@ -117,7 +128,116 @@ public sealed class ReconciliationRunServiceTests
             ? new LedgerReadService()
             : new LedgerReadService(securityReferenceLookup);
         var runReadService = new StrategyRunReadService(strategyRepository, portfolioReadService, ledgerReadService);
-        return new ReconciliationRunService(runReadService, new ReconciliationProjectionService(), repository);
+        return new ReconciliationRunService(runReadService, new ReconciliationProjectionService(), repository, bankTransactionSource);
+    }
+
+    // -----------------------------------------------------------------------
+    // Banking integration tests
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task RunAsync_WithMatchingBankNetAmount_ShouldProduceBankMatch()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun("run-bank-match"));
+
+        var entityId = Guid.NewGuid();
+        // Ledger cash = 750 (initial 1000 - 400 AAPL + 150 TSLA short proceeds)
+        // Bank net should match ledger cash: seed a single tx of 750
+        var bankingService = new InMemoryBankingService();
+        await bankingService.SeedBankTransactionsAsync(new BankTransactionSeedRequest(
+            EntityIds: [entityId],
+            CountPerEntity: 1,
+            FromDate: new DateOnly(2026, 3, 20),
+            ToDate: new DateOnly(2026, 3, 21)));
+
+        // Adjust so net == 750 by seeding directly via approval
+        var pending = await bankingService.InitiatePaymentAsync(entityId,
+            new InitiatePaymentRequest(750m, new DateOnly(2026, 3, 21), "RECON-TEST", null));
+        await bankingService.ApprovePaymentAsync(pending.PendingPaymentId,
+            new ApprovePaymentRequest("Test approval", "test"));
+
+        var service = CreateService(store, new InMemoryReconciliationRunRepository(),
+            securityReferenceLookup: null, bankTransactionSource: bankingService);
+
+        var detail = await service.RunAsync(
+            new ReconciliationRunRequest("run-bank-match", BankEntityId: entityId));
+
+        detail.Should().NotBeNull();
+        detail!.Summary.BankTransactionCount.Should().BeGreaterThan(0);
+        detail.BankTransactions.Should().NotBeNullOrEmpty();
+    }
+
+    [Fact]
+    public async Task RunAsync_WithBankEntityId_ShouldPopulateBankTransactionCount()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun("run-bank-count"));
+
+        var entityId = Guid.NewGuid();
+        var bankingService = new InMemoryBankingService();
+        await bankingService.SeedBankTransactionsAsync(new BankTransactionSeedRequest(
+            EntityIds: [entityId],
+            CountPerEntity: 3,
+            FromDate: new DateOnly(2026, 3, 20),
+            ToDate: new DateOnly(2026, 3, 21)));
+
+        var service = CreateService(store, new InMemoryReconciliationRunRepository(),
+            securityReferenceLookup: null, bankTransactionSource: bankingService);
+
+        var detail = await service.RunAsync(
+            new ReconciliationRunRequest("run-bank-count", BankEntityId: entityId));
+
+        detail.Should().NotBeNull();
+        detail!.Summary.BankTransactionCount.Should().Be(3);
+        detail.BankTransactions.Should().HaveCount(3);
+    }
+
+    [Fact]
+    public async Task RunAsync_WithNoBankEntityId_ShouldSkipBankingChecks()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun("run-no-bank"));
+
+        var bankingService = new InMemoryBankingService();
+        var service = CreateService(store, new InMemoryReconciliationRunRepository(),
+            securityReferenceLookup: null, bankTransactionSource: bankingService);
+
+        // No BankEntityId — banking checks should be skipped
+        var detail = await service.RunAsync(new ReconciliationRunRequest("run-no-bank"));
+
+        detail.Should().NotBeNull();
+        detail!.Summary.BankTransactionCount.Should().Be(0);
+        detail.BankTransactions.Should().BeNull();
+        detail.Matches.Should().Contain(m => m.CheckId == "cash-balance");
+    }
+
+    [Fact]
+    public async Task RunAsync_WhenBankHasTransactionsButNoLedger_ShouldProduceMissingLedgerBreak()
+    {
+        // Build a run that has a portfolio but NO ledger
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(TestRunFactory.BuildPortfolioOnlyRun("run-no-ledger"));
+
+        var entityId = Guid.NewGuid();
+        var bankingService = new InMemoryBankingService();
+        await bankingService.SeedBankTransactionsAsync(new BankTransactionSeedRequest(
+            EntityIds: [entityId],
+            CountPerEntity: 2,
+            FromDate: new DateOnly(2026, 3, 20),
+            ToDate: new DateOnly(2026, 3, 21)));
+
+        var service = CreateService(store, new InMemoryReconciliationRunRepository(),
+            securityReferenceLookup: null, bankTransactionSource: bankingService);
+
+        var detail = await service.RunAsync(
+            new ReconciliationRunRequest("run-no-ledger", BankEntityId: entityId));
+
+        detail.Should().NotBeNull();
+        detail!.Summary.BankBreakCount.Should().BeGreaterThan(0);
+        detail.Breaks.Should().Contain(b =>
+            b.CheckId == "bank-ledger-coverage-missing" &&
+            b.Category == ReconciliationBreakCategory.MissingLedgerCoverage);
     }
 
     private static class TestRunFactory
@@ -210,6 +330,99 @@ public sealed class ReconciliationRunServiceTests
                 PortfolioId = "recon-portfolio",
                 LedgerReference = "recon-ledger",
                 AuditReference = $"audit-{runId}"
+            };
+        }
+
+        /// <summary>
+        /// A run that has a portfolio snapshot but no ledger — useful for testing
+        /// reconciliation paths where only one side of the comparison exists.
+        /// </summary>
+        public static StrategyRunEntry BuildPortfolioOnlyRun(string runId)
+        {
+            var startedAt = new DateTimeOffset(2026, 3, 21, 16, 0, 0, TimeSpan.Zero);
+            var completedAt = startedAt.AddMinutes(30);
+            var positions = new Dictionary<string, Position>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["AAPL"] = new("AAPL", 10, 40m, 0m, 0m)
+            };
+            var accountSnapshot = new FinancialAccountSnapshot(
+                AccountId: BacktestDefaults.DefaultBrokerageAccountId,
+                DisplayName: "Primary Brokerage",
+                Kind: FinancialAccountKind.Brokerage,
+                Institution: "Simulated Broker",
+                Cash: 600m,
+                MarginBalance: 0m,
+                LongMarketValue: 400m,
+                ShortMarketValue: 0m,
+                Equity: 1000m,
+                Positions: positions,
+                Rules: new FinancialAccountRules());
+            var snapshot = new PortfolioSnapshot(
+                Timestamp: completedAt,
+                Date: DateOnly.FromDateTime(completedAt.UtcDateTime),
+                Cash: 600m,
+                MarginBalance: 0m,
+                LongMarketValue: 400m,
+                ShortMarketValue: 0m,
+                TotalEquity: 1000m,
+                DailyReturn: 0m,
+                Positions: positions,
+                Accounts: new Dictionary<string, FinancialAccountSnapshot>(StringComparer.OrdinalIgnoreCase)
+                {
+                    [accountSnapshot.AccountId] = accountSnapshot
+                },
+                DayCashFlows: []);
+
+            var request = new BacktestRequest(
+                From: new DateOnly(2026, 3, 20),
+                To: new DateOnly(2026, 3, 21),
+                Symbols: ["AAPL"],
+                InitialCash: 1_000m,
+                DataRoot: "./data");
+            var metrics = new BacktestMetrics(
+                InitialCapital: 1_000m,
+                FinalEquity: 1_000m,
+                GrossPnl: 0m,
+                NetPnl: 0m,
+                TotalReturn: 0m,
+                AnnualizedReturn: 0m,
+                SharpeRatio: 0d,
+                SortinoRatio: 0d,
+                CalmarRatio: 0d,
+                MaxDrawdown: 0m,
+                MaxDrawdownPercent: 0m,
+                MaxDrawdownRecoveryDays: 0,
+                ProfitFactor: 1d,
+                WinRate: 1d,
+                TotalTrades: 0,
+                WinningTrades: 0,
+                LosingTrades: 0,
+                TotalCommissions: 0m,
+                TotalMarginInterest: 0m,
+                TotalShortRebates: 0m,
+                Xirr: 0d,
+                SymbolAttribution: new Dictionary<string, SymbolAttribution>());
+            var result = new BacktestResult(
+                Request: request,
+                Universe: new HashSet<string>(["AAPL"], StringComparer.OrdinalIgnoreCase),
+                Snapshots: [snapshot],
+                CashFlows: [],
+                Fills: [],
+                Metrics: metrics,
+                Ledger: null!,   // <-- no ledger
+                ElapsedTime: TimeSpan.FromMinutes(30),
+                TotalEventsProcessed: 50);
+
+            return StrategyRunEntry.Start("portfolio-only-strategy", "Portfolio-Only Strategy", RunType.Backtest) with
+            {
+                RunId = runId,
+                StartedAt = startedAt,
+                EndedAt = completedAt,
+                Metrics = result,
+                DatasetReference = "dataset/us/equities",
+                FeedReference = "synthetic:equities",
+                PortfolioId = "portfolio-only-portfolio",
+                LedgerReference = null   // <-- no ledger reference
             };
         }
 

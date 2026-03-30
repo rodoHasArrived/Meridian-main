@@ -9,6 +9,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using Meridian.Ui.Services.Services;
+using Meridian.Wpf.Models;
 using WpfServices = Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.Views;
@@ -50,6 +51,7 @@ public partial class SettingsPage : Page
         RefreshProfiles();
         LoadRecentActivity();
         UpdateSystemStatus();
+        LoadGlobalHotkeys();
     }
 
     // ── Quick Actions ──────────────────────────────────────────────
@@ -66,8 +68,7 @@ public partial class SettingsPage : Page
 
     private void ManageCredentials_Click(object sender, RoutedEventArgs e)
     {
-        // Scroll to the Credential Vault section
-        CredentialVaultList.BringIntoView();
+        WpfServices.NavigationService.Instance.NavigateTo("CredentialManagement");
     }
 
     private void RunSetupWizard_Click(object sender, RoutedEventArgs e)
@@ -433,38 +434,18 @@ public partial class SettingsPage : Page
     {
         MessageBox.Show("You are running the latest version (1.6.1).", "Check for Updates", MessageBoxButton.OK, MessageBoxImage.Information);
     }
-}
 
-/// <summary>
-/// Credential display information for the settings page.
-/// </summary>
-public sealed class CredentialDisplayInfo
-{
-    public string Name { get; set; } = string.Empty;
-    public string Status { get; set; } = string.Empty;
-    public string Resource { get; set; } = string.Empty;
-    public SolidColorBrush TestStatusColor { get; set; } = new(Color.FromRgb(139, 148, 158));
-}
+    // ── Global Hotkeys ─────────────────────────────────────────────
 
-/// <summary>
-/// Activity item for recent activity list.
-/// </summary>
-public sealed class SettingsActivityItem
-{
-    public string Icon { get; set; } = string.Empty;
-    public SolidColorBrush IconColor { get; set; } = new(Color.FromRgb(139, 148, 158));
-    public string Message { get; set; } = string.Empty;
-    public string Time { get; set; } = string.Empty;
-}
+    private void LoadGlobalHotkeys()
+    {
+        GlobalHotkeysEnabledCheckBox.IsChecked = WpfServices.GlobalHotkeyService.Instance.IsEnabled;
+        GlobalHotkeysList.ItemsSource = WpfServices.GlobalHotkeyService.Instance.Definitions;
+    }
 
-/// <summary>
-/// View model for credential vault list items showing per-provider credential status.
-/// </summary>
-public sealed class CredentialVaultItem
-{
-    public string ProviderId { get; set; } = string.Empty;
-    public string DisplayName { get; set; } = string.Empty;
-    public string StatusMessage { get; set; } = string.Empty;
-    public SolidColorBrush StatusBrush { get; set; } = new(Color.FromRgb(139, 148, 158));
-    public Visibility ConfigureVisibility { get; set; } = Visibility.Collapsed;
+    private void GlobalHotkeysEnabled_Click(object sender, RoutedEventArgs e)
+    {
+        var enabled = GlobalHotkeysEnabledCheckBox.IsChecked ?? true;
+        WpfServices.GlobalHotkeyService.Instance.IsEnabled = enabled;
+    }
 }

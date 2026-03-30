@@ -316,7 +316,7 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
             return DirectLendingCommandResult<LoanServicingStateDto>.Failure(DirectLendingErrorCode.NotFound, $"Loan '{loanId}' was not found.");
         }
 
-        var decision = DirectLendingAggregateInterop.ApplyMixedPayment(stored.Servicing, request);
+        var decision = DirectLendingAggregateInterop.ApplyMixedPayment(stored.Servicing, stored.Contract.CurrentTerms, request);
         var servicing = decision.Servicing;
         var resolution = decision.Resolution;
         var cashTransactionId = decision.CashTransactionId;
@@ -781,6 +781,58 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
         }
 
         return DirectLendingCommandResult<ServicerReportBatchDto>.Success(batch);
+    }
+
+    public async Task<DirectLendingCommandResult<LoanServicingStateDto>> ChargePrepaymentPenaltyAsync(Guid loanId, ChargePrepaymentPenaltyRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        if (request.OutstandingPrincipal <= 0m)
+        {
+            return DirectLendingCommandResult<LoanServicingStateDto>.Failure(DirectLendingErrorCode.Validation, "Outstanding principal must be positive.");
+        }
+
+        var stored = await _queryService.LoadAggregateAsync(loanId, ct).ConfigureAwait(false);
+        if (stored is null)
+        {
+            return DirectLendingCommandResult<LoanServicingStateDto>.Failure(DirectLendingErrorCode.NotFound, $"Loan '{loanId}' was not found.");
+        }
+
+        var activeError = DirectLendingServiceSupport.EnsureActive(stored.Contract);
+        if (activeError is not null)
+        {
+            return new DirectLendingCommandResult<LoanServicingStateDto>(null, activeError);
+        }
+
+        if (!stored.Contract.CurrentTerms.PrepaymentAllowed)
+        {
+            return DirectLendingCommandResult<LoanServicingStateDto>.Failure(DirectLendingErrorCode.Validation, "Prepayment is not permitted under the current loan terms.");
+        }
+
+        var decision = DirectLendingAggregateInterop.ChargePrepaymentPenalty(stored.Servicing, stored.Contract.CurrentTerms, request);
+        var servicing = decision.Servicing;
+
+        using var payload = DirectLendingServiceSupport.CreatePayloadDocument(new
+        {
+            loanId,
+            request.OutstandingPrincipal,
+            PenaltyAmount = decision.PenaltyAmount,
+            request.EffectiveDate,
+            request.ExternalRef
+        });
+
+        await SaveAsync(
+            loanId,
+            stored.AggregateVersion,
+            stored.AggregateVersion + 1,
+            stored.Contract,
+            servicing,
+            eventType: "loan.prepayment-penalty-charged",
+            effectiveDate: request.EffectiveDate,
+            payload,
+            metadata,
+            ct: ct).ConfigureAwait(false);
+
+        return DirectLendingCommandResult<LoanServicingStateDto>.Success(servicing);
     }
 
     public async Task<DirectLendingCommandResult<IReadOnlyList<LoanAggregateSnapshotDto>>> RebuildAllAsync(CancellationToken ct = default)

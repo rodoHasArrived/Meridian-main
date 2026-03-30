@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Domain;
 
 namespace Meridian.Contracts.Catalog;
 
@@ -16,6 +17,13 @@ public interface ICanonicalSymbolRegistry
     string? ResolveToCanonical(string input);
 
     /// <summary>
+    /// Typed overload: resolves a raw <see cref="SymbolId"/> to its
+    /// <see cref="CanonicalSymbol"/>. Returns null if no match is found.
+    /// </summary>
+    CanonicalSymbol? ResolveToCanonical(SymbolId input)
+        => ResolveToCanonical(input.Value) is { } s ? new CanonicalSymbol(s) : null;
+
+    /// <summary>
     /// Resolves a provider-specific symbol to canonical form.
     /// Checks provider-specific mappings first, then falls back to generic resolution.
     /// </summary>
@@ -23,6 +31,16 @@ public interface ICanonicalSymbolRegistry
     /// <param name="provider">Provider name (e.g., "ALPACA", "POLYGON", "IB").</param>
     /// <returns>Canonical symbol or null if unresolved.</returns>
     string? TryResolve(string symbol, string provider);
+
+    /// <summary>
+    /// Typed overload: resolves a <see cref="ProviderSymbol"/> to its
+    /// <see cref="CanonicalSymbol"/>. Checks provider-specific mappings first,
+    /// then falls back to generic resolution. Returns null if unresolved.
+    /// </summary>
+    CanonicalSymbol? TryResolve(ProviderSymbol providerSymbol)
+        => TryResolve(providerSymbol.Symbol.Value, providerSymbol.Provider.Value) is { } s
+            ? new CanonicalSymbol(s)
+            : null;
 
     /// <summary>
     /// Registers a symbol with its canonical entry, updating aliases and identifier indexes.

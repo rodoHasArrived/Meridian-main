@@ -60,11 +60,13 @@ export function WorkspaceNav() {
       </nav>
 
       <div className="mt-auto rounded-2xl border border-border bg-secondary/45 px-4 py-5 text-sm text-slate-50">
-        <div className="eyebrow-label">Phase 1 Delivery</div>
-        <div className="mt-3 font-semibold text-foreground">Shared shell, premium posture, migration-safe route</div>
+        <div className="eyebrow-label">Wave 2 Delivery</div>
+        <div className="mt-3 font-semibold text-foreground">Paper cockpit, promotion workflow, all four lanes live</div>
         <p className="mt-2 leading-6 text-muted-foreground">
-          Research ships first with source-owned primitives and a migration-safe route under
-          <code className="ml-1 rounded bg-black/20 px-1 py-0.5 text-xs text-foreground">/workstation</code>.
+          All four workspaces are active. Promotion evaluation and order entry are wired to{" "}
+          <code className="rounded bg-black/20 px-1 py-0.5 text-xs text-foreground">/api/promotion/*</code>
+          {" "}and{" "}
+          <code className="rounded bg-black/20 px-1 py-0.5 text-xs text-foreground">/api/execution/*</code>.
         </p>
       </div>
     </aside>

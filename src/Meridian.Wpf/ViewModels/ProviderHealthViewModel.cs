@@ -5,7 +5,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
+using System.Windows.Shapes;
 using System.Windows.Threading;
+using CommunityToolkit.Mvvm.Input;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
 using WpfServices = Meridian.Wpf.Services;
@@ -17,7 +19,7 @@ namespace Meridian.Wpf.ViewModels;
 /// All state, HTTP loading, timer management, and connection-event tracking live here
 /// so that the code-behind is thinned to lifecycle wiring only.
 /// </summary>
-public sealed class ProviderHealthViewModel : BindableBase, IDisposable
+public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageActionBarProvider
 {
     private readonly WpfServices.StatusService _statusService;
     private readonly WpfServices.ConnectionService _connectionService;
@@ -26,6 +28,7 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable
 
     private readonly DispatcherTimer _refreshTimer;
     private readonly DispatcherTimer _staleCheckTimer;
+    private PeriodicTimer? _sparklineTimer;
     private CancellationTokenSource? _cts;
     private DateTime? _lastRefreshTime;
 
@@ -56,6 +59,10 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable
     private bool _hasNoHistory = true;
     public bool HasNoHistory { get => _hasNoHistory; private set => SetProperty(ref _hasNoHistory, value); }
 
+    // ── IPageActionBarProvider implementation ──────────────────────────────────────
+    public string PageTitle => "Provider Health";
+    public ObservableCollection<ActionEntry> Actions { get; } = new();
+
     public ProviderHealthViewModel(
         WpfServices.StatusService statusService,
         WpfServices.ConnectionService connectionService,
@@ -79,10 +86,16 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable
         _connectionService.StateChanged += OnConnectionStateChanged;
         _connectionService.ConnectionHealthUpdated += OnConnectionHealthUpdated;
 
+        // Populate action bar.
+        Actions.Clear();
+        Actions.Add(new ActionEntry("Refresh", new RelayCommand(() => _ = RefreshAsync()), "↻", "Refresh provider data", IsPrimary: true));
+        Actions.Add(new ActionEntry("Reconnect All", new RelayCommand(() => _notificationService.NotifyInfo("Reconnecting", "Initiating provider reconnection...")), "🔗", "Reconnect all providers"));
+
         await RefreshDataAsync();
 
         _refreshTimer.Start();
         _staleCheckTimer.Start();
+        StartSparklineTimer();
     }
 
     public void Stop()
@@ -91,6 +104,7 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable
         _connectionService.ConnectionHealthUpdated -= OnConnectionHealthUpdated;
         _refreshTimer.Stop();
         _staleCheckTimer.Stop();
+        StopSparklineTimer();
         _cts?.Cancel();
         _cts?.Dispose();
     }
@@ -164,6 +178,9 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable
                 e.Provider,
                 e.NewState == ConnectionState.Connected ? EventType.Success :
                 e.NewState == ConnectionState.Disconnected ? EventType.Error : EventType.Warning);
+
+            if (e.NewState == ConnectionState.Disconnected && !string.IsNullOrEmpty(e.Provider))
+                WpfServices.ToastNotificationService.Instance.ShowProviderDisconnected(e.Provider);
         });
     }
 
@@ -401,5 +418,51 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable
     public void Dispose()
     {
         Stop();
+        _sparklineTimer?.Dispose();
+    }
+
+    private void StartSparklineTimer()
+    {
+        _sparklineTimer = new PeriodicTimer(TimeSpan.FromSeconds(2));
+        _ = RefreshSparklineDataAsync();
+    }
+
+    private void StopSparklineTimer()
+    {
+        _sparklineTimer?.Dispose();
+        _sparklineTimer = null;
+    }
+
+    private async Task RefreshSparklineDataAsync()
+    {
+        try
+        {
+            while (_sparklineTimer is not null)
+            {
+                await _sparklineTimer.WaitForNextTickAsync();
+                if (_sparklineTimer is null) break;
+
+                _ = System.Windows.Application.Current?.Dispatcher.InvokeAsync(UpdateSparklineData);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Timer disposed — ignore
+        }
+    }
+
+    private void UpdateSparklineData()
+    {
+        foreach (var provider in StreamingProviders)
+        {
+            if (provider.SparklineItem == null)
+            {
+                provider.SparklineItem = new ProviderSparklineItem { ProviderName = provider.Name };
+            }
+
+            var latencySample = _connectionService.LastLatencyMs;
+            provider.SparklineItem.AddLatencySample(latencySample);
+            provider.SparklineItem.ReconnectCount = _connectionService.TotalReconnects;
+        }
     }
 }

@@ -159,6 +159,11 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
         Interlocked.Exchange(ref _connectionEstablishedTimestamp, Stopwatch.GetTimestamp());
         _reconnectBackoff.Reset();
 
+        // Validate the server version reported by TWS/Gateway before proceeding.
+        IBApiVersionValidator.ValidateServerVersion(
+            _clientSocket.ServerVersion,
+            IBApiVersionValidator.MinSupportedClientVersion);
+
         // Start heartbeat monitor if enabled
         if (EnableHeartbeat)
         {
@@ -692,6 +697,12 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     public void accountSummaryEnd(int reqId) { }
     public void accountUpdateMulti(int reqId, string account, string modelCode, string key, string value, string currency) { }
     public void accountUpdateMultiEnd(int reqId) { }
+    public void tickOptionComputation(int tickerId, int field, int tickAttrib, double impliedVolatility, double delta, double optPrice, double pvDividend, double gamma, double vega, double theta, double undPrice)
+    {
+        RecordMessageReceived();
+        _router.OnTickOptionComputation(tickerId, field, impliedVolatility, delta, optPrice, pvDividend, gamma, vega, theta, undPrice);
+    }
+
     public void marketDataType(int reqId, int marketDataType) { }
     public void contractDetails(int reqId, ContractDetails contractDetails) { }
     public void contractDetailsEnd(int reqId) { }

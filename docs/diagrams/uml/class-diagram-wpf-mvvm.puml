@@ -1,0 +1,249 @@
+@startuml Class Diagram - WPF MVVM Architecture
+!theme plain
+skinparam classAttributeIconSize 0
+skinparam classFontStyle Bold
+
+title Meridian WPF - MVVM Architecture Class Diagram
+
+' ==================== BASE TYPES ====================
+package "Meridian.Wpf.ViewModels" #LightYellow {
+
+    abstract class BindableBase {
+        + PropertyChanged : event PropertyChangedEventHandler?
+        # SetProperty<T>(ref T field, T value) : bool
+        # RaisePropertyChanged(propertyName?) : void
+    }
+
+    interface IPageActionBarProvider {
+        + PrimaryActionLabel : string
+        + PrimaryActionCommand : ICommand?
+        + SecondaryActions : IEnumerable<ActionItem>
+    }
+
+    interface ICommandContextProvider {
+        + GetContextCommands() : IEnumerable<CommandPaletteEntry>
+    }
+
+    ' ==================== VIEW MODELS ====================
+    class DashboardViewModel {
+        - _connectionService : ConnectionService
+        - _statusService : StatusService
+        - _messagingService : MessagingService
+        - _notificationService : NotificationService
+        - _alertService : AlertService
+        - _refreshTimer : DispatcherTimer
+        - _publishedHistory : List<double>
+        + PublishedCount : string
+        + DroppedCount : string
+        + ThroughputLabel : string
+        + ConnectionState : string
+        + CollectorStatus : string
+        + ActivityItems : ObservableCollection<ActivityItem>
+        + StartCollectorCommand : IRelayCommand
+        + PauseCollectorCommand : IRelayCommand
+        + NavigateToSymbolsCommand : IRelayCommand
+        + Dispose() : void
+    }
+
+    class BackfillViewModel {
+        - _backfillService : BackfillService
+        - _navigationService : NavigationService
+        + SelectedProvider : string
+        + Symbols : string
+        + FromDate : DateTime
+        + ToDate : DateTime
+        + IsRunning : bool
+        + ProgressPercent : double
+        + StatusMessage : string
+        + StartBackfillCommand : IRelayCommand
+        + CancelBackfillCommand : IRelayCommand
+    }
+
+    class BacktestViewModel {
+        - _backtestService : BacktestService
+        + StrategyName : string
+        + DataRoot : string
+        + FromDate : DateTime
+        + ToDate : DateTime
+        + IsRunning : bool
+        + Progress : double
+        + FinalEquity : decimal
+        + SharpeRatio : double
+        + MaxDrawdownPercent : decimal
+        + RunBacktestCommand : IRelayCommand
+        + ExportResultsCommand : IRelayCommand
+    }
+
+    class SymbolsPageViewModel {
+        - _symbolManagementService : SymbolManagementService
+        + Symbols : ObservableCollection<SymbolRow>
+        + SearchText : string
+        + SelectedSymbol : SymbolRow?
+        + AddSymbolCommand : IRelayCommand
+        + RemoveSymbolCommand : IRelayCommand
+        + ImportFromFileCommand : IRelayCommand
+    }
+
+    class ProviderHealthViewModel {
+        - _providerHealthService : ProviderHealthService
+        - _refreshTimer : DispatcherTimer
+        + Providers : ObservableCollection<ProviderHealthRow>
+        + OverallStatus : string
+        + RefreshCommand : IRelayCommand
+    }
+
+    class DataQualityViewModel {
+        - _dataQualityApiClient : IDataQualityApiClient
+        + QualityScore : double
+        + AnomalyCount : int
+        + GapCount : int
+        + FreshnessStatus : string
+        + Providers : ObservableCollection<ProviderQualityRow>
+        + RefreshCommand : IRelayCommand
+    }
+
+    class SecurityMasterViewModel {
+        - _securityMasterService : ISecurityMasterService
+        - _navigationService : NavigationService
+        + Securities : ObservableCollection<SecurityRow>
+        + SearchText : string
+        + SelectedSecurity : SecurityRow?
+        + SearchCommand : IRelayCommand
+        + ViewDetailsCommand : IRelayCommand
+    }
+
+    class StrategyRunBrowserViewModel {
+        - _strategyRunReadService : StrategyRunReadService
+        + Runs : ObservableCollection<StrategyRunEntry>
+        + SelectedRun : StrategyRunEntry?
+        + FilterRunType : string
+        + OpenRunCommand : IRelayCommand
+        + DeleteRunCommand : IRelayCommand
+    }
+
+    class RunMatViewModel {
+        - _runMatService : RunMatService
+        + Runs : ObservableCollection<RunMatRow>
+        + ComparisonMode : bool
+        + SelectedRuns : ObservableCollection<RunMatRow>
+        + CompareCommand : IRelayCommand
+        + ExportCommand : IRelayCommand
+    }
+
+    class LiveDataViewerViewModel {
+        - _liveDataService : LiveDataService
+        + Trades : ObservableCollection<LiveTradeRow>
+        + Quotes : ObservableCollection<LiveQuoteRow>
+        + IsStreaming : bool
+        + Symbol : string
+        + StartStreamCommand : IRelayCommand
+        + StopStreamCommand : IRelayCommand
+    }
+}
+
+' ==================== INHERITANCE ====================
+BindableBase <|-- DashboardViewModel
+BindableBase <|-- BackfillViewModel
+BindableBase <|-- BacktestViewModel
+BindableBase <|-- SymbolsPageViewModel
+BindableBase <|-- ProviderHealthViewModel
+BindableBase <|-- DataQualityViewModel
+BindableBase <|-- SecurityMasterViewModel
+BindableBase <|-- StrategyRunBrowserViewModel
+BindableBase <|-- RunMatViewModel
+BindableBase <|-- LiveDataViewerViewModel
+
+DashboardViewModel ..|> IPageActionBarProvider
+DashboardViewModel ..|> ICommandContextProvider
+
+' ==================== VIEWS ====================
+package "Meridian.Wpf.Views" #LightBlue {
+    class DashboardPage
+    class BackfillPage
+    class BacktestPage
+    class SymbolsPage
+    class ProviderHealthPage
+    class DataQualityPage
+    class SecurityMasterPage
+    class StrategyRunsPage
+    class RunMatPage
+    class LiveDataViewerPage
+    class MainWindow
+}
+
+' ==================== VIEW → VIEWMODEL BINDINGS ====================
+DashboardPage ..> DashboardViewModel : <<DataContext>>
+BackfillPage ..> BackfillViewModel : <<DataContext>>
+BacktestPage ..> BacktestViewModel : <<DataContext>>
+SymbolsPage ..> SymbolsPageViewModel : <<DataContext>>
+ProviderHealthPage ..> ProviderHealthViewModel : <<DataContext>>
+DataQualityPage ..> DataQualityViewModel : <<DataContext>>
+SecurityMasterPage ..> SecurityMasterViewModel : <<DataContext>>
+StrategyRunsPage ..> StrategyRunBrowserViewModel : <<DataContext>>
+RunMatPage ..> RunMatViewModel : <<DataContext>>
+LiveDataViewerPage ..> LiveDataViewerViewModel : <<DataContext>>
+
+' ==================== SERVICES ====================
+package "Meridian.Wpf.Services" #LightGreen {
+    class ConnectionService {
+        + ConnectAsync(ct) : Task
+        + DisconnectAsync(ct) : Task
+        + Status : ConnectionStatus
+    }
+    class StatusService {
+        + GetStatusAsync(ct) : Task<StatusSnapshot>
+        + StatusChanged : event
+    }
+    class NavigationService {
+        + NavigateTo(page) : void
+        + CanGoBack : bool
+        + GoBack() : void
+    }
+    class MessagingService {
+        + Subscribe<T>(handler) : void
+        + Publish<T>(message) : void
+    }
+    class NotificationService {
+        + Show(title, message, severity) : void
+    }
+    class BacktestService {
+        + RunAsync(request, strategy, progress, ct) : Task<BacktestResult>
+    }
+}
+
+package "Meridian.Ui.Services" #LightCoral {
+    class BackfillService
+    class LiveDataService
+    class ProviderHealthService
+    class SymbolManagementService
+    class DataQualityApiClient
+}
+
+' ==================== SERVICE DEPENDENCIES ====================
+DashboardViewModel --> ConnectionService
+DashboardViewModel --> StatusService
+DashboardViewModel --> MessagingService
+DashboardViewModel --> NotificationService
+BackfillViewModel --> BackfillService
+BacktestViewModel --> BacktestService
+SymbolsPageViewModel --> SymbolManagementService
+ProviderHealthViewModel --> ProviderHealthService
+DataQualityViewModel --> DataQualityApiClient
+LiveDataViewerViewModel --> LiveDataService
+
+note bottom of BindableBase
+  All ViewModels inherit BindableBase.
+  SetProperty<T>() only raises
+  PropertyChanged when value changes,
+  avoiding redundant binding updates.
+end note
+
+note bottom of DashboardPage
+  Code-behind contains only:
+  - InitializeComponent()
+  - Constructor DI wiring
+  - Thin event-handler delegation
+  No business logic in View layer.
+end note
+
+@enduml

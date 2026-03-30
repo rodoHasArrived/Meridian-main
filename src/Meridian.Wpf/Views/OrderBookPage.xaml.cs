@@ -35,6 +35,13 @@ public partial class OrderBookPage : Page
             }
         };
 
+        // Sync ComboBox when the ViewModel auto-selects the first symbol on load.
+        _viewModel.FirstSymbolAutoSelected += (_, _) =>
+        {
+            if (SymbolComboBox.SelectedIndex < 0 && SymbolComboBox.Items.Count > 0)
+                SymbolComboBox.SelectedIndex = 0;
+        };
+
         Unloaded += OnPageUnloaded;
     }
 

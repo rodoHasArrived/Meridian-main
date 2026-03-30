@@ -4,15 +4,21 @@ using System.Threading;
 using Meridian.Application.Config;
 using Meridian.Application.Exceptions;
 using Meridian.Application.Logging;
+using Meridian.Application.Serialization;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Contracts.Services;
+using Meridian.Domain.Events;
 using Meridian.Domain.Models;
+using Meridian.Storage;
+using Meridian.Storage.Archival;
+using Meridian.Storage.Policies;
 using Serilog;
 
 namespace Meridian.Infrastructure.Adapters.Core;
 
 /// <summary>
 /// Background worker service that processes the backfill request queue.
-/// Handles rate limits, retries, and writes data to storage.
+/// Handles rate limits, retries, writes data to storage, and supports offline-first mode.
 /// </summary>
 public sealed class BackfillWorkerService : IDisposable
 {
@@ -21,8 +27,10 @@ public sealed class BackfillWorkerService : IDisposable
     private readonly CompositeHistoricalDataProvider _provider;
     private readonly ProviderRateLimitTracker _rateLimitTracker;
     private readonly BackfillJobsConfig _config;
+    private readonly AppConfig _appConfig;
     private readonly string _dataRoot;
     private readonly ILogger _log;
+    private readonly IConnectivityProbeService? _connectivityProbe;
     private readonly CancellationTokenSource _cts = new();
     private readonly SemaphoreSlim _concurrencySemaphore;
     private readonly BackfillProgressTracker _progressTracker = new();
@@ -65,7 +73,9 @@ public sealed class BackfillWorkerService : IDisposable
         CompositeHistoricalDataProvider provider,
         ProviderRateLimitTracker rateLimitTracker,
         BackfillJobsConfig config,
+        AppConfig appConfig,
         string dataRoot,
+        IConnectivityProbeService? connectivityProbe = null,
         ILogger? log = null)
     {
         if (config.MaxConcurrentRequests < MinConcurrentRequests || config.MaxConcurrentRequests > MaxConcurrentRequests)
@@ -81,9 +91,17 @@ public sealed class BackfillWorkerService : IDisposable
         _provider = provider;
         _rateLimitTracker = rateLimitTracker;
         _config = config;
+        _appConfig = appConfig;
         _dataRoot = dataRoot;
+        _connectivityProbe = connectivityProbe;
         _log = log ?? LoggingSetup.ForContext<BackfillWorkerService>();
         _concurrencySemaphore = new SemaphoreSlim(config.MaxConcurrentRequests);
+
+        // Subscribe to connectivity changes if offline-first mode is enabled
+        if (_appConfig.OfflineFirstMode && _connectivityProbe != null)
+        {
+            _connectivityProbe.ConnectivityChanged += OnConnectivityChanged;
+        }
     }
 
     /// <summary>
@@ -188,14 +206,23 @@ public sealed class BackfillWorkerService : IDisposable
 
     /// <summary>
     /// Process a single backfill request with automatic retry and exponential backoff
-    /// for rate-limited responses.
+    /// for rate-limited responses. In offline-first mode, queues requests when offline.
     /// </summary>
     private async Task ProcessRequestAsync(BackfillRequest request, CancellationToken ct)
     {
-        var retryAttempt = 0;
-
         try
         {
+            // Check offline-first mode
+            if (_appConfig.OfflineFirstMode && _connectivityProbe != null && !_connectivityProbe.IsOnline)
+            {
+                _log.Warning("Offline mode: queueing backfill for {Symbol} until connectivity restored", request.Symbol);
+                // Mark as offline queued and requeue
+                await _requestQueue.EnqueueAsync(request, ct).ConfigureAwait(false);
+                return;
+            }
+
+            var retryAttempt = 0;
+
             while (!ct.IsCancellationRequested)
             {
                 try
@@ -501,19 +528,21 @@ public sealed class BackfillWorkerService : IDisposable
             var date = dateGroup.Key;
             var dateBars = dateGroup.ToList();
 
-            // Build file path based on naming convention
-            var filePath = BuildFilePath(request.Symbol, date, request.Granularity);
+            // Route historical writes through the shared storage policy and atomic writer
+            // so backfill data lands in the same durable, predictable structure as the
+            // rest of the JSONL storage stack.
+            var exemplarEvent = MarketEvent.HistoricalBar(
+                dateBars[0].ToTimestampUtc(),
+                dateBars[0].Symbol,
+                dateBars[0],
+                dateBars[0].SequenceNumber,
+                _provider.Name);
+            var filePath = BuildFilePath(request.Granularity, exemplarEvent);
 
-            // Ensure directory exists
-            var directory = Path.GetDirectoryName(filePath);
-            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-            {
-                Directory.CreateDirectory(directory);
-            }
-
-            // Write bars as JSONL
-            var lines = dateBars.Select(b => JsonSerializer.Serialize(b));
-            await File.AppendAllLinesAsync(filePath, lines, ct).ConfigureAwait(false);
+            var lines = dateBars.Select(b => JsonSerializer.Serialize(
+                b,
+                MarketDataJsonContext.Default.HistoricalBar));
+            await AtomicFileWriter.AppendLinesAsync(filePath, lines, ct).ConfigureAwait(false);
 
             foreach (var bar in dateBars)
             {
@@ -527,7 +556,7 @@ public sealed class BackfillWorkerService : IDisposable
     /// <summary>
     /// Build the file path for storing bars.
     /// </summary>
-    private string BuildFilePath(string symbol, DateOnly date, DataGranularity granularity)
+    private string BuildFilePath(DataGranularity granularity, MarketEvent evt)
     {
         var granularityName = granularity switch
         {
@@ -540,13 +569,15 @@ public sealed class BackfillWorkerService : IDisposable
             _ => "daily"
         };
 
-        // Default: BySymbol naming convention
-        // {DataRoot}/{Symbol}/bar_{granularity}/{date}.jsonl
-        var symbolDir = Path.Combine(_dataRoot, symbol.ToUpperInvariant());
-        var typeDir = Path.Combine(symbolDir, $"bar_{granularityName}");
-        var fileName = $"{date:yyyy-MM-dd}.jsonl";
+        var policy = new JsonlStoragePolicy(new StorageOptions
+        {
+            RootPath = _dataRoot,
+            NamingConvention = FileNamingConvention.BySymbol,
+            DatePartition = DatePartition.Daily,
+            FilePrefix = $"bar_{granularityName}"
+        });
 
-        return Path.Combine(typeDir, fileName);
+        return policy.GetPath(evt);
     }
 
     /// <summary>
@@ -623,11 +654,33 @@ public sealed class BackfillWorkerService : IDisposable
         }
     }
 
+    /// <summary>
+    /// Handles connectivity state changes. When going online, triggers reprocessing of offline-queued requests.
+    /// </summary>
+    private void OnConnectivityChanged(object? sender, bool isOnline)
+    {
+        if (isOnline)
+        {
+            _log.Information("Connectivity restored, reprocessing offline-queued backfill requests");
+            // Signal the worker loop to check for queued requests
+            // This happens naturally as the loop will process any items in the queue
+        }
+        else
+        {
+            _log.Information("Connectivity lost, future backfill requests will be queued offline");
+        }
+    }
+
     public void Dispose()
     {
         if (_disposed)
             return;
         _disposed = true;
+
+        if (_appConfig.OfflineFirstMode && _connectivityProbe != null)
+        {
+            _connectivityProbe.ConnectivityChanged -= OnConnectivityChanged;
+        }
 
         _cts.Cancel();
         _cts.Dispose();
@@ -651,9 +704,11 @@ public sealed class BackfillServiceFactory
     /// Create a complete backfill service stack from configuration.
     /// </summary>
     public BackfillServices CreateServices(
+        AppConfig appConfig,
         BackfillConfig config,
         string dataRoot,
-        IEnumerable<IHistoricalDataProvider> providers)
+        IEnumerable<IHistoricalDataProvider> providers,
+        IConnectivityProbeService? connectivityProbe = null)
     {
         var jobsConfig = config.Jobs ?? new BackfillJobsConfig();
         var jobsDirectory = Path.Combine(dataRoot, jobsConfig.JobsDirectory);
@@ -687,14 +742,16 @@ public sealed class BackfillServiceFactory
         // Create job manager
         var jobManager = new BackfillJobManager(gapAnalyzer, requestQueue, jobsDirectory, _log);
 
-        // Create worker service
+        // Create worker service with offline-first support
         var worker = new BackfillWorkerService(
             jobManager,
             requestQueue,
             composite,
             rateLimitTracker,
             jobsConfig,
+            appConfig,
             dataRoot,
+            connectivityProbe,
             _log);
 
         return new BackfillServices(

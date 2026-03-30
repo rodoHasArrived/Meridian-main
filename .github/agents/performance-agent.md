@@ -273,8 +273,8 @@ For each optimisation, produce a brief structured summary:
 ## Related Resources
 
 - **Master AI index:** [`docs/ai/README.md`](../../docs/ai/README.md)
-- **ADR-013 (channel policy):** [`docs/adr/adr-0013-bounded-channel-policy.md`](../../docs/adr/adr-0013-bounded-channel-policy.md)
-- **ADR-014 (JSON source generators):** [`docs/adr/adr-0014-json-source-generators.md`](../../docs/adr/adr-0014-json-source-generators.md)
+- **ADR-013 (channel policy):** [`docs/adr/013-bounded-channel-policy.md`](../../docs/adr/013-bounded-channel-policy.md)
+- **ADR-014 (JSON source generators):** [`docs/adr/014-json-source-generators.md`](../../docs/adr/014-json-source-generators.md)
 - **Error prevention:** [`docs/ai/ai-known-errors.md`](../../docs/ai/ai-known-errors.md)
 - **Code review (Lens 2):** [`.github/agents/code-review-agent.md`](code-review-agent.md)
 - **Bug fix:** [`.github/agents/bug-fix-agent.md`](bug-fix-agent.md)

@@ -5,7 +5,6 @@ skinparam backgroundColor white
 title Meridian - Backfill Operation Timing Diagram
 
 ' ==================== PARTICIPANTS ====================
-clock "Wall Clock" as Clock
 concise "Backfill Service" as Backfill
 concise "Rate Limiter" as RateLimiter
 concise "Provider (Stooq)" as Stooq

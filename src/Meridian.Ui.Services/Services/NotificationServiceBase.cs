@@ -73,8 +73,10 @@ public abstract class NotificationServiceBase
 
     public void ShowNotification(string title, string message, NotificationType type = NotificationType.Info, int durationMs = 5000)
     {
-        if (!_settings.Enabled) return;
-        if (IsQuietHours()) return;
+        if (!_settings.Enabled)
+            return;
+        if (IsQuietHours())
+            return;
 
         var dedupeKey = $"{title}:{type}";
 
@@ -146,8 +148,10 @@ public abstract class NotificationServiceBase
 
     public Task NotifyErrorAsync(string title, string message, Exception? exception = null)
     {
-        if (!_settings.Enabled || !_settings.NotifyErrors) return Task.CompletedTask;
-        if (IsQuietHours()) return Task.CompletedTask;
+        if (!_settings.Enabled || !_settings.NotifyErrors)
+            return Task.CompletedTask;
+        if (IsQuietHours())
+            return Task.CompletedTask;
 
         var fullMessage = exception != null ? $"{message}: {exception.Message}" : message;
         ShowNotification(title, fullMessage, NotificationType.Error, 0);
@@ -159,7 +163,8 @@ public abstract class NotificationServiceBase
 
     public void NotifyWarning(string title, string message)
     {
-        if (!_settings.Enabled || !_settings.NotifyErrors) return;
+        if (!_settings.Enabled || !_settings.NotifyErrors)
+            return;
         ShowNotification(title, message, NotificationType.Warning, 5000);
     }
 
@@ -180,15 +185,18 @@ public abstract class NotificationServiceBase
 
     public Task NotifyConnectionStatusAsync(bool connected, string providerName, string? details = null)
     {
-        if (!_settings.Enabled || !_settings.NotifyConnectionStatus) return Task.CompletedTask;
-        if (IsQuietHours()) return Task.CompletedTask;
+        if (!_settings.Enabled || !_settings.NotifyConnectionStatus)
+            return Task.CompletedTask;
+        if (IsQuietHours())
+            return Task.CompletedTask;
 
         var title = connected ? "Connected" : "Connection Lost";
         var message = connected
             ? $"Successfully connected to {providerName}"
             : $"Lost connection to {providerName}";
 
-        if (!string.IsNullOrEmpty(details)) message += $". {details}";
+        if (!string.IsNullOrEmpty(details))
+            message += $". {details}";
 
         ShowNotification(title, message,
             connected ? NotificationType.Success : NotificationType.Error,
@@ -198,8 +206,10 @@ public abstract class NotificationServiceBase
 
     public Task NotifyBackfillCompleteAsync(bool success, int symbolCount, int barsWritten, TimeSpan duration)
     {
-        if (!_settings.Enabled || !_settings.NotifyBackfillComplete) return Task.CompletedTask;
-        if (IsQuietHours()) return Task.CompletedTask;
+        if (!_settings.Enabled || !_settings.NotifyBackfillComplete)
+            return Task.CompletedTask;
+        if (IsQuietHours())
+            return Task.CompletedTask;
 
         var title = success ? "Backfill Complete" : "Backfill Failed";
         var message = success
@@ -212,8 +222,10 @@ public abstract class NotificationServiceBase
 
     public Task NotifyScheduledJobAsync(string jobName, bool started, bool success = true)
     {
-        if (!_settings.Enabled) return Task.CompletedTask;
-        if (IsQuietHours()) return Task.CompletedTask;
+        if (!_settings.Enabled)
+            return Task.CompletedTask;
+        if (IsQuietHours())
+            return Task.CompletedTask;
 
         var title = started ? "Scheduled Job Started" : (success ? "Scheduled Job Complete" : "Scheduled Job Failed");
         var message = started ? $"Job '{jobName}' is now running" : $"Job '{jobName}' has completed";
@@ -225,8 +237,10 @@ public abstract class NotificationServiceBase
 
     public Task NotifyDataGapAsync(string symbol, DateTime gapStart, DateTime gapEnd, int missingBars)
     {
-        if (!_settings.Enabled || !_settings.NotifyDataGaps) return Task.CompletedTask;
-        if (IsQuietHours()) return Task.CompletedTask;
+        if (!_settings.Enabled || !_settings.NotifyDataGaps)
+            return Task.CompletedTask;
+        if (IsQuietHours())
+            return Task.CompletedTask;
 
         ShowNotification(
             "Data Gap Detected",
@@ -237,8 +251,10 @@ public abstract class NotificationServiceBase
 
     public Task NotifyStorageWarningAsync(double usedPercent, long freeSpaceBytes)
     {
-        if (!_settings.Enabled || !_settings.NotifyStorageWarnings) return Task.CompletedTask;
-        if (IsQuietHours()) return Task.CompletedTask;
+        if (!_settings.Enabled || !_settings.NotifyStorageWarnings)
+            return Task.CompletedTask;
+        if (IsQuietHours())
+            return Task.CompletedTask;
 
         var freeSpaceFormatted = FormatHelpers.FormatBytes(freeSpaceBytes);
         var title = usedPercent >= 95 ? "Critical: Storage Almost Full" : "Storage Warning";
@@ -259,7 +275,8 @@ public abstract class NotificationServiceBase
 
     public IReadOnlyList<NotificationHistoryItem> GetHistory()
     {
-        lock (HistoryLock) { return _history.ToArray(); }
+        lock (HistoryLock)
+        { return _history.ToArray(); }
     }
 
     public void ClearHistory()
@@ -277,7 +294,8 @@ public abstract class NotificationServiceBase
     {
         lock (HistoryLock)
         {
-            if (index >= 0 && index < _history.Count) _history[index].IsRead = true;
+            if (index >= 0 && index < _history.Count)
+                _history[index].IsRead = true;
         }
     }
 
@@ -286,14 +304,16 @@ public abstract class NotificationServiceBase
         lock (HistoryLock)
         {
             var count = 0;
-            foreach (var item in _history) { if (!item.IsRead) count++; }
+            foreach (var item in _history)
+            { if (!item.IsRead) count++; }
             return count;
         }
     }
 
     private bool IsQuietHours()
     {
-        if (!_settings.QuietHoursEnabled) return false;
+        if (!_settings.QuietHoursEnabled)
+            return false;
 
         var now = DateTime.Now.TimeOfDay;
         var start = _settings.QuietHoursStart;
@@ -304,8 +324,10 @@ public abstract class NotificationServiceBase
 
     private static string FormatDuration(TimeSpan duration)
     {
-        if (duration.TotalHours >= 1) return $"{duration.Hours}h {duration.Minutes}m";
-        if (duration.TotalMinutes >= 1) return $"{duration.Minutes}m {duration.Seconds}s";
+        if (duration.TotalHours >= 1)
+            return $"{duration.Hours}h {duration.Minutes}m";
+        if (duration.TotalMinutes >= 1)
+            return $"{duration.Minutes}m {duration.Seconds}s";
         return $"{duration.Seconds}s";
     }
 }

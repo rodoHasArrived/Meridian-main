@@ -167,7 +167,8 @@ public sealed class DataCompletenessService
             ct.ThrowIfCancellationRequested();
 
             var fileName = Path.GetFileNameWithoutExtension(file);
-            if (fileName.EndsWith(".jsonl")) fileName = Path.GetFileNameWithoutExtension(fileName);
+            if (fileName.EndsWith(".jsonl"))
+                fileName = Path.GetFileNameWithoutExtension(fileName);
 
             if (DateOnly.TryParse(fileName, out var fileDate) && tradingDays.Contains(fileDate))
             {
@@ -241,10 +242,14 @@ public sealed class DataCompletenessService
     private static string DetermineEventType(string filePath)
     {
         var path = filePath.ToLowerInvariant();
-        if (path.Contains("trade")) return "Trade";
-        if (path.Contains("quote") || path.Contains("bbo")) return "Quote";
-        if (path.Contains("depth") || path.Contains("lob")) return "Depth";
-        if (path.Contains("bar") || path.Contains("ohlc")) return "Bar";
+        if (path.Contains("trade"))
+            return "Trade";
+        if (path.Contains("quote") || path.Contains("bbo"))
+            return "Quote";
+        if (path.Contains("depth") || path.Contains("lob"))
+            return "Depth";
+        if (path.Contains("bar") || path.Contains("ohlc"))
+            return "Bar";
         return "Unknown";
     }
 
@@ -310,12 +315,15 @@ public sealed class DataCompletenessService
         {
             // Quick extraction without full JSON parsing
             var idx = jsonLine.IndexOf("\"Timestamp\":");
-            if (idx < 0) idx = jsonLine.IndexOf("\"timestamp\":");
-            if (idx < 0) return false;
+            if (idx < 0)
+                idx = jsonLine.IndexOf("\"timestamp\":");
+            if (idx < 0)
+                return false;
 
             var startQuote = jsonLine.IndexOf('"', idx + 12);
             var endQuote = jsonLine.IndexOf('"', startQuote + 1);
-            if (startQuote < 0 || endQuote < 0) return false;
+            if (startQuote < 0 || endQuote < 0)
+                return false;
 
             var dateStr = jsonLine.Substring(startQuote + 1, endQuote - startQuote - 1);
             return DateTime.TryParse(dateStr, out timestamp);
@@ -341,7 +349,8 @@ public sealed class DataCompletenessService
 
     private static double CalculateOverallScore(List<SymbolCompleteness> symbols)
     {
-        if (symbols.Count == 0) return 100;
+        if (symbols.Count == 0)
+            return 100;
         return symbols.Average(s => s.Score);
     }
 
@@ -357,14 +366,14 @@ public sealed class DataCompletenessService
         while (currentDate <= end)
         {
             var isTradingDay = tradingDays.Contains(currentDate);
-            var symbolsWithData = isTradingDay 
+            var symbolsWithData = isTradingDay
                 ? symbols.Count(s => !s.MissingDays.Contains(currentDate))
                 : 0;
             var totalSymbols = isTradingDay ? symbols.Count : 0;
-            var completenessPercent = totalSymbols > 0 
-                ? (double)symbolsWithData / totalSymbols * 100 
+            var completenessPercent = totalSymbols > 0
+                ? (double)symbolsWithData / totalSymbols * 100
                 : (isTradingDay ? 100 : 0);
-            var status = isTradingDay 
+            var status = isTradingDay
                 ? GetDayStatus(completenessPercent)
                 : CompletenessStatus.NonTradingDay;
 
@@ -414,14 +423,17 @@ public sealed class DataCompletenessService
     private static GapType DetermineGapType(DateOnly date, List<DateOnly> tradingDays)
     {
         var idx = tradingDays.IndexOf(date);
-        if (idx == 0) return GapType.StartOfRange;
-        if (idx == tradingDays.Count - 1) return GapType.EndOfRange;
+        if (idx == 0)
+            return GapType.StartOfRange;
+        if (idx == tradingDays.Count - 1)
+            return GapType.EndOfRange;
 
         // Check if it's part of a consecutive gap
         var prevMissing = idx > 0 && !tradingDays.Contains(tradingDays[idx - 1]);
         var nextMissing = idx < tradingDays.Count - 1 && !tradingDays.Contains(tradingDays[idx + 1]);
 
-        if (prevMissing || nextMissing) return GapType.Consecutive;
+        if (prevMissing || nextMissing)
+            return GapType.Consecutive;
         return GapType.Single;
     }
 
@@ -435,8 +447,10 @@ public sealed class DataCompletenessService
 
     private static CompletenessStatus DetermineStatus(DailyCompleteness day)
     {
-        if (day.IsHoliday || day.IsWeekend) return CompletenessStatus.NonTradingDay;
-        if (day.SymbolsMissingData == 0) return CompletenessStatus.Complete;
+        if (day.IsHoliday || day.IsWeekend)
+            return CompletenessStatus.NonTradingDay;
+        if (day.SymbolsMissingData == 0)
+            return CompletenessStatus.Complete;
         var pct = day.Symbols.Count > 0 ? (double)day.SymbolsWithData / day.Symbols.Count * 100 : 100;
         return GetDayStatus(pct);
     }
@@ -644,11 +658,21 @@ public sealed class DayEventCount
     {
         switch (type)
         {
-            case "Trade": TradeEvents += count; break;
-            case "Quote": QuoteEvents += count; break;
-            case "Depth": DepthEvents += count; break;
-            case "Bar": BarEvents += count; break;
-            default: OtherEvents += count; break;
+            case "Trade":
+                TradeEvents += count;
+                break;
+            case "Quote":
+                QuoteEvents += count;
+                break;
+            case "Depth":
+                DepthEvents += count;
+                break;
+            case "Bar":
+                BarEvents += count;
+                break;
+            default:
+                OtherEvents += count;
+                break;
         }
     }
 }

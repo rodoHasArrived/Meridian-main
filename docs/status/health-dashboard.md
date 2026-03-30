@@ -1,12 +1,12 @@
 # Documentation Health Dashboard
 
 > Auto-generated documentation health report. Do not edit manually.
-> Last updated: 2026-03-21T13:44:56.706467+00:00
+> Last updated: 2026-03-30T14:56:27.954875+00:00
 
 ## Overall Health Score
 
 ```
-  [###########################---] 89/100
+  [##########################----] 87/100
   Rating: Good
 ```
 
@@ -14,14 +14,14 @@
 
 | Metric | Value |
 |--------|-------|
-| Total documentation files | 257 |
-| Total lines | 92,157 |
-| Average file size (lines) | 358.6 |
-| Orphaned files | 69 |
-| Files without headings | 2 |
+| Total documentation files | 294 |
+| Total lines | 115,776 |
+| Average file size (lines) | 393.8 |
+| Orphaned files | 86 |
+| Files without headings | 0 |
 | Stale files (>90 days) | 0 |
-| TODO/FIXME markers | 179 |
-| **Health score** | **89/100** |
+| TODO/FIXME markers | 316 |
+| **Health score** | **87/100** |
 
 ### Score Breakdown
 
@@ -35,38 +35,31 @@
 
 ## Top Priorities for Improvement
 
-### Files Without Headings
-
-These files lack a Markdown heading, making them harder to navigate:
-
-- `.github\PULL_REQUEST_TEMPLATE.md`
-- `.github\agents\cleanup-specialist.agent.md`
-
 ### Orphaned Documentation
 
 These files are not linked from any other Markdown file in the repository:
 
-- `.claude\agents\meridian-blueprint.md`
-- `.claude\agents\meridian-cleanup.md`
-- `.claude\agents\meridian-docs.md`
-- `.claude\skills\meridian-blueprint\references\blueprint-patterns.md`
-- `.claude\skills\meridian-blueprint\references\pipeline-position.md`
-- `.claude\skills\meridian-brainstorm\SKILL.md`
-- `.claude\skills\meridian-brainstorm\references\competitive-landscape.md`
-- `.claude\skills\meridian-brainstorm\references\idea-dimensions.md`
-- `.claude\skills\meridian-code-review\agents\grader.md`
-- `.claude\skills\meridian-code-review\references\architecture.md`
-- `.claude\skills\meridian-code-review\references\schemas.md`
-- `.claude\skills\meridian-provider-builder\SKILL.md`
-- `.claude\skills\meridian-test-writer\SKILL.md`
-- `.codex\skills\_shared\project-context.md`
-- `.codex\skills\meridian-blueprint\SKILL.md`
-- `.codex\skills\meridian-blueprint\references\blueprint-patterns.md`
-- `.codex\skills\meridian-brainstorm\SKILL.md`
-- `.codex\skills\meridian-brainstorm\references\competitive-landscape.md`
-- `.codex\skills\meridian-code-review\SKILL.md`
-- `.codex\skills\meridian-provider-builder\SKILL.md`
-- ... and 49 more
+- `.claude/agents/meridian-blueprint.md`
+- `.claude/agents/meridian-cleanup.md`
+- `.claude/agents/meridian-docs.md`
+- `.claude/skills/meridian-blueprint/references/blueprint-patterns.md`
+- `.claude/skills/meridian-blueprint/references/pipeline-position.md`
+- `.claude/skills/meridian-brainstorm/SKILL.md`
+- `.claude/skills/meridian-brainstorm/references/competitive-landscape.md`
+- `.claude/skills/meridian-brainstorm/references/idea-dimensions.md`
+- `.claude/skills/meridian-code-review/agents/grader.md`
+- `.claude/skills/meridian-code-review/references/architecture.md`
+- `.claude/skills/meridian-code-review/references/schemas.md`
+- `.claude/skills/meridian-implementation-assurance/SKILL.md`
+- `.claude/skills/meridian-implementation-assurance/references/documentation-routing.md`
+- `.claude/skills/meridian-implementation-assurance/references/evaluation-harness.md`
+- `.claude/skills/meridian-provider-builder/SKILL.md`
+- `.claude/skills/meridian-test-writer/SKILL.md`
+- `.codex/skills/_shared/project-context.md`
+- `.codex/skills/meridian-blueprint/SKILL.md`
+- `.codex/skills/meridian-blueprint/references/blueprint-patterns.md`
+- `.codex/skills/meridian-brainstorm/SKILL.md`
+- ... and 66 more
 
 ## Trend
 
@@ -74,7 +67,7 @@ These files are not linked from any other Markdown file in the repository:
 
 | Date | Score | Files | Orphans | Stale |
 |------|-------|-------|---------|-------|
-| 2026-03-21 | 89 | 257 | 69 | 0 |
+| 2026-03-30 | 87 | 294 | 86 | 0 |
 
 ---
 

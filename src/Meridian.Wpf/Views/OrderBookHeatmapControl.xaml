@@ -1,0 +1,49 @@
+<UserControl x:Class="Meridian.Wpf.Views.OrderBookHeatmapControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="200" d:DesignWidth="600"
+             Loaded="OnLoaded"
+             Unloaded="OnUnloaded"
+             SizeChanged="OnSizeChanged">
+    <Grid>
+
+        <!-- Heatmap bitmap surface — NearestNeighbor keeps pixel boundaries sharp -->
+        <Image x:Name="HeatmapImage"
+               Stretch="Fill"
+               RenderOptions.BitmapScalingMode="NearestNeighbor" />
+
+        <!-- Price-axis labels overlay (right-aligned, non-interactive) -->
+        <ItemsControl Width="56"
+                      HorizontalAlignment="Right"
+                      VerticalAlignment="Stretch"
+                      ItemsSource="{Binding PriceLabels}"
+                      IsHitTestVisible="False">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Canvas />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemContainerStyle>
+                <Style TargetType="ContentPresenter">
+                    <Setter Property="Canvas.Top" Value="{Binding Y}" />
+                    <Setter Property="Canvas.Left" Value="0" />
+                    <Setter Property="Width" Value="52" />
+                </Style>
+            </ItemsControl.ItemContainerStyle>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Price}"
+                               Width="52"
+                               FontFamily="Consolas"
+                               FontSize="9"
+                               Foreground="#99FFFFFF"
+                               TextAlignment="Right" />
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+    </Grid>
+</UserControl>

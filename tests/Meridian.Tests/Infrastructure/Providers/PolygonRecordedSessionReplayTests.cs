@@ -1,8 +1,6 @@
 using System.Reflection;
 using System.Text.Json;
 using FluentAssertions;
-using AggregateBarPayload = Meridian.Contracts.Domain.Models.AggregateBarPayload;
-using AggregateTimeframe = Meridian.Contracts.Domain.Models.AggregateTimeframe;
 using Meridian.Application.Config;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
@@ -12,6 +10,8 @@ using Meridian.Domain.Models;
 using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Tests.TestHelpers;
 using Xunit;
+using AggregateBarPayload = Meridian.Contracts.Domain.Models.AggregateBarPayload;
+using AggregateTimeframe = Meridian.Contracts.Domain.Models.AggregateTimeframe;
 
 namespace Meridian.Tests.Infrastructure.Providers;
 

@@ -255,14 +255,16 @@ public sealed class SymbolMappingService
     public async Task<int> ImportFromCsvAsync(string csvContent, CancellationToken ct = default)
     {
         var lines = csvContent.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-        if (lines.Length < 2) return 0;
+        if (lines.Length < 2)
+            return 0;
 
         var headers = lines[0].Split(',').Select(h => h.Trim().Trim('"')).ToArray();
         var canonicalIndex = Array.FindIndex(headers, h =>
             h.Equals("Canonical", StringComparison.OrdinalIgnoreCase) ||
             h.Equals("Symbol", StringComparison.OrdinalIgnoreCase));
 
-        if (canonicalIndex < 0) return 0;
+        if (canonicalIndex < 0)
+            return 0;
 
         var providerIndexes = new Dictionary<string, int>();
         foreach (var provider in KnownProviders)
@@ -280,10 +282,12 @@ public sealed class SymbolMappingService
         for (int i = 1; i < lines.Length; i++)
         {
             var values = ParseCsvLine(lines[i]);
-            if (values.Length <= canonicalIndex) continue;
+            if (values.Length <= canonicalIndex)
+                continue;
 
             var canonical = values[canonicalIndex].Trim().Trim('"');
-            if (string.IsNullOrWhiteSpace(canonical)) continue;
+            if (string.IsNullOrWhiteSpace(canonical))
+                continue;
 
             var mapping = GetMapping(canonical) ?? new SymbolMapping { CanonicalSymbol = canonical };
             mapping.ProviderSymbols ??= new Dictionary<string, string>();

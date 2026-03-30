@@ -66,7 +66,8 @@ public sealed class ApiClientService : IDisposable
     /// </summary>
     public void Configure(AppSettings? settings)
     {
-        if (settings == null) return;
+        if (settings == null)
+            return;
 
         var newUrl = settings.ServiceUrl ?? "http://localhost:8080";
         var newTimeout = settings.ServiceTimeoutSeconds > 0 ? settings.ServiceTimeoutSeconds : 30;
@@ -149,22 +150,6 @@ public sealed class ApiClientService : IDisposable
             }
         }
         return _backfillHttpClient;
-    }
-
-    /// <summary>
-    /// Creates an HTTP client configured for long-running backfill operations.
-    /// </summary>
-    /// <remarks>
-    /// Prefer using <see cref="GetBackfillClient"/> instead to reuse the shared client.
-    /// Only use this method when you need a client with a custom timeout that will be properly disposed.
-    /// </remarks>
-    [Obsolete("Prefer GetBackfillClient() to avoid socket exhaustion. Only use when custom timeout is required.")]
-    public HttpClient CreateBackfillClient()
-    {
-        // TD-10: Use HttpClientFactory instead of creating new HttpClient instances
-        var client = HttpClientFactoryProvider.CreateClient(HttpClientNames.BackfillClient);
-        client.Timeout = TimeSpan.FromMinutes(_backfillTimeoutMinutes);
-        return client;
     }
 
     /// <summary>

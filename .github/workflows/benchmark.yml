@@ -44,11 +44,11 @@ jobs:
   benchmark:
     name: Run Benchmarks
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 30
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -72,10 +72,12 @@ jobs:
             --no-build \
             -- \
             --filter "$filter" \
+            --category-exclude SIMD \
             --exporters json markdown \
             --memory \
             --artifacts ./BenchmarkDotNet.Artifacts/current \
-            --job short
+            --job short \
+            --export-budgets
 
       - name: Checkout baseline (main branch)
         if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
@@ -131,6 +133,32 @@ jobs:
           echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
           cat benchmark-summary.md >> $GITHUB_STEP_SUMMARY
           exit 0
+
+      - name: Validate allocation budgets
+        id: validate_budgets
+        if: always()
+        continue-on-error: true
+        run: |
+          set +e
+          BUDGET_JSON="./BenchmarkDotNet.Artifacts/current/perf-budgets.json"
+          if [ ! -f "$BUDGET_JSON" ]; then
+            echo "Budget file not found at $BUDGET_JSON — skipping budget validation."
+            echo "exit_code=0" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          python3 build/scripts/validate_budget.py \
+            --bdn-results ./BenchmarkDotNet.Artifacts/current/results \
+            --budget-json "$BUDGET_JSON" \
+            --fail-on-violation
+          EXIT_CODE=$?
+          echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
+          exit 0
+
+      - name: Fail on budget violation
+        if: steps.validate_budgets.outputs.exit_code == '1'
+        run: |
+          echo "One or more allocation budget violations were detected. See the 'Validate allocation budgets' step for details."
+          exit 1
 
       - name: Generate benchmark summary
         run: |

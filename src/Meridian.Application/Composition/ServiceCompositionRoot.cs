@@ -1,10 +1,10 @@
+using System.Reflection;
 using Meridian.Application.Composition.Features;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
 using Meridian.Domain.Events;
 using Meridian.Infrastructure.Contracts;
 using Microsoft.Extensions.DependencyInjection;
-using System.Reflection;
 
 namespace Meridian.Application.Composition;
 
@@ -115,6 +115,9 @@ public static class ServiceCompositionRoot
             services.RegisterFeature<HttpClientFeatureRegistration>(options);
 
         TryRegisterCppTraderIntegration(services, options.ConfigPath);
+
+        // Backtesting services are registered by the host project (Meridian.Backtesting references
+        // Meridian.Application, so registration here would create a circular dependency).
 
         return services;
     }

@@ -128,6 +128,9 @@ public sealed record StrategyRunDetail(
 
 /// <summary>
 /// Lightweight Security Master reference used by workstation portfolio and ledger surfaces.
+/// <para><see cref="SubType"/> is the most specific classification available at query time
+/// (e.g. "CommonShare", "Bond", "OptionContract"). It is derived from the security's asset
+/// class and is null when the asset class does not map to a unique sub-type.</para>
 /// </summary>
 public sealed record WorkstationSecurityReference(
     Guid SecurityId,
@@ -135,7 +138,8 @@ public sealed record WorkstationSecurityReference(
     string AssetClass,
     string Currency,
     SecurityStatusDto Status,
-    string? PrimaryIdentifier);
+    string? PrimaryIdentifier,
+    string? SubType = null);
 
 /// <summary>
 /// Shared portfolio rollup for workstation research and trading surfaces.
@@ -231,3 +235,114 @@ public sealed record StrategyRunComparison(
     StrategyRunPromotionState PromotionState = StrategyRunPromotionState.None,
     bool HasLedger = false,
     bool HasAuditTrail = false);
+
+// ---------------------------------------------------------------------------
+// Track C drill-in models
+// ---------------------------------------------------------------------------
+
+/// <summary>A single point on the portfolio equity curve.</summary>
+public sealed record EquityCurvePoint(
+    DateOnly Date,
+    decimal TotalEquity,
+    decimal Cash,
+    decimal DailyReturn,
+    decimal DrawdownFromPeak,
+    decimal DrawdownFromPeakPercent);
+
+/// <summary>Full equity curve with summary drawdown statistics for one run.</summary>
+public sealed record EquityCurveSummary(
+    string RunId,
+    decimal InitialEquity,
+    decimal FinalEquity,
+    decimal MaxDrawdown,
+    decimal MaxDrawdownPercent,
+    int MaxDrawdownRecoveryDays,
+    double SharpeRatio,
+    double SortinoRatio,
+    IReadOnlyList<EquityCurvePoint> Points);
+
+/// <summary>A single executed fill from a strategy run.</summary>
+public sealed record RunFillEntry(
+    Guid FillId,
+    Guid OrderId,
+    string Symbol,
+    long FilledQuantity,
+    decimal FillPrice,
+    decimal Commission,
+    DateTimeOffset FilledAt,
+    string? AccountId);
+
+/// <summary>Trade-level fill list for one run.</summary>
+public sealed record RunFillSummary(
+    string RunId,
+    int TotalFills,
+    decimal TotalCommissions,
+    IReadOnlyList<RunFillEntry> Fills);
+
+/// <summary>Per-symbol P&amp;L attribution for one run.</summary>
+public sealed record SymbolAttributionEntry(
+    string Symbol,
+    decimal RealizedPnl,
+    decimal UnrealizedPnl,
+    decimal TotalPnl,
+    int TradeCount,
+    decimal Commissions,
+    decimal MarginInterestAllocated);
+
+/// <summary>Complete attribution breakdown for one run.</summary>
+public sealed record RunAttributionSummary(
+    string RunId,
+    decimal TotalRealizedPnl,
+    decimal TotalUnrealizedPnl,
+    decimal TotalCommissions,
+    IReadOnlyList<SymbolAttributionEntry> BySymbol);
+
+// ---------------------------------------------------------------------------
+// Cash-flow projection models
+// ---------------------------------------------------------------------------
+
+/// <summary>A single historical cash-flow entry from a strategy run.</summary>
+public sealed record CashFlowEntryDto(
+    DateTimeOffset Timestamp,
+    decimal Amount,
+    string EventKind,
+    string? Symbol,
+    string Currency,
+    string? AccountId,
+    string? Description);
+
+/// <summary>A single time-bucket within a projected cash ladder.</summary>
+public sealed record CashLadderBucketDto(
+    DateTimeOffset BucketStart,
+    DateTimeOffset BucketEnd,
+    decimal ProjectedInflows,
+    decimal ProjectedOutflows,
+    decimal NetFlow,
+    string Currency,
+    int EventCount);
+
+/// <summary>Time-bucketed forward view of projected cash flows for one run.</summary>
+public sealed record RunCashLadder(
+    DateTimeOffset AsOf,
+    string Currency,
+    int BucketDays,
+    decimal TotalProjectedInflows,
+    decimal TotalProjectedOutflows,
+    decimal NetPosition,
+    IReadOnlyList<CashLadderBucketDto> Buckets);
+
+/// <summary>
+/// Cash-flow projection summary for a strategy run.
+/// <para>Includes both the raw historical entries and a time-bucketed cash ladder
+/// computed by the F# <c>CashLadder.build</c> module.</para>
+/// </summary>
+public sealed record RunCashFlowSummary(
+    string RunId,
+    DateTimeOffset AsOf,
+    string Currency,
+    int TotalEntries,
+    decimal TotalInflows,
+    decimal TotalOutflows,
+    decimal NetCashFlow,
+    IReadOnlyList<CashFlowEntryDto> Entries,
+    RunCashLadder Ladder);

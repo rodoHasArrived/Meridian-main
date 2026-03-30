@@ -1,6 +1,6 @@
 # Workflows Overview
 
-> Auto-generated on 2026-03-24 23:30:39 UTC. Do not edit manually.
+> Auto-generated on 2026-03-30 14:56:24 UTC. Do not edit manually.
 
 | Workflow File | Name |
 |---|---|
@@ -11,7 +11,7 @@
 | `.github/workflows/close-duplicate-issues.yml` | Close Duplicate and Stale Auto-Generated Issues |
 | `.github/workflows/code-quality.yml` | Code Quality |
 | `.github/workflows/copilot-pull-request-reviewer.yml` | Copilot Pull Request Reviewer |
-| `.github/workflows/copilot-setup-steps.yml` | Copilot Setup Steps |
+| `.github/workflows/copilot-setup-steps.yml` | Copilot Environment Setup |
 | `.github/workflows/copilot-swe-agent-copilot.yml` | Copilot SWE Agent / Copilot |
 | `.github/workflows/desktop-builds.yml` | Desktop Builds |
 | `.github/workflows/docker.yml` | Docker |

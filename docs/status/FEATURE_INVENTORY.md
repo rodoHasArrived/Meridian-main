@@ -231,9 +231,9 @@ Use this document alongside [`ROADMAP.md`](ROADMAP.md) (delivery waves and seque
 
 ---
 
-## 10. WPF Desktop Application *(Delayed Implementation)*
+## 10. WPF Desktop Application
 
-> **Status:** Code present in `src/Meridian.Wpf/` and `tests/Meridian.Wpf.Tests/` but not included in the active solution build. The inventory below reflects the state of the code at the time WPF was deactivated and is retained as a reference for when WPF development resumes.
+> **Status:** Code present in `src/Meridian.Wpf/` and `tests/Meridian.Wpf.Tests/`, both included in the solution build. Builds full WPF desktop app on Windows; produces a CI-compatible stub on Linux/macOS.
 
 ### Shell & Navigation (Complete baseline)
 
@@ -436,7 +436,7 @@ This migration is tracked in [`../plans/trading-workstation-migration-blueprint.
 | `Meridian.Tests` | 229 | ~3,100 | Core: backfill, storage, pipeline, monitoring, providers, credentials, serialization, domain, integration endpoints, execution |
 | `Meridian.FSharp.Tests` | 9 | ~120 | F# domain validation, calculations, transforms, trading transitions, ledger, risk, direct lending interop |
 | `Meridian.Ui.Tests` | 54 | ~900 | UI services (API client, backfill, fixtures, forms, health, watchlist) |
-| `Meridian.Wpf.Tests` | 27 | ~350 | WPF desktop services (navigation, config, status, connection) — *not in active solution build* |
+| `Meridian.Wpf.Tests` | 27 | ~350 | WPF desktop services (navigation, config, status, connection) |
 | `Meridian.Backtesting.Tests` | 8 | ~90 | Backtest engine, fill models, portfolio simulation, XIRR |
 | `Meridian.DirectLending.Tests` | 5 | ~50 | Direct lending services, workflows, PostgreSQL integration |
 | `Meridian.McpServer.Tests` | 3 | ~30 | MCP server tools (backfill, storage) |
@@ -491,9 +491,15 @@ This section inventories the workflow-centric product model that now sits above 
 | Shared portfolio read-model baseline | Partial | Portfolio summaries/positions derived from recorded runs exist; equity-history and broader source coverage remain |
 | Shared ledger read-model baseline | Partial | Ledger summaries, journal rows, and trial balance rows exist; account-summary and richer reconciliation UX remain |
 | Reconciliation run baseline | Partial | Run-scoped reconciliation service, history, and Security Master coverage issue detection now exist; broader break queues and non-run workflows remain |
-| Security Master platform baseline | Partial | Contracts, services, storage, migrations, and F# domain modules exist; workstation-facing productization and shared metadata integration remain |
+| Security Master platform baseline | Partial | Contracts, services, storage, migrations, and F# domain modules exist; Wave 6 delivers the six productization items below |
+| Security Master — bond term richness | ✅ | Extended `SecurityEconomicDefinition` with coupon rate, maturity, day-count convention, seniority, callable flag, and issue price |
+| Security Master — trading parameters | ✅ | Per-instrument lot size, tick size; `PaperTradingGateway` lot-size validation and `BacktestEngine` tick-size rounding wired; `GET /api/security-master/{id}/trading-parameters` |
+| Security Master — corporate action events | ✅ | `Dividend`, `StockSplit`, `SpinOff`, `MergerAbsorption` domain events; `CorporateActionAdjustmentService` applies split-adjusted bar prices in backtest replay; `GET /api/security-master/{id}/corporate-actions` |
+| Security Master — exchange bulk ingest | ✅ | CSV + JSON bulk-ingest via `SecurityMasterImportService`; idempotent dedup; CLI `--security-master-ingest`; `POST /api/security-master/import` endpoint |
+| Security Master — golden record conflict resolution | ✅ | `SecurityMasterConflictService` detects identifier-ambiguity conflicts; `GET /api/security-master/conflicts` list + `POST /api/security-master/conflicts/{id}/resolve` |
+| Security Master — WPF browser | ✅ | `SecurityMasterPage` + `SecurityMasterViewModel` (BindableBase); search, detail panel, corporate action timeline, trading params |
 | Direct lending vertical slice | Partial | Postgres-backed direct-lending services, migrations, workflow support, and `/api/loans/*` endpoints are live; broader governance/reporting integration remains |
-| WPF run browser/detail/portfolio/ledger surfaces | Delayed | Code present in `src/Meridian.Wpf/`; excluded from active build |
+| WPF run browser/detail/portfolio/ledger surfaces | In progress | Code present in `src/Meridian.Wpf/`; included in active build |
 | Backtest Studio unification | Planned | Native and Lean backtests are still distinct operator experiences |
 | Paper-trading cockpit | Partial | Execution primitives and brokerage gateway adapters (Alpaca, IB, StockSharp) exist; dedicated web dashboard cockpit wiring is still planned |
 | Promotion workflow (`Backtest -> Paper -> Live`) | Partial | Brokerage gateway framework provides the execution adapter layer; safety-gated lifecycle workflow remains planned |
@@ -509,7 +515,7 @@ This section inventories the workflow-centric product model that now sits above 
 
 - Turn taxonomy alignment into true workspace-first shells with quick actions and cross-workflow entry points.
 - Extend the shared run/portfolio/ledger model to paper/live history, cash-flow views, multi-ledger tracking, and richer reconciliation views.
-- Elevate Security Master from backend capability to explicit platform/product infrastructure for research and governance.
+- Elevate Security Master from backend capability to explicit platform/product infrastructure for research and governance (Wave 6 — see [`docs/plans/security-master-productization-roadmap.md`](../plans/security-master-productization-roadmap.md)).
 - Expand the current reconciliation seam into explicit break queues, match rules, exception workflows, and non-run governance use cases.
 - Extend the direct-lending slice into governance-grade projections, reconciliation hooks, and reporting outputs.
 - Add report generation tools that package auditable governance outputs for operators and stakeholders.
@@ -523,9 +529,9 @@ These areas are part of the documented implementation scope even though they are
 
 | Capability | Status | Notes |
 |------------|--------|-------|
-| QuantScript library/project | ðŸ“ | Blueprint exists; project, compiler/runtime pipeline, and public API are not yet implemented |
-| QuantScript WPF editor/surface | ðŸ“ | Planned AvalonEdit + charting-based desktop experience; not yet present in the shipping UI |
-| QuantScript tests/sample scripts/docs | ðŸ“ | Defined in the blueprint; not yet landed |
+| QuantScript library/project | ✅ | `src/Meridian.QuantScript` — Roslyn scripting API, PriceSeries/ReturnSeries domain types, StatisticsEngine, BacktestProxy, QuantDataContext, PlotQueue |
+| QuantScript WPF editor/surface | ✅ | `QuantScriptPage.xaml` + `QuantScriptViewModel` — AvalonEdit editor, three-column layout, Console/Charts/Metrics/Trades/Diagnostics result tabs, ScottPlot charting |
+| QuantScript tests/sample scripts/docs | ✅ | `tests/Meridian.QuantScript.Tests` (compiler, runner, stats, plot-queue); `scripts/example-sharpe.csx` sample script |
 | L3 reconstruction timeline | ðŸ“ | Planned deterministic replay + merged timeline for queue inference |
 | L3 inference model | ðŸ“ | Planned probabilistic queue-ahead inference with confidence scoring |
 | Queue-aware execution simulator | ðŸ“ | Planned market/limit simulation with partial fills, latency, and exported artifacts |
@@ -572,7 +578,7 @@ Meridian’s intended end state is a comprehensive fund management platform rath
 - `Research`, `Trading`, `Data Operations`, and `Governance` should operate as durable product surfaces, not only naming conventions.
 - Backtests, paper sessions, and live-facing history should share one recognizable run model with first-class portfolio and ledger drill-ins.
 - Account, entity, strategy-implementation, and trade-management workflows should be part of the same connected product surface.
-- Security Master should serve as the authoritative instrument-definition layer across research, governance, portfolio, and ledger workflows.
+- Security Master should serve as the authoritative instrument-definition layer across research, governance, portfolio, and ledger workflows; Wave 6 delivers bond terms, trading parameters, corporate actions, bulk ingest, conflict resolution, and a WPF browser.
 - Governance should expose cash-flow modeling, trial-balance analysis, and multi-ledger tracking as first-class capabilities.
 - Governance should include a reconciliation engine comparable to fund-operations tooling, plus report generation tools for audit, investor, and compliance outputs.
 - Provider, replay, storage, diagnostics, and observability capabilities should support that operator workflow end to end.

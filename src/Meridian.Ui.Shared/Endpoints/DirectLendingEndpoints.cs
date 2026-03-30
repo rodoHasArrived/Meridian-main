@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Meridian.Application.DirectLending;
 using Meridian.Contracts.DirectLending;
+using Meridian.Ui.Shared.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -455,6 +456,33 @@ public static class DirectLendingEndpoints
             }
         });
 
+        group.MapPost("/{loanId:guid}/prepayment-penalties", async (Guid loanId, JsonElement body, HttpContext context) =>
+        {
+            var service = ResolveService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            if (!TryBindCommand<ChargePrepaymentPenaltyRequest>(body, jsonOptions, context, out var request, out var metadata, out var error))
+            {
+                return Results.Problem(error, statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            try
+            {
+                var servicing = await service.ChargePrepaymentPenaltyAsync(loanId, request!, metadata, context.RequestAborted).ConfigureAwait(false);
+                return servicing is null ? Results.NotFound() : Results.Json(servicing, jsonOptions);
+            }
+            catch (DirectLendingCommandException ex)
+            {
+                return ToProblem(ex);
+            }
+        })
+        .WithName("ChargeLoanPrepaymentPenalty")
+        .Produces<LoanServicingStateDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound);
+
         group.MapPost("/{loanId:guid}/projections", async (Guid loanId, JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);
@@ -463,7 +491,8 @@ public static class DirectLendingEndpoints
                 return ServiceUnavailable();
             }
 
-            var request = JsonSerializer.Deserialize<RequestProjectionRunRequest>(body.GetRawText(), jsonOptions);
+            // ADR-014: Use source-generated context to eliminate reflection overhead.
+            var request = JsonSerializer.Deserialize(body.GetRawText(), DirectLendingJsonContext.Default.RequestProjectionRunRequest);
             try
             {
                 var projection = await service.RequestProjectionAsync(loanId, request?.ProjectionAsOf, context.RequestAborted).ConfigureAwait(false);
@@ -569,7 +598,8 @@ public static class DirectLendingEndpoints
                 return ServiceUnavailable();
             }
 
-            var request = JsonSerializer.Deserialize<ResolveReconciliationExceptionRequest>(body.GetRawText(), jsonOptions);
+            // ADR-014: Use source-generated context to eliminate reflection overhead.
+            var request = JsonSerializer.Deserialize(body.GetRawText(), DirectLendingJsonContext.Default.ResolveReconciliationExceptionRequest);
             if (request is null)
             {
                 return Results.Problem("Resolution request body is required.", statusCode: StatusCodes.Status400BadRequest);
@@ -634,6 +664,16 @@ public static class DirectLendingEndpoints
                 : Results.Json(await service.GetRebuildCheckpointsAsync(context.RequestAborted).ConfigureAwait(false), jsonOptions);
         });
 
+        app.MapGet("/api/loans/portfolio", async (HttpContext context) =>
+        {
+            var service = ResolveService(context);
+            return service is null
+                ? ServiceUnavailable()
+                : Results.Json(await service.GetPortfolioSummaryAsync(context.RequestAborted).ConfigureAwait(false), jsonOptions);
+        })
+        .WithName("GetPortfolioSummary")
+        .Produces<LoanPortfolioSummaryDto>(StatusCodes.Status200OK);
+
         app.MapPost("/api/loans/rebuild-all", async (HttpContext context) =>
         {
             var service = ResolveService(context);
@@ -678,6 +718,10 @@ public static class DirectLendingEndpoints
     {
         error = null;
 
+        // ADR-014 note: DirectLendingCommandEnvelope<TCommand> and TCommand are open-generic type
+        // parameters resolved at runtime. System.Text.Json source generators require concrete types
+        // known at compile time and cannot generate metadata for open generics. Reflection-based
+        // deserialization is therefore unavoidable here and is accepted as a documented exception.
         var envelope = JsonSerializer.Deserialize<DirectLendingCommandEnvelope<TCommand>>(body.GetRawText(), jsonOptions);
         if (envelope is not null && envelope.Command is not null)
         {
@@ -686,6 +730,7 @@ public static class DirectLendingEndpoints
             return true;
         }
 
+        // ADR-014 note: Same open-generic constraint applies here — TCommand is not statically known.
         command = JsonSerializer.Deserialize<TCommand>(body.GetRawText(), jsonOptions);
         if (command is null)
         {

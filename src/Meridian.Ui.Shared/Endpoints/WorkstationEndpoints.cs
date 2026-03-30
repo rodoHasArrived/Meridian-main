@@ -1,9 +1,11 @@
 using System.Globalization;
 using System.Text.Json;
-using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
+using Meridian.Execution.Models;
+using Meridian.Execution.Sdk;
 using Meridian.Storage.Export;
+using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -148,6 +150,76 @@ public static class WorkstationEndpoints
         .Produces<LedgerSummary>(200)
         .Produces(404);
 
+        group.MapGet("/runs/{runId}/equity-curve", async (string runId, HttpContext context) =>
+        {
+            var readService = context.RequestServices.GetService<StrategyRunReadService>();
+            if (readService is null)
+            {
+                return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var curve = await readService.GetEquityCurveAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            return curve is null
+                ? Results.NotFound()
+                : Results.Json(curve, jsonOptions);
+        })
+        .WithName("GetRunEquityCurve")
+        .Produces<EquityCurveSummary>(200)
+        .Produces(404)
+        .Produces(501);
+
+        group.MapGet("/runs/{runId}/fills", async (string runId, string? symbol, HttpContext context) =>
+        {
+            var readService = context.RequestServices.GetService<StrategyRunReadService>();
+            if (readService is null)
+            {
+                return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var summary = await readService.GetFillsAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            if (summary is null)
+            {
+                return Results.NotFound();
+            }
+
+            if (!string.IsNullOrWhiteSpace(symbol))
+            {
+                var filtered = summary with
+                {
+                    Fills = summary.Fills
+                        .Where(f => string.Equals(f.Symbol, symbol, StringComparison.OrdinalIgnoreCase))
+                        .ToArray(),
+                    TotalFills = summary.Fills
+                        .Count(f => string.Equals(f.Symbol, symbol, StringComparison.OrdinalIgnoreCase))
+                };
+                return Results.Json(filtered, jsonOptions);
+            }
+
+            return Results.Json(summary, jsonOptions);
+        })
+        .WithName("GetRunFills")
+        .Produces<RunFillSummary>(200)
+        .Produces(404)
+        .Produces(501);
+
+        group.MapGet("/runs/{runId}/attribution", async (string runId, HttpContext context) =>
+        {
+            var readService = context.RequestServices.GetService<StrategyRunReadService>();
+            if (readService is null)
+            {
+                return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var attribution = await readService.GetAttributionAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            return attribution is null
+                ? Results.NotFound()
+                : Results.Json(attribution, jsonOptions);
+        })
+        .WithName("GetRunAttribution")
+        .Produces<RunAttributionSummary>(200)
+        .Produces(404)
+        .Produces(501);
+
         group.MapGet("/runs/{runId}/ledger/trial-balance", async (string runId, string? accountType, HttpContext context) =>
         {
             var readService = context.RequestServices.GetService<StrategyRunReadService>();
@@ -282,6 +354,42 @@ public static class WorkstationEndpoints
         .Produces(404)
         .Produces(501);
 
+        group.MapGet("/security-master/securities/{securityId:guid}/identity", async (Guid securityId, HttpContext context) =>
+        {
+            var queryService = context.RequestServices.GetService<ISecurityMasterQueryService>();
+            if (queryService is null)
+            {
+                return Results.Problem("Security Master query service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var detail = await queryService.GetByIdAsync(securityId, context.RequestAborted).ConfigureAwait(false);
+            return detail is null
+                ? Results.NotFound()
+                : Results.Json(MapToIdentityDrillIn(detail), jsonOptions);
+        })
+        .WithName("GetSecurityMasterWorkstationIdentityDrillIn")
+        .Produces<SecurityIdentityDrillInDto>(200)
+        .Produces(404)
+        .Produces(501);
+
+        group.MapGet("/security-master/securities/{securityId:guid}/economic-definition", async (Guid securityId, HttpContext context) =>
+        {
+            var queryService = context.RequestServices.GetService<ISecurityMasterQueryService>();
+            if (queryService is null)
+            {
+                return Results.Problem("Security Master query service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var record = await queryService.GetEconomicDefinitionByIdAsync(securityId, context.RequestAborted).ConfigureAwait(false);
+            return record is null
+                ? Results.NotFound()
+                : Results.Json(MapToEconomicDefinitionSummary(record), jsonOptions);
+        })
+        .WithName("GetSecurityMasterWorkstationEconomicDefinition")
+        .Produces<SecurityEconomicDefinitionSummaryDto>(200)
+        .Produces(404)
+        .Produces(501);
+
         // --- Multi-run comparison and diff ---
 
         group.MapPost("/runs/compare", async (RunComparisonRequest request, HttpContext context) =>
@@ -326,6 +434,59 @@ public static class WorkstationEndpoints
         })
         .WithName("DiffRuns")
         .Produces<StrategyRunDiff>(200)
+        .Produces(404)
+        .Produces(501);
+
+        app.MapGet("/api/strategies/{strategyId}/runs", async (string strategyId, string? type, HttpContext context) =>
+        {
+            var readService = context.RequestServices.GetService<StrategyRunReadService>();
+            if (readService is null)
+            {
+                return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            RunType? runType = null;
+            if (!string.IsNullOrWhiteSpace(type) &&
+                Enum.TryParse<RunType>(type, ignoreCase: true, out var parsed))
+            {
+                runType = parsed;
+            }
+
+            var runs = await readService.GetRunsAsync(strategyId, runType, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(runs, jsonOptions);
+        })
+        .WithName("GetStrategyRuns")
+        .WithTags("Strategies")
+        .Produces<IReadOnlyList<StrategyRunSummary>>(200);
+
+        // --- Portfolio cash-flow projections ---
+        var portfolioGroup = app.MapGroup("/api/portfolio").WithTags("Portfolio");
+
+        portfolioGroup.MapGet("/{runId}/cash-flows", async (
+            string runId,
+            DateTimeOffset? asOf,
+            string? currency,
+            int? bucketDays,
+            HttpContext context) =>
+        {
+            var projectionService = context.RequestServices.GetService<CashFlowProjectionService>();
+            if (projectionService is null)
+            {
+                return Results.Problem(
+                    "Cash flow projection service is not registered.",
+                    statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var summary = await projectionService
+                .GetAsync(runId, asOf, currency, bucketDays, context.RequestAborted)
+                .ConfigureAwait(false);
+
+            return summary is null
+                ? Results.NotFound()
+                : Results.Json(summary, jsonOptions);
+        })
+        .WithName("GetPortfolioCashFlows")
+        .Produces<RunCashFlowSummary>(200)
         .Produces(404)
         .Produces(501);
 
@@ -569,75 +730,174 @@ public static class WorkstationEndpoints
     private static async Task<object> BuildTradingPayloadAsync(HttpContext context)
     {
         var readService = context.RequestServices.GetService<StrategyRunReadService>();
-        if (readService is null)
+        var portfolio = context.RequestServices.GetService<IPortfolioState>();
+        var oms = context.RequestServices.GetService<IOrderManager>();
+
+        // When neither execution layer nor strategy run service is active, use fixture data
+        if (portfolio is null && oms is null && readService is null)
         {
             return BuildTradingFallbackPayload();
         }
 
-        var runs = (await readService.GetRunsAsync(ct: context.RequestAborted).ConfigureAwait(false)).ToArray();
-        var run = runs.FirstOrDefault(static candidate => candidate.Mode == StrategyRunMode.Paper) ?? runs.FirstOrDefault();
-        if (run is null)
+        // Resolve the most relevant paper run (for run-level metadata)
+        StrategyRunSummary? run = null;
+        if (readService is not null)
         {
-            return BuildTradingFallbackPayload();
+            var runs = (await readService.GetRunsAsync(ct: context.RequestAborted).ConfigureAwait(false)).ToArray();
+            run = runs.FirstOrDefault(static candidate => candidate.Mode == StrategyRunMode.Paper) ?? runs.FirstOrDefault();
         }
 
-        var netPnl = run.NetPnl ?? 0m;
-        var pnlTone = netPnl >= 0m ? "success" : "warning";
+        // --- Metrics (prefer live data, fall back to run-level metrics) ---
+        var realisedPnl = portfolio?.RealisedPnl ?? run?.NetPnl ?? 0m;
+        var unrealisedPnl = portfolio?.UnrealisedPnl ?? 0m;
+        var totalPnl = realisedPnl + unrealisedPnl;
+        var openOrderCount = oms?.GetOpenOrders().Count ?? 0;
+        var pnlTone = totalPnl >= 0m ? "success" : "warning";
+
+        // --- Positions (live execution layer when available) ---
+        object[] positions;
+        if (portfolio is not null && portfolio.Positions.Count > 0)
+        {
+            positions = portfolio.Positions.Values.Select(pos => (object)new
+            {
+                symbol = pos.Symbol,
+                side = pos.Quantity >= 0 ? "Long" : "Short",
+                quantity = Math.Abs(pos.Quantity).ToString(CultureInfo.InvariantCulture),
+                averagePrice = pos.AverageCostBasis.ToString("F2", CultureInfo.InvariantCulture),
+                markPrice = "—",
+                dayPnl = "—",
+                unrealizedPnl = FormatCurrency(pos.UnrealisedPnl),
+                exposure = "—"
+            }).ToArray();
+        }
+        else
+        {
+            // No live positions yet — show an informational placeholder row
+            positions =
+            [
+                new { symbol = "—", side = "—", quantity = "—", averagePrice = "—", markPrice = "—", dayPnl = "—", unrealizedPnl = "—", exposure = "No open positions" }
+            ];
+        }
+
+        // --- Open orders (live OMS when available) ---
+        object[] openOrders;
+        if (oms is not null)
+        {
+            openOrders = oms.GetOpenOrders().Select(static order => (object)new
+            {
+                orderId = order.OrderId,
+                symbol = order.Symbol,
+                side = order.Side.ToString(),
+                type = order.Type.ToString(),
+                quantity = order.Quantity.ToString(CultureInfo.InvariantCulture),
+                limitPrice = order.LimitPrice.HasValue ? order.LimitPrice.Value.ToString("F2", CultureInfo.InvariantCulture) : "—",
+                status = order.Status.ToString(),
+                submittedAt = order.CreatedAt.ToString("HH:mm:ss", CultureInfo.InvariantCulture) + " UTC"
+            }).ToArray();
+        }
+        else
+        {
+            openOrders = [];
+        }
+
+        // --- Risk state (derived from live portfolio when available) ---
+        var riskState = "Healthy";
+        var riskSummary = "Portfolio and order-book exposure are within configured paper thresholds.";
+        var grossExposure = 0m;
+        var netExposureValue = 0m;
+
+        if (portfolio is not null)
+        {
+            grossExposure = portfolio.Positions.Values.Sum(static pos => Math.Abs(pos.AverageCostBasis * pos.Quantity));
+            netExposureValue = portfolio.Positions.Values.Sum(pos => pos.AverageCostBasis * pos.Quantity);
+            var drawdownPct = portfolio.PortfolioValue > 0m
+                ? totalPnl / portfolio.PortfolioValue
+                : 0m;
+
+            if (drawdownPct < -0.05m)
+            {
+                riskState = "Constrained";
+                riskSummary = "Portfolio has breached the 5% drawdown threshold. Promotion to live is blocked.";
+            }
+            else if (drawdownPct < -0.02m)
+            {
+                riskState = "Observe";
+                riskSummary = "Exposure nearing guardrail limits. Monitoring intraday drawdown closely.";
+            }
+        }
+        else if (run is not null && run.NetPnl.HasValue && run.NetPnl < 0m)
+        {
+            riskState = "Observe";
+            riskSummary = "Strategy is running at a loss. Monitoring active.";
+        }
+
+        var maxDrawdownDisplay = portfolio is not null && portfolio.PortfolioValue > 0m
+            ? FormatPercent(totalPnl / portfolio.PortfolioValue)
+            : "—";
+
+        // --- Fills (completed orders from OMS) ---
+        object[] fills;
+        if (oms is not null)
+        {
+            fills = oms.GetCompletedOrders(20).Select(static order => (object)new
+            {
+                fillId = order.OrderId,
+                orderId = order.OrderId,
+                symbol = order.Symbol,
+                side = order.Side.ToString(),
+                quantity = order.FilledQuantity.ToString(CultureInfo.InvariantCulture),
+                price = order.AverageFillPrice.HasValue
+                    ? order.AverageFillPrice.Value.ToString("F2", CultureInfo.InvariantCulture)
+                    : "—",
+                venue = "Paper",
+                timestamp = (order.LastUpdatedAt ?? order.CreatedAt).ToString("HH:mm:ss", CultureInfo.InvariantCulture) + " UTC"
+            }).ToArray();
+        }
+        else
+        {
+            fills = Array.Empty<object>();
+        }
 
         return new
         {
             metrics = new[]
             {
-                new { id = "trading-net-pnl", label = "Net P&L", value = FormatCurrency(netPnl), delta = netPnl >= 0m ? "+session" : "-session", tone = pnlTone },
-                new { id = "trading-open-orders", label = "Open Orders", value = "3", delta = "+1", tone = "default" },
-                new { id = "trading-fills", label = "Fills Today", value = "18", delta = "+4", tone = "success" },
-                new { id = "trading-risk-state", label = "Risk State", value = "Observe", delta = "0%", tone = "warning" }
+                new { id = "trading-net-pnl", label = "Net P&L", value = FormatCurrency(totalPnl), delta = totalPnl >= 0m ? "+session" : "-session", tone = pnlTone },
+                new { id = "trading-open-orders", label = "Open Orders", value = openOrderCount.ToString(CultureInfo.InvariantCulture), delta = openOrderCount == 0 ? "0" : $"+{openOrderCount}", tone = "default" },
+                new { id = "trading-cash", label = "Cash", value = portfolio is not null ? FormatCurrency(portfolio.Cash) : "—", delta = "0%", tone = "default" },
+                new { id = "trading-portfolio-value", label = "Portfolio Value", value = portfolio is not null ? FormatCurrency(portfolio.PortfolioValue) : "—", delta = "0%", tone = "default" }
             },
-            positions = new[]
-            {
-                new { symbol = "AAPL", side = "Long", quantity = "400", averagePrice = "188.14", markPrice = "189.42", dayPnl = "+$512", unrealizedPnl = "+$2,904", exposure = "$75,768" },
-                new { symbol = "MSFT", side = "Long", quantity = "220", averagePrice = "417.06", markPrice = "414.82", dayPnl = "-$493", unrealizedPnl = "-$493", exposure = "$91,260" },
-                new { symbol = "NVDA", side = "Short", quantity = "120", averagePrice = "957.50", markPrice = "949.21", dayPnl = "+$995", unrealizedPnl = "+$995", exposure = "$113,905" }
-            },
-            openOrders = new[]
-            {
-                new { orderId = "PO-24831", symbol = "AMZN", side = "Buy", type = "Limit", quantity = "160", limitPrice = "184.20", status = "Working", submittedAt = "09:42:11 ET" },
-                new { orderId = "PO-24835", symbol = "META", side = "Sell", type = "Stop", quantity = "80", limitPrice = "466.50", status = "Pending Routing", submittedAt = "09:44:58 ET" },
-                new { orderId = "PO-24839", symbol = "TSLA", side = "Buy", type = "Limit", quantity = "60", limitPrice = "171.10", status = "Partially Filled", submittedAt = "09:46:19 ET" }
-            },
-            fills = new[]
-            {
-                new { fillId = "FL-90114", orderId = "PO-24828", symbol = "AMD", side = "Buy", quantity = "100", price = "174.26", venue = "ARCA", timestamp = "09:40:23 ET" },
-                new { fillId = "FL-90120", orderId = "PO-24832", symbol = "AAPL", side = "Sell", quantity = "150", price = "189.44", venue = "IEX", timestamp = "09:43:06 ET" },
-                new { fillId = "FL-90126", orderId = "PO-24837", symbol = "NVDA", side = "Sell", quantity = "40", price = "949.30", venue = "NASDAQ", timestamp = "09:46:52 ET" },
-                new { fillId = "FL-90131", orderId = "PO-24838", symbol = "SPY", side = "Buy", quantity = "75", price = "513.08", venue = "BATS", timestamp = "09:48:11 ET" }
-            },
+            positions,
+            openOrders,
+            fills,
             risk = new
             {
-                state = "Observe",
-                summary = "Exposure remains within paper limits but concentration and intraday drawdown guardrails are active.",
-                netExposure = "$166,128",
-                grossExposure = "$280,933",
-                var95 = "$14,920",
-                maxDrawdown = "-1.8%",
-                buyingPowerUsed = "62%",
+                state = riskState,
+                summary = riskSummary,
+                netExposure = portfolio is not null ? FormatCurrency(netExposureValue) : "—",
+                grossExposure = portfolio is not null ? FormatCurrency(grossExposure) : "—",
+                var95 = "—",
+                maxDrawdown = maxDrawdownDisplay,
+                buyingPowerUsed = "—",
                 activeGuardrails = new[]
                 {
                     "Single-name concentration cap set at 30% notional.",
                     "Auto-throttle activates above 70% intraday buying power.",
-                    "Strategy promotion to live blocked while state is Observe."
+                    "Strategy promotion to live blocked while state is Observe or Constrained."
                 }
             },
             brokerage = new
             {
                 provider = "Interactive Brokers",
-                account = string.IsNullOrWhiteSpace(run.PortfolioId) ? "DU1009034" : run.PortfolioId,
+                account = run is not null && !string.IsNullOrWhiteSpace(run.PortfolioId) ? run.PortfolioId : "—",
                 environment = "paper",
-                connection = "Connected",
-                lastHeartbeat = "2s ago",
-                orderIngress = "healthy (p50 23ms)",
-                fillFeed = "healthy (p50 38ms)",
-                notes = "Paper gateway and execution adapter are wired through BrokerageGatewayAdapter telemetry."
+                connection = portfolio is not null ? "Connected" : "Disconnected",
+                lastHeartbeat = portfolio is not null ? "live" : "—",
+                orderIngress = oms is not null ? "healthy" : "—",
+                fillFeed = portfolio is not null ? "healthy" : "—",
+                notes = portfolio is not null
+                    ? "Live execution state from PaperTradingPortfolio and OrderManagementSystem."
+                    : "Paper gateway not active. Start a paper session to see live position and order data."
             }
         };
     }
@@ -701,40 +961,80 @@ public static class WorkstationEndpoints
     private static async Task<object> BuildDataOperationsPayloadAsync(HttpContext context)
     {
         var readService = context.RequestServices.GetService<StrategyRunReadService>();
-        if (readService is null)
+        var configStore = context.RequestServices.GetService<Meridian.Application.UI.ConfigStore>();
+
+        if (readService is null && configStore is null)
         {
             return BuildDataOperationsFallbackPayload();
         }
 
-        var runs = (await readService.GetRunsAsync(ct: context.RequestAborted).ConfigureAwait(false)).ToArray();
+        var runs = readService is not null
+            ? (await readService.GetRunsAsync(ct: context.RequestAborted).ConfigureAwait(false)).ToArray()
+            : [];
         var activeRuns = runs.Count(static run => run.Status is StrategyRunStatus.Running or StrategyRunStatus.Paused);
         var reviewRuns = runs.Count(static run => run.Promotion?.RequiresReview == true || run.Status is StrategyRunStatus.Failed or StrategyRunStatus.Cancelled);
+
+        // --- Providers (real data from metrics store when available) ---
+        var metricsStatus = configStore?.TryLoadProviderMetrics();
+        var healthyProviderCount = metricsStatus?.HealthyProviders ?? 0;
+        object[] providers = metricsStatus is { Providers.Length: > 0 }
+            ? metricsStatus.Providers.Select(static p => (object)new
+            {
+                provider = p.ProviderId,
+                status = p.IsConnected ? "Healthy" : "Offline",
+                capability = p.ProviderType,
+                latency = $"{p.AverageLatencyMs:F0}ms p50",
+                note = p.IsConnected
+                    ? $"Active subscriptions: {p.ActiveSubscriptions}. Quality score: {p.DataQualityScore:P0}."
+                    : $"Provider disconnected. Last seen: {p.Timestamp:HH:mm} UTC."
+            }).ToArray()
+            : [];
+
+        // --- Backfills (last known backfill result from status file) ---
+        var lastBackfill = configStore?.TryLoadBackfillStatus();
+        object[] backfills;
+        if (lastBackfill is not null)
+        {
+            var symbolSummary = lastBackfill.Symbols.Length > 0
+                ? string.Join(", ", lastBackfill.Symbols.Take(3)) + (lastBackfill.Symbols.Length > 3 ? " …" : "")
+                : "unknown";
+            var days = (lastBackfill.To != null && lastBackfill.From != null)
+                ? (lastBackfill.To.Value.DayNumber - lastBackfill.From.Value.DayNumber).ToString(CultureInfo.InvariantCulture) + "d"
+                : "—";
+            var age = DateTimeOffset.UtcNow - lastBackfill.CompletedUtc;
+            var updatedAt = age.TotalMinutes < 60
+                ? $"{(int)age.TotalMinutes}m ago"
+                : $"{(int)age.TotalHours}h ago";
+            backfills =
+            [
+                new
+                {
+                    jobId = $"BF-{Math.Abs(lastBackfill.GetHashCode()) % 10000:D4}",
+                    scope = $"{symbolSummary} / {days}",
+                    provider = lastBackfill.Provider,
+                    status = lastBackfill.Success ? "Completed" : "Failed",
+                    progress = lastBackfill.Success ? "100%" : "Error",
+                    updatedAt
+                }
+            ];
+        }
+        else
+        {
+            backfills = [];
+        }
 
         return new
         {
             metrics = new[]
             {
-                new { id = "providers-healthy", label = "Providers Healthy", value = "4", delta = "0", tone = "success" },
-                new { id = "backfills-running", label = "Backfills Running", value = Math.Max(1, activeRuns).ToString(CultureInfo.InvariantCulture), delta = activeRuns == 0 ? "0" : $"+{activeRuns}", tone = activeRuns > 0 ? "default" : "success" },
-                new { id = "exports-ready", label = "Exports Ready", value = "3", delta = "+1", tone = "success" },
+                new { id = "providers-healthy", label = "Providers Healthy", value = healthyProviderCount.ToString(CultureInfo.InvariantCulture), delta = "0", tone = healthyProviderCount > 0 ? "success" : "default" },
+                new { id = "backfills-running", label = "Backfills Running", value = activeRuns.ToString(CultureInfo.InvariantCulture), delta = activeRuns == 0 ? "0" : $"+{activeRuns}", tone = activeRuns > 0 ? "default" : "success" },
+                new { id = "exports-ready", label = "Exports Ready", value = "0", delta = "0", tone = "default" },
                 new { id = "ops-review", label = "Needs Review", value = reviewRuns.ToString(CultureInfo.InvariantCulture), delta = reviewRuns == 0 ? "0" : $"+{reviewRuns}", tone = reviewRuns == 0 ? "default" : "warning" }
             },
-            providers = new[]
-            {
-                new { provider = "Interactive Brokers", status = "Healthy", capability = "Execution + fills", latency = "23ms p50", note = "Paper session heartbeat and ingress are healthy." },
-                new { provider = "Polygon", status = "Healthy", capability = "Streaming equities", latency = "18ms p50", note = "Quote and trade subscriptions are within expected envelope." },
-                new { provider = "Databento", status = "Warning", capability = "Historical replay", latency = "74ms p50", note = "Backfill queue is elevated for options symbols." }
-            },
-            backfills = new[]
-            {
-                new { jobId = "BF-1042", scope = "US equities / 30d", provider = "Databento", status = activeRuns > 0 ? "Running" : "Queued", progress = activeRuns > 0 ? "62%" : "0%", updatedAt = "2m ago" },
-                new { jobId = "BF-1044", scope = "Options chains / 7d", provider = "Databento", status = "Review", progress = "95%", updatedAt = "5m ago" }
-            },
-            exports = new[]
-            {
-                new { exportId = "EX-2201", profile = "python-pandas", target = "research pack", status = "Ready", rows = "124k", updatedAt = "4m ago" },
-                new { exportId = "EX-2203", profile = "excel", target = "governance review", status = "Running", rows = "18k", updatedAt = "1m ago" }
-            }
+            providers,
+            backfills,
+            exports = Array.Empty<object>()
         };
     }
 
@@ -1455,7 +1755,7 @@ public static class WorkstationEndpoints
             Status: summary.Status,
             Classification: new SecurityClassificationSummaryDto(
                 AssetClass: summary.AssetClass,
-                SubType: null,
+                SubType: DeriveSubType(summary.AssetClass),
                 PrimaryIdentifierKind: null,
                 PrimaryIdentifierValue: summary.PrimaryIdentifier),
             EconomicDefinition: new SecurityEconomicDefinitionSummaryDto(
@@ -1476,7 +1776,7 @@ public static class WorkstationEndpoints
             Status: detail.Status,
             Classification: new SecurityClassificationSummaryDto(
                 AssetClass: detail.AssetClass,
-                SubType: null,
+                SubType: DeriveSubType(detail.AssetClass),
                 PrimaryIdentifierKind: primaryIdentifier?.Kind.ToString(),
                 PrimaryIdentifierValue: primaryIdentifier?.Value),
             EconomicDefinition: new SecurityEconomicDefinitionSummaryDto(
@@ -1485,6 +1785,48 @@ public static class WorkstationEndpoints
                 EffectiveFrom: detail.EffectiveFrom,
                 EffectiveTo: detail.EffectiveTo));
     }
+
+    private static SecurityIdentityDrillInDto MapToIdentityDrillIn(SecurityDetailDto detail)
+        => new(
+            SecurityId: detail.SecurityId,
+            DisplayName: detail.DisplayName,
+            AssetClass: detail.AssetClass,
+            Status: detail.Status,
+            Version: detail.Version,
+            EffectiveFrom: detail.EffectiveFrom,
+            EffectiveTo: detail.EffectiveTo,
+            Identifiers: detail.Identifiers,
+            Aliases: detail.Aliases);
+
+    private static SecurityEconomicDefinitionSummaryDto MapToEconomicDefinitionSummary(SecurityEconomicDefinitionRecord record)
+        => new(
+            Currency: record.Currency,
+            Version: record.Version,
+            EffectiveFrom: record.EffectiveFrom,
+            EffectiveTo: record.EffectiveTo,
+            SubType: record.SubType,
+            AssetFamily: record.AssetFamily,
+            IssuerType: record.IssuerType);
+
+    /// <summary>
+    /// Derives the most specific sub-type available from the asset-class string without requiring
+    /// a full aggregate rebuild. Returns null for asset classes that may map to multiple sub-types.
+    /// </summary>
+    private static string? DeriveSubType(string? assetClass) => assetClass switch
+    {
+        "Bond" => "Bond",
+        "TreasuryBill" => "TreasuryBill",
+        "Option" => "OptionContract",
+        "Future" => "FutureContract",
+        "Swap" => "SwapContract",
+        "DirectLoan" => "DirectLoan",
+        "Deposit" => "Deposit",
+        "MoneyMarketFund" => "MoneyMarket",
+        "CertificateOfDeposit" => "CertificateOfDeposit",
+        "CommercialPaper" => "CommercialPaper",
+        "Repo" => "Repo",
+        _ => null
+    };
 
     private static IResult ServeWorkstationIndex(IWebHostEnvironment environment)
     {

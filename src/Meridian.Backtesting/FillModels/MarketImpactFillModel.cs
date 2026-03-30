@@ -68,7 +68,8 @@ internal sealed class MarketImpactFillModel(
         for (var i = 0; i < numFills; i++)
         {
             var sliceQty = perSliceQuantity + (i < remainder ? 1 : 0);
-            if (sliceQty == 0) continue;
+            if (sliceQty == 0)
+                continue;
 
             // Impact increases with each slice (cumulative participation)
             var cumulativeParticipation = (decimal)(i + 1) / numFills;
@@ -81,8 +82,10 @@ internal sealed class MarketImpactFillModel(
             // Ensure limit orders don't exceed limit price
             if (executableType == OrderType.Limit)
             {
-                if (isBuy && fillPrice > order.LimitPrice!.Value) continue;
-                if (!isBuy && fillPrice < order.LimitPrice!.Value) continue;
+                if (isBuy && fillPrice > order.LimitPrice!.Value)
+                    continue;
+                if (!isBuy && fillPrice < order.LimitPrice!.Value)
+                    continue;
             }
 
             var signedQuantity = isBuy ? sliceQty : -sliceQty;
@@ -131,6 +134,8 @@ internal sealed class MarketImpactFillModel(
         switch (executableType)
         {
             case OrderType.Market:
+                // Midpoint is (Open + Close) / 2 — the bar's open-to-close centre — consistent
+                // with BarMidpointFillModel. See that model's summary XML doc for the rationale.
                 var mid = (bar.Open + bar.Close) / 2m;
                 var slip = mid * (slippageBasisPoints / 10_000m);
                 fillPrice = isBuy ? mid + slip : mid - slip;
@@ -138,8 +143,10 @@ internal sealed class MarketImpactFillModel(
 
             case OrderType.Limit:
                 var limitPrice = order.LimitPrice!.Value;
-                if (isBuy && bar.Low > limitPrice) return false;
-                if (!isBuy && bar.High < limitPrice) return false;
+                if (isBuy && bar.Low > limitPrice)
+                    return false;
+                if (!isBuy && bar.High < limitPrice)
+                    return false;
                 fillPrice = limitPrice;
                 return true;
 

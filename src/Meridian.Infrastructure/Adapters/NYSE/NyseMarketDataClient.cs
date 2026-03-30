@@ -1,14 +1,15 @@
+using System.Collections.Concurrent;
+using System.Net.Http;
+using System.Reactive.Disposables;
 using Meridian.Application.Logging;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Collectors;
 using Meridian.Domain.Events;
 using Meridian.Domain.Models;
 using Meridian.Infrastructure;
-using Meridian.Infrastructure.DataSources;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Infrastructure.DataSources;
 using Meridian.ProviderSdk;
-using System.Collections.Concurrent;
-using System.Reactive.Disposables;
 
 namespace Meridian.Infrastructure.Adapters.NYSE;
 
@@ -31,12 +32,16 @@ public sealed class NyseMarketDataClient : IMarketDataClient
         TradeDataCollector tradeCollector,
         MarketDepthCollector depthCollector,
         QuoteCollector quoteCollector,
+        IHttpClientFactory httpClientFactory,
         NYSEOptions? options = null)
     {
         _tradeCollector = tradeCollector ?? throw new ArgumentNullException(nameof(tradeCollector));
         _depthCollector = depthCollector ?? throw new ArgumentNullException(nameof(depthCollector));
         _quoteCollector = quoteCollector ?? throw new ArgumentNullException(nameof(quoteCollector));
-        _source = new NYSEDataSource(options ?? new NYSEOptions(), logger: LoggingSetup.ForContext<NYSEDataSource>());
+        _source = new NYSEDataSource(
+            options ?? new NYSEOptions(),
+            httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory)),
+            logger: LoggingSetup.ForContext<NYSEDataSource>());
 
         _subscriptions.Add(_source.Trades.Subscribe(OnTrade));
         _subscriptions.Add(_source.Quotes.Subscribe(OnQuote));

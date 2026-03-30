@@ -22,6 +22,7 @@ This directory contains setup guides, comparison tables, and usage instructions 
 | [Alpaca Setup](alpaca-setup.md) | Alpaca Markets API key setup and configuration |
 | [Interactive Brokers Setup](interactive-brokers-setup.md) | IB TWS / Gateway configuration |
 | [IB Free Equity Reference](interactive-brokers-free-equity-reference.md) | IB free equity data availability reference |
+| [Security Master Guide](security-master-guide.md) | Event-sourced golden record for securities across 14 asset classes |
 
 ### Selection And Inventory
 

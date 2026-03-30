@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Execution.Adapters;
 using Meridian.Execution.Exceptions;
 using Meridian.Execution.Sdk;
@@ -65,5 +66,160 @@ public sealed class PaperTradingGatewayTests
         acknowledgement.Status.Should().Be(Meridian.Execution.Models.OrderStatus.Accepted);
         gateway.Capabilities.SupportedOrderTypes.Should().Contain(Meridian.Execution.Sdk.OrderType.StopLimit);
         gateway.Capabilities.SupportedTimeInForce.Should().Contain(TimeInForce.GoodTilCancelled);
+    }
+
+    // ── Lot-size validation tests ─────────────────────────────────────────
+
+    [Fact]
+    public async Task ValidateOrderAsync_WithSecurityMaster_NoLotSize_AcceptsAnyQuantity()
+    {
+        // Security found but has no lot size → validation passes for any qty
+        var sm = new StubSecurityMaster(securityId: Guid.NewGuid(), lotSize: null);
+        await using var gateway = new PaperTradingGateway(NullLogger<PaperTradingGateway>.Instance, sm);
+
+        var result = await gateway.ValidateOrderAsync(MarketBuy("XYZ", 7));
+
+        result.IsValid.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_WithSecurityMaster_ValidLot_Accepts()
+    {
+        var sm = new StubSecurityMaster(securityId: Guid.NewGuid(), lotSize: 100m);
+        await using var gateway = new PaperTradingGateway(NullLogger<PaperTradingGateway>.Instance, sm);
+
+        var result = await gateway.ValidateOrderAsync(MarketBuy("XYZ", 300));
+
+        result.IsValid.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_WithSecurityMaster_SubLotQuantity_Rejects()
+    {
+        var sm = new StubSecurityMaster(securityId: Guid.NewGuid(), lotSize: 100m);
+        await using var gateway = new PaperTradingGateway(NullLogger<PaperTradingGateway>.Instance, sm);
+
+        var result = await gateway.ValidateOrderAsync(MarketBuy("XYZ", 150));
+
+        result.IsValid.Should().BeFalse();
+        result.Reason.Should().Contain("lot-size");
+        result.Reason.Should().Contain("100");
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_WithSecurityMaster_SellOrderSubLot_Rejects()
+    {
+        // Sell orders (negative qty) should also be validated by absolute value.
+        var sm = new StubSecurityMaster(securityId: Guid.NewGuid(), lotSize: 100m);
+        await using var gateway = new PaperTradingGateway(NullLogger<PaperTradingGateway>.Instance, sm);
+
+        var result = await gateway.ValidateOrderAsync(new OrderRequest
+        {
+            Symbol = "XYZ",
+            Side = OrderSide.Sell,
+            Type = OrderType.Market,
+            Quantity = -50,
+            TimeInForce = TimeInForce.Day
+        });
+
+        result.IsValid.Should().BeFalse();
+        result.Reason.Should().Contain("lot-size");
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_WithSecurityMaster_SecurityNotFound_Accepts()
+    {
+        // When the symbol is not in Security Master, validation is non-blocking.
+        var sm = new StubSecurityMaster(securityId: null, lotSize: null);
+        await using var gateway = new PaperTradingGateway(NullLogger<PaperTradingGateway>.Instance, sm);
+
+        var result = await gateway.ValidateOrderAsync(MarketBuy("UNKNOWN", 7));
+
+        result.IsValid.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_WithoutSecurityMaster_AcceptsAnyQuantity()
+    {
+        // Without Security Master injection, no lot-size constraint is applied.
+        await using var gateway = new PaperTradingGateway(NullLogger<PaperTradingGateway>.Instance);
+
+        var result = await gateway.ValidateOrderAsync(MarketBuy("XYZ", 7));
+
+        result.IsValid.Should().BeTrue();
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────
+
+    private static OrderRequest MarketBuy(string symbol, decimal qty) => new()
+    {
+        Symbol = symbol,
+        Side = OrderSide.Buy,
+        Type = OrderType.Market,
+        Quantity = qty,
+        TimeInForce = TimeInForce.Day
+    };
+
+    /// <summary>
+    /// Stub Security Master that returns a fixed security ID (or null) and optional lot size.
+    /// </summary>
+    private sealed class StubSecurityMaster : ISecurityMasterQueryService
+    {
+        private readonly Guid? _securityId;
+        private readonly decimal? _lotSize;
+
+        public StubSecurityMaster(Guid? securityId, decimal? lotSize)
+        {
+            _securityId = securityId;
+            _lotSize = lotSize;
+        }
+
+        public Task<SecurityDetailDto?> GetByIdentifierAsync(
+            SecurityIdentifierKind kind, string value, string? provider, CancellationToken ct = default)
+        {
+            if (_securityId is null)
+                return Task.FromResult<SecurityDetailDto?>(null);
+
+            var detail = new SecurityDetailDto(
+                SecurityId: _securityId.Value,
+                AssetClass: "Equity",
+                Status: SecurityStatusDto.Active,
+                DisplayName: value,
+                Currency: "USD",
+                CommonTerms: System.Text.Json.JsonDocument.Parse("{}").RootElement,
+                AssetSpecificTerms: System.Text.Json.JsonDocument.Parse("{}").RootElement,
+                Identifiers: Array.Empty<SecurityIdentifierDto>(),
+                Aliases: Array.Empty<SecurityAliasDto>(),
+                Version: 1L,
+                EffectiveFrom: DateTimeOffset.UtcNow.AddYears(-1),
+                EffectiveTo: null);
+            return Task.FromResult<SecurityDetailDto?>(detail);
+        }
+
+        public Task<TradingParametersDto?> GetTradingParametersAsync(
+            Guid securityId, DateTimeOffset asOf, CancellationToken ct = default)
+        {
+            var dto = new TradingParametersDto(
+                SecurityId: securityId,
+                LotSize: _lotSize,
+                TickSize: null,
+                ContractMultiplier: null,
+                MarginRequirementPct: null,
+                TradingHoursUtc: null,
+                CircuitBreakerThresholdPct: null,
+                AsOf: asOf);
+            return Task.FromResult<TradingParametersDto?>(dto);
+        }
+
+        public Task<SecurityDetailDto?> GetByIdAsync(Guid securityId, CancellationToken ct = default)
+            => throw new NotImplementedException();
+        public Task<IReadOnlyList<SecuritySummaryDto>> SearchAsync(SecuritySearchRequest request, CancellationToken ct = default)
+            => throw new NotImplementedException();
+        public Task<IReadOnlyList<SecurityMasterEventEnvelope>> GetHistoryAsync(SecurityHistoryRequest request, CancellationToken ct = default)
+            => throw new NotImplementedException();
+        public Task<SecurityEconomicDefinitionRecord?> GetEconomicDefinitionByIdAsync(Guid securityId, CancellationToken ct = default)
+            => throw new NotImplementedException();
+        public Task<IReadOnlyList<CorporateActionDto>> GetCorporateActionsAsync(Guid securityId, CancellationToken ct = default)
+            => throw new NotImplementedException();
     }
 }

@@ -114,11 +114,6 @@ public sealed class StrategyRunPortfolioViewModel : BindableBase
     public IRelayCommand OpenRunDetailCommand { get; }
     public IRelayCommand OpenLedgerCommand { get; }
 
-    public StrategyRunPortfolioViewModel()
-        : this(StrategyRunWorkspaceService.Instance, NavigationService.Instance)
-    {
-    }
-
     internal StrategyRunPortfolioViewModel(
         StrategyRunWorkspaceService runService,
         NavigationService navigationService)

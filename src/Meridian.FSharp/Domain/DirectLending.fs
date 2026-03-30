@@ -48,3 +48,34 @@ module DirectLending =
 
     let applyPrincipalPayment principalOutstanding paymentAmount =
         max 0m (principalOutstanding - max 0m paymentAmount)
+
+    let isInterestOnlyPeriod (originationDate: DateOnly) (interestOnlyMonths: int) (asOfDate: DateOnly) =
+        if interestOnlyMonths <= 0 then
+            false
+        else
+            let ioEndDate = originationDate.AddMonths interestOnlyMonths
+            asOfDate < ioEndDate
+
+    let isWithinGracePeriod (dueDate: DateOnly) (gracePeriodDays: int option) (asOfDate: DateOnly) =
+        match gracePeriodDays with
+        | None | Some 0 -> false
+        | Some days ->
+            let graceEnd = dueDate.AddDays days
+            asOfDate <= graceEnd
+
+    let estimatePrepaymentPenalty (prepaymentAllowed: bool) (prepaymentPenaltyRate: decimal option) (outstandingPrincipal: decimal) =
+        if not prepaymentAllowed then
+            None
+        else
+            match prepaymentPenaltyRate with
+            | None -> Some 0m
+            | Some rate when rate <= 0m -> Some 0m
+            | Some rate -> Some (outstandingPrincipal * rate)
+
+    let applyRateBounds (effectiveRateFloor: decimal option) (effectiveRateCap: decimal option) rate =
+        match effectiveRateFloor, effectiveRateCap with
+        | Some floor, Some cap when cap < floor ->
+            invalidArg "effectiveRateCap" (sprintf "EffectiveRateCap (%M) must not be less than EffectiveRateFloor (%M)." cap floor)
+        | _ ->
+            rate
+            |> clampFloorCap effectiveRateFloor effectiveRateCap

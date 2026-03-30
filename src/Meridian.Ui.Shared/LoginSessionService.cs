@@ -1,33 +1,29 @@
 using System.Collections.Concurrent;
 using System.Security.Cryptography;
-using System.Text;
 using Meridian.Ui.Shared.Endpoints;
 using Microsoft.Extensions.Hosting;
 
 namespace Meridian.Ui.Shared;
 
 /// <summary>
-/// In-memory session store for username/password authentication.
-/// Credentials are read from the MDC_USERNAME and MDC_PASSWORD environment variables.
+/// In-memory session store for username/password authentication with role-based access control.
+/// User accounts are resolved via <see cref="UserProfileRegistry"/> which supports both
+/// the legacy single-user environment variable pattern (MDC_USERNAME / MDC_PASSWORD) and the
+/// multi-user pattern (MDC_USERS JSON array).
 /// Authentication defaults to optional in Development/Test and required elsewhere.
 /// Use MDC_AUTH_MODE=optional|required|auto to override the default environment-based mode.
 /// </summary>
-public sealed class LoginSessionService(IHostEnvironment environment)
+public sealed class LoginSessionService(IHostEnvironment environment, UserProfileRegistry profileRegistry)
 {
-    private const string UsernameEnvVar = "MDC_USERNAME";
-    private const string PasswordEnvVar = "MDC_PASSWORD";
-
     /// <summary>Session lifetime; exposed so the auth endpoint can set a matching cookie expiry.</summary>
     internal static readonly TimeSpan SessionDuration = TimeSpan.FromHours(8);
 
     private readonly ConcurrentDictionary<string, SessionEntry> _sessions = new();
 
     /// <summary>
-    /// Returns true when both MDC_USERNAME and MDC_PASSWORD are configured via environment variables.
+    /// Returns <see langword="true"/> when at least one user account is configured.
     /// </summary>
-    public bool IsConfigured =>
-        !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(UsernameEnvVar)) &&
-        !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(PasswordEnvVar));
+    public bool IsConfigured => profileRegistry.IsConfigured;
 
     internal AuthenticationMode Mode => AuthenticationModeResolver.Resolve(environment);
 
@@ -35,28 +31,23 @@ public sealed class LoginSessionService(IHostEnvironment environment)
 
     /// <summary>
     /// Validates the supplied credentials and creates a new session token on success.
-    /// Returns null when the credentials are invalid or authentication is not configured.
+    /// Returns <see langword="null"/> when the credentials are invalid or no accounts are
+    /// configured.
     /// </summary>
     public string? CreateSession(string username, string password)
     {
-        var expectedUsername = Environment.GetEnvironmentVariable(UsernameEnvVar);
-        var expectedPassword = Environment.GetEnvironmentVariable(PasswordEnvVar);
-
-        if (string.IsNullOrWhiteSpace(expectedUsername) || string.IsNullOrWhiteSpace(expectedPassword))
-            return null;
-
-        if (!CryptographicEquals(username, expectedUsername) ||
-            !CryptographicEquals(password, expectedPassword))
+        var profile = profileRegistry.Authenticate(username, password);
+        if (profile is null)
             return null;
 
         var token = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
-        _sessions[token] = new SessionEntry(username, DateTimeOffset.UtcNow + SessionDuration);
+        _sessions[token] = new SessionEntry(profile.Username, profile.Role, DateTimeOffset.UtcNow + SessionDuration);
         PruneExpiredSessions();
         return token;
     }
 
     /// <summary>
-    /// Returns true when the token corresponds to a valid, non-expired session.
+    /// Returns <see langword="true"/> when the token corresponds to a valid, non-expired session.
     /// </summary>
     public bool ValidateSession(string token)
     {
@@ -70,6 +61,24 @@ public sealed class LoginSessionService(IHostEnvironment environment)
         }
 
         return true;
+    }
+
+    /// <summary>
+    /// Returns the <see cref="UserProfile"/> for the given session token, or
+    /// <see langword="null"/> when the token is missing or expired.
+    /// </summary>
+    public UserProfile? GetSessionProfile(string token)
+    {
+        if (!_sessions.TryGetValue(token, out var entry))
+            return null;
+
+        if (entry.ExpiresAt <= DateTimeOffset.UtcNow)
+        {
+            _sessions.TryRemove(token, out _);
+            return null;
+        }
+
+        return new UserProfile(entry.Username, entry.Role);
     }
 
     /// <summary>
@@ -87,13 +96,5 @@ public sealed class LoginSessionService(IHostEnvironment environment)
         }
     }
 
-    /// <summary>
-    /// Constant-time string comparison to prevent timing attacks on credential validation.
-    /// </summary>
-    private static bool CryptographicEquals(string a, string b) =>
-        CryptographicOperations.FixedTimeEquals(
-            Encoding.UTF8.GetBytes(a),
-            Encoding.UTF8.GetBytes(b));
-
-    private sealed record SessionEntry(string Username, DateTimeOffset ExpiresAt);
+    private sealed record SessionEntry(string Username, Contracts.Auth.UserRole Role, DateTimeOffset ExpiresAt);
 }

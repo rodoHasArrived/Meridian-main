@@ -29,12 +29,12 @@ jobs:
   auto-label-pr:
     name: Auto Label PR
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
     if: github.event_name == 'pull_request'
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Label based on changed files
         uses: actions/labeler@v6.0.1
@@ -44,7 +44,7 @@ jobs:
           sync-labels: true
 
       - name: Label based on PR size
-        uses: codelytv/pr-size-labeler@v1.10.3
+        uses: codelytv/pr-size-labeler@v1.9.0
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           xs_label: 'size/xs'
@@ -67,12 +67,12 @@ jobs:
   sync-labels:
     name: Sync Repository Labels
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
     if: github.event.inputs.sync_labels == 'true'
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Sync labels from configuration
         uses: EndBug/label-sync@v2.3.3

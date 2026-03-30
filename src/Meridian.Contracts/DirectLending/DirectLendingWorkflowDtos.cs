@@ -319,3 +319,4 @@ public sealed record ReplayDirectLendingResultDto(
     int LoansProcessed,
     int EventsProcessed,
     DateTimeOffset CompletedAt);
+

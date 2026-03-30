@@ -7,6 +7,7 @@ open FsUnit.Xunit
 open Meridian.FSharp.Domain.Sides
 open Meridian.FSharp.Domain.Integrity
 open Meridian.FSharp.Domain.MarketEvents
+open Meridian.FSharp.Domain
 
 [<Fact>]
 let ``Side.ToInt converts Buy to 0`` () =
@@ -146,3 +147,131 @@ let ``QuoteEvent with CLIMutable can be created`` () =
     quote.Symbol |> should equal "GOOGL"
     quote.BidPrice |> should equal 140.00m
     quote.AskPrice |> should equal 140.05m
+
+open Meridian.FSharp.Domain
+
+[<Fact>]
+let ``BondTerms fixedRate factory sets coupon correctly`` () =
+    let maturity = DateOnly(2030, 6, 15)
+    let terms = BondTerms.fixedRate maturity 5.25m (Some "30/360") (Some "Acme Corp")
+    terms.Maturity |> should equal maturity
+    terms.IsCallable |> should equal false
+    terms.IssuerName |> should equal (Some "Acme Corp")
+    match terms.Coupon with
+    | BondCouponStructure.Fixed(rate, dc) ->
+        rate |> should equal 5.25m
+        dc |> should equal (Some "30/360")
+    | _ -> failwith "Expected Fixed coupon"
+
+[<Fact>]
+let ``BondTerms floatingRate factory sets coupon correctly`` () =
+    let maturity = DateOnly(2028, 3, 1)
+    let terms = BondTerms.floatingRate maturity "SOFR" (Some 150m) (Some "Issuer Inc")
+    terms.Maturity |> should equal maturity
+    match terms.Coupon with
+    | BondCouponStructure.Floating(index, spread, _, _, _) ->
+        index |> should equal "SOFR"
+        spread |> should equal (Some 150m)
+    | _ -> failwith "Expected Floating coupon"
+
+[<Fact>]
+let ``BondTerms zeroCoupon factory creates zero-coupon bond`` () =
+    let maturity = DateOnly(2025, 12, 31)
+    let terms = BondTerms.zeroCoupon maturity None
+    terms.Maturity |> should equal maturity
+    match terms.Coupon with
+    | BondCouponStructure.ZeroCoupon -> ()
+    | _ -> failwith "Expected ZeroCoupon"
+
+[<Fact>]
+let ``BondTerms couponRate returns Some for fixed and None for zero-coupon`` () =
+    let fixedBond = BondTerms.fixedRate (DateOnly(2030, 1, 1)) 3.5m None None
+    let zero = BondTerms.zeroCoupon (DateOnly(2030, 1, 1)) None
+    BondTerms.couponRate fixedBond |> should equal (Some 3.5m)
+    BondTerms.couponRate zero |> should equal None
+
+[<Fact>]
+let ``BondTerms callable bond preserves callDate`` () =
+    let maturity = DateOnly(2035, 6, 1)
+    let callDate = DateOnly(2028, 6, 1)
+    let terms = {
+        Maturity = maturity
+        IssueDate = Some (DateOnly(2020, 6, 1))
+        Coupon = BondCouponStructure.Fixed(4.0m, Some "Act/360")
+        IsCallable = true
+        CallDate = Some callDate
+        IssuerName = Some "Corp A"
+        Seniority = Some "Senior"
+    }
+    terms.IsCallable |> should equal true
+    terms.CallDate |> should equal (Some callDate)
+
+// ---------------------------------------------------------------------------
+// CorpActEvent module tests
+// ---------------------------------------------------------------------------
+
+[<Fact>]
+let ``CorpActEvent.securityId extracts securityId from Dividend`` () =
+    let sid = SecurityId(Guid.NewGuid())
+    let evt = CorpActEvent.Dividend(sid, CorpActId(Guid.NewGuid()), DateOnly(2024, 2, 1), None, 1.00m, "USD")
+    CorpActEvent.securityId evt |> should equal sid
+
+[<Fact>]
+let ``CorpActEvent.securityId extracts securityId from StockSplit`` () =
+    let sid = SecurityId(Guid.NewGuid())
+    let evt = CorpActEvent.StockSplit(sid, CorpActId(Guid.NewGuid()), DateOnly(2024, 3, 1), 2m)
+    CorpActEvent.securityId evt |> should equal sid
+
+[<Fact>]
+let ``CorpActEvent.securityId extracts securityId from SpinOff`` () =
+    let sid = SecurityId(Guid.NewGuid())
+    let evt = CorpActEvent.SpinOff(sid, CorpActId(Guid.NewGuid()), DateOnly(2024, 4, 1), SecurityId(Guid.NewGuid()), 0.5m)
+    CorpActEvent.securityId evt |> should equal sid
+
+[<Fact>]
+let ``CorpActEvent.securityId extracts securityId from MergerAbsorption`` () =
+    let sid = SecurityId(Guid.NewGuid())
+    let evt = CorpActEvent.MergerAbsorption(sid, CorpActId(Guid.NewGuid()), DateOnly(2024, 5, 1), SecurityId(Guid.NewGuid()), 1.25m)
+    CorpActEvent.securityId evt |> should equal sid
+
+[<Fact>]
+let ``CorpActEvent.securityId extracts securityId from RightsIssue`` () =
+    let sid = SecurityId(Guid.NewGuid())
+    let evt = CorpActEvent.RightsIssue(sid, CorpActId(Guid.NewGuid()), DateOnly(2024, 6, 1), 15.00m, 2.0m)
+    CorpActEvent.securityId evt |> should equal sid
+
+[<Fact>]
+let ``CorpActEvent.corpActId extracts id from each case`` () =
+    let sid = SecurityId(Guid.NewGuid())
+    let id = CorpActId(Guid.NewGuid())
+    let div = CorpActEvent.Dividend(sid, id, DateOnly(2024, 2, 1), None, 1.00m, "USD")
+    let split = CorpActEvent.StockSplit(sid, id, DateOnly(2024, 3, 1), 2m)
+    CorpActEvent.corpActId div |> should equal id
+    CorpActEvent.corpActId split |> should equal id
+
+[<Fact>]
+let ``CorpActEvent.exDate extracts ex-date from all cases`` () =
+    let sid = SecurityId(Guid.NewGuid())
+    let id = CorpActId(Guid.NewGuid())
+    let exDate = DateOnly(2024, 7, 15)
+    let div = CorpActEvent.Dividend(sid, id, exDate, None, 0.50m, "USD")
+    let split = CorpActEvent.StockSplit(sid, id, exDate, 3m)
+    let spinOff = CorpActEvent.SpinOff(sid, id, exDate, SecurityId(Guid.NewGuid()), 0.25m)
+    let merger = CorpActEvent.MergerAbsorption(sid, id, exDate, SecurityId(Guid.NewGuid()), 0.8m)
+    let rights = CorpActEvent.RightsIssue(sid, id, exDate, 10.00m, 1.0m)
+    CorpActEvent.exDate div |> should equal exDate
+    CorpActEvent.exDate split |> should equal exDate
+    CorpActEvent.exDate spinOff |> should equal exDate
+    CorpActEvent.exDate merger |> should equal exDate
+    CorpActEvent.exDate rights |> should equal exDate
+
+[<Fact>]
+let ``CorpActEvent.eventType returns correct string for each case`` () =
+    let sid = SecurityId(Guid.NewGuid())
+    let id = CorpActId(Guid.NewGuid())
+    let date = DateOnly(2024, 1, 1)
+    CorpActEvent.eventType (CorpActEvent.Dividend(sid, id, date, None, 1m, "USD")) |> should equal "Dividend"
+    CorpActEvent.eventType (CorpActEvent.StockSplit(sid, id, date, 2m)) |> should equal "StockSplit"
+    CorpActEvent.eventType (CorpActEvent.SpinOff(sid, id, date, SecurityId(Guid.NewGuid()), 0.5m)) |> should equal "SpinOff"
+    CorpActEvent.eventType (CorpActEvent.MergerAbsorption(sid, id, date, SecurityId(Guid.NewGuid()), 1m)) |> should equal "MergerAbsorption"
+    CorpActEvent.eventType (CorpActEvent.RightsIssue(sid, id, date, 10m, 1m)) |> should equal "RightsIssue"

@@ -3,9 +3,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
+using System.Windows.Forms;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Meridian.Application.Services;
 using Meridian.Application.SecurityMaster;
+using Meridian.Backtesting;
+using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
 using Meridian.Strategies.Interfaces;
@@ -26,8 +30,9 @@ namespace Meridian.Wpf;
 /// </summary>
 public partial class App : System.Windows.Application
 {
-    private static bool _isFirstRun;
-    private static bool _isFixtureMode;
+    private static bool     _isFirstRun;
+    private static bool     _isFixtureMode;
+    private static string[] _launchArgs = [];
     private IHost? _host;
 
     /// <summary>
@@ -50,6 +55,12 @@ public partial class App : System.Windows.Application
     /// Gets whether this is the first run of the application.
     /// </summary>
     public static bool IsFirstRun => _isFirstRun;
+
+    /// <summary>
+    /// Gets the command-line arguments passed at launch.
+    /// Used by <see cref="MainWindow"/> to handle jump-list and deep-link args.
+    /// </summary>
+    public static string[] GetLaunchArgs() => _launchArgs;
 
     /// <summary>
     /// Gets the notification service instance.
@@ -83,8 +94,28 @@ public partial class App : System.Windows.Application
 
     private async void OnStartup(object sender, StartupEventArgs e)
     {
+        // Register the AppUserModelID before any window is shown so that the
+        // Windows shell (taskbar, JumpList, toast activations) maps all
+        // notifications back to this process identity.
+        WpfServices.ToastNotificationService.SetAppUserModelId();
+
+        // Enforce single instance: if another Meridian window is already running,
+        // forward the launch args to it via named pipe and exit cleanly.
+        _launchArgs = e.Args;
+        if (!WpfServices.SingleInstanceService.Instance.TryAcquire())
+        {
+            WpfServices.SingleInstanceService.SendArgsToPrimary(e.Args);
+            Shutdown();
+            return;
+        }
+
         // Detect fixture mode from --fixture arg or MDC_FIXTURE_MODE env var
         _isFixtureMode = DetectFixtureMode(e.Args);
+
+        // Parse any deep-link navigation tag from launch args (e.g. --navigate Backfill).
+        // Toast balloon-tip clicks raise BalloonTipClicked in-process, but external
+        // activations (future WinRT toasts, shortcuts) can pass this argument.
+        var deepLinkTag = ParseDeepLinkTag(e.Args);
 
         // Configure the host with dependency injection
         _host = Host.CreateDefaultBuilder()
@@ -110,8 +141,44 @@ public partial class App : System.Windows.Application
         Current.MainWindow = mainWindow;
         mainWindow.Show();
 
+        // Register taskbar jump list tasks (Start Collector, Open Dashboard, etc.).
+        WpfServices.JumpListService.Instance.Register();
+
+        // Begin listening for args forwarded from secondary instances (jump list re-launch).
+        WpfServices.SingleInstanceService.Instance.StartListening();
+
+        // If a deep-link page was requested, navigate immediately after the window opens.
+        if (!string.IsNullOrEmpty(deepLinkTag))
+            WpfServices.NavigationService.Instance.NavigateTo(deepLinkTag);
+
         // Fire-and-forget async initialization with proper exception handling
         await SafeOnStartupAsync();
+    }
+
+    /// <summary>
+    /// Parses a deep-link navigation tag from command-line args.
+    /// Supports <c>--navigate &lt;PageTag&gt;</c> (e.g. <c>--navigate Backfill</c>)
+    /// and <c>--page=&lt;PageTag&gt;</c> (e.g. <c>--page=Dashboard</c>, used by jump list tasks).
+    /// </summary>
+    private static string? ParseDeepLinkTag(string[] args)
+    {
+        for (var i = 0; i < args.Length - 1; i++)
+        {
+            if (string.Equals(args[i], "--navigate", StringComparison.OrdinalIgnoreCase))
+                return args[i + 1];
+        }
+
+        // Also support --page=PageTag format used by taskbar jump list tasks.
+        foreach (var arg in args)
+        {
+            if (arg.StartsWith("--page=", StringComparison.OrdinalIgnoreCase))
+            {
+                var tag = arg["--page=".Length..];
+                if (!string.IsNullOrWhiteSpace(tag)) return tag;
+            }
+        }
+
+        return null;
     }
 
     /// <summary>
@@ -179,6 +246,9 @@ public partial class App : System.Windows.Application
         services.AddSingleton<AdvancedAnalyticsServiceBase>(_ => new AdvancedAnalyticsServiceBase());
         services.AddSingleton(_ => SearchService.Instance);
 
+        // ── AI Agent service (local Ollama) ──────────────────────────────────
+        services.AddSingleton<WpfServices.IAgentLoopService, WpfServices.AgentLoopService>();
+
         // ── Data quality shared services ─────────────────────────────────────
         services.AddSingleton<IDataQualityApiClient, DataQualityApiClient>();
         services.AddSingleton<IDataQualityPresentationService, DataQualityPresentationService>();
@@ -189,6 +259,9 @@ public partial class App : System.Windows.Application
         services.AddSingleton(_ => WpfServices.BackgroundTaskSchedulerService.Instance);
         services.AddSingleton(_ => WpfServices.OfflineTrackingPersistenceService.Instance);
         services.AddSingleton(_ => WpfServices.PendingOperationsQueueService.Instance);
+        services.AddSingleton(_ => WpfServices.ToastNotificationService.Instance);
+        services.AddSingleton<WpfServices.ISystemTrayService>(_ => new WpfServices.SystemTrayService());
+        services.AddSingleton(_ => new WpfServices.SystemTrayService());
 
         // ── MainWindow ──────────────────────────────────────────────────────
         services.AddSingleton<MainWindow>();
@@ -249,22 +322,59 @@ public partial class App : System.Windows.Application
         services.AddTransient<RunDetailPage>();
         services.AddTransient<RunPortfolioPage>();
         services.AddTransient<RunLedgerPage>();
+        services.AddTransient<SecurityMasterPage>();
+        services.AddTransient<Meridian.Wpf.ViewModels.SecurityMasterViewModel>();
+        services.AddTransient<PluginManagementPage>();
+        services.AddTransient<AgentPage>();
 
+<<<<<<< copilot/add-corporate-action-adjustment-service-implementa
+        // ── Backtesting service — also registered in RegisterStrategyWorkspaceServices ──
+        // The registration below is deferred to RegisterStrategyWorkspaceServices (called at line 256)
+        // so the corporate action adjustment service can be wired in when a Security Master
+        // connection string is configured.
+=======
         // ── Backtesting service ──────────────────────────────────────────────
-        services.AddSingleton(_ => WpfServices.BacktestService.Instance);
+        services.AddSingleton(sp =>
+        {
+            var svc = WpfServices.BacktestService.Instance;
+            svc.SecurityMasterQueryService =
+                sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>();
+            svc.CorporateActionAdjustmentService =
+                sp.GetService<Meridian.Backtesting.ICorporateActionAdjustmentService>();
+            return svc;
+        });
+>>>>>>> main
 
         // ── Ui.Services singletons accessed via DI (no static .Instance in pages) ──
         services.AddSingleton(_ => BackfillProviderConfigService.Instance);
         services.AddSingleton(_ => BackfillCheckpointService.Instance);
+        services.AddSingleton(_ => Meridian.Ui.Services.ActivityFeedService.Instance);
+        services.AddSingleton(_ => Meridian.Ui.Services.CommandPaletteService.Instance);
+        services.AddSingleton(_ => Meridian.Ui.Services.SymbolManagementService.Instance);
+        services.AddSingleton(_ => Meridian.Ui.Services.BackfillService.Instance);
+        services.AddSingleton(_ => WpfServices.TaskbarProgressService.Instance);
+        services.AddSingleton(_ => WpfServices.TearOffPanelService.Instance);
+        services.AddSingleton(_ => WpfServices.StrategyRunWorkspaceService.Instance);
 
         // ── ViewModels (transient — new instance per page navigation) ────────
         services.AddTransient<Meridian.Wpf.ViewModels.BackfillViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.ProviderViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.DataQualityViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.RunMatViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.StrategyRunBrowserViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.StrategyRunDetailViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.StrategyRunPortfolioViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.StrategyRunLedgerViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.PluginManagementViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.AgentViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.BacktestViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.ChartingPageViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.TickerStripViewModel>();
+
+        // ── Plugin loader service ────────────────────────────────────────────
+        services.AddSingleton<Meridian.Infrastructure.DataSources.DataSourceRegistry>();
+        services.AddSingleton<Meridian.Application.Services.IPluginLoaderService,
+                              Meridian.Application.Services.PluginLoaderService>();
     }
 
     private static void RegisterStrategyWorkspaceServices(IServiceCollection services)
@@ -282,10 +392,39 @@ public partial class App : System.Windows.Application
                 ResolveInactiveByDefault = ParseBool("MERIDIAN_SECURITY_MASTER_RESOLVE_INACTIVE", true)
             });
             services.AddSingleton<ISecurityMasterEventStore, PostgresSecurityMasterEventStore>();
+            services.AddSingleton<ISecurityMasterSnapshotStore, PostgresSecurityMasterSnapshotStore>();
             services.AddSingleton<ISecurityMasterStore, PostgresSecurityMasterStore>();
-            services.AddSingleton<ISecurityMasterQueryService, SecurityMasterQueryService>();
+            services.AddSingleton<SecurityMasterAggregateRebuilder>();
+            services.AddSingleton<SecurityMasterQueryService>();
+            services.AddSingleton<Meridian.Application.SecurityMaster.ISecurityMasterQueryService>(sp => sp.GetRequiredService<SecurityMasterQueryService>());
+            services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(sp => sp.GetRequiredService<SecurityMasterQueryService>());
             services.AddSingleton<ISecurityReferenceLookup, SecurityMasterSecurityReferenceLookup>();
+
+            // Security Master bulk import services
+            services.AddSingleton<SecurityMasterCsvParser>();
+            services.AddSingleton<ISecurityMasterImportService, SecurityMasterImportService>();
+
+<<<<<<< copilot/add-corporate-action-adjustment-service-implementa
+            // Corporate action adjustment service (requires Security Master)
+            services.AddSingleton<ISecurityResolver, SecurityResolver>();
+            services.AddSingleton<ICorporateActionAdjustmentService, CorporateActionAdjustmentService>();
+=======
+            // Corporate action adjustment for backtesting
+            services.AddSingleton<Meridian.Backtesting.ICorporateActionAdjustmentService>(sp =>
+                new Meridian.Backtesting.CorporateActionAdjustmentService(
+                    sp.GetRequiredService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),
+                    sp.GetRequiredService<ISecurityResolver>(),
+                    sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Meridian.Backtesting.CorporateActionAdjustmentService>>()));
+>>>>>>> main
         }
+
+        // Wire the corporate action adjustment service into the BacktestService singleton when available.
+        services.AddSingleton(sp =>
+        {
+            var svc = WpfServices.BacktestService.Instance;
+            svc.CorporateActionAdjustmentService = sp.GetService<ICorporateActionAdjustmentService>();
+            return svc;
+        });
 
         services.AddSingleton<IStrategyRepository, StrategyRunStore>();
         services.AddSingleton<PortfolioReadService>();
@@ -324,6 +463,16 @@ public partial class App : System.Windows.Application
             if (Current.MainWindow is MainWindow mainWindow)
             {
                 WpfServices.ThemeService.Instance.Initialize(mainWindow);
+
+                // Initialize system tray integration
+                var systemTrayService = Services.GetRequiredService<WpfServices.ISystemTrayService>();
+                systemTrayService.Initialize(mainWindow);
+
+                // Wire notifications to system tray balloons
+                WireNotificationsTray(systemTrayService);
+
+                // Wire connection status to tray icon
+                WireConnectionStatusTray(systemTrayService);
             }
 
             // Start connection monitoring
@@ -334,6 +483,10 @@ public partial class App : System.Windows.Application
 
             // Start background task scheduler
             await InitializeBackgroundServicesAsync();
+
+            // Handle --start-collector launch arg now that connection monitoring is active.
+            if (Array.Exists(_launchArgs, a => string.Equals(a, "--start-collector", StringComparison.OrdinalIgnoreCase)))
+                await StartCollectorFromLaunchArgAsync();
 
             // Notify if running in fixture mode
             if (_isFixtureMode)
@@ -349,7 +502,20 @@ public partial class App : System.Windows.Application
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[App] Error during application startup: {ex.Message}");
+            WpfServices.LoggingService.Instance.LogError("Error during application startup", ex);
+
+            try
+            {
+                await WpfServices.NotificationService.Instance.NotifyErrorAsync(
+                    "Startup Error",
+                    ex.Message);
+            }
+            catch (Exception notificationEx)
+            {
+                WpfServices.LoggingService.Instance.LogError(
+                    "Failed to display startup error notification",
+                    notificationEx);
+            }
         }
     }
 
@@ -389,6 +555,33 @@ public partial class App : System.Windows.Application
         {
             System.Diagnostics.Debug.WriteLine($"Failed to initialize background services: {ex.Message}");
             // Continue - app should still work without background services
+        }
+    }
+
+    /// <summary>
+    /// Starts the data collector as requested by the <c>--start-collector</c> launch arg.
+    /// Runs after all services are initialised so connection monitoring is active.
+    /// </summary>
+    private static async Task StartCollectorFromLaunchArgAsync(CancellationToken ct = default)
+    {
+        try
+        {
+            var provider = WpfServices.ConnectionService.Instance.CurrentProvider ?? "default";
+            var success  = await WpfServices.ConnectionService.Instance.ConnectAsync(provider, ct);
+
+            WpfServices.NotificationService.Instance.ShowNotification(
+                success ? "Collector Started" : "Start Failed",
+                success
+                    ? "Data collection started via taskbar jump list."
+                    : "Failed to start collector — check provider settings.",
+                success
+                    ? NotificationType.Success
+                    : NotificationType.Error,
+                success ? 5000 : 0);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[App] StartCollectorFromLaunchArg failed: {ex.Message}");
         }
     }
 
@@ -449,6 +642,7 @@ public partial class App : System.Windows.Application
     {
         await SafeOnExitAsync();
         _host?.Dispose();
+        WpfServices.SingleInstanceService.Instance.Dispose();
     }
 
     /// <summary>
@@ -461,6 +655,9 @@ public partial class App : System.Windows.Application
         try
         {
             System.Diagnostics.Debug.WriteLine("App exiting, shutting down services...");
+
+            // Close any floating tear-off quote panels before service shutdown
+            WpfServices.TearOffPanelService.Instance.CloseAll();
 
             using var cts = new CancellationTokenSource(ShutdownTimeoutMs);
 
@@ -477,6 +674,10 @@ public partial class App : System.Windows.Application
             };
 
             await Task.WhenAll(shutdownTasks);
+
+            // Dispose the NotifyIcon so the system-tray icon is removed cleanly.
+            try { WpfServices.ToastNotificationService.Instance.Dispose(); }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[App] Error disposing ToastNotificationService: {ex.Message}"); }
 
             System.Diagnostics.Debug.WriteLine("Services shut down cleanly");
         }
@@ -552,7 +753,7 @@ public partial class App : System.Windows.Application
         catch (Exception ex)
         {
             // Q2: Log first-run setup failures instead of silently swallowing
-            System.Diagnostics.Debug.WriteLine($"[App] First-run setup failed: {ex.Message}");
+            WpfServices.LoggingService.Instance.LogError("First-run setup failed", ex);
         }
     }
 
@@ -624,7 +825,7 @@ public partial class App : System.Windows.Application
     {
         if (e.ExceptionObject is Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Domain unhandled exception: {ex}");
+            WpfServices.LoggingService.Instance.LogError("Domain unhandled exception", ex);
         }
     }
 
@@ -633,7 +834,63 @@ public partial class App : System.Windows.Application
     /// </summary>
     private void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
     {
-        System.Diagnostics.Debug.WriteLine($"Unobserved task exception: {e.Exception}");
+        WpfServices.LoggingService.Instance.LogError("Unobserved task exception", e.Exception);
         e.SetObserved(); // Prevent the process from terminating
+    }
+
+    /// <summary>
+    /// Wires the NotificationService to the system tray to display important notifications as balloon tips.
+    /// </summary>
+    private static void WireNotificationsTray(WpfServices.ISystemTrayService systemTrayService)
+    {
+        var notificationService = WpfServices.NotificationService.Instance;
+        notificationService.NotificationReceived += (sender, args) =>
+        {
+            // Only show high-priority notifications in tray to avoid spam
+            if (args.Type == NotificationType.Error || args.Type == NotificationType.Success)
+            {
+                var icon = args.Type switch
+                {
+                    NotificationType.Error => System.Windows.Forms.ToolTipIcon.Error,
+                    NotificationType.Warning => System.Windows.Forms.ToolTipIcon.Warning,
+                    NotificationType.Success => System.Windows.Forms.ToolTipIcon.Info,
+                    _ => System.Windows.Forms.ToolTipIcon.Info
+                };
+
+                systemTrayService.ShowBalloonTip(args.Title, args.Message, icon, args.DurationMs);
+            }
+        };
+    }
+
+    /// <summary>
+    /// Wires the ConnectionService status changes to the system tray icon color and tooltip.
+    /// Updates the tray icon to reflect connection health: green (connected), amber (reconnecting), red (disconnected).
+    /// </summary>
+    private static void WireConnectionStatusTray(WpfServices.ISystemTrayService systemTrayService)
+    {
+        var connectionService = WpfServices.ConnectionService.Instance;
+        connectionService.StateChanged += (sender, args) =>
+        {
+            // Map ConnectionState to ConnectionStatus
+            var status = args.NewState switch
+            {
+                ConnectionState.Connected => ConnectionStatus.Connected,
+                ConnectionState.Reconnecting => ConnectionStatus.Reconnecting,
+                ConnectionState.Disconnected => ConnectionStatus.Disconnected,
+                _ => ConnectionStatus.Faulted
+            };
+
+            systemTrayService.UpdateHealthStatus(status);
+        };
+
+        // Set initial status
+        var initialStatus = connectionService.State switch
+        {
+            ConnectionState.Connected => ConnectionStatus.Connected,
+            ConnectionState.Reconnecting => ConnectionStatus.Reconnecting,
+            ConnectionState.Disconnected => ConnectionStatus.Disconnected,
+            _ => ConnectionStatus.Faulted
+        };
+        systemTrayService.UpdateHealthStatus(initialStatus);
     }
 }

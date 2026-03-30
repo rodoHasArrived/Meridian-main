@@ -1,7 +1,9 @@
 using System.Diagnostics;
+using Meridian.Application.SecurityMaster;
 using Meridian.Backtesting.FillModels;
 using Meridian.Backtesting.Metrics;
 using Meridian.Backtesting.Portfolio;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Domain.Events;
 using Meridian.Storage.Replay;
 using Meridian.Storage.Services;
@@ -14,7 +16,9 @@ namespace Meridian.Backtesting.Engine;
 /// </summary>
 public sealed class BacktestEngine(
     ILogger<BacktestEngine> logger,
-    StorageCatalogService catalogService)
+    StorageCatalogService catalogService,
+    Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService? securityMasterQueryService = null,
+    ICorporateActionAdjustmentService? corporateActionAdjustment = null)
 {
     /// <summary>
     /// Runs a complete backtest, replaying all events in the requested date/symbol range.
@@ -38,7 +42,8 @@ public sealed class BacktestEngine(
 
         // 1. Discover universe
         var universe = await UniverseDiscovery.DiscoverAsync(
-            catalogService, request.DataRoot, request.Symbols, request.From, request.To, ct);
+            catalogService, request.DataRoot, request.Symbols, request.From, request.To, ct)
+            .ConfigureAwait(false);
 
         if (universe.Count == 0 && request.AssetEvents is not { Count: > 0 })
         {
@@ -49,16 +54,20 @@ public sealed class BacktestEngine(
         logger.LogInformation("Universe contains {Count} symbols: {Symbols}",
             universe.Count, universe.Count == 0 ? "(asset-event-only run)" : string.Join(", ", universe.Take(10)) + (universe.Count > 10 ? "…" : string.Empty));
 
-        // 2. Set up portfolio, fill models, context
-        var commissionModel = new PerShareCommissionModel();
+        // 2. Resolve per-symbol tick sizes from Security Master (best-effort; missing symbols are silently skipped).
+        var tickSizes = await ResolveTickSizesAsync(universe, request.To.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), ct)
+            .ConfigureAwait(false);
+
+        // 3. Set up portfolio, fill models, context
+        var commissionModel = BuildCommissionModel(request);
         var ledger = new BacktestLedger();
         var startTimestamp = new DateTimeOffset(request.From.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
         var accounts = request.ResolveAccounts();
         var portfolio = new SimulatedPortfolio(accounts, request.DefaultBrokerageAccountId, commissionModel, ledger, startTimestamp);
         var ctx = new BacktestContext(portfolio, universe, ledger, request.DefaultBrokerageAccountId);
-        var orderBookFillModel = new OrderBookFillModel(commissionModel);
-        var barFillModel = new BarMidpointFillModel(commissionModel, spreadAware: true);
-        var marketImpactFillModel = new MarketImpactFillModel(commissionModel);
+        var orderBookFillModel = new OrderBookFillModel(commissionModel, tickSizes);
+        var barFillModel = new BarMidpointFillModel(commissionModel, request.SlippageBasisPoints, spreadAware: true, tickSizes);
+        var marketImpactFillModel = new MarketImpactFillModel(commissionModel, request.MarketImpactCoefficient, request.SlippageBasisPoints);
 
         var pendingOrders = new List<Order>();
         var allSnapshots = new List<PortfolioSnapshot>();
@@ -72,8 +81,8 @@ public sealed class BacktestEngine(
         strategy.Initialize(ctx);
         ApplyScheduledAssetEvents(request.From, assetEventsByDate, portfolio, ctx);
 
-        // 4. Build per-symbol replay streams
-        var streams = BuildSymbolStreams(universe, request);
+        // 4. Build per-symbol replay streams (with corporate action adjustments if enabled)
+        var streams = await BuildSymbolStreamsAsync(universe, request, ct).ConfigureAwait(false);
 
         // 5. Replay loop — multi-symbol chronological merge
         var currentDay = request.From;
@@ -84,12 +93,12 @@ public sealed class BacktestEngine(
         {
             ct.ThrowIfCancellationRequested();
 
-            var evtDate = DateOnly.FromDateTime(evt.Timestamp.LocalDateTime);
+            var evtDate = DateOnly.FromDateTime(evt.Timestamp.UtcDateTime);
 
             // Day boundary — close out the previous day and apply any gap-day asset events.
             if (evtDate > currentDay)
             {
-                await AdvanceDaysAsync(currentDay, evtDate, portfolio, ctx, strategy, pendingOrders, allSnapshots, allCashFlows, assetEventsByDate, progress, request.From, totalDays, eventsProcessed, ct);
+                AdvanceDays(currentDay, evtDate, portfolio, ctx, strategy, pendingOrders, allSnapshots, allCashFlows, assetEventsByDate, progress, request.From, totalDays, eventsProcessed, ct);
                 currentDay = evtDate;
             }
 
@@ -108,15 +117,15 @@ public sealed class BacktestEngine(
             pendingOrders.AddRange(newOrders);
 
             // Try to fill pending orders against current event
-            ProcessPendingOrders(pendingOrders, evt, orderBookFillModel, barFillModel, marketImpactFillModel, portfolio, strategy, ctx, allFills);
+            ProcessPendingOrders(pendingOrders, evt, orderBookFillModel, barFillModel, marketImpactFillModel, portfolio, strategy, ctx, allFills, logger, request.DefaultExecutionModel);
         }
 
         // Final day-end for the last processed day and any remaining asset-event-only dates.
-        await ProcessDayEndAsync(currentDay, portfolio, pendingOrders, ctx, strategy, allSnapshots, allCashFlows, ct);
+        ProcessDayEnd(currentDay, portfolio, pendingOrders, ctx, strategy, allSnapshots, allCashFlows, ct);
         for (var date = currentDay.AddDays(1); date <= request.To; date = date.AddDays(1))
         {
             ApplyScheduledAssetEvents(date, assetEventsByDate, portfolio, ctx);
-            await ProcessDayEndAsync(date, portfolio, pendingOrders, ctx, strategy, allSnapshots, allCashFlows, ct);
+            ProcessDayEnd(date, portfolio, pendingOrders, ctx, strategy, allSnapshots, allCashFlows, ct);
         }
 
         strategy.OnFinished(ctx);
@@ -126,19 +135,24 @@ public sealed class BacktestEngine(
         var metrics = BacktestMetricsEngine.Compute(allSnapshots, allCashFlows, allFills, request);
         sw.Stop();
 
+        if (double.IsNaN(metrics.Xirr))
+            logger.LogWarning("XIRR bisection did not converge for this backtest run; Xirr will be reported as NaN. Check cash-flow patterns for non-standard sign changes.");
+
         logger.LogInformation(
             "Backtest complete: {Events} events, final equity {Equity:C}, net PnL {NetPnl:C} in {Elapsed}ms",
             eventsProcessed, metrics.FinalEquity, metrics.NetPnl, sw.ElapsedMilliseconds);
 
         var tradeTickets = BuildTradeTickets(allCashFlows);
-        return new BacktestResult(request, universe, allSnapshots, allCashFlows, allFills, metrics, ledger, sw.Elapsed, eventsProcessed, tradeTickets);
+        var tcaReport = PostSimulationTcaReporter.Generate(request, allFills);
+        return new BacktestResult(request, universe, allSnapshots, allCashFlows, allFills, metrics, ledger, sw.Elapsed, eventsProcessed, tradeTickets, tcaReport);
     }
 
     // ── Private helpers ──────────────────────────────────────────────────────
 
-    private static IReadOnlyList<IAsyncEnumerable<MarketEvent>> BuildSymbolStreams(
+    private Task<IReadOnlyList<IAsyncEnumerable<MarketEvent>>> BuildSymbolStreamsAsync(
         IReadOnlySet<string> universe,
-        BacktestRequest request)
+        BacktestRequest request,
+        CancellationToken ct)
     {
         var streams = new List<IAsyncEnumerable<MarketEvent>>();
         foreach (var symbol in universe)
@@ -148,9 +162,88 @@ public sealed class BacktestEngine(
                 symbolRoot = request.DataRoot;  // flat layout fallback
 
             var reader = new JsonlReplayer(symbolRoot);
-            streams.Add(FilterBySymbolAndDate(reader.ReadEventsAsync(), symbol, request.From, request.To));
+            var symbolStream = FilterBySymbolAndDate(reader.ReadEventsAsync(), symbol, request.From, request.To);
+
+            // Apply corporate action adjustments if enabled
+            if (request.AdjustForCorporateActions && corporateActionAdjustment != null)
+            {
+                symbolStream = ApplyCorporateActionAdjustmentsAsync(symbolStream, symbol, ct);
+            }
+
+            streams.Add(symbolStream);
         }
-        return streams;
+        return Task.FromResult<IReadOnlyList<IAsyncEnumerable<MarketEvent>>>(streams);
+    }
+
+    /// <summary>
+    /// Wraps a symbol stream to apply corporate action adjustments to all HistoricalBar events.
+    /// </summary>
+    private async IAsyncEnumerable<MarketEvent> ApplyCorporateActionAdjustmentsAsync(
+        IAsyncEnumerable<MarketEvent> source,
+        string symbol,
+        [EnumeratorCancellation] CancellationToken ct)
+    {
+        // Buffer all bars for this symbol
+        var bars = new List<HistoricalBar>();
+        var nonBarEvents = new List<MarketEvent>();
+
+        await foreach (var evt in source.WithCancellation(ct))
+        {
+            if (evt.Payload is HistoricalBar bar)
+            {
+                bars.Add(bar);
+            }
+            else
+            {
+                nonBarEvents.Add(evt);
+            }
+        }
+
+        // Apply adjustments to all bars
+        var adjustedBars = await corporateActionAdjustment!.AdjustAsync(bars, symbol, ct)
+            .ConfigureAwait(false);
+
+        // Merge adjusted bars back with non-bar events
+        // Re-create events in chronological order
+        var barsByTimestamp = adjustedBars.OrderBy(b => b.SessionDate).ToList();
+        var nonBarsByTimestamp = nonBarEvents.OrderBy(e => e.Timestamp).ToList();
+
+        int bIdx = 0, nbIdx = 0;
+        while (bIdx < barsByTimestamp.Count && nbIdx < nonBarsByTimestamp.Count)
+        {
+            var bar = barsByTimestamp[bIdx];
+            var nonBar = nonBarsByTimestamp[nbIdx];
+            var barTimestamp = bar.SessionDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+            if (barTimestamp <= nonBar.Timestamp.UtcDateTime)
+            {
+                yield return MarketEvent.HistoricalBar(
+                    new DateTimeOffset(barTimestamp, TimeSpan.Zero),
+                    symbol,
+                    bar);
+                bIdx++;
+            }
+            else
+            {
+                yield return nonBar;
+                nbIdx++;
+            }
+        }
+
+        while (bIdx < barsByTimestamp.Count)
+        {
+            var bar = barsByTimestamp[bIdx];
+            yield return MarketEvent.HistoricalBar(
+                new DateTimeOffset(bar.SessionDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
+                symbol,
+                bar);
+            bIdx++;
+        }
+
+        while (nbIdx < nonBarsByTimestamp.Count)
+        {
+            yield return nonBarsByTimestamp[nbIdx];
+            nbIdx++;
+        }
     }
 
     private static Dictionary<DateOnly, List<AssetEvent>> BuildAssetEventIndex(
@@ -190,7 +283,7 @@ public sealed class BacktestEngine(
         }
     }
 
-    private static async Task AdvanceDaysAsync(
+    private static void AdvanceDays(
         DateOnly fromDay,
         DateOnly toDay,
         SimulatedPortfolio portfolio,
@@ -206,14 +299,14 @@ public sealed class BacktestEngine(
         long eventsProcessed,
         CancellationToken ct)
     {
-        await ProcessDayEndAsync(fromDay, portfolio, pendingOrders, ctx, strategy, snapshots, allCashFlows, ct);
+        ProcessDayEnd(fromDay, portfolio, pendingOrders, ctx, strategy, snapshots, allCashFlows, ct);
 
         for (var date = fromDay.AddDays(1); date <= toDay; date = date.AddDays(1))
         {
             ApplyScheduledAssetEvents(date, assetEventsByDate, portfolio, ctx);
 
             if (date < toDay)
-                await ProcessDayEndAsync(date, portfolio, pendingOrders, ctx, strategy, snapshots, allCashFlows, ct);
+                ProcessDayEnd(date, portfolio, pendingOrders, ctx, strategy, snapshots, allCashFlows, ct);
 
             var daysElapsed = (date.ToDateTime(TimeOnly.MinValue) - requestFrom.ToDateTime(TimeOnly.MinValue)).Days;
             progress?.Report(new BacktestProgressEvent(
@@ -235,7 +328,7 @@ public sealed class BacktestEngine(
         {
             if (!evt.EffectiveSymbol.Equals(symbol, StringComparison.OrdinalIgnoreCase))
                 continue;
-            var date = DateOnly.FromDateTime(evt.Timestamp.LocalDateTime);
+            var date = DateOnly.FromDateTime(evt.Timestamp.UtcDateTime);
             if (date < from || date > to)
                 continue;
             yield return evt;
@@ -283,7 +376,9 @@ public sealed class BacktestEngine(
         SimulatedPortfolio portfolio,
         IBacktestStrategy strategy,
         BacktestContext ctx,
-        List<FillEvent> allFills)
+        List<FillEvent> allFills,
+        ILogger<BacktestEngine> logger,
+        ExecutionModel requestDefault = ExecutionModel.Auto)
     {
         var filled = new List<Guid>();
         for (var i = pendingOrders.Count - 1; i >= 0; i--)
@@ -292,12 +387,25 @@ public sealed class BacktestEngine(
             if (!order.Symbol.Equals(evt.EffectiveSymbol, StringComparison.OrdinalIgnoreCase))
                 continue;
 
-            var model = SelectFillModel(order, evt, lobModel, barModel, marketImpactModel);
+            var model = SelectFillModel(order, evt, lobModel, barModel, marketImpactModel, requestDefault);
             var result = model.TryFill(order, evt);
 
             foreach (var fill in result.Fills)
             {
-                portfolio.ProcessFill(fill);
+                try
+                {
+                    portfolio.ProcessFill(fill);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    // Account rule violation (e.g. short-selling or margin disabled).
+                    // Reject this fill rather than crashing the entire backtest run.
+                    logger.LogWarning(ex,
+                        "Fill rejected for order {OrderId} on {Symbol}: {Message}. The fill has been discarded.",
+                        fill.OrderId, fill.Symbol, ex.Message);
+                    continue;
+                }
+
                 ContingentOrderManager.ReconcileOcoSiblings(pendingOrders, order, fill);
                 allFills.Add(fill);
                 strategy.OnOrderFill(fill, ctx);
@@ -321,7 +429,7 @@ public sealed class BacktestEngine(
             (o.Status == OrderStatus.Filled && o.IsComplete));
     }
 
-    private static async Task ProcessDayEndAsync(
+    private static void ProcessDayEnd(
         DateOnly date,
         SimulatedPortfolio portfolio,
         List<Order> pendingOrders,
@@ -331,8 +439,7 @@ public sealed class BacktestEngine(
         List<CashFlowEntry> allCashFlows,
         CancellationToken ct = default)
     {
-        _ = ct;
-        await Task.Yield();  // allow UI thread to breathe during long replays
+        ct.ThrowIfCancellationRequested();
         portfolio.AccrueDailyInterest(date);
         ctx.CurrentDate = date;
         strategy.OnDayEnd(date, ctx);
@@ -362,9 +469,12 @@ public sealed class BacktestEngine(
         MarketEvent evt,
         IFillModel lobModel,
         IFillModel barModel,
-        IFillModel marketImpactModel)
+        IFillModel marketImpactModel,
+        ExecutionModel requestDefault = ExecutionModel.Auto)
     {
-        return order.ExecutionModel switch
+        // Order-level setting takes precedence; fall back to request default, then auto-select.
+        var effective = order.ExecutionModel == ExecutionModel.Auto ? requestDefault : order.ExecutionModel;
+        return effective switch
         {
             ExecutionModel.OrderBook => lobModel,
             ExecutionModel.BarMidpoint => barModel,
@@ -372,6 +482,19 @@ public sealed class BacktestEngine(
             _ => evt.Payload is LOBSnapshot ? lobModel : barModel
         };
     }
+
+    private static ICommissionModel BuildCommissionModel(BacktestRequest request) =>
+        request.CommissionKind switch
+        {
+            BacktestCommissionKind.Free => new FixedCommissionModel(0m),
+            BacktestCommissionKind.Percentage => new PercentageCommissionModel(
+                basisPoints: request.CommissionRate,
+                minimumPerOrder: request.CommissionMinimum),
+            _ => new PerShareCommissionModel(
+                perShare: request.CommissionRate,
+                minimumPerOrder: request.CommissionMinimum,
+                maximumPerOrder: request.CommissionMaximum)
+        };
 
     private static IReadOnlyList<TradeTicket> BuildTradeTickets(IReadOnlyList<CashFlowEntry> cashFlows)
     {
@@ -474,5 +597,46 @@ public sealed class BacktestEngine(
             : $" related symbol {assetEvent.RelatedSymbol}.";
 
         return $"{assetEvent.EventType} on {assetEvent.Symbol}: {assetEvent.UnitsImpacted} units impacted at {assetEvent.CashPerShare:F4} cash/share.{related}";
+    }
+
+    /// <summary>
+    /// Resolves per-symbol tick sizes from the Security Master (best-effort).
+    /// Returns an empty dictionary when no Security Master is configured or when a symbol is not found.
+    /// </summary>
+    private async Task<IReadOnlyDictionary<string, decimal>> ResolveTickSizesAsync(
+        IReadOnlySet<string> universe,
+        DateTime asOf,
+        CancellationToken ct)
+    {
+        if (securityMasterQueryService is null || universe.Count == 0)
+            return new Dictionary<string, decimal>();
+
+        var result = new Dictionary<string, decimal>(universe.Count, StringComparer.OrdinalIgnoreCase);
+        var asOfOffset = new DateTimeOffset(asOf, TimeSpan.Zero);
+
+        foreach (var symbol in universe)
+        {
+            ct.ThrowIfCancellationRequested();
+            try
+            {
+                var detail = await securityMasterQueryService.GetByIdentifierAsync(
+                    SecurityIdentifierKind.Ticker, symbol, provider: null, ct);
+
+                if (detail is null)
+                    continue;
+
+                var tradingParams = await securityMasterQueryService.GetTradingParametersAsync(
+                    detail.SecurityId, asOfOffset, ct);
+
+                if (tradingParams?.TickSize is { } tickSize && tickSize > 0m)
+                    result[symbol] = tickSize;
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                logger.LogWarning(ex, "Failed to resolve tick size for symbol {Symbol}; using default", symbol);
+            }
+        }
+
+        return result;
     }
 }

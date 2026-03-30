@@ -56,6 +56,17 @@ Transitive dependency from QuantConnect.Lean packages (required for backtesting 
 
 ---
 
+## Fixed Vulnerabilities (2026-03-27)
+
+The following vulnerabilities were fixed by pinning transitive dependencies in `Directory.Packages.props`:
+
+### System.Text.RegularExpressions 4.3.0 → 4.3.1
+- **CVE:** CVE-2019-0820 (GHSA-cmhx-cq75-c4mj)
+- **Severity:** High
+- **Fix:** Upgraded transitive pin to 4.3.1 (fixed in 4.3.1+)
+
+---
+
 ## Fixed Vulnerabilities (2026-02-10)
 
 The following vulnerabilities were fixed by pinning transitive dependencies in `Directory.Packages.props`:

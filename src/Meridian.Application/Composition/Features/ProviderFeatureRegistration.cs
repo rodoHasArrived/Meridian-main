@@ -11,6 +11,8 @@ using Meridian.Infrastructure.Adapters.Synthetic;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
 using Microsoft.Extensions.DependencyInjection;
+// IHttpClientFactory lives in Microsoft.Extensions.Http (transitively available)
+using System.Net.Http;
 
 namespace Meridian.Application.Composition.Features;
 
@@ -131,10 +133,12 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
             var tradeCollector = sp.GetRequiredService<TradeDataCollector>();
             var depthCollector = sp.GetRequiredService<MarketDepthCollector>();
             var quoteCollector = sp.GetRequiredService<QuoteCollector>();
+            var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
             return new Infrastructure.Adapters.NYSE.NyseMarketDataClient(
                 tradeCollector,
                 depthCollector,
-                quoteCollector);
+                quoteCollector,
+                httpClientFactory);
         });
 
         registry.RegisterStreamingFactory(DataSourceKind.Synthetic, () =>

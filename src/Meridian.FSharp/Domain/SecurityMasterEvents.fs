@@ -62,3 +62,82 @@ module SecurityMasterEvent =
             |> Some
         | None, _ ->
             None
+
+// ---------------------------------------------------------------------------
+// Corporate Action Events
+// ---------------------------------------------------------------------------
+
+/// Opaque identifier for a corporate action event.
+type CorpActId = CorpActId of Guid
+
+[<RequireQualifiedAccess>]
+type CorpActEvent =
+    /// Cash or stock dividend. `DividendPerShare` is in the instrument's currency.
+    | Dividend of
+        securityId: SecurityId *
+        corpActId: CorpActId *
+        exDate: DateOnly *
+        payDate: DateOnly option *
+        dividendPerShare: decimal *
+        currency: string
+    /// Forward stock split (`SplitRatio` > 1) or reverse split (`SplitRatio` < 1).
+    | StockSplit of
+        securityId: SecurityId *
+        corpActId: CorpActId *
+        exDate: DateOnly *
+        splitRatio: decimal
+    /// Spin-off: a portion of the parent company is distributed as shares of a new entity.
+    | SpinOff of
+        securityId: SecurityId *
+        corpActId: CorpActId *
+        exDate: DateOnly *
+        newSecurityId: SecurityId *
+        distributionRatio: decimal
+    /// Merger/absorption: this security is absorbed into an acquirer.
+    | MergerAbsorption of
+        securityId: SecurityId *
+        corpActId: CorpActId *
+        effectiveDate: DateOnly *
+        acquirerSecurityId: SecurityId *
+        exchangeRatio: decimal
+    /// Rights issue: existing shareholders are offered additional shares at a subscription price.
+    | RightsIssue of
+        securityId: SecurityId *
+        corpActId: CorpActId *
+        exDate: DateOnly *
+        subscriptionPricePerShare: decimal *
+        rightsPerShare: decimal
+
+[<RequireQualifiedAccess>]
+module CorpActEvent =
+    let securityId event =
+        match event with
+        | CorpActEvent.Dividend (secId, _, _, _, _, _) -> secId
+        | CorpActEvent.StockSplit (secId, _, _, _) -> secId
+        | CorpActEvent.SpinOff (secId, _, _, _, _) -> secId
+        | CorpActEvent.MergerAbsorption (secId, _, _, _, _) -> secId
+        | CorpActEvent.RightsIssue (secId, _, _, _, _) -> secId
+
+    let corpActId event =
+        match event with
+        | CorpActEvent.Dividend (_, id, _, _, _, _) -> id
+        | CorpActEvent.StockSplit (_, id, _, _) -> id
+        | CorpActEvent.SpinOff (_, id, _, _, _) -> id
+        | CorpActEvent.MergerAbsorption (_, id, _, _, _) -> id
+        | CorpActEvent.RightsIssue (_, id, _, _, _) -> id
+
+    let exDate event =
+        match event with
+        | CorpActEvent.Dividend (_, _, date, _, _, _) -> date
+        | CorpActEvent.StockSplit (_, _, date, _) -> date
+        | CorpActEvent.SpinOff (_, _, date, _, _) -> date
+        | CorpActEvent.MergerAbsorption (_, _, date, _, _) -> date
+        | CorpActEvent.RightsIssue (_, _, date, _, _) -> date
+
+    let eventType event =
+        match event with
+        | CorpActEvent.Dividend _ -> "Dividend"
+        | CorpActEvent.StockSplit _ -> "StockSplit"
+        | CorpActEvent.SpinOff _ -> "SpinOff"
+        | CorpActEvent.MergerAbsorption _ -> "MergerAbsorption"
+        | CorpActEvent.RightsIssue _ -> "RightsIssue"

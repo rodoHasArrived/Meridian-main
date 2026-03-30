@@ -36,7 +36,8 @@ public class ConfigService : IConfigService
 
     public virtual async Task<AppConfig?> LoadConfigAsync(CancellationToken ct = default)
     {
-        if (!File.Exists(ConfigPath)) return null;
+        if (!File.Exists(ConfigPath))
+            return null;
         try
         {
             var json = await File.ReadAllTextAsync(ConfigPath, ct);
@@ -49,7 +50,8 @@ public class ConfigService : IConfigService
     public virtual async Task SaveConfigAsync(AppConfig config, CancellationToken ct = default)
     {
         var dir = Path.GetDirectoryName(ConfigPath);
-        if (dir != null) Directory.CreateDirectory(dir);
+        if (dir != null)
+            Directory.CreateDirectory(dir);
         var json = JsonSerializer.Serialize(config, _jsonOptions);
         await File.WriteAllTextAsync(ConfigPath, json, ct);
     }
