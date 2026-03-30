@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-03-30 13:39:46 UTC. Do not edit manually.
+> Auto-generated on 2026-03-30 13:55:05 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -2203,6 +2203,7 @@ Meridian-main
 │       │   ├── PaneLayout.cs
 │       │   ├── ProviderHealthModels.cs
 │       │   ├── QuantScriptModels.cs
+│       │   ├── SettingsModels.cs
 │       │   ├── StorageDisplayModels.cs
 │       │   ├── SymbolsModels.cs
 │       │   ├── WorkspaceDefinition.cs
@@ -2320,6 +2321,8 @@ Meridian-main
 │       │   ├── AnalysisExportPage.xaml.cs
 │       │   ├── AnalysisExportWizardPage.xaml
 │       │   ├── AnalysisExportWizardPage.xaml.cs
+│       │   ├── ApiKeyDialog.xaml
+│       │   ├── ApiKeyDialog.xaml.cs
 │       │   ├── ArchiveHealthPage.xaml
 │       │   ├── ArchiveHealthPage.xaml.cs
 │       │   ├── BackfillPage.xaml
@@ -2356,6 +2359,8 @@ Meridian-main
 │       │   ├── DiagnosticsPage.xaml.cs
 │       │   ├── DirectLendingPage.xaml
 │       │   ├── DirectLendingPage.xaml.cs
+│       │   ├── EditScheduledJobDialog.xaml
+│       │   ├── EditScheduledJobDialog.xaml.cs
 │       │   ├── EventReplayPage.xaml
 │       │   ├── EventReplayPage.xaml.cs
 │       │   ├── ExportPresetsPage.xaml
@@ -2414,6 +2419,8 @@ Meridian-main
 │       │   ├── RunMatPage.xaml.cs
 │       │   ├── RunPortfolioPage.xaml
 │       │   ├── RunPortfolioPage.xaml.cs
+│       │   ├── SaveWatchlistDialog.xaml
+│       │   ├── SaveWatchlistDialog.xaml.cs
 │       │   ├── ScheduleManagerPage.xaml
 │       │   ├── ScheduleManagerPage.xaml.cs
 │       │   ├── SecurityMasterPage.xaml
