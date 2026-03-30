@@ -17,14 +17,37 @@ public enum LoanStatus : byte
     Suspended = 3,
     Matured = 4,
     Closed = 5,
-    Defaulted = 6
+    Defaulted = 6,
+    NonPerforming = 7,
+    Workout = 8
 }
 
 public enum DayCountBasis : byte
 {
     Act360 = 0,
     Act365F = 1,
-    Thirty360 = 2
+    Thirty360 = 2,
+    ActualActualISDA = 3
+}
+
+public enum CollateralType : byte
+{
+    RealEstate = 0,
+    Equipment = 1,
+    Inventory = 2,
+    AccountsReceivable = 3,
+    FinancialInstrument = 4,
+    Other = 5
+}
+
+public enum RestructuringType : byte
+{
+    MaturityExtension = 0,
+    RateReduction = 1,
+    PrincipalHaircut = 2,
+    DebtForEquitySwap = 3,
+    PikConversion = 4,
+    Full = 5
 }
 
 public enum RateTypeKind : byte
@@ -49,6 +72,14 @@ public enum AmortizationType : byte
     StraightLine = 2,
     CustomSchedule = 3
 }
+
+public sealed record CollateralDto(
+    Guid CollateralId,
+    CollateralType CollateralType,
+    string Description,
+    decimal EstimatedValue,
+    CurrencyCode Currency,
+    DateOnly AppraisalDate);
 
 public sealed record BorrowerInfoDto(
     Guid BorrowerId,
@@ -88,7 +119,8 @@ public sealed record DirectLendingTermsDto(
     int? GracePeriodDays = null,
     decimal? EffectiveRateFloor = null,
     decimal? EffectiveRateCap = null,
-    decimal? PrepaymentPenaltyRate = null);
+    decimal? PrepaymentPenaltyRate = null,
+    decimal? PurchasePrice = null);
 
 public sealed record LoanTermsVersionDto(
     int VersionNumber,
@@ -182,7 +214,11 @@ public sealed record LoanServicingStateDto(
     DateOnly? LastPaymentDate,
     long ServicingRevision,
     IReadOnlyList<ServicingRevisionDto> RevisionHistory,
-    IReadOnlyList<DailyAccrualEntryDto> AccrualEntries);
+    IReadOnlyList<DailyAccrualEntryDto> AccrualEntries,
+    IReadOnlyList<CollateralDto>? Collateral = null,
+    decimal UnamortizedDiscount = 0m,
+    decimal UnamortizedPremium = 0m,
+    bool IsPikToggled = false);
 
 public sealed record CreateLoanRequest(
     Guid? LoanId,
@@ -244,9 +280,48 @@ public sealed record LoanPortfolioSummaryDto(
     int TotalLoans,
     int ActiveLoans,
     int DefaultedLoans,
+    int NonPerformingLoans,
+    int WorkoutLoans,
     decimal TotalCommitment,
     decimal TotalPrincipalOutstanding,
     decimal TotalInterestAccruedUnpaid,
     decimal TotalPenaltyAccruedUnpaid,
     decimal TotalAvailableToDraw,
+    decimal TotalCollateralValue,
     IReadOnlyList<LoanSummaryDto> Loans);
+
+public sealed record AddCollateralRequest(
+    CollateralType CollateralType,
+    string Description,
+    decimal EstimatedValue,
+    CurrencyCode Currency,
+    DateOnly AppraisalDate);
+
+public sealed record RemoveCollateralRequest(
+    Guid CollateralId,
+    string Reason);
+
+public sealed record UpdateCollateralValueRequest(
+    Guid CollateralId,
+    decimal NewEstimatedValue,
+    DateOnly NewAppraisalDate);
+
+public sealed record TransitionLoanStatusRequest(
+    LoanStatus NewStatus,
+    string Reason,
+    DateOnly EffectiveDate);
+
+public sealed record TogglePikRequest(
+    bool EnablePik,
+    DateOnly EffectiveDate,
+    string? Reason = null);
+
+public sealed record RestructureLoanRequest(
+    RestructuringType RestructuringType,
+    string Reason,
+    DateOnly EffectiveDate,
+    DirectLendingTermsDto? NewTerms = null,
+    decimal? HaircutAmount = null);
+
+public sealed record AmortizeDiscountPremiumRequest(
+    DateOnly AccrualDate);

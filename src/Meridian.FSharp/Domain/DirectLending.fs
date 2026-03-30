@@ -7,6 +7,7 @@ type DirectLendingDayCountBasis =
     | Act360
     | Act365F
     | Thirty360
+    | ActualActualISDA
 
 [<RequireQualifiedAccess>]
 type DirectLendingRateType =
@@ -31,6 +32,32 @@ module DirectLending =
         | DirectLendingDayCountBasis.Act360
         | DirectLendingDayCountBasis.Thirty360 -> 360m
         | DirectLendingDayCountBasis.Act365F -> 365m
+        | DirectLendingDayCountBasis.ActualActualISDA -> 365m // denominator per period; numerator is actual days
+
+    /// Returns the accrual fraction for a single day under each convention.
+    let accrualFractionForDay (basis: DirectLendingDayCountBasis) (date: DateOnly) =
+        match basis with
+        | DirectLendingDayCountBasis.Act360 -> 1m / 360m
+        | DirectLendingDayCountBasis.Act365F -> 1m / 365m
+        | DirectLendingDayCountBasis.Thirty360 -> 1m / 360m
+        | DirectLendingDayCountBasis.ActualActualISDA ->
+            let year = date.Year
+            let daysInYear = if DateTime.IsLeapYear year then 366m else 365m
+            1m / daysInYear
+
+    /// Net present value of collateral minus principal outstanding.
+    let calculateCollateralCoverage (totalCollateralValue: decimal) (principalOutstanding: decimal) =
+        totalCollateralValue - principalOutstanding
+
+    /// Amortization amount for one period using straight-line method.
+    let calculateStraightLineAmortization (originalAmount: decimal) (remainingPeriods: int) =
+        if remainingPeriods <= 0 then 0m
+        else originalAmount / decimal remainingPeriods
+
+    /// PIK accrual: add interest to principal balance instead of cash payment.
+    let calculatePikAccrual (principalBasis: decimal) (annualRate: decimal) (basis: DirectLendingDayCountBasis) (date: DateOnly) =
+        if principalBasis <= 0m || annualRate <= 0m then 0m
+        else principalBasis * annualRate * (accrualFractionForDay basis date)
 
     let calculateAvailableToDraw currentCommitment totalDrawn =
         max 0m (currentCommitment - totalDrawn)
@@ -45,6 +72,11 @@ module DirectLending =
             0m
         else
             principalBasis * annualRate / dayCountDenominator basis
+
+    /// Date-aware variant used for ActualActualISDA where leap-year matters.
+    let calculateDailyAccrualAmountForDate basis principalBasis annualRate (date: DateOnly) =
+        if principalBasis <= 0m || annualRate <= 0m then 0m
+        else principalBasis * annualRate * (accrualFractionForDay basis date)
 
     let applyPrincipalPayment principalOutstanding paymentAmount =
         max 0m (principalOutstanding - max 0m paymentAmount)
