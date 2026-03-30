@@ -1657,8 +1657,13 @@ Use these documents together when planning or implementing new work:
 │   │   ├── OrderManagementSystem.cs
 │   │   ├── PaperExecutionContext.cs
 │   │   ├── PaperTradingGateway.cs
+│   │   ├── Serialization
+│   │   │   └── ExecutionJsonContext.cs
 │   │   └── Services
+│   │       ├── IPaperSessionStore.cs
+│   │       ├── JsonlFilePaperSessionStore.cs
 │   │       ├── OrderLifecycleManager.cs
+│   │       ├── PaperSessionOptions.cs
 │   │       ├── PaperSessionPersistenceService.cs
 │   │       └── PaperTradingPortfolio.cs
 │   ├── Meridian.Execution.Sdk
@@ -3202,6 +3207,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-472 directories, 2692 files
+473 directories, 2696 files
 ```
 <!-- readme-tree end -->
