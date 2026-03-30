@@ -314,5 +314,21 @@ public static class SecurityMasterEndpoints
         })
         .WithName("ImportSecurityMaster")
         .Produces<AppSecurityMaster.SecurityMasterImportResult>(StatusCodes.Status200OK);
+
+        // GET /api/security-master/ingest/status
+        group.MapGet(UiApiRoutes.SecurityMasterIngestStatus, async (
+            AppSecurityMaster.ISecurityMasterConflictService conflictService,
+            ISecurityMasterQueryService queryService,
+            CancellationToken ct) =>
+        {
+            var openConflicts = await conflictService.GetOpenConflictsAsync(ct).ConfigureAwait(false);
+            return Results.Json(new
+            {
+                OpenConflicts = openConflicts.Count,
+                RetrievedAt = DateTimeOffset.UtcNow
+            }, jsonOptions);
+        })
+        .WithName("SecurityMasterIngestStatus")
+        .Produces(StatusCodes.Status200OK);
     }
 }

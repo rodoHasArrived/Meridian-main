@@ -194,6 +194,9 @@ public sealed class Ledger : IReadOnlyLedger
         if (!string.IsNullOrWhiteSpace(query.Institution))
             filtered = filtered.Where(entry => string.Equals(entry.Metadata.Institution, query.Institution, StringComparison.OrdinalIgnoreCase));
 
+        if (query.AccountType is not null)
+            filtered = filtered.Where(entry => entry.Lines.Any(l => l.Account.AccountType == query.AccountType.Value));
+
         return filtered.ToList();
     }
 
