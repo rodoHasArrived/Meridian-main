@@ -40,7 +40,7 @@ public sealed class ParquetStorageSink : IStorageSink
 
     // Trade event schema
     private static readonly ParquetSchema TradeSchema = new(
-        new DataField<DateTimeOffset>("Timestamp"),
+        new DataField<DateTime>("Timestamp"),
         new DataField<string>("Symbol"),
         new DataField<decimal>("Price"),
         new DataField<long>("Size"),
@@ -52,7 +52,7 @@ public sealed class ParquetStorageSink : IStorageSink
 
     // Quote event schema
     private static readonly ParquetSchema QuoteSchema = new(
-        new DataField<DateTimeOffset>("Timestamp"),
+        new DataField<DateTime>("Timestamp"),
         new DataField<string>("Symbol"),
         new DataField<decimal>("BidPrice"),
         new DataField<long>("BidSize"),
@@ -65,7 +65,7 @@ public sealed class ParquetStorageSink : IStorageSink
 
     // L2 Snapshot schema
     private static readonly ParquetSchema L2Schema = new(
-        new DataField<DateTimeOffset>("Timestamp"),
+        new DataField<DateTime>("Timestamp"),
         new DataField<string>("Symbol"),
         new DataField<int>("BidLevels"),
         new DataField<int>("AskLevels"),
@@ -80,7 +80,7 @@ public sealed class ParquetStorageSink : IStorageSink
 
     // Historical bar schema
     private static readonly ParquetSchema BarSchema = new(
-        new DataField<DateTimeOffset>("Timestamp"),
+        new DataField<DateTime>("Timestamp"),
         new DataField<string>("Symbol"),
         new DataField<decimal>("Open"),
         new DataField<decimal>("High"),
@@ -237,7 +237,7 @@ public sealed class ParquetStorageSink : IStorageSink
             return;
 
         // Single-pass: build all column arrays simultaneously
-        var timestamps = new DateTimeOffset[count];
+        var timestamps = new DateTime[count];
         var symbols = new string[count];
         var prices = new decimal[count];
         var sizes = new long[count];
@@ -291,7 +291,7 @@ public sealed class ParquetStorageSink : IStorageSink
         if (count == 0)
             return;
 
-        var timestamps = new DateTimeOffset[count];
+        var timestamps = new DateTime[count];
         var symbols = new string[count];
         var bidPrices = new decimal[count];
         var bidSizes = new long[count];
@@ -353,7 +353,7 @@ public sealed class ParquetStorageSink : IStorageSink
             using var rowGroupWriter = groupWriter.CreateRowGroup();
 
             var count = snapshots.Count;
-            var timestamps = new DateTimeOffset[count];
+            var timestamps = new DateTime[count];
             var symbols = new string[count];
             var bidCounts = new int[count];
             var askCounts = new int[count];
@@ -421,7 +421,7 @@ public sealed class ParquetStorageSink : IStorageSink
         if (count == 0)
             return;
 
-        var timestamps = new DateTimeOffset[count];
+        var timestamps = new DateTime[count];
         var symbols = new string[count];
         var opens = new decimal[count];
         var highs = new decimal[count];
@@ -470,7 +470,7 @@ public sealed class ParquetStorageSink : IStorageSink
     {
         // For generic events, write as JSON strings in a simple schema
         var genericSchema = new ParquetSchema(
-            new DataField<DateTimeOffset>("Timestamp"),
+            new DataField<DateTime>("Timestamp"),
             new DataField<string>("Symbol"),
             new DataField<string>("Type"),
             new DataField<string>("PayloadJson"),
@@ -479,7 +479,7 @@ public sealed class ParquetStorageSink : IStorageSink
         );
 
         var count = events.Count;
-        var timestamps = new DateTimeOffset[count];
+        var timestamps = new DateTime[count];
         var symbols = new string[count];
         var types = new string[count];
         var payloads = new string[count];
