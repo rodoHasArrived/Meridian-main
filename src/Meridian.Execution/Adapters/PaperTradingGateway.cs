@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Execution.Exceptions;
@@ -26,6 +27,7 @@ public sealed class PaperTradingGateway : IOrderGateway
     private readonly ISecurityMasterQueryService? _securityMaster;
     private readonly System.Threading.Channels.Channel<OrderStatusUpdate> _updates;
     private readonly Dictionary<string, OrderRequest> _workingOrders = new();
+    private readonly ConcurrentDictionary<string, TradingParametersDto?> _tradingParamsCache = new(StringComparer.OrdinalIgnoreCase);
     private readonly Lock _lock = new();
     private bool _disposed;
 
@@ -67,10 +69,10 @@ public sealed class PaperTradingGateway : IOrderGateway
     /// <summary>
     /// Creates a new paper trading gateway.
     /// </summary>
-    /// <param name="logger">Logger.</param>
+    /// <param name="logger">Logger instance.</param>
     /// <param name="securityMaster">
-    /// Optional Security Master query service. When provided, order lot-size constraints
-    /// are validated against the instrument's <see cref="TradingParametersDto.LotSize"/>.
+    /// Optional Security Master query service. When provided, lot-size validation and
+    /// tick-size price rounding are applied on a best-effort basis.
     /// </param>
     public PaperTradingGateway(ILogger<PaperTradingGateway> logger, ISecurityMasterQueryService? securityMaster = null)
     {
@@ -148,6 +150,20 @@ public sealed class PaperTradingGateway : IOrderGateway
             return new OrderValidationResult(false, "Stop and stop-limit orders require a positive stop price.");
         }
 
+        // Best-effort lot-size validation using the Security Master (requires ISecurityMasterQueryService).
+        var tradingParams = await TryGetTradingParamsAsync(request.Symbol, ct).ConfigureAwait(false);
+        if (tradingParams?.LotSize is { } lotSize && lotSize > 0m)
+        {
+            var absQty = Math.Abs(request.Quantity);
+            if (absQty % lotSize != 0m)
+            {
+                return new OrderValidationResult(
+                    false,
+                    $"Order quantity {absQty} is not a valid multiple of the lot size {lotSize} for {request.Symbol}.");
+            }
+        }
+
+        return new OrderValidationResult(true);
         // Lot-size validation via Security Master (when configured).
         if (_securityMaster is not null)
         {
@@ -262,6 +278,10 @@ public sealed class PaperTradingGateway : IOrderGateway
             _ => ScaffoldMarketFillPrice
         };
 
+        // Best-effort tick-size rounding: snap fill price to the instrument's tick grid.
+        var tradingParams = await TryGetTradingParamsAsync(request.Symbol, ct).ConfigureAwait(false);
+        fillPrice = SnapToTickSize(fillPrice, tradingParams?.TickSize);
+
         var fill = new OrderStatusUpdate(
             OrderId: orderId,
             ClientOrderId: orderId,
@@ -277,6 +297,55 @@ public sealed class PaperTradingGateway : IOrderGateway
         _logger.LogInformation(
             "Paper fill: {ClientOrderId} {Quantity} {Symbol} @ {FillPrice}",
             request.ClientOrderId, request.Quantity, request.Symbol, fillPrice);
+    }
+
+    /// <summary>
+    /// Looks up trading parameters for a symbol via the Security Master. Results are
+    /// cached per symbol for the lifetime of this gateway instance to avoid repeated I/O.
+    /// Returns <c>null</c> on any error or when no Security Master is configured.
+    /// </summary>
+    private async Task<TradingParametersDto?> TryGetTradingParamsAsync(string symbol, CancellationToken ct)
+    {
+        if (_securityMaster is null)
+            return null;
+
+        if (_tradingParamsCache.TryGetValue(symbol, out var cached))
+            return cached;
+
+        try
+        {
+            var detail = await _securityMaster.GetByIdentifierAsync(
+                SecurityIdentifierKind.Ticker, symbol, provider: null, ct)
+                .ConfigureAwait(false);
+
+            TradingParametersDto? result = null;
+            if (detail is not null)
+            {
+                result = await _securityMaster.GetTradingParametersAsync(detail.SecurityId, DateTimeOffset.UtcNow, ct)
+                    .ConfigureAwait(false);
+            }
+
+            _tradingParamsCache[symbol] = result;
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "Could not resolve trading parameters for {Symbol} — lot-size and tick-size checks skipped", symbol);
+            _tradingParamsCache[symbol] = null;
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Rounds <paramref name="price"/> to the nearest multiple of <paramref name="tickSize"/>.
+    /// Returns <paramref name="price"/> unchanged when <paramref name="tickSize"/> is null or zero.
+    /// </summary>
+    private static decimal SnapToTickSize(decimal price, decimal? tickSize)
+    {
+        if (tickSize is not { } tick || tick <= 0m)
+            return price;
+
+        return Math.Round(price / tick, MidpointRounding.AwayFromZero) * tick;
     }
 
     /// <inheritdoc/>

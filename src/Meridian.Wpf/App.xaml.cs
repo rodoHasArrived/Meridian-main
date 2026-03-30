@@ -327,10 +327,23 @@ public partial class App : System.Windows.Application
         services.AddTransient<PluginManagementPage>();
         services.AddTransient<AgentPage>();
 
+<<<<<<< copilot/add-corporate-action-adjustment-service-implementa
         // ── Backtesting service — also registered in RegisterStrategyWorkspaceServices ──
         // The registration below is deferred to RegisterStrategyWorkspaceServices (called at line 256)
         // so the corporate action adjustment service can be wired in when a Security Master
         // connection string is configured.
+=======
+        // ── Backtesting service ──────────────────────────────────────────────
+        services.AddSingleton(sp =>
+        {
+            var svc = WpfServices.BacktestService.Instance;
+            svc.SecurityMasterQueryService =
+                sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>();
+            svc.CorporateActionAdjustmentService =
+                sp.GetService<Meridian.Backtesting.ICorporateActionAdjustmentService>();
+            return svc;
+        });
+>>>>>>> main
 
         // ── Ui.Services singletons accessed via DI (no static .Instance in pages) ──
         services.AddSingleton(_ => BackfillProviderConfigService.Instance);
@@ -391,9 +404,18 @@ public partial class App : System.Windows.Application
             services.AddSingleton<SecurityMasterCsvParser>();
             services.AddSingleton<ISecurityMasterImportService, SecurityMasterImportService>();
 
+<<<<<<< copilot/add-corporate-action-adjustment-service-implementa
             // Corporate action adjustment service (requires Security Master)
             services.AddSingleton<ISecurityResolver, SecurityResolver>();
             services.AddSingleton<ICorporateActionAdjustmentService, CorporateActionAdjustmentService>();
+=======
+            // Corporate action adjustment for backtesting
+            services.AddSingleton<Meridian.Backtesting.ICorporateActionAdjustmentService>(sp =>
+                new Meridian.Backtesting.CorporateActionAdjustmentService(
+                    sp.GetRequiredService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),
+                    sp.GetRequiredService<ISecurityResolver>(),
+                    sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Meridian.Backtesting.CorporateActionAdjustmentService>>()));
+>>>>>>> main
         }
 
         // Wire the corporate action adjustment service into the BacktestService singleton when available.

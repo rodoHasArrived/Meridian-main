@@ -73,5 +73,9 @@ module DirectLending =
             | Some rate -> Some (outstandingPrincipal * rate)
 
     let applyRateBounds (effectiveRateFloor: decimal option) (effectiveRateCap: decimal option) rate =
-        rate
-        |> clampFloorCap effectiveRateFloor effectiveRateCap
+        match effectiveRateFloor, effectiveRateCap with
+        | Some floor, Some cap when cap < floor ->
+            invalidArg "effectiveRateCap" (sprintf "EffectiveRateCap (%M) must not be less than EffectiveRateFloor (%M)." cap floor)
+        | _ ->
+            rate
+            |> clampFloorCap effectiveRateFloor effectiveRateCap

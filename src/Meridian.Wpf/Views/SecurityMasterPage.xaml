@@ -45,6 +45,28 @@
                         <TextBlock Text="{Binding StatusText}"
                                    Foreground="{StaticResource ConsoleTextMutedBrush}"
                                    VerticalAlignment="Center" Margin="0,0,16,0" FontSize="12"/>
+                        <!-- Conflict badge: visible when open conflicts exist -->
+                        <Border Background="{StaticResource WarningColorBrush}"
+                                CornerRadius="10"
+                                Padding="8,2"
+                                VerticalAlignment="Center"
+                                Visibility="{Binding HasOpenConflicts, Converter={StaticResource BoolToVisibilityConverter}}"
+                                ToolTip="Open identifier conflicts detected. Review and resolve them."
+                                Cursor="Hand">
+                            <Border.InputBindings>
+                                <MouseBinding MouseAction="LeftClick"
+                                              Command="{Binding RefreshConflictCountCommand}"/>
+                            </Border.InputBindings>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="⚠ " Foreground="#333" FontWeight="Bold" FontSize="12"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding OpenConflictCount}"
+                                           Foreground="#333" FontWeight="Bold" FontSize="12"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Text=" conflicts" Foreground="#333" FontSize="12"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
                     </StackPanel>
                 </Grid>
             </Border>

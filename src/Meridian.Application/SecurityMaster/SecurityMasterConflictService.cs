@@ -18,6 +18,13 @@ public interface ISecurityMasterConflictService
 
     /// <summary>Resolves or dismisses a conflict. Returns the updated record, or null if not found.</summary>
     Task<SecurityMasterConflict?> ResolveAsync(ResolveConflictRequest request, CancellationToken ct);
+
+    /// <summary>
+    /// Checks a freshly written projection for identifier conflicts with existing securities
+    /// and records any newly found conflicts in the in-memory store.
+    /// Called automatically after every create/amend operation.
+    /// </summary>
+    Task RecordConflictsForProjectionAsync(SecurityProjectionRecord projection, CancellationToken ct);
 }
 
 /// <summary>
@@ -78,6 +85,68 @@ public sealed class SecurityMasterConflictService : ISecurityMasterConflictServi
             request.ConflictId, existing.SecurityId, newStatus, request.ResolvedBy);
 
         return Task.FromResult<SecurityMasterConflict?>(updated);
+    }
+
+    public async Task RecordConflictsForProjectionAsync(SecurityProjectionRecord projection, CancellationToken ct)
+    {
+        // Load all projections and check the new record's identifiers against existing ones
+        var all = await _store.LoadAllAsync(ct).ConfigureAwait(false);
+
+        // Build a lookup of (kind, value) → (SecurityId, Provider) for all OTHER records
+        var byIdentifier = new Dictionary<string, (Guid SecurityId, string Provider)>(
+            StringComparer.OrdinalIgnoreCase);
+
+        foreach (var existing in all)
+        {
+            if (existing.SecurityId == projection.SecurityId)
+                continue;
+
+            foreach (var id in existing.Identifiers)
+            {
+                var key = $"{id.Kind}|{id.Value}";
+                // Track only the first record we encounter for each identifier (deterministic)
+                byIdentifier.TryAdd(key, (existing.SecurityId, id.Provider ?? "Unknown"));
+            }
+        }
+
+        // Check each identifier on the new projection
+        int newConflicts = 0;
+        foreach (var id in projection.Identifiers)
+        {
+            var key = $"{id.Kind}|{id.Value}";
+            if (!byIdentifier.TryGetValue(key, out var conflicting))
+                continue;
+
+            var conflictId = DeterministicConflictId(id.Kind.ToString(), id.Value, projection.SecurityId, conflicting.SecurityId);
+
+            // Only record if not already tracked with a non-Open status
+            if (_conflicts.TryGetValue(conflictId, out var existing) && existing.Status != "Open")
+                continue;
+
+            var conflict = new SecurityMasterConflict(
+                ConflictId: conflictId,
+                SecurityId: projection.SecurityId,
+                ConflictKind: "IdentifierAmbiguity",
+                FieldPath: $"Identifiers.{id.Kind}",
+                ProviderA: id.Provider ?? "Unknown",
+                ValueA: projection.SecurityId.ToString(),
+                ProviderB: conflicting.Provider,
+                ValueB: conflicting.SecurityId.ToString(),
+                DetectedAt: DateTimeOffset.UtcNow,
+                Status: "Open");
+
+            _conflicts[conflictId] = conflict;
+            newConflicts++;
+
+            _logger.LogWarning(
+                "Ingest-time conflict detected: identifier {Kind}={Value} already assigned to security {ExistingId} (new: {NewId})",
+                id.Kind, id.Value, conflicting.SecurityId, projection.SecurityId);
+        }
+
+        if (newConflicts > 0)
+            _logger.LogInformation(
+                "Recorded {Count} new identifier conflict(s) for security {SecurityId}",
+                newConflicts, projection.SecurityId);
     }
 
     private async Task<IReadOnlyList<SecurityMasterConflict>> DetectConflictsAsync(CancellationToken ct)

@@ -1820,6 +1820,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── PolygonCorporateActionFetcher.cs
 │   │   │   │   ├── PolygonHistoricalDataProvider.cs
 │   │   │   │   ├── PolygonMarketDataClient.cs
+│   │   │   │   ├── PolygonSecurityMasterIngestProvider.cs
 │   │   │   │   ├── PolygonSymbolSearchProvider.cs
 │   │   │   │   └── TradingParametersBackfillService.cs
 │   │   │   ├── StockSharp
@@ -3201,6 +3202,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-472 directories, 2691 files
+472 directories, 2692 files
 ```
 <!-- readme-tree end -->
