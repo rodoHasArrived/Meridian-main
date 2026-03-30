@@ -117,13 +117,16 @@ static package content.
 ### `meridian-implementation-assurance`
 
 **Location:** [`.claude/skills/meridian-implementation-assurance/`](https://github.com/rodoHasArrived/Meridian/blob/main/.claude/skills/meridian-implementation-assurance)
-**Purpose:** Validate that implemented changes match approved requirements/blueprints and are accompanied by tests, documentation updates, and traceable evidence.
+**Purpose:** Certify that implemented changes match approved requirements/blueprints, are validated with explicit evidence (builds, tests, docs), and are discoverable in the AI catalogs.
 **When it triggers:** requests to certify completeness, collect validation evidence, update AI/agent catalogs after new capabilities, or verify implementation scope against acceptance criteria.
+**Passing threshold:** rubric score ≥ 8/10 and no category scored 0.
 **On-demand resources and scripts:**
 
+- `references/documentation-routing.md` — docs placement matrix and cross-linking rules
+- `references/evaluation-harness.md` — scenario set (A/B/C), rubric definitions, and pass/fail criteria
 - `scripts/doc_route.py` — routes catalog updates to the correct AI/agent index
 - `scripts/score_eval.py` — summarizes assurance scoring with JSON/text output
-- `python3 build/scripts/docs/validate-skill-packages.py --skill meridian-implementation-assurance` — validates packaging and references for this skill before shipping
+- `python3 build/scripts/docs/validate-skill-packages.py` — validates skill packaging and references
 
 ### `meridian-test-writer`
 
@@ -134,18 +137,6 @@ static package content.
 
 - `references/test-patterns.md` — component-specific test scaffolds and decision trees
 - Companion skill referenced as needed: `meridian-code-review`
-
-
-### `meridian-implementation-assurance`
-
-**Location:** [`.claude/skills/meridian-implementation-assurance/`](https://github.com/rodoHasArrived/Meridian/blob/main/.claude/skills/meridian-implementation-assurance)
-**Purpose:** Deliver implementation changes with correctness validation, performance guardrails, documentation synchronization, and rubric-scored self-evaluation.
-**When it triggers:** implementation/refactor tasks that require explicit validation evidence, performance-safety review, and in-PR documentation updates.
-**On-demand resources and scripts:**
-
-- `references/documentation-routing.md` — docs placement matrix and cross-linking rules
-- `references/evaluation-harness.md` — scenario set, rubric, and pass/fail criteria
-- `scripts/doc_route.py`, `scripts/score_eval.py` — deterministic routing and scoring helpers
 
 ### `ai-docs-maintain` (code-defined)
 
@@ -199,4 +190,4 @@ The validator checks for:
 
 ---
 
-_Last Updated: 2026-03-29_
+_Last Updated: 2026-03-30_

@@ -14,6 +14,79 @@ Use this harness to evaluate whether outputs from `meridian-implementation-assur
 
 - Use `scripts/score_eval.py` to enforce rubric key coverage, compute totals, and emit a report block.
 - Use `scripts/doc_route.py` before documentation edits when placement is unclear.
+- Use `.codex/skills/meridian-implementation-assurance/scripts/run_evals.py` to run deterministic checks against eval cases and compare against the baseline.
+
+## Prompt-Based Eval Infrastructure
+
+The `.codex/skills/meridian-implementation-assurance/evals/` directory contains a prompt set and
+structured rubric schema for systematic regression testing.
+
+### Trigger Classification
+
+A CSV of prompts labelled `should_trigger=true/false` lives at
+`.codex/skills/meridian-implementation-assurance/evals/meridian-implementation-assurance.prompts.csv`.
+Use it to verify that changes to the skill name or description don't break invocation.
+
+**Negative controls** (`should_trigger=false`) catch false positives — prompts that match adjacent
+skills (code-review, blueprint, test-writer) but should not invoke implementation assurance.
+
+Validate CSV structure without invoking `codex exec`:
+
+```bash
+python3 .codex/skills/meridian-implementation-assurance/scripts/run_evals.py --all --dry-run
+```
+
+### Structured Rubric Output
+
+A JSON Schema at `.codex/skills/meridian-implementation-assurance/evals/style-rubric.schema.json`
+enforces `overall_pass`, `score` (0-10), `scenario`, and one `checks` entry per rubric category.
+Pass it to `codex exec --output-schema` for a second qualitative grading pass.
+
+### Deterministic Runner
+
+Runs each case in `evals/evals.json` through `codex exec --json --full-auto`, saves JSONL traces
+to `evals/artifacts/`, and applies deterministic checks:
+
+| Check | Description |
+|---|---|
+| `ran build/test command` | At least one `dotnet build`, `dotnet test`, `make test`, or script validation |
+| `produced rubric output` | Rubric score block detected in the trace |
+| `command count within budget` | ≤ 30 command executions |
+| `doc_route.py invoked` | Required for Scenario B (new doc needed) |
+| `score_eval.py invoked` | Recommended for all scenarios |
+
+```bash
+# Validate infrastructure without running codex
+python3 .codex/skills/meridian-implementation-assurance/scripts/run_evals.py --all --dry-run
+
+# Run all cases and check regressions vs baseline
+python3 .codex/skills/meridian-implementation-assurance/scripts/run_evals.py --all --summary
+
+# Run a single case
+python3 .codex/skills/meridian-implementation-assurance/scripts/run_evals.py --eval-id 3
+
+# Machine-readable output for CI
+python3 .codex/skills/meridian-implementation-assurance/scripts/run_evals.py --all --summary --json
+```
+
+### Baseline Management
+
+Each eval case has an `accepted_pass_rate` in
+`.codex/skills/meridian-implementation-assurance/evals/benchmark_baseline.json`.
+If a run drops more than `regression_threshold_pp` (default 10 pp) below baseline, the runner
+emits a regression warning.
+
+After intentionally improving the skill, update the baseline:
+1. Run `python3 scripts/run_evals.py --all --summary --json` and inspect output quality.
+2. Update `accepted_pass_rate` values to match the verified run.
+3. Update `_last_updated`.
+
+### Growing Coverage
+
+Add new rows to `evals/evals.json` and corresponding baselines when:
+- A prompt that should trigger the skill was observed **not** triggering it.
+- A prompt that should **not** trigger the skill was incorrectly activating it.
+- A real fix was made to address a skill regression.
 
 ## Scenario Set
 
@@ -116,3 +189,4 @@ Automatically fail if any of these occur:
 - Docs are claimed updated but no file/path is cited.
 - New docs are added with no README/index cross-link.
 - Performance-sensitive request has no performance discussion.
+
