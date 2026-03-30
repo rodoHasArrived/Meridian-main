@@ -327,9 +327,10 @@ public partial class App : System.Windows.Application
         services.AddTransient<PluginManagementPage>();
         services.AddTransient<AgentPage>();
 
-        // ── Backtesting service — registration deferred to RegisterStrategyWorkspaceServices ──
-        // BacktestService is registered there so the corporate action adjustment service can be
-        // wired in when a Security Master connection string is configured.
+        // ── Backtesting service — also registered in RegisterStrategyWorkspaceServices ──
+        // The registration below is deferred to RegisterStrategyWorkspaceServices (called at line 256)
+        // so the corporate action adjustment service can be wired in when a Security Master
+        // connection string is configured.
 
         // ── Ui.Services singletons accessed via DI (no static .Instance in pages) ──
         services.AddSingleton(_ => BackfillProviderConfigService.Instance);

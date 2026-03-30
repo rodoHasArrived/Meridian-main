@@ -552,11 +552,18 @@
                                                                                        FontSize="9"
                                                                                        Foreground="White"
                                                                                        Opacity="0.85"/>
-                                                                            <TextBlock x:Name="AmountLabel"
+                                                                            <!-- Two text blocks — only one shown at a time via DataTrigger visibility -->
+                                                                            <TextBlock x:Name="DividendAmountBadge"
                                                                                        Text="{Binding DividendPerShare, StringFormat='${0:F2}'}"
                                                                                        FontSize="9"
                                                                                        Foreground="White"
                                                                                        Opacity="0.85"/>
+                                                                            <TextBlock x:Name="SplitRatioBadge"
+                                                                                       Text="{Binding SplitRatio, StringFormat='×{0:G}'}"
+                                                                                       FontSize="9"
+                                                                                       Foreground="White"
+                                                                                       Opacity="0.85"
+                                                                                       Visibility="Collapsed"/>
                                                                         </StackPanel>
                                                                     </Border>
                                                                     <!-- Connector arrow -->
@@ -570,8 +577,10 @@
                                                                     <DataTrigger Binding="{Binding EventType}" Value="StockSplit">
                                                                         <Setter TargetName="EventBadge" Property="Background"
                                                                                 Value="{StaticResource WarningColorBrush}"/>
-                                                                        <Setter TargetName="AmountLabel" Property="Text"
-                                                                                Value="{Binding SplitRatio, StringFormat='×{0:G}'}"/>
+                                                                        <Setter TargetName="DividendAmountBadge" Property="Visibility"
+                                                                                Value="Collapsed"/>
+                                                                        <Setter TargetName="SplitRatioBadge" Property="Visibility"
+                                                                                Value="Visible"/>
                                                                     </DataTrigger>
                                                                 </DataTemplate.Triggers>
                                                             </DataTemplate>
