@@ -513,6 +513,73 @@
                                                 </Grid>
                                             </Border>
 
+                                            <!-- Corporate Actions Timeline Strip -->
+                                            <TextBlock DockPanel.Dock="Top"
+                                                       Text="Timeline"
+                                                       Style="{StaticResource CardHeaderStyle}"
+                                                       Margin="0,0,0,6"/>
+                                            <Border DockPanel.Dock="Top" Margin="0,0,0,12"
+                                                    Height="80"
+                                                    Background="{StaticResource ConsoleBackgroundDarkBrush}"
+                                                    CornerRadius="4">
+                                                <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                                                              VerticalScrollBarVisibility="Disabled"
+                                                              Padding="8,0">
+                                                    <ItemsControl ItemsSource="{Binding CorporateActions}">
+                                                        <ItemsControl.ItemsPanel>
+                                                            <ItemsPanelTemplate>
+                                                                <StackPanel Orientation="Horizontal"
+                                                                            VerticalAlignment="Center"/>
+                                                            </ItemsPanelTemplate>
+                                                        </ItemsControl.ItemsPanel>
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <StackPanel Orientation="Horizontal"
+                                                                            VerticalAlignment="Center"
+                                                                            Margin="0,0,4,0">
+                                                                    <!-- Event badge -->
+                                                                    <Border x:Name="EventBadge"
+                                                                            CornerRadius="4"
+                                                                            Padding="7,5"
+                                                                            Background="{StaticResource SuccessColorBrush}"
+                                                                            ToolTip="{Binding EventType}">
+                                                                        <StackPanel>
+                                                                            <TextBlock Text="{Binding EventType}"
+                                                                                       FontSize="10"
+                                                                                       FontWeight="SemiBold"
+                                                                                       Foreground="White"/>
+                                                                            <TextBlock Text="{Binding ExDate, StringFormat='{}{0:yyyy-MM-dd}'}"
+                                                                                       FontSize="9"
+                                                                                       Foreground="White"
+                                                                                       Opacity="0.85"/>
+                                                                            <TextBlock x:Name="AmountLabel"
+                                                                                       Text="{Binding DividendPerShare, StringFormat='${0:F2}'}"
+                                                                                       FontSize="9"
+                                                                                       Foreground="White"
+                                                                                       Opacity="0.85"/>
+                                                                        </StackPanel>
+                                                                    </Border>
+                                                                    <!-- Connector arrow -->
+                                                                    <TextBlock Text="›"
+                                                                               FontSize="14"
+                                                                               VerticalAlignment="Center"
+                                                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                                               Margin="3,0"/>
+                                                                </StackPanel>
+                                                                <DataTemplate.Triggers>
+                                                                    <DataTrigger Binding="{Binding EventType}" Value="StockSplit">
+                                                                        <Setter TargetName="EventBadge" Property="Background"
+                                                                                Value="{StaticResource WarningColorBrush}"/>
+                                                                        <Setter TargetName="AmountLabel" Property="Text"
+                                                                                Value="{Binding SplitRatio, StringFormat='×{0:G}'}"/>
+                                                                    </DataTrigger>
+                                                                </DataTemplate.Triggers>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </ScrollViewer>
+                                            </Border>
+
                                             <!-- DataGrid -->
                                             <DataGrid ItemsSource="{Binding CorporateActions}" AutoGenerateColumns="False"
                                                       IsReadOnly="True" CanUserAddRows="False"

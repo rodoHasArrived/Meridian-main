@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Meridian.Application.Services;
 using Meridian.Application.SecurityMaster;
+using Meridian.Backtesting;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
@@ -326,8 +327,9 @@ public partial class App : System.Windows.Application
         services.AddTransient<PluginManagementPage>();
         services.AddTransient<AgentPage>();
 
-        // ── Backtesting service ──────────────────────────────────────────────
-        services.AddSingleton(_ => WpfServices.BacktestService.Instance);
+        // ── Backtesting service — registration deferred to RegisterStrategyWorkspaceServices ──
+        // BacktestService is registered there so the corporate action adjustment service can be
+        // wired in when a Security Master connection string is configured.
 
         // ── Ui.Services singletons accessed via DI (no static .Instance in pages) ──
         services.AddSingleton(_ => BackfillProviderConfigService.Instance);
@@ -387,7 +389,19 @@ public partial class App : System.Windows.Application
             // Security Master bulk import services
             services.AddSingleton<SecurityMasterCsvParser>();
             services.AddSingleton<ISecurityMasterImportService, SecurityMasterImportService>();
+
+            // Corporate action adjustment service (requires Security Master)
+            services.AddSingleton<ISecurityResolver, SecurityResolver>();
+            services.AddSingleton<ICorporateActionAdjustmentService, CorporateActionAdjustmentService>();
         }
+
+        // Wire the corporate action adjustment service into the BacktestService singleton when available.
+        services.AddSingleton(sp =>
+        {
+            var svc = WpfServices.BacktestService.Instance;
+            svc.CorporateActionAdjustmentService = sp.GetService<ICorporateActionAdjustmentService>();
+            return svc;
+        });
 
         services.AddSingleton<IStrategyRepository, StrategyRunStore>();
         services.AddSingleton<PortfolioReadService>();

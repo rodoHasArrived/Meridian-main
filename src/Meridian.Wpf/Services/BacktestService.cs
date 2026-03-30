@@ -1,5 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
+using Meridian.Backtesting;
 using Meridian.Backtesting.Engine;
 using Meridian.Backtesting.Sdk;
 using Meridian.Storage;
@@ -23,6 +24,13 @@ public sealed class BacktestService
     public BacktestResult? LastResult { get; private set; }
     public bool IsRunning { get; private set; }
 
+    /// <summary>
+    /// Optional corporate-action adjustment service injected by the DI container when a
+    /// Security Master connection string is configured. When set, the <see cref="BacktestEngine"/>
+    /// will apply split and dividend adjustments to historical bars before replaying them.
+    /// </summary>
+    public ICorporateActionAdjustmentService? CorporateActionAdjustmentService { get; set; }
+
     public event EventHandler<BacktestResult>? BacktestCompleted;
     public event EventHandler? BacktestCancelled;
 
@@ -44,7 +52,8 @@ public sealed class BacktestService
             var storageOptions = new StorageOptions { RootPath = request.DataRoot };
             var catalogService = new StorageCatalogService(request.DataRoot, storageOptions);
             var engineLogger = NullLogger<BacktestEngine>.Instance;
-            var engine = new BacktestEngine(engineLogger, catalogService);
+            var engine = new BacktestEngine(engineLogger, catalogService,
+                corporateActionAdjustment: CorporateActionAdjustmentService);
 
             var result = await engine.RunAsync(request, strategy, progress, _cts.Token);
             LastResult = result;
