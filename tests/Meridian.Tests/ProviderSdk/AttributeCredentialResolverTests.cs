@@ -28,6 +28,16 @@ public sealed class AttributeCredentialResolverTests
         DisplayName = "Secret")]
     private sealed class MultiKeyProvider { }
 
+    [Meridian.Infrastructure.DataSources.DataSource(
+        "test-schema-provider",
+        "Test Schema Provider",
+        Meridian.Infrastructure.DataSources.DataSourceType.Historical,
+        Meridian.Infrastructure.DataSources.DataSourceCategory.Other)]
+    [RequiresCredential("SCHEMA_KEY",
+        EnvironmentVariables = new[] { "TEST_ATTR_SCHEMA_KEY" },
+        DisplayName = "Schema Key")]
+    private sealed class DataSourceCredentialProvider { }
+
     private sealed class NoCredentialProvider { }
 
     // -------------------------------------------------------------------------
@@ -210,6 +220,40 @@ public sealed class AttributeCredentialResolverTests
     {
         var attrs = AttributeCredentialResolver.GetAttributes(typeof(NoCredentialProvider));
         attrs.Should().BeEmpty();
+    }
+
+    // -------------------------------------------------------------------------
+    // CredentialSchemaRegistry
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void CredentialSchemaRegistry_FromTypes_IndexesSchemasByProviderType()
+    {
+        var registry = CredentialSchemaRegistry.FromTypes(new[]
+        {
+            typeof(SingleKeyProvider),
+            typeof(MultiKeyProvider),
+            typeof(NoCredentialProvider)
+        });
+
+        registry.All.Should().HaveCount(2);
+        registry.ByProviderType.Keys.Should().Contain(new[] { typeof(SingleKeyProvider), typeof(MultiKeyProvider) });
+        registry.Get(typeof(MultiKeyProvider))!.Fields.Select(field => field.Name)
+            .Should().BeEquivalentTo(new[] { "KEY_ID", "SECRET" });
+        registry.Get(typeof(NoCredentialProvider)).Should().BeNull();
+    }
+
+    [Fact]
+    public void CredentialSchemaRegistry_DiscoverFromAssemblies_BuildsProviderIdConvenienceIndex()
+    {
+        var registry = CredentialSchemaRegistry.DiscoverFromAssemblies(typeof(DataSourceCredentialProvider).Assembly);
+
+        var schema = registry.Get("test-schema-provider");
+
+        schema.Should().NotBeNull();
+        schema!.DisplayName.Should().Be("Test Schema Provider");
+        schema.ProviderType.Should().Be(typeof(DataSourceCredentialProvider));
+        schema.Fields.Should().ContainSingle(field => field.Name == "SCHEMA_KEY");
     }
 
     // -------------------------------------------------------------------------
