@@ -95,7 +95,8 @@ public sealed class QuantDataContext(
         await foreach (var evt in store.QueryAsync(query, ct))
         {
             var diff = (evt.Timestamp - timestamp).Duration();
-            if (diff < minDiff) { minDiff = diff; closest = evt; }
+            if (diff < minDiff)
+            { minDiff = diff; closest = evt; }
         }
 
         if (closest?.Payload is Contracts.Domain.Models.LOBSnapshot snap)

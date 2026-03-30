@@ -399,7 +399,8 @@ public sealed class CompletenessScoreCalculator : IDisposable
                     CoveredDuration: coveredDuration,
                     CoveragePercent: Math.Round(coveragePercent, 2),
                     CalculatedAt: DateTimeOffset.UtcNow
-                ) { IsAutoCalibrated = _isAutoCalibrated };
+                )
+                { IsAutoCalibrated = _isAutoCalibrated };
             }
         }
     }

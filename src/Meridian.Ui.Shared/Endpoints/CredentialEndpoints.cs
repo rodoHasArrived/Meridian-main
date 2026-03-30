@@ -81,7 +81,8 @@ public static class CredentialEndpoints
                 return Results.NotFound(new { error = $"Provider '{provider}' not found." });
 
             JsonDocument doc;
-            try { doc = await JsonDocument.ParseAsync(ctx.Request.Body); }
+            try
+            { doc = await JsonDocument.ParseAsync(ctx.Request.Body); }
             catch { return Results.BadRequest(new { error = "Invalid JSON body." }); }
 
             var warnings = new List<string>();
@@ -153,7 +154,8 @@ public static class CredentialEndpoints
 
     private static string ResolveState(ProviderCredentialDescriptor p)
     {
-        if (p.RequiredEnvVars.Count == 0) return "NotRequired";
+        if (p.RequiredEnvVars.Count == 0)
+            return "NotRequired";
         var missing = p.RequiredEnvVars
             .Where(v => string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(v)))
             .ToList();
@@ -171,8 +173,10 @@ public static class CredentialEndpoints
 
     private static string MaskValue(string? value)
     {
-        if (string.IsNullOrEmpty(value)) return string.Empty;
-        if (value.Length <= 4) return new string('*', value.Length);
+        if (string.IsNullOrEmpty(value))
+            return string.Empty;
+        if (value.Length <= 4)
+            return new string('*', value.Length);
         return string.Concat(value.AsSpan(0, 4), new string('*', Math.Min(value.Length - 4, 12)));
     }
 

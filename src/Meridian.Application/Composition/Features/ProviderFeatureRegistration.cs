@@ -1,3 +1,5 @@
+// IHttpClientFactory lives in Microsoft.Extensions.Http (transitively available)
+using System.Net.Http;
 using Meridian.Application.Config;
 using Meridian.Application.Logging;
 using Meridian.Application.Monitoring;
@@ -11,8 +13,6 @@ using Meridian.Infrastructure.Adapters.Synthetic;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
 using Microsoft.Extensions.DependencyInjection;
-// IHttpClientFactory lives in Microsoft.Extensions.Http (transitively available)
-using System.Net.Http;
 
 namespace Meridian.Application.Composition.Features;
 
