@@ -25,7 +25,7 @@ public sealed class BackfillCostEstimatorTests
     [InlineData("2024-01-06", "2024-01-08", 0)]  // Sat–Mon (Sat/Sun only) → 0
     [InlineData("2024-01-07", "2024-01-08", 0)]  // Sun–Mon → 0
     [InlineData("2024-01-08", "2024-01-12", 4)]  // Mon–Fri (4 days, to is exclusive) → 4
-    [InlineData("2024-01-08", "2024-01-13", 5)]  // Mon–Sat inclusive range → 5 weekdays
+    [InlineData("2024-01-08", "2024-01-13", 5)]  // Mon–Fri (to is exclusive, upper bound set to Saturday) → 5 weekdays
     [InlineData("2024-01-01", "2025-01-01", 262)] // ~1 year (2024 leap year: 366 days → 52 full weeks + 2 extra days Mon/Tue)
     public void EstimateTradingDays_VariousRanges_ReturnsCorrectWeekdayCount(
         string fromStr, string toStr, int expected)
