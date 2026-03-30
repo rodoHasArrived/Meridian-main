@@ -8,6 +8,8 @@ Current skills:
 - `meridian-brainstorm`
 - `meridian-code-review`
 - `meridian-provider-builder`
+- `meridian-roadmap-strategist`
 - `meridian-test-writer`
+- `meridian-implementation-assurance`
 
-Use these skills as repo-owned guidance for Meridian-specific planning, ideation, review, provider work, and test writing.
+Use these skills as repo-owned guidance for Meridian-specific planning, ideation, review, provider work, test writing, implementation assurance, and roadmap strategy.
