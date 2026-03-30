@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-03-30 04:05:17 UTC. Do not edit manually.
+> Auto-generated on 2026-03-30 13:39:46 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -2736,6 +2736,7 @@ Meridian-main
 │   │   │   │   ├── AuthEndpointTests.cs
 │   │   │   │   ├── BackfillEndpointTests.cs
 │   │   │   │   ├── CatalogEndpointTests.cs
+│   │   │   │   ├── CheckpointEndpointTests.cs
 │   │   │   │   ├── ConfigEndpointTests.cs
 │   │   │   │   ├── EndpointIntegrationTestBase.cs
 │   │   │   │   ├── EndpointTestCollection.cs

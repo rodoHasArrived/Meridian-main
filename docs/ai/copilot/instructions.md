@@ -2847,6 +2847,7 @@ Meridian-main
 │   │   │   │   ├── AuthEndpointTests.cs
 │   │   │   │   ├── BackfillEndpointTests.cs
 │   │   │   │   ├── CatalogEndpointTests.cs
+│   │   │   │   ├── CheckpointEndpointTests.cs
 │   │   │   │   ├── ConfigEndpointTests.cs
 │   │   │   │   ├── EndpointIntegrationTestBase.cs
 │   │   │   │   ├── EndpointTestCollection.cs
