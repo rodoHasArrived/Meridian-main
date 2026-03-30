@@ -30,6 +30,8 @@ public static class HttpClientNames
     public const string NasdaqDataLinkHistorical = "nasdaq-data-link-historical";
     public const string FredHistorical = "fred-historical";
     public const string TwelveDataHistorical = "twelvedata-historical";
+    public const string RobinhoodHistorical = "robinhood-historical";
+    public const string RobinhoodSymbolSearch = "robinhood-symbol-search";
 
     // Symbol search providers
     public const string AlpacaSymbolSearch = "alpaca-symbol-search";
@@ -235,6 +237,25 @@ public static class HttpClientConfiguration
             .ConfigureHttpClient(client =>
             {
                 client.BaseAddress = new Uri("https://api.twelvedata.com/");
+                client.Timeout = SharedResiliencePolicies.DefaultTimeout;
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            })
+            .AddSharedResiliencePolicy();
+
+        // Robinhood clients (no auth required)
+        services.AddHttpClient(HttpClientNames.RobinhoodHistorical)
+            .ConfigureHttpClient(client =>
+            {
+                client.BaseAddress = new Uri("https://api.robinhood.com/");
+                client.Timeout = SharedResiliencePolicies.DefaultTimeout;
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            })
+            .AddSharedResiliencePolicy();
+
+        services.AddHttpClient(HttpClientNames.RobinhoodSymbolSearch)
+            .ConfigureHttpClient(client =>
+            {
+                client.BaseAddress = new Uri("https://api.robinhood.com/");
                 client.Timeout = SharedResiliencePolicies.DefaultTimeout;
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             })
@@ -517,6 +538,25 @@ public static class HttpClientConfiguration
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             })
             .AddSharedResiliencePolicyTracked(HttpClientNames.TwelveDataHistorical, onStateChanged);
+
+        // Robinhood clients (no auth required)
+        services.AddHttpClient(HttpClientNames.RobinhoodHistorical)
+            .ConfigureHttpClient(client =>
+            {
+                client.BaseAddress = new Uri("https://api.robinhood.com/");
+                client.Timeout = SharedResiliencePolicies.DefaultTimeout;
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            })
+            .AddSharedResiliencePolicyTracked(HttpClientNames.RobinhoodHistorical, onStateChanged);
+
+        services.AddHttpClient(HttpClientNames.RobinhoodSymbolSearch)
+            .ConfigureHttpClient(client =>
+            {
+                client.BaseAddress = new Uri("https://api.robinhood.com/");
+                client.Timeout = SharedResiliencePolicies.DefaultTimeout;
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            })
+            .AddSharedResiliencePolicyTracked(HttpClientNames.RobinhoodSymbolSearch, onStateChanged);
 
         // OpenFIGI client
         services.AddHttpClient(HttpClientNames.OpenFigi)
