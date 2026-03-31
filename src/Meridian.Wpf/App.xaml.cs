@@ -260,8 +260,10 @@ public partial class App : System.Windows.Application
         services.AddSingleton(_ => WpfServices.OfflineTrackingPersistenceService.Instance);
         services.AddSingleton(_ => WpfServices.PendingOperationsQueueService.Instance);
         services.AddSingleton(_ => WpfServices.ToastNotificationService.Instance);
-        services.AddSingleton<WpfServices.ISystemTrayService>(_ => new WpfServices.SystemTrayService());
-        services.AddSingleton(_ => new WpfServices.SystemTrayService());
+        // C1 fix: register a single SystemTrayService instance under the interface contract;
+        //         the concrete type is resolved via the same singleton.
+        services.AddSingleton<WpfServices.SystemTrayService>();
+        services.AddSingleton<WpfServices.ISystemTrayService>(sp => sp.GetRequiredService<WpfServices.SystemTrayService>());
 
         // ── MainWindow ──────────────────────────────────────────────────────
         services.AddSingleton<MainWindow>();
@@ -775,25 +777,41 @@ public partial class App : System.Windows.Application
 
     /// <summary>
     /// Handles unhandled exceptions on the UI thread.
+    /// E3 fix: only suppress transient/recoverable exceptions; fatal ones are logged and re-raised
+    /// so the process can terminate cleanly instead of limping forward in a broken state.
     /// </summary>
     private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
     {
-        // Log the exception but don't crash
-        System.Diagnostics.Debug.WriteLine($"Dispatcher unhandled exception: {e.Exception}");
-        e.Handled = true;
+        var ex = e.Exception;
 
-        // Notify user of the error
-        try
+        // Determine whether the exception is likely recoverable (transient UI or I/O issues).
+        var isRecoverable =
+            ex is InvalidOperationException or
+                 System.Net.Http.HttpRequestException or
+                 TimeoutException or
+                 OperationCanceledException or
+                 System.IO.IOException;
+
+        // Always log with structured logging so the error is visible in the log file.
+        WpfServices.LoggingService.Instance.LogError("Dispatcher unhandled exception", ex);
+
+        if (isRecoverable)
         {
-            _ = WpfServices.NotificationService.Instance.NotifyErrorAsync(
-                "Application Error",
-                e.Exception.Message);
+            e.Handled = true;
+            try
+            {
+                _ = WpfServices.NotificationService.Instance.NotifyErrorAsync(
+                    "Application Error",
+                    ex.Message);
+            }
+            catch (Exception notifyEx)
+            {
+                WpfServices.LoggingService.Instance.LogWarning(
+                    "Notification failure during error handling",
+                    ("Error", notifyEx.Message));
+            }
         }
-        catch (Exception ex)
-        {
-            // Q2: Log notification failures instead of silently swallowing
-            System.Diagnostics.Debug.WriteLine($"[App] Notification failure during error handling: {ex.Message}");
-        }
+        // Non-recoverable exceptions are not marked Handled so WPF can tear down cleanly.
     }
 
     /// <summary>

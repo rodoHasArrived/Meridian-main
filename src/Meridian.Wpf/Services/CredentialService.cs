@@ -11,6 +11,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Meridian.Contracts.Credentials;
+using Meridian.Ui.Services;
 using HttpClientFactoryProvider = Meridian.Ui.Services.HttpClientFactoryProvider;
 using HttpClientNames = Meridian.Ui.Services.HttpClientNames;
 
@@ -472,7 +473,7 @@ public sealed class CredentialService : IDisposable
                 snapshot = new Dictionary<string, CredentialMetadata>(_metadataCache);
             }
 
-            var json = JsonSerializer.Serialize(snapshot, new JsonSerializerOptions { WriteIndented = true });
+            var json = JsonSerializer.Serialize(snapshot, DesktopJsonOptions.PrettyPrint);
             await File.WriteAllTextAsync(_metadataPath, json);
         }
         catch (Exception ex)

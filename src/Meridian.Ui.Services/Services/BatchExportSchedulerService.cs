@@ -570,10 +570,7 @@ public sealed class BatchExportSchedulerService : IAsyncDisposable
             if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
                 Directory.CreateDirectory(dir);
 
-            var json = JsonSerializer.Serialize(_jobs.Values.ToList(), new JsonSerializerOptions
-            {
-                WriteIndented = true
-            });
+            var json = JsonSerializer.Serialize(_jobs.Values.ToList(), DesktopJsonOptions.PrettyPrint);
             await File.WriteAllTextAsync(_jobStorePath, json);
         }
         catch

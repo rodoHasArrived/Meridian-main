@@ -222,7 +222,7 @@
                                     Style="{StaticResource GhostButtonStyle}"
                                     Click="AddMajorETFs_Click"
                                     Margin="0,0,16,0" />
-                            <TextBlock x:Name="SymbolCountText" Text="0 symbols"
+                            <TextBlock x:Name="SymbolCountText" Text="{Binding SymbolCountText}"
                                        Foreground="{StaticResource ConsoleTextMutedBrush}"
                                        FontSize="12"
                                        VerticalAlignment="Center" />
@@ -365,7 +365,7 @@
                         </WrapPanel>
 
                         <TextBlock x:Name="DateRangeHintText"
-                                   Text="Smart range uses symbol count + granularity to keep request sizes practical."
+                                   Text="{Binding DateRangeHintText}"
                                    Foreground="{StaticResource ConsoleTextMutedBrush}"
                                    FontSize="12"
                                    Margin="0,8,0,0" />
@@ -819,7 +819,7 @@
                                       Unchecked="ScheduledBackfill_Toggled" />
                         </StackPanel>
 
-                        <StackPanel x:Name="ScheduleSettingsPanel" Opacity="0.5">
+                        <StackPanel x:Name="ScheduleSettingsPanel" Opacity="{Binding SchedulePanelOpacity}">
                             <StackPanel Margin="0,0,0,12">
                                 <TextBlock Text="Frequency" Style="{StaticResource FormLabelStyle}" Margin="0,0,0,4" />
                                 <ComboBox x:Name="ScheduleFrequencyCombo" Style="{StaticResource FormComboBoxStyle}">

@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.ViewModels;
 using WpfServices = Meridian.Wpf.Services;
@@ -18,7 +17,6 @@ namespace Meridian.Wpf.Views;
 /// </summary>
 public partial class BackfillPage : Page
 {
-    private readonly WpfServices.NotificationService _notificationService;
     private readonly WpfServices.WorkspaceService _workspaceService;
     private readonly WpfServices.ConfigService _configService;
     private readonly BackfillViewModel _viewModel;
@@ -31,7 +29,6 @@ public partial class BackfillPage : Page
     {
         InitializeComponent();
 
-        _notificationService = notificationService;
         _workspaceService = workspaceService;
         _configService = configService;
         _viewModel = viewModel;
@@ -106,7 +103,8 @@ public partial class BackfillPage : Page
     private void SymbolsBox_TextChanged(object sender, TextChangedEventArgs e)
     {
         var symbols = SymbolsBox.Text?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) ?? Array.Empty<string>();
-        SymbolCountText.Text = $"{symbols.Length} symbols";
+        // M1: delegate text update to the ViewModel instead of writing to a named element directly.
+        _viewModel.UpdateSymbolCount(symbols.Length);
     }
 
     private void ProviderPriority_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -130,8 +128,9 @@ public partial class BackfillPage : Page
         ToDatePicker.SelectedDate = toDate;
         FromDatePicker.SelectedDate = fromDate;
 
+        // M1: delegate hint text update to the ViewModel instead of writing to a named element.
         var lookbackDays = (int)(toDate - fromDate).TotalDays;
-        DateRangeHintText.Text = $"Smart range applied: last {lookbackDays} days for {Math.Max(symbolCount, 1)} symbol(s) at {BackfillViewModel.GetGranularityDisplay(granularity)} granularity.";
+        _viewModel.UpdateDateRangeHint(lookbackDays, symbolCount, BackfillViewModel.GetGranularityDisplay(granularity));
     }
 
     private void UpdateProviderPrioritySummary()
@@ -292,10 +291,8 @@ public partial class BackfillPage : Page
         ToDatePicker.SelectedDate = DateTime.Today;
         AddAllSubscribed_Click(sender, e);
 
-        _notificationService.ShowNotification(
-            "Update to Latest",
-            "Configured to update all subscribed symbols to latest data.",
-            NotificationType.Info);
+        // M3: notification belongs in ViewModel.
+        _viewModel.HandleUpdateToLatest();
     }
 
     // ── Backfill control ─────────────────────────────────────────────────────
@@ -356,28 +353,22 @@ public partial class BackfillPage : Page
     {
         await RefreshStatusFromApiAsync();
 
-        _notificationService.ShowNotification(
-            "Status Refreshed",
-            "Backfill status has been refreshed.",
-            NotificationType.Info);
+        // M3: notification belongs in ViewModel.
+        _viewModel.HandleRefreshStatusNotification();
     }
 
     // ── Validation / data ops ────────────────────────────────────────────────
 
     private void ValidateData_Click(object sender, RoutedEventArgs e)
     {
-        _notificationService.ShowNotification(
-            "Data Validation",
-            "Starting data validation...",
-            NotificationType.Info);
+        // M3: stub notification belongs in ViewModel.
+        _viewModel.HandleValidateData();
     }
 
     private void RepairGaps_Click(object sender, RoutedEventArgs e)
     {
-        _notificationService.ShowNotification(
-            "Gap Repair",
-            "Checking for data gaps...",
-            NotificationType.Info);
+        // M3: stub notification belongs in ViewModel.
+        _viewModel.HandleRepairGaps();
     }
 
     private void OpenWizard_Click(object sender, RoutedEventArgs e)
@@ -387,10 +378,8 @@ public partial class BackfillPage : Page
 
     private void FillAllGaps_Click(object sender, RoutedEventArgs e)
     {
-        _notificationService.ShowNotification(
-            "Fill Gaps",
-            "Analyzing all symbols for gaps...",
-            NotificationType.Info);
+        // M3: stub notification belongs in ViewModel.
+        _viewModel.HandleFillAllGaps();
     }
 
     private void BrowseData_Click(object sender, RoutedEventArgs e)
@@ -445,43 +434,36 @@ public partial class BackfillPage : Page
         var symbolsWithGaps = _viewModel.GetSymbolsWithGaps();
         if (symbolsWithGaps.Length == 0)
         {
-            _notificationService.ShowNotification("No Gaps", "No gaps detected to fill.", NotificationType.Info);
+            // M3: notification belongs in ViewModel.
+            _viewModel.HandleNoGapsFound();
             return;
         }
 
         SymbolsBox.Text = string.Join(", ", symbolsWithGaps);
-        _notificationService.ShowNotification(
-            "Gap Fill",
-            $"Configured to fill gaps for {symbolsWithGaps.Length} symbols. Press Start Backfill to begin.",
-            NotificationType.Info);
+        // M3: notification belongs in ViewModel.
+        _viewModel.HandleAutoFillGapsNotification(symbolsWithGaps);
     }
 
     // ── Schedule management ──────────────────────────────────────────────────
 
     private void ScheduledBackfill_Toggled(object sender, RoutedEventArgs e)
     {
-        if (ScheduleSettingsPanel != null)
-        {
-            ScheduleSettingsPanel.Opacity = ScheduledBackfillToggle.IsChecked.GetValueOrDefault() ? 1.0 : 0.5;
-        }
+        // M1: delegate opacity to the ViewModel; bind ScheduleSettingsPanel.Opacity in XAML.
+        _viewModel.SetScheduleEnabled(ScheduledBackfillToggle.IsChecked.GetValueOrDefault());
     }
 
     private void SaveSchedule_Click(object sender, RoutedEventArgs e)
     {
-        _notificationService.ShowNotification(
-            "Schedule Saved",
-            "Backfill schedule has been saved.",
-            NotificationType.Success);
+        // M3: stub notification belongs in ViewModel.
+        _viewModel.HandleSaveSchedule();
     }
 
     private void RunScheduledJob_Click(object sender, RoutedEventArgs e)
     {
         if (sender is Button btn && btn.Tag is ScheduledJobInfo job)
         {
-            _notificationService.ShowNotification(
-                "Running Job",
-                $"Starting scheduled job: {job.Name}",
-                NotificationType.Info);
+            // M3: notification belongs in ViewModel.
+            _viewModel.HandleRunScheduledJob(job);
         }
     }
 
@@ -495,28 +477,13 @@ public partial class BackfillPage : Page
                 if (dialog.ShouldDelete)
                 {
                     _viewModel.DeleteScheduledJob(job);
-
-                    _notificationService.ShowNotification(
-                        "Job Deleted",
-                        $"Scheduled job '{job.Name}' has been deleted.",
-                        NotificationType.Success);
+                    // M3: notification belongs in ViewModel.
+                    _viewModel.HandleJobDeletedNotification(job.Name);
                 }
                 else
                 {
-                    var index = _viewModel.ScheduledJobs.IndexOf(job);
-                    if (index >= 0)
-                    {
-                        _viewModel.ScheduledJobs[index] = new ScheduledJobInfo
-                        {
-                            Name = dialog.JobName,
-                            NextRun = dialog.NextRunText
-                        };
-                    }
-
-                    _notificationService.ShowNotification(
-                        "Job Updated",
-                        $"Scheduled job '{dialog.JobName}' has been updated.",
-                        NotificationType.Success);
+                    // M2: collection mutation delegated to ViewModel method.
+                    _viewModel.UpdateScheduledJob(job, dialog.JobName, dialog.NextRunText);
                 }
             }
         }

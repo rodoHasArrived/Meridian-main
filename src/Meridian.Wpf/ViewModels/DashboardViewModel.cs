@@ -545,15 +545,16 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
     private void ApplyLiveStatus(SimpleStatus status)
     {
         // Compute event rate from delta between polls.
+        // P5 fix: capture the computed rate BEFORE updating _previousPublished so that the
+        //         sparkline history append below uses the same non-zero delta value.
         var now = DateTime.UtcNow;
         var elapsed = (now - _lastRateCalcTime).TotalSeconds;
+        double currentRate = 0;
         if (elapsed > 0 && _previousPublished > 0)
         {
-            var rate = (status.Published - _previousPublished) / elapsed;
-            PublishedRateText = rate >= 0 ? $"+{rate:N0}/s" : "0/s";
-
-            var currentRate = (int)((status.Published - _previousPublished) / elapsed);
-            CurrentThroughputText = $"{currentRate:N0}/s";
+            currentRate = (status.Published - _previousPublished) / elapsed;
+            PublishedRateText = currentRate >= 0 ? $"+{currentRate:N0}/s" : "0/s";
+            CurrentThroughputText = $"{(int)currentRate:N0}/s";
         }
 
         _previousPublished = status.Published;
@@ -597,10 +598,12 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
         AppendToHistory(_integrityHistory, status.Integrity);
         AppendToHistory(_historicalHistory, status.Historical);
 
-        if (elapsed > 0 && _previousPublished > 0)
+        // P5 fix: use the already-computed rate (captured before _previousPublished was updated).
+        //         Previously this block re-computed the delta after _previousPublished was set,
+        //         which always produced a delta of 0.
+        if (elapsed > 0 && currentRate > 0)
         {
-            var rate = (status.Published - _previousPublished) / elapsed;
-            AppendToHistory(_throughputHistory, rate);
+            AppendToHistory(_throughputHistory, currentRate);
         }
 
         PublishedSparkline = BuildSparkline(_publishedHistory, 30);

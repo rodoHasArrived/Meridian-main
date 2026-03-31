@@ -262,7 +262,7 @@ public sealed class OnboardingTourService
                 Directory.CreateDirectory(dir);
             }
 
-            var json = JsonSerializer.Serialize(progress, new JsonSerializerOptions { WriteIndented = true });
+            var json = JsonSerializer.Serialize(progress, DesktopJsonOptions.PrettyPrint);
             await File.WriteAllTextAsync(ProgressFilePath, json);
         }
         catch (Exception ex)

@@ -30,7 +30,7 @@ public abstract class SchemaServiceBase : ISchemaService
 
         return JsonSerializer.Serialize(
             new { schema = canonicalKey, @namespace = "Meridian.Domain.Events", definition = schema },
-            new JsonSerializerOptions { WriteIndented = true });
+            DesktopJsonOptions.PrettyPrint);
     }
 
     /// <summary>
@@ -306,11 +306,7 @@ public abstract class SchemaServiceBase : ISchemaService
 
     protected static string ExportAsJson(DataDictionary dictionary)
     {
-        return JsonSerializer.Serialize(dictionary, new JsonSerializerOptions
-        {
-            WriteIndented = true,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        });
+        return JsonSerializer.Serialize(dictionary, DesktopJsonOptions.PrettyPrint);
     }
 
     protected static string ExportAsMarkdown(DataDictionary dictionary)
