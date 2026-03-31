@@ -3048,6 +3048,8 @@ Meridian-main
 │   │   │   ├── WatchlistServiceTests.cs
 │   │   │   └── WorkspaceServiceTests.cs
 │   │   ├── Support
+│   │   │   ├── FakeQuantScriptCompiler.cs
+│   │   │   ├── FakeScriptRunner.cs
 │   │   │   ├── RunMatUiAutomationFacade.cs
 │   │   │   └── WpfTestThread.cs
 │   │   ├── ViewModels
@@ -3057,8 +3059,10 @@ Meridian-main
 │   │   │   ├── RunMatViewModelTests.cs
 │   │   │   └── StrategyRunBrowserViewModelTests.cs
 │   │   ├── Views
+│   │   │   ├── QuantScriptPageTests.cs
 │   │   │   ├── RunMatUiSmokeTests.cs
-│   │   │   └── RunMatWorkflowSmokeTests.cs
+│   │   │   ├── RunMatWorkflowSmokeTests.cs
+│   │   │   └── SplitPaneHostControlTests.cs
 │   │   ├── GlobalUsings.cs
 │   │   └── Meridian.Wpf.Tests.csproj
 │   ├── scripts
