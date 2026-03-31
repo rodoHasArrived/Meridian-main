@@ -34,9 +34,9 @@ Total items: **204**
 | `.github/agents/cleanup-agent.md` | 393 | `TODO` | ❌ | - `// TODO:` or `// FIXME:` comments that describe genuine open work items — flag |
 | `.github/agents/cleanup-agent.md` | 436 | `NOTE` | ❌ | - **No new features** — cleanup only; if something is missing, note it but do not add it. |
 | `.github/agents/cleanup-agent.md` | 438 | `NOTE` | ❌ | - **No ViewModel extraction** — flag it as a note; full MVVM refactors belong in code review. |
-| `.github/agents/documentation-agent.md` | 368 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
-| `.github/agents/documentation-agent.md` | 825 | `TODO` | ❌ | │   │   └── TODO.md |
-| `.github/agents/documentation-agent.md` | 3214 | `TODO` | ❌ | - `TODO.md` - Pending work items |
+| `.github/agents/documentation-agent.md` | 374 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
+| `.github/agents/documentation-agent.md` | 831 | `TODO` | ❌ | │   │   └── TODO.md |
+| `.github/agents/documentation-agent.md` | 3220 | `TODO` | ❌ | - `TODO.md` - Pending work items |
 | `.github/agents/implementation-assurance-agent.md` | 59 | `NOTE` | ❌ | - **Performance-sensitive paths are noted:** any hot-path touched by the change includes an explicit note on allocation, async, or buffering risk. |
 | `.github/agents/performance-agent.md` | 248 | `NOTE` | ❌ | - **No new features** — if a performance win requires a new feature, note it but defer it. |
 | `.github/agents/provider-builder-agent.md` | 81 | `TODO` | ❌ | Read the full template before writing any code. Templates contain inline `// TODO:` comments |
@@ -61,8 +61,8 @@ Total items: **204**
 | `.github/workflows/test-matrix.yml` | 5 | `NOTE` | ❌ | # NOTE: This workflow intentionally does NOT use reusable-dotnet-build.yml because it needs |
 | `.github/workflows/validate-workflows.yml` | 206 | `NOTE` | ❌ | echo "Note: Ensure cron schedules are distributed to avoid rate limits" |
 | `CLAUDE.md` | 100 | `NOTE` | ❌ | **Note:** Always use `/p:EnableWindowsTargeting=true` on non-Windows systems to avoid NETSDK1100 errors. |
-| `CLAUDE.md` | 421 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
-| `CLAUDE.md` | 878 | `TODO` | ❌ | │   │   └── TODO.md |
+| `CLAUDE.md` | 427 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
+| `CLAUDE.md` | 884 | `TODO` | ❌ | │   │   └── TODO.md |
 | `README.md` | 573 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
 | `README.md` | 1020 | `TODO` | ❌ | │   │   ├── TODO.md |
 | `benchmarks/run-bottleneck-benchmarks.sh` | 111 | `NOTE` | ❌ | # Note: --filter is intentionally not added here; each phase below supplies its own |
@@ -78,9 +78,9 @@ Total items: **204**
 | `docs/ai/claude/CLAUDE.structure.md` | 160 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
 | `docs/ai/claude/CLAUDE.structure.md` | 473 | `TODO` | ❌ | │   │   └── TODO.md |
 | `docs/ai/copilot/instructions.md` | 5 | `NOTE` | ❌ | > **Note:** For comprehensive project context, see [CLAUDE.md](https://github.com/rodoHasArrived/Meridian/blob/main/CLAUDE.md) in the repository root. For the master AI resource index, see [docs/ai/README.md](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/README.md). |
-| `docs/ai/copilot/instructions.md` | 406 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
-| `docs/ai/copilot/instructions.md` | 863 | `TODO` | ❌ | │   │   └── TODO.md |
-| `docs/ai/copilot/instructions.md` | 3160 | `TODO` | ❌ | - `documentation.yml` — Doc generation, TODO scanning, AI error intake |
+| `docs/ai/copilot/instructions.md` | 412 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
+| `docs/ai/copilot/instructions.md` | 869 | `TODO` | ❌ | │   │   └── TODO.md |
+| `docs/ai/copilot/instructions.md` | 3166 | `TODO` | ❌ | - `documentation.yml` — Doc generation, TODO scanning, AI error intake |
 | `docs/ai/skills/README.md` | 179 | `NOTE` | ❌ | > **Note:** The Direct Lending module (`src/Meridian.FSharp/Domain/DirectLending.fs`, |
 | `docs/architecture/deterministic-canonicalization.md` | 365 | `NOTE` | ❌ | Note: Polygon does not define buyer-initiated codes. Only ~5% of trades carry definitive aggressor inference. The canonicalization layer preserves `Unknown` as a valid canonical value rather than attempting inference. |
 | `docs/architecture/domains.md` | 111 | `NOTE` | ❌ | > Note: not every enum member is currently emitted by the three core collectors (`TradeDataCollector`, `MarketDepthCollector`, `QuoteCollector`); several are used by adapters, backfill paths, or the `L3OrderBookCollector`. |
@@ -139,9 +139,9 @@ Total items: **204**
 | `docs/status/rules-report.md` | 432 | `TODO` | ❌ | \| `docs\status\TODO.md` \| No hardcoded localhost URLs in docs \| info \| |
 | `src/Meridian.Application/Commands/SecurityMasterCommands.cs` | 20 | `NOTE` | ❌ | // NOTE: _importService is null when the Security Master database is not configured at CLI |
 | `src/Meridian.Application/Config/ConfigValidationHelper.cs` | 123 | `TODO` | ❌ | var placeholders = new[] { "__SET_ME__", "YOUR_", "REPLACE_", "ENTER_", "INSERT_", "TODO" }; |
-| `src/Meridian.Application/Config/ConfigurationPipeline.cs` | 323 | `TODO` | ❌ | ["__SET_ME__", "your-key-here", "your-secret-here", "REPLACE_ME", "ENTER_YOUR", "INSERT_YOUR", "TODO", "xxx"]; |
+| `src/Meridian.Application/Config/ConfigurationPipeline.cs` | 331 | `TODO` | ❌ | ["__SET_ME__", "your-key-here", "your-secret-here", "REPLACE_ME", "ENTER_YOUR", "INSERT_YOUR", "TODO", "xxx"]; |
 | `src/Meridian.Application/Config/Credentials/CredentialTestingService.cs` | 377 | `NOTE` | ❌ | if (content.Contains("\"Note\":")) |
-| `src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs` | 195 | `TODO` | ❌ | "TODO" or |
+| `src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs` | 188 | `TODO` | ❌ | "TODO" or |
 | `src/Meridian.Application/Config/IConfigValidator.cs` | 165 | `TODO` | ❌ | "TODO", "xxx", "change-me", "placeholder" |
 | `src/Meridian.Application/DirectLending/InMemoryDirectLendingService.Workflows.cs` | 100 | `NOTE` | ❌ | AppendEvent(stored, "loan.fee-assessed", request.EffectiveDate, new { loanId, request.FeeType, request.Amount, request.EffectiveDate, request.Note }, metadata); |
 | `src/Meridian.Application/DirectLending/InMemoryDirectLendingService.Workflows.cs` | 101 | `NOTE` | ❌ | GetList(_feeBalances, loanId).Add(new FeeBalanceDto(Guid.NewGuid(), loanId, request.FeeType, request.EffectiveDate, request.Amount, request.Amount, stored.History[^1].EventId, request.Note, DateTimeOffset.UtcNow)); |
