@@ -669,7 +669,6 @@ public sealed class SymbolManagementService
     }
 }
 
-#region Result Types
 
 /// <summary>
 /// Result of a symbol add/remove operation.
@@ -764,4 +763,3 @@ public sealed record SymbolStatusReport(
     ArchivedSymbolInfo? ArchivedInfo
 );
 
-#endregion

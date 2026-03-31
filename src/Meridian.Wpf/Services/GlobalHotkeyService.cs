@@ -124,7 +124,6 @@ public sealed class GlobalHotkeyService
         {
             if (def.Id != hotkeyId) continue;
 
-            Debug.WriteLine($"[GlobalHotkeyService] Hotkey fired: {def.ActionId} ({def.KeyGesture})");
             GlobalHotkeyFired?.Invoke(this, new GlobalHotkeyFiredEventArgs(def.ActionId, def));
             return;
         }
@@ -152,12 +151,10 @@ public sealed class GlobalHotkeyService
             if (ok)
             {
                 _registeredIds.Add(def.Id);
-                Debug.WriteLine($"[GlobalHotkeyService] Registered {def.KeyGesture} → {def.ActionId}");
             }
             else
             {
                 int err = Marshal.GetLastWin32Error();
-                Debug.WriteLine(
                     $"[GlobalHotkeyService] WARNING: Failed to register {def.KeyGesture} " +
                     $"(id=0x{def.Id:X4}, win32err={err}). " +
                     "Another application may be using this combination.");
@@ -172,7 +169,6 @@ public sealed class GlobalHotkeyService
         foreach (var id in _registeredIds)
         {
             UnregisterHotKey(_hwnd, id);
-            Debug.WriteLine($"[GlobalHotkeyService] Unregistered hotkey id=0x{id:X4}");
         }
 
         _registeredIds.Clear();

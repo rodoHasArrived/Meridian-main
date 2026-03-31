@@ -753,7 +753,6 @@ Refer to your data provider's terms of service for data usage rights.
     private static string FormatBytes(long bytes) => FormatHelpers.FormatBytes(bytes);
 }
 
-#region Models
 
 public sealed record PackageRequest
 {
@@ -901,4 +900,3 @@ public sealed class PackageInfo
     public long TotalSizeBytes { get; set; }
 }
 
-#endregion

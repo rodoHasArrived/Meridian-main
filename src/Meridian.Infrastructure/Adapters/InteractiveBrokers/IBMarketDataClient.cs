@@ -41,7 +41,6 @@ public sealed class IBMarketDataClient : IMarketDataClient
 
     public bool IsEnabled => _inner.IsEnabled;
 
-    #region IProviderMetadata
 
     /// <inheritdoc/>
     public string ProviderId => "ib";
@@ -91,7 +90,6 @@ public sealed class IBMarketDataClient : IMarketDataClient
         "TWS/Gateway must be running and configured."
     };
 
-    #endregion
 
     public Task ConnectAsync(CancellationToken ct = default) => _inner.ConnectAsync(ct);
     public Task DisconnectAsync(CancellationToken ct = default) => _inner.DisconnectAsync(ct);

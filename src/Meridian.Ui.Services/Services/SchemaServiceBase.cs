@@ -133,7 +133,6 @@ public abstract class SchemaServiceBase : ISchemaService
         };
     }
 
-    #region Schema Creation Methods
 
     protected static EventSchema CreateTradeSchema()
     {
@@ -251,9 +250,7 @@ public abstract class SchemaServiceBase : ISchemaService
         };
     }
 
-    #endregion
 
-    #region Reference Data
 
     protected static Dictionary<string, string> GetExchangeCodes()
     {
@@ -300,9 +297,7 @@ public abstract class SchemaServiceBase : ISchemaService
         };
     }
 
-    #endregion
 
-    #region Export Methods
 
     protected static string ExportAsJson(DataDictionary dictionary)
     {
@@ -377,7 +372,6 @@ public abstract class SchemaServiceBase : ISchemaService
         return sb.ToString();
     }
 
-    #endregion
 }
 
 /// <summary>

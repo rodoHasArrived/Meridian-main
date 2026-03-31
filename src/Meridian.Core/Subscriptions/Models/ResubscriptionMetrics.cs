@@ -29,7 +29,6 @@ public static class ResubscriptionMetrics
     private static long _totalResubscribeTimeMs;
     private static long _lastResubscribeTimestamp;
 
-    #region Counter Properties
 
     public static long ResubscribeAttempts => Interlocked.Read(ref _resubscribeAttempts);
     public static long ResubscribeSuccesses => Interlocked.Read(ref _resubscribeSuccesses);
@@ -76,9 +75,7 @@ public static class ResubscriptionMetrics
         }
     }
 
-    #endregion
 
-    #region Increment Methods
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void IncResubscribeAttempt()
@@ -128,9 +125,7 @@ public static class ResubscriptionMetrics
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void SetSymbolsCircuitOpen(long count) => Interlocked.Exchange(ref _symbolsCircuitOpen, count);
 
-    #endregion
 
-    #region Snapshot
 
     /// <summary>
     /// Gets a point-in-time snapshot of all resubscription metrics.
@@ -173,7 +168,6 @@ public static class ResubscriptionMetrics
         Interlocked.Exchange(ref _lastResubscribeTimestamp, 0);
     }
 
-    #endregion
 }
 
 /// <summary>

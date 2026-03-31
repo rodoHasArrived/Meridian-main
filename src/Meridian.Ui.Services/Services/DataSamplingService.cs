@@ -375,7 +375,6 @@ public sealed class DataSamplingService
     }
 }
 
-#region Event Args
 
 public sealed class SamplingProgressEventArgs : EventArgs
 {
@@ -384,9 +383,7 @@ public sealed class SamplingProgressEventArgs : EventArgs
     public long RecordsProcessed { get; set; }
 }
 
-#endregion
 
-#region Enums
 
 public enum SamplingStrategyType : byte
 {
@@ -401,9 +398,7 @@ public enum SamplingStrategyType : byte
     Systematic
 }
 
-#endregion
 
-#region Options and Results
 
 public sealed class SamplingOptions
 {
@@ -503,9 +498,7 @@ public sealed class SamplingValidationResult
     public List<string> Warnings { get; set; } = new();
 }
 
-#endregion
 
-#region API Response Classes
 
 public sealed class SamplingResponse
 {
@@ -537,4 +530,3 @@ public sealed class SamplingDeleteResponse
     public bool Success { get; set; }
 }
 
-#endregion

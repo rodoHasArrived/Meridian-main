@@ -61,7 +61,6 @@ public sealed class StockSharpHistoricalDataProvider : IHistoricalDataProvider
         _config = config ?? throw new ArgumentNullException(nameof(config));
     }
 
-    #region IHistoricalDataProvider Implementation
 
     /// <inheritdoc/>
     public string Name => "stocksharp";
@@ -88,9 +87,7 @@ public sealed class StockSharpHistoricalDataProvider : IHistoricalDataProvider
     /// <inheritdoc/>
     public HistoricalDataCapabilities Capabilities => GetConnectorCapabilities();
 
-    #endregion
 
-    #region IProviderMetadata Implementation
 
     /// <inheritdoc/>
     public string ProviderId => "stocksharp";
@@ -129,7 +126,6 @@ public sealed class StockSharpHistoricalDataProvider : IHistoricalDataProvider
         "Some connectors may have rate limits or data restrictions."
     };
 
-    #endregion
 
     /// <summary>
     /// Check if the provider is available (StockSharp configured and historical enabled).

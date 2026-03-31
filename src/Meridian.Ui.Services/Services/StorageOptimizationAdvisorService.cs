@@ -1087,7 +1087,6 @@ public sealed class StorageOptimizationAdvisorService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[StorageOptimization] Warm tier migration API failed: {ex.Message}");
             return null;
         }
     }
@@ -1183,7 +1182,6 @@ public sealed class StorageOptimizationAdvisorService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[StorageOptimization] Tier migration API failed: {ex.Message}");
             return null;
         }
     }
@@ -1202,7 +1200,6 @@ public sealed class StorageOptimizationAdvisorService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[StorageOptimization] Tier statistics API failed: {ex.Message}");
             return null;
         }
     }
@@ -1231,7 +1228,6 @@ public sealed class StorageOptimizationAdvisorService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[StorageOptimization] Migration plan API failed: {ex.Message}");
             return null;
         }
     }
@@ -1250,7 +1246,6 @@ public sealed class StorageOptimizationAdvisorService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[StorageOptimization] Defragmentation API failed: {ex.Message}");
             return null;
         }
     }
@@ -1269,13 +1264,11 @@ public sealed class StorageOptimizationAdvisorService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[StorageOptimization] Storage catalog API failed: {ex.Message}");
             return null;
         }
     }
 }
 
-#region Models
 
 /// <summary>
 /// Options for storage analysis.
@@ -1454,9 +1447,7 @@ public sealed class OptimizationExecutionResult
     public List<string> Errors { get; set; } = new();
 }
 
-#endregion
 
-#region API Response Models
 
 /// <summary>
 /// Response from /api/storage/tiers/migrate endpoint.
@@ -1560,4 +1551,3 @@ public sealed class CatalogEntry
     public string? Checksum { get; set; }
 }
 
-#endregion

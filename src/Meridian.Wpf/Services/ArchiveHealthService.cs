@@ -328,7 +328,6 @@ public sealed class ArchiveHealthService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Failed to get drive info: {ex.Message}");
         }
 
         return Task.FromResult(info);
@@ -486,7 +485,6 @@ public sealed class ArchiveHealthService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Failed to save health status: {ex.Message}");
         }
     }
 }

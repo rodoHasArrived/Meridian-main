@@ -16,7 +16,6 @@ public class AdminMaintenanceServiceBase : IAdminMaintenanceService
     /// <summary>Shared singleton instance for use in DI registrations and direct access.</summary>
     public static AdminMaintenanceServiceBase Instance => _instance.Value;
 
-    #region Archive Maintenance
 
     /// <inheritdoc />
     public async Task<MaintenanceScheduleResult> GetMaintenanceScheduleAsync(CancellationToken ct = default)
@@ -133,9 +132,7 @@ public class AdminMaintenanceServiceBase : IAdminMaintenanceService
         };
     }
 
-    #endregion
 
-    #region Tier Migration
 
     /// <inheritdoc />
     public async Task<TierConfigResult> GetTierConfigurationAsync(CancellationToken ct = default)
@@ -235,9 +232,7 @@ public class AdminMaintenanceServiceBase : IAdminMaintenanceService
         };
     }
 
-    #endregion
 
-    #region Retention Policies
 
     /// <inheritdoc />
     public async Task<RetentionPoliciesResult> GetRetentionPoliciesAsync(CancellationToken ct = default)
@@ -321,9 +316,7 @@ public class AdminMaintenanceServiceBase : IAdminMaintenanceService
         };
     }
 
-    #endregion
 
-    #region Cleanup
 
     /// <inheritdoc />
     public async Task<CleanupPreviewResult> PreviewCleanupAsync(
@@ -377,9 +370,7 @@ public class AdminMaintenanceServiceBase : IAdminMaintenanceService
         };
     }
 
-    #endregion
 
-    #region Diagnostics
 
     /// <inheritdoc />
     public async Task<PermissionValidationResult> ValidatePermissionsAsync(CancellationToken ct = default)
@@ -502,5 +493,4 @@ public class AdminMaintenanceServiceBase : IAdminMaintenanceService
         };
     }
 
-    #endregion
 }

@@ -12,7 +12,6 @@ namespace Meridian.Ui.Services;
 /// </summary>
 public static class ErrorMessages
 {
-    #region Connection Errors
 
     /// <summary>
     /// Error when unable to connect to a data provider.
@@ -46,9 +45,7 @@ public static class ErrorMessages
          $"{provider} is currently unavailable.",
          "This may be a temporary outage. Check the provider's status page or try again later.");
 
-    #endregion
 
-    #region Rate Limit Errors
 
     /// <summary>
     /// Error when rate limit is exceeded.
@@ -60,9 +57,7 @@ public static class ErrorMessages
              ? $"Please wait {FormatTimeSpan(retryAfter.Value)} before making more requests."
              : $"Please wait a few minutes before making more requests. Consider upgrading your {provider} plan for higher limits.");
 
-    #endregion
 
-    #region Configuration Errors
 
     /// <summary>
     /// Error when API key is missing.
@@ -88,9 +83,7 @@ public static class ErrorMessages
          $"The data directory does not exist: {path}",
          "Create the directory manually or update the data path in Settings → Storage.");
 
-    #endregion
 
-    #region Symbol Errors
 
     /// <summary>
     /// Error when symbol is not found.
@@ -116,9 +109,7 @@ public static class ErrorMessages
          $"Failed to subscribe to {symbol}: {reason}",
          "Check that the collector is running and connected. Try removing and re-adding the symbol.");
 
-    #endregion
 
-    #region Storage Errors
 
     /// <summary>
     /// Error when unable to save data.
@@ -144,9 +135,7 @@ public static class ErrorMessages
          $"Disk space is running low ({availableSpace} available).",
          "Free up disk space or change the data directory to a drive with more space. Consider running archive maintenance to compress old data.");
 
-    #endregion
 
-    #region Backfill Errors
 
     /// <summary>
     /// Error when backfill fails.
@@ -164,9 +153,7 @@ public static class ErrorMessages
          $"Downloaded {downloaded} bars for {symbol} (expected {expected}).",
          "Some data may be missing for weekends, holidays, or due to provider limitations. This is often expected.");
 
-    #endregion
 
-    #region General Errors
 
     /// <summary>
     /// Generic unexpected error.
@@ -184,9 +171,7 @@ public static class ErrorMessages
          $"Failed to {operation}: {ex.Message}",
          "Check the logs for more details. If the problem persists, please report it at github.com/rodoHasArrived/Meridian/issues");
 
-    #endregion
 
-    #region Helpers
 
     /// <summary>
     /// Formats a TimeSpan into a human-readable string.
@@ -208,5 +193,4 @@ public static class ErrorMessages
         return $"{error.Message}\n\nSuggestion: {error.Remedy}";
     }
 
-    #endregion
 }

@@ -363,7 +363,6 @@ public sealed class LeanIntegrationService
     }
 }
 
-#region Event Args
 
 public sealed class BacktestStatusChangedEventArgs : EventArgs
 {
@@ -372,9 +371,7 @@ public sealed class BacktestStatusChangedEventArgs : EventArgs
     public double Progress { get; set; }
 }
 
-#endregion
 
-#region Configuration Classes
 
 public sealed class LeanStatus
 {
@@ -416,9 +413,7 @@ public sealed class LeanVerificationResult
     public List<string> Warnings { get; set; } = new();
 }
 
-#endregion
 
-#region Algorithm Classes
 
 public sealed class AlgorithmInfo
 {
@@ -436,9 +431,7 @@ public sealed class AlgorithmListResult
     public List<AlgorithmInfo> Algorithms { get; set; } = new();
 }
 
-#endregion
 
-#region Data Sync Classes
 
 public sealed class DataSyncOptions
 {
@@ -467,9 +460,7 @@ public sealed class DataSyncStatus
     public int TotalSymbols { get; set; }
 }
 
-#endregion
 
-#region Backtest Classes
 
 public sealed class BacktestOptions
 {
@@ -565,9 +556,7 @@ public sealed class BacktestHistoryResult
     public List<BacktestSummary> Backtests { get; set; } = new();
 }
 
-#endregion
 
-#region API Response Classes
 
 public sealed class LeanVerificationResponse
 {
@@ -603,9 +592,7 @@ public sealed class BacktestHistoryResponse
     public List<BacktestSummary>? Backtests { get; set; }
 }
 
-#endregion
 
-#region Auto-Export Classes
 
 public sealed class LeanAutoExportStatus
 {
@@ -628,9 +615,7 @@ public sealed class LeanAutoExportConfigureOptions
     public List<string>? Symbols { get; set; }
 }
 
-#endregion
 
-#region Results Ingest Classes
 
 public sealed class LeanResultsIngestResult
 {
@@ -644,9 +629,7 @@ public sealed class LeanResultsIngestResult
     public string? Message { get; set; }
 }
 
-#endregion
 
-#region Symbol Mapping Classes
 
 public sealed class LeanSymbolMapping
 {
@@ -662,4 +645,3 @@ public sealed class LeanSymbolMappingResult
     public int Total { get; set; }
 }
 
-#endregion

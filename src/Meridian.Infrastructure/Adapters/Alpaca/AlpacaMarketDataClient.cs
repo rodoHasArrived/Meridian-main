@@ -74,7 +74,6 @@ public sealed class AlpacaMarketDataClient : WebSocketProviderBase
             throw new ArgumentException("Alpaca KeyId/SecretKey required.");
     }
 
-    #region IProviderMetadata
 
     /// <inheritdoc/>
     public override bool IsEnabled => true;
@@ -118,9 +117,7 @@ public sealed class AlpacaMarketDataClient : WebSocketProviderBase
         "IEX feed is free; SIP feed requires subscription."
     };
 
-    #endregion
 
-    #region WebSocketProviderBase template methods
 
     /// <inheritdoc/>
     protected override Uri BuildWebSocketUri()
@@ -210,9 +207,7 @@ public sealed class AlpacaMarketDataClient : WebSocketProviderBase
         }
     }
 
-    #endregion
 
-    #region IMarketDataClient – subscriptions
 
     /// <inheritdoc/>
     public override int SubscribeTrades(SymbolConfig cfg)
@@ -269,9 +264,7 @@ public sealed class AlpacaMarketDataClient : WebSocketProviderBase
         }
     }
 
-    #endregion
 
-    #region Private message processing
 
     private void HandleMessage(JsonElement el)
     {
@@ -376,5 +369,4 @@ public sealed class AlpacaMarketDataClient : WebSocketProviderBase
         }
     }
 
-    #endregion
 }

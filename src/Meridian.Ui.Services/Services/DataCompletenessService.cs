@@ -615,7 +615,6 @@ public sealed class TradingCalendarService
     }
 }
 
-#region Models
 
 public sealed record CompletenessReport
 {
@@ -779,4 +778,3 @@ public enum GapType : byte
     EndOfRange
 }
 
-#endregion

@@ -180,7 +180,6 @@ public sealed class FinnhubSymbolSearchProviderRefactored : BaseSymbolSearchProv
         return DateOnly.TryParse(ipoDate, out var date) ? date : null;
     }
 
-    #region Finnhub API Models
 
     private sealed class FinnhubSearchResponse
     {
@@ -260,5 +259,4 @@ public sealed class FinnhubSymbolSearchProviderRefactored : BaseSymbolSearchProv
         public decimal? Week52Low { get; set; }
     }
 
-    #endregion
 }

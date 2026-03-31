@@ -85,7 +85,6 @@ public class ExportPresetServiceBase
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[ExportPresetService] Error loading export presets: {ex.Message}");
 
             if (_presets.Count == 0)
             {
@@ -113,7 +112,6 @@ public class ExportPresetServiceBase
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[ExportPresetService] Error saving export presets: {ex.Message}");
         }
     }
 
@@ -311,7 +309,6 @@ public class ExportPresetServiceBase
         return importedCount;
     }
 
-    #region Built-In Presets
 
     private void EnsureBuiltInPresets()
     {
@@ -461,5 +458,4 @@ public class ExportPresetServiceBase
         };
     }
 
-    #endregion
 }

@@ -241,7 +241,6 @@ public partial class SettingsPage : Page
         {
             var theme = item.Tag?.ToString();
             // Theme switching logic would go here
-            System.Diagnostics.Debug.WriteLine($"Theme changed to: {theme}");
         }
     }
 

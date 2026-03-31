@@ -806,7 +806,6 @@ public enum FallbackStrategy : byte
     Random
 }
 
-#region Configuration Extensions
 
 /// <summary>
 /// Extension methods for working with data source configuration.
@@ -872,4 +871,3 @@ public static class DataSourceConfigurationExtensions
     }
 }
 
-#endregion

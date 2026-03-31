@@ -161,7 +161,6 @@ public partial class SystemHealthPage : Page
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"[SystemHealthPage] Error loading metrics: {ex.Message}");
         }
     }
 
@@ -205,7 +204,6 @@ public partial class SystemHealthPage : Page
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"[SystemHealthPage] Error loading providers: {ex.Message}");
         }
     }
 
@@ -242,7 +240,6 @@ public partial class SystemHealthPage : Page
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"[SystemHealthPage] Error loading storage: {ex.Message}");
         }
     }
 
@@ -279,7 +276,6 @@ public partial class SystemHealthPage : Page
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"[SystemHealthPage] Error loading events: {ex.Message}");
         }
     }
 

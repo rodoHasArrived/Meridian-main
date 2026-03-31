@@ -76,7 +76,6 @@ public partial class AdvancedAnalyticsPage : Page
         }
     }
 
-    #region Quality Report
 
     private async System.Threading.Tasks.Task LoadQualityReportAsync()
     {
@@ -157,9 +156,7 @@ public partial class AdvancedAnalyticsPage : Page
         ShowSuccess("Quality report generated.");
     }
 
-    #endregion
 
-    #region Gap Analysis
 
     private async void AnalyzeGaps_Click(object sender, RoutedEventArgs e)
     {
@@ -252,9 +249,7 @@ public partial class AdvancedAnalyticsPage : Page
         }
     }
 
-    #endregion
 
-    #region Cross-Provider Comparison
 
     private async void CompareProviders_Click(object sender, RoutedEventArgs e)
     {
@@ -307,9 +302,7 @@ public partial class AdvancedAnalyticsPage : Page
         }
     }
 
-    #endregion
 
-    #region Latency Analysis
 
     private async System.Threading.Tasks.Task LoadLatencyDataAsync()
     {
@@ -344,9 +337,7 @@ public partial class AdvancedAnalyticsPage : Page
         }
     }
 
-    #endregion
 
-    #region Rate Limits
 
     private async System.Threading.Tasks.Task LoadRateLimitsAsync()
     {
@@ -389,9 +380,7 @@ public partial class AdvancedAnalyticsPage : Page
         }
     }
 
-    #endregion
 
-    #region Helpers
 
     private static string FormatDuration(TimeSpan duration)
     {
@@ -423,10 +412,8 @@ public partial class AdvancedAnalyticsPage : Page
         StatusInfoBar.Visibility = Visibility.Collapsed;
     }
 
-    #endregion
 }
 
-#region Display Items
 
 public sealed class SymbolQualityDisplayItem
 {
@@ -476,4 +463,3 @@ public sealed class RateLimitDisplayItem
     public SolidColorBrush? StatusBackground { get; set; }
 }
 
-#endregion

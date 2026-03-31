@@ -45,7 +45,6 @@ public static class Metrics
         UpdateGcCounts();
     }
 
-    #region Event Counters
 
     public static long Published => Interlocked.Read(ref _published);
     public static long Dropped => Interlocked.Read(ref _dropped);
@@ -76,9 +75,7 @@ public static class Metrics
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void IncHistoricalBars() => Interlocked.Increment(ref _historicalBars);
 
-    #endregion
 
-    #region Latency Tracking
 
     /// <summary>
     /// Records a latency sample in ticks.
@@ -161,9 +158,7 @@ public static class Metrics
     /// </summary>
     public static long LatencySampleCount => Interlocked.Read(ref _latencySampleCount);
 
-    #endregion
 
-    #region Rate Calculations
 
     /// <summary>
     /// Gets the events per second rate.
@@ -241,9 +236,7 @@ public static class Metrics
         return (double)elapsed / Stopwatch.Frequency;
     }
 
-    #endregion
 
-    #region GC Monitoring
 
     /// <summary>
     /// Updates GC collection counts and calculates deltas since last update.
@@ -280,9 +273,7 @@ public static class Metrics
     /// </summary>
     public static double HeapSizeMb => GC.GetGCMemoryInfo().HeapSizeBytes / (1024.0 * 1024.0);
 
-    #endregion
 
-    #region Snapshot
 
     /// <summary>
     /// Resets all counters to zero.
@@ -351,7 +342,6 @@ public static class Metrics
         );
     }
 
-    #endregion
 }
 
 /// <summary>

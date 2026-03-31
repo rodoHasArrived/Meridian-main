@@ -26,7 +26,6 @@ namespace Meridian.Infrastructure.Adapters.Core;
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 public interface IHistoricalDataProvider : IProviderMetadata, IDisposable
 {
-    #region Core Identity
 
     /// <summary>
     /// Unique identifier for the provider (e.g., "alpaca", "tiingo").
@@ -43,9 +42,7 @@ public interface IHistoricalDataProvider : IProviderMetadata, IDisposable
     /// </summary>
     string Description { get; }
 
-    #endregion
 
-    #region Priority and Rate Limiting
 
     /// <summary>
     /// Priority for fallback ordering (lower = higher priority, tried first).
@@ -71,9 +68,7 @@ public interface IHistoricalDataProvider : IProviderMetadata, IDisposable
     /// </summary>
     TimeSpan RateLimitWindow => TimeSpan.FromHours(1);
 
-    #endregion
 
-    #region Data Capabilities
 
     /// <summary>
     /// Consolidated capability flags for this provider.
@@ -129,9 +124,7 @@ public interface IHistoricalDataProvider : IProviderMetadata, IDisposable
     /// <remarks>Delegates to <see cref="Capabilities"/>. Kept for backwards compatibility.</remarks>
     IReadOnlyList<string> SupportedMarkets => Capabilities.SupportedMarkets;
 
-    #endregion
 
-    #region Health Check
 
     /// <summary>
     /// Check if the provider is currently available and healthy.
@@ -139,9 +132,7 @@ public interface IHistoricalDataProvider : IProviderMetadata, IDisposable
     /// </summary>
     Task<bool> IsAvailableAsync(CancellationToken ct = default) => Task.FromResult(true);
 
-    #endregion
 
-    #region Core Data Methods
 
     /// <summary>
     /// Fetch daily OHLCV bars for a symbol within the specified date range.
@@ -168,9 +159,7 @@ public interface IHistoricalDataProvider : IProviderMetadata, IDisposable
         )).ToList();
     }
 
-    #endregion
 
-    #region Extended Data Methods (Optional)
 
     /// <summary>
     /// Fetch historical NBBO quotes for a symbol.
@@ -242,9 +231,7 @@ public interface IHistoricalDataProvider : IProviderMetadata, IDisposable
         CancellationToken ct = default)
         => Task.FromResult(new HistoricalAuctionsResult(Array.Empty<HistoricalAuction>()));
 
-    #endregion
 
-    #region IProviderMetadata Default Implementations
 
     /// <inheritdoc/>
     string IProviderMetadata.ProviderId => Name;
@@ -266,16 +253,13 @@ public interface IHistoricalDataProvider : IProviderMetadata, IDisposable
             RateLimitWindow,
             RateLimitDelay == TimeSpan.Zero ? null : RateLimitDelay);
 
-    #endregion
 
-    #region IDisposable Default Implementation
 
     /// <summary>
     /// Disposes provider resources. Default implementation does nothing.
     /// </summary>
     void IDisposable.Dispose() { }
 
-    #endregion
 }
 
 /// <summary>

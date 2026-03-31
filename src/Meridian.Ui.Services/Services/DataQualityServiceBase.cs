@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 
 namespace Meridian.Ui.Services.Services;
 
-#region DTO Classes
 
 public sealed class DataQualitySummary
 {
@@ -164,7 +163,6 @@ public sealed class IntegrityVerificationResult
     public DateTime CheckedAt { get; set; }
 }
 
-#endregion
 
 /// <summary>
 /// Abstract base class for data quality monitoring shared between platforms.

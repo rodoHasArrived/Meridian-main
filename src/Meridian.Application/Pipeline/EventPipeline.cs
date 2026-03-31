@@ -261,7 +261,6 @@ public sealed class EventPipeline : IMarketEventPublisher, IBackpressureSignal, 
         return requestedConsumerCount;
     }
 
-    #region Public Properties - Pipeline Statistics
 
     /// <summary>Gets the total number of events successfully published to the pipeline.</summary>
     public long PublishedCount => Interlocked.Read(ref _publishedCount);
@@ -333,7 +332,6 @@ public sealed class EventPipeline : IMarketEventPublisher, IBackpressureSignal, 
     // backwards compatibility with callers that already use it for display purposes.
     double IBackpressureSignal.QueueUtilization => QueueUtilization / 100.0;
 
-    #endregion
 
     /// <summary>
     /// Recovers uncommitted events from the WAL and replays them to the storage sink.

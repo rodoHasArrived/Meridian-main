@@ -490,7 +490,6 @@ public partial class MainWindow : Window
         // For now, notifications are handled by the NotificationService
     }
 
-    #region Clipboard Symbol Watcher
 
     private void OnSymbolsDetected(object? sender, SymbolsDetectedEventArgs e)
     {
@@ -587,9 +586,7 @@ public partial class MainWindow : Window
         }
     }
 
-    #endregion
 
-    #region Fixture/Offline Mode Banner
 
     private void OnFixtureModeChanged(object? sender, EventArgs e)
     {
@@ -632,9 +629,7 @@ public partial class MainWindow : Window
         }
     }
 
-    #endregion
 
-    #region Onboarding Tour Overlay
 
     private void OnTourStepChanged(object? sender, TourStepEventArgs e)
     {
@@ -701,9 +696,7 @@ public partial class MainWindow : Window
         // Auto-advance via messaging: pages can listen for "TourNext" / "TourDismiss"
     }
 
-    #endregion
 
-    #region Alert Remediation
 
     private void OnAlertRaised(object? sender, AlertEventArgs e)
     {
@@ -846,9 +839,7 @@ public partial class MainWindow : Window
         }
     }
 
-    #endregion
 
-    #region Workspace Session Persistence
 
     /// <summary>
     /// Restores the last workspace session state (active workspace, last page, etc.)
@@ -881,7 +872,6 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[MainWindow] Failed to restore workspace session: {ex.Message}");
         }
     }
 
@@ -921,13 +911,10 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[MainWindow] Failed to save workspace session: {ex.Message}");
         }
     }
 
-    #endregion
 
-    #region Window State Persistence
 
     /// <summary>
     /// Saves the current window position, size, and state to disk.
@@ -961,7 +948,6 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[MainWindow] Failed to save window state: {ex.Message}");
         }
     }
 
@@ -1007,7 +993,6 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[MainWindow] Failed to restore window state: {ex.Message}");
         }
     }
 
@@ -1112,9 +1097,7 @@ public partial class MainWindow : Window
     [JsonSerializable(typeof(PersistedWindowState))]
     private sealed partial class WindowStateJsonContext : JsonSerializerContext;
 
-    #endregion
 
-    #region Drag-and-Drop file import
 
     private void OnRootFrameDragEnter(object sender, DragEventArgs e)
     {
@@ -1190,11 +1173,9 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[MainWindow] Drop routing failed for '{filePath}': {ex.Message}");
         }
     }
 
-    #endregion
 }
 
 /// <summary>

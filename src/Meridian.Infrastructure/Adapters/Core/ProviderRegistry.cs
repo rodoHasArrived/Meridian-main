@@ -67,7 +67,6 @@ public sealed class ProviderRegistry : IDisposable
         _log = log ?? LoggingSetup.ForContext<ProviderRegistry>();
     }
 
-    #region Unified Provider Registration
 
     /// <summary>
     /// Registers any provider implementing <see cref="IProviderMetadata"/>.
@@ -176,9 +175,7 @@ public sealed class ProviderRegistry : IDisposable
     public IReadOnlyList<string> SupportedStreamingSources =>
         _streamingFactories.Keys.OrderBy(k => k, StringComparer.Ordinal).ToList();
 
-    #endregion
 
-    #region Provider Metadata Queries
 
     /// <summary>
     /// Gets all registered providers as unified metadata.
@@ -215,9 +212,7 @@ public sealed class ProviderRegistry : IDisposable
             .ToList();
     }
 
-    #endregion
 
-    #region Generic Provider Retrieval
 
     /// <summary>
     /// Gets all providers of a specific type, ordered by priority.
@@ -337,9 +332,7 @@ public sealed class ProviderRegistry : IDisposable
         return results;
     }
 
-    #endregion
 
-    #region Type-Specific Methods (Convenience wrappers - delegate to generic methods)
 
     /// <summary>
     /// Registers a streaming market data provider.
@@ -421,9 +414,7 @@ public sealed class ProviderRegistry : IDisposable
     public Task<ISymbolSearchProvider?> GetBestSymbolSearchProviderAsync(CancellationToken ct = default)
         => GetBestAvailableProviderAsync<ISymbolSearchProvider>(ct);
 
-    #endregion
 
-    #region Provider Management
 
     /// <summary>
     /// Enables a provider.
@@ -535,7 +526,6 @@ public sealed class ProviderRegistry : IDisposable
             TotalEnabled: providers.Count(p => p.IsEnabled));
     }
 
-    #endregion
 
     private static void ValidateName(string name)
     {

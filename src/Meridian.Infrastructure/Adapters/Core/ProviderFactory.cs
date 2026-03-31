@@ -451,21 +451,6 @@ public sealed class ProviderCreationResult
 }
 
 /// <summary>
-/// Interface for resolving provider credentials from configuration or environment.
-/// </summary>
-/// <remarks>
-/// This interface is preserved for backward compatibility with existing providers.
-/// New providers should declare their credential requirements using
-/// <see cref="Meridian.Infrastructure.Contracts.RequiresCredentialAttribute"/> and
-/// accept an <see cref="Meridian.Infrastructure.Contracts.ICredentialContext"/> instead.
-/// </remarks>
-[Obsolete("ICredentialResolver is deprecated. Use IProviderCredentialResolver.CreateContext(...) " +
-          "with [RequiresCredential] metadata instead.")]
-public interface ICredentialResolver : IProviderCredentialResolver
-{
-}
-
-/// <summary>
 /// Generic provider credential context factory used by runtime provider registration.
 /// </summary>
 public interface IProviderCredentialResolver

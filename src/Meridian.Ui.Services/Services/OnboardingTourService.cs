@@ -241,7 +241,6 @@ public sealed class OnboardingTourService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[OnboardingTourService] Failed to load progress: {ex.Message}");
         }
     }
 
@@ -267,7 +266,6 @@ public sealed class OnboardingTourService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[OnboardingTourService] Failed to save progress: {ex.Message}");
         }
     }
 

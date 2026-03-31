@@ -203,7 +203,6 @@ public sealed class BatchExportSchedulerService : IAsyncDisposable
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Export scheduler error: {ex.Message}");
                 _workerSemaphore.Release();
             }
         }
@@ -587,7 +586,6 @@ public sealed class BatchExportSchedulerService : IAsyncDisposable
     }
 }
 
-#region Models
 
 public sealed class ExportJob
 {
@@ -733,4 +731,3 @@ public sealed class ExportJobProgressEventArgs : EventArgs
     }
 }
 
-#endregion

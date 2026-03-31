@@ -14,7 +14,6 @@ namespace Meridian.Infrastructure.Adapters.InteractiveBrokers;
 /// </remarks>
 public static class IBApiLimits
 {
-    #region Connection Limits
 
     /// <summary>
     /// Maximum number of API clients that can connect to a single TWS/Gateway instance.
@@ -26,9 +25,7 @@ public static class IBApiLimits
     /// </summary>
     public const int MaxMessagesPerSecond = 50;
 
-    #endregion
 
-    #region Real-Time Market Data Limits
 
     /// <summary>
     /// Default maximum number of simultaneous market data subscriptions (Level 1).
@@ -47,9 +44,7 @@ public static class IBApiLimits
     /// </summary>
     public const int MaxDepthSubscriptions = 60;
 
-    #endregion
 
-    #region Historical Data Limits
 
     /// <summary>
     /// Maximum number of simultaneous open historical data requests.
@@ -99,9 +94,7 @@ public static class IBApiLimits
     /// </summary>
     public const int BidAskRequestWeight = 2;
 
-    #endregion
 
-    #region Tick-by-Tick Limits
 
     /// <summary>
     /// Minimum seconds between tick-by-tick requests for the same instrument.
@@ -113,9 +106,7 @@ public static class IBApiLimits
     /// </summary>
     public const int MaxTickByTickSubscriptions = 60;
 
-    #endregion
 
-    #region Snapshot Quote Limits
 
     /// <summary>
     /// Free snapshot quotes per month ($1.00 value).
@@ -127,18 +118,14 @@ public static class IBApiLimits
     /// </summary>
     public const decimal SnapshotCostUSD = 0.01m;
 
-    #endregion
 
-    #region Account Requirements
 
     /// <summary>
     /// Minimum account balance required for market data subscriptions.
     /// </summary>
     public const decimal MinAccountBalanceForMarketData = 500m;
 
-    #endregion
 
-    #region Connection Ports
 
     /// <summary>
     /// TWS Paper Trading connection port.
@@ -160,9 +147,7 @@ public static class IBApiLimits
     /// </summary>
     public const int GatewayLivePort = 4001;
 
-    #endregion
 
-    #region Error Codes
 
     /// <summary>
     /// Historical market data service error.
@@ -194,7 +179,6 @@ public static class IBApiLimits
     /// </summary>
     public const int ErrorPacingViolation = 162;
 
-    #endregion
 }
 
 /// <summary>
