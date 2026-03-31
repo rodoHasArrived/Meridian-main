@@ -399,6 +399,18 @@ This migration is tracked in [`../plans/trading-workstation-migration-blueprint.
 
 ---
 
+## 14a. MCP Server
+
+Two MCP (Model Context Protocol) server projects provide AI-agent tooling over the Meridian platform.
+
+| Project | Status | Notes |
+|---------|--------|-------|
+| `Meridian.McpServer` | ✅ | Market-data–focused MCP server: `BackfillTools`, `ProviderTools`, `StorageTools`, `SymbolTools`; `MarketDataPrompts`, `MarketDataResources` |
+| `Meridian.Mcp` | ✅ | Repo-tooling MCP server: `AdrTools`, `AuditTools`, `ConventionTools`, `KnownErrorTools`, `ProviderTools`; ADR/convention/template resources and code-review/test-writer prompts |
+| MCP tests | ✅ | `tests/Meridian.McpServer.Tests/` — backfill tools and storage tools coverage |
+
+---
+
 ## 15. Execution & Brokerage
 
 | Feature | Status | Notes |
@@ -597,7 +609,7 @@ Meridian’s intended end state is a comprehensive fund management platform rath
 
 ---
 
-*Last Updated: 2026-03-24*
+*Last Updated: 2026-03-31*
 
 
 
