@@ -17,8 +17,6 @@ public partial class QuantScriptPage : Page
     public QuantScriptPage()
     {
         InitializeComponent();
-        Loaded += OnPageLoaded;
-        Unloaded += OnPageUnloaded;
     }
 
     private void OnPageLoaded(object sender, RoutedEventArgs e)

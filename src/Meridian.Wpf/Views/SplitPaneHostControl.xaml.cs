@@ -11,10 +11,9 @@ public partial class SplitPaneHostControl : UserControl
 {
     private readonly List<Frame> _paneFrames = new();
 
-    /// <summary>Format string used for drag-and-drop page-tag data objects.</summary>
-    public const string PageTagFormat = "Meridian.PageTag";
-
-    /// <summary>Raised when a page tag is dropped onto a drop zone.</summary>
+    /// <summary>
+    /// Raised when a page-tag string is dropped onto this host.
+    /// </summary>
     public event EventHandler<PaneDropEventArgs>? PaneDropRequested;
 
     public PaneLayout Layout
@@ -84,6 +83,65 @@ public partial class SplitPaneHostControl : UserControl
                 ContentGrid.Children.Add(splitter);
             }
         }
+
+        // Re-span the overlay across all columns after rebuilding panes
+        Grid.SetColumnSpan(DropOverlay, Math.Max(1, ContentGrid.ColumnDefinitions.Count));
+    }
+
+    // ── Drag-and-drop ────────────────────────────────────────────────────────
+
+    private void OnDragOver(object sender, DragEventArgs e)
+    {
+        if (e.Data.GetDataPresent(DataFormats.StringFormat))
+        {
+            e.Effects = DragDropEffects.Move;
+            DropOverlay.Visibility = Visibility.Visible;
+        }
+        else
+        {
+            e.Effects = DragDropEffects.None;
+        }
+        e.Handled = true;
+    }
+
+    private void OnDragLeave(object sender, DragEventArgs e)
+    {
+        DropOverlay.Visibility = Visibility.Collapsed;
+        e.Handled = true;
+    }
+
+    private void OnDrop(object sender, DragEventArgs e)
+    {
+        DropOverlay.Visibility = Visibility.Collapsed;
+
+        if (e.Data.GetDataPresent(DataFormats.StringFormat) &&
+            e.Data.GetData(DataFormats.StringFormat) is string pageTag &&
+            !string.IsNullOrWhiteSpace(pageTag))
+        {
+            var dropPosition = e.GetPosition(this);
+            var targetIndex = HitTestPaneIndex(dropPosition);
+            PaneDropRequested?.Invoke(this, new PaneDropEventArgs(pageTag, targetIndex));
+        }
+        e.Handled = true;
+    }
+
+    /// <summary>
+    /// Returns the zero-based pane index that contains <paramref name="position"/>.
+    /// Falls back to <see cref="ActivePaneIndex"/> when no frame is hit.
+    /// </summary>
+    private int HitTestPaneIndex(Point position)
+    {
+        for (int i = 0; i < _paneFrames.Count; i++)
+        {
+            var frame = _paneFrames[i];
+            var bounds = new Rect(
+                frame.TranslatePoint(new Point(0, 0), this),
+                new Size(frame.ActualWidth, frame.ActualHeight));
+
+            if (bounds.Contains(position))
+                return i;
+        }
+        return ActivePaneIndex;
     }
 
     // ── Drag-and-drop handling ────────────────────────────────────────────────

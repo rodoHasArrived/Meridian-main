@@ -5,6 +5,19 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d"
              d:DesignHeight="600" d:DesignWidth="800"
-             Background="Transparent">
-    <Grid x:Name="ContentGrid"/>
+             Background="Transparent"
+             AllowDrop="True"
+             DragOver="OnDragOver"
+             DragLeave="OnDragLeave"
+             Drop="OnDrop">
+    <Grid x:Name="ContentGrid">
+        <!-- Shown as a translucent overlay while a page is being dragged over the host -->
+        <Border x:Name="DropOverlay"
+                Background="#400078D7"
+                BorderBrush="#FF0078D7"
+                BorderThickness="2"
+                Visibility="Collapsed"
+                IsHitTestVisible="False"
+                Panel.ZIndex="100"/>
+    </Grid>
 </UserControl>
