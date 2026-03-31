@@ -231,12 +231,12 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
                 () => _runner.RunAsync(_scriptSource, paramDict, ct), ct)
                 .ConfigureAwait(false);
 
-            await Application.Current.Dispatcher.InvokeAsync(() =>
+            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
                 ApplyResult(result), DispatcherPriority.Normal);
         }
         catch (OperationCanceledException)
         {
-            await Application.Current.Dispatcher.InvokeAsync(() =>
+            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 StatusText = "Cancelled";
                 AppendConsole("Script was cancelled.", ConsoleEntryKind.Warning);
@@ -245,7 +245,7 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unhandled error in QuantScript runner");
-            await Application.Current.Dispatcher.InvokeAsync(() =>
+            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 StatusText = "Error";
                 AppendConsole($"Error: {ex.Message}", ConsoleEntryKind.Error);
@@ -253,7 +253,7 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         }
         finally
         {
-            await Application.Current.Dispatcher.InvokeAsync(() =>
+            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 _runStopwatch?.Stop();
                 _elapsedTimer?.Stop();
@@ -403,8 +403,8 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
             EnableRaisingEvents = true
         };
 
-        _fileWatcher.Created += (_, _) => Application.Current?.Dispatcher.InvokeAsync(RefreshScripts, DispatcherPriority.Background);
-        _fileWatcher.Deleted += (_, _) => Application.Current?.Dispatcher.InvokeAsync(RefreshScripts, DispatcherPriority.Background);
-        _fileWatcher.Renamed += (_, _) => Application.Current?.Dispatcher.InvokeAsync(RefreshScripts, DispatcherPriority.Background);
+        _fileWatcher.Created += (_, _) => System.Windows.Application.Current?.Dispatcher.InvokeAsync(RefreshScripts, DispatcherPriority.Background);
+        _fileWatcher.Deleted += (_, _) => System.Windows.Application.Current?.Dispatcher.InvokeAsync(RefreshScripts, DispatcherPriority.Background);
+        _fileWatcher.Renamed += (_, _) => System.Windows.Application.Current?.Dispatcher.InvokeAsync(RefreshScripts, DispatcherPriority.Background);
     }
 }

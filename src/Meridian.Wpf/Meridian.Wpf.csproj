@@ -65,7 +65,7 @@
     <PackageReference Include="CommunityToolkit.Mvvm" />
 
     <!-- QuantScript UI components -->
-    <PackageReference Include="ICSharpCode.AvalonEdit" />
+    <PackageReference Include="AvalonEdit" />
     <PackageReference Include="ScottPlot.WPF" />
 
     <!-- Modern WPF Controls -->
@@ -93,8 +93,6 @@
     <PackageReference Include="System.IO.Compression" />
 
     <!-- QuantScript editor and chart rendering -->
-    <PackageReference Include="ICSharpCode.AvalonEdit" />
-    <PackageReference Include="ScottPlot.WPF" />
     <PackageReference Include="ZstdSharp.Port" />
   </ItemGroup>
 

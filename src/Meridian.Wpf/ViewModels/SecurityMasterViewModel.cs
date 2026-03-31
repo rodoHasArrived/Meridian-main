@@ -272,7 +272,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         private set
         {
             if (SetProperty(ref _openConflictCount, value))
-                OnPropertyChanged(nameof(HasOpenConflicts));
+                RaisePropertyChanged(nameof(HasOpenConflicts));
         }
     }
 

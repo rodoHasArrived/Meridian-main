@@ -34,7 +34,7 @@ public sealed class PlotQueue : IDisposable
     /// Signals that the current script run has finished emitting plots.
     /// Called by <see cref="Compilation.ScriptRunner"/> in its finally block.
     /// </summary>
-    internal void Complete() => _completed = true;
+    public void Complete() => _completed = true;
 
     /// <summary>
     /// Drains all enqueued <see cref="PlotRequest"/> items into a list.

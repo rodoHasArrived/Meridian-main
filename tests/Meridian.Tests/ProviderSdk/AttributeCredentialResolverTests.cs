@@ -32,7 +32,7 @@ public sealed class AttributeCredentialResolverTests
         "test-schema-provider",
         "Test Schema Provider",
         Meridian.Infrastructure.DataSources.DataSourceType.Historical,
-        Meridian.Infrastructure.DataSources.DataSourceCategory.Other)]
+        Meridian.Infrastructure.DataSources.DataSourceCategory.Free)]
     [RequiresCredential("SCHEMA_KEY",
         EnvironmentVariables = new[] { "TEST_ATTR_SCHEMA_KEY" },
         DisplayName = "Schema Key")]

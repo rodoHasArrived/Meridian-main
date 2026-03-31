@@ -84,6 +84,15 @@ public partial class DiagnosticsPage : Page
             "Diagnostic bundle export is not yet implemented.");
     }
 
+    private void RunQuickCheck_Click(object sender, RoutedEventArgs e) =>
+        _viewModel.RunQuickCheckCommand.Execute(null);
+
+    private void RunFullDiagnostics_Click(object sender, RoutedEventArgs e) =>
+        _viewModel.RunFullDiagnosticsCommand.Execute(null);
+
+    private void OpenLogsFolder_Click(object sender, RoutedEventArgs e) =>
+        _viewModel.OpenLogsFolderCommand.Execute(null);
+
     /// <summary>
     /// Updates a status dot and label based on a <see cref="DiagnosticCheckResult"/>.
     /// This remains in code-behind because it requires WPF <c>FindResource</c> calls.

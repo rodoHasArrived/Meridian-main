@@ -13,6 +13,7 @@ public sealed class ChartingPageViewModel : BindableBase
 {
     private readonly ChartingService _chartingService = new();
     private readonly SymbolManagementService _symbolService;
+    private CandlestickData? _chartData;
     private string? _selectedSymbol;
     private ChartTimeframe _selectedTimeframe = ChartTimeframe.Daily;
     private DateOnly? _fromDate;

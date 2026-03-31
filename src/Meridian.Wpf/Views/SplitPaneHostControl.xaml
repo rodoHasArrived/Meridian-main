@@ -5,6 +5,24 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d"
              d:DesignHeight="600" d:DesignWidth="800"
-             Background="Transparent">
-    <Grid x:Name="ContentGrid"/>
+             AllowDrop="True"
+             Background="Transparent"
+             DragLeave="OnDragLeave"
+             DragOver="OnDragOver"
+             Drop="OnDrop">
+    <Grid>
+        <Grid x:Name="ContentGrid"/>
+        <Border x:Name="DropOverlay"
+                Background="#22007ACC"
+                BorderBrush="#66007ACC"
+                BorderThickness="2"
+                Visibility="Collapsed">
+            <TextBlock HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       FontSize="20"
+                       FontWeight="SemiBold"
+                       Foreground="White"
+                       Text="Drop Page Here" />
+        </Border>
+    </Grid>
 </UserControl>

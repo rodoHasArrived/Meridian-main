@@ -2,6 +2,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.ViewModels;
 using WpfServices = Meridian.Wpf.Services;
@@ -34,7 +35,14 @@ public partial class SymbolsPage : Page
 
         _navigationService = navigationService;
         _workspaceService = WpfServices.WorkspaceService.Instance;
-        _vm = new SymbolsPageViewModel(configService, watchlistService, loggingService, notificationService);
+        _vm = new SymbolsPageViewModel(
+            configService,
+            watchlistService,
+            loggingService,
+            notificationService,
+            navigationService,
+            SymbolManagementService.Instance,
+            CommandPaletteService.Instance);
         DataContext = _vm;
 
         SymbolsListView.ItemsSource = _vm.FilteredSymbols;

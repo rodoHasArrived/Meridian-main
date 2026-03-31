@@ -123,3 +123,9 @@ public partial class SplitPaneHostControl : UserControl
         e.Handled = true;
     }
 }
+
+public sealed class PaneDropEventArgs(string pageTag, int targetPaneIndex) : EventArgs
+{
+    public string PageTag { get; } = pageTag;
+    public int TargetPaneIndex { get; } = targetPaneIndex;
+}

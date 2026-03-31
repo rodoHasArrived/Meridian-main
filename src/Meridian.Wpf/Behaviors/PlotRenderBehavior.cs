@@ -55,40 +55,60 @@ public static class PlotRenderBehavior
         plot.DataBackground.Color = ToScottPlot(dataBg);
         plot.Axes.Color(ToScottPlot(Palette.MutedText));
 
-        if (request.Points.Count == 0)
+        if (request.Series is not { Count: > 0 } && request.MultiSeries is not { Count: > 0 } && request.HeatmapData is null)
         {
             wpfPlot.Refresh();
             return;
         }
-
-        var xs = request.Points.Select(p => p.X.ToOADate()).ToArray();
-        var ys = request.Points.Select(p => p.Y).ToArray();
         var seriesColor = ToScottPlot(SeriesPalette[0]);
 
         switch (request.Type)
         {
+            case PlotType.Line:
+            case PlotType.CumulativeReturn:
+            case PlotType.Drawdown:
             case PlotType.Scatter:
-                var scatter = plot.Add.Scatter(xs, ys);
-                scatter.Color = seriesColor;
-                break;
-
             case PlotType.Bar:
-                var bars = new List<Bar>();
-                for (var i = 0; i < xs.Length; i++)
-                    bars.Add(new Bar { Position = xs[i], Value = ys[i], FillColor = seriesColor });
-                plot.Add.Bars(bars);
-                break;
-
             case PlotType.Histogram:
-                var hist = plot.Add.Bars(
-                    xs.Zip(ys, (x, y) => new Bar { Position = x, Value = y, FillColor = seriesColor }).ToArray());
+                if (request.Series is { Count: > 0 } series)
+                {
+                    var xs = series.Select(p => p.Date.ToDateTime(TimeOnly.MinValue).ToOADate()).ToArray();
+                    var ys = series.Select(p => p.Value).ToArray();
+                    var scatter = plot.Add.Scatter(xs, ys);
+                    scatter.Color = seriesColor;
+                    scatter.LineWidth = 1.5f;
+                    scatter.MarkerSize = request.Type == PlotType.Scatter ? 5 : 0;
+                }
                 break;
 
-            default: // Line
-                var line = plot.Add.Scatter(xs, ys);
-                line.Color = seriesColor;
-                line.LineWidth = 1.5f;
-                line.MarkerSize = 0;
+            case PlotType.MultiLine:
+                if (request.MultiSeries is { Count: > 0 } multiSeries)
+                {
+                    var paletteIndex = 0;
+                    foreach (var (label, values) in multiSeries)
+                    {
+                        var xs = values.Select(p => p.Date.ToDateTime(TimeOnly.MinValue).ToOADate()).ToArray();
+                        var ys = values.Select(p => p.Value).ToArray();
+                        var scatter = plot.Add.Scatter(xs, ys);
+                        scatter.Color = ToScottPlot(SeriesPalette[paletteIndex % SeriesPalette.Length]);
+                        scatter.LegendText = label;
+                        scatter.MarkerSize = 0;
+                        paletteIndex++;
+                    }
+
+                    plot.ShowLegend();
+                }
+                break;
+
+            case PlotType.Heatmap:
+                if (request.HeatmapData is { Length: > 0 } heatmapData)
+                {
+                    var rowCount = heatmapData.Length;
+                    var columnCount = heatmapData[0].Length;
+                    var positions = Enumerable.Range(0, Math.Min(rowCount, columnCount)).Select(static i => (double)i).ToArray();
+                    var values = positions.Select(i => heatmapData[(int)i][(int)i]).ToArray();
+                    plot.Add.Bars(positions, values);
+                }
                 break;
         }
 
@@ -98,5 +118,5 @@ public static class PlotRenderBehavior
     }
 
     private static ScottPlot.Color ToScottPlot(ColorPalette.ArgbColor c)
-        => ScottPlot.Color.FromARGB(c.A, c.R, c.G, c.B);
+        => new(c.R, c.G, c.B, c.A);
 }

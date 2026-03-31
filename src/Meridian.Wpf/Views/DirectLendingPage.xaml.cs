@@ -1,4 +1,5 @@
 using System.Windows.Controls;
+using Meridian.Ui.Services;
 using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Views;
@@ -10,7 +11,7 @@ public partial class DirectLendingPage : Page
     public DirectLendingPage()
     {
         InitializeComponent();
-        _viewModel = new DirectLendingViewModel();
+        _viewModel = new DirectLendingViewModel(ApiClientService.Instance);
         DataContext = _viewModel;
     }
 
