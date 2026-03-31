@@ -28,6 +28,8 @@ jobs:
     name: Pre-release Build & Test Gate
     uses: ./.github/workflows/reusable-dotnet-build.yml
     if: ${{ !inputs.skip-tests }}
+    permissions:
+      contents: read
     with:
       run-tests: true
       run-fsharp-tests: true
