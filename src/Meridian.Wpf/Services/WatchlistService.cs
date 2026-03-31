@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Meridian.Ui.Services;
 
 namespace Meridian.Wpf.Services;
 
@@ -335,11 +336,7 @@ public sealed class WatchlistService
         var watchlist = await GetWatchlistAsync(watchlistId, ct);
         if (watchlist == null) return null;
 
-        return JsonSerializer.Serialize(watchlist, new JsonSerializerOptions
-        {
-            WriteIndented = true,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        });
+        return JsonSerializer.Serialize(watchlist, DesktopJsonOptions.PrettyPrint);
     }
 
     /// <summary>
@@ -352,10 +349,7 @@ public sealed class WatchlistService
     {
         try
         {
-            var imported = JsonSerializer.Deserialize<Watchlist>(json, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
+            var imported = JsonSerializer.Deserialize<Watchlist>(json, DesktopJsonOptions.Compact);
 
             if (imported == null) return null;
 
@@ -384,10 +378,7 @@ public sealed class WatchlistService
             if (response.IsSuccessStatusCode)
             {
                 var json = await response.Content.ReadAsStringAsync(ct);
-                var remoteWatchlists = JsonSerializer.Deserialize<List<Watchlist>>(json, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+                var remoteWatchlists = JsonSerializer.Deserialize<List<Watchlist>>(json, DesktopJsonOptions.Compact);
 
                 if (remoteWatchlists != null)
                 {
@@ -498,10 +489,7 @@ public sealed class WatchlistService
             if (File.Exists(_watchlistsPath))
             {
                 var json = await File.ReadAllTextAsync(_watchlistsPath, ct);
-                var watchlists = JsonSerializer.Deserialize<List<Watchlist>>(json, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+                var watchlists = JsonSerializer.Deserialize<List<Watchlist>>(json, DesktopJsonOptions.Compact);
 
                 lock (_lock)
                 {
@@ -545,11 +533,7 @@ public sealed class WatchlistService
             toSave = _watchlists.ToList();
         }
 
-        var json = JsonSerializer.Serialize(toSave, new JsonSerializerOptions
-        {
-            WriteIndented = true,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        });
+        var json = JsonSerializer.Serialize(toSave, DesktopJsonOptions.PrettyPrint);
 
         await File.WriteAllTextAsync(_watchlistsPath, json, ct);
     }

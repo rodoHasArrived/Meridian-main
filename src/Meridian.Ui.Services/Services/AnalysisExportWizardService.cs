@@ -563,7 +563,7 @@ public sealed class AnalysisExportWizardService
                 var qualityReport = await GenerateQualityReportAsync(config, ct);
                 var reportPath = Path.Combine(config.OutputPath, "quality_report.json");
                 await File.WriteAllTextAsync(reportPath,
-                    JsonSerializer.Serialize(qualityReport, new JsonSerializerOptions { WriteIndented = true }), ct);
+                    JsonSerializer.Serialize(qualityReport, DesktopJsonOptions.PrettyPrint), ct);
                 result.GeneratedFiles.Add(reportPath);
             }
 
@@ -1145,7 +1145,7 @@ public sealed class AnalysisExportWizardService
             }
         };
 
-        var notebookJson = JsonSerializer.Serialize(notebook, new JsonSerializerOptions { WriteIndented = true });
+        var notebookJson = JsonSerializer.Serialize(notebook, DesktopJsonOptions.PrettyPrint);
         await File.WriteAllTextAsync(notebookFile, notebookJson, ct);
 
         var result = csvResult;
@@ -1181,7 +1181,7 @@ public sealed class AnalysisExportWizardService
             }
         };
 
-        return JsonSerializer.Serialize(schema, new JsonSerializerOptions { WriteIndented = true });
+        return JsonSerializer.Serialize(schema, DesktopJsonOptions.PrettyPrint);
     }
 
     /// <summary>

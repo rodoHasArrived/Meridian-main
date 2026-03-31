@@ -480,11 +480,7 @@ public sealed class ArchiveHealthService
                 Directory.CreateDirectory(directory);
             }
 
-            var json = JsonSerializer.Serialize(status, new JsonSerializerOptions
-            {
-                WriteIndented = true,
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            });
+            var json = JsonSerializer.Serialize(status, DesktopJsonOptions.PrettyPrint);
 
             await File.WriteAllTextAsync(_healthStatusPath, json);
         }

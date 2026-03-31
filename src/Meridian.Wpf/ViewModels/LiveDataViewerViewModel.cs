@@ -22,6 +22,16 @@ namespace Meridian.Wpf.ViewModels;
 /// </summary>
 public sealed class LiveDataViewerViewModel : BindableBase, IDisposable
 {
+    // P1: Static cached brushes — avoids allocating a new SolidColorBrush per market event.
+    private static readonly SolidColorBrush BrushTrade       = new(Color.FromRgb(63, 185, 80));
+    private static readonly SolidColorBrush BrushQuote       = new(Color.FromRgb(88, 166, 255));
+    private static readonly SolidColorBrush BrushEventOther  = new(Color.FromRgb(139, 148, 158));
+    private static readonly SolidColorBrush BrushBuy         = new(Color.FromRgb(63, 185, 80));
+    private static readonly SolidColorBrush BrushSell        = new(Color.FromRgb(244, 67, 54));
+    private static readonly SolidColorBrush BrushConnected   = new(Color.FromRgb(63, 185, 80));
+    private static readonly SolidColorBrush BrushReconnecting= new(Color.FromRgb(255, 193, 7));
+    private static readonly SolidColorBrush BrushDisconnected= new(Color.FromRgb(139, 148, 158));
+
     private readonly HttpClient _httpClient = new();
     private readonly WpfServices.StatusService _statusService;
     private readonly WpfServices.ConnectionService _connectionService;
@@ -33,7 +43,13 @@ public sealed class LiveDataViewerViewModel : BindableBase, IDisposable
 
     private readonly DispatcherTimer _refreshTimer;
     private readonly DispatcherTimer _statsTimer;
-    private CancellationTokenSource? _cts;
+    // P3: Two separate CancellationTokenSources so symbol loading and live-data polling
+    //     cannot inadvertently cancel each other.
+    private CancellationTokenSource? _loadSymbolsCts;
+    private CancellationTokenSource? _liveDataCts;
+    // P2: Persistent set of already-seen event IDs — updated incrementally instead of
+    //     rebuilding a HashSet on every 500 ms timer tick.
+    private readonly HashSet<string> _seenEventIds = new();
     private string _baseUrl;
     private string _selectedSymbol = string.Empty;
     private bool _isPaused;
@@ -63,7 +79,8 @@ public sealed class LiveDataViewerViewModel : BindableBase, IDisposable
 
     public string SelectedSymbol => string.IsNullOrWhiteSpace(_selectedSymbol) ? "No symbol" : _selectedSymbol;
 
-    private SolidColorBrush _connectionIndicatorColor = new(Color.FromRgb(139, 148, 158));
+    // P1: Initial value reuses the static cached brush instead of allocating a new instance.
+    private SolidColorBrush _connectionIndicatorColor = BrushDisconnected;
     public SolidColorBrush ConnectionIndicatorColor { get => _connectionIndicatorColor; private set => SetProperty(ref _connectionIndicatorColor, value); }
 
     private bool _isPauseResumeEnabled;
@@ -167,8 +184,12 @@ public sealed class LiveDataViewerViewModel : BindableBase, IDisposable
         _connectionService.StateChanged -= OnConnectionStateChanged;
         _refreshTimer.Stop();
         _statsTimer.Stop();
-        _cts?.Cancel();
-        _cts?.Dispose();
+        _loadSymbolsCts?.Cancel();
+        _loadSymbolsCts?.Dispose();
+        _loadSymbolsCts = null;
+        _liveDataCts?.Cancel();
+        _liveDataCts?.Dispose();
+        _liveDataCts = null;
     }
 
     public void PauseResume()
@@ -184,6 +205,7 @@ public sealed class LiveDataViewerViewModel : BindableBase, IDisposable
     public void Clear()
     {
         LiveEvents.Clear();
+        _seenEventIds.Clear();
         ResetSessionStats();
         NoDataVisible = true;
         _notificationService.ShowNotification("Cleared", "Live data feed has been cleared.", NotificationType.Info);
@@ -195,6 +217,7 @@ public sealed class LiveDataViewerViewModel : BindableBase, IDisposable
         RaisePropertyChanged(nameof(SelectedSymbol));
         ResetSessionStats();
         LiveEvents.Clear();
+        _seenEventIds.Clear();
         NoDataVisible = true;
     }
 
@@ -213,6 +236,7 @@ public sealed class LiveDataViewerViewModel : BindableBase, IDisposable
         _ = System.Windows.Application.Current?.Dispatcher.InvokeAsync(UpdateConnectionStatus);
     }
 
+    // P1: Connection indicator brushes are cached as static fields — avoids allocation per state change.
     private void UpdateConnectionStatus()
     {
         var state = _connectionService.State;
@@ -222,24 +246,26 @@ public sealed class LiveDataViewerViewModel : BindableBase, IDisposable
             ConnectionState.Reconnecting => "Reconnecting...",
             _ => "Disconnected"
         };
-        ConnectionIndicatorColor = new SolidColorBrush(state switch
+        ConnectionIndicatorColor = state switch
         {
-            ConnectionState.Connected => Color.FromRgb(63, 185, 80),
-            ConnectionState.Reconnecting => Color.FromRgb(255, 193, 7),
-            _ => Color.FromRgb(139, 148, 158)
-        });
+            ConnectionState.Connected => BrushConnected,
+            ConnectionState.Reconnecting => BrushReconnecting,
+            _ => BrushDisconnected
+        };
         IsPauseResumeEnabled = state == ConnectionState.Connected;
     }
 
+    // P3: Uses a dedicated CTS so that symbol loading never cancels an in-flight live-data request.
     private async Task LoadSymbolsAsync(CancellationToken ct = default)
     {
         try
         {
-            _cts?.Cancel();
-            _cts = new CancellationTokenSource();
+            _loadSymbolsCts?.Cancel();
+            _loadSymbolsCts?.Dispose();
+            _loadSymbolsCts = new CancellationTokenSource();
 
             var symbolService = _symbolManagementService;
-            var result = await symbolService.GetAllSymbolsAsync(_cts.Token);
+            var result = await symbolService.GetAllSymbolsAsync(_loadSymbolsCts.Token);
             AvailableSymbols.Clear();
 
             if (result.Success && result.Symbols.Count > 0)
@@ -248,17 +274,20 @@ public sealed class LiveDataViewerViewModel : BindableBase, IDisposable
             }
             else
             {
-                var configSymbols = await _configService.GetConfiguredSymbolsAsync(_cts.Token);
+                var configSymbols = await _configService.GetConfiguredSymbolsAsync(_loadSymbolsCts.Token);
                 if (configSymbols.Length > 0)
                     AvailableSymbols.AddRange(configSymbols.Select(s => s.Symbol));
             }
         }
+        catch (OperationCanceledException) { }
         catch (Exception ex)
         {
             _loggingService.LogError("Failed to load symbols from backend", ex);
         }
     }
 
+    // P3: Uses a dedicated CTS so that live-data polling never cancels an in-flight symbol load.
+    // P2: Uses the persistent _seenEventIds set — avoids rebuilding a HashSet on every 500 ms tick.
     private async Task RefreshLiveDataAsync(CancellationToken ct = default)
     {
         if (_isPaused || string.IsNullOrEmpty(_selectedSymbol))
@@ -266,16 +295,17 @@ public sealed class LiveDataViewerViewModel : BindableBase, IDisposable
 
         try
         {
-            _cts?.Cancel();
-            _cts = new CancellationTokenSource();
+            _liveDataCts?.Cancel();
+            _liveDataCts?.Dispose();
+            _liveDataCts = new CancellationTokenSource();
 
             var response = await _httpClient.GetAsync(
                 $"{_baseUrl}/api/live/{Uri.EscapeDataString(_selectedSymbol)}/recent?limit=50",
-                _cts.Token);
+                _liveDataCts.Token);
 
             if (response.IsSuccessStatusCode)
             {
-                var json = await response.Content.ReadAsStringAsync(_cts.Token);
+                var json = await response.Content.ReadAsStringAsync(_liveDataCts.Token);
                 var data = JsonSerializer.Deserialize<JsonElement>(json);
 
                 if (data.ValueKind == JsonValueKind.Array)
@@ -291,9 +321,9 @@ public sealed class LiveDataViewerViewModel : BindableBase, IDisposable
                         }
                     }
 
-                    var existingIds = LiveEvents.Select(e => e.Id).ToHashSet();
+                    // P2: Filter using the persistent set (O(1) per lookup, no per-tick allocation).
                     bool added = false;
-                    foreach (var evt in newEvents.Where(e => !existingIds.Contains(e.Id)).OrderBy(e => e.RawTimestamp))
+                    foreach (var evt in newEvents.Where(e => _seenEventIds.Add(e.Id)).OrderBy(e => e.RawTimestamp))
                     {
                         if (ShouldShowEvent(evt))
                         {
@@ -303,7 +333,10 @@ public sealed class LiveDataViewerViewModel : BindableBase, IDisposable
                             added = true;
 
                             while (LiveEvents.Count > 500)
+                            {
+                                _seenEventIds.Remove(LiveEvents[0].Id);
                                 LiveEvents.RemoveAt(0);
+                            }
                         }
                     }
 
@@ -330,11 +363,11 @@ public sealed class LiveDataViewerViewModel : BindableBase, IDisposable
         {
             var response = await _httpClient.GetAsync(
                 $"{_baseUrl}/api/live/{Uri.EscapeDataString(_selectedSymbol)}/quote",
-                _cts!.Token);
+                _liveDataCts!.Token);
 
             if (response.IsSuccessStatusCode)
             {
-                var json = await response.Content.ReadAsStringAsync(_cts.Token);
+                var json = await response.Content.ReadAsStringAsync(_liveDataCts.Token);
                 var quote = JsonSerializer.Deserialize<JsonElement>(json);
 
                 if (quote.TryGetProperty("bid", out var b)) _bidPrice = b.GetDecimal();
@@ -350,6 +383,8 @@ public sealed class LiveDataViewerViewModel : BindableBase, IDisposable
         catch (JsonException) { }
     }
 
+    // P1: Returns static cached brushes — avoids allocating two SolidColorBrush objects per event.
+    // E2: Logs parse failures instead of silently swallowing them.
     private LiveDataEventModel? ParseLiveEvent(JsonElement item)
     {
         try
@@ -384,17 +419,20 @@ public sealed class LiveDataViewerViewModel : BindableBase, IDisposable
                 RawPrice = price,
                 Size = FormatSize(size),
                 Exchange = exchange,
-                TypeColor = new SolidColorBrush(type.ToUpperInvariant() switch
+                TypeColor = type.ToUpperInvariant() switch
                 {
-                    "TRADE" => Color.FromRgb(63, 185, 80),
-                    "QUOTE" or "BBO" => Color.FromRgb(88, 166, 255),
-                    _ => Color.FromRgb(139, 148, 158)
-                }),
-                PriceColor = new SolidColorBrush(isBuy ?
-                    Color.FromRgb(63, 185, 80) : Color.FromRgb(244, 67, 54))
+                    "TRADE" => BrushTrade,
+                    "QUOTE" or "BBO" => BrushQuote,
+                    _ => BrushEventOther
+                },
+                PriceColor = isBuy ? BrushBuy : BrushSell
             };
         }
-        catch { return null; }
+        catch (Exception ex)
+        {
+            _loggingService.LogWarning("Failed to parse live market event", ("Error", ex.Message));
+            return null;
+        }
     }
 
     private bool ShouldShowEvent(LiveDataEventModel evt)

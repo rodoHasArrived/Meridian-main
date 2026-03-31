@@ -103,7 +103,7 @@ public class ExportPresetServiceBase
 
         try
         {
-            var options = new JsonSerializerOptions { WriteIndented = true };
+            var options = DesktopJsonOptions.PrettyPrint;
             var json = JsonSerializer.Serialize(_presets, options);
             await File.WriteAllTextAsync(_presetsFilePath, json, cancellationToken);
         }
@@ -268,7 +268,7 @@ public class ExportPresetServiceBase
             preset.LastUsedAt = null;
         }
 
-        var options = new JsonSerializerOptions { WriteIndented = true };
+        var options = DesktopJsonOptions.PrettyPrint;
         var json = JsonSerializer.Serialize(presetsToExport, options);
         var filePath = Path.Combine(destinationPath, $"export_presets_{DateTime.Now:yyyyMMdd_HHmmss}.json");
         await File.WriteAllTextAsync(filePath, json, cancellationToken);

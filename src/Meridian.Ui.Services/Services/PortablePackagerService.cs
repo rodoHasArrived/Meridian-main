@@ -281,7 +281,7 @@ public sealed class PortablePackagerService
             var manifest = CreatePackageManifest(request, copiedFiles, startTime);
             var manifestPath = Path.Combine(tempDir, "manifest.json");
             await File.WriteAllTextAsync(manifestPath,
-                JsonSerializer.Serialize(manifest, new JsonSerializerOptions { WriteIndented = true }), ct);
+                JsonSerializer.Serialize(manifest, DesktopJsonOptions.PrettyPrint), ct);
 
             // 6. Generate README
             progress?.Report(new PackageProgress(80, "Generating documentation..."));
