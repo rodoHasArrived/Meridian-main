@@ -52,23 +52,23 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,24,0">
-                        <Ellipse x:Name="MarketStatusDot" Width="12" Height="12"
-                                 Fill="{StaticResource ConsoleTextMutedBrush}"
+                        <Ellipse Width="12" Height="12"
+                                 Fill="{Binding MarketStatusDotFill}"
                                  VerticalAlignment="Center" Margin="0,0,8,0" />
-                        <TextBlock x:Name="MarketStatusText" Text="Loading..."
+                        <TextBlock Text="{Binding MarketStatusText}"
                                    FontSize="18" FontWeight="Bold"
-                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                   Foreground="{Binding MarketStatusTextForeground}"
                                    VerticalAlignment="Center" />
                     </StackPanel>
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                        <TextBlock x:Name="MarketStatusReasonText" Text=""
+                        <TextBlock Text="{Binding MarketStatusReasonText}"
                                    Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                                    FontSize="13" />
-                        <TextBlock x:Name="NextSessionText" Text=""
+                        <TextBlock Text="{Binding NextSessionText}"
                                    Foreground="{StaticResource ConsoleTextMutedBrush}"
                                    FontSize="12" Margin="0,2,0,0" />
                     </StackPanel>
-                    <TextBlock Grid.Column="2" x:Name="MarketStatusTimeText" Text=""
+                    <TextBlock Grid.Column="2" Text="{Binding MarketStatusTimeText}"
                                Foreground="{StaticResource ConsoleTextMutedBrush}"
                                FontSize="11" VerticalAlignment="Center" />
                 </Grid>
@@ -119,8 +119,8 @@
                             <TextBlock Grid.Column="1" Text="Regular Session" Style="{StaticResource TableCellStyle}" />
                             <TextBlock Grid.Column="2" Text="9:30 AM - 4:00 PM ET" Style="{StaticResource TableCellStyle}" />
                             <StackPanel Grid.Column="3" Orientation="Horizontal">
-                                <Ellipse x:Name="NyseRegularStatusDot" Width="8" Height="8" Fill="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" Margin="0,0,6,0" />
-                                <TextBlock x:Name="NyseRegularStatusText" Text="--" Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="12" VerticalAlignment="Center" />
+                                <Ellipse Width="8" Height="8" Fill="{Binding NyseRegularStatusDotFill}" VerticalAlignment="Center" Margin="0,0,6,0" />
+                                <TextBlock Text="{Binding NyseRegularStatusText}" Foreground="{Binding NyseRegularStatusForeground}" FontSize="12" VerticalAlignment="Center" />
                             </StackPanel>
                         </Grid>
                     </Border>
@@ -179,8 +179,8 @@
                             <TextBlock Grid.Column="1" Text="Regular Session" Style="{StaticResource TableCellStyle}" />
                             <TextBlock Grid.Column="2" Text="9:30 AM - 4:00 PM ET" Style="{StaticResource TableCellStyle}" />
                             <StackPanel Grid.Column="3" Orientation="Horizontal">
-                                <Ellipse x:Name="NasdaqRegularStatusDot" Width="8" Height="8" Fill="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" Margin="0,0,6,0" />
-                                <TextBlock x:Name="NasdaqRegularStatusText" Text="--" Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="12" VerticalAlignment="Center" />
+                                <Ellipse Width="8" Height="8" Fill="{Binding NasdaqRegularStatusDotFill}" VerticalAlignment="Center" Margin="0,0,6,0" />
+                                <TextBlock Text="{Binding NasdaqRegularStatusText}" Foreground="{Binding NasdaqRegularStatusForeground}" FontSize="12" VerticalAlignment="Center" />
                             </StackPanel>
                         </Grid>
                     </Border>
@@ -338,7 +338,7 @@
                                    FontSize="18"
                                    Foreground="{StaticResource InfoColorBrush}"
                                    VerticalAlignment="Center" />
-                        <TextBlock x:Name="HolidaysHeaderText" Text="US Market Holidays"
+                        <TextBlock Text="{Binding HolidaysHeaderText}"
                                    Style="{StaticResource CardHeaderStyle}"
                                    Margin="8,0,0,0" />
                     </StackPanel>
@@ -359,7 +359,7 @@
                     </Border>
 
                     <!-- Dynamic holiday rows -->
-                    <ItemsControl x:Name="HolidaysList">
+                    <ItemsControl ItemsSource="{Binding Holidays}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Border Padding="12,10">

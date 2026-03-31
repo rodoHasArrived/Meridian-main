@@ -248,16 +248,14 @@
                                     <TextBlock Text="Connection"
                                                FontWeight="SemiBold"
                                                Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                    <TextBlock x:Name="ConnectionProviderText"
-                                               Text="No provider connected"
+                                    <TextBlock Text="{Binding ConnectionProviderText}"
                                                Foreground="{StaticResource ConsoleTextMutedBrush}"
                                                FontSize="11" />
                                 </StackPanel>
                                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Ellipse x:Name="ConnectionStatusDot" Width="8" Height="8"
-                                             Fill="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,6,0" />
-                                    <TextBlock x:Name="ConnectionStatusText"
-                                               Text="Disconnected"
+                                    <Ellipse Width="8" Height="8"
+                                             Fill="{Binding ConnectionStatusDotFill}" Margin="0,0,6,0" />
+                                    <TextBlock Text="{Binding ConnectionStatusText}"
                                                FontWeight="SemiBold"
                                                Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
                                 </StackPanel>
@@ -290,9 +288,8 @@
                                                Foreground="{StaticResource ConsoleTextMutedBrush}"
                                                FontSize="11" />
                                 </StackPanel>
-                                <TextBlock x:Name="SymbolsCountText"
-                                           Grid.Column="2"
-                                           Text="0"
+                                <TextBlock Grid.Column="2"
+                                           Text="{Binding SymbolsCountText}"
                                            FontSize="20"
                                            FontWeight="Bold"
                                            Foreground="{StaticResource ConsoleTextPrimaryBrush}"
@@ -320,8 +317,7 @@
                                     <TextBlock Text="Storage Path"
                                                FontWeight="SemiBold"
                                                Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                    <TextBlock x:Name="StoragePathText"
-                                               Text="./data"
+                                    <TextBlock Text="{Binding StoragePathText}"
                                                FontFamily="Cascadia Code, Consolas, monospace"
                                                FontSize="11"
                                                Foreground="{StaticResource ConsoleTextMutedBrush}"
