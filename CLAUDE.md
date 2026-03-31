@@ -2469,6 +2469,7 @@ Meridian-main
 │       │   ├── NotificationCenterViewModel.cs
 │       │   ├── OrderBookHeatmapViewModel.cs
 │       │   ├── OrderBookViewModel.cs
+│       │   ├── PackageManagerViewModel.cs
 │       │   ├── PluginManagementViewModel.cs
 │       │   ├── ProviderHealthViewModel.cs
 │       │   ├── ProviderPageModels.cs
@@ -2483,12 +2484,16 @@ Meridian-main
 │       │   ├── ServiceManagerViewModel.cs
 │       │   ├── SplitPaneViewModel.cs
 │       │   ├── StatusBarViewModel.cs
+│       │   ├── StorageViewModel.cs
 │       │   ├── StrategyRunBrowserViewModel.cs
 │       │   ├── StrategyRunDetailViewModel.cs
 │       │   ├── StrategyRunLedgerViewModel.cs
 │       │   ├── StrategyRunPortfolioViewModel.cs
 │       │   ├── SymbolsPageViewModel.cs
-│       │   └── TickerStripViewModel.cs
+│       │   ├── SystemHealthViewModel.cs
+│       │   ├── TickerStripViewModel.cs
+│       │   ├── TradingHoursViewModel.cs
+│       │   └── WelcomePageViewModel.cs
 │       ├── Views
 │       │   ├── ActivityLogPage.xaml
 │       │   ├── ActivityLogPage.xaml.cs

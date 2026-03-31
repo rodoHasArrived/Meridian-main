@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-03-31 21:08:15 UTC. Do not edit manually.
+> Auto-generated on 2026-03-31 21:19:23 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -2343,6 +2343,7 @@ Meridian-main
 │       │   ├── NotificationCenterViewModel.cs
 │       │   ├── OrderBookHeatmapViewModel.cs
 │       │   ├── OrderBookViewModel.cs
+│       │   ├── PackageManagerViewModel.cs
 │       │   ├── PluginManagementViewModel.cs
 │       │   ├── ProviderHealthViewModel.cs
 │       │   ├── ProviderPageModels.cs
@@ -2357,12 +2358,16 @@ Meridian-main
 │       │   ├── ServiceManagerViewModel.cs
 │       │   ├── SplitPaneViewModel.cs
 │       │   ├── StatusBarViewModel.cs
+│       │   ├── StorageViewModel.cs
 │       │   ├── StrategyRunBrowserViewModel.cs
 │       │   ├── StrategyRunDetailViewModel.cs
 │       │   ├── StrategyRunLedgerViewModel.cs
 │       │   ├── StrategyRunPortfolioViewModel.cs
 │       │   ├── SymbolsPageViewModel.cs
-│       │   └── TickerStripViewModel.cs
+│       │   ├── SystemHealthViewModel.cs
+│       │   ├── TickerStripViewModel.cs
+│       │   ├── TradingHoursViewModel.cs
+│       │   └── WelcomePageViewModel.cs
 │       ├── Views
 │       │   ├── ActivityLogPage.xaml
 │       │   ├── ActivityLogPage.xaml.cs
