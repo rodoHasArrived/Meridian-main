@@ -77,7 +77,7 @@ Total items: **204**
 | `docs/ai/claude/CLAUDE.api.md` | 221 | `TODO` | ❌ | \| `documentation.yml` \| Documentation generation, AI instruction sync, TODO scanning \| |
 | `docs/ai/claude/CLAUDE.structure.md` | 160 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
 | `docs/ai/claude/CLAUDE.structure.md` | 473 | `TODO` | ❌ | │   │   └── TODO.md |
-| `docs/ai/copilot/instructions.md` | 5 | `NOTE` | ❌ | > **Note:** For comprehensive project context, see [CLAUDE.md](https://github.com/rodoHasArrived/Meridian/blob/main/CLAUDE.md) in the repository root. For the master AI resource index, see [docs/ai/README.md](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/README.md). |
+| `docs/ai/copilot/instructions.md` | 5 | `NOTE` | ❌ | > **Note:** For comprehensive project context, see [CLAUDE.md](https://github.com/rodoHasArrived/Meridian/blob/main/CLAUDE.md) in the repository root. For the master AI resource index, see [docs/ai/README.md](https://github.com/rodoHasArrived/Meridian/blob/main/docs/ai/README.md). |
 | `docs/ai/copilot/instructions.md` | 412 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
 | `docs/ai/copilot/instructions.md` | 869 | `TODO` | ❌ | │   │   └── TODO.md |
 | `docs/ai/copilot/instructions.md` | 3169 | `TODO` | ❌ | - `documentation.yml` — Doc generation, TODO scanning, AI error intake |
