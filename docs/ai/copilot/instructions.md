@@ -2443,6 +2443,7 @@ Meridian-main
 │       │   ├── ClusterStatusViewModel.cs
 │       │   ├── CredentialManagementViewModel.cs
 │       │   ├── DashboardViewModel.cs
+│       │   ├── DataCalendarViewModel.cs
 │       │   ├── DataQualityViewModel.cs
 │       │   ├── DiagnosticsPageViewModel.cs
 │       │   ├── DirectLendingViewModel.cs
@@ -2451,6 +2452,7 @@ Meridian-main
 │       │   ├── LeanIntegrationViewModel.cs
 │       │   ├── LiveDataViewerViewModel.cs
 │       │   ├── MainPageViewModel.cs
+│       │   ├── MessagingHubViewModel.cs
 │       │   ├── NotificationCenterViewModel.cs
 │       │   ├── OrderBookHeatmapViewModel.cs
 │       │   ├── OrderBookViewModel.cs
