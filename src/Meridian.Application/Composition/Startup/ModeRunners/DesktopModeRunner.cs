@@ -1,7 +1,4 @@
-using Meridian.Application.Composition;
 using Meridian.Application.Composition.Startup.StartupModels;
-using Meridian.Application.Monitoring;
-using Meridian.Application.Pipeline;
 using Serilog;
 
 namespace Meridian.Application.Composition.Startup.ModeRunners;
@@ -9,6 +6,8 @@ namespace Meridian.Application.Composition.Startup.ModeRunners;
 /// <summary>
 /// Runs the desktop host mode: starts the embedded HTTP UI server, then executes either the
 /// backfill or streaming collector depending on the request, and finally shuts the server down.
+/// Desktop mode routing (backfill vs. collector) is resolved here since the orchestrator uses
+/// a single <see cref="HostMode.Desktop"/> plan entry for all desktop invocations.
 /// </summary>
 public sealed class DesktopModeRunner
 {
@@ -32,7 +31,7 @@ public sealed class DesktopModeRunner
     {
         _log.Information("Desktop mode: starting UI server ({ModeDescription})...", ctx.Deployment.ModeDescription);
 
-        IHostDashboardServer? uiServer = _dashboardServerFactory(ctx.ConfigPath, ctx.Deployment.HttpPort);
+        IHostDashboardServer uiServer = _dashboardServerFactory(ctx.ConfigPath, ctx.Deployment.HttpPort);
         await uiServer.StartAsync(ct);
         _log.Information("Desktop mode UI server started at http://localhost:{Port}", ctx.Deployment.HttpPort);
 
@@ -41,37 +40,15 @@ public sealed class DesktopModeRunner
             var backfillRequested = ctx.CliArgs.Backfill || (ctx.Config.Backfill?.Enabled == true);
             if (backfillRequested)
             {
-                return await RunDesktopBackfillAsync(ctx, ct);
+                return await new BackfillModeRunner(_log).RunAsync(ctx, ct);
             }
 
-            return await RunDesktopCollectorAsync(ctx, ct);
+            return await new CollectorModeRunner(_log).RunAsync(ctx, ct);
         }
         finally
         {
             await uiServer.StopAsync(ct);
             await uiServer.DisposeAsync();
         }
-    }
-
-    private async Task<int> RunDesktopBackfillAsync(StartupContext ctx, CancellationToken ct)
-    {
-        var statusPath = Path.Combine(ctx.Config.DataRoot, "_status", "status.json");
-        await using var statusWriter = new StatusWriter(
-            statusPath,
-            () => ctx.ConfigurationService.LoadAndPrepareConfig(ctx.ConfigPath));
-
-        await using var hostStartup = HostStartupFactory.Create(ctx.Deployment, ctx.ConfigPath);
-        var pipeline = hostStartup.Pipeline;
-        await pipeline.RecoverAsync();
-        _log.Information("WAL enabled for pipeline durability");
-
-        var backfillRunner = new BackfillModeRunner(_log);
-        return await backfillRunner.RunAsync(ctx, pipeline, statusWriter, ct);
-    }
-
-    private Task<int> RunDesktopCollectorAsync(StartupContext ctx, CancellationToken ct)
-    {
-        var collectorRunner = new CollectorModeRunner(_log);
-        return collectorRunner.RunAsync(ctx, ct);
     }
 }

@@ -1,7 +1,6 @@
 using Meridian.Application.Composition.Startup.ModeRunners;
 using Meridian.Application.Composition.Startup.StartupModels;
 using Meridian.Application.Config;
-using Meridian.Application.Monitoring;
 using Serilog;
 
 namespace Meridian.Application.Composition.Startup;
@@ -51,7 +50,7 @@ public sealed class StartupOrchestrator
         // Phase 3 — Validation
         var validationResult = await RunValidationAsync(ctx);
         if (!validationResult.Success)
-            return validationResult.ExitCode!.Value;
+            return validationResult.ExitCode.GetValueOrDefault(1);
 
         // Phase 4 — Runtime selection
         var plan = ResolvePlan(ctx);
@@ -102,26 +101,11 @@ public sealed class StartupOrchestrator
             HostMode.Desktop => new DesktopModeRunner(_log, _dashboardServerFactory)
                                     .RunAsync(plan.Context, plan.Context.CancellationToken),
 
-            HostMode.Backfill => RunHeadlessBackfillAsync(plan.Context),
+            HostMode.Backfill => new BackfillModeRunner(_log)
+                                    .RunAsync(plan.Context, plan.Context.CancellationToken),
 
             _ /* Collector */ => new CollectorModeRunner(_log)
                                     .RunAsync(plan.Context, plan.Context.CancellationToken),
         };
-    }
-
-    private async Task<int> RunHeadlessBackfillAsync(StartupContext ctx)
-    {
-        var statusPath = Path.Combine(ctx.Config.DataRoot, "_status", "status.json");
-        await using var statusWriter = new StatusWriter(
-            statusPath,
-            () => ctx.ConfigurationService.LoadAndPrepareConfig(ctx.ConfigPath));
-
-        await using var hostStartup = HostStartupFactory.Create(ctx.Deployment, ctx.ConfigPath);
-        var pipeline = hostStartup.Pipeline;
-        await pipeline.RecoverAsync();
-        _log.Information("WAL enabled for pipeline durability");
-
-        var backfillRunner = new BackfillModeRunner(_log);
-        return await backfillRunner.RunAsync(ctx, pipeline, statusWriter, ctx.CancellationToken);
     }
 }

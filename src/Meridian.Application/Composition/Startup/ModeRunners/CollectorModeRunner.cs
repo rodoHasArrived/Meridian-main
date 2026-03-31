@@ -63,13 +63,6 @@ public sealed class CollectorModeRunner
         _log.Information("Compression: {CompressionEnabled}", storageOpt.Compress ? "enabled" : "disabled");
         _log.Debug("Example path: {ExamplePath}", policy.GetPathPreview());
 
-        var backfillRequested = ctx.CliArgs.Backfill || (ctx.Config.Backfill?.Enabled == true);
-        if (backfillRequested)
-        {
-            var backfillRunner = new BackfillModeRunner(_log);
-            return await backfillRunner.RunAsync(ctx, pipeline, statusWriter, ct);
-        }
-
         var quoteCollector = hostStartup.GetRequiredService<QuoteCollector>();
         var tradeCollector = hostStartup.GetRequiredService<TradeDataCollector>();
         var depthCollector = hostStartup.GetRequiredService<MarketDepthCollector>();

@@ -11,8 +11,8 @@ namespace Meridian.Application.Composition.Startup.ModeRunners;
 
 /// <summary>
 /// Runs the historical data backfill operation.
-/// Creates a backfill-profile host, selects the appropriate provider(s), executes the backfill,
-/// and writes status. Designed to be independently runnable without a streaming collector.
+/// Fully self-contained: creates its own host, pipeline, and status writer so it can be
+/// invoked directly without caller-side setup.
 /// </summary>
 public sealed class BackfillModeRunner
 {
@@ -21,16 +21,32 @@ public sealed class BackfillModeRunner
     public BackfillModeRunner(ILogger log) => _log = log;
 
     /// <summary>
-    /// Executes the backfill using providers and the <paramref name="pipeline"/> supplied by the caller.
-    /// Called from <see cref="CollectorModeRunner"/> or <see cref="DesktopModeRunner"/> which both
-    /// create the shared pipeline and status writer before delegating here.
+    /// Executes the backfill from a resolved startup context.
+    /// Creates the pipeline host, recovers WAL, runs the backfill providers, and writes status.
     /// </summary>
     /// <param name="ctx">Resolved startup context.</param>
-    /// <param name="pipeline">Event pipeline used to persist backfill events.</param>
-    /// <param name="statusWriter">Status writer for recording the run outcome.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>Exit code: 0 on success, non-zero on failure.</returns>
-    public async Task<int> RunAsync(
+    public async Task<int> RunAsync(StartupContext ctx, CancellationToken ct = default)
+    {
+        var statusPath = Path.Combine(ctx.Config.DataRoot, "_status", "status.json");
+        await using var statusWriter = new StatusWriter(
+            statusPath,
+            () => ctx.ConfigurationService.LoadAndPrepareConfig(ctx.ConfigPath));
+
+        await using var hostStartup = HostStartupFactory.Create(ctx.Deployment, ctx.ConfigPath);
+        var pipeline = hostStartup.Pipeline;
+        await pipeline.RecoverAsync();
+        _log.Information("WAL enabled for pipeline durability");
+
+        return await RunBackfillAsync(ctx, pipeline, statusWriter, ct);
+    }
+
+    /// <summary>
+    /// Executes the backfill using a pre-existing <paramref name="pipeline"/> and <paramref name="statusWriter"/>
+    /// created by the caller (e.g. <see cref="CollectorModeRunner"/> or <see cref="DesktopModeRunner"/>).
+    /// </summary>
+    internal async Task<int> RunBackfillAsync(
         StartupContext ctx,
         EventPipeline pipeline,
         StatusWriter statusWriter,
