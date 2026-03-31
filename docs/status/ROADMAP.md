@@ -149,10 +149,11 @@ Multi-run comparison, performance attribution, and strategy lifecycle management
 - Unified Backtest Studio across native and Lean engines
 - Strategy comparison and run-diff tooling
 - Live broker integration validation (brokerage gateway framework is in place; live-validated runtime paths remain)
+- QuantScript Research Environment: polish the editor surface in the WPF workstation and wire it to live platform data and the native backtest engine
+- Operator Observability Platform: unified health dashboard, SLA enforcement reporting, alert management UI, and cross-provider data quality surface
 
 ### Optional / Later
 
-- QuantScript runtime and editor
 - L3 inference and queue-aware execution simulation
 - Governance: multi-ledger, trial balance, cash-flow, report packs
 - Multi-instance collector coordination and horizontal scale-out
@@ -255,12 +256,43 @@ Full design: [`docs/plans/security-master-productization-roadmap.md`](../plans/s
 
 ---
 
+### Wave 7: QuantScript Research Environment
+
+The QuantScript backend is complete: `RoslynScriptCompiler`, `ScriptRunner`, `QuantDataContext`, `BacktestProxy`, `DataProxy`, `StatisticsEngine`, `PortfolioBuilder`, `PriceSeries`, `TechnicalSeriesExtensions`, `EfficientFrontierConstraints`, `PlotQueue`, and `ScriptParamAttribute` are all in place. The `QuantScriptPage` and `QuantScriptViewModel` exist in the WPF workstation. The gap is an integrated, operator-ready research surface connected to the live platform.
+
+**Focus:**
+- Polish the QuantScript editor surface (`QuantScriptPage`) in the WPF workstation: code editing, parameter binding, plot output rendering via `PlotRenderBehavior`
+- Wire `QuantDataContext` to live historical and streaming data so scripts consume real platform data
+- Expose `BacktestProxy` from within scripts so iterative strategy exploration uses the native backtest engine
+- Script result export (JSONL/CSV/chart image) via the analysis export pipeline
+- Script library management: save, load, and version user scripts
+- Introductory example scripts demonstrating common research patterns (momentum, pairs, mean-reversion)
+
+**Exit signal:** An operator can write a research script in the QuantScript editor, run it against real platform data, and export or compare results — without leaving the workstation.
+
+---
+
+### Wave 8: Operator Observability Platform
+
+The monitoring backend is rich but fragmented. `DataQualityMonitoringService`, `DataFreshnessSlaMonitor`, `AnomalyDetector`, `CompletenessScoreCalculator`, `CrossProviderComparisonService`, `GapAnalyzer`, `PrometheusMetrics`, `ProviderDegradationScorer`, `ProviderLatencyService`, `SpreadMonitor`, `SequenceErrorTracker`, and `AlertDispatcher` are all implemented. The gap is a unified, navigable operator surface that makes this monitoring data actionable in real time.
+
+**Focus:**
+- Unified health dashboard in the web dashboard: provider status, SLA compliance, data quality scores, and alert state — all on one screen
+- SLA enforcement reporting: configurable thresholds, breach timelines, and provider-level accountability summaries
+- Alert management UI: view active alerts, acknowledge, configure suppression windows, and review alert history
+- Cross-provider comparison surface: symbol-level data completeness side-by-side across providers
+- Historical data quality trend charts: completeness scores, gap frequency, and latency histograms over time
+- Prometheus metrics integration guide: documented scrape endpoint and a reference Grafana dashboard JSON
+
+**Exit signal:** An operator can open the observability dashboard, see the current health state of all providers and data streams, drill into an SLA breach, and configure alert thresholds — without inspecting logs or writing queries.
+
+---
+
 ### Optional Wave: Advanced research and scale
 
 Depth multipliers that require a stable platform foundation to deliver value.
 
 **Focus:**
-- QuantScript runtime and editor
 - L3 inference and queue-aware simulation
 - Multi-instance collector scale-out
 - Phase 16 assembly-level performance work

@@ -127,7 +127,45 @@ Consolidate the native and Lean backtest experiences into one coherent workflow.
 
 ## Later
 
-### 7. Live Integration Readiness *(Wave 5)*
+### 7. QuantScript Research Environment *(Wave 7 — new initiative)*
+
+**Background and rationale:**
+
+The QuantScript backend is already built: `RoslynScriptCompiler`, `ScriptRunner`, `QuantDataContext`, `BacktestProxy`, `DataProxy`, `StatisticsEngine`, `PortfolioBuilder`, `PriceSeries`, `TechnicalSeriesExtensions`, `EfficientFrontierConstraints`, `PlotQueue`, and `ScriptParamAttribute` are all present in `src/Meridian.QuantScript/`. The `QuantScriptPage` and `QuantScriptViewModel` exist in the WPF workstation. The gap is an integrated, operator-ready research surface connected to the live platform and native backtest engine.
+
+**Delivery scope:**
+
+- Polish the QuantScript editor surface (`QuantScriptPage`) in the WPF workstation: code editing, parameter binding, and plot output rendering via `PlotRenderBehavior`
+- Wire `QuantDataContext` to live historical and streaming data so scripts consume real platform data
+- Expose `BacktestProxy` from within scripts so iterative strategy exploration uses the native backtest engine directly
+- Script result export (JSONL/CSV/chart image) through the analysis export pipeline
+- Script library management: save, load, and version user scripts
+- Introductory example scripts demonstrating common research patterns (momentum, pairs, mean-reversion)
+
+**Exit gate:** An operator can write a research script in the QuantScript editor, run it against real platform data, and export or compare results — without leaving the workstation.
+
+---
+
+### 8. Operator Observability Platform *(Wave 8 — new initiative)*
+
+**Background and rationale:**
+
+The monitoring backend is rich but its outputs are not surfaced to operators through a unified interface. `DataQualityMonitoringService`, `DataFreshnessSlaMonitor`, `AnomalyDetector`, `CompletenessScoreCalculator`, `CrossProviderComparisonService`, `GapAnalyzer`, `PrometheusMetrics`, `ProviderDegradationScorer`, `ProviderLatencyService`, `SpreadMonitor`, `SequenceErrorTracker`, and `AlertDispatcher` are all present in `src/Meridian.Application/Monitoring/`. Operators currently must inspect logs or wire custom queries to see this data. A unified dashboard surface makes the platform's health observable at a glance.
+
+**Delivery scope:**
+
+- Unified health dashboard in the web dashboard: provider status, SLA compliance, data quality scores, and alert state on one screen
+- SLA enforcement reporting: configurable thresholds, breach timelines, and provider-level accountability summaries
+- Alert management UI: view active alerts, acknowledge, configure suppression windows, and review alert history
+- Cross-provider comparison surface: symbol-level data completeness side-by-side across providers
+- Historical data quality trend charts: completeness scores, gap frequency, and latency histograms over time
+- Prometheus scrape endpoint documentation and a reference Grafana dashboard JSON shipped with the deployment assets
+
+**Exit gate:** An operator can open the observability dashboard, see the current health state of all providers and data streams, drill into an SLA breach, and configure alert thresholds — without inspecting logs or writing queries.
+
+---
+
+### 9. Live Integration Readiness *(Wave 5)*
 
 The brokerage gateway framework (`IBrokerageGateway`, `BaseBrokerageGateway`) and provider-specific adapters (Alpaca, IB, StockSharp) are implemented. The remaining work is validating these adapters against live vendor surfaces and adding execution audit trail.
 
@@ -144,11 +182,10 @@ The brokerage gateway framework (`IBrokerageGateway`, `BaseBrokerageGateway`) an
 
 ---
 
-### 8. Advanced Research and Scale *(Optional Wave)*
+### 10. Advanced Research and Scale *(Optional Wave)*
 
 Depth multipliers that require a stable platform foundation to deliver value. None of these are prerequisites for core operator value.
 
-- QuantScript runtime and editor
 - L3 inference and queue-aware execution simulation
 - Multi-instance collector coordination and horizontal scale-out
 - Phase 16 assembly-level performance optimizations
@@ -167,6 +204,7 @@ Meridian can claim core-platform readiness when all of the following are true:
 4. Portfolio and run history cover backtest, paper, and live-adjacent results through one consistent model
 5. Backfill checkpoint reliability is validated across providers and date ranges
 6. Security Master is operator-accessible via the web dashboard for search, classification, and provider reconciliation
+7. Platform health is observable via the Operator Observability Dashboard without requiring log inspection
 
 ---
 
@@ -183,6 +221,8 @@ Meridian can claim core-platform readiness when all of the following are true:
 **NYSE cancellation gaps remain active reliability debt.** Transport paths that ignore caller cancellation can weaken graceful shutdown and reconnect behavior.
 
 **Security Master productization competes for dashboard resources.** The cockpit and Security Master panels share the same React dashboard. Sequencing them (cockpit first) avoids UI layout conflicts and lets Security Master follow established component patterns.
+
+**QuantScript editor depends on stable backtest engine.** The `BacktestProxy` integration inside QuantScript scripts requires a stable and well-tested native engine; Wave 4 (Backtest Studio) should complete before QuantScript goes into final polish.
 
 **Test coverage must grow with the platform.** Strategy correctness, fill model edge cases, and provider adapters need explicit regression coverage before live integration.
 
