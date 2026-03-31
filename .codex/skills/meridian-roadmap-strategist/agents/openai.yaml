@@ -1,4 +1,0 @@
-interface:
-  display_name: "Meridian Roadmap Strategist"
-  short_description: "Plan and refresh Meridian roadmaps"
-  default_prompt: "Use $meridian-roadmap-strategist to create or update a Meridian roadmap with opportunities and end-state outcomes."
