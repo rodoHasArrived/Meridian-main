@@ -1995,6 +1995,7 @@ Use these documents together when planning or implementing new work:
 │   │       └── SymbolTools.cs
 │   ├── Meridian.ProviderSdk
 │   │   ├── AttributeCredentialResolver.cs
+│   │   ├── CredentialSchemaRegistry.cs
 │   │   ├── CredentialValidator.cs
 │   │   ├── DataSourceAttribute.cs
 │   │   ├── DataSourceRegistry.cs
@@ -3240,6 +3241,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-477 directories, 2725 files
+477 directories, 2726 files
 ```
 <!-- readme-tree end -->
