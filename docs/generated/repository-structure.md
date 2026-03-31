@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-03-31 03:29:35 UTC. Do not edit manually.
+> Auto-generated on 2026-03-31 05:45:09 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -2300,6 +2300,7 @@ Meridian-main
 │       │   ├── BacktestViewModel.cs
 │       │   ├── BatchBacktestViewModel.cs
 │       │   ├── BindableBase.cs
+│       │   ├── CashFlowViewModel.cs
 │       │   ├── ChartingPageViewModel.cs
 │       │   ├── ClusterStatusViewModel.cs
 │       │   ├── CredentialManagementViewModel.cs
@@ -2440,6 +2441,8 @@ Meridian-main
 │       │   ├── ResearchWorkspaceShellPage.xaml.cs
 │       │   ├── RetentionAssurancePage.xaml
 │       │   ├── RetentionAssurancePage.xaml.cs
+│       │   ├── RunCashFlowPage.xaml
+│       │   ├── RunCashFlowPage.xaml.cs
 │       │   ├── RunDetailPage.xaml
 │       │   ├── RunDetailPage.xaml.cs
 │       │   ├── RunLedgerPage.xaml
@@ -2975,6 +2978,7 @@ Meridian-main
 │   │   │   ├── RunMatUiAutomationFacade.cs
 │   │   │   └── WpfTestThread.cs
 │   │   ├── ViewModels
+│   │   │   ├── CashFlowViewModelTests.cs
 │   │   │   ├── DataQualityViewModelCharacterizationTests.cs
 │   │   │   ├── QuantScriptViewModelTests.cs
 │   │   │   ├── RunMatViewModelTests.cs

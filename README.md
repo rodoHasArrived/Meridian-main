@@ -2582,6 +2582,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── BacktestViewModel.cs
 │       │   ├── BatchBacktestViewModel.cs
 │       │   ├── BindableBase.cs
+│       │   ├── CashFlowViewModel.cs
 │       │   ├── ChartingPageViewModel.cs
 │       │   ├── ClusterStatusViewModel.cs
 │       │   ├── CredentialManagementViewModel.cs
@@ -2722,6 +2723,8 @@ Use these documents together when planning or implementing new work:
 │           ├── ResearchWorkspaceShellPage.xaml.cs
 │           ├── RetentionAssurancePage.xaml
 │           ├── RetentionAssurancePage.xaml.cs
+│           ├── RunCashFlowPage.xaml
+│           ├── RunCashFlowPage.xaml.cs
 │           ├── RunDetailPage.xaml
 │           ├── RunDetailPage.xaml.cs
 │           ├── RunLedgerPage.xaml
@@ -3252,6 +3255,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── RunMatUiAutomationFacade.cs
 │   │   │   └── WpfTestThread.cs
 │   │   ├── ViewModels
+│   │   │   ├── CashFlowViewModelTests.cs
 │   │   │   ├── DataQualityViewModelCharacterizationTests.cs
 │   │   │   ├── QuantScriptViewModelTests.cs
 │   │   │   ├── RunMatViewModelTests.cs
@@ -3266,6 +3270,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-477 directories, 2727 files
+477 directories, 2731 files
 ```
 <!-- readme-tree end -->
