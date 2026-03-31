@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-03-31 05:55:35 UTC. Do not edit manually.
+> Auto-generated on 2026-03-31 06:06:56 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -2975,6 +2975,8 @@ Meridian-main
 │   │   │   ├── WatchlistServiceTests.cs
 │   │   │   └── WorkspaceServiceTests.cs
 │   │   ├── Support
+│   │   │   ├── FakeQuantScriptCompiler.cs
+│   │   │   ├── FakeScriptRunner.cs
 │   │   │   ├── RunMatUiAutomationFacade.cs
 │   │   │   └── WpfTestThread.cs
 │   │   ├── ViewModels
@@ -2984,8 +2986,10 @@ Meridian-main
 │   │   │   ├── RunMatViewModelTests.cs
 │   │   │   └── StrategyRunBrowserViewModelTests.cs
 │   │   ├── Views
+│   │   │   ├── QuantScriptPageTests.cs
 │   │   │   ├── RunMatUiSmokeTests.cs
-│   │   │   └── RunMatWorkflowSmokeTests.cs
+│   │   │   ├── RunMatWorkflowSmokeTests.cs
+│   │   │   └── SplitPaneHostControlTests.cs
 │   │   ├── GlobalUsings.cs
 │   │   └── Meridian.Wpf.Tests.csproj
 │   ├── scripts
