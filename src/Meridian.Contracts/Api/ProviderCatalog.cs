@@ -699,8 +699,16 @@ public sealed record CredentialFieldInfo(
     [property: JsonPropertyName("envVar")] string? EnvironmentVariable,
     [property: JsonPropertyName("displayName")] string DisplayName,
     [property: JsonPropertyName("required")] bool Required,
-    [property: JsonPropertyName("defaultValue")] string? DefaultValue = null
-);
+    [property: JsonPropertyName("defaultValue")] string? DefaultValue = null,
+    [property: JsonPropertyName("envVarAliases")] string[]? EnvironmentVariableAliases = null)
+{
+    public string[] AllEnvironmentVariables =>
+        (new[] { EnvironmentVariable }
+            .Concat(EnvironmentVariableAliases ?? Array.Empty<string>()))
+        .Where(envVar => !string.IsNullOrWhiteSpace(envVar))
+        .Distinct(StringComparer.OrdinalIgnoreCase)
+        .ToArray()!;
+}
 
 /// <summary>
 /// Rate limit information for UI display and validation.

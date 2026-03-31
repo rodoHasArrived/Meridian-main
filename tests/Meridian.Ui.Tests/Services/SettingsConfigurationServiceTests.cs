@@ -105,4 +105,89 @@ public sealed class SettingsConfigurationServiceTests
             ProviderCatalog.RuntimeCatalogEntryProvider = null;
         }
     }
+
+    [Fact]
+    public void GetProviderCredentialStatuses_TreatsAliasEnvironmentVariablesAsConfigured()
+    {
+        const string primaryEnvVar = "DEMO_ALIAS_PRIMARY";
+        const string legacyEnvVar = "DEMO_ALIAS_LEGACY";
+        var entry = new Meridian.Contracts.Api.ProviderCatalogEntry
+        {
+            ProviderId = "demo-alias-provider",
+            DisplayName = "Demo Alias Provider",
+            Description = "Shared catalog entry",
+            ProviderType = ProviderTypeKind.Backfill,
+            RequiresCredentials = true,
+            CredentialFields = new[]
+            {
+                new CredentialFieldInfo(
+                    "ApiKey",
+                    primaryEnvVar,
+                    "Demo API Key",
+                    true,
+                    EnvironmentVariableAliases: new[] { legacyEnvVar })
+            },
+            Capabilities = new CapabilityInfo()
+        };
+
+        try
+        {
+            ProviderCatalog.InitializeFromRegistry(
+                () => new[] { entry },
+                id => id == entry.ProviderId ? entry : null);
+
+            Environment.SetEnvironmentVariable(primaryEnvVar, null);
+            Environment.SetEnvironmentVariable(legacyEnvVar, "legacy-configured");
+
+            var catalog = SettingsConfigurationService.Instance.GetProviderCatalog();
+            var provider = catalog.Should().ContainSingle().Subject;
+            provider.RequiredEnvVars.Should().Equal(primaryEnvVar, legacyEnvVar);
+
+            var status = SettingsConfigurationService.Instance
+                .GetProviderCredentialStatuses()
+                .Single(item => item.ProviderId == entry.ProviderId);
+
+            status.State.Should().Be(CredentialState.Configured);
+            status.MissingEnvVars.Should().BeEmpty();
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(primaryEnvVar, null);
+            Environment.SetEnvironmentVariable(legacyEnvVar, null);
+            ProviderCatalog.RuntimeCatalogProvider = null;
+            ProviderCatalog.RuntimeCatalogEntryProvider = null;
+        }
+    }
+
+    [Theory]
+    [InlineData("nasdaq", ProviderTier.LimitedFree)]
+    [InlineData("ibkr", ProviderTier.FreeWithAccount)]
+    public void GetProviderCatalog_MapsRuntimeProviderIdsToExpectedTier(string providerId, ProviderTier expectedTier)
+    {
+        var entry = new Meridian.Contracts.Api.ProviderCatalogEntry
+        {
+            ProviderId = providerId,
+            DisplayName = $"Provider {providerId}",
+            Description = "Runtime catalog entry",
+            ProviderType = ProviderTypeKind.Backfill,
+            RequiresCredentials = false,
+            CredentialFields = Array.Empty<CredentialFieldInfo>(),
+            Capabilities = new CapabilityInfo()
+        };
+
+        try
+        {
+            ProviderCatalog.InitializeFromRegistry(
+                () => new[] { entry },
+                id => id == entry.ProviderId ? entry : null);
+
+            var provider = SettingsConfigurationService.Instance.GetProviderCatalog().Single();
+            provider.Tier.Should().Be(expectedTier);
+        }
+        finally
+        {
+            ProviderCatalog.RuntimeCatalogProvider = null;
+            ProviderCatalog.RuntimeCatalogEntryProvider = null;
+        }
+    }
 }

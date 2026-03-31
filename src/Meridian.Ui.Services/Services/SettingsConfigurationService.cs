@@ -88,21 +88,22 @@ public sealed class SettingsConfigurationService
 
         foreach (var provider in catalog)
         {
-            var requiredEnvVars = provider.CredentialFields
-                .Where(field => field.Required && !string.IsNullOrWhiteSpace(field.EnvironmentVariable))
-                .Select(field => field.EnvironmentVariable!)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
+            var requiredFields = provider.CredentialFields
+                .Where(field => field.Required)
                 .ToArray();
 
-            if (requiredEnvVars.Length == 0)
+            if (requiredFields.Length == 0)
             {
                 result.Add(new ProviderCredentialStatus(provider.Id, provider.DisplayName,
                     CredentialState.NotRequired, "No credentials required", Array.Empty<string>()));
                 continue;
             }
 
-            var missing = requiredEnvVars
-                .Where(env => string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(env)))
+            var missing = requiredFields
+                .Where(field => !HasConfiguredEnvironmentVariable(field))
+                .Select(field => field.EnvironmentVariable)
+                .Where(env => !string.IsNullOrWhiteSpace(env))
+                .Select(env => env!)
                 .ToArray();
 
             if (missing.Length == 0)
@@ -110,7 +111,7 @@ public sealed class SettingsConfigurationService
                 result.Add(new ProviderCredentialStatus(provider.Id, provider.DisplayName,
                     CredentialState.Configured, "Configured via environment", Array.Empty<string>()));
             }
-            else if (missing.Length < requiredEnvVars.Length)
+            else if (missing.Length < requiredFields.Length)
             {
                 result.Add(new ProviderCredentialStatus(provider.Id, provider.DisplayName,
                     CredentialState.Partial, "Some credentials missing", missing));
@@ -128,7 +129,7 @@ public sealed class SettingsConfigurationService
     private static ProviderCatalogEntry MapProviderCatalogEntry(Meridian.Contracts.Api.ProviderCatalogEntry entry)
     {
         var envCredentialFields = entry.CredentialFields
-            .Where(field => !string.IsNullOrWhiteSpace(field.EnvironmentVariable))
+            .Where(field => field.AllEnvironmentVariables.Length > 0)
             .ToArray();
 
         var supportsStreaming = entry.ProviderType is ProviderTypeKind.Streaming or ProviderTypeKind.Hybrid;
@@ -150,11 +151,17 @@ public sealed class SettingsConfigurationService
     private static ProviderTier MapTier(string providerId) =>
         providerId.ToLowerInvariant() switch
         {
-            "alpaca" or "ib" or "stocksharp" => ProviderTier.FreeWithAccount,
-            "polygon" or "nasdaqdatalink" => ProviderTier.LimitedFree,
+            "alpaca" or "ib" or "ibkr" or "stocksharp" => ProviderTier.FreeWithAccount,
+            "polygon" or "nasdaq" or "nasdaqdatalink" => ProviderTier.LimitedFree,
             "nyse" => ProviderTier.Premium,
             _ => ProviderTier.Free,
         };
+
+    private static bool HasConfiguredEnvironmentVariable(CredentialFieldInfo field)
+    {
+        return field.AllEnvironmentVariables
+            .Any(envVar => !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(envVar)));
+    }
 
     private static int GetRequestsPerMinute(RateLimitInfo? rateLimit)
     {
@@ -293,8 +300,8 @@ public sealed record ProviderCatalogEntry(
     CredentialFieldInfo[] CredentialFields)
 {
     public string[] RequiredEnvVars => CredentialFields
-        .Where(field => field.Required && !string.IsNullOrWhiteSpace(field.EnvironmentVariable))
-        .Select(field => field.EnvironmentVariable!)
+        .Where(field => field.Required)
+        .SelectMany(field => field.AllEnvironmentVariables)
         .Distinct(StringComparer.OrdinalIgnoreCase)
         .ToArray();
 }

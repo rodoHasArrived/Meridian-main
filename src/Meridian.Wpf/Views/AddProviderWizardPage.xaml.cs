@@ -138,7 +138,7 @@ public partial class AddProviderWizardPage : Page
         foreach (var field in _selectedProvider.CredentialFields)
         {
             var envVar = field.EnvironmentVariable ?? string.Empty;
-            var currentValue = Environment.GetEnvironmentVariable(envVar) ?? "";
+            var currentValue = GetConfiguredEnvironmentValue(field) ?? "";
 
             var label = new TextBlock
             {
@@ -156,7 +156,7 @@ public partial class AddProviderWizardPage : Page
 
             var envHint = new TextBlock
             {
-                Text = $"Environment variable: {envVar}",
+                Text = $"Environment variable: {string.Join(", ", field.AllEnvironmentVariables)}",
                 FontSize = 11,
                 Foreground = (Brush)FindResource("ConsoleTextMutedBrush"),
                 Margin = new Thickness(0, 2, 0, 12)
@@ -182,8 +182,7 @@ public partial class AddProviderWizardPage : Page
         var hasCredentials = _selectedProvider.CredentialFields.Length == 0 ||
             _selectedProvider.CredentialFields
                 .Where(field => field.Required)
-                .All(field => !string.IsNullOrWhiteSpace(field.EnvironmentVariable) &&
-                    !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(field.EnvironmentVariable)));
+                .All(HasConfiguredEnvironmentValue);
 
         if (hasCredentials)
         {
@@ -261,6 +260,26 @@ public partial class AddProviderWizardPage : Page
         Step2Dot.Fill = completedUpTo >= 2 ? (completedUpTo > 2 ? successBrush : activeBrush) : pendingBrush;
         Step3Dot.Fill = completedUpTo >= 3 ? (completedUpTo > 3 ? successBrush : activeBrush) : pendingBrush;
         Step4Dot.Fill = completedUpTo >= 4 ? successBrush : pendingBrush;
+    }
+
+    private static bool HasConfiguredEnvironmentValue(CredentialFieldInfo field)
+    {
+        return field.AllEnvironmentVariables
+            .Any(envVar => !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(envVar)));
+    }
+
+    private static string? GetConfiguredEnvironmentValue(CredentialFieldInfo field)
+    {
+        foreach (var envVar in field.AllEnvironmentVariables)
+        {
+            var value = Environment.GetEnvironmentVariable(envVar);
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                return value;
+            }
+        }
+
+        return null;
     }
 }
 
