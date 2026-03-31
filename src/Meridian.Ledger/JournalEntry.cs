@@ -1,5 +1,3 @@
-using Meridian.FSharp.Ledger;
-
 namespace Meridian.Ledger;
 
 /// <summary>
@@ -105,27 +103,7 @@ public sealed record JournalEntry
                 totalCredit += line.Credit;
             }
 
-            var validation = LedgerInterop.ValidateJournalEntry(
-                JournalEntryId,
-                Timestamp,
-                Description,
-                Lines.Select(line => new LedgerLineInput
-                {
-                    EntryId = line.EntryId,
-                    JournalEntryId = line.JournalEntryId,
-                    Timestamp = line.Timestamp,
-                    AccountName = line.Account.Name,
-                    AccountType = (int)line.Account.AccountType,
-                    Symbol = line.Account.Symbol ?? string.Empty,
-                    FinancialAccountId = line.Account.FinancialAccountId ?? string.Empty,
-                    Debit = line.Debit,
-                    Credit = line.Credit,
-                    Description = line.Description,
-                }),
-                Array.Empty<Guid>(),
-                Array.Empty<Guid>());
-
-            return validation.IsValid || Math.Abs(totalDebit - totalCredit) <= BalanceTolerance;
+            return Math.Abs(totalDebit - totalCredit) <= BalanceTolerance;
         }
     }
 }
