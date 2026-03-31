@@ -1,6 +1,6 @@
 # TODO / FIXME / NOTE Scan
 
-Total items: **207**
+Total items: **206**
 
 | File | Line | Tag | Linked Issue | Text |
 |---|---:|---|:---:|---|
@@ -37,8 +37,7 @@ Total items: **207**
 | `.github/agents/documentation-agent.md` | 361 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
 | `.github/agents/documentation-agent.md` | 818 | `TODO` | ❌ | │   │   └── TODO.md |
 | `.github/agents/documentation-agent.md` | 3197 | `TODO` | ❌ | - `TODO.md` - Pending work items |
-| `.github/agents/implementation-assurance-agent.md` | 66 | `NOTE` | ❌ | - **Performance-sensitive paths are noted:** any hot-path touched by the change includes an explicit note on allocation, async, or buffering risk. |
-| `.github/agents/implementation-assurance-agent.md` | 156 | `NOTE` | ❌ | - Explicit note that performance-sensitive areas were reviewed (or why not applicable). |
+| `.github/agents/implementation-assurance-agent.md` | 59 | `NOTE` | ❌ | - **Performance-sensitive paths are noted:** any hot-path touched by the change includes an explicit note on allocation, async, or buffering risk. |
 | `.github/agents/performance-agent.md` | 248 | `NOTE` | ❌ | - **No new features** — if a performance win requires a new feature, note it but defer it. |
 | `.github/agents/provider-builder-agent.md` | 81 | `TODO` | ❌ | Read the full template before writing any code. Templates contain inline `// TODO:` comments |
 | `.github/workflows/README.md` | 11 | `TODO` | ❌ | \| `documentation.yml` \| `docs-comprehensive.yml`, `docs-auto-update.yml`, `docs-structure-sync.yml`, `ai-instructions-sync.yml`, `todo-automation.yml`, `docs-check.yml` \| AI documentation quality review, AI TODO triage \| |
