@@ -35,8 +35,8 @@ Total items: **207**
 | `.github/agents/cleanup-agent.md` | 436 | `NOTE` | ❌ | - **No new features** — cleanup only; if something is missing, note it but do not add it. |
 | `.github/agents/cleanup-agent.md` | 438 | `NOTE` | ❌ | - **No ViewModel extraction** — flag it as a note; full MVVM refactors belong in code review. |
 | `.github/agents/documentation-agent.md` | 361 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
-| `.github/agents/documentation-agent.md` | 814 | `TODO` | ❌ | │   │   └── TODO.md |
-| `.github/agents/documentation-agent.md` | 3193 | `TODO` | ❌ | - `TODO.md` - Pending work items |
+| `.github/agents/documentation-agent.md` | 818 | `TODO` | ❌ | │   │   └── TODO.md |
+| `.github/agents/documentation-agent.md` | 3197 | `TODO` | ❌ | - `TODO.md` - Pending work items |
 | `.github/agents/implementation-assurance-agent.md` | 66 | `NOTE` | ❌ | - **Performance-sensitive paths are noted:** any hot-path touched by the change includes an explicit note on allocation, async, or buffering risk. |
 | `.github/agents/implementation-assurance-agent.md` | 156 | `NOTE` | ❌ | - Explicit note that performance-sensitive areas were reviewed (or why not applicable). |
 | `.github/agents/performance-agent.md` | 248 | `NOTE` | ❌ | - **No new features** — if a performance win requires a new feature, note it but defer it. |
@@ -63,7 +63,7 @@ Total items: **207**
 | `.github/workflows/validate-workflows.yml` | 206 | `NOTE` | ❌ | echo "Note: Ensure cron schedules are distributed to avoid rate limits" |
 | `CLAUDE.md` | 100 | `NOTE` | ❌ | **Note:** Always use `/p:EnableWindowsTargeting=true` on non-Windows systems to avoid NETSDK1100 errors. |
 | `CLAUDE.md` | 414 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
-| `CLAUDE.md` | 867 | `TODO` | ❌ | │   │   └── TODO.md |
+| `CLAUDE.md` | 871 | `TODO` | ❌ | │   │   └── TODO.md |
 | `README.md` | 536 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
 | `README.md` | 983 | `TODO` | ❌ | │   │   ├── TODO.md |
 | `benchmarks/run-bottleneck-benchmarks.sh` | 111 | `NOTE` | ❌ | # Note: --filter is intentionally not added here; each phase below supplies its own |
@@ -82,8 +82,8 @@ Total items: **207**
 | `docs/ai/claude/CLAUDE.structure.md` | 473 | `TODO` | ❌ | │   │   └── TODO.md |
 | `docs/ai/copilot/instructions.md` | 5 | `NOTE` | ❌ | > **Note:** For comprehensive project context, see [CLAUDE.md](https://github.com/rodoHasArrived/Meridian/blob/main/CLAUDE.md) in the repository root. For the master AI resource index, see [docs/ai/README.md](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/README.md). |
 | `docs/ai/copilot/instructions.md` | 399 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
-| `docs/ai/copilot/instructions.md` | 852 | `TODO` | ❌ | │   │   └── TODO.md |
-| `docs/ai/copilot/instructions.md` | 3139 | `TODO` | ❌ | - `documentation.yml` — Doc generation, TODO scanning, AI error intake |
+| `docs/ai/copilot/instructions.md` | 856 | `TODO` | ❌ | │   │   └── TODO.md |
+| `docs/ai/copilot/instructions.md` | 3143 | `TODO` | ❌ | - `documentation.yml` — Doc generation, TODO scanning, AI error intake |
 | `docs/ai/skills/README.md` | 176 | `NOTE` | ❌ | > **Note:** The Direct Lending module (`src/Meridian.FSharp/Domain/DirectLending.fs`, |
 | `docs/architecture/deterministic-canonicalization.md` | 365 | `NOTE` | ❌ | Note: Polygon does not define buyer-initiated codes. Only ~5% of trades carry definitive aggressor inference. The canonicalization layer preserves `Unknown` as a valid canonical value rather than attempting inference. |
 | `docs/architecture/domains.md` | 111 | `NOTE` | ❌ | > Note: not every enum member is currently emitted by the three core collectors (`TradeDataCollector`, `MarketDepthCollector`, `QuoteCollector`); several are used by adapters, backfill paths, or the `L3OrderBookCollector`. |
