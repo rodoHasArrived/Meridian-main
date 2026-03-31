@@ -4,6 +4,7 @@ using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.YahooFinance;
 using Xunit;
 using Xunit.Abstractions;
+using Xunit.Sdk;
 
 namespace Meridian.Tests.Integration;
 
@@ -21,12 +22,20 @@ namespace Meridian.Tests.Integration;
 /// These tests hit the live Yahoo Finance API and are marked with
 /// Trait("Category", "Integration") so they can be filtered during CI.
 /// Run with: dotnet test --filter "Category=Integration"
+/// When the Yahoo Finance API is unreachable (e.g. in offline CI sandboxes)
+/// each test is dynamically skipped rather than failing.
 /// </summary>
 [Trait("Category", "Integration")]
 public sealed class YahooFinancePcgPreferredIntegrationTests : IDisposable
 {
     private readonly ITestOutputHelper _output;
     private readonly YahooFinanceHistoricalDataProvider _provider;
+
+    // Shared availability check: performed at most once per test-runner process.
+    // Caching avoids a repeated round-trip for every [Theory] row.
+    private static readonly Lazy<Task<bool>> _yahooAvailable =
+        new(() => new YahooFinanceHistoricalDataProvider().IsAvailableAsync(),
+            System.Threading.LazyThreadSafetyMode.PublicationOnly);
 
     /// <summary>
     /// All known PG&amp;E preferred share series on Yahoo Finance.
@@ -46,9 +55,23 @@ public sealed class YahooFinancePcgPreferredIntegrationTests : IDisposable
         _provider = new YahooFinanceHistoricalDataProvider();
     }
 
+    /// <summary>
+    /// Throws <see cref="SkipException"/> when Yahoo Finance is not reachable so that
+    /// tests appear as Skipped rather than Failed in offline environments (e.g. CI sandboxes).
+    /// </summary>
+    private static async Task SkipWhenOfflineAsync()
+    {
+        if (!await _yahooAvailable.Value.ConfigureAwait(false))
+            throw SkipException.ForSkip(
+                "Yahoo Finance API is not reachable in this environment. " +
+                "Run with live network access to execute these tests.");
+    }
+
     [Fact]
     public async Task YahooFinance_IsAvailable_ReturnsTrue()
     {
+        await SkipWhenOfflineAsync();
+
         // Verify Yahoo Finance API is reachable before running data tests
         var available = await _provider.IsAvailableAsync();
 
@@ -65,6 +88,8 @@ public sealed class YahooFinancePcgPreferredIntegrationTests : IDisposable
     public async Task YahooFinance_GetAllHistoricalBars_ForPcgPreferredSeries(
         string symbol, string seriesDescription)
     {
+        await SkipWhenOfflineAsync();
+
         // Act - Pull all available historical data (no date range limit)
         var bars = await _provider.GetDailyBarsAsync(symbol, from: null, to: null);
 
@@ -116,6 +141,8 @@ public sealed class YahooFinancePcgPreferredIntegrationTests : IDisposable
     public async Task YahooFinance_GetAdjustedBars_IncludesDividendData_ForPcgPreferredSeries(
         string symbol, string seriesDescription)
     {
+        await SkipWhenOfflineAsync();
+
         // Act - Pull adjusted bars which include dividend and split factor data
         var bars = await _provider.GetAdjustedDailyBarsAsync(symbol, from: null, to: null);
 
@@ -169,6 +196,8 @@ public sealed class YahooFinancePcgPreferredIntegrationTests : IDisposable
     [Fact]
     public async Task YahooFinance_GetAllPcgPreferredSeries_SummaryReport()
     {
+        await SkipWhenOfflineAsync();
+
         // Pull data for all preferred series and produce a summary comparison
         _output.WriteLine("=== PG&E Preferred Shares - Full Summary ===");
         _output.WriteLine("");

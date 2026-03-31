@@ -21,6 +21,7 @@ public sealed class EndpointTestFixture : IAsyncLifetime
     private Microsoft.AspNetCore.Builder.WebApplication? _app;
     private string? _tempConfigDir;
     private string? _originalAuthMode;
+    private string? _originalDisableRateLimit;
 
     public HttpClient Client { get; private set; } = null!;
 
@@ -38,7 +39,11 @@ public sealed class EndpointTestFixture : IAsyncLifetime
     public async Task InitializeAsync()
     {
         _originalAuthMode = Environment.GetEnvironmentVariable("MDC_AUTH_MODE");
+        _originalDisableRateLimit = Environment.GetEnvironmentVariable("MDC_DISABLE_RATE_LIMIT");
         Environment.SetEnvironmentVariable("MDC_AUTH_MODE", "optional");
+        // All TestServer requests share a null RemoteIpAddress which maps to the "unknown"
+        // partition key; 10 requests would exhaust the production limit immediately.
+        Environment.SetEnvironmentVariable("MDC_DISABLE_RATE_LIMIT", "true");
 
         _tempConfigDir = Path.Combine(Path.GetTempPath(), $"mdc-endpoint-tests-{Guid.NewGuid():N}");
         Directory.CreateDirectory(_tempConfigDir);
@@ -72,6 +77,7 @@ public sealed class EndpointTestFixture : IAsyncLifetime
         if (_app != null)
             await _app.DisposeAsync();
         Environment.SetEnvironmentVariable("MDC_AUTH_MODE", _originalAuthMode);
+        Environment.SetEnvironmentVariable("MDC_DISABLE_RATE_LIMIT", _originalDisableRateLimit);
         if (_tempConfigDir != null && Directory.Exists(_tempConfigDir))
         {
             try

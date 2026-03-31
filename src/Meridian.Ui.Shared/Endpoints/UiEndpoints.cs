@@ -448,12 +448,30 @@ public static class UiEndpoints
     /// <summary>
     /// Registers a per-IP fixed-window rate limiter for mutation endpoints.
     /// Allows 10 requests per minute per IP with a small queue for bursts.
+    /// Set the <c>MDC_DISABLE_RATE_LIMIT=true</c> environment variable to bypass rate
+    /// limiting entirely (intended for test environments where all requests share the
+    /// same loopback address and a 10/min limit would be exhausted immediately).
     /// </summary>
     private static IServiceCollection AddMutationRateLimiter(this IServiceCollection services)
     {
+        // Allow tests (and dev environments) to opt out of rate limiting via env var.
+        // In production this variable is absent, so the guard never triggers.
+        var disableRateLimit = string.Equals(
+            Environment.GetEnvironmentVariable("MDC_DISABLE_RATE_LIMIT"),
+            "true",
+            StringComparison.OrdinalIgnoreCase);
+
         services.AddRateLimiter(options =>
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+            if (disableRateLimit)
+            {
+                options.AddPolicy(MutationRateLimitPolicy, _ =>
+                    RateLimitPartition.GetNoLimiter<string>("global"));
+                return;
+            }
+
             options.AddPolicy(MutationRateLimitPolicy, httpContext =>
                 RateLimitPartition.GetFixedWindowLimiter(
                     partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
