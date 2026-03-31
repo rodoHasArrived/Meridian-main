@@ -76,8 +76,8 @@ static package content.
 **When it triggers:** design-doc requests, architecture spikes, interface planning, or roadmap-to-implementation handoffs.
 **On-demand resources:**
 
-- `references/blueprint-patterns.md` — reusable section patterns and implementation shapes
-- `references/pipeline-position.md` — pipeline-stage and handoff guidance
+- [`references/blueprint-patterns.md`](../../../.claude/skills/meridian-blueprint/references/blueprint-patterns.md) — reusable section patterns and implementation shapes
+- [`references/pipeline-position.md`](../../../.claude/skills/meridian-blueprint/references/pipeline-position.md) — pipeline-stage and handoff guidance
 - `../_shared/project-context.md` — canonical project statistics, paths, and ADR anchors
 
 ### `meridian-code-review`
@@ -87,26 +87,28 @@ static package content.
 **When it triggers:** code review, refactoring, architecture audit, MVVM cleanup, provider compliance, or performance review tasks.
 **On-demand resources and scripts:**
 
-- `references/architecture.md` — deep architecture context
-- `references/schemas.md` — eval/grading schemas
-- `agents/grader.md` — grading instructions for eval runs
+- [`references/architecture.md`](../../../.claude/skills/meridian-code-review/references/architecture.md) — deep architecture context
+- [`references/schemas.md`](../../../.claude/skills/meridian-code-review/references/schemas.md) — eval/grading schemas
+- [`agents/grader.md`](../../../.claude/skills/meridian-code-review/agents/grader.md) — grading instructions for eval runs
 - `scripts/run_eval.py`, `scripts/aggregate_benchmark.py`, `scripts/package_skill.py` — deterministic review helpers
 - Dynamic resources via the provider: `project-stats`, `git-context`
 
 ### `meridian-brainstorm`
 
 **Location:** [`.claude/skills/meridian-brainstorm/`](https://github.com/rodoHasArrived/Meridian/blob/main/.claude/skills/meridian-brainstorm)
+**SKILL.md:** [`.claude/skills/meridian-brainstorm/SKILL.md`](../../../.claude/skills/meridian-brainstorm/SKILL.md)
 **Purpose:** Generate high-value, implementable ideas that extend Meridian coherently.
 **When it triggers:** feature ideation, user-pain brainstorming, architecture brainstorms, or technical-debt ideation.
 **On-demand resources:**
 
-- `references/idea-dimensions.md` — evaluation rubric
-- `references/competitive-landscape.md` — external framing and differentiation context
+- [`references/idea-dimensions.md`](../../../.claude/skills/meridian-brainstorm/references/idea-dimensions.md) — evaluation rubric
+- [`references/competitive-landscape.md`](../../../.claude/skills/meridian-brainstorm/references/competitive-landscape.md) — external framing and differentiation context
 - `brainstorm-history.jsonl` — optional local continuity ledger when the host permits writes
 
 ### `meridian-provider-builder`
 
 **Location:** [`.claude/skills/meridian-provider-builder/`](https://github.com/rodoHasArrived/Meridian/blob/main/.claude/skills/meridian-provider-builder)
+**SKILL.md:** [`.claude/skills/meridian-provider-builder/SKILL.md`](../../../.claude/skills/meridian-provider-builder/SKILL.md)
 **Purpose:** Scaffold Meridian data providers with the right ADR, DI, and resilience patterns.
 **When it triggers:** new exchange/provider work, historical providers, streaming adapters, or symbol search implementations.
 **On-demand resources:**
@@ -122,8 +124,8 @@ static package content.
 **Passing threshold:** rubric score ≥ 8/10 and no category scored 0.
 **On-demand resources and scripts:**
 
-- `references/documentation-routing.md` — docs placement matrix and cross-linking rules
-- `references/evaluation-harness.md` — scenario set (A/B/C), rubric definitions, and pass/fail criteria
+- [`references/documentation-routing.md`](../../../.claude/skills/meridian-implementation-assurance/references/documentation-routing.md) — docs placement matrix and cross-linking rules
+- [`references/evaluation-harness.md`](../../../.claude/skills/meridian-implementation-assurance/references/evaluation-harness.md) — scenario set (A/B/C), rubric definitions, and pass/fail criteria
 - `scripts/doc_route.py` — routes catalog updates to the correct AI/agent index
 - `scripts/score_eval.py` — summarizes assurance scoring with JSON/text output
 - `python3 build/scripts/docs/validate-skill-packages.py` — validates skill packaging and references
@@ -131,6 +133,7 @@ static package content.
 ### `meridian-test-writer`
 
 **Location:** [`.claude/skills/meridian-test-writer/`](https://github.com/rodoHasArrived/Meridian/blob/main/.claude/skills/meridian-test-writer)
+**SKILL.md:** [`.claude/skills/meridian-test-writer/SKILL.md`](../../../.claude/skills/meridian-test-writer/SKILL.md)
 **Purpose:** Produce idiomatic Meridian xUnit tests with the right async, mocking, and cleanup patterns.
 **When it triggers:** new tests, test-gap remediation, or code-review follow-up for missing coverage.
 **On-demand resources:**
