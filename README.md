@@ -281,6 +281,7 @@ Use these documents together when planning or implementing new work:
 │       ├── readme-tree.yml
 │       ├── release.yml
 │       ├── repo-health.yml
+│       ├── reusable-ai-analysis.yml
 │       ├── reusable-dotnet-build.yml
 │       ├── scheduled-maintenance.yml
 │       ├── security.yml
@@ -3307,6 +3308,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-486 directories, 2759 files
+486 directories, 2760 files
 ```
 <!-- readme-tree end -->
