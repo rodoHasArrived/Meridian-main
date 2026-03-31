@@ -11,6 +11,12 @@ public partial class SplitPaneHostControl : UserControl
 {
     private readonly List<Frame> _paneFrames = new();
 
+    /// <summary>Format string used for drag-and-drop page-tag data objects.</summary>
+    public const string PageTagFormat = "Meridian.PageTag";
+
+    /// <summary>Raised when a page tag is dropped onto a drop zone.</summary>
+    public event EventHandler<PaneDropEventArgs>? PaneDropRequested;
+
     public PaneLayout Layout
     {
         get => (PaneLayout)GetValue(LayoutProperty);
@@ -78,5 +84,42 @@ public partial class SplitPaneHostControl : UserControl
                 ContentGrid.Children.Add(splitter);
             }
         }
+    }
+
+    // ── Drag-and-drop handling ────────────────────────────────────────────────
+
+    private void OnDragOver(object sender, DragEventArgs e)
+    {
+        if (e.Data.GetDataPresent(PageTagFormat))
+        {
+            e.Effects = DragDropEffects.Move;
+            DropOverlay.Visibility = Visibility.Visible;
+            e.Handled = true;
+        }
+        else
+        {
+            e.Effects = DragDropEffects.None;
+        }
+    }
+
+    private void OnDragLeave(object sender, DragEventArgs e)
+    {
+        DropOverlay.Visibility = Visibility.Collapsed;
+    }
+
+    private void OnDrop(object sender, DragEventArgs e)
+    {
+        DropOverlay.Visibility = Visibility.Collapsed;
+
+        if (!e.Data.GetDataPresent(PageTagFormat)) return;
+        var pageTag = e.Data.GetData(PageTagFormat) as string;
+        if (string.IsNullOrEmpty(pageTag)) return;
+
+        // Determine target pane: drop on the left half → pane 0, right half → pane 1
+        var pos = e.GetPosition(this);
+        var targetPane = pos.X > ActualWidth / 2 ? 1 : 0;
+
+        PaneDropRequested?.Invoke(this, new PaneDropEventArgs(pageTag, targetPane));
+        e.Handled = true;
     }
 }
