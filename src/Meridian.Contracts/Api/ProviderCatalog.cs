@@ -694,6 +694,7 @@ public sealed class ProviderCatalogEntry
 /// <param name="DisplayName">The display label for the credential field.</param>
 /// <param name="Required">Whether the credential field is required.</param>
 /// <param name="DefaultValue">The default value to use when none is provided.</param>
+/// <param name="EnvironmentVariableAliases">Additional environment variable aliases that should also be treated as valid for this credential.</param>
 public sealed record CredentialFieldInfo(
     [property: JsonPropertyName("name")] string Name,
     [property: JsonPropertyName("envVar")] string? EnvironmentVariable,
