@@ -220,6 +220,7 @@ performance safety, documentation sync, and traceable evaluation evidence.
 ### Claude Blueprint Agent
 
 **Location:** `.claude/agents/`
+**File:** [`.claude/agents/meridian-blueprint.md`](../../../.claude/agents/meridian-blueprint.md)
 **Used by:** Claude Code
 **Copilot equivalent:** [`.github/agents/blueprint-agent.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/agents/blueprint-agent.md)
 **Skill equivalent:** the Blueprint skill documented under `.claude/skills/`
@@ -233,6 +234,7 @@ and implementation checklists — grounded in Meridian's actual stack.
 ### Claude Cleanup Agent
 
 **Location:** `.claude/agents/`
+**File:** [`.claude/agents/meridian-cleanup.md`](../../../.claude/agents/meridian-cleanup.md)
 **Used by:** Claude Code
 **Copilot equivalent:** [`.github/agents/cleanup-agent.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/agents/cleanup-agent.md)
 
@@ -247,6 +249,7 @@ ADR attribute cleanup, deprecated/obsolete member cleanup, and log hygiene.
 ### Claude Documentation Agent
 
 **Location:** `.claude/agents/`
+**File:** [`.claude/agents/meridian-docs.md`](../../../.claude/agents/meridian-docs.md)
 **Used by:** Claude Code
 **Copilot equivalent:** [`.github/agents/documentation-agent.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/agents/documentation-agent.md)
 
