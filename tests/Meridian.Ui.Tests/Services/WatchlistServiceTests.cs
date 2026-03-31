@@ -339,7 +339,7 @@ public sealed class WatchlistServiceTests : IDisposable
 
     private class CustomWatchlistService : WatchlistService
     {
-        public override Task<WatchlistData> LoadWatchlistAsync()
+        public override Task<WatchlistData> LoadWatchlistAsync(CancellationToken ct = default)
         {
             return Task.FromResult(new WatchlistData
             {
