@@ -2856,6 +2856,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── TestPriceSeriesBuilder.cs
 │   │   ├── Meridian.QuantScript.Tests.csproj
 │   │   ├── PlotQueueTests.cs
+│   │   ├── PortfolioBuilderTests.cs
 │   │   ├── PriceSeriesTests.cs
 │   │   ├── RoslynScriptCompilerTests.cs
 │   │   ├── ScriptRunnerTests.cs
@@ -3171,7 +3172,10 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── WriteAheadLogTests.cs
 │   │   ├── Strategies
 │   │   │   ├── CashFlowProjectionTests.cs
+│   │   │   ├── LedgerReadServiceTests.cs
+│   │   │   ├── PortfolioReadServiceTests.cs
 │   │   │   ├── PromotionServiceTests.cs
+│   │   │   ├── ReconciliationProjectionServiceTests.cs
 │   │   │   ├── StrategyLifecycleManagerTests.cs
 │   │   │   ├── StrategyRunDrillInTests.cs
 │   │   │   └── StrategyRunReadServiceTests.cs
@@ -3303,6 +3307,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-486 directories, 2755 files
+486 directories, 2759 files
 ```
 <!-- readme-tree end -->
