@@ -1,7 +1,6 @@
 # Meridian - Improvement Tracking
 
-**Version:** 1.7.0
-**Last Updated:** 2026-03-21
+**Last Updated:** 2026-03-31
 **Status:** Active tracking document
 
 This document consolidates **functional improvements** (features, reliability, UX) and **structural improvements** (architecture, modularity, code quality) into a single source of truth for tracking. For phased execution timeline, see [`ROADMAP.md`](ROADMAP.md).

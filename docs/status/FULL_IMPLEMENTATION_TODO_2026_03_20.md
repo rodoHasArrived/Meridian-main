@@ -1,6 +1,6 @@
 # Full Implementation Backlog (Non-Assembly Scope)
 
-**Last Updated:** 2026-03-25
+**Last Updated:** 2026-03-31
 **Status:** Active normalized backlog
 **Purpose:** Single current backlog for finishing the remaining planned non-assembly work
 
@@ -172,17 +172,18 @@ Primary anchors:
 - `src/Meridian.Contracts/SecurityMaster/`
 - `src/Meridian.Storage/SecurityMaster/`
 
-### Track G: QuantScript
+### Track G: QuantScript *(implemented)*
 
 Goal: ship the QuantScript capability as a real project, not only a blueprint.
 
-Open work:
+**Status: Closed.** The QuantScript project has been fully implemented:
 
-- add the project and test project
-- implement the compiler/runner pipeline
-- add execution context, parameter discovery, and plotting/output handling
-- add a web dashboard or CLI entry surface
-- add samples, tests, and operating docs
+- `src/Meridian.QuantScript/` — Roslyn scripting API, `PriceSeries`/`ReturnSeries` domain types, `StatisticsEngine`, `BacktestProxy`, `QuantDataContext`, `PlotQueue`
+- `src/Meridian.Wpf/Views/QuantScriptPage.xaml` + `QuantScriptViewModel` — AvalonEdit editor, three-column layout, Console/Charts/Metrics/Trades/Diagnostics result tabs, ScottPlot charting
+- `tests/Meridian.QuantScript.Tests/` — compiler, runner, statistics engine, plot queue, portfolio builder tests
+- `scripts/example-sharpe.csx` — sample script
+
+Remaining optional work: deeper workflow integration and expanded sample script library.
 
 Reference:
 
@@ -265,7 +266,7 @@ References:
 ### Optional Wave
 
 - Track F: Governance and Security Master productization
-- Track G: QuantScript
+- Track G: QuantScript *(implemented — deeper workflow integration and sample scripts remain)*
 - Track H: L3 inference/simulation foundation
 - Track I: Multi-instance coordination
 - Track J: Remaining structural/documentation closure
