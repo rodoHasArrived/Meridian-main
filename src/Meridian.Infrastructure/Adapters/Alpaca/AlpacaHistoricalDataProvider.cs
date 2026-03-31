@@ -42,7 +42,7 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
     private readonly string _feed;
     private readonly string _adjustment;
     private readonly int _priority;
-    private readonly int _maxRequestsPerWindow;
+    private readonly int _maxRequestsPerWindow = 200; // default; overridden by constructor parameter
 
     #region Abstract Property Implementations
 
