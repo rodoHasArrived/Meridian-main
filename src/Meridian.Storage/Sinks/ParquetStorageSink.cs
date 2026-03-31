@@ -276,7 +276,7 @@ public sealed class ParquetStorageSink : IStorageSink
             await rowGroupWriter.WriteColumnAsync(new DataColumn(TradeSchema.DataFields[5], sequences));
             await rowGroupWriter.WriteColumnAsync(new DataColumn(TradeSchema.DataFields[6], venues));
             await rowGroupWriter.WriteColumnAsync(new DataColumn(TradeSchema.DataFields[7], sources));
-        });
+        }, ct);
     }
 
     private async Task WriteQuotesAsync(string path, IReadOnlyList<MarketEvent> events, CancellationToken ct)
@@ -333,7 +333,7 @@ public sealed class ParquetStorageSink : IStorageSink
             await rowGroupWriter.WriteColumnAsync(new DataColumn(QuoteSchema.DataFields[6], spreads));
             await rowGroupWriter.WriteColumnAsync(new DataColumn(QuoteSchema.DataFields[7], sequences));
             await rowGroupWriter.WriteColumnAsync(new DataColumn(QuoteSchema.DataFields[8], sources));
-        });
+        }, ct);
     }
 
     private async Task WriteL2SnapshotsAsync(string path, IReadOnlyList<MarketEvent> events, CancellationToken ct)
@@ -392,7 +392,7 @@ public sealed class ParquetStorageSink : IStorageSink
             await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[8], sources));
             await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[9], bidsJson));
             await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[10], asksJson));
-        });
+        }, ct);
     }
 
     private static (LOBSnapshot? Snapshot, long SequenceNumber) ExtractL2Data(MarketEvent evt) => evt.Payload switch
@@ -463,7 +463,7 @@ public sealed class ParquetStorageSink : IStorageSink
             await rowGroupWriter.WriteColumnAsync(new DataColumn(BarSchema.DataFields[6], volumes));
             await rowGroupWriter.WriteColumnAsync(new DataColumn(BarSchema.DataFields[7], sequences));
             await rowGroupWriter.WriteColumnAsync(new DataColumn(BarSchema.DataFields[8], sources));
-        });
+        }, ct);
     }
 
     private async Task WriteGenericEventsAsync(string path, IReadOnlyList<MarketEvent> events, CancellationToken ct)
@@ -508,15 +508,16 @@ public sealed class ParquetStorageSink : IStorageSink
             await rowGroupWriter.WriteColumnAsync(new DataColumn(genericSchema.DataFields[3], payloads));
             await rowGroupWriter.WriteColumnAsync(new DataColumn(genericSchema.DataFields[4], sequences));
             await rowGroupWriter.WriteColumnAsync(new DataColumn(genericSchema.DataFields[5], sources));
-        });
+        }, ct);
     }
 
     /// <summary>
     /// Writes Parquet data atomically using a temp-file-then-rename strategy.
     /// Prevents partially written files from appearing at the destination on crash or I/O error.
     /// </summary>
-    private static async Task WriteAtomicallyAsync(string path, Func<Stream, Task> writeAsync)
+    private static async Task WriteAtomicallyAsync(string path, Func<Stream, Task> writeAsync, CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
         var tempPath = GetAtomicTempPath(path);
         try
         {
@@ -530,6 +531,7 @@ public sealed class ParquetStorageSink : IStorageSink
                     FileOptions.Asynchronous);
                 await writeAsync(tempStream);
             }
+            ct.ThrowIfCancellationRequested();
             File.Move(tempPath, path, overwrite: true);
         }
         catch
