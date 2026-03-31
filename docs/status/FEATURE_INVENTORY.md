@@ -1,7 +1,7 @@
 # Meridian — Feature Inventory
 
 **Version:** 1.7.2
-**Date:** 2026-03-24
+**Date:** 2026-03-31
 **Purpose:** Comprehensive inventory of every functional area, its current implementation status, and the remaining work required to reach full implementation.
 
 Use this document alongside [`ROADMAP.md`](ROADMAP.md) (delivery waves and sequencing), [`IMPROVEMENTS.md`](IMPROVEMENTS.md) (normalized improvement/backlog tracking), and [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md) (consolidated non-assembly execution backlog).
@@ -433,14 +433,15 @@ This migration is tracked in [`../plans/trading-workstation-migration-blueprint.
 
 | Test Project | Test Files | Methods | Focus |
 |---|---|---|---|
-| `Meridian.Tests` | 229 | ~3,100 | Core: backfill, storage, pipeline, monitoring, providers, credentials, serialization, domain, integration endpoints, execution |
-| `Meridian.FSharp.Tests` | 9 | ~120 | F# domain validation, calculations, transforms, trading transitions, ledger, risk, direct lending interop |
-| `Meridian.Ui.Tests` | 54 | ~900 | UI services (API client, backfill, fixtures, forms, health, watchlist) |
-| `Meridian.Wpf.Tests` | 27 | ~350 | WPF desktop services (navigation, config, status, connection) |
-| `Meridian.Backtesting.Tests` | 8 | ~90 | Backtest engine, fill models, portfolio simulation, XIRR |
-| `Meridian.DirectLending.Tests` | 5 | ~50 | Direct lending services, workflows, PostgreSQL integration |
-| `Meridian.McpServer.Tests` | 3 | ~30 | MCP server tools (backfill, storage) |
-| **Total** | **335** | **~4,424** | |
+| `Meridian.Tests` | 266 | ~3,595 | Core: backfill, storage, pipeline, monitoring, providers, credentials, serialization, domain, integration endpoints, execution |
+| `Meridian.FSharp.Tests` | 10 | ~174 | F# domain validation, calculations, transforms, trading transitions, ledger, risk, direct lending interop |
+| `Meridian.Ui.Tests` | 55 | ~948 | UI services (API client, backfill, fixtures, forms, health, watchlist) |
+| `Meridian.Wpf.Tests` | 35 | ~391 | WPF desktop services (navigation, config, status, connection, ViewModels) |
+| `Meridian.Backtesting.Tests` | 14 | ~146 | Backtest engine, fill models, portfolio simulation, XIRR |
+| `Meridian.DirectLending.Tests` | 7 | ~29 | Direct lending services, workflows, PostgreSQL integration |
+| `Meridian.McpServer.Tests` | 3 | ~11 | MCP server tools (backfill, storage) |
+| `Meridian.QuantScript.Tests` | 10 | ~76 | Script compiler, runner, statistics engine, plot queue, portfolio builder |
+| **Total** | **400** | **~5,370** | |
 
 ### Key test infrastructure
 

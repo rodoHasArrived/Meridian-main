@@ -1,8 +1,8 @@
 # Meridian — Now / Next / Later Roadmap
 
-**Generated:** 2026-03-26
+**Generated:** 2026-03-31
 **Format:** Now / Next / Later
-**Basis:** Wave 1–5 roadmap + FEATURE_INVENTORY.md + codebase audit
+**Basis:** Wave 1–5 roadmap + FEATURE_INVENTORY.md + codebase audit (2026-03-31)
 **Change from prior roadmap:** Adds Security Master productization as a **Next** initiative; reorganises delivery waves into horizon buckets; retains all existing wave goals; marks the WPF workstation as an active Windows delivery track again as of March 26, 2026.
 
 ---
@@ -148,7 +148,7 @@ The brokerage gateway framework (`IBrokerageGateway`, `BaseBrokerageGateway`) an
 
 Depth multipliers that require a stable platform foundation to deliver value. None of these are prerequisites for core operator value.
 
-- QuantScript runtime and editor
+- QuantScript runtime and editor *(project, WPF surface, and tests are implemented — `src/Meridian.QuantScript/`, `QuantScriptPage.xaml`, `tests/Meridian.QuantScript.Tests/`; deeper workflow integration and sample script library remain)*
 - L3 inference and queue-aware execution simulation
 - Multi-instance collector coordination and horizontal scale-out
 - Phase 16 assembly-level performance optimizations
