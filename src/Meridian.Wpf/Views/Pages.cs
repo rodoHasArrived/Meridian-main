@@ -64,11 +64,12 @@ public partial class MessagingHubPage : Page { }
 // Backtesting pages
 public partial class BacktestPage : Page { }
 
-// Strategy Run workstation pages (browser, detail drill-ins, portfolio, ledger)
+// Strategy Run workstation pages (browser, detail drill-ins, portfolio, ledger, cash flow)
 public partial class StrategyRunsPage : Page { }
 public partial class RunDetailPage : Page { }
 public partial class RunPortfolioPage : Page { }
 public partial class RunLedgerPage : Page { }
+public partial class RunCashFlowPage : Page { }
 
 // Security Master workstation page
 public partial class SecurityMasterPage : Page { }

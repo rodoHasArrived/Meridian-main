@@ -88,6 +88,7 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         RegisterPage("RunDetail", typeof(RunDetailPage));
         RegisterPage("RunPortfolio", typeof(RunPortfolioPage));
         RegisterPage("RunLedger", typeof(RunLedgerPage));
+        RegisterPage("RunCashFlow", typeof(RunCashFlowPage));
 
         // Monitoring (6 pages)
         RegisterPage("DataQuality", typeof(DataQualityPage));
