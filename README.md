@@ -2625,6 +2625,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── NotificationCenterViewModel.cs
 │       │   ├── OrderBookHeatmapViewModel.cs
 │       │   ├── OrderBookViewModel.cs
+│       │   ├── PackageManagerViewModel.cs
 │       │   ├── PluginManagementViewModel.cs
 │       │   ├── ProviderHealthViewModel.cs
 │       │   ├── ProviderPageModels.cs
@@ -2639,12 +2640,16 @@ Use these documents together when planning or implementing new work:
 │       │   ├── ServiceManagerViewModel.cs
 │       │   ├── SplitPaneViewModel.cs
 │       │   ├── StatusBarViewModel.cs
+│       │   ├── StorageViewModel.cs
 │       │   ├── StrategyRunBrowserViewModel.cs
 │       │   ├── StrategyRunDetailViewModel.cs
 │       │   ├── StrategyRunLedgerViewModel.cs
 │       │   ├── StrategyRunPortfolioViewModel.cs
 │       │   ├── SymbolsPageViewModel.cs
-│       │   └── TickerStripViewModel.cs
+│       │   ├── SystemHealthViewModel.cs
+│       │   ├── TickerStripViewModel.cs
+│       │   ├── TradingHoursViewModel.cs
+│       │   └── WelcomePageViewModel.cs
 │       └── Views
 │           ├── ActivityLogPage.xaml
 │           ├── ActivityLogPage.xaml.cs
@@ -3308,6 +3313,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-486 directories, 2760 files
+486 directories, 2765 files
 ```
 <!-- readme-tree end -->
