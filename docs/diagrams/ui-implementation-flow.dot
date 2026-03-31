@@ -18,7 +18,7 @@ digraph UiImplementationFlow {
   node [fontname="Segoe UI", shape=box, style="rounded,filled", color="#475569", fontcolor="#e2e8f0", fillcolor="#1e293b"];
   edge [fontname="Segoe UI", color="#94a3b8", penwidth=1.3, arrowsize=0.8];
 
-  generated [shape=note, fillcolor="#1d4ed8", color="#60a5fa", label="Source fingerprint: 382225523881\nTransient pages in App.xaml.cs: 73\nNavigation tags: 61"];
+  generated [shape=note, fillcolor="#1d4ed8", color="#60a5fa", label="Source fingerprint: cf3b05c495d7\nTransient pages in App.xaml.cs: 73\nNavigation tags: 62"];
   app [shape=component, fillcolor="#0f766e", color="#2dd4bf", label="App.xaml.cs\nHost + DI composition"];
   window [shape=component, fillcolor="#2563eb", color="#93c5fd", label="MainWindow.xaml(.cs)\nRoot frame + global shortcuts"];
   page [shape=component, fillcolor="#7c3aed", color="#c4b5fd", label="MainPage.xaml(.cs)\nSidebar shell + command palette"];
@@ -193,10 +193,10 @@ digraph UiImplementationFlow {
   }
 
   subgraph cluster_section_10 {
-    label="Strategy Run workstation pages (browser, detail drill-ins, portfolio, ledger)";
+    label="Strategy Run workstation pages (browser, detail drill-ins, portfolio, ledger, cash flow)";
     color="#334155";
     style="rounded";
-    section_10 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Strategy Run workstation pages (browser, detail drill-ins, portfolio, ledger)\n4 page classes\n4 transient registrations"];
+    section_10 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Strategy Run workstation pages (browser, detail drill-ins, portfolio, ledger, cash flow)\n5 page classes\n4 transient registrations"];
     views -> section_10;
     section_10_StrategyRunsPage [label="Strategy Runs\nStrategyRunsPage\nDI transient", fillcolor="#111827"];
     section_10 -> section_10_StrategyRunsPage;
@@ -206,6 +206,8 @@ digraph UiImplementationFlow {
     section_10 -> section_10_RunPortfolioPage;
     section_10_RunLedgerPage [label="Run Ledger\nRunLedgerPage\nDI transient", fillcolor="#111827"];
     section_10 -> section_10_RunLedgerPage;
+    section_10_RunCashFlowPage [label="Run Cash Flow\nRunCashFlowPage\nNot in App DI", fillcolor="#111827"];
+    section_10 -> section_10_RunCashFlowPage;
   }
 
   subgraph cluster_section_11 {
