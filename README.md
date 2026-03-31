@@ -1156,7 +1156,20 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── SecurityMasterStartup.cs
 │   │   │   ├── ServiceCompositionRoot.cs
 │   │   │   └── Startup
-│   │   │       └── SharedStartupBootstrapper.cs
+│   │   │       ├── ModeRunners
+│   │   │       │   ├── BackfillModeRunner.cs
+│   │   │       │   ├── CollectorModeRunner.cs
+│   │   │       │   ├── CommandModeRunner.cs
+│   │   │       │   ├── DesktopModeRunner.cs
+│   │   │       │   └── WebModeRunner.cs
+│   │   │       ├── SharedStartupBootstrapper.cs
+│   │   │       ├── StartupModels
+│   │   │       │   ├── HostMode.cs
+│   │   │       │   ├── StartupContext.cs
+│   │   │       │   ├── StartupPlan.cs
+│   │   │       │   ├── StartupRequest.cs
+│   │   │       │   └── StartupValidationResult.cs
+│   │   │       └── StartupOrchestrator.cs
 │   │   ├── Config
 │   │   │   ├── AppConfigJsonOptions.cs
 │   │   │   ├── ConfigDtoMapper.cs
@@ -3290,6 +3303,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-484 directories, 2744 files
+486 directories, 2755 files
 ```
 <!-- readme-tree end -->
