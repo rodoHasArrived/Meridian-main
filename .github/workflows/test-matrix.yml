@@ -187,6 +187,17 @@ jobs:
           path: ./TestResults/
           retention-days: 5
 
+      - name: Upload coverage to Codecov
+        if: success()
+        continue-on-error: true
+        uses: codecov/codecov-action@v6.0.0
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./TestResults/**/coverage.cobertura.xml
+          flags: unittests,${{ matrix.os_name }}
+          name: codecov-${{ matrix.os_name }}
+          fail_ci_if_error: false
+
   test-summary:
     name: Test Summary
     runs-on: ubuntu-latest
@@ -201,6 +212,22 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Platform | Status |" >> $GITHUB_STEP_SUMMARY
           echo "|----------|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Linux | ${{ needs.test-ubuntu.result == 'success' && 'Passed' || (needs.test-ubuntu.result == 'skipped' && 'Skipped' || 'Failed') }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Windows | ${{ needs.test-other-platforms.result == 'success' && 'Passed' || (needs.test-other-platforms.result == 'skipped' && 'Skipped (PR)' || 'Failed') }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| macOS | ${{ needs.test-other-platforms.result == 'success' && 'Passed' || (needs.test-other-platforms.result == 'skipped' && 'Skipped (PR)' || 'Failed') }} |" >> $GITHUB_STEP_SUMMARY
+
+          # Linux always runs and has a single definitive result
+          LINUX_STATUS="${{ needs.test-ubuntu.result }}"
+          case "$LINUX_STATUS" in
+            success) LINUX_LABEL="✅ Passed" ;;
+            skipped) LINUX_LABEL="⏭️ Skipped" ;;
+            *) LINUX_LABEL="❌ Failed" ;;
+          esac
+          echo "| Linux | $LINUX_LABEL |" >> $GITHUB_STEP_SUMMARY
+
+          # Windows and macOS share a matrix result; on PRs they are skipped
+          OTHER_STATUS="${{ needs.test-other-platforms.result }}"
+          case "$OTHER_STATUS" in
+            success) WIN_LABEL="✅ Passed"; MAC_LABEL="✅ Passed" ;;
+            skipped) WIN_LABEL="⏭️ Skipped (PR)"; MAC_LABEL="⏭️ Skipped (PR)" ;;
+            *) WIN_LABEL="❌ Failed"; MAC_LABEL="❌ Failed" ;;
+          esac
+          echo "| Windows | $WIN_LABEL |" >> $GITHUB_STEP_SUMMARY
+          echo "| macOS | $MAC_LABEL |" >> $GITHUB_STEP_SUMMARY

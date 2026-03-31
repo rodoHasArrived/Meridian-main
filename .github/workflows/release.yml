@@ -12,16 +12,41 @@ on:
         required: false
         type: boolean
         default: false
+      skip-tests:
+        description: 'Skip pre-release test gate (use only for hotfix re-tags)'
+        required: false
+        type: boolean
+        default: false
 
 concurrency:
   group: ${{ github.workflow }}
   cancel-in-progress: false
 
 jobs:
+  # ─── Pre-release gate: build + test ────────────────────────────────────
+  pre-release-gate:
+    name: Pre-release Build & Test Gate
+    uses: ./.github/workflows/reusable-dotnet-build.yml
+    if: ${{ !inputs.skip-tests }}
+    permissions:
+      contents: read
+    with:
+      run-tests: true
+      run-fsharp-tests: true
+      collect-coverage: false
+      cache-suffix: release
+      test-results-prefix: release-gate
+    secrets: inherit
+
   create-release:
     name: Create Release
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    needs: [pre-release-gate]
+    # Run if gate succeeded OR if gate was skipped (skip-tests: true bypasses the pre-release-gate job).
+    # The 'skipped' result is intentional: when skip-tests=true the gate job is never created,
+    # so GitHub marks it as skipped rather than success.
+    if: always() && (needs.pre-release-gate.result == 'success' || needs.pre-release-gate.result == 'skipped')
     permissions:
       contents: write
     
@@ -110,13 +135,13 @@ jobs:
             prerelease: ${{ github.event.inputs.prerelease }},
           });
 
-    - name: Trigger build workflow
+    - name: Trigger desktop build workflow
       uses: actions/github-script@v8
       with:
         script: |
           await github.rest.actions.createWorkflowDispatch({
             owner: context.repo.owner,
             repo: context.repo.repo,
-            workflow_id: 'dotnet-desktop.yml',
+            workflow_id: 'desktop-builds.yml',
             ref: '${{ github.event.inputs.version }}',
           });
