@@ -1635,6 +1635,7 @@ Meridian-main
 │   │   │   │   ├── AlpacaConstants.cs
 │   │   │   │   ├── AlpacaHistoricalDataProvider.cs
 │   │   │   │   ├── AlpacaMarketDataClient.cs
+│   │   │   │   ├── AlpacaProviderModule.cs
 │   │   │   │   └── AlpacaSymbolSearchProviderRefactored.cs
 │   │   │   ├── AlphaVantage
 │   │   │   │   └── AlphaVantageHistoricalDataProvider.cs
@@ -1660,6 +1661,7 @@ Meridian-main
 │   │   │   │   ├── CompositeHistoricalDataProvider.cs
 │   │   │   │   ├── IHistoricalDataProvider.cs
 │   │   │   │   ├── ISymbolSearchProvider.cs
+│   │   │   │   ├── ProviderBehaviorBuilder.cs
 │   │   │   │   ├── ProviderFactory.cs
 │   │   │   │   ├── ProviderRegistry.cs
 │   │   │   │   ├── ProviderServiceExtensions.cs
@@ -1881,6 +1883,7 @@ Meridian-main
 │   │   ├── IRealtimeDataSource.cs
 │   │   ├── Meridian.ProviderSdk.csproj
 │   │   ├── ProviderHttpUtilities.cs
+│   │   ├── ProviderModuleLoader.cs
 │   │   └── RequiresCredentialAttribute.cs
 │   ├── Meridian.QuantScript
 │   │   ├── Api
@@ -2871,6 +2874,7 @@ Meridian-main
 │   │   │   │   ├── PolygonMessageParsingTests.cs
 │   │   │   │   ├── PolygonRecordedSessionReplayTests.cs
 │   │   │   │   ├── PolygonSubscriptionTests.cs
+│   │   │   │   ├── ProviderBehaviorBuilderTests.cs
 │   │   │   │   ├── ProviderResilienceTests.cs
 │   │   │   │   ├── RobinhoodHistoricalDataProviderTests.cs
 │   │   │   │   ├── RobinhoodSymbolSearchProviderTests.cs
@@ -2929,7 +2933,8 @@ Meridian-main
 │   │   │   ├── CredentialValidatorTests.cs
 │   │   │   ├── DataSourceAttributeTests.cs
 │   │   │   ├── DataSourceRegistryTests.cs
-│   │   │   └── ExceptionTypeTests.cs
+│   │   │   ├── ExceptionTypeTests.cs
+│   │   │   └── ProviderModuleLoaderTests.cs
 │   │   ├── Risk
 │   │   │   └── CompositeRiskValidatorTests.cs
 │   │   ├── SecurityMaster
