@@ -2411,6 +2411,7 @@ Meridian-main
 │       │   ├── BacktestViewModel.cs
 │       │   ├── BatchBacktestViewModel.cs
 │       │   ├── BindableBase.cs
+│       │   ├── CashFlowViewModel.cs
 │       │   ├── ChartingPageViewModel.cs
 │       │   ├── ClusterStatusViewModel.cs
 │       │   ├── CredentialManagementViewModel.cs
@@ -2551,6 +2552,8 @@ Meridian-main
 │       │   ├── ResearchWorkspaceShellPage.xaml.cs
 │       │   ├── RetentionAssurancePage.xaml
 │       │   ├── RetentionAssurancePage.xaml.cs
+│       │   ├── RunCashFlowPage.xaml
+│       │   ├── RunCashFlowPage.xaml.cs
 │       │   ├── RunDetailPage.xaml
 │       │   ├── RunDetailPage.xaml.cs
 │       │   ├── RunLedgerPage.xaml
@@ -3086,6 +3089,7 @@ Meridian-main
 │   │   │   ├── RunMatUiAutomationFacade.cs
 │   │   │   └── WpfTestThread.cs
 │   │   ├── ViewModels
+│   │   │   ├── CashFlowViewModelTests.cs
 │   │   │   ├── DataQualityViewModelCharacterizationTests.cs
 │   │   │   ├── QuantScriptViewModelTests.cs
 │   │   │   ├── RunMatViewModelTests.cs
