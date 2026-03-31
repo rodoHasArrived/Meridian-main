@@ -790,7 +790,6 @@ public sealed class BackfillService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[BackfillService] Backend poll failed: {ex.Message}");
             return null;
         }
     }

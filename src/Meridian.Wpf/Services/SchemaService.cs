@@ -88,7 +88,6 @@ public sealed class SchemaService : Meridian.Ui.Services.SchemaServiceBase
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Failed to load data dictionary: {ex.Message}");
             }
         }
 

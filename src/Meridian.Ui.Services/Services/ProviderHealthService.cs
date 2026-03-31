@@ -70,7 +70,6 @@ public sealed class ProviderHealthService : IDisposable
         catch (Exception ex)
         {
             // Log error but don't crash - timer callbacks must handle their own exceptions
-            System.Diagnostics.Debug.WriteLine($"Error refreshing health data: {ex.Message}");
         }
     }
 

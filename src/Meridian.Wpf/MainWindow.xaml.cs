@@ -872,7 +872,6 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[MainWindow] Failed to restore workspace session: {ex.Message}");
         }
     }
 
@@ -912,7 +911,6 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[MainWindow] Failed to save workspace session: {ex.Message}");
         }
     }
 
@@ -950,7 +948,6 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[MainWindow] Failed to save window state: {ex.Message}");
         }
     }
 
@@ -996,7 +993,6 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[MainWindow] Failed to restore window state: {ex.Message}");
         }
     }
 
@@ -1177,7 +1173,6 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[MainWindow] Drop routing failed for '{filePath}': {ex.Message}");
         }
     }
 

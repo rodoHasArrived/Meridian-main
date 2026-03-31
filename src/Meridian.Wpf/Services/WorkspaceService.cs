@@ -116,7 +116,6 @@ public sealed class WorkspaceService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[WorkspaceService] Error loading workspaces: {ex.Message}");
         }
     }
 
@@ -136,7 +135,6 @@ public sealed class WorkspaceService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[WorkspaceService] Error saving workspaces: {ex.Message}");
         }
     }
 
@@ -248,7 +246,6 @@ public sealed class WorkspaceService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[WorkspaceService] Error saving session state: {ex.Message}");
         }
     }
 
@@ -319,7 +316,6 @@ public sealed class WorkspaceService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[WorkspaceService] Error importing workspace: {ex.Message}");
         }
         return null;
     }

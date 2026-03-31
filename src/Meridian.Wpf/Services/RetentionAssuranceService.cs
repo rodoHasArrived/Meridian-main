@@ -99,7 +99,6 @@ public sealed class RetentionAssuranceService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[RetentionAssuranceService] Error loading config: {ex.Message}");
         }
     }
 
@@ -124,7 +123,6 @@ public sealed class RetentionAssuranceService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[RetentionAssuranceService] Error saving config: {ex.Message}");
         }
     }
 
@@ -332,7 +330,6 @@ public sealed class RetentionAssuranceService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[RetentionAssuranceService] API dry run failed: {ex.Message}");
             return null; // Fall back to local scanning
         }
     }
@@ -358,7 +355,6 @@ public sealed class RetentionAssuranceService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[RetentionAssuranceService] Health check failed: {ex.Message}");
             return null;
         }
     }
@@ -377,7 +373,6 @@ public sealed class RetentionAssuranceService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[RetentionAssuranceService] Find orphans failed: {ex.Message}");
             return null;
         }
     }
@@ -695,7 +690,6 @@ public sealed class RetentionAssuranceService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[RetentionAssuranceService] Error saving audit report: {ex.Message}");
         }
     }
 

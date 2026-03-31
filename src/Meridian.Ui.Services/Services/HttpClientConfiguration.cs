@@ -203,8 +203,6 @@ public static class HttpClientConfiguration
                 sleepDurationProvider: retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
                 onRetry: (outcome, timespan, retryAttempt, _) =>
                 {
-                    System.Diagnostics.Debug.WriteLine(
-                        $"[HttpClient] Retry {retryAttempt} after {timespan.TotalSeconds}s due to {outcome.Exception?.Message ?? outcome.Result?.StatusCode.ToString()}");
                 });
     }
 

@@ -203,7 +203,6 @@ public sealed class BatchExportSchedulerService : IAsyncDisposable
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Export scheduler error: {ex.Message}");
                 _workerSemaphore.Release();
             }
         }

@@ -218,7 +218,6 @@ public sealed class CredentialService : IDisposable
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"{LogPrefix} Failed to load credential vault: {ex.Message}");
                 _vault = new();
             }
         }
@@ -237,7 +236,6 @@ public sealed class CredentialService : IDisposable
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"{LogPrefix} Failed to save credential vault: {ex.Message}");
             }
         }
     }
@@ -288,7 +286,6 @@ public sealed class CredentialService : IDisposable
                     return (cred.Username, cred.Password);
                 }
             }
-            Debug.WriteLine($"{LogPrefix} GetCredential - No credential found for resource '{resource}'");
             return null;
         }
         catch (Exception ex)
@@ -444,7 +441,6 @@ public sealed class CredentialService : IDisposable
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"{LogPrefix} Failed to load metadata: {ex.Message}");
             lock (_metadataLock)
             {
                 _metadataCache = new Dictionary<string, CredentialMetadata>();
@@ -467,7 +463,6 @@ public sealed class CredentialService : IDisposable
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"{LogPrefix} Failed to save metadata: {ex.Message}");
         }
     }
 
@@ -884,7 +879,6 @@ public sealed class CredentialService : IDisposable
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"OAuth refresh failed for {resource}: {ex.Message}");
             await UpdateMetadataAsync(resource, m => m.RefreshFailureCount++);
             return false;
         }
@@ -925,12 +919,10 @@ public sealed class CredentialService : IDisposable
         var timestamp = DateTime.UtcNow.ToString("o");
         if (success)
         {
-            Debug.WriteLine($"[{timestamp}] CredentialService: {operation} succeeded for resource '{resource}'");
         }
         else
         {
             var detailInfo = !string.IsNullOrEmpty(details) ? $", Details={details}" : "";
-            Debug.WriteLine($"[{timestamp}] CredentialService: {operation} FAILED for resource '{resource}' ({detailInfo})");
         }
     }
 

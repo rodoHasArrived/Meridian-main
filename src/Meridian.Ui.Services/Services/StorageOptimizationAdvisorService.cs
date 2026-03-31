@@ -1087,7 +1087,6 @@ public sealed class StorageOptimizationAdvisorService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[StorageOptimization] Warm tier migration API failed: {ex.Message}");
             return null;
         }
     }
@@ -1183,7 +1182,6 @@ public sealed class StorageOptimizationAdvisorService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[StorageOptimization] Tier migration API failed: {ex.Message}");
             return null;
         }
     }
@@ -1202,7 +1200,6 @@ public sealed class StorageOptimizationAdvisorService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[StorageOptimization] Tier statistics API failed: {ex.Message}");
             return null;
         }
     }
@@ -1231,7 +1228,6 @@ public sealed class StorageOptimizationAdvisorService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[StorageOptimization] Migration plan API failed: {ex.Message}");
             return null;
         }
     }
@@ -1250,7 +1246,6 @@ public sealed class StorageOptimizationAdvisorService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[StorageOptimization] Defragmentation API failed: {ex.Message}");
             return null;
         }
     }
@@ -1269,7 +1264,6 @@ public sealed class StorageOptimizationAdvisorService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[StorageOptimization] Storage catalog API failed: {ex.Message}");
             return null;
         }
     }

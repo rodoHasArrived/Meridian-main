@@ -194,7 +194,6 @@ public sealed class ManifestService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Failed to load manifest: {ex.Message}");
             return null;
         }
     }

@@ -507,11 +507,9 @@ public partial class App : System.Windows.Application
         try
         {
             await WpfServices.OfflineTrackingPersistenceService.Instance.InitializeAsync();
-            System.Diagnostics.Debug.WriteLine("Offline tracking persistence initialized");
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Failed to initialize offline tracking: {ex.Message}");
             // Continue - app should still work without persistence
         }
     }
@@ -525,15 +523,12 @@ public partial class App : System.Windows.Application
         {
             // Initialize pending operations queue
             await WpfServices.PendingOperationsQueueService.Instance.InitializeAsync();
-            System.Diagnostics.Debug.WriteLine("Pending operations queue initialized");
 
             // Start background task scheduler
             await WpfServices.BackgroundTaskSchedulerService.Instance.StartAsync();
-            System.Diagnostics.Debug.WriteLine("Background task scheduler started");
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Failed to initialize background services: {ex.Message}");
             // Continue - app should still work without background services
         }
     }
@@ -561,7 +556,6 @@ public partial class App : System.Windows.Application
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[App] StartCollectorFromLaunchArg failed: {ex.Message}");
         }
     }
 
@@ -580,12 +574,10 @@ public partial class App : System.Windows.Application
             {
                 // Navigate to the last active page
                 WpfServices.NavigationService.Instance.NavigateTo(session.ActivePageTag);
-                System.Diagnostics.Debug.WriteLine($"[App] Restored session to page: {session.ActivePageTag}");
             }
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[App] Failed to restore workspace session: {ex.Message}");
         }
     }
 
@@ -607,11 +599,9 @@ public partial class App : System.Windows.Application
             };
 
             await workspaceService.SaveSessionStateAsync(session);
-            System.Diagnostics.Debug.WriteLine("[App] Workspace session saved");
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[App] Failed to save workspace session: {ex.Message}");
         }
     }
 
@@ -634,7 +624,6 @@ public partial class App : System.Windows.Application
 
         try
         {
-            System.Diagnostics.Debug.WriteLine("App exiting, shutting down services...");
 
             // Close any floating tear-off quote panels before service shutdown
             WpfServices.TearOffPanelService.Instance.CloseAll();
@@ -657,17 +646,13 @@ public partial class App : System.Windows.Application
 
             // Dispose the NotifyIcon so the system-tray icon is removed cleanly.
             try { WpfServices.ToastNotificationService.Instance.Dispose(); }
-            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[App] Error disposing ToastNotificationService: {ex.Message}"); }
 
-            System.Diagnostics.Debug.WriteLine("Services shut down cleanly");
         }
         catch (OperationCanceledException)
         {
-            System.Diagnostics.Debug.WriteLine("App shutdown timed out - forcing exit");
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[App] Error during app exit: {ex.Message}");
         }
     }
 
@@ -679,15 +664,12 @@ public partial class App : System.Windows.Application
         try
         {
             await shutdownAction().WaitAsync(ct);
-            System.Diagnostics.Debug.WriteLine($"{serviceName} shut down successfully");
         }
         catch (OperationCanceledException)
         {
-            System.Diagnostics.Debug.WriteLine($"{serviceName} shutdown timed out");
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"{serviceName} shutdown failed: {ex.Message}");
         }
     }
 
@@ -702,15 +684,12 @@ public partial class App : System.Windows.Application
             {
                 ct.ThrowIfCancellationRequested();
                 shutdownAction();
-                System.Diagnostics.Debug.WriteLine($"{serviceName} shut down successfully");
             }
             catch (OperationCanceledException)
             {
-                System.Diagnostics.Debug.WriteLine($"{serviceName} shutdown timed out");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"{serviceName} shutdown failed: {ex.Message}");
             }
         }, ct);
     }

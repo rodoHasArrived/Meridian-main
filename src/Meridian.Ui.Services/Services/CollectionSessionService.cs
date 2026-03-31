@@ -49,7 +49,6 @@ public sealed class CollectionSessionService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Failed to load sessions: {ex.Message}");
         }
 
         _sessionsConfig ??= new CollectionSessionsConfig { Sessions = Array.Empty<CollectionSession>() };
@@ -71,7 +70,6 @@ public sealed class CollectionSessionService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Failed to save sessions: {ex.Message}");
         }
     }
 
@@ -230,7 +228,6 @@ public sealed class CollectionSessionService
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Failed to generate manifest: {ex.Message}");
             }
         }
 

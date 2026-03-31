@@ -86,7 +86,6 @@ public sealed class ThemeService : ThemeServiceBase
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Failed to apply theme: {ex.Message}");
             // Fall back to programmatic theming if resource dictionaries aren't available
             ApplyProgrammaticTheme(theme);
         }

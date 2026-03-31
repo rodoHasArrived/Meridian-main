@@ -655,7 +655,6 @@ public sealed class AnalysisExportWizardService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[AnalysisExportWizard] Export failed for {symbol}: {ex.Message}");
         }
 
         return result;
