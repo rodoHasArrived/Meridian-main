@@ -5,6 +5,9 @@
       Loaded="OnPageLoaded"
       Unloaded="OnPageUnloaded"
       AutomationProperties.Name="Messaging Hub">
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </Page.Resources>
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
         <StackPanel MaxWidth="1200">
 
@@ -25,8 +28,8 @@
                         </Border>
                         <TextBlock Text="Messaging Hub" Style="{StaticResource PageTitleStyle}" Margin="12,0,0,0" VerticalAlignment="Center" />
                         <Border x:Name="ConnectionBadge" CornerRadius="999" Padding="8,3" Margin="12,0,0,0"
-                                Background="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center">
-                            <TextBlock x:Name="ConnectionStatusText" Text="Checking..." FontSize="11"
+                                Background="{Binding ConnectionBadgeBackground}" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding ConnectionStatusText}" FontSize="11"
                                        Foreground="White" FontWeight="SemiBold" />
                         </Border>
                     </StackPanel>
@@ -53,28 +56,28 @@
                 </Grid.ColumnDefinitions>
                 <Border Grid.Column="0" Style="{StaticResource CardStyle}">
                     <StackPanel HorizontalAlignment="Center">
-                        <TextBlock x:Name="TotalMessagesText" Text="0" FontSize="32" FontWeight="Bold"
+                        <TextBlock Text="{Binding TotalMessagesText}" FontSize="32" FontWeight="Bold"
                                    Foreground="{StaticResource InfoColorBrush}" HorizontalAlignment="Center" />
                         <TextBlock Text="Total Messages" HorizontalAlignment="Center" Foreground="{StaticResource ConsoleTextMutedBrush}" />
                     </StackPanel>
                 </Border>
                 <Border Grid.Column="2" Style="{StaticResource CardStyle}">
                     <StackPanel HorizontalAlignment="Center">
-                        <TextBlock x:Name="SubscribersText" Text="0" FontSize="32" FontWeight="Bold"
+                        <TextBlock Text="{Binding SubscribersText}" FontSize="32" FontWeight="Bold"
                                    Foreground="{StaticResource SuccessColorBrush}" HorizontalAlignment="Center" />
                         <TextBlock Text="Subscribers" HorizontalAlignment="Center" Foreground="{StaticResource ConsoleTextMutedBrush}" />
                     </StackPanel>
                 </Border>
                 <Border Grid.Column="4" Style="{StaticResource CardStyle}">
                     <StackPanel HorizontalAlignment="Center">
-                        <TextBlock x:Name="FailedMessagesText" Text="0" FontSize="32" FontWeight="Bold"
+                        <TextBlock Text="{Binding FailedMessagesText}" FontSize="32" FontWeight="Bold"
                                    Foreground="{StaticResource WarningColorBrush}" HorizontalAlignment="Center" />
                         <TextBlock Text="Failed" HorizontalAlignment="Center" Foreground="{StaticResource ConsoleTextMutedBrush}" />
                     </StackPanel>
                 </Border>
                 <Border Grid.Column="6" Style="{StaticResource CardStyle}">
                     <StackPanel HorizontalAlignment="Center">
-                        <TextBlock x:Name="MessageRateText" Text="0/s" FontSize="32" FontWeight="Bold"
+                        <TextBlock Text="{Binding MessageRateText}" FontSize="32" FontWeight="Bold"
                                    Foreground="{StaticResource InfoColorBrush}" HorizontalAlignment="Center" />
                         <TextBlock Text="Rate" HorizontalAlignment="Center" Foreground="{StaticResource ConsoleTextMutedBrush}" />
                     </StackPanel>
@@ -89,7 +92,7 @@
                                    FontSize="16" Foreground="{StaticResource InfoColorBrush}" VerticalAlignment="Center" Margin="0,0,8,0" />
                         <TextBlock Text="Registered Message Types" Style="{StaticResource CardHeaderStyle}" />
                     </StackPanel>
-                    <ListView x:Name="MessageTypesList" SelectionMode="Single" MaxHeight="200"
+                    <ListView ItemsSource="{Binding MessageTypes}" SelectionMode="Single" MaxHeight="200"
                               Background="Transparent" BorderThickness="0">
                         <ListView.ItemContainerStyle>
                             <Style TargetType="ListViewItem">
@@ -140,7 +143,7 @@
                         <Button Grid.Column="1" x:Name="ClearActivityButton" Click="ClearActivity_Click"
                                 Style="{StaticResource GhostButtonStyle}" Content="Clear" />
                     </Grid>
-                    <ListView x:Name="ActivityList" SelectionMode="Single" MaxHeight="300"
+                    <ListView ItemsSource="{Binding ActivityItems}" SelectionMode="Single" MaxHeight="300"
                               Background="Transparent" BorderThickness="0">
                         <ListView.ItemContainerStyle>
                             <Style TargetType="ListViewItem">
@@ -174,7 +177,7 @@
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>
-                    <StackPanel x:Name="NoActivityPanel" Visibility="Collapsed" Margin="0,12,0,0">
+                    <StackPanel Visibility="{Binding NoActivityVisible, Converter={StaticResource BoolToVisibilityConverter}}" Margin="0,12,0,0">
                         <TextBlock Text="No recent messaging activity" FontSize="13"
                                    Foreground="{StaticResource ConsoleTextMutedBrush}" HorizontalAlignment="Center" />
                     </StackPanel>
