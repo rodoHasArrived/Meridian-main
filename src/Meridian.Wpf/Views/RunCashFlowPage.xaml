@@ -1,0 +1,131 @@
+<Page x:Class="Meridian.Wpf.Views.RunCashFlowPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Background="{DynamicResource ShellWindowBackgroundBrush}"
+      AutomationProperties.Name="Run Cash Flow">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="28,20,28,32" MaxWidth="1200">
+
+            <!-- Header -->
+            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,20">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <StackPanel Orientation="Horizontal">
+                            <Border Width="44" Height="44" CornerRadius="14"
+                                    Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                                    BorderBrush="{StaticResource InfoColorBrush}" BorderThickness="1" Margin="0,0,12,0">
+                                <TextBlock Text="&#xE8F1;" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                           FontSize="24" Foreground="{StaticResource InfoColorBrush}"
+                                           VerticalAlignment="Center" HorizontalAlignment="Center" />
+                            </Border>
+                            <StackPanel>
+                                <TextBlock Text="{Binding Title}" Style="{StaticResource PageTitleStyle}" />
+                                <TextBlock Text="{Binding StatusText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" />
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Button Content="Run Browser" Command="{Binding OpenBrowserCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,0" />
+                        <Button Content="Run Detail" Command="{Binding OpenRunDetailCommand}" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0" />
+                        <Button Content="Portfolio" Command="{Binding OpenPortfolioCommand}" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0" />
+                        <Button Content="Ledger" Command="{Binding OpenLedgerCommand}" Style="{StaticResource PrimaryButtonStyle}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Summary metric cards -->
+            <UniformGrid Columns="5" Margin="0,0,0,20">
+                <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                    <StackPanel>
+                        <TextBlock Text="As Of" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                        <TextBlock Text="{Binding AsOfText}" Style="{StaticResource CardHeaderStyle}" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                    <StackPanel>
+                        <TextBlock Text="Events" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                        <TextBlock Text="{Binding TotalEntriesText}" Style="{StaticResource CardHeaderStyle}" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                    <StackPanel>
+                        <TextBlock Text="Total Inflows" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                        <TextBlock Text="{Binding TotalInflowsText}" Style="{StaticResource CardHeaderStyle}" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                    <StackPanel>
+                        <TextBlock Text="Total Outflows" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                        <TextBlock Text="{Binding TotalOutflowsText}" Style="{StaticResource CardHeaderStyle}" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="Net Cash Flow" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                        <TextBlock Text="{Binding NetCashFlowText}" Style="{StaticResource CardHeaderStyle}" />
+                    </StackPanel>
+                </Border>
+            </UniformGrid>
+
+            <!-- Cash Ladder -->
+            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,20">
+                <StackPanel>
+                    <Grid Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Cash Ladder" Style="{StaticResource CardHeaderStyle}" />
+                        <TextBlock Grid.Column="1" Text="{Binding BucketSummaryText}"
+                                   FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   VerticalAlignment="Center" />
+                    </Grid>
+                    <DataGrid ItemsSource="{Binding LadderBuckets}"
+                              AutoGenerateColumns="False"
+                              IsReadOnly="True"
+                              HeadersVisibility="Column"
+                              BorderThickness="0"
+                              Background="{StaticResource ConsoleBackgroundLightBrush}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Bucket Start" Binding="{Binding BucketStart, StringFormat={}{0:yyyy-MM-dd}}" Width="120" />
+                            <DataGridTextColumn Header="Bucket End" Binding="{Binding BucketEnd, StringFormat={}{0:yyyy-MM-dd}}" Width="120" />
+                            <DataGridTextColumn Header="Projected Inflows" Binding="{Binding ProjectedInflows, StringFormat={}{0:C2}}" Width="140" />
+                            <DataGridTextColumn Header="Projected Outflows" Binding="{Binding ProjectedOutflows, StringFormat={}{0:C2}}" Width="140" />
+                            <DataGridTextColumn Header="Net Flow" Binding="{Binding NetFlow, StringFormat={}{0:C2}}" Width="120" />
+                            <DataGridTextColumn Header="Currency" Binding="{Binding Currency}" Width="80" />
+                            <DataGridTextColumn Header="Events" Binding="{Binding EventCount}" Width="70" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </StackPanel>
+            </Border>
+
+            <!-- Cash Flow Entries -->
+            <Border Style="{StaticResource CardStyle}">
+                <StackPanel>
+                    <TextBlock Text="Cash Flow Events" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12" />
+                    <DataGrid ItemsSource="{Binding Entries}"
+                              AutoGenerateColumns="False"
+                              IsReadOnly="True"
+                              HeadersVisibility="Column"
+                              BorderThickness="0"
+                              Background="{StaticResource ConsoleBackgroundLightBrush}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Timestamp" Binding="{Binding Timestamp, StringFormat={}{0:g}}" Width="150" />
+                            <DataGridTextColumn Header="Type" Binding="{Binding EventKind}" Width="120" />
+                            <DataGridTextColumn Header="Symbol" Binding="{Binding Symbol}" Width="100" />
+                            <DataGridTextColumn Header="Amount" Binding="{Binding Amount, StringFormat={}{0:C2}}" Width="120" />
+                            <DataGridTextColumn Header="Currency" Binding="{Binding Currency}" Width="80" />
+                            <DataGridTextColumn Header="Account" Binding="{Binding AccountId}" Width="120" />
+                            <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="*" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
+    </ScrollViewer>
+</Page>
