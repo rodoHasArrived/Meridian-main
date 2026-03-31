@@ -4,7 +4,9 @@
       xmlns:avalonEdit="http://icsharpcode.net/sharpdevelop/avalonedit"
       xmlns:scottplot="clr-namespace:ScottPlot.WPF;assembly=ScottPlot.WPF"
       xmlns:models="clr-namespace:Meridian.Wpf.Models"
-      xmlns:behaviors="clr-namespace:Meridian.Wpf.Behaviors">
+      xmlns:behaviors="clr-namespace:Meridian.Wpf.Behaviors"
+      Loaded="OnPageLoaded"
+      Unloaded="OnPageUnloaded">
 
   <Page.Resources>
     <BooleanToVisibilityConverter x:Key="BoolVis" />

@@ -1,8 +1,8 @@
 # Meridian
 
-Meridian is a comprehensive fund management platform in active delivery. The current platform includes market-data ingestion (90+ streaming sources, 10+ backfill providers), tiered storage (WAL + JSONL/Parquet), backtesting (tick-level replay with fill models), a brokerage gateway framework (Alpaca, IB, StockSharp adapters), paper-trading with risk rules, portfolio and ledger read models, Security Master foundations, direct-lending services, and a web dashboard with 300 API routes. The next delivery wave focuses on wiring brokerage gateways into a paper-trading cockpit, provider confidence hardening, Security Master productization, and governance/fund-operations product slices.
+Meridian is a .NET 9 fund-management and trading-platform codebase in active delivery. The current solution spans market-data ingestion and backfill, tiered storage, backtesting, execution and risk seams, portfolio and ledger workflows, QuantScript tooling, MCP surfaces, a web UI, and a Windows WPF workstation shell. The current delivery focus is turning that breadth into a more cohesive operator product across research, trading, data operations, governance, and fund-operations workflows.
 
-> **WPF Desktop App:** Code is present in `src/Meridian.Wpf/` and is included in the solution build. On Windows it builds as the full WPF desktop application; on Linux/macOS it compiles as a minimal stub for CI compatibility. The web dashboard (`make run-ui`) remains the cross-platform UI surface.
+> **Desktop + web surfaces:** `src/Meridian.Wpf/` is the Windows desktop shell. `src/Meridian.Ui/` is the web/API surface, and `src/Meridian.Ui/dashboard/` contains the dashboard frontend toolchain. On non-Windows platforms the WPF project remains in the solution as a CI-friendly stub build, while the web dashboard stays the primary cross-platform UI path.
 
 ## Start Here
 
@@ -26,6 +26,30 @@ Meridian's intended end state is a self-hosted fund management system where oper
 - reconcile internal and external records
 - generate governance, investor, and compliance reports
 - promote safely into paper and later live workflows
+
+## Solution Map
+
+The solution currently includes these major areas:
+
+- `src/Meridian`, `src/Meridian.Application`, `src/Meridian.Domain`, `src/Meridian.Core`, `src/Meridian.Contracts`, `src/Meridian.Infrastructure`, and `src/Meridian.Storage` for the main host plus core application/domain/infrastructure/storage layers
+- `src/Meridian.ProviderSdk`, `src/Meridian.Execution`, `src/Meridian.Execution.Sdk`, `src/Meridian.Risk`, and `src/Meridian.Strategies` for provider, execution, risk, and strategy seams
+- `src/Meridian.Backtesting` and `src/Meridian.Backtesting.Sdk` for replay and backtesting
+- `src/Meridian.Ledger`, `src/Meridian.FSharp.Ledger`, and `src/Meridian.FSharp.DirectLending.Aggregates` for accounting and direct-lending/domain-specialized work
+- `src/Meridian.QuantScript` for scripting and charting-oriented tooling
+- `src/Meridian.Mcp` and `src/Meridian.McpServer` for Model Context Protocol integration surfaces
+- `src/Meridian.Ui`, `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared`, and `src/Meridian.Wpf` for web and desktop UI layers
+- `tests/` and `benchmarks/` for automated validation and performance work
+
+## Verified Entry Points
+
+The repo exposes a few main ways to work locally:
+
+- `make help` for the current task catalog
+- `make run-ui` for the cross-platform web dashboard flow
+- `dotnet run --project src/Meridian/Meridian.csproj -- --help` for the CLI host
+- `dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj -p:EnableFullWpfBuild=true` for the full Windows WPF desktop app
+
+The CLI currently supports verified flows for configuration/bootstrap, provider recommendation, symbol management, backfill, package operations, schema validation, diagnostics, and Security Master-related commands. See [docs/HELP.md](docs/HELP.md) for the current operator/developer quick reference.
 
 ## Planning Source of Truth
 

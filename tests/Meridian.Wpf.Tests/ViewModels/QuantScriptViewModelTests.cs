@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 using Meridian.QuantScript;
 using Meridian.QuantScript.Compilation;
 using Meridian.QuantScript.Plotting;
-using Meridian.QuantScript.Tests.Helpers;
+using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
 

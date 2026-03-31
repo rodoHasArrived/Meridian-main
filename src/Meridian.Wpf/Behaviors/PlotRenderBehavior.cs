@@ -55,11 +55,23 @@ public static class PlotRenderBehavior
         plot.DataBackground.Color = ToScottPlot(dataBg);
         plot.Axes.Color(ToScottPlot(Palette.MutedText));
 
-        if (request.Series is not { Count: > 0 } && request.MultiSeries is not { Count: > 0 } && request.HeatmapData is null)
+        var usesDateAxis =
+            request.Type is PlotType.Line
+            or PlotType.CumulativeReturn
+            or PlotType.Drawdown
+            or PlotType.Scatter
+            or PlotType.Bar
+            or PlotType.Histogram
+            or PlotType.MultiLine;
+
+        if (request.Series is not { Count: > 0 } &&
+            request.MultiSeries is not { Count: > 0 } &&
+            request.HeatmapData is null)
         {
             wpfPlot.Refresh();
             return;
         }
+
         var seriesColor = ToScottPlot(SeriesPalette[0]);
 
         switch (request.Type)
@@ -105,14 +117,21 @@ public static class PlotRenderBehavior
                 {
                     var rowCount = heatmapData.Length;
                     var columnCount = heatmapData[0].Length;
-                    var positions = Enumerable.Range(0, Math.Min(rowCount, columnCount)).Select(static i => (double)i).ToArray();
-                    var values = positions.Select(i => heatmapData[(int)i][(int)i]).ToArray();
-                    plot.Add.Bars(positions, values);
+                    var matrix = new double[rowCount, columnCount];
+
+                    for (var row = 0; row < rowCount; row++)
+                    {
+                        for (var column = 0; column < columnCount; column++)
+                            matrix[row, column] = heatmapData[row][column];
+                    }
+
+                    plot.Add.Heatmap(matrix);
                 }
                 break;
         }
 
-        plot.Axes.DateTimeTicksBottom();
+        if (usesDateAxis)
+            plot.Axes.DateTimeTicksBottom();
 
         wpfPlot.Refresh();
     }

@@ -10,6 +10,7 @@ namespace Meridian.Wpf.Views;
 public partial class SplitPaneHostControl : UserControl
 {
     private readonly List<Frame> _paneFrames = new();
+    public const string PageTagFormat = "Meridian.PageTag";
 
     /// <summary>
     /// Raised when a page-tag string is dropped onto this host.
@@ -92,7 +93,7 @@ public partial class SplitPaneHostControl : UserControl
 
     private void OnDragOver(object sender, DragEventArgs e)
     {
-        if (e.Data.GetDataPresent(DataFormats.StringFormat))
+        if (TryGetPageTag(e.Data, out _))
         {
             e.Effects = DragDropEffects.Move;
             DropOverlay.Visibility = Visibility.Visible;
@@ -101,6 +102,7 @@ public partial class SplitPaneHostControl : UserControl
         {
             e.Effects = DragDropEffects.None;
         }
+
         e.Handled = true;
     }
 
@@ -114,14 +116,15 @@ public partial class SplitPaneHostControl : UserControl
     {
         DropOverlay.Visibility = Visibility.Collapsed;
 
-        if (e.Data.GetDataPresent(DataFormats.StringFormat) &&
-            e.Data.GetData(DataFormats.StringFormat) is string pageTag &&
-            !string.IsNullOrWhiteSpace(pageTag))
+        if (!TryGetPageTag(e.Data, out var pageTag))
         {
-            var dropPosition = e.GetPosition(this);
-            var targetIndex = HitTestPaneIndex(dropPosition);
-            PaneDropRequested?.Invoke(this, new PaneDropEventArgs(pageTag, targetIndex));
+            e.Handled = true;
+            return;
         }
+
+        var dropPosition = e.GetPosition(this);
+        var targetIndex = HitTestPaneIndex(dropPosition);
+        PaneDropRequested?.Invoke(this, new PaneDropEventArgs(pageTag, targetIndex));
         e.Handled = true;
     }
 
@@ -144,46 +147,29 @@ public partial class SplitPaneHostControl : UserControl
         return ActivePaneIndex;
     }
 
-    // ── Drag-and-drop handling ────────────────────────────────────────────────
-
-    private void OnDragOver(object sender, DragEventArgs e)
+    private static bool TryGetPageTag(IDataObject data, out string pageTag)
     {
-        if (e.Data.GetDataPresent(PageTagFormat))
+        if (TryReadString(data, PageTagFormat, out pageTag) ||
+            TryReadString(data, DataFormats.StringFormat, out pageTag))
         {
-            e.Effects = DragDropEffects.Move;
-            DropOverlay.Visibility = Visibility.Visible;
-            e.Handled = true;
+            return true;
         }
-        else
+
+        pageTag = string.Empty;
+        return false;
+    }
+
+    private static bool TryReadString(IDataObject data, string format, out string value)
+    {
+        if (data.GetDataPresent(format) &&
+            data.GetData(format) is string text &&
+            !string.IsNullOrWhiteSpace(text))
         {
-            e.Effects = DragDropEffects.None;
+            value = text;
+            return true;
         }
+
+        value = string.Empty;
+        return false;
     }
-
-    private void OnDragLeave(object sender, DragEventArgs e)
-    {
-        DropOverlay.Visibility = Visibility.Collapsed;
-    }
-
-    private void OnDrop(object sender, DragEventArgs e)
-    {
-        DropOverlay.Visibility = Visibility.Collapsed;
-
-        if (!e.Data.GetDataPresent(PageTagFormat)) return;
-        var pageTag = e.Data.GetData(PageTagFormat) as string;
-        if (string.IsNullOrEmpty(pageTag)) return;
-
-        // Determine target pane: drop on the left half → pane 0, right half → pane 1
-        var pos = e.GetPosition(this);
-        var targetPane = pos.X > ActualWidth / 2 ? 1 : 0;
-
-        PaneDropRequested?.Invoke(this, new PaneDropEventArgs(pageTag, targetPane));
-        e.Handled = true;
-    }
-}
-
-public sealed class PaneDropEventArgs(string pageTag, int targetPaneIndex) : EventArgs
-{
-    public string PageTag { get; } = pageTag;
-    public int TargetPaneIndex { get; } = targetPaneIndex;
 }

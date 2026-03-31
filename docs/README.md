@@ -1,12 +1,23 @@
 # Meridian Documentation
 
-**Version:** 1.7.2
-**Last Updated:** 2026-03-26
+**Version:** 1.7.3
+**Last Updated:** 2026-03-30
 
 This index is the main entry point for Meridian documentation. The current documentation set is synchronized around two connected product tracks inside a broader comprehensive fund-management objective:
 
 - a workflow-centric front-office workstation for research, implementation, and trade management
 - a governance and fund-operations expansion for middle- and back-office workflows built on Security Master, portfolio, ledger, reconciliation, and UFL asset-package foundations
+
+## Platform At A Glance
+
+Meridian's active solution now spans:
+
+- a console/host application in `src/Meridian/`
+- application, domain, contracts, infrastructure, and storage layers in `src/Meridian.Application/`, `src/Meridian.Domain/`, `src/Meridian.Contracts/`, `src/Meridian.Infrastructure/`, and `src/Meridian.Storage/`
+- execution, risk, strategy, provider, and backtesting seams in `src/Meridian.Execution*/`, `src/Meridian.Risk/`, `src/Meridian.Strategies/`, `src/Meridian.ProviderSdk/`, and `src/Meridian.Backtesting*/`
+- ledger, direct-lending, and F# support projects in `src/Meridian.Ledger/`, `src/Meridian.FSharp*/`
+- web and desktop UI surfaces in `src/Meridian.Ui/`, `src/Meridian.Ui.Shared/`, `src/Meridian.Ui.Services/`, and `src/Meridian.Wpf/`
+- scripting and MCP surfaces in `src/Meridian.QuantScript/`, `src/Meridian.Mcp/`, and `src/Meridian.McpServer/`
 
 ## Quick Start
 
@@ -35,6 +46,7 @@ This index is the main entry point for Meridian documentation. The current docum
 
 - [Getting Started](getting-started/README.md)
 - [Help and FAQ](HELP.md)
+- [Dependencies Reference](DEPENDENCIES.md)
 - [Provider Setup Guides](providers/README.md)
 - [Backfill Guide](providers/backfill-guide.md)
 - [Operator Runbook](operations/operator-runbook.md)
@@ -47,6 +59,7 @@ This index is the main entry point for Meridian documentation. The current docum
 - [Provider Implementation Guide](development/provider-implementation.md)
 - [WPF Implementation Notes](development/wpf-implementation-notes.md)
 - [Desktop Testing Guide](development/desktop-testing-guide.md)
+- [Central Package Management Guide](development/central-package-management.md)
 - [F# Decision Rule](development/fsharp-decision-rule.md)
 - [Language Strategy](integrations/language-strategy.md)
 - [Documentation Contribution Guide](development/documentation-contribution-guide.md)
@@ -95,6 +108,16 @@ Use these documents together when planning implementation:
 10. [status/FEATURE_INVENTORY.md](status/FEATURE_INVENTORY.md) for capability status
 11. [status/FULL_IMPLEMENTATION_TODO_2026_03_20.md](status/FULL_IMPLEMENTATION_TODO_2026_03_20.md) for the normalized non-assembly implementation backlog
 12. [status/IMPROVEMENTS.md](status/IMPROVEMENTS.md) for tracked implementation themes
+
+## Verified Build And Run References
+
+These repo entry points are currently reflected in the active codebase and build scripts:
+
+- `make help` for the current Make task index
+- `make run-ui` for the cross-platform dashboard path
+- `dotnet run --project src/Meridian/Meridian.csproj -- --help` for the CLI host
+- `dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj -p:EnableFullWpfBuild=true` for the full Windows WPF build/run path
+- `npm --prefix src/Meridian.Ui/dashboard run build` for the dashboard frontend bundle
 
 ## Reference
 
