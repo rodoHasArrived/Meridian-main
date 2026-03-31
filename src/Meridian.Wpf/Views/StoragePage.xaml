@@ -41,7 +41,7 @@
 
                 <Border Grid.Column="0" Style="{StaticResource CardStyle}">
                     <StackPanel HorizontalAlignment="Center">
-                        <TextBlock x:Name="TotalSizeText" Text="--" FontSize="32" FontWeight="Bold"
+                        <TextBlock Text="{Binding TotalSizeText}" FontSize="32" FontWeight="Bold"
                                    Foreground="{StaticResource InfoColorBrush}"
                                    HorizontalAlignment="Center" />
                         <TextBlock Text="Total Size" HorizontalAlignment="Center"
@@ -51,7 +51,7 @@
 
                 <Border Grid.Column="2" Style="{StaticResource CardStyle}">
                     <StackPanel HorizontalAlignment="Center">
-                        <TextBlock x:Name="TotalFilesText" Text="--" FontSize="32" FontWeight="Bold"
+                        <TextBlock Text="{Binding TotalFilesText}" FontSize="32" FontWeight="Bold"
                                    Foreground="{StaticResource SuccessColorBrush}"
                                    HorizontalAlignment="Center" />
                         <TextBlock Text="Total Files" HorizontalAlignment="Center"
@@ -61,7 +61,7 @@
 
                 <Border Grid.Column="4" Style="{StaticResource CardStyle}">
                     <StackPanel HorizontalAlignment="Center">
-                        <TextBlock x:Name="SymbolCountText" Text="--" FontSize="32" FontWeight="Bold"
+                        <TextBlock Text="{Binding SymbolCountText}" FontSize="32" FontWeight="Bold"
                                    Foreground="{StaticResource InfoColorBrush}"
                                    HorizontalAlignment="Center" />
                         <TextBlock Text="Symbols" HorizontalAlignment="Center"
@@ -136,7 +136,7 @@
                     <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
                             CornerRadius="12"
                             Padding="16">
-                        <TextBlock x:Name="FileTreePreviewText"
+                        <TextBlock Text="{Binding FileTreePreviewText}"
                                    FontFamily="Cascadia Code, Consolas, monospace"
                                    FontSize="12"
                                    Foreground="{StaticResource ConsoleTextSecondaryBrush}"
@@ -144,7 +144,7 @@
                     </Border>
 
                     <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                        <TextBlock x:Name="StorageEstimateText"
+                        <TextBlock Text="{Binding StorageEstimateText}"
                                    Foreground="{StaticResource ConsoleTextMutedBrush}"
                                    FontSize="12" />
                     </StackPanel>
@@ -166,19 +166,19 @@
                         <StackPanel Grid.Column="0" Margin="0,0,8,0">
                             <TextBlock Text="Hot Tier" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
                             <TextBlock Text="Last 7 days" Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="12" />
-                            <TextBlock x:Name="HotTierSizeText" Text="--" Foreground="{StaticResource SuccessColorBrush}" FontWeight="SemiBold" Margin="0,4,0,0" />
+                            <TextBlock Text="{Binding HotTierSizeText}" Foreground="{StaticResource SuccessColorBrush}" FontWeight="SemiBold" Margin="0,4,0,0" />
                         </StackPanel>
 
                         <StackPanel Grid.Column="1" Margin="8,0">
                             <TextBlock Text="Warm Tier" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
                             <TextBlock Text="8-30 days" Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="12" />
-                            <TextBlock x:Name="WarmTierSizeText" Text="--" Foreground="{StaticResource WarningColorBrush}" FontWeight="SemiBold" Margin="0,4,0,0" />
+                            <TextBlock Text="{Binding WarmTierSizeText}" Foreground="{StaticResource WarningColorBrush}" FontWeight="SemiBold" Margin="0,4,0,0" />
                         </StackPanel>
 
                         <StackPanel Grid.Column="2" Margin="8,0,0,0">
                             <TextBlock Text="Cold Tier" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
                             <TextBlock Text="30+ days" Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="12" />
-                            <TextBlock x:Name="ColdTierSizeText" Text="--" Foreground="{StaticResource InfoColorBrush}" FontWeight="SemiBold" Margin="0,4,0,0" />
+                            <TextBlock Text="{Binding ColdTierSizeText}" Foreground="{StaticResource InfoColorBrush}" FontWeight="SemiBold" Margin="0,4,0,0" />
                         </StackPanel>
                     </Grid>
                 </StackPanel>
