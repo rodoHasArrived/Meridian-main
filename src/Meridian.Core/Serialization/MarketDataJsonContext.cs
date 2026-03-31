@@ -120,6 +120,7 @@ namespace Meridian.Application.Serialization;
 [JsonSerializable(typeof(AlphaVantageConfig))]
 [JsonSerializable(typeof(FinnhubConfig))]
 [JsonSerializable(typeof(FredConfig))]
+[JsonSerializable(typeof(RobinhoodConfig))]
 [JsonSerializable(typeof(DerivativesConfig))]
 [JsonSerializable(typeof(IndexOptionsConfig))]
 [JsonSerializable(typeof(StockSharpConfig))]

@@ -1,6 +1,6 @@
 # TODO / FIXME / NOTE Scan
 
-Total items: **205**
+Total items: **207**
 
 | File | Line | Tag | Linked Issue | Text |
 |---|---:|---|:---:|---|
@@ -21,7 +21,7 @@ Total items: **205**
 | `.claude/skills/meridian-code-review/evals/evals.json` | 166 | `TODO` | ❌ | "prompt": "Review this ViewModel and its paired View code-behind together for MVVM compliance:\n\nFile 1: SymbolsViewModel.cs\n```csharp\nusing System.Collections.ObjectModel;\nusing Meridian.Ui.Services;\nusing Meridian.Contracts;\n\nnamespace Meridian.Wpf.ViewModels;\n\npublic class SymbolsViewModel : BindableBase\n{\n    private readonly ISymbolService _symbolService;\n    private ObservableCollection<SymbolStatus> _symbols = new();\n    private string _searchText = string.Empty;\n    private bool _isLoading;\n\n    public SymbolsViewModel(ISymbolService symbolService)\n    {\n        _symbolService = symbolService;\n        LoadSymbolsCommand = new RelayCommand(async _ => await LoadSymbolsAsync());\n        RemoveSymbolCommand = new RelayCommand(async p => await RemoveSymbolAsync((string)p!));\n    }\n\n    public ObservableCollection<SymbolStatus> Symbols\n    {\n        get => _symbols;\n        private set => SetProperty(ref _symbols, value);\n    }\n\n    public string SearchText\n    {\n        get => _searchText;\n        set\n        {\n            SetProperty(ref _searchText, value);\n            FilterSymbols();\n        }\n    }\n\n    public bool IsLoading\n    {\n        get => _isLoading;\n        private set => SetProperty(ref _isLoading, value);\n    }\n\n    public RelayCommand LoadSymbolsCommand { get; }\n    public RelayCommand RemoveSymbolCommand { get; }\n\n    private async Task LoadSymbolsAsync()\n    {\n        IsLoading = true;\n        var symbols = await _symbolService.GetSymbolsAsync();\n        Symbols = new ObservableCollection<SymbolStatus>(symbols);\n        IsLoading = false;\n    }\n\n    private async Task RemoveSymbolAsync(string symbol)\n    {\n        await _symbolService.RemoveSymbolAsync(symbol);\n        var item = _symbols.FirstOrDefault(s => s.Symbol == symbol);\n        if (item != null) _symbols.Remove(item);\n    }\n\n    private void FilterSymbols()\n    {\n        // TODO: implement filtering\n    }\n}\n```\n\nFile 2: SymbolsPage.xaml.cs\n```csharp\nusing System.Windows.Controls;\nusing Meridian.Wpf.ViewModels;\nusing Meridian.Ui.Services;\n\nnamespace Meridian.Wpf.Views;\n\npublic partial class SymbolsPage : Page\n{\n    private readonly SymbolsViewModel _viewModel;\n\n    public SymbolsPage(ISymbolService symbolService)\n    {\n        InitializeComponent();\n        _viewModel = new SymbolsViewModel(symbolService);\n        DataContext = _viewModel;\n        Loaded += async (_, _) => await _viewModel.LoadSymbolsCommand.Execute(null);\n    }\n\n    private void OnSearchTextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)\n    {\n        _viewModel.SearchText = ((TextBox)sender).Text;\n    }\n\n    private async void RemoveButton_Click(object sender, System.Windows.RoutedEventArgs e)\n    {\n        var symbol = (string)((System.Windows.FrameworkElement)sender).Tag;\n        await _viewModel._symbolService.RemoveSymbolAsync(symbol);\n        await _viewModel.LoadSymbolsCommand.Execute(null);\n    }\n}\n```", |
 | `.claude/skills/meridian-code-review/scripts/aggregate_benchmark.py` | 332 | `NOTE` | ❌ | for note in benchmark["notes"]: |
 | `.claude/skills/meridian-code-review/scripts/aggregate_benchmark.py` | 333 | `NOTE` | ❌ | lines.append(f"- {note}") |
-| `.claude/skills/meridian-implementation-assurance/SKILL.md` | 40 | `NOTE` | ❌ | - **Performance-sensitive paths are annotated:** any hot-path touched by the change includes an explicit note on allocation, async, or buffering risk. |
+| `.claude/skills/meridian-implementation-assurance/SKILL.md` | 41 | `NOTE` | ❌ | - **Performance-sensitive paths are annotated:** any hot-path touched by the change includes an explicit note on allocation, async, or buffering risk. |
 | `.codex/skills/meridian-implementation-assurance/SKILL.md` | 31 | `NOTE` | ❌ | - **Performance-sensitive paths are annotated**: any hot-path touched by the change includes an explicit note on allocation, async, or buffering risk. |
 | `.codex/skills/meridian-implementation-assurance/evals/evals.json` | 9 | `NOTE` | ❌ | "prompt": "Use $meridian-implementation-assurance to certify this EventPipeline refactor is complete.\n\nThe change moves bounded-channel creation to EventPipelinePolicy.Default.CreateChannel<T>() (ADR-013 compliance). The existing ADR-013 doc at docs/adr/013-bounded-channel-policy.md covers the pattern and needs a note that direct Channel.CreateBounded calls are now disallowed outside the policy helper.\n\nProvide: validation commands, doc update evidence, rubric scores.", |
 | `.codex/skills/meridian-implementation-assurance/evals/evals.json` | 13 | `NOTE` | ❌ | "Must note the hot-path risk of channel capacity and DropOldest policy", |
@@ -36,9 +36,11 @@ Total items: **205**
 | `.github/agents/cleanup-agent.md` | 438 | `NOTE` | ❌ | - **No ViewModel extraction** — flag it as a note; full MVVM refactors belong in code review. |
 | `.github/agents/documentation-agent.md` | 361 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
 | `.github/agents/documentation-agent.md` | 814 | `TODO` | ❌ | │   │   └── TODO.md |
-| `.github/agents/documentation-agent.md` | 3164 | `TODO` | ❌ | - `TODO.md` - Pending work items |
-| `.github/agents/implementation-assurance-agent.md` | 65 | `NOTE` | ❌ | - **Performance-sensitive paths are noted:** any hot-path touched by the change includes an explicit note on allocation, async, or buffering risk. |
+| `.github/agents/documentation-agent.md` | 3193 | `TODO` | ❌ | - `TODO.md` - Pending work items |
+| `.github/agents/implementation-assurance-agent.md` | 66 | `NOTE` | ❌ | - **Performance-sensitive paths are noted:** any hot-path touched by the change includes an explicit note on allocation, async, or buffering risk. |
+| `.github/agents/implementation-assurance-agent.md` | 156 | `NOTE` | ❌ | - Explicit note that performance-sensitive areas were reviewed (or why not applicable). |
 | `.github/agents/performance-agent.md` | 248 | `NOTE` | ❌ | - **No new features** — if a performance win requires a new feature, note it but defer it. |
+| `.github/agents/provider-builder-agent.md` | 81 | `TODO` | ❌ | Read the full template before writing any code. Templates contain inline `// TODO:` comments |
 | `.github/workflows/README.md` | 11 | `TODO` | ❌ | \| `documentation.yml` \| `docs-comprehensive.yml`, `docs-auto-update.yml`, `docs-structure-sync.yml`, `ai-instructions-sync.yml`, `todo-automation.yml`, `docs-check.yml` \| AI documentation quality review, AI TODO triage \| |
 | `.github/workflows/README.md` | 136 | `TODO` | ❌ | - **Purpose**: Centralized documentation quality checks, generation, AI instruction sync, and TODO tracking |
 | `.github/workflows/README.md` | 137 | `TODO` | ❌ | - **Replaces**: `docs-comprehensive.yml`, `docs-auto-update.yml`, `docs-structure-sync.yml`, `ai-instructions-sync.yml`, `todo-automation.yml` |
@@ -63,12 +65,12 @@ Total items: **205**
 | `CLAUDE.md` | 414 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
 | `CLAUDE.md` | 867 | `TODO` | ❌ | │   │   └── TODO.md |
 | `README.md` | 536 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
-| `README.md` | 979 | `TODO` | ❌ | │   │   ├── TODO.md |
+| `README.md` | 983 | `TODO` | ❌ | │   │   ├── TODO.md |
 | `benchmarks/run-bottleneck-benchmarks.sh` | 111 | `NOTE` | ❌ | # Note: --filter is intentionally not added here; each phase below supplies its own |
 | `build/scripts/run/start-collector.ps1` | 109 | `NOTE` | ❌ | if ($depth -gt 0) { Write-Host "[NOTE] L2 depth requires provider depth entitlements for venues." } |
 | `build/scripts/run/start-collector.sh` | 114 | `NOTE` | ❌ | print("[NOTE] L2 depth requires provider depth subscription for venues.") |
-| `config/appsettings.sample.json` | 364 | `NOTE` | ❌ | // NOTE: Credentials are resolved from environment variables - do NOT add them here. |
-| `config/appsettings.sample.json` | 484 | `NOTE` | ❌ | //   4. Note the port (default 7497 for TWS paper, 7496 for live) |
+| `config/appsettings.sample.json` | 374 | `NOTE` | ❌ | // NOTE: Credentials are resolved from environment variables - do NOT add them here. |
+| `config/appsettings.sample.json` | 494 | `NOTE` | ❌ | //   4. Note the port (default 7497 for TWS paper, 7496 for live) |
 | `docs/HELP.md` | 422 | `NOTE` | ❌ | **Note:** Environment variables override values in `appsettings.json`. |
 | `docs/HELP.md` | 450 | `NOTE` | ❌ | - Note the Socket Port (default: 7497 for TWS, 4001 for Gateway) |
 | `docs/ai/ai-known-errors.md` | 239 | `NOTE` | ❌ | - **Note**: This issue regressed multiple times (1e2ea1d, 5756479, 1802ea9, bf67ed5, e920c34) when using workarounds. The structural fix eliminates the problem at the API design level. |
@@ -81,8 +83,8 @@ Total items: **205**
 | `docs/ai/copilot/instructions.md` | 5 | `NOTE` | ❌ | > **Note:** For comprehensive project context, see [CLAUDE.md](https://github.com/rodoHasArrived/Meridian/blob/main/CLAUDE.md) in the repository root. For the master AI resource index, see [docs/ai/README.md](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/README.md). |
 | `docs/ai/copilot/instructions.md` | 399 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
 | `docs/ai/copilot/instructions.md` | 852 | `TODO` | ❌ | │   │   └── TODO.md |
-| `docs/ai/copilot/instructions.md` | 3110 | `TODO` | ❌ | - `documentation.yml` — Doc generation, TODO scanning, AI error intake |
-| `docs/ai/skills/README.md` | 164 | `NOTE` | ❌ | > **Note:** The Direct Lending module (`src/Meridian.FSharp/Domain/DirectLending.fs`, |
+| `docs/ai/copilot/instructions.md` | 3139 | `TODO` | ❌ | - `documentation.yml` — Doc generation, TODO scanning, AI error intake |
+| `docs/ai/skills/README.md` | 176 | `NOTE` | ❌ | > **Note:** The Direct Lending module (`src/Meridian.FSharp/Domain/DirectLending.fs`, |
 | `docs/architecture/deterministic-canonicalization.md` | 365 | `NOTE` | ❌ | Note: Polygon does not define buyer-initiated codes. Only ~5% of trades carry definitive aggressor inference. The canonicalization layer preserves `Unknown` as a valid canonical value rather than attempting inference. |
 | `docs/architecture/domains.md` | 111 | `NOTE` | ❌ | > Note: not every enum member is currently emitted by the three core collectors (`TradeDataCollector`, `MarketDepthCollector`, `QuoteCollector`); several are used by adapters, backfill paths, or the `L3OrderBookCollector`. |
 | `docs/audits/BACKTEST_ENGINE_CODE_REVIEW_2026_03_25.md` | 150 | `NOTE` | ❌ | **Fix:** Add a note to the XML doc comment explaining the open/close midpoint convention and when to use `BarMidpointFillModel` vs. `OrderBookFillModel`. Consider offering `(bar.High + bar.Low) / 2m` as an alternative mode. |
@@ -134,7 +136,7 @@ Total items: **205**
 | `docs/status/docs-automation-summary.json` | 32 | `TODO` | ❌ | "output_file": "docs/status/TODO.md", |
 | `docs/status/docs-automation-summary.md` | 9 | `TODO` | ❌ | \| `scan-todos` \| `success` \| `175.615` \| `docs/status/TODO.md` \| |
 | `docs/status/example-validation.md` | 148 | `TODO` | ❌ | \| `docs\status\TODO.md` \| 1 \| |
-| `docs/status/health-dashboard.md` | 23 | `TODO` | ❌ | \| TODO/FIXME markers \| 316 \| |
+| `docs/status/health-dashboard.md` | 23 | `TODO` | ❌ | \| TODO/FIXME markers \| 318 \| |
 | `docs/status/health-dashboard.md` | 33 | `TODO` | ❌ | \| TODO density \| 15 pts \| Lower density of TODO/FIXME markers \| |
 | `docs/status/rules-report.md` | 431 | `TODO` | ❌ | \| `docs\status\TODO.md` \| No hardcoded API keys in docs \| error \| |
 | `docs/status/rules-report.md` | 432 | `TODO` | ❌ | \| `docs\status\TODO.md` \| No hardcoded localhost URLs in docs \| info \| |
@@ -157,11 +159,11 @@ Total items: **205**
 | `src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs` | 29 | `NOTE` | ❌ | string? Note); |
 | `src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs` | 70 | `NOTE` | ❌ | string? Note, |
 | `src/Meridian.Core/Monitoring/MigrationDiagnostics.cs` | 17 | `NOTE` | ❌ | /// NOTE: This class lives in the Core project (not Application) so that |
-| `src/Meridian.Core/Serialization/MarketDataJsonContext.cs` | 178 | `NOTE` | ❌ | /// NOTE: Alpaca payloads use both "T" and "t" keys in the same object. |
+| `src/Meridian.Core/Serialization/MarketDataJsonContext.cs` | 179 | `NOTE` | ❌ | /// NOTE: Alpaca payloads use both "T" and "t" keys in the same object. |
 | `src/Meridian.Execution/BrokerageServiceRegistration.cs` | 139 | `NOTE` | ❌ | // NOTE: We intentionally use GetRequiredKeyedService here rather than |
 | `src/Meridian.FSharp/Domain/SecMasterDomain.fs` | 98 | `NOTE` | ❌ | \| Note |
-| `src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs` | 87 | `NOTE` | ❌ | return !json.Contains("Note") && !json.Contains("Thank you for using Alpha Vantage"); |
-| `src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs` | 241 | `NOTE` | ❌ | return json.Contains("\"Note\"") \|\| json.Contains("Thank you for using Alpha Vantage"); |
+| `src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs` | 91 | `NOTE` | ❌ | return !json.Contains("Note") && !json.Contains("Thank you for using Alpha Vantage"); |
+| `src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs` | 245 | `NOTE` | ❌ | return json.Contains("\"Note\"") \|\| json.Contains("Thank you for using Alpha Vantage"); |
 | `src/Meridian.QuantScript/Api/PortfolioBuilder.cs` | 136 | `TODO` | ❌ | // TODO: Implement full MV quadratic optimisation (e.g. via MathNet.Numerics or custom QP solver) |
 | `src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs` | 28 | `NOTE` | ❌ | string? Note); |
 | `src/Meridian.Storage/DirectLending/Migrations/005_direct_lending_operations.sql` | 54 | `NOTE` | ❌ | note                     text, |

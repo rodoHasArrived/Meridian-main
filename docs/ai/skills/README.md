@@ -138,6 +138,18 @@ static package content.
 - `references/test-patterns.md` — component-specific test scaffolds and decision trees
 - Companion skill referenced as needed: `meridian-code-review`
 
+
+### `meridian-implementation-assurance`
+
+**Location:** [`.claude/skills/meridian-implementation-assurance/`](https://github.com/rodoHasArrived/Meridian/blob/main/.claude/skills/meridian-implementation-assurance)
+**Purpose:** Deliver implementation changes with correctness validation, performance guardrails, documentation synchronization, and rubric-scored self-evaluation.
+**When it triggers:** implementation/refactor tasks that require explicit validation evidence, performance-safety review, and in-PR documentation updates.
+**On-demand resources and scripts:**
+
+- `references/documentation-routing.md` — docs placement matrix and cross-linking rules
+- `references/evaluation-harness.md` — scenario set, rubric, and pass/fail criteria
+- `scripts/doc_route.py`, `scripts/score_eval.py` — deterministic routing and scoring helpers
+
 ### `ai-docs-maintain` (code-defined)
 
 **Registered in:** [`.claude/skills/skills_provider.py`](https://github.com/rodoHasArrived/Meridian/blob/main/.claude/skills/skills_provider.py)
@@ -200,4 +212,8 @@ The validator checks for:
 
 ---
 
+<<<<<<< Updated upstream
 _Last Updated: 2026-03-30_
+=======
+_Last Updated: 2026-03-29_
+>>>>>>> Stashed changes

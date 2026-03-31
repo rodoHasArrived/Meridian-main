@@ -412,6 +412,14 @@ public sealed class ProviderCreationResult
 /// <summary>
 /// Interface for resolving provider credentials from configuration or environment.
 /// </summary>
+/// <remarks>
+/// This interface is preserved for backward compatibility with existing providers.
+/// New providers should declare their credential requirements using
+/// <see cref="Meridian.Infrastructure.Contracts.RequiresCredentialAttribute"/> and
+/// accept an <see cref="Meridian.Infrastructure.Contracts.ICredentialContext"/> instead.
+/// </remarks>
+[Obsolete("ICredentialResolver requires a new method per provider. " +
+          "Annotate new providers with [RequiresCredential] and use AttributeCredentialResolver / ICredentialContext instead.")]
 public interface ICredentialResolver
 {
     (string? KeyId, string? SecretKey) ResolveAlpacaCredentials(string? configKeyId, string? configSecretKey);

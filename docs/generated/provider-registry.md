@@ -1,6 +1,6 @@
 # Provider Registry
 
-> Auto-generated on 2026-03-30 14:19:17 UTC. Do not edit manually.
+> Auto-generated on 2026-03-31 00:13:55 UTC. Do not edit manually.
 
 | Provider Candidate |
 |---|
@@ -23,6 +23,7 @@
 | `src/Meridian.Core/Exceptions/DataProviderException.cs` |
 | `src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs` |
+| `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaProviderModule.cs` |
 | `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs` |
 | `src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs` |
@@ -30,6 +31,7 @@
 | `src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Core/ISymbolSearchProvider.cs` |
+| `src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs` |
 | `src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs` |
 | `src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs` |
 | `src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs` |
@@ -45,6 +47,8 @@
 | `src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Polygon/PolygonSecurityMasterIngestProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs` |
+| `src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodHistoricalDataProvider.cs` |
+| `src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpHistoricalDataProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpSymbolSearchProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs` |
@@ -59,6 +63,7 @@
 | `src/Meridian.ProviderSdk/IProviderMetadata.cs` |
 | `src/Meridian.ProviderSdk/IProviderModule.cs` |
 | `src/Meridian.ProviderSdk/ProviderHttpUtilities.cs` |
+| `src/Meridian.ProviderSdk/ProviderModuleLoader.cs` |
 | `src/Meridian.Ui.Services/Services/BackfillProviderConfigService.cs` |
 | `src/Meridian.Ui.Services/Services/ProviderHealthService.cs` |
 | `src/Meridian.Ui.Services/Services/ProviderManagementService.cs` |

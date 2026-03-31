@@ -194,6 +194,7 @@ provider adapters. Operates only on **measured** bottlenecks (BenchmarkDotNet / 
 **Used by:** GitHub Copilot agents
 **Claude Code equivalent:** [`.claude/skills/meridian-implementation-assurance/SKILL.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.claude/skills/meridian-implementation-assurance/SKILL.md)
 
+<<<<<<< Updated upstream
 Certifies that changes match approved requirements/blueprints and are validated with explicit
 evidence (builds, tests, docs). Operates across three scenarios:
 
@@ -207,6 +208,10 @@ evidence (builds, tests, docs). Operates across three scenarios:
 
 **Bundled tooling:** `doc_route.py` (catalog routing), `score_eval.py` (rubric scoring),
 `run_evals.py` (deterministic eval runner), `validate-skill-packages.py` (package integrity).
+=======
+Coordinates end-to-end implementation tasks with required workflow gates for behavior correctness,
+performance safety, documentation sync, and traceable evaluation evidence.
+>>>>>>> Stashed changes
 
 ---
 
@@ -290,4 +295,8 @@ Copilot agents, referencing these files in the issue or prompt body improves out
 
 ---
 
+<<<<<<< Updated upstream
 *Last Updated: 2026-03-30*
+=======
+*Last Updated: 2026-03-29*
+>>>>>>> Stashed changes

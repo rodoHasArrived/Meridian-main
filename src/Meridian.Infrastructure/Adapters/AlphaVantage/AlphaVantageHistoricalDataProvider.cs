@@ -24,6 +24,10 @@ namespace Meridian.Infrastructure.Adapters.AlphaVantage;
 [ImplementsAdr("ADR-001", "Alpha Vantage historical data provider implementation")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
+[RequiresCredential("ALPHA_VANTAGE_API_KEY",
+    EnvironmentVariables = new[] { "ALPHA_VANTAGE_API_KEY", "ALPHAVANTAGE__APIKEY" },
+    DisplayName = "API Key",
+    Description = "Alpha Vantage API key from https://www.alphavantage.co/support/#api-key")]
 public sealed class AlphaVantageHistoricalDataProvider : BaseHistoricalDataProvider
 {
     private const string ApiBaseUrl = "https://www.alphavantage.co/query";

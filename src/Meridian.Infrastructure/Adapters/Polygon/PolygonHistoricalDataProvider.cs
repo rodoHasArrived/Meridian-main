@@ -25,6 +25,10 @@ namespace Meridian.Infrastructure.Adapters.Polygon;
 /// </summary>
 [ImplementsAdr("ADR-001", "Polygon.io historical data provider implementation")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
+[RequiresCredential("POLYGON_API_KEY",
+    EnvironmentVariables = new[] { "POLYGON_API_KEY", "POLYGON__APIKEY" },
+    DisplayName = "API Key",
+    Description = "Polygon.io API key from https://polygon.io/dashboard/api-keys")]
 public sealed class PolygonHistoricalDataProvider : BaseHistoricalDataProvider
 {
     private const string BaseUrl = "https://api.polygon.io";

@@ -25,6 +25,10 @@ namespace Meridian.Infrastructure.Adapters.Tiingo;
 [ImplementsAdr("ADR-001", "Tiingo historical data provider implementation")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
+[RequiresCredential("TIINGO_API_TOKEN",
+    EnvironmentVariables = new[] { "TIINGO_API_TOKEN", "TIINGO__TOKEN" },
+    DisplayName = "API Token",
+    Description = "Tiingo API token from https://www.tiingo.com/account/api/token")]
 public sealed class TiingoHistoricalDataProvider : BaseHistoricalDataProvider
 {
     private const string BaseUrl = "https://api.tiingo.com/tiingo/daily";
