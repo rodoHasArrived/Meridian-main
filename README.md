@@ -3252,6 +3252,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── WatchlistServiceTests.cs
 │   │   │   └── WorkspaceServiceTests.cs
 │   │   ├── Support
+│   │   │   ├── FakeQuantScriptCompiler.cs
+│   │   │   ├── FakeScriptRunner.cs
 │   │   │   ├── RunMatUiAutomationFacade.cs
 │   │   │   └── WpfTestThread.cs
 │   │   ├── ViewModels
@@ -3261,8 +3263,10 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── RunMatViewModelTests.cs
 │   │   │   └── StrategyRunBrowserViewModelTests.cs
 │   │   └── Views
+│   │       ├── QuantScriptPageTests.cs
 │   │       ├── RunMatUiSmokeTests.cs
-│   │       └── RunMatWorkflowSmokeTests.cs
+│   │       ├── RunMatWorkflowSmokeTests.cs
+│   │       └── SplitPaneHostControlTests.cs
 │   ├── coverlet.runsettings
 │   ├── scripts
 │   │   └── setup-verification.sh
@@ -3270,6 +3274,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-477 directories, 2731 files
+477 directories, 2735 files
 ```
 <!-- readme-tree end -->
