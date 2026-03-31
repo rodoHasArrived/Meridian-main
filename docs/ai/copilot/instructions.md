@@ -1856,6 +1856,7 @@ Meridian-main
 │   │   └── Program.cs
 │   ├── Meridian.ProviderSdk
 │   │   ├── AttributeCredentialResolver.cs
+│   │   ├── CredentialSchemaRegistry.cs
 │   │   ├── CredentialValidator.cs
 │   │   ├── DataSourceAttribute.cs
 │   │   ├── DataSourceRegistry.cs
@@ -2338,6 +2339,7 @@ Meridian-main
 │       │   ├── LiveDataModels.cs
 │       │   ├── NotificationModels.cs
 │       │   ├── OrderBookModels.cs
+│       │   ├── PaneDropEventArgs.cs
 │       │   ├── PaneLayout.cs
 │       │   ├── ProviderHealthModels.cs
 │       │   ├── QuantScriptModels.cs

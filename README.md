@@ -1995,6 +1995,7 @@ Use these documents together when planning or implementing new work:
 │   │       └── SymbolTools.cs
 │   ├── Meridian.ProviderSdk
 │   │   ├── AttributeCredentialResolver.cs
+│   │   ├── CredentialSchemaRegistry.cs
 │   │   ├── CredentialValidator.cs
 │   │   ├── DataSourceAttribute.cs
 │   │   ├── DataSourceRegistry.cs
@@ -2484,6 +2485,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── LiveDataModels.cs
 │       │   ├── NotificationModels.cs
 │       │   ├── OrderBookModels.cs
+│       │   ├── PaneDropEventArgs.cs
 │       │   ├── PaneLayout.cs
 │       │   ├── ProviderHealthModels.cs
 │       │   ├── QuantScriptModels.cs
@@ -3240,6 +3242,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-477 directories, 2725 files
+477 directories, 2727 files
 ```
 <!-- readme-tree end -->

@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-03-31 03:09:29 UTC. Do not edit manually.
+> Auto-generated on 2026-03-31 03:29:35 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -1745,6 +1745,7 @@ Meridian-main
 │   │   └── Program.cs
 │   ├── Meridian.ProviderSdk
 │   │   ├── AttributeCredentialResolver.cs
+│   │   ├── CredentialSchemaRegistry.cs
 │   │   ├── CredentialValidator.cs
 │   │   ├── DataSourceAttribute.cs
 │   │   ├── DataSourceRegistry.cs
@@ -2227,6 +2228,7 @@ Meridian-main
 │       │   ├── LiveDataModels.cs
 │       │   ├── NotificationModels.cs
 │       │   ├── OrderBookModels.cs
+│       │   ├── PaneDropEventArgs.cs
 │       │   ├── PaneLayout.cs
 │       │   ├── ProviderHealthModels.cs
 │       │   ├── QuantScriptModels.cs
