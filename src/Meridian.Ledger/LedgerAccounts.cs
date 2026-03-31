@@ -83,6 +83,27 @@ public static class LedgerAccounts
     public static LedgerAccount CorporateActionExpenseFor(string financialAccountId) =>
         CreateScoped("Corporate Action Expense", LedgerAccountType.Expense, financialAccountId);
 
+    /// <summary>Unrealized gain on open long positions marked to current market value.</summary>
+    public static readonly LedgerAccount UnrealizedGain =
+        new("Unrealized Gain", LedgerAccountType.Revenue);
+
+    /// <summary>Unrealized loss on open long positions marked to current market value.</summary>
+    public static readonly LedgerAccount UnrealizedLoss =
+        new("Unrealized Loss", LedgerAccountType.Expense);
+
+    /// <summary>Retained earnings carried forward from prior reporting periods.</summary>
+    public static readonly LedgerAccount RetainedEarnings =
+        new("Retained Earnings", LedgerAccountType.Equity);
+
+    public static LedgerAccount UnrealizedGainFor(string financialAccountId) =>
+        CreateScoped("Unrealized Gain", LedgerAccountType.Revenue, financialAccountId);
+
+    public static LedgerAccount UnrealizedLossFor(string financialAccountId) =>
+        CreateScoped("Unrealized Loss", LedgerAccountType.Expense, financialAccountId);
+
+    public static LedgerAccount RetainedEarningsFor(string financialAccountId) =>
+        CreateScoped("Retained Earnings", LedgerAccountType.Equity, financialAccountId);
+
     /// <summary>Dividend expense owed on short positions or other negative dividend adjustments.</summary>
     public static readonly LedgerAccount DividendExpense =
         new("Dividend Expense", LedgerAccountType.Expense);

@@ -31,7 +31,13 @@ public sealed class Ledger : IReadOnlyLedger
     public IReadOnlyList<JournalEntry> Journal => _journal;
 
     /// <summary>All accounts that have been posted to, in first-seen order.</summary>
-    public IReadOnlyCollection<LedgerAccount> Accounts => _accountTotals.Keys.ToList();
+    public IReadOnlyCollection<LedgerAccount> Accounts => _accountTotals.Keys;
+
+    /// <summary>Total number of journal entries posted to this ledger.</summary>
+    public int JournalEntryCount => _journal.Count;
+
+    /// <summary>Total number of individual ledger entry lines (debit/credit rows) posted.</summary>
+    public int TotalLedgerEntryCount => _ledgerEntryIds.Count;
 
     /// <summary>
     /// Posts a <see cref="JournalEntry"/> to the ledger.

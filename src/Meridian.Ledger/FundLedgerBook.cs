@@ -92,7 +92,7 @@ public sealed class FundLedgerBook
                 continue;
 
             var dimensionId = key.LedgerBook[prefix.Length..];
-            result[dimensionId] = ((Ledger)ledger).SnapshotAsOf(asOf);
+            result[dimensionId] = ledger.SnapshotAsOf(asOf);
         }
         return result;
     }
