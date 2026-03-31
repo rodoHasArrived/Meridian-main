@@ -136,10 +136,14 @@ Use these documents together when planning or implementing new work:
 │       │   └── project-context.md
 │       ├── meridian-blueprint
 │       │   ├── SKILL.md
+│       │   ├── agents
+│       │   │   └── openai.yaml
 │       │   └── references
 │       │       └── blueprint-patterns.md
 │       ├── meridian-brainstorm
 │       │   ├── SKILL.md
+│       │   ├── agents
+│       │   │   └── openai.yaml
 │       │   └── references
 │       │       └── competitive-landscape.md
 │       ├── meridian-cleanup
@@ -147,7 +151,9 @@ Use these documents together when planning or implementing new work:
 │       │   └── agents
 │       │       └── openai.yaml
 │       ├── meridian-code-review
-│       │   └── SKILL.md
+│       │   ├── SKILL.md
+│       │   └── agents
+│       │       └── openai.yaml
 │       ├── meridian-implementation-assurance
 │       │   ├── SKILL.md
 │       │   ├── agents
@@ -172,6 +178,8 @@ Use these documents together when planning or implementing new work:
 │       │       └── score_eval.py
 │       ├── meridian-provider-builder
 │       │   ├── SKILL.md
+│       │   ├── agents
+│       │   │   └── openai.yaml
 │       │   └── references
 │       │       └── provider-patterns.md
 │       ├── meridian-roadmap-strategist
@@ -182,6 +190,8 @@ Use these documents together when planning or implementing new work:
 │       │       └── roadmap-source-map.md
 │       └── meridian-test-writer
 │           ├── SKILL.md
+│           ├── agents
+│           │   └── openai.yaml
 │           └── references
 │               └── test-patterns.md
 ├── .devcontainer
@@ -3277,6 +3287,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-477 directories, 2735 files
+484 directories, 2741 files
 ```
 <!-- readme-tree end -->
