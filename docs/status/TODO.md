@@ -139,8 +139,8 @@ Total items: **204**
 | `docs/status/rules-report.md` | 432 | `TODO` | ❌ | \| `docs\status\TODO.md` \| No hardcoded localhost URLs in docs \| info \| |
 | `src/Meridian.Application/Commands/SecurityMasterCommands.cs` | 20 | `NOTE` | ❌ | // NOTE: _importService is null when the Security Master database is not configured at CLI |
 | `src/Meridian.Application/Config/ConfigValidationHelper.cs` | 123 | `TODO` | ❌ | var placeholders = new[] { "__SET_ME__", "YOUR_", "REPLACE_", "ENTER_", "INSERT_", "TODO" }; |
-| `src/Meridian.Application/Config/ConfigurationPipeline.cs` | 331 | `TODO` | ❌ | ["__SET_ME__", "your-key-here", "your-secret-here", "REPLACE_ME", "ENTER_YOUR", "INSERT_YOUR", "TODO", "xxx"]; |
-| `src/Meridian.Application/Config/Credentials/CredentialTestingService.cs` | 377 | `NOTE` | ❌ | if (content.Contains("\"Note\":")) |
+| `src/Meridian.Application/Config/ConfigurationPipeline.cs` | 324 | `TODO` | ❌ | ["__SET_ME__", "your-key-here", "your-secret-here", "REPLACE_ME", "ENTER_YOUR", "INSERT_YOUR", "TODO", "xxx"]; |
+| `src/Meridian.Application/Config/Credentials/CredentialTestingService.cs` | 376 | `NOTE` | ❌ | if (content.Contains("\"Note\":")) |
 | `src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs` | 188 | `TODO` | ❌ | "TODO" or |
 | `src/Meridian.Application/Config/IConfigValidator.cs` | 165 | `TODO` | ❌ | "TODO", "xxx", "change-me", "placeholder" |
 | `src/Meridian.Application/DirectLending/InMemoryDirectLendingService.Workflows.cs` | 100 | `NOTE` | ❌ | AppendEvent(stored, "loan.fee-assessed", request.EffectiveDate, new { loanId, request.FeeType, request.Amount, request.EffectiveDate, request.Note }, metadata); |
@@ -170,15 +170,15 @@ Total items: **204**
 | `src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.cs` | 981 | `NOTE` | ❌ | @note, |
 | `src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.cs` | 991 | `NOTE` | ❌ | insert.Parameters.AddWithValue("note", (object?)row.Note ?? DBNull.Value); |
 | `src/Meridian.Storage/Packaging/PortableDataPackager.Scripts.Sql.cs` | 31 | `NOTE` | ❌ | sb.AppendLine("-- Note: For JSONL files, use PostgreSQL's COPY with JSON processing"); |
-| `src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs` | 275 | `NOTE` | ❌ | /// Note: Renamed from RetentionPolicy to avoid conflict with Meridian.Ui.Services.RetentionPolicy |
-| `src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs` | 411 | `NOTE` | ❌ | // NOTE: SelfTest*, ErrorCodes*, ShowConfig*, QuickCheck* models are defined in DiagnosticsService.cs |
-| `src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs` | 816 | `NOTE` | ❌ | // For now, fall back to CSV with a note |
-| `src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs` | 825 | `NOTE` | ❌ | "Note: Full Parquet export requires Apache.Arrow library.\n" + |
-| `src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs` | 850 | `NOTE` | ❌ | // Add a note file explaining the Excel fallback |
-| `src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs` | 856 | `NOTE` | ❌ | "Note: Full Excel (.xlsx) export requires the EPPlus library.\n" + |
-| `src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs` | 892 | `NOTE` | ❌ | "Note: Full HDF5 (.h5) export requires the h5py library in Python.\n" + |
-| `src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs` | 986 | `NOTE` | ❌ | "Note: Full QuantConnect Lean format export requires specific data structure.\n" + |
-| `src/Meridian.Ui.Services/Services/ProviderHealthService.cs` | 518 | `NOTE` | ❌ | // NOTE: ProviderComparison is defined in AdvancedAnalyticsModels.cs for cross-provider comparison |
+| `src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs` | 266 | `NOTE` | ❌ | /// Note: Renamed from RetentionPolicy to avoid conflict with Meridian.Ui.Services.RetentionPolicy |
+| `src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs` | 398 | `NOTE` | ❌ | // NOTE: SelfTest*, ErrorCodes*, ShowConfig*, QuickCheck* models are defined in DiagnosticsService.cs |
+| `src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs` | 815 | `NOTE` | ❌ | // For now, fall back to CSV with a note |
+| `src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs` | 824 | `NOTE` | ❌ | "Note: Full Parquet export requires Apache.Arrow library.\n" + |
+| `src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs` | 849 | `NOTE` | ❌ | // Add a note file explaining the Excel fallback |
+| `src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs` | 855 | `NOTE` | ❌ | "Note: Full Excel (.xlsx) export requires the EPPlus library.\n" + |
+| `src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs` | 891 | `NOTE` | ❌ | "Note: Full HDF5 (.h5) export requires the h5py library in Python.\n" + |
+| `src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs` | 985 | `NOTE` | ❌ | "Note: Full QuantConnect Lean format export requires specific data structure.\n" + |
+| `src/Meridian.Ui.Services/Services/ProviderHealthService.cs` | 514 | `NOTE` | ❌ | // NOTE: ProviderComparison is defined in AdvancedAnalyticsModels.cs for cross-provider comparison |
 | `src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs` | 806 | `NOTE` | ❌ | // Fallback: Note that tier migration requires storage configuration |
 | `src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs` | 1043 | `NOTE` | ❌ | // Fallback: Note that tier migration requires storage configuration |
 | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs` | 721 | `NOTE` | ❌ | // ADR-014 note: DirectLendingCommandEnvelope<TCommand> and TCommand are open-generic type |
@@ -192,7 +192,7 @@ Total items: **204**
 | `src/Meridian.Ui/dashboard/src/screens/data-operations-screen.tsx` | 211 | `NOTE` | ❌ | <div className="mt-3 text-sm leading-6 text-foreground">{provider.note}</div> |
 | `src/Meridian.Ui/dashboard/src/types.ts` | 115 | `NOTE` | ❌ | note: string; |
 | `src/Meridian.Wpf/GlobalUsings.cs` | 7 | `NOTE` | ❌ | // NOTE: Type aliases and Contracts namespaces are NOT re-defined here because |
-| `src/Meridian.Wpf/Services/ContextMenuService.cs` | 120 | `NOTE` | ❌ | "Add Note", "\uE70B", |
+| `src/Meridian.Wpf/Services/ContextMenuService.cs` | 117 | `NOTE` | ❌ | "Add Note", "\uE70B", |
 | `tests/Meridian.Tests/Application/Backfill/AdditionalProviderContractTests.cs` | 637 | `NOTE` | ❌ | "Note": "Thank you for using Alpha Vantage! Our standard API call frequency is 5 calls per minute and 500 calls per day. Please visit https://www.alphavantage.co/premium/ if you would like to target a higher API call frequency." |
 | `tests/Meridian.Tests/Application/Backfill/BackfillWorkerServiceTests.cs` | 28 | `NOTE` | ❌ | // NOTE: Using null! because validation throws before dependencies are accessed |
 | `tests/Meridian.Tests/Application/Backfill/BackfillWorkerServiceTests.cs` | 56 | `NOTE` | ❌ | // NOTE: Using null! because validation throws before dependencies are accessed |
