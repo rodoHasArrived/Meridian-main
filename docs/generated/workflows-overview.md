@@ -1,6 +1,6 @@
 # Workflows Overview
 
-> Auto-generated on 2026-03-31 20:45:46 UTC. Do not edit manually.
+> Auto-generated on 2026-03-31 21:08:15 UTC. Do not edit manually.
 
 | Workflow File | Name |
 |---|---|
@@ -29,6 +29,7 @@
 | `.github/workflows/readme-tree.yml` | README Tree Sync |
 | `.github/workflows/release.yml` | Release Management |
 | `.github/workflows/repo-health.yml` | Repo Health |
+| `.github/workflows/reusable-ai-analysis.yml` | Reusable AI Analysis |
 | `.github/workflows/reusable-dotnet-build.yml` | Reusable .NET Build |
 | `.github/workflows/scheduled-maintenance.yml` | Scheduled Maintenance |
 | `.github/workflows/security.yml` | Security |
