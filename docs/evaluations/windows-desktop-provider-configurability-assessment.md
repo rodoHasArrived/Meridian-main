@@ -2,8 +2,8 @@
 
 ## Meridian — Structure Review & Improvement Plan
 
-**Date:** 2026-02-13  
-**Status:** Proposed  
+**Date:** 2026-02-13
+**Status:** Proposed
 **Author:** Architecture Review
 
 ---

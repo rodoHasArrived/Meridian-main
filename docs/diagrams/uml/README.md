@@ -1,7 +1,7 @@
 # UML Diagrams
 
-**Status:** Active  
-**Owner:** Core Team  
+**Status:** Active
+**Owner:** Core Team
 **Reviewed:** 2026-03-15
 
 This directory contains PlantUML source files (`.puml`) and committed PNG artifacts (`.png`) for architecture and workflow documentation.
@@ -105,7 +105,7 @@ When editing UML docs:
 
 - [Architecture Overview](../../architecture/overview.md)
 - [Domain Contracts](../../architecture/domains.md)
-- [Diagrams Index](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/README.md) — Graphviz DOT diagrams (C4, data flow, etc.)
+- [Diagrams Index](https://github.com/rodoHasArrived/Meridian/blob/main/docs/diagrams/README.md) — Graphviz DOT diagrams (C4, data flow, etc.)
 
 ---
 

@@ -292,7 +292,7 @@ Copilot agents, referencing these files in the issue or prompt body improves out
 | Resource | Purpose |
 |----------|---------|
 | [`docs/ai/skills/README.md`](../skills/README.md) | Claude Code skill details |
-| [`docs/ai/README.md`](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/README.md) | Master AI resource index |
+| [`docs/ai/README.md`](https://github.com/rodoHasArrived/Meridian/blob/main/docs/ai/README.md) | Master AI resource index |
 | [`docs/ai/ai-known-errors.md`](../ai-known-errors.md) | Error prevention registry |
 | [`docs/ai/instructions/README.md`](../instructions/README.md) | Path-specific Copilot instructions |
 

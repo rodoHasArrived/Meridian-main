@@ -1,7 +1,7 @@
 # Architecture Documentation
 
-**Owner:** Core Team  
-**Scope:** Engineering  
+**Owner:** Core Team
+**Scope:** Engineering
 **Review Cadence:** Quarterly or when significant architectural decisions are made
 
 ---

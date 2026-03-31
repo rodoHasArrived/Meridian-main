@@ -1,7 +1,7 @@
 # Repository Organization Guide
 
-**Version:** 1.0  
-**Last Updated:** 2026-02-13  
+**Version:** 1.0
+**Last Updated:** 2026-02-13
 **Audience:** Developers, Contributors, Maintainers
 
 This guide establishes conventions for organizing code, documentation, and assets in the Meridian repository. Following these patterns ensures consistency, maintainability, and ease of navigation.
@@ -288,7 +288,7 @@ public static class ConfigEndpoints
     public static void MapConfigEndpoints(this WebApplication app)
     {
         var group = app.MapGroup("/api/config").WithTags("Configuration");
-        
+
         group.MapGet("/", GetConfig)
              .WithName("GetConfiguration")
              .Produces<AppConfigDto>();
@@ -427,7 +427,7 @@ public class ConfigServiceTests
 {
     [Fact]
     public void LoadConfig_ValidFile_ReturnsConfig() { }
-    
+
     [Fact]
     public void LoadConfig_InvalidFile_ThrowsException() { }
 }
@@ -441,11 +441,11 @@ public class ConfigServiceTests
     {
         [Fact]
         public void ValidFile_ReturnsConfig() { }
-        
+
         [Fact]
         public void InvalidFile_ThrowsException() { }
     }
-    
+
     public class SaveConfig
     {
         [Fact]

@@ -1,9 +1,9 @@
 # UFL Equity Target-State Package V2
 
-**Owner:** Core Team  
-**Audience:** Product, architecture, domain, storage, and application contributors  
-**Last Updated:** 2026-03-26  
-**Status:** active  
+**Owner:** Core Team
+**Audience:** Product, architecture, domain, storage, and application contributors
+**Last Updated:** 2026-03-26
+**Status:** active
 **Reviewed:** 2026-03-26
 
 > **Naming standard:** All new F# types and DTOs in this package must follow the
