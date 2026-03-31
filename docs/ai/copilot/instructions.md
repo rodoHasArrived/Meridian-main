@@ -987,7 +987,20 @@ Meridian-main
 │   │   │   │   ├── StorageFeatureRegistration.cs
 │   │   │   │   └── SymbolManagementFeatureRegistration.cs
 │   │   │   ├── Startup
-│   │   │   │   └── SharedStartupBootstrapper.cs
+│   │   │   │   ├── ModeRunners
+│   │   │   │   │   ├── BackfillModeRunner.cs
+│   │   │   │   │   ├── CollectorModeRunner.cs
+│   │   │   │   │   ├── CommandModeRunner.cs
+│   │   │   │   │   ├── DesktopModeRunner.cs
+│   │   │   │   │   └── WebModeRunner.cs
+│   │   │   │   ├── StartupModels
+│   │   │   │   │   ├── HostMode.cs
+│   │   │   │   │   ├── StartupContext.cs
+│   │   │   │   │   ├── StartupPlan.cs
+│   │   │   │   │   ├── StartupRequest.cs
+│   │   │   │   │   └── StartupValidationResult.cs
+│   │   │   │   ├── SharedStartupBootstrapper.cs
+│   │   │   │   └── StartupOrchestrator.cs
 │   │   │   ├── CircuitBreakerCallbackRouter.cs
 │   │   │   ├── DirectLendingStartup.cs
 │   │   │   ├── HostAdapters.cs
