@@ -1,7 +1,7 @@
 # Development Guides
 
-**Owner:** Core Team  
-**Scope:** Engineering — Developer-Facing  
+**Owner:** Core Team
+**Scope:** Engineering — Developer-Facing
 **Review Cadence:** As features and tooling evolve
 
 ---

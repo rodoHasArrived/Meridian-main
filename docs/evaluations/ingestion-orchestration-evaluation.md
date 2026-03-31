@@ -216,7 +216,7 @@ Monitors pipeline queue utilization and drop rate, emitting debounced alerts:
 
 ### G.4 Dead-Letter and Audit Trail
 
-`src/Meridian.Application/Pipeline/DeadLetterSink.cs`  
+`src/Meridian.Application/Pipeline/DeadLetterSink.cs`
 `src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs`
 
 - **DeadLetterSink**: records events that fail `IEventValidator` to `_dead_letter/rejected_events.jsonl` with error details. Enables post-fix replay.

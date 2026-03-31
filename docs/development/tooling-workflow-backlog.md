@@ -1,8 +1,8 @@
 # Tooling & Workflow Backlog
 
-**Owner:** Core Team  
-**Scope:** Engineering — Tooling, automation, and contributor workflow  
-**Status:** Proposed  
+**Owner:** Core Team
+**Scope:** Engineering — Tooling, automation, and contributor workflow
+**Status:** Proposed
 **Last Updated:** 2026-03-20
 
 ---

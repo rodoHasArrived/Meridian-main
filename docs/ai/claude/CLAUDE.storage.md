@@ -748,7 +748,7 @@ public async Task<HealthCheckResult> CheckStorageHealthAsync()
 
 ## Related Resources
 
-- **Master AI index:** [`docs/ai/README.md`](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/README.md)
+- **Master AI index:** [`docs/ai/README.md`](https://github.com/rodoHasArrived/Meridian/blob/main/docs/ai/README.md)
 - **Root context:** [`CLAUDE.md`](https://github.com/rodoHasArrived/Meridian/blob/main/CLAUDE.md) § Storage Architecture
 - **Architecture docs:** [`docs/architecture/storage-design.md`](../../architecture/storage-design.md)
 

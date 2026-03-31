@@ -1,8 +1,8 @@
 # UFL Direct Lending Implementation Roadmap
 
-**Owner:** Core Team  
-**Audience:** Engineering leads, implementers, reviewers, and product stakeholders  
-**Last Updated:** 2026-03-22  
+**Owner:** Core Team
+**Audience:** Engineering leads, implementers, reviewers, and product stakeholders
+**Last Updated:** 2026-03-22
 **Status:** Active execution roadmap
 
 ## Scope
@@ -203,9 +203,9 @@ Planned additions to complete direct lending:
 
 ### Direct Lending Write Model
 
-**Namespace:** `Meridian.Application.DirectLending`, `Meridian.FSharp.Domain`  
-**Type:** proposed aggregate + command-handler flow  
-**Lifetime:** Scoped or transient command handlers over singleton stores  
+**Namespace:** `Meridian.Application.DirectLending`, `Meridian.FSharp.Domain`
+**Type:** proposed aggregate + command-handler flow
+**Lifetime:** Scoped or transient command handlers over singleton stores
 **Responsibilities:**
 
 - validate contract and servicing commands
@@ -221,15 +221,15 @@ Planned additions to complete direct lending:
 - metadata/context accessor
 - outbox publisher
 
-**Concurrency Model:** optimistic versioning per loan aggregate  
-**Error Handling:** business validation failures return 400-style domain errors; version conflicts return retryable concurrency errors  
+**Concurrency Model:** optimistic versioning per loan aggregate
+**Error Handling:** business validation failures return 400-style domain errors; version conflicts return retryable concurrency errors
 **Hot Config Reload:** not required for command behavior; store/worker tuning may move to `IOptionsMonitor<DirectLendingOptions>`
 
 ### Direct Lending Projection Store
 
-**Namespace:** `Meridian.Storage.DirectLending`  
-**Type:** `sealed class PostgresDirectLendingStateStore`  
-**Lifetime:** Singleton  
+**Namespace:** `Meridian.Storage.DirectLending`
+**Type:** `sealed class PostgresDirectLendingStateStore`
+**Lifetime:** Singleton
 **Responsibilities:**
 
 - append `loan_event`
@@ -237,33 +237,33 @@ Planned additions to complete direct lending:
 - expose projection queries for ops/audit and read-side APIs
 - support replay-backed rebuild writes
 
-**Dependencies:** `DirectLendingOptions`, `NpgsqlConnection`  
-**Key Internal State:** schema-qualified table access only  
-**Concurrency Model:** serializable transactions with aggregate-version checks  
-**Error Handling:** fail fast on deserialization, SQL schema mismatch, or concurrency conflicts  
+**Dependencies:** `DirectLendingOptions`, `NpgsqlConnection`
+**Key Internal State:** schema-qualified table access only
+**Concurrency Model:** serializable transactions with aggregate-version checks
+**Error Handling:** fail fast on deserialization, SQL schema mismatch, or concurrency conflicts
 **Hot Config Reload:** currently static options; live reload not recommended until store lifetime and connection policy are revisited
 
 ### Outbox and Worker Layer
 
-**Namespace:** `Meridian.Application.DirectLending` plus `Meridian.Workers`-style host area  
-**Type:** proposed services and hosted workers  
-**Lifetime:** Singleton workers, singleton publisher  
+**Namespace:** `Meridian.Application.DirectLending` plus `Meridian.Workers`-style host area
+**Type:** proposed services and hosted workers
+**Lifetime:** Singleton workers, singleton publisher
 **Responsibilities:**
 
 - persist projection/journal/reconciliation/import work requests
 - carry command/correlation/causation lineage into async flows
 - enforce replay-safe suppression modes
 
-**Dependencies:** outbox table, direct-lending services, logging, metrics  
-**Concurrency Model:** idempotent dequeue and retry  
-**Error Handling:** poison-message tracking, retry counters, dead-letter or operator queue  
+**Dependencies:** outbox table, direct-lending services, logging, metrics
+**Concurrency Model:** idempotent dequeue and retry
+**Error Handling:** poison-message tracking, retry counters, dead-letter or operator queue
 **Hot Config Reload:** polling interval and batch size can use `IOptionsMonitor<T>`
 
 ### Servicer Ingestion and Revision Control
 
-**Namespace:** `Meridian.Application.DirectLending.ServicerImport` and `Meridian.Storage.DirectLending`  
-**Type:** proposed service + staging store + workers  
-**Lifetime:** Singleton ingestion orchestrator, singleton stores  
+**Namespace:** `Meridian.Application.DirectLending.ServicerImport` and `Meridian.Storage.DirectLending`
+**Type:** proposed service + staging store + workers
+**Lifetime:** Singleton ingestion orchestrator, singleton stores
 **Responsibilities:**
 
 - accept raw servicer files
@@ -272,16 +272,16 @@ Planned additions to complete direct lending:
 - validate and normalize into canonical servicing revisions
 - trigger projection, reconciliation, and accounting workflows
 
-**Dependencies:** direct-lending store, blob/file storage if needed, outbox publisher  
-**Concurrency Model:** batch-based processing with idempotent batch keys  
-**Error Handling:** explicit batch status transitions and rejection reasons  
+**Dependencies:** direct-lending store, blob/file storage if needed, outbox publisher
+**Concurrency Model:** batch-based processing with idempotent batch keys
+**Error Handling:** explicit batch status transitions and rejection reasons
 **Hot Config Reload:** parser/provider settings can be monitor-backed
 
 ### Projection / Accounting / Reconciliation Modules
 
-**Namespace:** `Meridian.Application.DirectLending.*`, `Meridian.Storage.DirectLending`, selected F# ledger modules  
-**Type:** proposed services and relational stores  
-**Lifetime:** Singleton workers with scoped command execution  
+**Namespace:** `Meridian.Application.DirectLending.*`, `Meridian.Storage.DirectLending`, selected F# ledger modules
+**Type:** proposed services and relational stores
+**Lifetime:** Singleton workers with scoped command execution
 **Responsibilities:**
 
 - immutable cashflow projections
@@ -289,9 +289,9 @@ Planned additions to complete direct lending:
 - expected-versus-actual reconciliation
 - explainable exceptions and audit links
 
-**Dependencies:** event lineage, servicing revisions, reference data, ledger/reconciliation kernels  
-**Concurrency Model:** asynchronous worker-driven processing keyed by loan and run IDs  
-**Error Handling:** explicit run statuses and retries  
+**Dependencies:** event lineage, servicing revisions, reference data, ledger/reconciliation kernels
+**Concurrency Model:** asynchronous worker-driven processing keyed by loan and run IDs
+**Error Handling:** explicit run statuses and retries
 **Hot Config Reload:** tolerance, engine version, and processing cadence should be configurable
 
 ## Data Flow
@@ -369,7 +369,7 @@ N/A - backend and API roadmap only.
 
 ## Implementation Checklist
 
-**Estimated effort:** XL  
+**Estimated effort:** XL
 **Suggested branch:** `feature/direct-lending-roadmap`
 
 ### Phase 0: Stabilize Current Slice

@@ -1,8 +1,8 @@
 # Security Master Guide
 
-**Last Updated:** 2026-03-21  
-**Owner:** Core Team  
-**Scope:** Engineering / Operations / Product  
+**Last Updated:** 2026-03-21
+**Owner:** Core Team
+**Scope:** Engineering / Operations / Product
 **Review Cadence:** When asset class coverage or API changes
 
 ---
