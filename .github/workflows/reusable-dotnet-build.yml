@@ -152,26 +152,22 @@ jobs:
         if: always()
         shell: bash
         run: |
+          outcome_label() {
+            case "$1" in
+              success)   echo "✅ Passed" ;;
+              skipped)   echo "⏭️ Skipped" ;;
+              cancelled) echo "🚫 Cancelled" ;;
+              *)         echo "❌ Failed" ;;
+            esac
+          }
           {
             echo "## Build & Test Summary"
             echo ""
             echo "| Step | Result |"
             echo "|------|--------|"
-            if [[ "${{ steps.build.outcome }}" == "success" ]]; then
-              echo "| Build | ✅ Passed |"
-            elif [[ "${{ steps.build.outcome }}" == "skipped" ]]; then
-              echo "| Build | ⏭️ Skipped |"
-            else
-              echo "| Build | ❌ Failed |"
-            fi
+            echo "| Build | $(outcome_label '${{ steps.build.outcome }}') |"
             if [[ "${{ inputs.run-tests }}" == "true" ]]; then
-              if [[ "${{ steps.test.outcome }}" == "success" ]]; then
-                echo "| Tests | ✅ Passed |"
-              elif [[ "${{ steps.test.outcome }}" == "skipped" ]]; then
-                echo "| Tests | ⏭️ Skipped |"
-              else
-                echo "| Tests | ❌ Failed |"
-              fi
+              echo "| Tests | $(outcome_label '${{ steps.test.outcome }}') |"
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 
