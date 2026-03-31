@@ -1,0 +1,4 @@
+interface:
+  display_name: "Meridian Cleanup"
+  short_description: "Safely simplify Meridian code and docs"
+  default_prompt: "Use $meridian-cleanup to make a focused, behavior-preserving cleanup pass in Meridian and validate the touched area."

@@ -255,7 +255,7 @@ export MERIDIAN_SECURITY_MASTER_SCHEMA="security_master"
 | `FSharp/Domain/SecurityMaster.fs` | Domain types and asset class definitions |
 | `Ui.Shared/Endpoints/SecurityMasterEndpoints.cs` | REST API endpoints |
 
-**Related:** [Security Master Guide](../providers/security-master-guide.md) — Complete setup and usage guide
+**Related:** [Security Master Guide](../../providers/security-master-guide.md) — Complete setup and usage guide
 
 ---
 

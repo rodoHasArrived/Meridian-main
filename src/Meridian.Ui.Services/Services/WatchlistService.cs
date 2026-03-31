@@ -23,11 +23,12 @@ public class WatchlistService
         set => _instance = value ?? throw new ArgumentNullException(nameof(value));
     }
 
-    public virtual async Task<WatchlistData> LoadWatchlistAsync()
+    public virtual async Task<WatchlistData> LoadWatchlistAsync(CancellationToken ct = default)
     {
-        await _watchlistLock.WaitAsync().ConfigureAwait(false);
+        await _watchlistLock.WaitAsync(ct).ConfigureAwait(false);
         try
         {
+            ct.ThrowIfCancellationRequested();
             return Clone(_watchlist);
         }
         finally

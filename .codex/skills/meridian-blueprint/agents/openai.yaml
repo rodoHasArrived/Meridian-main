@@ -1,0 +1,4 @@
+interface:
+  display_name: "Meridian Blueprint"
+  short_description: "Draft implementation-ready Meridian designs"
+  default_prompt: "Use $meridian-blueprint to turn a Meridian feature or refactor idea into a code-ready technical design with interfaces, flow, risks, and tests."

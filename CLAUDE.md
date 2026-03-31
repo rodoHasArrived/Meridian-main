@@ -2,7 +2,7 @@
 
 ## Local Codex Skills
 
-Repo-local Codex skills live under `.codex/skills/`. Use them for Meridian-specific blueprinting, brainstorming, code review, provider implementation, and test writing workflows.
+Repo-local Codex skills live under `.codex/skills/`. Use them for Meridian-specific blueprinting, brainstorming, cleanup, code review, provider implementation, and test writing workflows.
 
 **Meridian** is a high-performance .NET 9.0 / C# 13 / F# 8.0 integrated trading platform. It collects real-time and historical market microstructure data from multiple providers, executes trading strategies in real-time, backtests strategies on historical data, and tracks portfolio performance across all runs.
 
@@ -151,6 +151,10 @@ Meridian-main
 │   │   │   ├── brainstorm-history.jsonl
 │   │   │   ├── CHANGELOG.md
 │   │   │   └── SKILL.md
+│   │   ├── meridian-cleanup
+│   │   │   ├── agents
+│   │   │   │   └── openai.yaml
+│   │   │   └── SKILL.md
 │   │   ├── meridian-code-review
 │   │   │   ├── agents
 │   │   │   │   └── grader.md
@@ -208,6 +212,10 @@ Meridian-main
 │   │   │   ├── references
 │   │   │   │   └── competitive-landscape.md
 │   │   │   └── SKILL.md
+│   │   ├── meridian-cleanup
+│   │   │   ├── agents
+│   │   │   │   └── openai.yaml
+│   │   │   └── SKILL.md
 │   │   ├── meridian-code-review
 │   │   │   └── SKILL.md
 │   │   ├── meridian-implementation-assurance
@@ -262,7 +270,6 @@ Meridian-main
 │   │   ├── brainstorm-agent.md
 │   │   ├── bug-fix-agent.md
 │   │   ├── cleanup-agent.md
-│   │   ├── cleanup-specialist.agent.md
 │   │   ├── code-review-agent.md
 │   │   ├── documentation-agent.md
 │   │   ├── implementation-assurance-agent.md
@@ -3360,6 +3367,8 @@ The following provider-related classes are the current canonical inventory used 
 | `IBHistoricalDataProvider` | Interactive Brokers historical bars |
 | `NasdaqDataLinkHistoricalDataProvider` | Nasdaq Data Link historical bars |
 | `PolygonHistoricalDataProvider` | Polygon historical bars |
+| `BuiltHistoricalDataProvider` | Internal delegate-driven historical provider produced by `ProviderBehaviorBuilder` |
+| `RobinhoodHistoricalDataProvider` | Robinhood free public end-of-day historical bars |
 | `StockSharpHistoricalDataProvider` | StockSharp historical bars |
 | `StooqHistoricalDataProvider` | Stooq historical bars |
 | `SyntheticHistoricalDataProvider` | Deterministic synthetic historical bars, quotes, trades, auctions, and corporate actions |
@@ -3374,6 +3383,7 @@ The following provider-related classes are the current canonical inventory used 
 | `FinnhubSymbolSearchProviderRefactored` | Finnhub symbol search |
 | `OpenFigiClient` | OpenFIGI symbol resolution/search |
 | `PolygonSymbolSearchProvider` | Polygon symbol search |
+| `RobinhoodSymbolSearchProvider` | Robinhood public instruments symbol search |
 | `StockSharpSymbolSearchProvider` | StockSharp symbol search |
 
 ### Brokerage gateway implementations

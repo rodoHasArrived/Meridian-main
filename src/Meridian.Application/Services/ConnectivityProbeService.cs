@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Meridian.Application.Logging;
 using Meridian.Contracts.Services;
 using Meridian.Infrastructure.Contracts;
+using Meridian.Infrastructure.Http;
 using Serilog;
 
 namespace Meridian.Application.Services;
@@ -12,7 +13,7 @@ namespace Meridian.Application.Services;
 /// <summary>
 /// Sealed implementation that probes connectivity every 60 seconds using HTTP GET to Google's connectivity check endpoint.
 /// </summary>
-[ImplementsAdr("ADR-010", "IHttpClientFactory for proper HTTP client lifecycle management — never new HttpClient()")]
+[ImplementsAdr("ADR-010", "Uses IHttpClientFactory and the configured connectivity-test client for HTTP lifecycle management")]
 public sealed class ConnectivityProbeService : IConnectivityProbeService, IDisposable
 {
     private const string ConnectivityCheckUrl = "https://connectivitycheck.gstatic.com/generate_204";
@@ -22,6 +23,7 @@ public sealed class ConnectivityProbeService : IConnectivityProbeService, IDispo
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger _log;
     private PeriodicTimer? _probeTimer;
+    private CancellationTokenSource? _probeCancellation;
     private bool _isOnline;
     private bool _disposed;
 
@@ -64,25 +66,26 @@ public sealed class ConnectivityProbeService : IConnectivityProbeService, IDispo
             throw new ObjectDisposedException(nameof(ConnectivityProbeService));
 
         _probeTimer ??= new PeriodicTimer(TimeSpan.FromSeconds(ProbeIntervalSeconds));
+        _probeCancellation ??= new CancellationTokenSource();
 
         // Fire an immediate probe and then start the periodic loop
-        _ = ProbeOnceAsync();
-        _ = RunProbeLoopAsync();
+        _ = ProbeOnceAsync(_probeCancellation.Token);
+        _ = RunProbeLoopAsync(_probeCancellation.Token);
     }
 
     /// <summary>
     /// Runs the periodic probe loop.
     /// </summary>
-    private async Task RunProbeLoopAsync()
+    private async Task RunProbeLoopAsync(CancellationToken ct)
     {
         if (_probeTimer == null)
             return;
 
         try
         {
-            while (await _probeTimer.WaitForNextTickAsync().ConfigureAwait(false))
+            while (await _probeTimer.WaitForNextTickAsync(ct).ConfigureAwait(false))
             {
-                await ProbeOnceAsync().ConfigureAwait(false);
+                await ProbeOnceAsync(ct).ConfigureAwait(false);
             }
         }
         catch (OperationCanceledException)
@@ -94,13 +97,14 @@ public sealed class ConnectivityProbeService : IConnectivityProbeService, IDispo
     /// <summary>
     /// Performs a single connectivity probe and updates IsOnline.
     /// </summary>
-    private async Task ProbeOnceAsync()
+    private async Task ProbeOnceAsync(CancellationToken ct)
     {
         try
         {
-            using var client = _httpClientFactory.CreateClient();
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(HttpTimeoutSeconds));
-            var response = await client.GetAsync(ConnectivityCheckUrl, HttpCompletionOption.ResponseHeadersRead, cts.Token)
+            using var client = _httpClientFactory.CreateClient(HttpClientNames.ConnectivityTest);
+            using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            timeoutCts.CancelAfter(TimeSpan.FromSeconds(HttpTimeoutSeconds));
+            var response = await client.GetAsync(ConnectivityCheckUrl, HttpCompletionOption.ResponseHeadersRead, timeoutCts.Token)
                 .ConfigureAwait(false);
 
             // Success = 2xx status or 204 No Content
@@ -114,6 +118,10 @@ public sealed class ConnectivityProbeService : IConnectivityProbeService, IDispo
             {
                 _log.Debug("Connectivity probe returned non-success status: {StatusCode}", response.StatusCode);
             }
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            // Service is stopping or the probe loop was canceled.
         }
         catch (OperationCanceledException)
         {
@@ -137,6 +145,8 @@ public sealed class ConnectivityProbeService : IConnectivityProbeService, IDispo
         if (_disposed)
             return;
 
+        _probeCancellation?.Cancel();
+        _probeCancellation?.Dispose();
         _probeTimer?.Dispose();
         _disposed = true;
     }

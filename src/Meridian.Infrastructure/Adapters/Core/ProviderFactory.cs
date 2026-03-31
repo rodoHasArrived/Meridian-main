@@ -39,12 +39,12 @@ namespace Meridian.Infrastructure.Adapters.Core;
 public sealed class ProviderFactory
 {
     private readonly AppConfig _config;
-    private readonly ICredentialResolver _credentialResolver;
+    private readonly IProviderCredentialResolver _credentialResolver;
     private readonly ILogger _log;
 
     public ProviderFactory(
         AppConfig config,
-        ICredentialResolver credentialResolver,
+        IProviderCredentialResolver credentialResolver,
         ILogger? log = null)
     {
         _config = config ?? throw new ArgumentNullException(nameof(config));
@@ -420,7 +420,14 @@ public sealed class ProviderCreationResult
 /// </remarks>
 [Obsolete("ICredentialResolver requires a new method per provider. " +
           "Annotate new providers with [RequiresCredential] and use AttributeCredentialResolver / ICredentialContext instead.")]
-public interface ICredentialResolver
+public interface ICredentialResolver : IProviderCredentialResolver
+{
+}
+
+/// <summary>
+/// Legacy provider credential resolver contract used by the unified provider factory.
+/// </summary>
+public interface IProviderCredentialResolver
 {
     (string? KeyId, string? SecretKey) ResolveAlpacaCredentials(string? configKeyId, string? configSecretKey);
     string? ResolvePolygonCredentials(string? configApiKey);
@@ -435,7 +442,7 @@ public interface ICredentialResolver
 /// Credential resolver that reads from environment variables.
 /// Follows the same pattern as ConfigurationService.
 /// </summary>
-public sealed class EnvironmentCredentialResolver : ICredentialResolver
+public sealed class EnvironmentCredentialResolver : IProviderCredentialResolver
 {
     public (string? KeyId, string? SecretKey) ResolveAlpacaCredentials(string? configKeyId, string? configSecretKey)
     {

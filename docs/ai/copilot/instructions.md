@@ -136,6 +136,10 @@ Meridian-main
 │   │   │   ├── brainstorm-history.jsonl
 │   │   │   ├── CHANGELOG.md
 │   │   │   └── SKILL.md
+│   │   ├── meridian-cleanup
+│   │   │   ├── agents
+│   │   │   │   └── openai.yaml
+│   │   │   └── SKILL.md
 │   │   ├── meridian-code-review
 │   │   │   ├── agents
 │   │   │   │   └── grader.md
@@ -193,6 +197,10 @@ Meridian-main
 │   │   │   ├── references
 │   │   │   │   └── competitive-landscape.md
 │   │   │   └── SKILL.md
+│   │   ├── meridian-cleanup
+│   │   │   ├── agents
+│   │   │   │   └── openai.yaml
+│   │   │   └── SKILL.md
 │   │   ├── meridian-code-review
 │   │   │   └── SKILL.md
 │   │   ├── meridian-implementation-assurance
@@ -247,7 +255,6 @@ Meridian-main
 │   │   ├── brainstorm-agent.md
 │   │   ├── bug-fix-agent.md
 │   │   ├── cleanup-agent.md
-│   │   ├── cleanup-specialist.agent.md
 │   │   ├── code-review-agent.md
 │   │   ├── documentation-agent.md
 │   │   ├── implementation-assurance-agent.md

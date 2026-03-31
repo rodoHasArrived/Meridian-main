@@ -142,6 +142,10 @@ Use these documents together when planning or implementing new work:
 │       │   ├── SKILL.md
 │       │   └── references
 │       │       └── competitive-landscape.md
+│       ├── meridian-cleanup
+│       │   ├── SKILL.md
+│       │   └── agents
+│       │       └── openai.yaml
 │       ├── meridian-code-review
 │       │   └── SKILL.md
 │       ├── meridian-implementation-assurance
@@ -203,7 +207,6 @@ Use these documents together when planning or implementing new work:
 │   │   ├── brainstorm-agent.md
 │   │   ├── bug-fix-agent.md
 │   │   ├── cleanup-agent.md
-│   │   ├── cleanup-specialist.agent.md
 │   │   ├── code-review-agent.md
 │   │   ├── documentation-agent.md
 │   │   ├── implementation-assurance-agent.md

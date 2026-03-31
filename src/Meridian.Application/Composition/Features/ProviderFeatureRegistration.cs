@@ -34,7 +34,7 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
         });
 
         // Register credential resolver
-        services.AddSingleton<ICredentialResolver>(sp =>
+        services.AddSingleton<IProviderCredentialResolver>(sp =>
         {
             var configService = sp.GetRequiredService<ConfigurationService>();
             return new ConfigurationServiceCredentialAdapter(configService);
@@ -47,7 +47,7 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
 
             var configStore = sp.GetRequiredService<ConfigStore>();
             var config = configStore.Load();
-            var credentialResolver = sp.GetRequiredService<ICredentialResolver>();
+            var credentialResolver = sp.GetRequiredService<IProviderCredentialResolver>();
             var log = LoggingSetup.ForContext("ProviderRegistration");
 
             var useAttributeDiscovery = config.ProviderRegistry?.UseAttributeDiscovery ?? false;
@@ -72,7 +72,7 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
         {
             var configStore = sp.GetRequiredService<ConfigStore>();
             var config = configStore.Load();
-            var credentialResolver = sp.GetRequiredService<ICredentialResolver>();
+            var credentialResolver = sp.GetRequiredService<IProviderCredentialResolver>();
             var logger = LoggingSetup.ForContext<ProviderFactory>();
             return new ProviderFactory(config, credentialResolver, logger);
         });
@@ -83,11 +83,11 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
     private static void RegisterStreamingFactories(
         ProviderRegistry registry,
         AppConfig config,
-        ICredentialResolver credentialResolver,
+        IProviderCredentialResolver credentialResolver,
         IServiceProvider sp,
         Serilog.ILogger log)
     {
-        registry.RegisterStreamingFactory(DataSourceKind.IB, () =>
+        registry.RegisterStreamingFactory("ib", () =>
         {
             var publisher = sp.GetRequiredService<IMarketEventPublisher>();
             var tradeCollector = sp.GetRequiredService<TradeDataCollector>();
@@ -96,7 +96,7 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
                 publisher, tradeCollector, depthCollector);
         });
 
-        registry.RegisterStreamingFactory(DataSourceKind.Alpaca, () =>
+        registry.RegisterStreamingFactory("alpaca", () =>
         {
             var tradeCollector = sp.GetRequiredService<TradeDataCollector>();
             var quoteCollector = sp.GetRequiredService<QuoteCollector>();
@@ -107,7 +107,7 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
                 config.Alpaca! with { KeyId = keyId ?? "", SecretKey = secretKey ?? "" });
         });
 
-        registry.RegisterStreamingFactory(DataSourceKind.Polygon, () =>
+        registry.RegisterStreamingFactory("polygon", () =>
         {
             var publisher = sp.GetRequiredService<IMarketEventPublisher>();
             var tradeCollector = sp.GetRequiredService<TradeDataCollector>();
@@ -118,7 +118,7 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
                 reconnectionMetrics: reconnMetrics);
         });
 
-        registry.RegisterStreamingFactory(DataSourceKind.StockSharp, () =>
+        registry.RegisterStreamingFactory("stocksharp", () =>
         {
             var tradeCollector = sp.GetRequiredService<TradeDataCollector>();
             var depthCollector = sp.GetRequiredService<MarketDepthCollector>();
@@ -128,7 +128,7 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
                 config.StockSharp ?? new StockSharpConfig());
         });
 
-        registry.RegisterStreamingFactory(DataSourceKind.NYSE, () =>
+        registry.RegisterStreamingFactory("nyse", () =>
         {
             var tradeCollector = sp.GetRequiredService<TradeDataCollector>();
             var depthCollector = sp.GetRequiredService<MarketDepthCollector>();
@@ -141,7 +141,7 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
                 httpClientFactory);
         });
 
-        registry.RegisterStreamingFactory(DataSourceKind.Synthetic, () =>
+        registry.RegisterStreamingFactory("synthetic", () =>
         {
             var publisher = sp.GetRequiredService<IMarketEventPublisher>();
             return new SyntheticMarketDataClient(publisher, config.Synthetic);
@@ -183,7 +183,7 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
     private static void RegisterBackfillProviders(
         ProviderRegistry registry,
         AppConfig config,
-        ICredentialResolver credentialResolver,
+        IProviderCredentialResolver credentialResolver,
         Serilog.ILogger log)
     {
         var factory = new ProviderFactory(config, credentialResolver, log);
@@ -197,7 +197,7 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
     private static void RegisterSymbolSearchProviders(
         ProviderRegistry registry,
         AppConfig config,
-        ICredentialResolver credentialResolver,
+        IProviderCredentialResolver credentialResolver,
         Serilog.ILogger log)
     {
         var factory = new ProviderFactory(config, credentialResolver, log);

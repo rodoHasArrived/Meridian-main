@@ -14,7 +14,7 @@ namespace Meridian.Tests.Application.Pipeline;
 
 /// <summary>
 /// Tests for <see cref="ProviderRegistry"/> streaming client creation via
-/// the dictionary-based factory approach that replaced MarketDataClientFactory.
+/// the string-keyed factory approach that replaced MarketDataClientFactory.
 /// </summary>
 public sealed class MarketDataClientFactoryTests
 {
@@ -32,33 +32,59 @@ public sealed class MarketDataClientFactoryTests
     }
 
     [Fact]
-    public void CreateStreamingClient_IB_ReturnsIBClient()
+    public void CreateStreamingClient_WithStringProviderId_ReturnsIBClient()
     {
         // Arrange
         var registry = CreateRegistryWithFactories();
 
         // Act
-        var client = registry.CreateStreamingClient(DataSourceKind.IB);
+        var client = registry.CreateStreamingClient("ib");
 
         // Assert
         client.Should().BeOfType<IBMarketDataClient>();
     }
 
     [Fact]
-    public void CreateStreamingClient_Polygon_ReturnsPolygonClient()
+    public void CreateStreamingClient_WithStringProviderId_ReturnsPolygonClient()
     {
         // Arrange
         var registry = CreateRegistryWithFactories();
 
         // Act
-        var client = registry.CreateStreamingClient(DataSourceKind.Polygon);
+        var client = registry.CreateStreamingClient("polygon");
 
         // Assert
         client.Should().BeOfType<PolygonMarketDataClient>();
     }
 
     [Fact]
-    public void CreateStreamingClient_Alpaca_ReturnsAlpacaClient()
+    public void CreateStreamingClient_WithStringProviderId_ReturnsAlpacaClient()
+    {
+        // Arrange
+        var registry = CreateRegistryWithFactories();
+
+        // Act
+        var client = registry.CreateStreamingClient("alpaca");
+
+        // Assert
+        client.Should().BeOfType<AlpacaMarketDataClient>();
+    }
+
+    [Fact]
+    public void CreateStreamingClient_UnknownProviderId_FallsBackToIB()
+    {
+        // Arrange
+        var registry = CreateRegistryWithFactories();
+
+        // Act - use a provider ID with no registered factory; falls back to IB
+        var client = registry.CreateStreamingClient("custom-feed");
+
+        // Assert
+        client.Should().BeOfType<IBMarketDataClient>();
+    }
+
+    [Fact]
+    public void CreateStreamingClient_DataSourceKindShim_MapsToLowerCaseProviderId()
     {
         // Arrange
         var registry = CreateRegistryWithFactories();
@@ -71,28 +97,18 @@ public sealed class MarketDataClientFactoryTests
     }
 
     [Fact]
-    public void CreateStreamingClient_UnknownDataSource_FallsBackToIB()
-    {
-        // Arrange
-        var registry = CreateRegistryWithFactories();
-
-        // Act - use an enum value with no registered factory; falls back to IB
-        var client = registry.CreateStreamingClient((DataSourceKind)200);
-
-        // Assert
-        client.Should().BeOfType<IBMarketDataClient>();
-    }
-
-    [Fact]
-    public void CreateStreamingClient_Alpaca_UsesCustomCredentialResolver()
+    public void CreateStreamingClient_StringProviderId_UsesCustomCredentialResolver()
     {
         // Arrange
         var resolverCalled = false;
         var registry = new ProviderRegistry();
         var (_, publisher, trade, depth, quote) = CreateDependencies();
-        var config = new AppConfig { Alpaca = new AlpacaOptions { KeyId = "k", SecretKey = "s" } };
+        var config = new AppConfig
+        {
+            Alpaca = new AlpacaOptions { KeyId = "k", SecretKey = "s" }
+        };
 
-        registry.RegisterStreamingFactory(DataSourceKind.Alpaca, () =>
+        registry.RegisterStreamingFactory("alpaca", () =>
         {
             resolverCalled = true;
             return new AlpacaMarketDataClient(trade, quote,
@@ -100,7 +116,7 @@ public sealed class MarketDataClientFactoryTests
         });
 
         // Act
-        registry.CreateStreamingClient(DataSourceKind.Alpaca);
+        registry.CreateStreamingClient("alpaca");
 
         // Assert
         resolverCalled.Should().BeTrue();
@@ -114,7 +130,7 @@ public sealed class MarketDataClientFactoryTests
 
         // Act & Assert
         Assert.Throws<InvalidOperationException>(() =>
-            registry.CreateStreamingClient(DataSourceKind.IB));
+            registry.CreateStreamingClient("ib"));
     }
 
     [Fact]
@@ -123,17 +139,17 @@ public sealed class MarketDataClientFactoryTests
         // Arrange
         var registry = new ProviderRegistry();
         var (_, publisher, trade, depth, quote) = CreateDependencies();
-        registry.RegisterStreamingFactory(DataSourceKind.IB, () =>
+        registry.RegisterStreamingFactory("ib", () =>
             new IBMarketDataClient(publisher, trade, depth));
 
-        // Act - register a second factory for the same kind
+        // Act - register a second factory for the same provider ID
         var secondFactoryCalled = false;
-        registry.RegisterStreamingFactory(DataSourceKind.IB, () =>
+        registry.RegisterStreamingFactory("IB", () =>
         {
             secondFactoryCalled = true;
             return new IBMarketDataClient(publisher, trade, depth);
         });
-        registry.CreateStreamingClient(DataSourceKind.IB);
+        registry.CreateStreamingClient("ib");
 
         // Assert
         secondFactoryCalled.Should().BeTrue();
@@ -144,17 +160,17 @@ public sealed class MarketDataClientFactoryTests
         var registry = new ProviderRegistry();
         var (config, publisher, trade, depth, quote) = CreateDependencies();
 
-        registry.RegisterStreamingFactory(DataSourceKind.IB, () =>
+        registry.RegisterStreamingFactory("ib", () =>
             new IBMarketDataClient(publisher, trade, depth));
 
-        registry.RegisterStreamingFactory(DataSourceKind.Alpaca, () =>
+        registry.RegisterStreamingFactory("alpaca", () =>
             new AlpacaMarketDataClient(trade, quote,
                 config.Alpaca! with { KeyId = "test-key", SecretKey = "test-secret" }));
 
-        registry.RegisterStreamingFactory(DataSourceKind.Polygon, () =>
+        registry.RegisterStreamingFactory("polygon", () =>
             new PolygonMarketDataClient(publisher, trade, quote));
 
-        registry.RegisterStreamingFactory(DataSourceKind.StockSharp, () =>
+        registry.RegisterStreamingFactory("stocksharp", () =>
             new StockSharpMarketDataClient(trade, depth, quote, new StockSharpConfig()));
 
         return registry;
@@ -162,7 +178,10 @@ public sealed class MarketDataClientFactoryTests
 
     private static (AppConfig config, IMarketEventPublisher publisher, TradeDataCollector trade, MarketDepthCollector depth, QuoteCollector quote) CreateDependencies()
     {
-        var config = new AppConfig { Alpaca = new AlpacaOptions() };
+        var config = new AppConfig
+        {
+            Alpaca = new AlpacaOptions()
+        };
         IMarketEventPublisher publisher = new TestMarketEventPublisher();
         var trade = new TradeDataCollector(publisher);
         var depth = new MarketDepthCollector(publisher);

@@ -14,7 +14,6 @@ namespace Meridian.QuantScript.Plotting;
 public sealed class PlotQueue : IDisposable
 {
     private readonly ConcurrentQueue<PlotRequest> _queue = new();
-    private bool _completed;
 
     /// <summary>
     /// The <see cref="PlotQueue"/> associated with the currently-executing script run,
@@ -34,7 +33,9 @@ public sealed class PlotQueue : IDisposable
     /// Signals that the current script run has finished emitting plots.
     /// Called by <see cref="Compilation.ScriptRunner"/> in its finally block.
     /// </summary>
-    public void Complete() => _completed = true;
+    public void Complete()
+    {
+    }
 
     /// <summary>
     /// Drains all enqueued <see cref="PlotRequest"/> items into a list.

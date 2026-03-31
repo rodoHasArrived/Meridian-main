@@ -6,7 +6,7 @@ namespace Meridian.Application.Services;
 /// Adapter that wraps ConfigurationService to implement ICredentialResolver.
 /// Enables using ConfigurationService's credential resolution with the unified ProviderFactory.
 /// </summary>
-public sealed class ConfigurationServiceCredentialAdapter : ICredentialResolver
+public sealed class ConfigurationServiceCredentialAdapter : IProviderCredentialResolver
 {
     private readonly ConfigurationService _configService;
 

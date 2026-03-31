@@ -1,12 +1,6 @@
 ---
 name: meridian-implementation-assurance
 description: Deliver production-ready Meridian changes with correctness checks, performance guardrails, doc synchronization, and rubric-based self-evaluation. Use when a change must be verified, certified, or rolled out with traceable evidence.
-triggers:
-  - "build or refactor code and verify behavior"
-  - "certify completeness or confirm scope alignment"
-  - "gather rollout evidence before merging"
-  - "update AI/agent catalogs after new capabilities land"
-  - "prove a change matches approved blueprint or requirements"
 ---
 
 # Meridian Implementation Assurance

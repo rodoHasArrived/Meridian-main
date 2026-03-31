@@ -1,0 +1,4 @@
+interface:
+  display_name: "Meridian Code Review"
+  short_description: "Review Meridian changes for bugs and risk"
+  default_prompt: "Use $meridian-code-review to review a Meridian change for correctness, regressions, architecture drift, and missing tests."

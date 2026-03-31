@@ -1,0 +1,4 @@
+interface:
+  display_name: "Meridian Test Writer"
+  short_description: "Write stable tests for Meridian code"
+  default_prompt: "Use $meridian-test-writer to add or expand Meridian tests with the right project placement, async patterns, and coverage of key risk paths."
