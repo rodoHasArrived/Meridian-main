@@ -167,4 +167,29 @@ public sealed class PortfolioBuilderTests
         returns.Should().NotBeNull();
         returns.Symbol.Should().Be("Portfolio");
     }
+
+    [Fact]
+    public void EfficientFrontier_PortfolioReturnMeetsTargetWhenFeasible()
+    {
+        // Use a deterministic ascending series so mean daily return is positive and known.
+        var s1 = TestPriceSeriesBuilder.Build("HI", 120, startPrice: 100m);
+        var s2 = TestPriceSeriesBuilder.Build("LO", 120, startPrice: 50m);
+
+        // Ask for a very small positive target (well within achievable range).
+        const double target = 0.0005;
+        var constraints = new EfficientFrontierConstraints { TargetReturn = target };
+
+        var result = PortfolioBuilder.EfficientFrontier(constraints, s1, s2);
+
+        // Compute realised portfolio daily return as weighted sum of asset means.
+        var portReturn = result.Weights.Sum(kv =>
+        {
+            var series = new[] { s1, s2 }.First(s => s.Symbol == kv.Key);
+            var mean = series.DailyReturns().Points.Average(p => p.Value);
+            return kv.Value * mean;
+        });
+
+        portReturn.Should().BeGreaterThanOrEqualTo(target - 1e-4,
+            "portfolio return should meet the target within numerical tolerance");
+    }
 }

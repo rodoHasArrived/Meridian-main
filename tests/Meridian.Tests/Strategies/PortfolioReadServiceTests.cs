@@ -173,7 +173,7 @@ public sealed class PortfolioReadServiceTests
 
         var lookup = new Mock<ISecurityReferenceLookup>();
         lookup
-            .Setup(static l => l.GetBySymbolAsync("AAPL", It.IsAny<CancellationToken>()))
+            .Setup(l => l.GetBySymbolAsync("AAPL", It.IsAny<CancellationToken>()))
             .ReturnsAsync(reference);
 
         var service = new PortfolioReadService(lookup.Object);
@@ -196,7 +196,7 @@ public sealed class PortfolioReadServiceTests
 
         var lookup = new Mock<ISecurityReferenceLookup>();
         lookup
-            .Setup(static l => l.GetBySymbolAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Setup(l => l.GetBySymbolAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((WorkstationSecurityReference?)null);
 
         var service = new PortfolioReadService(lookup.Object);

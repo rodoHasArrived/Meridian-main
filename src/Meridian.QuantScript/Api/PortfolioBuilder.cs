@@ -205,12 +205,17 @@ internal static class MvOptimizer
         // Step size: proportional to the inverse of the operator norm (estimated by trace / n).
         var sigmaTrace = 0.0;
         for (var i = 0; i < n; i++) sigmaTrace += sigma[i, i];
+        // Step size: 1/(2·L) where L ≈ trace(Σ) is an upper bound on the Lipschitz
+        // constant of ∇f = Σw.  The factor of 2 provides a safety margin for convergence.
         var step = sigmaTrace > 0 ? 1.0 / (2.0 * sigmaTrace) : 0.01;
 
         var w = InitializeFeasible(n, minWeight, maxWeight);
 
         // Dual variable for the soft return constraint:  λ ≥ 0, active when μ'w < targetReturn.
         var lambda = 0.0;
+        // rho is the augmented Lagrangian penalty weight.  A value of 50 is empirically
+        // effective for typical daily return magnitudes in [-0.05, 0.05]; increase if
+        // the return constraint is repeatedly violated at convergence.
         const double rho = 50.0;
 
         for (var iter = 0; iter < MaxIterations; iter++)
