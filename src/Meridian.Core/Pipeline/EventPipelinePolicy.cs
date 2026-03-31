@@ -28,7 +28,6 @@ public sealed record EventPipelinePolicy(
     BoundedChannelFullMode FullMode = BoundedChannelFullMode.DropOldest,
     bool EnableMetrics = true)
 {
-    #region Static Presets
 
     /// <summary>
     /// Default policy for general-purpose event pipelines.
@@ -85,9 +84,7 @@ public sealed record EventPipelinePolicy(
         BoundedChannelFullMode.Wait,
         EnableMetrics: false);
 
-    #endregion
 
-    #region Factory Methods
 
     /// <summary>
     /// Creates a bounded channel with this policy's configuration.
@@ -132,5 +129,4 @@ public sealed record EventPipelinePolicy(
         };
     }
 
-    #endregion
 }

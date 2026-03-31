@@ -587,7 +587,6 @@ public sealed class BatchExportSchedulerService : IAsyncDisposable
     }
 }
 
-#region Models
 
 public sealed class ExportJob
 {
@@ -733,4 +732,3 @@ public sealed class ExportJobProgressEventArgs : EventArgs
     }
 }
 
-#endregion

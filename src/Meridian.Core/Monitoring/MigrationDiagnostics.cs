@@ -21,7 +21,6 @@ namespace Meridian.Application.Monitoring;
 /// </summary>
 public static class MigrationDiagnostics
 {
-    #region Provider Factory Counters
 
     /// <summary>Total number of streaming client factory invocations.</summary>
     private static long _streamingFactoryHits;
@@ -60,9 +59,7 @@ public static class MigrationDiagnostics
         return _streamingFactoryHitsByKind.TryGetValue(dataSourceKind, out var count) ? count : 0;
     }
 
-    #endregion
 
-    #region Reconnect Counters
 
     /// <summary>Total reconnect attempts across all providers.</summary>
     private static long _reconnectAttempts;
@@ -119,9 +116,7 @@ public static class MigrationDiagnostics
         return _reconnectSuccessesByProvider.TryGetValue(provider, out var count) ? count : 0;
     }
 
-    #endregion
 
-    #region Resubscribe Outcome Counters
 
     /// <summary>Total resubscribe attempts following a reconnect.</summary>
     private static long _resubscribeAttempts;
@@ -145,9 +140,7 @@ public static class MigrationDiagnostics
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void IncResubscribeFailure() => Interlocked.Increment(ref _resubscribeFailures);
 
-    #endregion
 
-    #region Provider Registration Counters
 
     /// <summary>Total number of providers registered in the registry.</summary>
     private static long _providersRegistered;
@@ -164,9 +157,7 @@ public static class MigrationDiagnostics
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void IncStreamingFactoryRegistered() => Interlocked.Increment(ref _streamingFactoriesRegistered);
 
-    #endregion
 
-    #region Snapshot
 
     /// <summary>
     /// Gets a point-in-time snapshot of all migration diagnostics counters.
@@ -216,7 +207,6 @@ public static class MigrationDiagnostics
         Interlocked.Exchange(ref _streamingFactoriesRegistered, 0);
     }
 
-    #endregion
 }
 
 /// <summary>

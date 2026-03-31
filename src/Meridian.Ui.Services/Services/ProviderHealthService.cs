@@ -428,7 +428,6 @@ public sealed class ProviderHealthService : IDisposable
     }
 }
 
-#region Event Args
 
 public sealed class HealthUpdateEventArgs : EventArgs
 {
@@ -454,9 +453,7 @@ public enum HealthAlertType : byte
     ConnectionLost
 }
 
-#endregion
 
-#region Data Classes
 
 public sealed class ProviderHealthData
 {
@@ -527,9 +524,7 @@ public sealed class ProviderHealthComparison
     public string? BestStability { get; set; }
 }
 
-#endregion
 
-#region API Response Classes
 
 public sealed class ProviderHealthResponse
 {
@@ -561,4 +556,3 @@ public sealed class FailoverThresholdsResponse
     public bool AutoFailoverEnabled { get; set; }
 }
 
-#endregion

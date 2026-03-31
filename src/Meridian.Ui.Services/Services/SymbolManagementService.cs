@@ -481,7 +481,6 @@ public sealed class SymbolManagementService
     }
 }
 
-#region Result Classes
 
 public sealed class SymbolListResult
 {
@@ -614,9 +613,7 @@ public sealed class ArchiveFileInfo
     public long RecordCount { get; set; }
 }
 
-#endregion
 
-#region API Request/Response Classes
 
 public sealed class AddSymbolRequest
 {
@@ -713,4 +710,3 @@ public sealed class SymbolSearchApiResult
     public string? CompositeFigi { get; set; }
 }
 
-#endregion

@@ -14,7 +14,6 @@ public static class BrushRegistry
 {
     private static SolidColorBrush FromArgb(ColorPalette.ArgbColor c) => new(Color.FromArgb(c.A, c.R, c.G, c.B));
 
-    #region Status Brushes
 
     public static readonly SolidColorBrush Success = FromArgb(Palette.Success);
     public static readonly SolidColorBrush Warning = FromArgb(Palette.Warning);
@@ -24,9 +23,7 @@ public static class BrushRegistry
     public static readonly SolidColorBrush Critical = FromArgb(Palette.Critical);
     public static readonly SolidColorBrush WarningEvent = FromArgb(Palette.WarningEvent);
 
-    #endregion
 
-    #region Chart/Visualization Brushes
 
     public static readonly SolidColorBrush ChartPrimary = FromArgb(Palette.ChartPrimary);
     public static readonly SolidColorBrush ChartSecondary = FromArgb(Palette.ChartSecondary);
@@ -34,18 +31,14 @@ public static class BrushRegistry
     public static readonly SolidColorBrush ChartPositive = FromArgb(Palette.ChartPositive);
     public static readonly SolidColorBrush ChartNegative = FromArgb(Palette.ChartNegative);
 
-    #endregion
 
-    #region Provider Status Brushes
 
     public static readonly SolidColorBrush ProviderConnected = Success;
     public static readonly SolidColorBrush ProviderConnecting = Info;
     public static readonly SolidColorBrush ProviderDisconnected = Inactive;
     public static readonly SolidColorBrush ProviderError = Error;
 
-    #endregion
 
-    #region Data Quality Brushes
 
     public static readonly SolidColorBrush QualityExcellent = FromArgb(Palette.QualityExcellent);
     public static readonly SolidColorBrush QualityGood = Success;
@@ -53,9 +46,7 @@ public static class BrushRegistry
     public static readonly SolidColorBrush QualityPoor = Warning;
     public static readonly SolidColorBrush QualityCritical = Error;
 
-    #endregion
 
-    #region UI Element Brushes
 
     public static readonly SolidColorBrush Accent = FromArgb(Palette.Accent);
     public static readonly SolidColorBrush SubtleBackground = FromArgb(Palette.SubtleBackground);
@@ -63,18 +54,14 @@ public static class BrushRegistry
     public static readonly SolidColorBrush MutedText = FromArgb(Palette.MutedText);
     public static readonly SolidColorBrush LightText = FromArgb(Palette.LightText);
 
-    #endregion
 
-    #region Semi-Transparent Status Backgrounds
 
     public static readonly SolidColorBrush SuccessBackground = FromArgb(Palette.SuccessBackground);
     public static readonly SolidColorBrush WarningBackground = FromArgb(Palette.WarningBackground);
     public static readonly SolidColorBrush ErrorBackground = FromArgb(Palette.ErrorBackground);
     public static readonly SolidColorBrush InfoBackground = FromArgb(Palette.InfoBackground);
 
-    #endregion
 
-    #region State-Based Brush Lookups
 
     public static SolidColorBrush GetNotificationBrush(NotificationType type) => FromArgb(Palette.GetNotificationColor((Meridian.Ui.Services.NotificationType)(int)type));
     public static SolidColorBrush GetSeverityBrush(IntegritySeverity severity) => FromArgb(Palette.GetSeverityColor(severity));
@@ -100,5 +87,4 @@ public static class BrushRegistry
     public static SolidColorBrush GetStreamStatusBrush(bool isStreamActive, bool isCollectorRunning, bool isCollectorPaused) =>
         FromArgb(Palette.GetStreamStatusColor(isStreamActive, isCollectorRunning, isCollectorPaused));
 
-    #endregion
 }

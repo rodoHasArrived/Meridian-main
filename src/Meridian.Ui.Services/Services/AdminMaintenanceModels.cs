@@ -8,7 +8,6 @@ namespace Meridian.Ui.Services;
 // Extracted from duplicate definitions to provide a single source of truth.
 // =====================================================================================
 
-#region Schedule Models
 
 /// <summary>
 /// Result of getting the maintenance schedule.
@@ -46,9 +45,7 @@ public sealed class MaintenanceScheduleConfig
     public bool RunTierMigration { get; set; }
 }
 
-#endregion
 
-#region Maintenance Run Models
 
 /// <summary>
 /// Options for triggering a maintenance run.
@@ -102,9 +99,7 @@ public sealed class MaintenanceOperation
     public string? Error { get; set; }
 }
 
-#endregion
 
-#region Maintenance History Models
 
 /// <summary>
 /// Result of getting maintenance history.
@@ -137,9 +132,7 @@ public sealed class MaintenanceRunSummary
     public int OperationsFailed { get; set; }
 }
 
-#endregion
 
-#region Tier Models
 
 /// <summary>
 /// Result of getting tier configuration.
@@ -246,9 +239,7 @@ public sealed class TierUsage
     public DateOnly? NewestData { get; set; }
 }
 
-#endregion
 
-#region Retention Policy Models
 
 /// <summary>
 /// Result of getting retention policies.
@@ -309,9 +300,7 @@ public sealed class RetentionApplyResponse
     public string[]? AffectedSymbols { get; set; }
 }
 
-#endregion
 
-#region Cleanup Models
 
 /// <summary>
 /// Options for file cleanup operations.
@@ -380,9 +369,7 @@ public sealed class CleanupResultResponse
     public string[]? Errors { get; set; }
 }
 
-#endregion
 
-#region Permission Models (Non-Diagnostics)
 
 /// <summary>
 /// Result of permission validation.
@@ -411,9 +398,7 @@ public sealed class PermissionValidationResponse
 // NOTE: SelfTest*, ErrorCodes*, ShowConfig*, QuickCheck* models are defined in DiagnosticsService.cs
 // to avoid duplication and maintain single source of truth
 
-#endregion
 
-#region Shared Models
 
 /// <summary>
 /// HTTP operation response used for POST mutations.
@@ -424,4 +409,3 @@ public sealed class OperationResponse
     public string? Message { get; set; }
 }
 
-#endregion

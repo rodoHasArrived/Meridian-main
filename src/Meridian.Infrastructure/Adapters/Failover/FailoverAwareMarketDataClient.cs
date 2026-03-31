@@ -70,7 +70,6 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
             _providers.Count, _activeProviderId, _ruleId);
     }
 
-    #region IMarketDataClient
 
     public bool IsEnabled => _activeClient.IsEnabled;
 
@@ -181,9 +180,7 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
         }
     }
 
-    #endregion
 
-    #region IProviderMetadata
 
     public string ProviderId => $"failover-{_ruleId}";
     public string ProviderDisplayName => $"Failover ({_activeProviderId})";
@@ -193,9 +190,7 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
         ? meta.ProviderCapabilities
         : ProviderCapabilities.Streaming();
 
-    #endregion
 
-    #region IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
@@ -217,7 +212,6 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
         _switchLock.Dispose();
     }
 
-    #endregion
 
     /// <summary>
     /// Gets the currently active provider ID.

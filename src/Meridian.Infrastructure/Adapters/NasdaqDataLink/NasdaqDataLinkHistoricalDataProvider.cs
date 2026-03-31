@@ -315,7 +315,6 @@ public sealed class NasdaqDataLinkHistoricalDataProvider : BaseHistoricalDataPro
         };
     }
 
-    #region Nasdaq Data Link API Models
 
     private sealed class QuandlDatasetResponse
     {
@@ -356,5 +355,4 @@ public sealed class NasdaqDataLinkHistoricalDataProvider : BaseHistoricalDataPro
         public string? Frequency { get; set; }
     }
 
-    #endregion
 }

@@ -118,7 +118,6 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
     /// </summary>
     public bool UseDelayed => _options.UseDelayed;
 
-    #region IProviderMetadata
 
     /// <inheritdoc/>
     public override string ProviderId => "polygon";
@@ -164,9 +163,7 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
         "Free tier has 15-minute delayed data for most feeds."
     };
 
-    #endregion
 
-    #region WebSocketProviderBase template methods
 
     /// <inheritdoc/>
     protected override Uri BuildWebSocketUri()
@@ -315,9 +312,7 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
         }
     }
 
-    #endregion
 
-    #region IMarketDataClient – connection
 
     /// <inheritdoc/>
     /// <remarks>
@@ -332,9 +327,7 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
         _publisher.TryPublish(MarketEvent.Heartbeat(DateTimeOffset.UtcNow, source: "Polygon"));
     }
 
-    #endregion
 
-    #region IMarketDataClient – subscriptions
 
     /// <inheritdoc/>
     public override int SubscribeMarketDepth(SymbolConfig cfg)
@@ -499,9 +492,7 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
     /// <summary>Gets the list of currently subscribed aggregate symbols.</summary>
     public IReadOnlyList<string> SubscribedAggregateSymbols => Subscriptions.GetSymbolsByKind("aggregates");
 
-    #endregion
 
-    #region Credential validation
 
     /// <summary>
     /// Ensures a usable Polygon API key is configured before attempting a live connection.
@@ -544,9 +535,7 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
         Log.Debug("Polygon API key format validated (length: {Length})", apiKey.Length);
     }
 
-    #endregion
 
-    #region WebSocket helpers
 
     private async Task SendSubscribeAsync(string channel, CancellationToken ct = default)
     {
@@ -578,9 +567,7 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
         }
     }
 
-    #endregion
 
-    #region Message processing
 
     /// <summary>
     /// Processes an incoming WebSocket message (string form, called by the base receive loop).
@@ -850,9 +837,7 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
         Log.Debug("Polygon status: {Status} - {Message}", status, message);
     }
 
-    #endregion
 
-    #region Static helpers
 
     /// <summary>
     /// Maps Polygon exchange codes to exchange names.
@@ -902,14 +887,11 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
         return AggressorSide.Unknown;
     }
 
-    #endregion
 
-    #region Test hook
 
     /// <summary>
     /// Injects a raw WebSocket message for unit testing without a live connection.
     /// </summary>
     internal void ProcessTestMessage(string message) => ProcessMessage(message);
 
-    #endregion
 }

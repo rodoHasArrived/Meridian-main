@@ -311,7 +311,6 @@ public class ExportPresetServiceBase
         return importedCount;
     }
 
-    #region Built-In Presets
 
     private void EnsureBuiltInPresets()
     {
@@ -461,5 +460,4 @@ public class ExportPresetServiceBase
         };
     }
 
-    #endregion
 }

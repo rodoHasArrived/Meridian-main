@@ -63,7 +63,6 @@ public sealed class IBSimulationClient : IMarketDataClient
     public bool IsEnabled => true;
     public bool IsSimulation => true;
 
-    #region IProviderMetadata
 
     public string ProviderId => "ib-sim";
     public string ProviderDisplayName => "Interactive Brokers (Simulation)";
@@ -98,7 +97,6 @@ public sealed class IBSimulationClient : IMarketDataClient
         "Do not use for trading decisions."
     };
 
-    #endregion
 
     public Task ConnectAsync(CancellationToken ct = default)
     {

@@ -54,7 +54,6 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
     private bool _isRateLimited;
     protected bool Disposed;
 
-    #region Abstract Properties (Must be implemented by derived classes)
 
     /// <summary>
     /// Unique identifier for the provider (e.g., "alpaca", "tiingo").
@@ -76,9 +75,7 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
     /// </summary>
     protected abstract string HttpClientName { get; }
 
-    #endregion
 
-    #region Virtual Properties (Can be overridden)
 
     public virtual int Priority => 100;
     public virtual TimeSpan RateLimitDelay => TimeSpan.Zero;
@@ -145,9 +142,7 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
     /// <remarks>Delegates to <see cref="Capabilities"/>. Provided for backwards compatibility.</remarks>
     public IReadOnlyList<string> SupportedMarkets => Capabilities.SupportedMarkets;
 
-    #endregion
 
-    #region IRateLimitAwareProvider
 
     /// <summary>
     /// Event raised when the provider hits a rate limit (HTTP 429).
@@ -163,7 +158,6 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
         OnRateLimitHit?.Invoke(info);
     }
 
-    #endregion
 
     /// <summary>
     /// Initialize the base provider with common infrastructure.
@@ -203,7 +197,6 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
         _windowStart = DateTimeOffset.UtcNow;
     }
 
-    #region Symbol Normalization
 
     /// <summary>
     /// Normalize a symbol using the standard approach.
@@ -222,9 +215,7 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
         return symbols.Select(NormalizeSymbol).Distinct().ToList();
     }
 
-    #endregion
 
-    #region Rate Limiting
 
     /// <summary>
     /// Wait for a rate limit slot before making a request.
@@ -270,9 +261,7 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
         );
     }
 
-    #endregion
 
-    #region HTTP Request Helpers
 
     /// <summary>
     /// Execute an HTTP GET request with rate limiting, resilience, and standard error handling.
@@ -437,9 +426,7 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
         }
     }
 
-    #endregion
 
-    #region Validation Helpers
 
     /// <summary>
     /// Validate that the provider has not been disposed.
@@ -468,9 +455,7 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
             throw new ArgumentException("At least one symbol is required", nameof(symbols));
     }
 
-    #endregion
 
-    #region OHLC Validation
 
     /// <summary>
     /// Validate OHLC data is valid (all prices > 0).
@@ -493,9 +478,7 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
         return false;
     }
 
-    #endregion
 
-    #region Abstract Methods
 
     /// <summary>
     /// Fetch daily OHLCV bars for a symbol within the specified date range.
@@ -507,9 +490,7 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
         DateOnly? to,
         CancellationToken ct = default);
 
-    #endregion
 
-    #region Virtual Methods with Default Implementations
 
     /// <summary>
     /// Check if the provider is currently available and healthy.
@@ -536,9 +517,7 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
         )).ToList();
     }
 
-    #endregion
 
-    #region IDisposable
 
     public void Dispose()
     {
@@ -559,5 +538,4 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
         }
     }
 
-    #endregion
 }

@@ -205,7 +205,6 @@ public sealed class OpenFigiSymbolResolver : ISymbolResolver, IDisposable
         _http.Dispose();
     }
 
-    #region OpenFIGI API Models
 
     private sealed class OpenFigiRequest
     {
@@ -267,5 +266,4 @@ public sealed class OpenFigiSymbolResolver : ISymbolResolver, IDisposable
         public string? SecurityType2 { get; set; }
     }
 
-    #endregion
 }

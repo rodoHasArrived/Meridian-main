@@ -1275,7 +1275,6 @@ public sealed class StorageOptimizationAdvisorService
     }
 }
 
-#region Models
 
 /// <summary>
 /// Options for storage analysis.
@@ -1454,9 +1453,7 @@ public sealed class OptimizationExecutionResult
     public List<string> Errors { get; set; } = new();
 }
 
-#endregion
 
-#region API Response Models
 
 /// <summary>
 /// Response from /api/storage/tiers/migrate endpoint.
@@ -1560,4 +1557,3 @@ public sealed class CatalogEntry
     public string? Checksum { get; set; }
 }
 
-#endregion

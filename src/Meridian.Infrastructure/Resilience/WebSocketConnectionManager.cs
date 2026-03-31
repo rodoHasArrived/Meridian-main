@@ -439,7 +439,6 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
         _connectLock.Dispose();
     }
 
-    #region Private Methods
 
     private async Task ReceiveLoopAsync(Func<string, Task> messageHandler, CancellationToken ct)
     {
@@ -618,7 +617,6 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
         return TimeSpan.FromMilliseconds(delay + jitter);
     }
 
-    #endregion
 }
 
 /// <summary>

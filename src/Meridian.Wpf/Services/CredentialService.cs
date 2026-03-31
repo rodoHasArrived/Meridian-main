@@ -195,7 +195,6 @@ public sealed class CredentialService : IDisposable
         ObjectDisposedException.ThrowIf(_disposed, this);
     }
 
-    #region DPAPI Vault Operations
 
     private sealed class StoredCredential
     {
@@ -243,9 +242,7 @@ public sealed class CredentialService : IDisposable
         }
     }
 
-    #endregion
 
-    #region Credential CRUD
 
     /// <summary>
     /// Saves username/password credentials to the encrypted credential vault.
@@ -381,9 +378,7 @@ public sealed class CredentialService : IDisposable
         }
     }
 
-    #endregion
 
-    #region Alpaca-specific helpers
 
     /// <summary>
     /// Gets stored Alpaca credentials.
@@ -418,23 +413,17 @@ public sealed class CredentialService : IDisposable
         RemoveCredential(AlpacaCredentialResource);
     }
 
-    #endregion
 
-    #region Nasdaq Data Link helpers
 
     public string? GetNasdaqApiKey() => GetApiKey(NasdaqApiKeyResource);
     public void SaveNasdaqApiKey(string apiKey) => SaveApiKey(NasdaqApiKeyResource, apiKey);
 
-    #endregion
 
-    #region OpenFIGI helpers
 
     public string? GetOpenFigiApiKey() => GetApiKey(OpenFigiApiKeyResource);
     public void SaveOpenFigiApiKey(string apiKey) => SaveApiKey(OpenFigiApiKeyResource, apiKey);
 
-    #endregion
 
-    #region Metadata Management
 
     private async Task LoadMetadataAsync(CancellationToken ct = default)
     {
@@ -601,9 +590,7 @@ public sealed class CredentialService : IDisposable
             .ToList();
     }
 
-    #endregion
 
-    #region Credential Testing
 
     public async Task<CredentialTestResult> TestAlpacaCredentialsAsync(bool useSandbox = false, CancellationToken ct = default)
     {
@@ -812,9 +799,7 @@ public sealed class CredentialService : IDisposable
         return results;
     }
 
-    #endregion
 
-    #region OAuth Token Management
 
     public async Task SaveOAuthTokenAsync(
         string providerId,
@@ -933,9 +918,7 @@ public sealed class CredentialService : IDisposable
         return true;
     }
 
-    #endregion
 
-    #region Logging Helpers
 
     private void LogCredentialOperation(string operation, string resource, bool success, string? details = null)
     {
@@ -957,5 +940,4 @@ public sealed class CredentialService : IDisposable
         CredentialError?.Invoke(this, new CredentialErrorEventArgs(operation, resource, message, ex, severity, DateTime.UtcNow));
     }
 
-    #endregion
 }

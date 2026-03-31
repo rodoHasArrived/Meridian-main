@@ -35,7 +35,7 @@ public sealed class QualityArchiveViewModel : BindableBase, IDisposable
     public QualityArchiveViewModel(IQualityArchiveStore archiveStore)
     {
         _archiveStore = archiveStore;
-        InitializeSymbols();
+        _ = InitializeSymbolsAsync();
     }
 
     public string SelectedSymbol
@@ -70,7 +70,7 @@ public sealed class QualityArchiveViewModel : BindableBase, IDisposable
 
     public ICommand LoadCommand => _loadCommand ??= new AsyncRelayCommand(OnLoadAsync);
 
-    private async void InitializeSymbols()
+    private async Task InitializeSymbolsAsync()
     {
         try
         {

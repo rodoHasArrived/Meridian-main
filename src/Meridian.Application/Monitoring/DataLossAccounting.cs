@@ -30,7 +30,6 @@ public static class DataLossAccounting
     private static readonly ConcurrentDictionary<string, ProviderCounters> _providerCounters
         = new(StringComparer.OrdinalIgnoreCase);
 
-    #region Stage 1: Ingestion
 
     /// <summary>Total events received from all providers.</summary>
     public static long Received => Interlocked.Read(ref _received);
@@ -54,9 +53,7 @@ public static class DataLossAccounting
             GetProvider(provider).IncDuplicate();
     }
 
-    #endregion
 
-    #region Stage 2: Validation
 
     /// <summary>Events that passed validation.</summary>
     public static long Validated => Interlocked.Read(ref _validated);
@@ -70,9 +67,7 @@ public static class DataLossAccounting
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void IncRejected() => Interlocked.Increment(ref _rejected);
 
-    #endregion
 
-    #region Stage 3: Pipeline
 
     /// <summary>Events accepted into the pipeline channel.</summary>
     public static long PipelineAccepted => Interlocked.Read(ref _pipelineAccepted);
@@ -86,9 +81,7 @@ public static class DataLossAccounting
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void IncPipelineDropped() => Interlocked.Increment(ref _pipelineDropped);
 
-    #endregion
 
-    #region Stage 4: Storage
 
     /// <summary>Events successfully persisted to storage.</summary>
     public static long Stored => Interlocked.Read(ref _stored);
@@ -102,9 +95,7 @@ public static class DataLossAccounting
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void IncStoreFailed() => Interlocked.Increment(ref _storeFailed);
 
-    #endregion
 
-    #region Reconciliation
 
     /// <summary>
     /// Generates a full reconciliation report across all pipeline stages.
@@ -164,7 +155,6 @@ public static class DataLossAccounting
         _providerCounters.Clear();
     }
 
-    #endregion
 
     private static ProviderCounters GetProvider(string provider)
         => _providerCounters.GetOrAdd(provider, _ => new ProviderCounters());

@@ -60,7 +60,6 @@ public sealed class ConfigurationService : IAsyncDisposable
     /// </summary>
     public ConfigurationPipeline Pipeline => _pipeline;
 
-    #region Wizard and Auto-Configuration
 
     /// <summary>
     /// Runs the interactive configuration wizard.
@@ -90,9 +89,7 @@ public sealed class ConfigurationService : IAsyncDisposable
     public AppConfig GenerateFirstTimeConfig(FirstTimeConfigOptions options)
         => _autoConfig.GenerateFirstTimeConfig(options);
 
-    #endregion
 
-    #region Provider Detection (Consolidated)
 
     /// <summary>
     /// Detects all available providers based on environment variables and configuration.
@@ -179,9 +176,7 @@ public sealed class ConfigurationService : IAsyncDisposable
         Console.WriteLine();
     }
 
-    #endregion
 
-    #region Credential Resolution (Consolidated)
 
     /// <summary>
     /// Creates a provider-scoped credential context from attribute metadata and config fallbacks.
@@ -344,9 +339,7 @@ public sealed class ConfigurationService : IAsyncDisposable
         return config;
     }
 
-    #endregion
 
-    #region Validation (Consolidated)
 
     /// <summary>
     /// Validates a configuration file and returns an exit code (0 = valid, 1 = invalid).
@@ -433,9 +426,7 @@ public sealed class ConfigurationService : IAsyncDisposable
         return await validator.ValidateAllAsync(config, ct);
     }
 
-    #endregion
 
-    #region Self-Healing Fixes (Consolidated)
 
     /// <summary>
     /// Applies self-healing fixes to a configuration and returns the fixed config
@@ -634,9 +625,7 @@ public sealed class ConfigurationService : IAsyncDisposable
         return false;
     }
 
-    #endregion
 
-    #region Configuration Loading and Environment
 
     /// <summary>
     /// Applies environment variable overrides to configuration.
@@ -794,9 +783,7 @@ public sealed class ConfigurationService : IAsyncDisposable
         };
     }
 
-    #endregion
 
-    #region Hot Reload
 
     /// <summary>
     /// Starts hot reload monitoring for configuration file changes.
@@ -845,9 +832,7 @@ public sealed class ConfigurationService : IAsyncDisposable
         _watcher = null;
     }
 
-    #endregion
 
-    #region Configuration Display
 
     /// <summary>
     /// Displays configuration summary to console.
@@ -886,7 +871,6 @@ public sealed class ConfigurationService : IAsyncDisposable
         _log.Information("Configuration saved to {Path}", store.ConfigPath);
     }
 
-    #endregion
 
     public async ValueTask DisposeAsync()
     {
