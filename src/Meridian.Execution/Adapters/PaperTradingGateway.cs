@@ -159,7 +159,7 @@ public sealed class PaperTradingGateway : IOrderGateway
             {
                 return new OrderValidationResult(
                     false,
-                    $"Order quantity {absQty} is not a valid multiple of the lot size {lotSize} for {request.Symbol}.");
+                    $"Order quantity {absQty} is not a valid multiple of the lot-size {lotSize} for {request.Symbol}.");
             }
         }
 
