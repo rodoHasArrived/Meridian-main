@@ -1,4 +1,5 @@
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Infrastructure.Contracts;
 
 namespace Meridian.Application.Services;
 
@@ -15,24 +16,8 @@ public sealed class ConfigurationServiceCredentialAdapter : IProviderCredentialR
         _configService = configService ?? throw new ArgumentNullException(nameof(configService));
     }
 
-    public (string? KeyId, string? SecretKey) ResolveAlpacaCredentials(string? configKeyId, string? configSecretKey)
-        => _configService.ResolveAlpacaCredentials(configKeyId, configSecretKey);
-
-    public string? ResolvePolygonCredentials(string? configApiKey)
-        => _configService.ResolvePolygonCredentials(configApiKey);
-
-    public string? ResolveTiingoCredentials(string? configToken)
-        => _configService.ResolveTiingoCredentials(configToken);
-
-    public string? ResolveFinnhubCredentials(string? configApiKey)
-        => _configService.ResolveFinnhubCredentials(configApiKey);
-
-    public string? ResolveAlphaVantageCredentials(string? configApiKey)
-        => _configService.ResolveAlphaVantageCredentials(configApiKey);
-
-    public string? ResolveFredCredentials(string? configApiKey)
-        => _configService.ResolveFredCredentials(configApiKey);
-
-    public string? ResolveNasdaqCredentials(string? configApiKey)
-        => _configService.ResolveNasdaqCredentials(configApiKey);
+    public ICredentialContext CreateContext(Type providerType, IReadOnlyDictionary<string, string?>? configuredValues = null)
+    {
+        return _configService.CreateCredentialContext(providerType, configuredValues);
+    }
 }

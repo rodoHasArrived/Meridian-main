@@ -105,8 +105,8 @@ public partial class AddProviderWizardPage : Page
         DetailRateLimitText.Text = _selectedProvider.RateLimitPerMinute > 0
             ? $"{_selectedProvider.RateLimitPerMinute}/min"
             : "None";
-        DetailCredentialsText.Text = _selectedProvider.RequiredEnvVars.Length > 0
-            ? $"{_selectedProvider.RequiredEnvVars.Length} required"
+        DetailCredentialsText.Text = _selectedProvider.CredentialFields.Length > 0
+            ? $"{_selectedProvider.CredentialFields.Length} required"
             : "None";
 
         // Show Step 2
@@ -124,7 +124,7 @@ public partial class AddProviderWizardPage : Page
 
         if (_selectedProvider == null) return;
 
-        if (_selectedProvider.RequiredEnvVars.Length == 0)
+        if (_selectedProvider.CredentialFields.Length == 0)
         {
             CredentialsInfoText.Text = $"{_selectedProvider.DisplayName} does not require API credentials.";
             NoCredentialsNeededText.Visibility = Visibility.Visible;
@@ -135,14 +135,14 @@ public partial class AddProviderWizardPage : Page
         CredentialsInfoText.Text = $"Enter your {_selectedProvider.DisplayName} credentials. " +
             "These will be stored as user environment variables.";
 
-        foreach (var envVar in _selectedProvider.RequiredEnvVars)
+        foreach (var field in _selectedProvider.CredentialFields)
         {
+            var envVar = field.EnvironmentVariable ?? string.Empty;
             var currentValue = Environment.GetEnvironmentVariable(envVar) ?? "";
-            var friendlyName = envVar.Replace("__", " ").Replace("_", " ");
 
             var label = new TextBlock
             {
-                Text = friendlyName,
+                Text = field.DisplayName,
                 Style = (Style)FindResource("FormLabelStyle"),
                 Margin = new Thickness(0, 0, 0, 4)
             };
@@ -179,8 +179,11 @@ public partial class AddProviderWizardPage : Page
         ConnectionTestStatusText.Text = $"Testing {_selectedProvider.DisplayName} connectivity...";
 
         // Simulate connection test (actual implementation would call ConnectivityTestService)
-        var hasCredentials = _selectedProvider.RequiredEnvVars.Length == 0 ||
-            _selectedProvider.RequiredEnvVars.All(env => !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(env)));
+        var hasCredentials = _selectedProvider.CredentialFields.Length == 0 ||
+            _selectedProvider.CredentialFields
+                .Where(field => field.Required)
+                .All(field => !string.IsNullOrWhiteSpace(field.EnvironmentVariable) &&
+                    !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(field.EnvironmentVariable)));
 
         if (hasCredentials)
         {

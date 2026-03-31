@@ -206,7 +206,10 @@ public abstract class WebSocketProviderBase : IMarketDataClient
 
     #region Reconnection
 
-    private async Task OnConnectionLostAsync()
+    private Task OnConnectionLostAsync()
+        => OnConnectionLostAsync(CancellationToken.None);
+
+    private async Task OnConnectionLostAsync(CancellationToken ct)
     {
         if (_wsUri == null)
             return;
@@ -218,13 +221,14 @@ public abstract class WebSocketProviderBase : IMarketDataClient
             configureSocket: ConfigureWebSocket,
             onReconnected: async () =>
             {
-                await AuthenticateAsync(CancellationToken.None).ConfigureAwait(false);
-                _connectionManager.StartReceiveLoop(HandleMessageAsync, CancellationToken.None);
-                await ResubscribeAsync(CancellationToken.None).ConfigureAwait(false);
+                await AuthenticateAsync(ct).ConfigureAwait(false);
+                _connectionManager.StartReceiveLoop(HandleMessageAsync, ct);
+                await ResubscribeAsync(ct).ConfigureAwait(false);
 
                 MigrationDiagnostics.IncResubscribeAttempt();
                 MigrationDiagnostics.IncResubscribeSuccess();
-            }).ConfigureAwait(false);
+            },
+            ct: ct).ConfigureAwait(false);
 
         if (success)
             MigrationDiagnostics.IncReconnectSuccess(ProviderId);

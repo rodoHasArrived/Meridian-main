@@ -5,6 +5,7 @@ using Meridian.Application.Logging;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Services;
 using Meridian.Application.UI;
+using Meridian.Contracts.Api;
 using Meridian.Domain.Collectors;
 using Meridian.Domain.Events;
 using Meridian.Infrastructure;
@@ -63,6 +64,9 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
 
             RegisterBackfillProviders(registry, config, credentialResolver, log);
             RegisterSymbolSearchProviders(registry, config, credentialResolver, log);
+            ProviderCatalog.InitializeFromRegistry(
+                registry.GetProviderCatalog,
+                registry.GetProviderCatalogEntry);
 
             return registry;
         });
@@ -100,8 +104,15 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
         {
             var tradeCollector = sp.GetRequiredService<TradeDataCollector>();
             var quoteCollector = sp.GetRequiredService<QuoteCollector>();
-            var (keyId, secretKey) = credentialResolver.ResolveAlpacaCredentials(
-                config.Alpaca?.KeyId, config.Alpaca?.SecretKey);
+            var credentialContext = credentialResolver.CreateContext(
+                typeof(Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient),
+                new Dictionary<string, string?>(StringComparer.Ordinal)
+                {
+                    ["ALPACA_KEY_ID"] = config.Alpaca?.KeyId,
+                    ["ALPACA_SECRET_KEY"] = config.Alpaca?.SecretKey
+                });
+            var keyId = credentialContext.Get("ALPACA_KEY_ID");
+            var secretKey = credentialContext.Get("ALPACA_SECRET_KEY");
             return new Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient(
                 tradeCollector, quoteCollector,
                 config.Alpaca! with { KeyId = keyId ?? "", SecretKey = secretKey ?? "" });

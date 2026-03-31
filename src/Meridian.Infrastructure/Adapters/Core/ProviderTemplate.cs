@@ -1,5 +1,5 @@
 using Meridian.Contracts.Api;
-using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Infrastructure.Contracts;
 
 namespace Meridian.Infrastructure.Adapters.Core;
 
@@ -142,15 +142,10 @@ public static class ProviderTemplateFactory
             _ => caps.SupportsSymbolSearch ? ProviderTypeKind.SymbolSearch : ProviderTypeKind.Streaming
         };
 
-        // Convert credential fields
-        var credentialFields = provider.ProviderCredentialFields
-            .Select(f => new CredentialFieldInfo(
-                f.Name,
-                f.EnvironmentVariable,
-                f.DisplayName,
-                f.Required,
-                f.DefaultValue))
-            .ToArray();
+        // Convert credential fields. When providers only declare [RequiresCredential]
+        // metadata, derive the UI contract from those attributes so consumers don't
+        // need a separate hardcoded credential map.
+        var credentialFields = BuildCredentialFields(provider);
 
         // Build rate limit info if available
         Meridian.Contracts.Api.RateLimitInfo? rateLimit = null;
@@ -188,7 +183,7 @@ public static class ProviderTemplateFactory
             DisplayName = provider.ProviderDisplayName,
             Description = provider.ProviderDescription,
             ProviderType = typeKind,
-            RequiresCredentials = provider.RequiresCredentials,
+            RequiresCredentials = credentialFields.Any(field => field.Required),
             CredentialFields = credentialFields,
             RateLimit = rateLimit,
             Notes = provider.ProviderNotes,
@@ -198,4 +193,38 @@ public static class ProviderTemplateFactory
             Capabilities = capabilityInfo
         };
     }
+
+    private static CredentialFieldInfo[] BuildCredentialFields(IProviderMetadata provider)
+    {
+        var explicitFields = provider.ProviderCredentialFields;
+        if (explicitFields.Length > 0)
+        {
+            return explicitFields
+                .Select(field => new CredentialFieldInfo(
+                    field.Name,
+                    field.EnvironmentVariable,
+                    field.DisplayName,
+                    field.Required,
+                    field.DefaultValue))
+                .ToArray();
+        }
+
+        var attributeFields = AttributeCredentialResolver
+            .GetAttributes(provider.GetType())
+            .Select(attribute => new CredentialFieldInfo(
+                attribute.Name,
+                attribute.EnvironmentVariables.FirstOrDefault(),
+                attribute.DisplayName ?? FormatCredentialDisplayName(attribute.Name),
+                !attribute.Optional))
+            .ToArray();
+
+        return attributeFields;
+    }
+
+    private static string FormatCredentialDisplayName(string name) =>
+        string.Join(" ",
+            name.Split('_', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Select(part => part.Length > 0
+                    ? char.ToUpperInvariant(part[0]) + part[1..].ToLowerInvariant()
+                    : part));
 }

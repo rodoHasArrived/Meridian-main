@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Meridian.Application.Config;
 using Meridian.Application.Services;
+using Meridian.Infrastructure.Adapters.Alpaca;
 using Xunit;
 
 namespace Meridian.Tests.Application.Services;
@@ -508,6 +509,24 @@ public class ConfigurationServiceTests : IAsyncDisposable
 
         // Assert
         resolved.Alpaca.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void CreateCredentialContext_UsesConfiguredValuesForAnnotatedProvider()
+    {
+        // Arrange
+        var configuredValues = new Dictionary<string, string?>(StringComparer.Ordinal)
+        {
+            ["ALPACA_KEY_ID"] = "configured-key",
+            ["ALPACA_SECRET_KEY"] = "configured-secret"
+        };
+
+        // Act
+        var context = _sut.CreateCredentialContext(typeof(AlpacaHistoricalDataProvider), configuredValues);
+
+        // Assert
+        context.Get("ALPACA_KEY_ID").Should().Be("configured-key");
+        context.Get("ALPACA_SECRET_KEY").Should().Be("configured-secret");
     }
 
     #endregion

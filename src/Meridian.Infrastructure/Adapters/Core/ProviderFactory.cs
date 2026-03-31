@@ -172,7 +172,11 @@ public sealed class ProviderFactory
         if (!(cfg?.Enabled ?? true))
             return null;
 
-        var (keyId, secretKey) = _credentialResolver.ResolveAlpacaCredentials(cfg?.KeyId, cfg?.SecretKey);
+        var credentials = CreateCredentialContext<AlpacaHistoricalDataProvider>(
+            ("ALPACA_KEY_ID", cfg?.KeyId),
+            ("ALPACA_SECRET_KEY", cfg?.SecretKey));
+        var keyId = credentials.Get("ALPACA_KEY_ID");
+        var secretKey = credentials.Get("ALPACA_SECRET_KEY");
         if (string.IsNullOrEmpty(keyId) || string.IsNullOrEmpty(secretKey))
             return null;
 
@@ -198,7 +202,9 @@ public sealed class ProviderFactory
         if (!(cfg?.Enabled ?? true))
             return null;
 
-        var apiKey = _credentialResolver.ResolvePolygonCredentials(cfg?.ApiKey);
+        var credentials = CreateCredentialContext<PolygonHistoricalDataProvider>(
+            ("POLYGON_API_KEY", cfg?.ApiKey));
+        var apiKey = credentials.Get("POLYGON_API_KEY");
         if (string.IsNullOrEmpty(apiKey))
             return null;
 
@@ -210,7 +216,9 @@ public sealed class ProviderFactory
         if (!(cfg?.Enabled ?? true))
             return null;
 
-        var token = _credentialResolver.ResolveTiingoCredentials(cfg?.ApiToken);
+        var credentials = CreateCredentialContext<TiingoHistoricalDataProvider>(
+            ("TIINGO_API_TOKEN", cfg?.ApiToken));
+        var token = credentials.Get("TIINGO_API_TOKEN");
         if (string.IsNullOrEmpty(token))
             return null;
 
@@ -222,7 +230,9 @@ public sealed class ProviderFactory
         if (!(cfg?.Enabled ?? true))
             return null;
 
-        var apiKey = _credentialResolver.ResolveFinnhubCredentials(cfg?.ApiKey);
+        var credentials = CreateCredentialContext<FinnhubHistoricalDataProvider>(
+            ("FINNHUB_API_KEY", cfg?.ApiKey));
+        var apiKey = credentials.Get("FINNHUB_API_KEY");
         if (string.IsNullOrEmpty(apiKey))
             return null;
 
@@ -242,7 +252,9 @@ public sealed class ProviderFactory
         if (!(cfg?.Enabled ?? false))
             return null;
 
-        var apiKey = _credentialResolver.ResolveAlphaVantageCredentials(cfg?.ApiKey);
+        var credentials = CreateCredentialContext<AlphaVantageHistoricalDataProvider>(
+            ("ALPHA_VANTAGE_API_KEY", cfg?.ApiKey));
+        var apiKey = credentials.Get("ALPHA_VANTAGE_API_KEY");
         if (string.IsNullOrEmpty(apiKey))
             return null;
 
@@ -254,7 +266,9 @@ public sealed class ProviderFactory
         if (!(cfg?.Enabled ?? false))
             return null;
 
-        var apiKey = _credentialResolver.ResolveFredCredentials(cfg?.ApiKey);
+        var credentials = CreateCredentialContext<FredHistoricalDataProvider>(
+            ("FRED_API_KEY", cfg?.ApiKey));
+        var apiKey = credentials.Get("FRED_API_KEY");
         if (string.IsNullOrEmpty(apiKey))
             return null;
 
@@ -266,7 +280,9 @@ public sealed class ProviderFactory
         if (!(cfg?.Enabled ?? true))
             return null;
 
-        var apiKey = _credentialResolver.ResolveNasdaqCredentials(cfg?.ApiKey);
+        var credentials = CreateCredentialContext<NasdaqDataLinkHistoricalDataProvider>(
+            ("NASDAQ_DATA_LINK_API_KEY", cfg?.ApiKey));
+        var apiKey = credentials.Get("NASDAQ_DATA_LINK_API_KEY");
         return new NasdaqDataLinkHistoricalDataProvider(
             apiKey: apiKey,
             database: cfg?.Database ?? "WIKI",
@@ -332,7 +348,11 @@ public sealed class ProviderFactory
         if (cfg != null && !cfg.Enabled)
             return null;
 
-        var (keyId, secretKey) = _credentialResolver.ResolveAlpacaCredentials(cfg?.KeyId, cfg?.SecretKey);
+        var credentials = CreateCredentialContext<AlpacaHistoricalDataProvider>(
+            ("ALPACA_KEY_ID", cfg?.KeyId),
+            ("ALPACA_SECRET_KEY", cfg?.SecretKey));
+        var keyId = credentials.Get("ALPACA_KEY_ID");
+        var secretKey = credentials.Get("ALPACA_SECRET_KEY");
         if (string.IsNullOrEmpty(keyId) || string.IsNullOrEmpty(secretKey))
             return null;
 
@@ -345,7 +365,9 @@ public sealed class ProviderFactory
         if (cfg != null && !cfg.Enabled)
             return null;
 
-        var apiKey = _credentialResolver.ResolveFinnhubCredentials(cfg?.ApiKey);
+        var credentials = CreateCredentialContext<FinnhubHistoricalDataProvider>(
+            ("FINNHUB_API_KEY", cfg?.ApiKey));
+        var apiKey = credentials.Get("FINNHUB_API_KEY");
         if (string.IsNullOrEmpty(apiKey))
             return null;
 
@@ -358,7 +380,9 @@ public sealed class ProviderFactory
         if (cfg != null && !cfg.Enabled)
             return null;
 
-        var apiKey = _credentialResolver.ResolvePolygonCredentials(cfg?.ApiKey);
+        var credentials = CreateCredentialContext<PolygonHistoricalDataProvider>(
+            ("POLYGON_API_KEY", cfg?.ApiKey));
+        var apiKey = credentials.Get("POLYGON_API_KEY");
         if (string.IsNullOrEmpty(apiKey))
             return null;
 
@@ -385,6 +409,23 @@ public sealed class ProviderFactory
             symbolResolver,
             enableCrossValidation: false,
             log: _log);
+    }
+
+    private ICredentialContext CreateCredentialContext<TProvider>(params (string Name, string? Value)[] configuredValues)
+    {
+        IReadOnlyDictionary<string, string?>? configuredLookup = null;
+        if (configuredValues.Length > 0)
+        {
+            var values = new Dictionary<string, string?>(StringComparer.Ordinal);
+            foreach (var (name, value) in configuredValues)
+            {
+                values[name] = value;
+            }
+
+            configuredLookup = values;
+        }
+
+        return _credentialResolver.CreateContext(typeof(TProvider), configuredLookup);
     }
 }
 
@@ -418,24 +459,18 @@ public sealed class ProviderCreationResult
 /// <see cref="Meridian.Infrastructure.Contracts.RequiresCredentialAttribute"/> and
 /// accept an <see cref="Meridian.Infrastructure.Contracts.ICredentialContext"/> instead.
 /// </remarks>
-[Obsolete("ICredentialResolver requires a new method per provider. " +
-          "Annotate new providers with [RequiresCredential] and use AttributeCredentialResolver / ICredentialContext instead.")]
+[Obsolete("ICredentialResolver is deprecated. Use IProviderCredentialResolver.CreateContext(...) " +
+          "with [RequiresCredential] metadata instead.")]
 public interface ICredentialResolver : IProviderCredentialResolver
 {
 }
 
 /// <summary>
-/// Legacy provider credential resolver contract used by the unified provider factory.
+/// Generic provider credential context factory used by runtime provider registration.
 /// </summary>
 public interface IProviderCredentialResolver
 {
-    (string? KeyId, string? SecretKey) ResolveAlpacaCredentials(string? configKeyId, string? configSecretKey);
-    string? ResolvePolygonCredentials(string? configApiKey);
-    string? ResolveTiingoCredentials(string? configToken);
-    string? ResolveFinnhubCredentials(string? configApiKey);
-    string? ResolveAlphaVantageCredentials(string? configApiKey);
-    string? ResolveFredCredentials(string? configApiKey);
-    string? ResolveNasdaqCredentials(string? configApiKey);
+    ICredentialContext CreateContext(Type providerType, IReadOnlyDictionary<string, string?>? configuredValues = null);
 }
 
 /// <summary>
@@ -444,36 +479,17 @@ public interface IProviderCredentialResolver
 /// </summary>
 public sealed class EnvironmentCredentialResolver : IProviderCredentialResolver
 {
-    public (string? KeyId, string? SecretKey) ResolveAlpacaCredentials(string? configKeyId, string? configSecretKey)
+    public ICredentialContext CreateContext(Type providerType, IReadOnlyDictionary<string, string?>? configuredValues = null)
     {
-        var keyId = configKeyId ?? Environment.GetEnvironmentVariable("ALPACA__KEYID")
-                                 ?? Environment.GetEnvironmentVariable("ALPACA_KEY_ID");
-        var secretKey = configSecretKey ?? Environment.GetEnvironmentVariable("ALPACA__SECRETKEY")
-                                        ?? Environment.GetEnvironmentVariable("ALPACA_SECRET_KEY");
-        return (keyId, secretKey);
+        return AttributeCredentialResolver.ForType(providerType, credentialName =>
+        {
+            if (configuredValues is not null &&
+                configuredValues.TryGetValue(credentialName, out var configuredValue))
+            {
+                return configuredValue;
+            }
+
+            return null;
+        });
     }
-
-    public string? ResolvePolygonCredentials(string? configApiKey)
-        => configApiKey ?? Environment.GetEnvironmentVariable("POLYGON__APIKEY")
-                        ?? Environment.GetEnvironmentVariable("POLYGON_API_KEY");
-
-    public string? ResolveTiingoCredentials(string? configToken)
-        => configToken ?? Environment.GetEnvironmentVariable("TIINGO__TOKEN")
-                       ?? Environment.GetEnvironmentVariable("TIINGO_API_TOKEN");
-
-    public string? ResolveFinnhubCredentials(string? configApiKey)
-        => configApiKey ?? Environment.GetEnvironmentVariable("FINNHUB__APIKEY")
-                        ?? Environment.GetEnvironmentVariable("FINNHUB_API_KEY");
-
-    public string? ResolveAlphaVantageCredentials(string? configApiKey)
-        => configApiKey ?? Environment.GetEnvironmentVariable("ALPHAVANTAGE__APIKEY")
-                        ?? Environment.GetEnvironmentVariable("ALPHA_VANTAGE_API_KEY");
-
-    public string? ResolveFredCredentials(string? configApiKey)
-        => configApiKey ?? Environment.GetEnvironmentVariable("FRED__APIKEY")
-                        ?? Environment.GetEnvironmentVariable("FRED_API_KEY");
-
-    public string? ResolveNasdaqCredentials(string? configApiKey)
-        => configApiKey ?? Environment.GetEnvironmentVariable("NASDAQ__APIKEY")
-                        ?? Environment.GetEnvironmentVariable("NASDAQ_DATA_LINK_API_KEY");
 }

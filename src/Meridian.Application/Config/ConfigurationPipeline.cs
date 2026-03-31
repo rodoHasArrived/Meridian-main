@@ -2,6 +2,14 @@ using Meridian.Application.Config.Credentials;
 using Meridian.Application.Logging;
 using Meridian.Application.Services;
 using Meridian.Application.UI;
+using Meridian.Infrastructure.Adapters.Alpaca;
+using Meridian.Infrastructure.Adapters.AlphaVantage;
+using Meridian.Infrastructure.Adapters.Finnhub;
+using Meridian.Infrastructure.Adapters.Fred;
+using Meridian.Infrastructure.Adapters.NasdaqDataLink;
+using Meridian.Infrastructure.Adapters.Polygon;
+using Meridian.Infrastructure.Adapters.Tiingo;
+using Meridian.Infrastructure.Contracts;
 using Serilog;
 
 namespace Meridian.Application.Config;
@@ -427,7 +435,15 @@ public sealed class ConfigurationPipeline : IAsyncDisposable
         // Resolve Alpaca credentials
         if (config.DataSource == DataSourceKind.Alpaca || config.Alpaca != null)
         {
-            var (keyId, secretKey) = _credentialResolver.ResolveAlpaca(config.Alpaca?.KeyId, config.Alpaca?.SecretKey);
+            var credentials = CreateCredentialContext(
+                typeof(AlpacaHistoricalDataProvider),
+                new Dictionary<string, string?>(StringComparer.Ordinal)
+                {
+                    ["ALPACA_KEY_ID"] = config.Alpaca?.KeyId,
+                    ["ALPACA_SECRET_KEY"] = config.Alpaca?.SecretKey
+                });
+            var keyId = credentials.Get("ALPACA_KEY_ID");
+            var secretKey = credentials.Get("ALPACA_SECRET_KEY");
             if (!string.IsNullOrEmpty(keyId) && !string.IsNullOrEmpty(secretKey))
             {
                 config = config with
@@ -444,7 +460,12 @@ public sealed class ConfigurationPipeline : IAsyncDisposable
         // Resolve Polygon credentials
         if (config.DataSource == DataSourceKind.Polygon || config.Polygon != null)
         {
-            var apiKey = _credentialResolver.ResolvePolygon(config.Polygon?.ApiKey);
+            var apiKey = CreateCredentialContext(
+                typeof(PolygonHistoricalDataProvider),
+                new Dictionary<string, string?>(StringComparer.Ordinal)
+                {
+                    ["POLYGON_API_KEY"] = config.Polygon?.ApiKey
+                }).Get("POLYGON_API_KEY");
             if (!string.IsNullOrEmpty(apiKey) && config.Polygon != null)
             {
                 config = config with
@@ -462,7 +483,12 @@ public sealed class ConfigurationPipeline : IAsyncDisposable
 
             if (providers.Tiingo != null)
             {
-                var token = _credentialResolver.ResolveTiingo(providers.Tiingo.ApiToken);
+                var token = CreateCredentialContext(
+                    typeof(TiingoHistoricalDataProvider),
+                    new Dictionary<string, string?>(StringComparer.Ordinal)
+                    {
+                        ["TIINGO_API_TOKEN"] = providers.Tiingo.ApiToken
+                    }).Get("TIINGO_API_TOKEN");
                 if (!string.IsNullOrEmpty(token))
                 {
                     providers = providers with { Tiingo = providers.Tiingo with { ApiToken = token } };
@@ -472,7 +498,12 @@ public sealed class ConfigurationPipeline : IAsyncDisposable
 
             if (providers.Finnhub != null)
             {
-                var key = _credentialResolver.ResolveFinnhub(providers.Finnhub.ApiKey);
+                var key = CreateCredentialContext(
+                    typeof(FinnhubHistoricalDataProvider),
+                    new Dictionary<string, string?>(StringComparer.Ordinal)
+                    {
+                        ["FINNHUB_API_KEY"] = providers.Finnhub.ApiKey
+                    }).Get("FINNHUB_API_KEY");
                 if (!string.IsNullOrEmpty(key))
                 {
                     providers = providers with { Finnhub = providers.Finnhub with { ApiKey = key } };
@@ -482,7 +513,12 @@ public sealed class ConfigurationPipeline : IAsyncDisposable
 
             if (providers.Polygon != null)
             {
-                var key = _credentialResolver.ResolvePolygon(providers.Polygon.ApiKey);
+                var key = CreateCredentialContext(
+                    typeof(PolygonHistoricalDataProvider),
+                    new Dictionary<string, string?>(StringComparer.Ordinal)
+                    {
+                        ["POLYGON_API_KEY"] = providers.Polygon.ApiKey
+                    }).Get("POLYGON_API_KEY");
                 if (!string.IsNullOrEmpty(key))
                 {
                     providers = providers with { Polygon = providers.Polygon with { ApiKey = key } };
@@ -492,7 +528,12 @@ public sealed class ConfigurationPipeline : IAsyncDisposable
 
             if (providers.AlphaVantage != null)
             {
-                var key = _credentialResolver.ResolveAlphaVantage(providers.AlphaVantage.ApiKey);
+                var key = CreateCredentialContext(
+                    typeof(AlphaVantageHistoricalDataProvider),
+                    new Dictionary<string, string?>(StringComparer.Ordinal)
+                    {
+                        ["ALPHA_VANTAGE_API_KEY"] = providers.AlphaVantage.ApiKey
+                    }).Get("ALPHA_VANTAGE_API_KEY");
                 if (!string.IsNullOrEmpty(key))
                 {
                     providers = providers with { AlphaVantage = providers.AlphaVantage with { ApiKey = key } };
@@ -502,7 +543,12 @@ public sealed class ConfigurationPipeline : IAsyncDisposable
 
             if (providers.Nasdaq != null)
             {
-                var key = _credentialResolver.ResolveNasdaq(providers.Nasdaq.ApiKey);
+                var key = CreateCredentialContext(
+                    typeof(NasdaqDataLinkHistoricalDataProvider),
+                    new Dictionary<string, string?>(StringComparer.Ordinal)
+                    {
+                        ["NASDAQ_DATA_LINK_API_KEY"] = providers.Nasdaq.ApiKey
+                    }).Get("NASDAQ_DATA_LINK_API_KEY");
                 if (!string.IsNullOrEmpty(key))
                 {
                     providers = providers with { Nasdaq = providers.Nasdaq with { ApiKey = key } };
@@ -512,7 +558,12 @@ public sealed class ConfigurationPipeline : IAsyncDisposable
 
             if (providers.Fred != null)
             {
-                var key = _credentialResolver.ResolveFred(providers.Fred.ApiKey);
+                var key = CreateCredentialContext(
+                    typeof(FredHistoricalDataProvider),
+                    new Dictionary<string, string?>(StringComparer.Ordinal)
+                    {
+                        ["FRED_API_KEY"] = providers.Fred.ApiKey
+                    }).Get("FRED_API_KEY");
                 if (!string.IsNullOrEmpty(key))
                 {
                     providers = providers with { Fred = providers.Fred with { ApiKey = key } };
@@ -584,7 +635,9 @@ public sealed class ConfigurationPipeline : IAsyncDisposable
         {
             if (config.Alpaca == null || string.IsNullOrEmpty(config.Alpaca.KeyId))
             {
-                var (keyId, secretKey) = _credentialResolver.ResolveAlpaca();
+                var credentials = CreateCredentialContext(typeof(AlpacaHistoricalDataProvider));
+                var keyId = credentials.Get("ALPACA_KEY_ID");
+                var secretKey = credentials.Get("ALPACA_SECRET_KEY");
                 if (!string.IsNullOrEmpty(keyId) && !string.IsNullOrEmpty(secretKey))
                 {
                     TryFix(
@@ -604,7 +657,9 @@ public sealed class ConfigurationPipeline : IAsyncDisposable
         // ── Fix: IB selected but gateway not available (Warn — switches active provider) ──
         if (config.DataSource == DataSourceKind.IB && !IsIBGatewayAvailable())
         {
-            var (keyId, secretKey) = _credentialResolver.ResolveAlpaca();
+            var credentials = CreateCredentialContext(typeof(AlpacaHistoricalDataProvider));
+            var keyId = credentials.Get("ALPACA_KEY_ID");
+            var secretKey = credentials.Get("ALPACA_SECRET_KEY");
             if (!string.IsNullOrEmpty(keyId) && !string.IsNullOrEmpty(secretKey))
             {
                 TryFix(
@@ -719,6 +774,13 @@ public sealed class ConfigurationPipeline : IAsyncDisposable
             applied.Count, refused.Count, warnings.Count);
 
         return (config, applied, refused, warnings);
+    }
+
+    private ICredentialContext CreateCredentialContext(
+        Type providerType,
+        IReadOnlyDictionary<string, string?>? configuredValues = null)
+    {
+        return _credentialResolver.CreateContext(providerType, configuredValues);
     }
 
     private static bool IsIBGatewayAvailable()
