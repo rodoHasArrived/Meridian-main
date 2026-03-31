@@ -2614,6 +2614,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── ClusterStatusViewModel.cs
 │       │   ├── CredentialManagementViewModel.cs
 │       │   ├── DashboardViewModel.cs
+│       │   ├── DataCalendarViewModel.cs
 │       │   ├── DataQualityViewModel.cs
 │       │   ├── DiagnosticsPageViewModel.cs
 │       │   ├── DirectLendingViewModel.cs
@@ -2622,6 +2623,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── LeanIntegrationViewModel.cs
 │       │   ├── LiveDataViewerViewModel.cs
 │       │   ├── MainPageViewModel.cs
+│       │   ├── MessagingHubViewModel.cs
 │       │   ├── NotificationCenterViewModel.cs
 │       │   ├── OrderBookHeatmapViewModel.cs
 │       │   ├── OrderBookViewModel.cs
@@ -3313,6 +3315,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-486 directories, 2765 files
+486 directories, 2767 files
 ```
 <!-- readme-tree end -->
