@@ -31,7 +31,7 @@
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                             <Button Content="&lt;" Style="{StaticResource SecondaryButtonStyle}"
                                     Click="PreviousYear_Click" Padding="8,4" Margin="0,0,4,0" />
-                            <TextBlock x:Name="CurrentYearText" Text="2026" FontSize="16" FontWeight="Bold"
+                            <TextBlock Text="{Binding CurrentYearText}" FontSize="16" FontWeight="Bold"
                                        Foreground="{StaticResource ConsoleTextPrimaryBrush}" VerticalAlignment="Center"
                                        Margin="8,0" />
                             <Button Content="&gt;" Style="{StaticResource SecondaryButtonStyle}"
@@ -47,12 +47,12 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" Margin="0,0,12,0">
                             <TextBlock Text="Trading Days" Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
-                            <TextBlock x:Name="TradingDaysText" Text="--" FontSize="20" FontWeight="Bold"
+                            <TextBlock Text="{Binding TradingDaysText}" FontSize="20" FontWeight="Bold"
                                        Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
                         </StackPanel>
                         <StackPanel Grid.Column="1" Margin="0,0,12,0">
                             <TextBlock Text="Days with Data" Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
-                            <TextBlock x:Name="DaysWithDataText" Text="--" FontSize="20" FontWeight="Bold"
+                            <TextBlock Text="{Binding DaysWithDataText}" FontSize="20" FontWeight="Bold"
                                        Foreground="{StaticResource SuccessColorBrush}" />
                         </StackPanel>
                         <StackPanel Grid.Column="2" Margin="0,0,12,0">
