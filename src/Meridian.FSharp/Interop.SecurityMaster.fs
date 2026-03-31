@@ -177,6 +177,33 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                             {| covenantType = covenant.CovenantType
                                threshold = covenant.Threshold
                                notes = covenant.Notes |}) |})
+        | SecurityKind.Commodity terms ->
+            JsonSerializer.Serialize(
+                {| schemaVersion = schemaVersion
+                   commodityType = terms.CommodityType
+                   denomination = terms.Denomination
+                   contractSize = terms.ContractSize |})
+        | SecurityKind.CryptoCurrency terms ->
+            JsonSerializer.Serialize(
+                {| schemaVersion = schemaVersion
+                   baseCurrency = terms.BaseCurrency
+                   quoteCurrency = terms.QuoteCurrency
+                   network = terms.Network |})
+        | SecurityKind.Cfd terms ->
+            JsonSerializer.Serialize(
+                {| schemaVersion = schemaVersion
+                   underlyingAssetClass = terms.UnderlyingAssetClass
+                   underlyingDescription = terms.UnderlyingDescription
+                   leverage = terms.Leverage |})
+        | SecurityKind.Warrant terms ->
+            let (SecurityId underlyingId) = terms.UnderlyingId
+            JsonSerializer.Serialize(
+                {| schemaVersion = schemaVersion
+                   underlyingId = underlyingId
+                   warrantType = terms.WarrantType
+                   strike = terms.Strike
+                   expiry = terms.Expiry
+                   multiplier = terms.Multiplier |})
 
     let commonTermsJson =
         JsonSerializer.Serialize(
