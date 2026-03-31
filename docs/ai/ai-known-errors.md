@@ -1,6 +1,6 @@
 # AI Known Errors and Prevention Checklist
 
-**Last Updated:** 2026-03-21
+**Last Updated:** 2026-03-31
 
 This file tracks repeated AI-agent mistakes so future agents can avoid introducing the same failures.
 

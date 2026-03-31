@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -328,6 +329,7 @@ public sealed class ArchiveHealthService
         }
         catch (Exception ex)
         {
+            Debug.WriteLine($"[ArchiveHealthService] Failed to read drive info: {ex.Message}");
         }
 
         return Task.FromResult(info);
@@ -485,6 +487,7 @@ public sealed class ArchiveHealthService
         }
         catch (Exception ex)
         {
+            Debug.WriteLine($"[ArchiveHealthService] Failed to save health status: {ex.Message}");
         }
     }
 }

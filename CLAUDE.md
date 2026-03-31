@@ -6,7 +6,7 @@ Repo-local Codex skills live under `.codex/skills/`. Use them for Meridian-speci
 
 **Meridian** is a high-performance .NET 9.0 / C# 13 / F# 8.0 integrated trading platform. It collects real-time and historical market microstructure data from multiple providers, executes trading strategies in real-time, backtests strategies on historical data, and tracks portfolio performance across all runs.
 
-**Version:** 1.7.2 | **Status:** Development / Pilot Ready | **Files:** 1,220 source files (1,169 C# + 51 F#) | **Tests:** ~4,756
+**Version:** 1.7.2 | **Status:** Development / Pilot Ready | **Files:** 1,313 source files (1,262 C# + 51 F#) | **Tests:** ~4,756
 
 ### Platform Pillars
 - **📡 Data Collection** - Real-time streaming (90+ sources) + historical backfill (10+ providers) with data quality monitoring
@@ -3529,4 +3529,4 @@ Load these on-demand when working in the relevant area — do not read all of th
 
 ---
 
-*Last Updated: 2026-03-24*
+*Last Updated: 2026-03-31*
