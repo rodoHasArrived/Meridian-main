@@ -806,7 +806,10 @@ Meridian-main
 │   │   ├── ufl-bond-target-state-v2.md
 │   │   ├── ufl-cash-sweep-target-state-v2.md
 │   │   ├── ufl-certificate-of-deposit-target-state-v2.md
+│   │   ├── ufl-cfd-target-state-v2.md
 │   │   ├── ufl-commercial-paper-target-state-v2.md
+│   │   ├── ufl-commodity-target-state-v2.md
+│   │   ├── ufl-crypto-target-state-v2.md
 │   │   ├── ufl-deposit-target-state-v2.md
 │   │   ├── ufl-direct-lending-implementation-roadmap.md
 │   │   ├── ufl-direct-lending-target-state-v2.md
@@ -820,6 +823,7 @@ Meridian-main
 │   │   ├── ufl-supported-assets-index.md
 │   │   ├── ufl-swap-target-state-v2.md
 │   │   ├── ufl-treasury-bill-target-state-v2.md
+│   │   ├── ufl-warrant-target-state-v2.md
 │   │   ├── workstation-release-readiness-blueprint.md
 │   │   └── workstation-sprint-1-implementation-backlog.md
 │   ├── providers
@@ -1635,6 +1639,7 @@ Meridian-main
 │   │   │   │   ├── AlpacaConstants.cs
 │   │   │   │   ├── AlpacaHistoricalDataProvider.cs
 │   │   │   │   ├── AlpacaMarketDataClient.cs
+│   │   │   │   ├── AlpacaProviderModule.cs
 │   │   │   │   └── AlpacaSymbolSearchProviderRefactored.cs
 │   │   │   ├── AlphaVantage
 │   │   │   │   └── AlphaVantageHistoricalDataProvider.cs
@@ -1660,6 +1665,7 @@ Meridian-main
 │   │   │   │   ├── CompositeHistoricalDataProvider.cs
 │   │   │   │   ├── IHistoricalDataProvider.cs
 │   │   │   │   ├── ISymbolSearchProvider.cs
+│   │   │   │   ├── ProviderBehaviorBuilder.cs
 │   │   │   │   ├── ProviderFactory.cs
 │   │   │   │   ├── ProviderRegistry.cs
 │   │   │   │   ├── ProviderServiceExtensions.cs
@@ -1881,6 +1887,7 @@ Meridian-main
 │   │   ├── IRealtimeDataSource.cs
 │   │   ├── Meridian.ProviderSdk.csproj
 │   │   ├── ProviderHttpUtilities.cs
+│   │   ├── ProviderModuleLoader.cs
 │   │   └── RequiresCredentialAttribute.cs
 │   ├── Meridian.QuantScript
 │   │   ├── Api
@@ -2871,6 +2878,7 @@ Meridian-main
 │   │   │   │   ├── PolygonMessageParsingTests.cs
 │   │   │   │   ├── PolygonRecordedSessionReplayTests.cs
 │   │   │   │   ├── PolygonSubscriptionTests.cs
+│   │   │   │   ├── ProviderBehaviorBuilderTests.cs
 │   │   │   │   ├── ProviderResilienceTests.cs
 │   │   │   │   ├── RobinhoodHistoricalDataProviderTests.cs
 │   │   │   │   ├── RobinhoodSymbolSearchProviderTests.cs
@@ -2929,7 +2937,8 @@ Meridian-main
 │   │   │   ├── CredentialValidatorTests.cs
 │   │   │   ├── DataSourceAttributeTests.cs
 │   │   │   ├── DataSourceRegistryTests.cs
-│   │   │   └── ExceptionTypeTests.cs
+│   │   │   ├── ExceptionTypeTests.cs
+│   │   │   └── ProviderModuleLoaderTests.cs
 │   │   ├── Risk
 │   │   │   └── CompositeRiskValidatorTests.cs
 │   │   ├── SecurityMaster

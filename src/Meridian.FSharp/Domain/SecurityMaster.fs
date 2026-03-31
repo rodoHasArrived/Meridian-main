@@ -192,6 +192,32 @@ type DirectLoanTerms = {
     Covenants: Covenant list
 }
 
+type CommodityTerms = {
+    CommodityType: string
+    Denomination: string option
+    ContractSize: decimal option
+}
+
+type CryptoTerms = {
+    BaseCurrency: string
+    QuoteCurrency: string
+    Network: string option
+}
+
+type CfdTerms = {
+    UnderlyingAssetClass: string
+    UnderlyingDescription: string option
+    Leverage: decimal option
+}
+
+type WarrantTerms = {
+    UnderlyingId: SecurityId
+    WarrantType: string
+    Strike: decimal option
+    Expiry: DateOnly option
+    Multiplier: decimal option
+}
+
 [<RequireQualifiedAccess>]
 type SecurityKind =
     | Equity of EquityTerms
@@ -209,6 +235,10 @@ type SecurityKind =
     | OtherSecurity of OtherSecurityTerms
     | Swap of SwapTerms
     | DirectLoan of DirectLoanTerms
+    | Commodity of CommodityTerms
+    | CryptoCurrency of CryptoTerms
+    | Cfd of CfdTerms
+    | Warrant of WarrantTerms
 
 type Provenance = {
     SourceSystem: string
@@ -265,6 +295,10 @@ module SecurityMasterRecord =
         | SecurityKind.OtherSecurity _ -> "OtherSecurity"
         | SecurityKind.Swap _ -> "Swap"
         | SecurityKind.DirectLoan _ -> "DirectLoan"
+        | SecurityKind.Commodity _ -> "Commodity"
+        | SecurityKind.CryptoCurrency _ -> "CryptoCurrency"
+        | SecurityKind.Cfd _ -> "Cfd"
+        | SecurityKind.Warrant _ -> "Warrant"
 
     let isActive (record: SecurityMasterRecord) =
         SecurityStatus.isActive record.Status
@@ -329,17 +363,24 @@ module SecurityKind =
         | SecurityKind.OtherSecurity _ -> "OtherSecurity"
         | SecurityKind.Swap _ -> "Swap"
         | SecurityKind.DirectLoan _ -> "DirectLoan"
+        | SecurityKind.Commodity _ -> "Commodity"
+        | SecurityKind.CryptoCurrency _ -> "CryptoCurrency"
+        | SecurityKind.Cfd _ -> "Cfd"
+        | SecurityKind.Warrant _ -> "Warrant"
 
     let underlyingSecurityId kind =
         match kind with
         | SecurityKind.Option terms -> Some terms.UnderlyingId
+        | SecurityKind.Warrant terms -> Some terms.UnderlyingId
         | _ -> None
 
     let isDerivative kind =
         match kind with
         | SecurityKind.Option _
         | SecurityKind.Future _
-        | SecurityKind.Swap _ -> true
+        | SecurityKind.Swap _
+        | SecurityKind.Cfd _
+        | SecurityKind.Warrant _ -> true
         | SecurityKind.Equity _
         | SecurityKind.Bond _
         | SecurityKind.FxSpot _
@@ -351,4 +392,6 @@ module SecurityKind =
         | SecurityKind.Repo _
         | SecurityKind.CashSweep _
         | SecurityKind.OtherSecurity _
-        | SecurityKind.DirectLoan _ -> false
+        | SecurityKind.DirectLoan _
+        | SecurityKind.Commodity _
+        | SecurityKind.CryptoCurrency _ -> false

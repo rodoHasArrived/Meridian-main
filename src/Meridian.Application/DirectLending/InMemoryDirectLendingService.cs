@@ -527,7 +527,7 @@ public sealed partial class InMemoryDirectLendingService : IDirectLendingService
 
     public Task<LoanPortfolioSummaryDto> GetPortfolioSummaryAsync(CancellationToken ct = default)
     {
-        lock (_lock)
+        lock (_gate)
         {
             var summaries = _loans.Values.Select(stored =>
             {
@@ -574,7 +574,7 @@ public sealed partial class InMemoryDirectLendingService : IDirectLendingService
 
     public Task<LoanServicingStateDto?> AddCollateralAsync(Guid loanId, AddCollateralRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
     {
-        lock (_lock)
+        lock (_gate)
         {
             if (!_loans.TryGetValue(loanId, out var stored))
                 return Task.FromResult<LoanServicingStateDto?>(null);
@@ -598,7 +598,7 @@ public sealed partial class InMemoryDirectLendingService : IDirectLendingService
 
     public Task<LoanServicingStateDto?> RemoveCollateralAsync(Guid loanId, RemoveCollateralRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
     {
-        lock (_lock)
+        lock (_gate)
         {
             if (!_loans.TryGetValue(loanId, out var stored))
                 return Task.FromResult<LoanServicingStateDto?>(null);
@@ -617,7 +617,7 @@ public sealed partial class InMemoryDirectLendingService : IDirectLendingService
 
     public Task<LoanServicingStateDto?> UpdateCollateralValueAsync(Guid loanId, UpdateCollateralValueRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
     {
-        lock (_lock)
+        lock (_gate)
         {
             if (!_loans.TryGetValue(loanId, out var stored))
                 return Task.FromResult<LoanServicingStateDto?>(null);
@@ -640,7 +640,7 @@ public sealed partial class InMemoryDirectLendingService : IDirectLendingService
 
     public Task<IReadOnlyList<CollateralDto>> GetCollateralAsync(Guid loanId, CancellationToken ct = default)
     {
-        lock (_lock)
+        lock (_gate)
         {
             if (!_loans.TryGetValue(loanId, out var stored))
                 return Task.FromResult<IReadOnlyList<CollateralDto>>(Array.Empty<CollateralDto>());
@@ -652,7 +652,7 @@ public sealed partial class InMemoryDirectLendingService : IDirectLendingService
 
     public Task<LoanServicingStateDto?> TransitionLoanStatusAsync(Guid loanId, TransitionLoanStatusRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
     {
-        lock (_lock)
+        lock (_gate)
         {
             if (!_loans.TryGetValue(loanId, out var stored))
                 return Task.FromResult<LoanServicingStateDto?>(null);
@@ -667,7 +667,7 @@ public sealed partial class InMemoryDirectLendingService : IDirectLendingService
 
     public Task<LoanServicingStateDto?> TogglePikAsync(Guid loanId, TogglePikRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
     {
-        lock (_lock)
+        lock (_gate)
         {
             if (!_loans.TryGetValue(loanId, out var stored))
                 return Task.FromResult<LoanServicingStateDto?>(null);
@@ -681,7 +681,7 @@ public sealed partial class InMemoryDirectLendingService : IDirectLendingService
 
     public Task<LoanContractDetailDto?> RestructureLoanAsync(Guid loanId, RestructureLoanRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
     {
-        lock (_lock)
+        lock (_gate)
         {
             if (!_loans.TryGetValue(loanId, out var stored))
                 return Task.FromResult<LoanContractDetailDto?>(null);
@@ -713,7 +713,7 @@ public sealed partial class InMemoryDirectLendingService : IDirectLendingService
 
     public Task<LoanServicingStateDto?> AmortizeDiscountPremiumAsync(Guid loanId, AmortizeDiscountPremiumRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
     {
-        lock (_lock)
+        lock (_gate)
         {
             if (!_loans.TryGetValue(loanId, out var stored))
                 return Task.FromResult<LoanServicingStateDto?>(null);

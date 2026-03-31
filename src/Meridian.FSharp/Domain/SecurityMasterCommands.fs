@@ -148,6 +148,33 @@ module SecurityMaster =
                    []
                    @ requireNotBlank "covenant_type_required" "CovenantType" covenant.CovenantType
                    @ requireNotBlank "covenant_threshold_required" "Threshold" covenant.Threshold))
+        | SecurityKind.Commodity terms ->
+            []
+            @ requireNotBlank "commodity_type_required" "CommodityType" terms.CommodityType
+            @ require (terms.ContractSize |> Option.forall (fun size -> size > 0m))
+                (error "commodity_contract_size_invalid" "Commodity ContractSize must be greater than zero when present.")
+        | SecurityKind.CryptoCurrency terms ->
+            []
+            @ requireNotBlank "crypto_base_currency_required" "BaseCurrency" terms.BaseCurrency
+            @ requireNotBlank "crypto_quote_currency_required" "QuoteCurrency" terms.QuoteCurrency
+            @ require (not (String.Equals(terms.BaseCurrency, terms.QuoteCurrency, StringComparison.OrdinalIgnoreCase)))
+                (error "crypto_currency_pair_invalid" "BaseCurrency and QuoteCurrency must differ.")
+        | SecurityKind.Cfd terms ->
+            []
+            @ requireNotBlank "cfd_underlying_asset_class_required" "UnderlyingAssetClass" terms.UnderlyingAssetClass
+            @ require (terms.Leverage |> Option.forall (fun l -> l > 0m))
+                (error "cfd_leverage_invalid" "CFD Leverage must be greater than zero when present.")
+        | SecurityKind.Warrant terms ->
+            []
+            @ requireNotBlank "warrant_type_required" "WarrantType" terms.WarrantType
+            @ require
+                (String.Equals(terms.WarrantType, "Call", StringComparison.OrdinalIgnoreCase)
+                 || String.Equals(terms.WarrantType, "Put", StringComparison.OrdinalIgnoreCase))
+                (error "warrant_type_invalid" "Warrant WarrantType must be either 'Call' or 'Put'.")
+            @ require (terms.Strike |> Option.forall (fun s -> s > 0m))
+                (error "warrant_strike_invalid" "Warrant Strike must be greater than zero when present.")
+            @ require (terms.Multiplier |> Option.forall (fun m -> m > 0m))
+                (error "warrant_multiplier_invalid" "Warrant Multiplier must be greater than zero when present.")
 
     let private validateIdentifier (identifier: Identifier) =
         []

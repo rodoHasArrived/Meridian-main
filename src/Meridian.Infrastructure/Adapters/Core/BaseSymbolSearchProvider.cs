@@ -215,10 +215,10 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
         if (!HasValidCredentials())
             return Array.Empty<SymbolSearchResult>();
 
-        await RateLimiter.WaitForSlotAsync(ct).ConfigureAwait(false);
-
         try
         {
+            await RateLimiter.WaitForSlotAsync(ct).ConfigureAwait(false);
+
             var url = BuildSearchUrl(query, assetType, exchange);
             using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
 

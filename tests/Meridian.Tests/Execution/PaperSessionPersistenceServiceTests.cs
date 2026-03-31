@@ -316,7 +316,9 @@ public sealed class PaperSessionDurablePersistenceTests : IDisposable
 
     public void Dispose()
     {
-        try { Directory.Delete(_tempDir, recursive: true); } catch { /* best-effort */ }
+        try
+        { Directory.Delete(_tempDir, recursive: true); }
+        catch { /* best-effort */ }
     }
 
     private JsonlFilePaperSessionStore BuildStore() =>
@@ -526,7 +528,9 @@ public sealed class PaperSessionReplayTests : IDisposable
 
     public void Dispose()
     {
-        try { Directory.Delete(_tempDir, recursive: true); } catch { /* best-effort */ }
+        try
+        { Directory.Delete(_tempDir, recursive: true); }
+        catch { /* best-effort */ }
     }
 
     private JsonlFilePaperSessionStore BuildStore() =>
