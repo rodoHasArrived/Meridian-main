@@ -3047,7 +3047,9 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── PolygonRecordedSessionReplayTests.cs
 │   │   │   │   ├── PolygonSubscriptionTests.cs
 │   │   │   │   ├── ProviderBehaviorBuilderTests.cs
+│   │   │   │   ├── ProviderFactoryCredentialContextTests.cs
 │   │   │   │   ├── ProviderResilienceTests.cs
+│   │   │   │   ├── ProviderTemplateFactoryCredentialTests.cs
 │   │   │   │   ├── RobinhoodHistoricalDataProviderTests.cs
 │   │   │   │   ├── RobinhoodSymbolSearchProviderTests.cs
 │   │   │   │   ├── StockSharpConnectorFactoryTests.cs
@@ -3229,6 +3231,7 @@ Use these documents together when planning or implementing new work:
 │   │       ├── ScheduledMaintenanceServiceTests.cs
 │   │       ├── SchemaServiceTests.cs
 │   │       ├── SearchServiceTests.cs
+│   │       ├── SettingsConfigurationServiceTests.cs
 │   │       ├── SmartRecommendationsServiceTests.cs
 │   │       ├── StatusServiceBaseTests.cs
 │   │       ├── StorageAnalyticsServiceTests.cs
@@ -3287,6 +3290,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-484 directories, 2741 files
+484 directories, 2744 files
 ```
 <!-- readme-tree end -->
