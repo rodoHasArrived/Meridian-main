@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-03-31 06:06:56 UTC. Do not edit manually.
+> Auto-generated on 2026-03-31 06:34:03 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -75,14 +75,24 @@ Meridian-main
 │   │   ├── _shared
 │   │   │   └── project-context.md
 │   │   ├── meridian-blueprint
+│   │   │   ├── agents
+│   │   │   │   └── openai.yaml
 │   │   │   ├── references
 │   │   │   │   └── blueprint-patterns.md
 │   │   │   └── SKILL.md
 │   │   ├── meridian-brainstorm
+│   │   │   ├── agents
+│   │   │   │   └── openai.yaml
 │   │   │   ├── references
 │   │   │   │   └── competitive-landscape.md
 │   │   │   └── SKILL.md
+│   │   ├── meridian-cleanup
+│   │   │   ├── agents
+│   │   │   │   └── openai.yaml
+│   │   │   └── SKILL.md
 │   │   ├── meridian-code-review
+│   │   │   ├── agents
+│   │   │   │   └── openai.yaml
 │   │   │   └── SKILL.md
 │   │   ├── meridian-implementation-assurance
 │   │   │   ├── agents
@@ -107,6 +117,8 @@ Meridian-main
 │   │   │   │   └── score_eval.py
 │   │   │   └── SKILL.md
 │   │   ├── meridian-provider-builder
+│   │   │   ├── agents
+│   │   │   │   └── openai.yaml
 │   │   │   ├── references
 │   │   │   │   └── provider-patterns.md
 │   │   │   └── SKILL.md
@@ -117,6 +129,8 @@ Meridian-main
 │   │   │   │   └── roadmap-source-map.md
 │   │   │   └── SKILL.md
 │   │   ├── meridian-test-writer
+│   │   │   ├── agents
+│   │   │   │   └── openai.yaml
 │   │   │   ├── references
 │   │   │   │   └── test-patterns.md
 │   │   │   └── SKILL.md
@@ -136,7 +150,6 @@ Meridian-main
 │   │   ├── brainstorm-agent.md
 │   │   ├── bug-fix-agent.md
 │   │   ├── cleanup-agent.md
-│   │   ├── cleanup-specialist.agent.md
 │   │   ├── code-review-agent.md
 │   │   ├── documentation-agent.md
 │   │   ├── implementation-assurance-agent.md
