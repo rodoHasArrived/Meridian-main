@@ -328,7 +328,6 @@ public sealed class ArchiveHealthService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Failed to get drive info: {ex.Message}");
         }
 
         return Task.FromResult(info);
@@ -480,17 +479,12 @@ public sealed class ArchiveHealthService
                 Directory.CreateDirectory(directory);
             }
 
-            var json = JsonSerializer.Serialize(status, new JsonSerializerOptions
-            {
-                WriteIndented = true,
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            });
+            var json = JsonSerializer.Serialize(status, DesktopJsonOptions.PrettyPrint);
 
             await File.WriteAllTextAsync(_healthStatusPath, json);
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Failed to save health status: {ex.Message}");
         }
     }
 }

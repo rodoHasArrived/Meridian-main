@@ -25,6 +25,12 @@ public sealed class RetentionAssuranceService
 {
     private static readonly Lazy<RetentionAssuranceService> _instance = new(() => new RetentionAssuranceService());
 
+    // C2: Static options instance avoids allocating a new JsonSerializerOptions on every audit export.
+    private static readonly JsonSerializerOptions AuditSerializerOptions = new(DesktopJsonOptions.PrettyPrint)
+    {
+        Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() }
+    };
+
     private const string RetentionConfigKey = "RetentionConfig";
     private const string LegalHoldsKey = "LegalHolds";
     private const string AuditReportsFolder = "RetentionAudits";
@@ -93,7 +99,6 @@ public sealed class RetentionAssuranceService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[RetentionAssuranceService] Error loading config: {ex.Message}");
         }
     }
 
@@ -113,12 +118,11 @@ public sealed class RetentionAssuranceService
                 Config = _config,
                 LegalHolds = _legalHolds.ToList()
             };
-            var json = JsonSerializer.Serialize(settingsData, new JsonSerializerOptions { WriteIndented = true });
+            var json = JsonSerializer.Serialize(settingsData, DesktopJsonOptions.PrettyPrint);
             await File.WriteAllTextAsync(settingsPath, json);
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[RetentionAssuranceService] Error saving config: {ex.Message}");
         }
     }
 
@@ -326,7 +330,6 @@ public sealed class RetentionAssuranceService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[RetentionAssuranceService] API dry run failed: {ex.Message}");
             return null; // Fall back to local scanning
         }
     }
@@ -352,7 +355,6 @@ public sealed class RetentionAssuranceService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[RetentionAssuranceService] Health check failed: {ex.Message}");
             return null;
         }
     }
@@ -371,7 +373,6 @@ public sealed class RetentionAssuranceService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[RetentionAssuranceService] Find orphans failed: {ex.Message}");
             return null;
         }
     }
@@ -671,12 +672,7 @@ public sealed class RetentionAssuranceService
     /// </summary>
     public Task<string> ExportAuditReportAsync(RetentionAuditReport report, string format = "json")
     {
-        var options = new JsonSerializerOptions
-        {
-            WriteIndented = true,
-            Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() }
-        };
-        var json = JsonSerializer.Serialize(report, options);
+        var json = JsonSerializer.Serialize(report, AuditSerializerOptions);
         return Task.FromResult(json);
     }
 
@@ -689,12 +685,11 @@ public sealed class RetentionAssuranceService
             Directory.CreateDirectory(auditFolderPath);
             var fileName = $"retention_audit_{report.ExecutedAt:yyyyMMdd_HHmmss}.json";
             var filePath = Path.Combine(auditFolderPath, fileName);
-            var json = JsonSerializer.Serialize(report, new JsonSerializerOptions { WriteIndented = true });
+            var json = JsonSerializer.Serialize(report, DesktopJsonOptions.PrettyPrint);
             await File.WriteAllTextAsync(filePath, json);
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[RetentionAssuranceService] Error saving audit report: {ex.Message}");
         }
     }
 

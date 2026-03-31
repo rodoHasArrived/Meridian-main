@@ -190,14 +190,10 @@ public sealed class ManifestService
             }
 
             var json = await File.ReadAllTextAsync(path);
-            return JsonSerializer.Deserialize<DataManifest>(json, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
+            return JsonSerializer.Deserialize<DataManifest>(json, DesktopJsonOptions.Compact);
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Failed to load manifest: {ex.Message}");
             return null;
         }
     }
@@ -504,11 +500,7 @@ public sealed class ManifestService
         var fileName = $"{safeName}_{DateTime.UtcNow:yyyyMMdd_HHmmss}.json";
         var filePath = Path.Combine(_catalogPath, fileName);
 
-        var json = JsonSerializer.Serialize(manifest, new JsonSerializerOptions
-        {
-            WriteIndented = true,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        });
+        var json = JsonSerializer.Serialize(manifest, DesktopJsonOptions.PrettyPrint);
 
         await File.WriteAllTextAsync(filePath, json);
 

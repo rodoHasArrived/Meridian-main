@@ -1,7 +1,7 @@
 # Documentation Contribution Guide
 
-**Version:** 1.1  
-**Last Updated:** 2026-03-15  
+**Version:** 1.1
+**Last Updated:** 2026-03-15
 **Status:** Active, Continuously Updated
 
 This guide provides standards and best practices for creating, organizing, and maintaining documentation in the Meridian project.
@@ -172,8 +172,8 @@ Every document should include lifecycle metadata to help identify stale content 
 Add these fields in the front matter section at the top of new documents:
 
 ```markdown
-**Status:** active | draft | deprecated | archived  
-**Owner:** core-team | <team-alias>  
+**Status:** active | draft | deprecated | archived
+**Owner:** core-team | <team-alias>
 **Reviewed:** YYYY-MM-DD
 ```
 
@@ -214,11 +214,11 @@ All documentation uses **GitHub Flavored Markdown** (GFM).
 ```markdown
 # Document Title
 
-**Version:** 1.0  
-**Last Updated:** 2026-03-15  
-**Status:** active | draft | deprecated | archived  
-**Owner:** core-team | <team-alias>  
-**Reviewed:** YYYY-MM-DD  
+**Version:** 1.0
+**Last Updated:** 2026-03-15
+**Status:** active | draft | deprecated | archived
+**Owner:** core-team | <team-alias>
+**Reviewed:** YYYY-MM-DD
 **Audience:** Users | Developers | Operators
 
 Brief summary of what this document covers.
@@ -432,12 +432,12 @@ dotnet test
 public class ExampleService
 {
     private readonly ILogger _logger;
-    
+
     public ExampleService(ILogger logger)
     {
         _logger = logger;
     }
-    
+
     public void DoWork()
     {
         _logger.LogInformation("Working...");
@@ -455,7 +455,7 @@ When showing partial code, indicate what's omitted:
 public class ConfigService
 {
     // ... other members ...
-    
+
     public async Task SaveAsync(AppConfig config, CancellationToken ct = default)
     {
         // Implementation
@@ -602,8 +602,8 @@ Fix any failures before merging.
 ```markdown
 # [Feature Name] Guide
 
-**Version:** 1.0  
-**Last Updated:** YYYY-MM-DD  
+**Version:** 1.0
+**Last Updated:** YYYY-MM-DD
 **Audience:** Users | Developers | Operators
 
 Brief introduction explaining what this guide covers.
@@ -652,8 +652,8 @@ Symptom and solution.
 ```markdown
 # [Component Name] Reference
 
-**Version:** 1.0  
-**Last Updated:** YYYY-MM-DD  
+**Version:** 1.0
+**Last Updated:** YYYY-MM-DD
 **Audience:** Developers
 
 Brief description of the component.

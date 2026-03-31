@@ -281,7 +281,7 @@ public sealed class PortablePackagerService
             var manifest = CreatePackageManifest(request, copiedFiles, startTime);
             var manifestPath = Path.Combine(tempDir, "manifest.json");
             await File.WriteAllTextAsync(manifestPath,
-                JsonSerializer.Serialize(manifest, new JsonSerializerOptions { WriteIndented = true }), ct);
+                JsonSerializer.Serialize(manifest, DesktopJsonOptions.PrettyPrint), ct);
 
             // 6. Generate README
             progress?.Report(new PackageProgress(80, "Generating documentation..."));
@@ -753,7 +753,6 @@ Refer to your data provider's terms of service for data usage rights.
     private static string FormatBytes(long bytes) => FormatHelpers.FormatBytes(bytes);
 }
 
-#region Models
 
 public sealed record PackageRequest
 {
@@ -901,4 +900,3 @@ public sealed class PackageInfo
     public long TotalSizeBytes { get; set; }
 }
 
-#endregion

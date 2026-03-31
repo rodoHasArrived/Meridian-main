@@ -1,7 +1,7 @@
 # Reference Documentation
 
-**Owner:** Core Team  
-**Scope:** Engineering / Product — Reference  
+**Owner:** Core Team
+**Scope:** Engineering / Product — Reference
 **Review Cadence:** When APIs, data models, or configuration options change
 
 ---

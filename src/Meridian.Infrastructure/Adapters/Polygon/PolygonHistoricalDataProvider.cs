@@ -35,16 +35,13 @@ public sealed class PolygonHistoricalDataProvider : BaseHistoricalDataProvider
 
     private readonly string? _apiKey;
 
-    #region Abstract Property Implementations
 
     public override string Name => "polygon";
     public override string DisplayName => "Polygon.io (free tier)";
     public override string Description => "High-quality OHLCV aggregates for US equities with 2-year history on free tier.";
     protected override string HttpClientName => HttpClientNames.PolygonHistorical;
 
-    #endregion
 
-    #region Virtual Property Overrides
 
     public override int Priority => 12;
     public override TimeSpan RateLimitDelay => TimeSpan.FromSeconds(12); // 5 requests/minute = 12 seconds between requests
@@ -59,7 +56,6 @@ public sealed class PolygonHistoricalDataProvider : BaseHistoricalDataProvider
         Intraday = true
     };
 
-    #endregion
 
     public PolygonHistoricalDataProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null)
         : base(httpClient, log)
@@ -365,7 +361,6 @@ public sealed class PolygonHistoricalDataProvider : BaseHistoricalDataProvider
         }
     }
 
-    #region Helper Methods
 
     protected override string NormalizeSymbol(string symbol)
     {
@@ -404,9 +399,7 @@ public sealed class PolygonHistoricalDataProvider : BaseHistoricalDataProvider
         };
     }
 
-    #endregion
 
-    #region Polygon API Models
 
     private sealed class PolygonAggregatesResponse
     {
@@ -528,5 +521,4 @@ public sealed class PolygonHistoricalDataProvider : BaseHistoricalDataProvider
         public string? Ticker { get; set; }
     }
 
-    #endregion
 }

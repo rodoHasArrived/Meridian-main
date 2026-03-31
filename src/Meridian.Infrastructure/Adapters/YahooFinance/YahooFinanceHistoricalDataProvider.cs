@@ -256,7 +256,6 @@ public sealed class YahooFinanceHistoricalDataProvider : BaseHistoricalDataProvi
         return array[index];
     }
 
-    #region Yahoo Finance API Models
 
     private sealed class YahooChartResponse
     {
@@ -369,5 +368,4 @@ public sealed class YahooFinanceHistoricalDataProvider : BaseHistoricalDataProvi
         public decimal?[]? AdjClose { get; set; }
     }
 
-    #endregion
 }

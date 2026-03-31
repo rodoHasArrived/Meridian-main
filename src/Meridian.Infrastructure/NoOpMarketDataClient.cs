@@ -15,7 +15,6 @@ public sealed class NoOpMarketDataClient : IMarketDataClient
 {
     public bool IsEnabled => false;
 
-    #region IProviderMetadata
 
     /// <inheritdoc/>
     public string ProviderId => "noop";
@@ -39,7 +38,6 @@ public sealed class NoOpMarketDataClient : IMarketDataClient
         "Configure a real data provider in appsettings.json."
     };
 
-    #endregion
 
     public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 

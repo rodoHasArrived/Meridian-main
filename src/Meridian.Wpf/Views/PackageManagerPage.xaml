@@ -68,8 +68,8 @@
                         <Button Content="Create Package" Style="{StaticResource PrimaryButtonStyle}"
                                 Click="CreatePackage_Click" Padding="16,8" Margin="0,0,8,0" />
                     </StackPanel>
-                    <TextBlock x:Name="CreatePackageStatus" Text=""
-                               Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,8,0,0" TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding CreateStatusText}"
+                               Foreground="{Binding CreateStatusForeground}" Margin="0,8,0,0" TextWrapping="Wrap" />
                 </StackPanel>
             </Border>
 
@@ -81,9 +81,9 @@
                         <Button Content="Refresh" Style="{StaticResource SecondaryButtonStyle}"
                                 Click="RefreshPackages_Click" HorizontalAlignment="Right" Padding="12,6" />
                     </DockPanel>
-                    <TextBlock x:Name="PackageListStatus" Text="Loading packages..."
-                               Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,0,8" />
-                    <ItemsControl x:Name="PackageList">
+                    <TextBlock Text="{Binding PackageListStatusText}"
+                               Foreground="{Binding PackageListStatusForeground}" Margin="0,0,0,8" />
+                    <ItemsControl ItemsSource="{Binding PackageItems}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Border BorderBrush="{StaticResource ConsoleTextMutedBrush}" BorderThickness="0,0,0,1"
@@ -126,8 +126,8 @@
                                  BorderBrush="{StaticResource ConsoleTextMutedBrush}"
                                  Padding="8,6" />
                     </DockPanel>
-                    <TextBlock x:Name="ValidatePackageResult" Text=""
-                               Foreground="{StaticResource ConsoleTextMutedBrush}" TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding ValidateResultText}"
+                               Foreground="{Binding ValidateResultForeground}" TextWrapping="Wrap" />
                 </StackPanel>
             </Border>
 
@@ -146,8 +146,8 @@
                                  BorderBrush="{StaticResource ConsoleTextMutedBrush}"
                                  Padding="8,6" />
                     </DockPanel>
-                    <TextBlock x:Name="ImportPackageResult" Text=""
-                               Foreground="{StaticResource ConsoleTextMutedBrush}" TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding ImportResultText}"
+                               Foreground="{Binding ImportResultForeground}" TextWrapping="Wrap" />
                 </StackPanel>
             </Border>
         </StackPanel>

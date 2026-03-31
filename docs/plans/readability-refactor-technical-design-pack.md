@@ -1,7 +1,7 @@
 # Readability Refactor Technical Design Pack
 
-**Date:** 2026-03-20  
-**Status:** Draft target design  
+**Date:** 2026-03-20
+**Status:** Draft target design
 **Companion to:** `docs/plans/readability-refactor-roadmap.md`
 
 ---

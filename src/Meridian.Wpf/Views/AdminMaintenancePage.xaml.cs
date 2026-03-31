@@ -35,7 +35,6 @@ public partial class AdminMaintenancePage : Page
         await LoadMaintenanceHistoryAsync();
     }
 
-    #region Quick Check
 
     private async void QuickCheck_Click(object sender, RoutedEventArgs e)
     {
@@ -87,9 +86,7 @@ public partial class AdminMaintenancePage : Page
         QuickCheckList.ItemsSource = items;
     }
 
-    #endregion
 
-    #region Maintenance Schedule
 
     private async System.Threading.Tasks.Task LoadMaintenanceScheduleAsync()
     {
@@ -208,9 +205,7 @@ public partial class AdminMaintenancePage : Page
         }
     }
 
-    #endregion
 
-    #region Storage Tiers
 
     private async System.Threading.Tasks.Task LoadTierUsageAsync()
     {
@@ -276,9 +271,7 @@ public partial class AdminMaintenancePage : Page
         }
     }
 
-    #endregion
 
-    #region Retention Policies
 
     private async System.Threading.Tasks.Task LoadRetentionPoliciesAsync()
     {
@@ -454,9 +447,7 @@ public partial class AdminMaintenancePage : Page
         }
     }
 
-    #endregion
 
-    #region Maintenance History
 
     private async System.Threading.Tasks.Task LoadMaintenanceHistoryAsync()
     {
@@ -491,9 +482,7 @@ public partial class AdminMaintenancePage : Page
         }
     }
 
-    #endregion
 
-    #region Helpers
 
     private void ShowSuccess(string message)
     {
@@ -528,10 +517,8 @@ public partial class AdminMaintenancePage : Page
     }
 
 
-    #endregion
 }
 
-#region Display Items
 
 public sealed class QuickCheckDisplayItem
 {
@@ -576,4 +563,3 @@ public sealed class MaintenanceHistoryItem
     public SolidColorBrush? StatusColor { get; set; }
 }
 
-#endregion

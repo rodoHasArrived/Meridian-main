@@ -54,7 +54,6 @@ public interface ISymbolSearchProvider : IProviderMetadata
     /// <returns>Symbol details or null if not found.</returns>
     Task<SymbolDetails?> GetDetailsAsync(SymbolId symbol, CancellationToken ct = default);
 
-    #region IProviderMetadata Default Implementations
 
     /// <inheritdoc/>
     string IProviderMetadata.ProviderId => Name;
@@ -71,7 +70,6 @@ public interface ISymbolSearchProvider : IProviderMetadata
     /// <inheritdoc/>
     ProviderCapabilities IProviderMetadata.ProviderCapabilities => ProviderCapabilities.SymbolSearch;
 
-    #endregion
 }
 
 /// <summary>
@@ -106,11 +104,9 @@ public interface IFilterableSymbolSearchProvider : ISymbolSearchProvider
         string? exchange = null,
         CancellationToken ct = default);
 
-    #region IProviderMetadata Override
 
     /// <inheritdoc/>
     ProviderCapabilities IProviderMetadata.ProviderCapabilities =>
         ProviderCapabilities.SymbolSearchFilterable(SupportedAssetTypes, SupportedExchanges);
 
-    #endregion
 }

@@ -172,7 +172,6 @@ public sealed class StorageAnalyticsService
         catch (Exception ex)
         {
             // Log error but return what we have
-            System.Diagnostics.Debug.WriteLine($"Storage analysis error: {ex.Message}");
         }
 
         return analytics;

@@ -45,7 +45,6 @@ public sealed class ConfigurationPipeline : IAsyncDisposable
         _envOverride = new ConfigEnvironmentOverride();
     }
 
-    #region Pipeline Entry Points
 
     /// <summary>
     /// Loads and validates configuration from a file path.
@@ -144,9 +143,7 @@ public sealed class ConfigurationPipeline : IAsyncDisposable
         return RunPipeline(config, configPath, environmentName, ConfigurationOrigin.HotReload, options);
     }
 
-    #endregion
 
-    #region Hot Reload Support
 
     /// <summary>
     /// Starts watching a configuration file for changes.
@@ -188,9 +185,7 @@ public sealed class ConfigurationPipeline : IAsyncDisposable
         _watcher = null;
     }
 
-    #endregion
 
-    #region Pipeline Core
 
     private ValidatedConfig RunPipeline(
         AppConfig config,
@@ -323,9 +318,7 @@ public sealed class ConfigurationPipeline : IAsyncDisposable
         }
     }
 
-    #endregion
 
-    #region Credential Security
 
     private static readonly string[] PlaceholderValues =
         ["__SET_ME__", "your-key-here", "your-secret-here", "REPLACE_ME", "ENTER_YOUR", "INSERT_YOUR", "TODO", "xxx"];
@@ -426,9 +419,7 @@ public sealed class ConfigurationPipeline : IAsyncDisposable
         }
     }
 
-    #endregion
 
-    #region Credential Resolution
 
     private AppConfig ResolveAllCredentials(AppConfig config)
     {
@@ -580,9 +571,7 @@ public sealed class ConfigurationPipeline : IAsyncDisposable
         return config;
     }
 
-    #endregion
 
-    #region Self-Healing
 
     /// <summary>
     /// Discovers and conditionally applies self-healing fixes to <paramref name="config"/>
@@ -807,9 +796,7 @@ public sealed class ConfigurationPipeline : IAsyncDisposable
         return false;
     }
 
-    #endregion
 
-    #region Environment Handling
 
     private AppConfig ApplyEnvironmentOverlay(AppConfig baseConfig, string basePath)
     {
@@ -863,7 +850,6 @@ public sealed class ConfigurationPipeline : IAsyncDisposable
         };
     }
 
-    #endregion
 
     public ValueTask DisposeAsync()
     {

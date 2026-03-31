@@ -865,7 +865,7 @@ See the [provider field audit](../../architecture/deterministic-canonicalization
 
 ## Related Resources
 
-- **Master AI index:** [`docs/ai/README.md`](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/README.md)
+- **Master AI index:** [`docs/ai/README.md`](https://github.com/rodoHasArrived/Meridian/blob/main/docs/ai/README.md)
 - **Root context:** [`CLAUDE.md`](https://github.com/rodoHasArrived/Meridian/blob/main/CLAUDE.md) § Data Providers
 - **Code review (Lens 5 - Provider Compliance):** [`.github/agents/code-review-agent.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/agents/code-review-agent.md)
 - **Development guide:** [`docs/development/provider-implementation.md`](../../development/provider-implementation.md)

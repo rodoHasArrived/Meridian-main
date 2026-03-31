@@ -181,50 +181,35 @@ jobs:
   ai-failure-analysis:
     name: AI Failure Analysis
     needs: [test-matrix, benchmark, integration-tests]
-    runs-on: ubuntu-latest
     if: |
       always() &&
       (needs.test-matrix.result == 'failure' || needs.benchmark.result == 'failure' || needs.integration-tests.result == 'failure')
-    timeout-minutes: 30
+    uses: ./.github/workflows/reusable-ai-analysis.yml
+    with:
+      summary-header: "## AI Failure Diagnosis"
+      unavailable-message: "_AI diagnosis was not available for this run._"
+      max-tokens: 1500
+      prompt: |
+        You are a .NET build/test infrastructure engineer analyzing nightly test failures for a market data collection application (.NET 9.0).
 
-    steps:
-      - name: AI diagnose failures
-        id: ai-diagnosis
-        continue-on-error: true
-        uses: actions/ai-inference@v2
-        with:
-          model: gpt-4o-mini
-          max-tokens: 1500
-          prompt: |
-            You are a .NET build/test infrastructure engineer analyzing nightly test failures for a market data collection application (.NET 9.0).
+        Test matrix result: ${{ needs.test-matrix.result }}
+        Benchmark result: ${{ needs.benchmark.result }}
+        Integration tests result: ${{ needs.integration-tests.result }}
 
-            Test matrix result: ${{ needs.test-matrix.result }}
-            Benchmark result: ${{ needs.benchmark.result }}
-            Integration tests result: ${{ needs.integration-tests.result }}
+        The nightly suite runs:
+        - Cross-platform tests on ubuntu, windows, macos
+        - BenchmarkDotNet performance benchmarks
+        - Integration tests with self-test mode (--selftest)
 
-            The nightly suite runs:
-            - Cross-platform tests on ubuntu, windows, macos
-            - BenchmarkDotNet performance benchmarks
-            - Integration tests with self-test mode (--selftest)
+        Based on which jobs failed, provide:
+        1) **Likely Root Causes** - common reasons for these specific failure types
+        2) **Triage Priority** (P1-P4) based on which jobs failed
+        3) **Recommended Investigation Steps** - what to check first
+        4) If only certain platforms failed, note platform-specific issues
 
-            Based on which jobs failed, provide:
-            1) **Likely Root Causes** - common reasons for these specific failure types
-            2) **Triage Priority** (P1-P4) based on which jobs failed
-            3) **Recommended Investigation Steps** - what to check first
-            4) If only certain platforms failed, note platform-specific issues
-
-            Keep response under 250 words in markdown format.
-
-      - name: Post AI analysis to summary
-        if: always()
-        run: |
-          echo "## AI Failure Diagnosis" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          if [ -n "${{ steps.ai-diagnosis.outputs.response }}" ]; then
-            echo "${{ steps.ai-diagnosis.outputs.response }}" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "_AI diagnosis was not available for this run._" >> $GITHUB_STEP_SUMMARY
-          fi
+        Keep response under 250 words in markdown format.
+    permissions:
+      models: read
 
   # ─── Nightly Summary ──────────────────────────────────────────────
 

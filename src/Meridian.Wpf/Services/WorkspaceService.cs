@@ -116,7 +116,6 @@ public sealed class WorkspaceService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[WorkspaceService] Error loading workspaces: {ex.Message}");
         }
     }
 
@@ -131,12 +130,11 @@ public sealed class WorkspaceService
                 LastSession = _lastSession
             };
 
-            var json = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });
+            var json = JsonSerializer.Serialize(data, UiServices.DesktopJsonOptions.PrettyPrint);
             await File.WriteAllTextAsync(GetSettingsFilePath(), json);
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[WorkspaceService] Error saving workspaces: {ex.Message}");
         }
     }
 
@@ -248,7 +246,6 @@ public sealed class WorkspaceService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[WorkspaceService] Error saving session state: {ex.Message}");
         }
     }
 
@@ -291,7 +288,7 @@ public sealed class WorkspaceService
         var workspace = _workspaces.FirstOrDefault(w => w.Id == workspaceId);
         if (workspace != null)
         {
-            return JsonSerializer.Serialize(workspace, new JsonSerializerOptions { WriteIndented = true });
+            return JsonSerializer.Serialize(workspace, UiServices.DesktopJsonOptions.PrettyPrint);
         }
         return string.Empty;
     }
@@ -319,7 +316,6 @@ public sealed class WorkspaceService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[WorkspaceService] Error importing workspace: {ex.Message}");
         }
         return null;
     }

@@ -223,7 +223,6 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[NavigationService] Tour check failed: {ex.Message}");
         }
     }
 

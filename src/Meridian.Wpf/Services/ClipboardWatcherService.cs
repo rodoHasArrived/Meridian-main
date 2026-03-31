@@ -133,8 +133,6 @@ public sealed class ClipboardWatcherService : IDisposable
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine(
-                $"[ClipboardWatcherService] Error processing clipboard: {ex.Message}");
         }
     }
 
@@ -182,8 +180,6 @@ public sealed class ClipboardWatcherService : IDisposable
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(
-                    $"[ClipboardWatcherService] Dispose error: {ex.Message}");
             }
             _hwndSource = null;
         }

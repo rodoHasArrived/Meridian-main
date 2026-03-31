@@ -12,7 +12,6 @@ namespace Meridian.Infrastructure.DataSources;
 /// </summary>
 public abstract class DataSourceBase : IDataSource
 {
-    #region Fields
 
     protected readonly ILogger Log;
     protected readonly DataSourceOptions Options;
@@ -24,9 +23,7 @@ public abstract class DataSourceBase : IDataSource
     private DateTimeOffset _windowStart = DateTimeOffset.UtcNow;
     private bool _disposed;
 
-    #endregion
 
-    #region Identity (Abstract)
 
     /// <inheritdoc />
     public abstract string Id { get; }
@@ -37,9 +34,7 @@ public abstract class DataSourceBase : IDataSource
     /// <inheritdoc />
     public abstract string Description { get; }
 
-    #endregion
 
-    #region Classification (Abstract)
 
     /// <inheritdoc />
     public abstract DataSourceType Type { get; }
@@ -52,9 +47,7 @@ public abstract class DataSourceBase : IDataSource
     /// </summary>
     public virtual int Priority => Options.Priority;
 
-    #endregion
 
-    #region Capabilities (Abstract/Virtual)
 
     /// <inheritdoc />
     public abstract DataSourceCapabilities Capabilities { get; }
@@ -68,9 +61,7 @@ public abstract class DataSourceBase : IDataSource
     /// <inheritdoc />
     public abstract IReadOnlySet<AssetClass> SupportedAssetClasses { get; }
 
-    #endregion
 
-    #region Operational State
 
     /// <inheritdoc />
     public DataSourceHealth Health => _healthTracker.CurrentHealth;
@@ -84,9 +75,7 @@ public abstract class DataSourceBase : IDataSource
     /// <inheritdoc />
     public IObservable<DataSourceHealthChanged> HealthChanges => _healthChanges;
 
-    #endregion
 
-    #region Constructor
 
     /// <summary>
     /// Initializes a new instance of the DataSourceBase class.
@@ -101,9 +90,7 @@ public abstract class DataSourceBase : IDataSource
         _rateLimiter = new SemaphoreSlim(Options.RateLimits.MaxConcurrentRequests);
     }
 
-    #endregion
 
-    #region Lifecycle
 
     /// <inheritdoc />
     public virtual async Task InitializeAsync(CancellationToken ct = default)
@@ -173,9 +160,7 @@ public abstract class DataSourceBase : IDataSource
     /// </summary>
     protected virtual ValueTask OnDisposeAsync() => ValueTask.CompletedTask;
 
-    #endregion
 
-    #region Request Execution
 
     /// <summary>
     /// Execute a request with automatic rate limiting, retry, and health tracking.
@@ -282,9 +267,7 @@ public abstract class DataSourceBase : IDataSource
         return Math.Min(delay, maxDelay);
     }
 
-    #endregion
 
-    #region Rate Limiting
 
     private async Task ApplyRateLimitDelayAsync(CancellationToken ct)
     {
@@ -349,9 +332,7 @@ public abstract class DataSourceBase : IDataSource
         );
     }
 
-    #endregion
 
-    #region Health Tracking
 
     private void OnHealthChanged(DataSourceHealth previousHealth, DataSourceHealth newHealth)
     {
@@ -368,9 +349,7 @@ public abstract class DataSourceBase : IDataSource
         }
     }
 
-    #endregion
 
-    #region Helpers
 
     /// <summary>
     /// Checks if this source has a specific capability.
@@ -390,10 +369,8 @@ public abstract class DataSourceBase : IDataSource
     protected bool SupportsAssetClass(AssetClass assetClass)
         => SupportedAssetClasses.Contains(assetClass);
 
-    #endregion
 }
 
-#region Health Tracker
 
 /// <summary>
 /// Internal helper for tracking data source health.
@@ -512,9 +489,7 @@ internal sealed class HealthTracker
     }
 }
 
-#endregion
 
-#region Configuration Options
 
 /// <summary>
 /// Configuration options for a data source.
@@ -568,4 +543,3 @@ public sealed record HealthCheckOptions(
     int UnhealthyThreshold = 3
 );
 
-#endregion

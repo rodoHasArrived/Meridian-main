@@ -12,7 +12,6 @@ public static class ColorPalette
     /// </summary>
     public readonly record struct ArgbColor(byte A, byte R, byte G, byte B);
 
-    #region Status Colors
 
     /// <summary>Success/Active state (green).</summary>
     public static readonly ArgbColor Success = new(255, 72, 187, 120);
@@ -35,9 +34,7 @@ public static class ColorPalette
     /// <summary>Warning events (amber/gold).</summary>
     public static readonly ArgbColor WarningEvent = new(255, 210, 153, 34);
 
-    #endregion
 
-    #region Chart/Visualization Colors
 
     /// <summary>Primary chart line color (blue).</summary>
     public static readonly ArgbColor ChartPrimary = new(255, 66, 153, 225);
@@ -54,9 +51,7 @@ public static class ColorPalette
     /// <summary>Chart negative/down color (red).</summary>
     public static readonly ArgbColor ChartNegative = new(255, 245, 101, 101);
 
-    #endregion
 
-    #region Data Quality Colors
 
     /// <summary>Data quality excellent (bright green).</summary>
     public static readonly ArgbColor QualityExcellent = new(255, 56, 161, 105);
@@ -64,9 +59,7 @@ public static class ColorPalette
     /// <summary>Data quality fair (yellow).</summary>
     public static readonly ArgbColor QualityFair = new(255, 236, 201, 75);
 
-    #endregion
 
-    #region UI Element Colors
 
     /// <summary>Accent color for interactive elements.</summary>
     public static readonly ArgbColor Accent = new(255, 99, 102, 241);
@@ -83,9 +76,7 @@ public static class ColorPalette
     /// <summary>Light text on dark background.</summary>
     public static readonly ArgbColor LightText = new(255, 226, 232, 240);
 
-    #endregion
 
-    #region Semi-Transparent Status Backgrounds
 
     /// <summary>Semi-transparent success background.</summary>
     public static readonly ArgbColor SuccessBackground = new(40, 72, 187, 120);
@@ -99,9 +90,7 @@ public static class ColorPalette
     /// <summary>Semi-transparent info background.</summary>
     public static readonly ArgbColor InfoBackground = new(40, 88, 166, 255);
 
-    #endregion
 
-    #region State-to-Color Mapping
 
     /// <summary>Gets the color for a notification type.</summary>
     public static ArgbColor GetNotificationColor(NotificationType type) => type switch
@@ -147,5 +136,4 @@ public static class ColorPalette
         return Inactive;
     }
 
-    #endregion
 }

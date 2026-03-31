@@ -1,7 +1,7 @@
 # Meridian Repository Rule Set
 
-**Owner:** Core Team  
-**Scope:** Engineering — Repository-Wide  
+**Owner:** Core Team
+**Scope:** Engineering — Repository-Wide
 **Review Cadence:** Quarterly (or when platform/tooling shifts)
 
 ---

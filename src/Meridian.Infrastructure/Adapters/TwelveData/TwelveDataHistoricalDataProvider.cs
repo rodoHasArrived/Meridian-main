@@ -33,16 +33,13 @@ public sealed class TwelveDataHistoricalDataProvider : BaseHistoricalDataProvide
 
     private readonly string? _apiKey;
 
-    #region Abstract Property Implementations
 
     public override string Name => "twelvedata";
     public override string DisplayName => "Twelve Data";
     public override string Description => "OHLCV data for US and international equities, ETFs, forex, and crypto via Twelve Data API.";
     protected override string HttpClientName => HttpClientNames.TwelveDataHistorical;
 
-    #endregion
 
-    #region Virtual Property Overrides
 
     public override int Priority => 22;
     public override TimeSpan RateLimitDelay => TimeSpan.FromMilliseconds(7500); // 8 req/min
@@ -52,7 +49,6 @@ public sealed class TwelveDataHistoricalDataProvider : BaseHistoricalDataProvide
     public override HistoricalDataCapabilities Capabilities { get; } =
         HistoricalDataCapabilities.BarsOnly.WithMarkets("US", "UK", "EU", "CA", "AU");
 
-    #endregion
 
     public TwelveDataHistoricalDataProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null)
         : base(httpClient, log)
@@ -177,7 +173,6 @@ public sealed class TwelveDataHistoricalDataProvider : BaseHistoricalDataProvide
         return bars;
     }
 
-    #region Twelve Data API Models
 
     private sealed class TwelveDataResponse
     {
@@ -209,5 +204,4 @@ public sealed class TwelveDataHistoricalDataProvider : BaseHistoricalDataProvide
         public string? Volume { get; set; }
     }
 
-    #endregion
 }

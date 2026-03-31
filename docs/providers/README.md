@@ -1,8 +1,8 @@
 # Provider Documentation
 
-**Last Updated:** 2026-03-21  
-**Owner:** Core Team  
-**Scope:** Engineering / Product - Provider-Facing  
+**Last Updated:** 2026-03-21
+**Owner:** Core Team
+**Scope:** Engineering / Product - Provider-Facing
 **Review Cadence:** When providers change APIs, tiers, or rate limits
 
 ---

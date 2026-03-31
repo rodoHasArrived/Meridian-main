@@ -602,7 +602,6 @@ public sealed class ArchiveBrowserService
     }
 }
 
-#region Models
 
 public sealed record ArchiveTree
 {
@@ -755,4 +754,3 @@ public sealed record FileVerificationResult
     public List<string> Issues { get; init; } = new();
 }
 
-#endregion

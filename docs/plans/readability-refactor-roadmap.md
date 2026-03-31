@@ -97,8 +97,8 @@ This phase establishes the refactor scaffolding needed to improve readability wi
 - [ ] Sequencing approved for Phase 1 extraction work.
 # Readability Refactor Roadmap
 
-**Date:** 2026-03-20  
-**Status:** Draft implementation roadmap  
+**Date:** 2026-03-20
+**Status:** Draft implementation roadmap
 **Scope:** Startup/orchestration clarity, composition-root modularization, WPF/UI service separation, workflow modeling, declarative transforms, and provider capability extraction.
 
 ---
@@ -835,26 +835,26 @@ For each phase, run:
 
 ### Milestone 1 — Safe extraction
 
-**Duration:** 2–3 weeks  
-**Includes:** Phase 0 and the beginning of Phase 1  
+**Duration:** 2–3 weeks
+**Includes:** Phase 0 and the beginning of Phase 1
 **Goal:** Get `Program.cs` under control without changing platform behavior.
 
 ### Milestone 2 — Structural clarity
 
-**Duration:** 2–4 weeks  
-**Includes:** Finish Phase 1 and Phase 2  
+**Duration:** 2–4 weeks
+**Includes:** Finish Phase 1 and Phase 2
 **Goal:** Make startup and DI understandable at a glance.
 
 ### Milestone 3 — UI modernization
 
-**Duration:** 3–5 weeks  
-**Includes:** Phase 3 and the start of Phase 4  
+**Duration:** 3–5 weeks
+**Includes:** Phase 3 and the start of Phase 4
 **Goal:** Fully migrate one WPF page with a repeatable pattern.
 
 ### Milestone 4 — Domain/provider clarity
 
-**Duration:** 4–8 weeks  
-**Includes:** Finish Phase 4 plus Phase 5 and Phase 6 pilots  
+**Duration:** 4–8 weeks
+**Includes:** Finish Phase 4 plus Phase 5 and Phase 6 pilots
 **Goal:** Prove the transform-oriented and capability-oriented directions.
 
 ---

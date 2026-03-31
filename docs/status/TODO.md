@@ -1,6 +1,6 @@
 # TODO / FIXME / NOTE Scan
 
-Total items: **204**
+Total items: **203**
 
 | File | Line | Tag | Linked Issue | Text |
 |---|---:|---|:---:|---|
@@ -34,9 +34,9 @@ Total items: **204**
 | `.github/agents/cleanup-agent.md` | 393 | `TODO` | ❌ | - `// TODO:` or `// FIXME:` comments that describe genuine open work items — flag |
 | `.github/agents/cleanup-agent.md` | 436 | `NOTE` | ❌ | - **No new features** — cleanup only; if something is missing, note it but do not add it. |
 | `.github/agents/cleanup-agent.md` | 438 | `NOTE` | ❌ | - **No ViewModel extraction** — flag it as a note; full MVVM refactors belong in code review. |
-| `.github/agents/documentation-agent.md` | 368 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
-| `.github/agents/documentation-agent.md` | 825 | `TODO` | ❌ | │   │   └── TODO.md |
-| `.github/agents/documentation-agent.md` | 3214 | `TODO` | ❌ | - `TODO.md` - Pending work items |
+| `.github/agents/documentation-agent.md` | 375 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
+| `.github/agents/documentation-agent.md` | 832 | `TODO` | ❌ | │   │   └── TODO.md |
+| `.github/agents/documentation-agent.md` | 3241 | `TODO` | ❌ | - `TODO.md` - Pending work items |
 | `.github/agents/implementation-assurance-agent.md` | 59 | `NOTE` | ❌ | - **Performance-sensitive paths are noted:** any hot-path touched by the change includes an explicit note on allocation, async, or buffering risk. |
 | `.github/agents/performance-agent.md` | 248 | `NOTE` | ❌ | - **No new features** — if a performance win requires a new feature, note it but defer it. |
 | `.github/agents/provider-builder-agent.md` | 81 | `TODO` | ❌ | Read the full template before writing any code. Templates contain inline `// TODO:` comments |
@@ -48,7 +48,7 @@ Total items: **204**
 | `.github/workflows/README.md` | 150 | `TODO` | ❌ | - **AI**: Documentation quality review, TODO triage recommendations |
 | `.github/workflows/README.md` | 323 | `TODO` | ❌ | \| `documentation.yml` \| Doc Quality Review, TODO Triage \| Completeness/accuracy assessment, TODO prioritization \| |
 | `.github/workflows/desktop-builds.yml` | 9 | `NOTE` | ❌ | # NOTE: UWP/WinUI 3 application has been removed. WPF is the sole desktop client. |
-| `.github/workflows/nightly.yml` | 214 | `NOTE` | ❌ | 4) If only certain platforms failed, note platform-specific issues |
+| `.github/workflows/nightly.yml` | 208 | `NOTE` | ❌ | 4) If only certain platforms failed, note platform-specific issues |
 | `.github/workflows/prompt-generation.yml` | 269 | `NOTE` | ❌ | - name: Note skipped AI review |
 | `.github/workflows/prompt-generation.yml` | 473 | `NOTE` | ❌ | - name: Note Copilot trigger status |
 | `.github/workflows/scheduled-maintenance.yml` | 311 | `TODO` | ❌ | echo "### TODO/FIXME/HACK Markers" >> $GITHUB_STEP_SUMMARY |
@@ -59,12 +59,12 @@ Total items: **204**
 | `.github/workflows/scheduled-maintenance.yml` | 330 | `FIXME` | ❌ | echo "<details><summary>FIXME locations (click to expand)</summary>" >> $GITHUB_STEP_SUMMARY |
 | `.github/workflows/scheduled-maintenance.yml` | 333 | `FIXME` | ❌ | grep -rn "FIXME" src/ tests/ --include="*.cs" --include="*.fs" 2>/dev/null \| head -25 >> $GITHUB_STEP_SUMMARY |
 | `.github/workflows/test-matrix.yml` | 5 | `NOTE` | ❌ | # NOTE: This workflow intentionally does NOT use reusable-dotnet-build.yml because it needs |
-| `.github/workflows/validate-workflows.yml` | 206 | `NOTE` | ❌ | echo "Note: Ensure cron schedules are distributed to avoid rate limits" |
+| `.github/workflows/validate-workflows.yml` | 233 | `NOTE` | ❌ | echo "Note: Ensure cron schedules are distributed to avoid rate limits" |
 | `CLAUDE.md` | 100 | `NOTE` | ❌ | **Note:** Always use `/p:EnableWindowsTargeting=true` on non-Windows systems to avoid NETSDK1100 errors. |
-| `CLAUDE.md` | 421 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
-| `CLAUDE.md` | 878 | `TODO` | ❌ | │   │   └── TODO.md |
-| `README.md` | 573 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
-| `README.md` | 1020 | `TODO` | ❌ | │   │   ├── TODO.md |
+| `CLAUDE.md` | 428 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
+| `CLAUDE.md` | 885 | `TODO` | ❌ | │   │   └── TODO.md |
+| `README.md` | 574 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
+| `README.md` | 1021 | `TODO` | ❌ | │   │   ├── TODO.md |
 | `benchmarks/run-bottleneck-benchmarks.sh` | 111 | `NOTE` | ❌ | # Note: --filter is intentionally not added here; each phase below supplies its own |
 | `build/scripts/run/start-collector.ps1` | 109 | `NOTE` | ❌ | if ($depth -gt 0) { Write-Host "[NOTE] L2 depth requires provider depth entitlements for venues." } |
 | `build/scripts/run/start-collector.sh` | 114 | `NOTE` | ❌ | print("[NOTE] L2 depth requires provider depth subscription for venues.") |
@@ -77,10 +77,10 @@ Total items: **204**
 | `docs/ai/claude/CLAUDE.api.md` | 221 | `TODO` | ❌ | \| `documentation.yml` \| Documentation generation, AI instruction sync, TODO scanning \| |
 | `docs/ai/claude/CLAUDE.structure.md` | 160 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
 | `docs/ai/claude/CLAUDE.structure.md` | 473 | `TODO` | ❌ | │   │   └── TODO.md |
-| `docs/ai/copilot/instructions.md` | 5 | `NOTE` | ❌ | > **Note:** For comprehensive project context, see [CLAUDE.md](https://github.com/rodoHasArrived/Meridian/blob/main/CLAUDE.md) in the repository root. For the master AI resource index, see [docs/ai/README.md](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/README.md). |
-| `docs/ai/copilot/instructions.md` | 406 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
-| `docs/ai/copilot/instructions.md` | 863 | `TODO` | ❌ | │   │   └── TODO.md |
-| `docs/ai/copilot/instructions.md` | 3160 | `TODO` | ❌ | - `documentation.yml` — Doc generation, TODO scanning, AI error intake |
+| `docs/ai/copilot/instructions.md` | 5 | `NOTE` | ❌ | > **Note:** For comprehensive project context, see [CLAUDE.md](https://github.com/rodoHasArrived/Meridian/blob/main/CLAUDE.md) in the repository root. For the master AI resource index, see [docs/ai/README.md](https://github.com/rodoHasArrived/Meridian/blob/main/docs/ai/README.md). |
+| `docs/ai/copilot/instructions.md` | 413 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
+| `docs/ai/copilot/instructions.md` | 870 | `TODO` | ❌ | │   │   └── TODO.md |
+| `docs/ai/copilot/instructions.md` | 3187 | `TODO` | ❌ | - `documentation.yml` — Doc generation, TODO scanning, AI error intake |
 | `docs/ai/skills/README.md` | 179 | `NOTE` | ❌ | > **Note:** The Direct Lending module (`src/Meridian.FSharp/Domain/DirectLending.fs`, |
 | `docs/architecture/deterministic-canonicalization.md` | 365 | `NOTE` | ❌ | Note: Polygon does not define buyer-initiated codes. Only ~5% of trades carry definitive aggressor inference. The canonicalization layer preserves `Unknown` as a valid canonical value rather than attempting inference. |
 | `docs/architecture/domains.md` | 111 | `NOTE` | ❌ | > Note: not every enum member is currently emitted by the three core collectors (`TradeDataCollector`, `MarketDepthCollector`, `QuoteCollector`); several are used by adapters, backfill paths, or the `L3OrderBookCollector`. |
@@ -133,15 +133,15 @@ Total items: **204**
 | `docs/status/docs-automation-summary.json` | 32 | `TODO` | ❌ | "output_file": "docs/status/TODO.md", |
 | `docs/status/docs-automation-summary.md` | 9 | `TODO` | ❌ | \| `scan-todos` \| `success` \| `175.615` \| `docs/status/TODO.md` \| |
 | `docs/status/example-validation.md` | 148 | `TODO` | ❌ | \| `docs\status\TODO.md` \| 1 \| |
-| `docs/status/health-dashboard.md` | 23 | `TODO` | ❌ | \| TODO/FIXME markers \| 318 \| |
+| `docs/status/health-dashboard.md` | 23 | `TODO` | ❌ | \| TODO/FIXME markers \| 316 \| |
 | `docs/status/health-dashboard.md` | 33 | `TODO` | ❌ | \| TODO density \| 15 pts \| Lower density of TODO/FIXME markers \| |
 | `docs/status/rules-report.md` | 431 | `TODO` | ❌ | \| `docs\status\TODO.md` \| No hardcoded API keys in docs \| error \| |
 | `docs/status/rules-report.md` | 432 | `TODO` | ❌ | \| `docs\status\TODO.md` \| No hardcoded localhost URLs in docs \| info \| |
 | `src/Meridian.Application/Commands/SecurityMasterCommands.cs` | 20 | `NOTE` | ❌ | // NOTE: _importService is null when the Security Master database is not configured at CLI |
 | `src/Meridian.Application/Config/ConfigValidationHelper.cs` | 123 | `TODO` | ❌ | var placeholders = new[] { "__SET_ME__", "YOUR_", "REPLACE_", "ENTER_", "INSERT_", "TODO" }; |
-| `src/Meridian.Application/Config/ConfigurationPipeline.cs` | 323 | `TODO` | ❌ | ["__SET_ME__", "your-key-here", "your-secret-here", "REPLACE_ME", "ENTER_YOUR", "INSERT_YOUR", "TODO", "xxx"]; |
-| `src/Meridian.Application/Config/Credentials/CredentialTestingService.cs` | 377 | `NOTE` | ❌ | if (content.Contains("\"Note\":")) |
-| `src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs` | 195 | `TODO` | ❌ | "TODO" or |
+| `src/Meridian.Application/Config/ConfigurationPipeline.cs` | 324 | `TODO` | ❌ | ["__SET_ME__", "your-key-here", "your-secret-here", "REPLACE_ME", "ENTER_YOUR", "INSERT_YOUR", "TODO", "xxx"]; |
+| `src/Meridian.Application/Config/Credentials/CredentialTestingService.cs` | 376 | `NOTE` | ❌ | if (content.Contains("\"Note\":")) |
+| `src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs` | 188 | `TODO` | ❌ | "TODO" or |
 | `src/Meridian.Application/Config/IConfigValidator.cs` | 165 | `TODO` | ❌ | "TODO", "xxx", "change-me", "placeholder" |
 | `src/Meridian.Application/DirectLending/InMemoryDirectLendingService.Workflows.cs` | 100 | `NOTE` | ❌ | AppendEvent(stored, "loan.fee-assessed", request.EffectiveDate, new { loanId, request.FeeType, request.Amount, request.EffectiveDate, request.Note }, metadata); |
 | `src/Meridian.Application/DirectLending/InMemoryDirectLendingService.Workflows.cs` | 101 | `NOTE` | ❌ | GetList(_feeBalances, loanId).Add(new FeeBalanceDto(Guid.NewGuid(), loanId, request.FeeType, request.EffectiveDate, request.Amount, request.Amount, stored.History[^1].EventId, request.Note, DateTimeOffset.UtcNow)); |
@@ -161,7 +161,6 @@ Total items: **204**
 | `src/Meridian.FSharp/Domain/SecMasterDomain.fs` | 98 | `NOTE` | ❌ | \| Note |
 | `src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs` | 91 | `NOTE` | ❌ | return !json.Contains("Note") && !json.Contains("Thank you for using Alpha Vantage"); |
 | `src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs` | 245 | `NOTE` | ❌ | return json.Contains("\"Note\"") \|\| json.Contains("Thank you for using Alpha Vantage"); |
-| `src/Meridian.QuantScript/Api/PortfolioBuilder.cs` | 136 | `TODO` | ❌ | // TODO: Implement full MV quadratic optimisation (e.g. via MathNet.Numerics or custom QP solver) |
 | `src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs` | 28 | `NOTE` | ❌ | string? Note); |
 | `src/Meridian.Storage/DirectLending/Migrations/005_direct_lending_operations.sql` | 54 | `NOTE` | ❌ | note                     text, |
 | `src/Meridian.Storage/DirectLending/Migrations/005_direct_lending_workflows.sql` | 64 | `NOTE` | ❌ | note text, |
@@ -170,15 +169,15 @@ Total items: **204**
 | `src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.cs` | 981 | `NOTE` | ❌ | @note, |
 | `src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.cs` | 991 | `NOTE` | ❌ | insert.Parameters.AddWithValue("note", (object?)row.Note ?? DBNull.Value); |
 | `src/Meridian.Storage/Packaging/PortableDataPackager.Scripts.Sql.cs` | 31 | `NOTE` | ❌ | sb.AppendLine("-- Note: For JSONL files, use PostgreSQL's COPY with JSON processing"); |
-| `src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs` | 275 | `NOTE` | ❌ | /// Note: Renamed from RetentionPolicy to avoid conflict with Meridian.Ui.Services.RetentionPolicy |
-| `src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs` | 411 | `NOTE` | ❌ | // NOTE: SelfTest*, ErrorCodes*, ShowConfig*, QuickCheck* models are defined in DiagnosticsService.cs |
-| `src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs` | 816 | `NOTE` | ❌ | // For now, fall back to CSV with a note |
-| `src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs` | 825 | `NOTE` | ❌ | "Note: Full Parquet export requires Apache.Arrow library.\n" + |
-| `src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs` | 850 | `NOTE` | ❌ | // Add a note file explaining the Excel fallback |
-| `src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs` | 856 | `NOTE` | ❌ | "Note: Full Excel (.xlsx) export requires the EPPlus library.\n" + |
-| `src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs` | 892 | `NOTE` | ❌ | "Note: Full HDF5 (.h5) export requires the h5py library in Python.\n" + |
-| `src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs` | 986 | `NOTE` | ❌ | "Note: Full QuantConnect Lean format export requires specific data structure.\n" + |
-| `src/Meridian.Ui.Services/Services/ProviderHealthService.cs` | 518 | `NOTE` | ❌ | // NOTE: ProviderComparison is defined in AdvancedAnalyticsModels.cs for cross-provider comparison |
+| `src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs` | 266 | `NOTE` | ❌ | /// Note: Renamed from RetentionPolicy to avoid conflict with Meridian.Ui.Services.RetentionPolicy |
+| `src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs` | 398 | `NOTE` | ❌ | // NOTE: SelfTest*, ErrorCodes*, ShowConfig*, QuickCheck* models are defined in DiagnosticsService.cs |
+| `src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs` | 815 | `NOTE` | ❌ | // For now, fall back to CSV with a note |
+| `src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs` | 824 | `NOTE` | ❌ | "Note: Full Parquet export requires Apache.Arrow library.\n" + |
+| `src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs` | 849 | `NOTE` | ❌ | // Add a note file explaining the Excel fallback |
+| `src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs` | 855 | `NOTE` | ❌ | "Note: Full Excel (.xlsx) export requires the EPPlus library.\n" + |
+| `src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs` | 891 | `NOTE` | ❌ | "Note: Full HDF5 (.h5) export requires the h5py library in Python.\n" + |
+| `src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs` | 985 | `NOTE` | ❌ | "Note: Full QuantConnect Lean format export requires specific data structure.\n" + |
+| `src/Meridian.Ui.Services/Services/ProviderHealthService.cs` | 514 | `NOTE` | ❌ | // NOTE: ProviderComparison is defined in AdvancedAnalyticsModels.cs for cross-provider comparison |
 | `src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs` | 806 | `NOTE` | ❌ | // Fallback: Note that tier migration requires storage configuration |
 | `src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs` | 1043 | `NOTE` | ❌ | // Fallback: Note that tier migration requires storage configuration |
 | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs` | 721 | `NOTE` | ❌ | // ADR-014 note: DirectLendingCommandEnvelope<TCommand> and TCommand are open-generic type |
@@ -192,7 +191,7 @@ Total items: **204**
 | `src/Meridian.Ui/dashboard/src/screens/data-operations-screen.tsx` | 211 | `NOTE` | ❌ | <div className="mt-3 text-sm leading-6 text-foreground">{provider.note}</div> |
 | `src/Meridian.Ui/dashboard/src/types.ts` | 115 | `NOTE` | ❌ | note: string; |
 | `src/Meridian.Wpf/GlobalUsings.cs` | 7 | `NOTE` | ❌ | // NOTE: Type aliases and Contracts namespaces are NOT re-defined here because |
-| `src/Meridian.Wpf/Services/ContextMenuService.cs` | 120 | `NOTE` | ❌ | "Add Note", "\uE70B", |
+| `src/Meridian.Wpf/Services/ContextMenuService.cs` | 117 | `NOTE` | ❌ | "Add Note", "\uE70B", |
 | `tests/Meridian.Tests/Application/Backfill/AdditionalProviderContractTests.cs` | 637 | `NOTE` | ❌ | "Note": "Thank you for using Alpha Vantage! Our standard API call frequency is 5 calls per minute and 500 calls per day. Please visit https://www.alphavantage.co/premium/ if you would like to target a higher API call frequency." |
 | `tests/Meridian.Tests/Application/Backfill/BackfillWorkerServiceTests.cs` | 28 | `NOTE` | ❌ | // NOTE: Using null! because validation throws before dependencies are accessed |
 | `tests/Meridian.Tests/Application/Backfill/BackfillWorkerServiceTests.cs` | 56 | `NOTE` | ❌ | // NOTE: Using null! because validation throws before dependencies are accessed |

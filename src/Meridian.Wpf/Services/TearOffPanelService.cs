@@ -125,8 +125,6 @@ public sealed class TearOffPanelService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine(
-                $"[TearOffPanelService] Failed to load positions: {ex.Message}");
         }
     }
 
@@ -140,8 +138,6 @@ public sealed class TearOffPanelService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine(
-                $"[TearOffPanelService] Failed to save positions: {ex.Message}");
         }
     }
 }

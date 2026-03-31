@@ -429,7 +429,6 @@ public sealed class AlphaVantageHistoricalDataProvider : BaseHistoricalDataProvi
         return long.TryParse(prop.GetString(), NumberStyles.Any, CultureInfo.InvariantCulture, out result);
     }
 
-    #region Alpha Vantage API Models
 
     private sealed class AlphaVantageDailyAdjustedResponse
     {
@@ -485,5 +484,4 @@ public sealed class AlphaVantageHistoricalDataProvider : BaseHistoricalDataProvi
         public string? SplitCoefficient { get; set; }
     }
 
-    #endregion
 }

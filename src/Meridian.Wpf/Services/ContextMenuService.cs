@@ -15,7 +15,6 @@ public sealed class ContextMenuService
 
     private ContextMenuService() { }
 
-    #region Menu Item Builders
 
     /// <summary>
     /// Creates a menu item with an optional keyboard gesture.
@@ -67,9 +66,7 @@ public sealed class ContextMenuService
     /// </summary>
     public Separator CreateSeparator() => new();
 
-    #endregion
 
-    #region Symbol Context Menu
 
     /// <summary>
     /// Creates a context menu for symbol items (watchlist, symbols page, etc.)
@@ -145,9 +142,7 @@ public sealed class ContextMenuService
         return menu;
     }
 
-    #endregion
 
-    #region Subscription Context Menu
 
     /// <summary>
     /// Creates a context menu for subscription items on the symbols page.
@@ -213,9 +208,7 @@ public sealed class ContextMenuService
         return menu;
     }
 
-    #endregion
 
-    #region Schedule Context Menu
 
     /// <summary>
     /// Creates a context menu for schedule items (backfill/maintenance).
@@ -266,9 +259,7 @@ public sealed class ContextMenuService
         return menu;
     }
 
-    #endregion
 
-    #region Generic List Item Context Menu
 
     /// <summary>
     /// Creates a generic context menu for list items with common actions.
@@ -324,9 +315,7 @@ public sealed class ContextMenuService
         return menu;
     }
 
-    #endregion
 
-    #region Data/Archive Context Menu
 
     /// <summary>
     /// Creates a context menu for data/archive file items.
@@ -371,9 +360,7 @@ public sealed class ContextMenuService
         return menu;
     }
 
-    #endregion
 
-    #region Bulk Actions Context Menu
 
     /// <summary>
     /// Creates a context menu for bulk operations on selected items.
@@ -423,9 +410,7 @@ public sealed class ContextMenuService
         return menu;
     }
 
-    #endregion
 
-    #region Helper Methods
 
     /// <summary>
     /// Copies text to the clipboard.
@@ -463,5 +448,4 @@ public sealed class ContextMenuService
         return string.Join("+", parts);
     }
 
-    #endregion
 }

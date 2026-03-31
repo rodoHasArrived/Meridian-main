@@ -65,7 +65,6 @@ public static class TooltipContent
         return content;
     }
 
-    #region Feature Help Content
 
     public static readonly Dictionary<string, FeatureHelp> FeatureHelpContent = new()
     {
@@ -160,9 +159,7 @@ public static class TooltipContent
         }
     };
 
-    #endregion
 
-    #region Onboarding Tips
 
     public static readonly Dictionary<string, OnboardingTip[]> OnboardingTipsContent = new()
     {
@@ -225,5 +222,4 @@ public static class TooltipContent
         }
     };
 
-    #endregion
 }

@@ -15,7 +15,6 @@ public sealed class ScheduleManagerService
 
     private ScheduleManagerService() { }
 
-    #region Backfill Schedules
 
     /// <summary>
     /// Gets all backfill schedules.
@@ -92,9 +91,7 @@ public sealed class ScheduleManagerService
         return await ApiClientService.Instance.GetAsync<List<ScheduleTemplate>>("/api/backfill/schedules/templates", ct);
     }
 
-    #endregion
 
-    #region Maintenance Schedules
 
     /// <summary>
     /// Gets all maintenance schedules.
@@ -155,9 +152,7 @@ public sealed class ScheduleManagerService
         return await ApiClientService.Instance.GetAsync<List<ScheduleExecutionLog>>($"/api/maintenance/schedules/{id}/history?limit={limit}", ct);
     }
 
-    #endregion
 
-    #region Cron Helpers
 
     /// <summary>
     /// Validates a cron expression.
@@ -181,7 +176,6 @@ public sealed class ScheduleManagerService
             ct);
     }
 
-    #endregion
 }
 
 // DTO classes for schedule management

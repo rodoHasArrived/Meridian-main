@@ -54,8 +54,8 @@ Project files reference packages **WITHOUT** version numbers:
 ### Error Message
 
 ```
-error NU1008: Projects that use central package version management should not define 
-the version on the PackageReference items but on the PackageVersion items: 
+error NU1008: Projects that use central package version management should not define
+the version on the PackageReference items but on the PackageVersion items:
 PackageName1;PackageName2;...
 ```
 

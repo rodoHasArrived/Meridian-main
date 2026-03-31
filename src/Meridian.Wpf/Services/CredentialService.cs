@@ -11,6 +11,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Meridian.Contracts.Credentials;
+using Meridian.Ui.Services;
 using HttpClientFactoryProvider = Meridian.Ui.Services.HttpClientFactoryProvider;
 using HttpClientNames = Meridian.Ui.Services.HttpClientNames;
 
@@ -194,7 +195,6 @@ public sealed class CredentialService : IDisposable
         ObjectDisposedException.ThrowIf(_disposed, this);
     }
 
-    #region DPAPI Vault Operations
 
     private sealed class StoredCredential
     {
@@ -218,7 +218,6 @@ public sealed class CredentialService : IDisposable
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"{LogPrefix} Failed to load credential vault: {ex.Message}");
                 _vault = new();
             }
         }
@@ -237,14 +236,11 @@ public sealed class CredentialService : IDisposable
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"{LogPrefix} Failed to save credential vault: {ex.Message}");
             }
         }
     }
 
-    #endregion
 
-    #region Credential CRUD
 
     /// <summary>
     /// Saves username/password credentials to the encrypted credential vault.
@@ -290,7 +286,6 @@ public sealed class CredentialService : IDisposable
                     return (cred.Username, cred.Password);
                 }
             }
-            Debug.WriteLine($"{LogPrefix} GetCredential - No credential found for resource '{resource}'");
             return null;
         }
         catch (Exception ex)
@@ -380,9 +375,7 @@ public sealed class CredentialService : IDisposable
         }
     }
 
-    #endregion
 
-    #region Alpaca-specific helpers
 
     /// <summary>
     /// Gets stored Alpaca credentials.
@@ -417,23 +410,17 @@ public sealed class CredentialService : IDisposable
         RemoveCredential(AlpacaCredentialResource);
     }
 
-    #endregion
 
-    #region Nasdaq Data Link helpers
 
     public string? GetNasdaqApiKey() => GetApiKey(NasdaqApiKeyResource);
     public void SaveNasdaqApiKey(string apiKey) => SaveApiKey(NasdaqApiKeyResource, apiKey);
 
-    #endregion
 
-    #region OpenFIGI helpers
 
     public string? GetOpenFigiApiKey() => GetApiKey(OpenFigiApiKeyResource);
     public void SaveOpenFigiApiKey(string apiKey) => SaveApiKey(OpenFigiApiKeyResource, apiKey);
 
-    #endregion
 
-    #region Metadata Management
 
     private async Task LoadMetadataAsync(CancellationToken ct = default)
     {
@@ -454,7 +441,6 @@ public sealed class CredentialService : IDisposable
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"{LogPrefix} Failed to load metadata: {ex.Message}");
             lock (_metadataLock)
             {
                 _metadataCache = new Dictionary<string, CredentialMetadata>();
@@ -472,12 +458,11 @@ public sealed class CredentialService : IDisposable
                 snapshot = new Dictionary<string, CredentialMetadata>(_metadataCache);
             }
 
-            var json = JsonSerializer.Serialize(snapshot, new JsonSerializerOptions { WriteIndented = true });
+            var json = JsonSerializer.Serialize(snapshot, DesktopJsonOptions.PrettyPrint);
             await File.WriteAllTextAsync(_metadataPath, json);
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"{LogPrefix} Failed to save metadata: {ex.Message}");
         }
     }
 
@@ -600,9 +585,7 @@ public sealed class CredentialService : IDisposable
             .ToList();
     }
 
-    #endregion
 
-    #region Credential Testing
 
     public async Task<CredentialTestResult> TestAlpacaCredentialsAsync(bool useSandbox = false, CancellationToken ct = default)
     {
@@ -811,9 +794,7 @@ public sealed class CredentialService : IDisposable
         return results;
     }
 
-    #endregion
 
-    #region OAuth Token Management
 
     public async Task SaveOAuthTokenAsync(
         string providerId,
@@ -898,7 +879,6 @@ public sealed class CredentialService : IDisposable
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"OAuth refresh failed for {resource}: {ex.Message}");
             await UpdateMetadataAsync(resource, m => m.RefreshFailureCount++);
             return false;
         }
@@ -932,21 +912,17 @@ public sealed class CredentialService : IDisposable
         return true;
     }
 
-    #endregion
 
-    #region Logging Helpers
 
     private void LogCredentialOperation(string operation, string resource, bool success, string? details = null)
     {
         var timestamp = DateTime.UtcNow.ToString("o");
         if (success)
         {
-            Debug.WriteLine($"[{timestamp}] CredentialService: {operation} succeeded for resource '{resource}'");
         }
         else
         {
             var detailInfo = !string.IsNullOrEmpty(details) ? $", Details={details}" : "";
-            Debug.WriteLine($"[{timestamp}] CredentialService: {operation} FAILED for resource '{resource}' ({detailInfo})");
         }
     }
 
@@ -956,5 +932,4 @@ public sealed class CredentialService : IDisposable
         CredentialError?.Invoke(this, new CredentialErrorEventArgs(operation, resource, message, ex, severity, DateTime.UtcNow));
     }
 
-    #endregion
 }

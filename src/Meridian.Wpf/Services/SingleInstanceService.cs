@@ -56,7 +56,6 @@ public sealed class SingleInstanceService : IDisposable
         {
             // If the mutex cannot be created (e.g. permission error), assume primary
             // so startup is not blocked.
-            System.Diagnostics.Debug.WriteLine($"[SingleInstanceService] Mutex error: {ex.Message}");
             return true;
         }
     }
@@ -96,7 +95,6 @@ public sealed class SingleInstanceService : IDisposable
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[SingleInstanceService] SendArgsToPrimary failed: {ex.Message}");
         }
     }
 
@@ -136,7 +134,6 @@ public sealed class SingleInstanceService : IDisposable
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[SingleInstanceService] Pipe listen error: {ex.Message}");
                 // Brief backoff before retrying to avoid a tight error loop.
                 await Task.Delay(500, ct).ConfigureAwait(false);
             }

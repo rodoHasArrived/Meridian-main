@@ -85,7 +85,6 @@ public class ExportPresetServiceBase
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[ExportPresetService] Error loading export presets: {ex.Message}");
 
             if (_presets.Count == 0)
             {
@@ -103,7 +102,7 @@ public class ExportPresetServiceBase
 
         try
         {
-            var options = new JsonSerializerOptions { WriteIndented = true };
+            var options = DesktopJsonOptions.PrettyPrint;
             var json = JsonSerializer.Serialize(_presets, options);
             await File.WriteAllTextAsync(_presetsFilePath, json, cancellationToken);
         }
@@ -113,7 +112,6 @@ public class ExportPresetServiceBase
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[ExportPresetService] Error saving export presets: {ex.Message}");
         }
     }
 
@@ -268,7 +266,7 @@ public class ExportPresetServiceBase
             preset.LastUsedAt = null;
         }
 
-        var options = new JsonSerializerOptions { WriteIndented = true };
+        var options = DesktopJsonOptions.PrettyPrint;
         var json = JsonSerializer.Serialize(presetsToExport, options);
         var filePath = Path.Combine(destinationPath, $"export_presets_{DateTime.Now:yyyyMMdd_HHmmss}.json");
         await File.WriteAllTextAsync(filePath, json, cancellationToken);
@@ -311,7 +309,6 @@ public class ExportPresetServiceBase
         return importedCount;
     }
 
-    #region Built-In Presets
 
     private void EnsureBuiltInPresets()
     {
@@ -461,5 +458,4 @@ public class ExportPresetServiceBase
         };
     }
 
-    #endregion
 }

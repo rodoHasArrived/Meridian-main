@@ -14,6 +14,12 @@ public interface IReadOnlyLedger
     /// <summary>All accounts that have been posted to.</summary>
     IReadOnlyCollection<LedgerAccount> Accounts { get; }
 
+    /// <summary>Total number of journal entries posted to this ledger.</summary>
+    int JournalEntryCount { get; }
+
+    /// <summary>Total number of individual ledger entry lines (debit/credit rows) posted.</summary>
+    int TotalLedgerEntryCount { get; }
+
     /// <summary>Returns all individual ledger lines posted to <paramref name="account"/>.</summary>
     IReadOnlyList<LedgerEntry> GetEntries(LedgerAccount account);
 

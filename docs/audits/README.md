@@ -1,7 +1,7 @@
 # Audits Directory
 
-**Owner:** Core Team  
-**Scope:** Governance — Code Quality  
+**Owner:** Core Team
+**Scope:** Governance — Code Quality
 **Review Cadence:** As hygiene audits are completed
 
 This directory contains comprehensive audits and assessments of the Meridian codebase.

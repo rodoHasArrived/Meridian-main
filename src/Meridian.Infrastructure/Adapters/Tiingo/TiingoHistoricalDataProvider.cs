@@ -35,16 +35,13 @@ public sealed class TiingoHistoricalDataProvider : BaseHistoricalDataProvider
 
     private readonly string? _apiToken;
 
-    #region Abstract Property Implementations
 
     public override string Name => "tiingo";
     public override string DisplayName => "Tiingo (free tier)";
     public override string Description => "High-quality dividend-adjusted OHLCV for US/international equities with corporate actions.";
     protected override string HttpClientName => HttpClientNames.TiingoHistorical;
 
-    #endregion
 
-    #region Virtual Property Overrides
 
     public override int Priority => 15;
     public override TimeSpan RateLimitDelay => TimeSpan.FromSeconds(1.5); // 50 requests/hour = ~72 seconds between requests
@@ -57,7 +54,6 @@ public sealed class TiingoHistoricalDataProvider : BaseHistoricalDataProvider
     public override HistoricalDataCapabilities Capabilities { get; } =
         HistoricalDataCapabilities.BarsOnly.WithMarkets("US", "UK", "DE", "CA", "AU");
 
-    #endregion
 
     public TiingoHistoricalDataProvider(string? apiToken = null, HttpClient? httpClient = null, ILogger? log = null)
         : base(httpClient, log)
@@ -236,7 +232,6 @@ public sealed class TiingoHistoricalDataProvider : BaseHistoricalDataProvider
         }
     }
 
-    #region Tiingo API Models
 
     private sealed class TiingoPriceData
     {
@@ -280,5 +275,4 @@ public sealed class TiingoHistoricalDataProvider : BaseHistoricalDataProvider
         public decimal? SplitFactor { get; set; }
     }
 
-    #endregion
 }

@@ -260,8 +260,10 @@ public partial class App : System.Windows.Application
         services.AddSingleton(_ => WpfServices.OfflineTrackingPersistenceService.Instance);
         services.AddSingleton(_ => WpfServices.PendingOperationsQueueService.Instance);
         services.AddSingleton(_ => WpfServices.ToastNotificationService.Instance);
-        services.AddSingleton<WpfServices.ISystemTrayService>(_ => new WpfServices.SystemTrayService());
-        services.AddSingleton(_ => new WpfServices.SystemTrayService());
+        // C1 fix: register a single SystemTrayService instance under the interface contract;
+        //         the concrete type is resolved via the same singleton.
+        services.AddSingleton<WpfServices.SystemTrayService>();
+        services.AddSingleton<WpfServices.ISystemTrayService>(sp => sp.GetRequiredService<WpfServices.SystemTrayService>());
 
         // ── MainWindow ──────────────────────────────────────────────────────
         services.AddSingleton<MainWindow>();
@@ -300,6 +302,7 @@ public partial class App : System.Windows.Application
         services.AddTransient<AdvancedAnalyticsPage>();
         services.AddTransient<ChartingPage>();
         services.AddTransient<OrderBookPage>();
+        services.AddTransient<Meridian.Ui.Services.DataCalendarService>();
         services.AddTransient<DataCalendarPage>();
         services.AddTransient<StorageOptimizationPage>();
         services.AddTransient<RetentionAssurancePage>();
@@ -505,11 +508,9 @@ public partial class App : System.Windows.Application
         try
         {
             await WpfServices.OfflineTrackingPersistenceService.Instance.InitializeAsync();
-            System.Diagnostics.Debug.WriteLine("Offline tracking persistence initialized");
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Failed to initialize offline tracking: {ex.Message}");
             // Continue - app should still work without persistence
         }
     }
@@ -523,15 +524,12 @@ public partial class App : System.Windows.Application
         {
             // Initialize pending operations queue
             await WpfServices.PendingOperationsQueueService.Instance.InitializeAsync();
-            System.Diagnostics.Debug.WriteLine("Pending operations queue initialized");
 
             // Start background task scheduler
             await WpfServices.BackgroundTaskSchedulerService.Instance.StartAsync();
-            System.Diagnostics.Debug.WriteLine("Background task scheduler started");
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Failed to initialize background services: {ex.Message}");
             // Continue - app should still work without background services
         }
     }
@@ -559,7 +557,6 @@ public partial class App : System.Windows.Application
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[App] StartCollectorFromLaunchArg failed: {ex.Message}");
         }
     }
 
@@ -578,12 +575,10 @@ public partial class App : System.Windows.Application
             {
                 // Navigate to the last active page
                 WpfServices.NavigationService.Instance.NavigateTo(session.ActivePageTag);
-                System.Diagnostics.Debug.WriteLine($"[App] Restored session to page: {session.ActivePageTag}");
             }
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[App] Failed to restore workspace session: {ex.Message}");
         }
     }
 
@@ -605,11 +600,9 @@ public partial class App : System.Windows.Application
             };
 
             await workspaceService.SaveSessionStateAsync(session);
-            System.Diagnostics.Debug.WriteLine("[App] Workspace session saved");
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[App] Failed to save workspace session: {ex.Message}");
         }
     }
 
@@ -632,7 +625,6 @@ public partial class App : System.Windows.Application
 
         try
         {
-            System.Diagnostics.Debug.WriteLine("App exiting, shutting down services...");
 
             // Close any floating tear-off quote panels before service shutdown
             WpfServices.TearOffPanelService.Instance.CloseAll();
@@ -655,17 +647,13 @@ public partial class App : System.Windows.Application
 
             // Dispose the NotifyIcon so the system-tray icon is removed cleanly.
             try { WpfServices.ToastNotificationService.Instance.Dispose(); }
-            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[App] Error disposing ToastNotificationService: {ex.Message}"); }
 
-            System.Diagnostics.Debug.WriteLine("Services shut down cleanly");
         }
         catch (OperationCanceledException)
         {
-            System.Diagnostics.Debug.WriteLine("App shutdown timed out - forcing exit");
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[App] Error during app exit: {ex.Message}");
         }
     }
 
@@ -677,15 +665,12 @@ public partial class App : System.Windows.Application
         try
         {
             await shutdownAction().WaitAsync(ct);
-            System.Diagnostics.Debug.WriteLine($"{serviceName} shut down successfully");
         }
         catch (OperationCanceledException)
         {
-            System.Diagnostics.Debug.WriteLine($"{serviceName} shutdown timed out");
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"{serviceName} shutdown failed: {ex.Message}");
         }
     }
 
@@ -700,15 +685,12 @@ public partial class App : System.Windows.Application
             {
                 ct.ThrowIfCancellationRequested();
                 shutdownAction();
-                System.Diagnostics.Debug.WriteLine($"{serviceName} shut down successfully");
             }
             catch (OperationCanceledException)
             {
-                System.Diagnostics.Debug.WriteLine($"{serviceName} shutdown timed out");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"{serviceName} shutdown failed: {ex.Message}");
             }
         }, ct);
     }
@@ -775,25 +757,41 @@ public partial class App : System.Windows.Application
 
     /// <summary>
     /// Handles unhandled exceptions on the UI thread.
+    /// E3 fix: only suppress transient/recoverable exceptions; fatal ones are logged and re-raised
+    /// so the process can terminate cleanly instead of limping forward in a broken state.
     /// </summary>
     private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
     {
-        // Log the exception but don't crash
-        System.Diagnostics.Debug.WriteLine($"Dispatcher unhandled exception: {e.Exception}");
-        e.Handled = true;
+        var ex = e.Exception;
 
-        // Notify user of the error
-        try
+        // Determine whether the exception is likely recoverable (transient UI or I/O issues).
+        var isRecoverable =
+            ex is InvalidOperationException or
+                 System.Net.Http.HttpRequestException or
+                 TimeoutException or
+                 OperationCanceledException or
+                 System.IO.IOException;
+
+        // Always log with structured logging so the error is visible in the log file.
+        WpfServices.LoggingService.Instance.LogError("Dispatcher unhandled exception", ex);
+
+        if (isRecoverable)
         {
-            _ = WpfServices.NotificationService.Instance.NotifyErrorAsync(
-                "Application Error",
-                e.Exception.Message);
+            e.Handled = true;
+            try
+            {
+                _ = WpfServices.NotificationService.Instance.NotifyErrorAsync(
+                    "Application Error",
+                    ex.Message);
+            }
+            catch (Exception notifyEx)
+            {
+                WpfServices.LoggingService.Instance.LogWarning(
+                    "Notification failure during error handling",
+                    ("Error", notifyEx.Message));
+            }
         }
-        catch (Exception ex)
-        {
-            // Q2: Log notification failures instead of silently swallowing
-            System.Diagnostics.Debug.WriteLine($"[App] Notification failure during error handling: {ex.Message}");
-        }
+        // Non-recoverable exceptions are not marked Handled so WPF can tear down cleanly.
     }
 
     /// <summary>

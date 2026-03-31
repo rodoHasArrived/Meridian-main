@@ -169,6 +169,5 @@ public abstract class NavigationServiceBase
     /// </summary>
     protected virtual void OnNavigationFailed(string pageTag)
     {
-        System.Diagnostics.Debug.WriteLine($"[NavigationService] Unknown page tag: {pageTag}");
     }
 }

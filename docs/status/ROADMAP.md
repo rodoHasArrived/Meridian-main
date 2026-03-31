@@ -1,8 +1,8 @@
 # Meridian - Project Roadmap
 
-**Last Updated:** 2026-03-26
+**Last Updated:** 2026-03-31
 **Status:** Refocused on core platform functionality and active native desktop redevelopment
-**Repository Snapshot (2026-03-24):** solution projects: 35 | `src/` projects: 27 | test projects: 7 | workflow files: 35 | source files: 1,118 (1,073 C# + 45 F#) | test files: 335 (326 C# + 9 F#) | tests: ~4,424
+**Repository Snapshot (2026-03-31):** solution projects: 39 | `src/` projects: 28 | test projects: 8 | workflow files: 36 | source files: 1,318 (1,267 C# + 51 F#) | test files: 400 (390 C# + 10 F#) | tests: ~5,370
 
 Meridian is a self-hosted trading platform. The active delivery focus is the four core platform pillars: **data collection**, **backtesting**, **real-time execution**, and **portfolio/strategy tracking**. The web dashboard remains the primary cross-platform operator surface. As of **March 26, 2026**, the WPF desktop app is back in **active development** as the Windows-first workstation track, beginning with shell modernization and workflow-page redesigns in `src/Meridian.Wpf/`.
 
@@ -152,7 +152,7 @@ Multi-run comparison, performance attribution, and strategy lifecycle management
 
 ### Optional / Later
 
-- QuantScript runtime and editor
+- QuantScript runtime and editor *(implemented — `src/Meridian.QuantScript/`, `QuantScriptPage.xaml`, `tests/Meridian.QuantScript.Tests/`; deeper workflow integration and additional sample scripts remain)*
 - L3 inference and queue-aware execution simulation
 - Governance: multi-ledger, trial balance, cash-flow, report packs
 - Multi-instance collector coordination and horizontal scale-out
@@ -260,7 +260,7 @@ Full design: [`docs/plans/security-master-productization-roadmap.md`](../plans/s
 Depth multipliers that require a stable platform foundation to deliver value.
 
 **Focus:**
-- QuantScript runtime and editor
+- QuantScript runtime and editor *(project, WPF surface, and tests are implemented; deeper workflow integration and sample script library remain)*
 - L3 inference and queue-aware simulation
 - Multi-instance collector scale-out
 - Phase 16 assembly-level performance work

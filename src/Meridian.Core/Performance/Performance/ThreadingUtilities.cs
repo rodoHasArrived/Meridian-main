@@ -179,7 +179,6 @@ public static class ThreadingUtilities
         }
     }
 
-    #region Platform-specific implementations
 
     private static bool TrySetWindowsThreadAffinity(int cpuIndex)
     {
@@ -197,7 +196,6 @@ public static class ThreadingUtilities
         return TrySetProcessAffinity(mask);
     }
 
-    #endregion
 }
 
 /// <summary>

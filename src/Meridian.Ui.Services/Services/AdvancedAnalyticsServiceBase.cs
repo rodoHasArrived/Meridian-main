@@ -13,7 +13,6 @@ namespace Meridian.Ui.Services;
 /// </summary>
 public class AdvancedAnalyticsServiceBase
 {
-    #region Gap Analysis
 
     public virtual async Task<GapAnalysisResult> AnalyzeGapsAsync(
         GapAnalysisOptions options,
@@ -69,9 +68,7 @@ public class AdvancedAnalyticsServiceBase
         };
     }
 
-    #endregion
 
-    #region Cross-Provider Comparison
 
     public virtual async Task<CrossProviderComparisonResult> CompareProvidersAsync(
         CrossProviderComparisonOptions options,
@@ -100,9 +97,7 @@ public class AdvancedAnalyticsServiceBase
         };
     }
 
-    #endregion
 
-    #region Latency Analysis
 
     public virtual async Task<LatencyHistogramResult> GetLatencyHistogramAsync(
         LatencyHistogramOptions? options = null,
@@ -161,9 +156,7 @@ public class AdvancedAnalyticsServiceBase
         };
     }
 
-    #endregion
 
-    #region Anomaly Detection
 
     public virtual async Task<AnomalyDetectionResult> DetectAnomaliesAsync(
         AnomalyDetectionOptions options,
@@ -191,9 +184,7 @@ public class AdvancedAnalyticsServiceBase
         };
     }
 
-    #endregion
 
-    #region Quality Reports
 
     public virtual async Task<DataQualityReportResult> GetQualityReportAsync(
         DataQualityReportOptions options,
@@ -249,9 +240,7 @@ public class AdvancedAnalyticsServiceBase
         };
     }
 
-    #endregion
 
-    #region Throughput Analysis
 
     public virtual async Task<ThroughputAnalysisResult> GetThroughputAnalysisAsync(
         ThroughputAnalysisOptions? options = null,
@@ -282,9 +271,7 @@ public class AdvancedAnalyticsServiceBase
         };
     }
 
-    #endregion
 
-    #region Rate Limits
 
     public virtual async Task<RateLimitStatusResult> GetRateLimitStatusAsync(CancellationToken ct = default)
     {
@@ -307,9 +294,7 @@ public class AdvancedAnalyticsServiceBase
         };
     }
 
-    #endregion
 
-    #region Symbols
 
     public virtual async Task<AnalyticsSymbolsResult> GetAllSymbolsAsync(CancellationToken ct = default)
     {
@@ -332,5 +317,4 @@ public class AdvancedAnalyticsServiceBase
         };
     }
 
-    #endregion
 }

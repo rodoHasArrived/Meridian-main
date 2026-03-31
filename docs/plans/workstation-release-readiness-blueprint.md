@@ -1,8 +1,8 @@
 # Workstation Release Readiness Blueprint
 
-**Owner:** Core Team  
-**Audience:** Product, Architecture, UI, API, and Platform contributors  
-**Last Updated:** 2026-03-24  
+**Owner:** Core Team
+**Audience:** Product, Architecture, UI, API, and Platform contributors
+**Last Updated:** 2026-03-24
 **Status:** Active blueprint
 
 ---
@@ -294,7 +294,7 @@ Trading write endpoints should return action results that support:
 
 ### Sprint 1: Shell and Trading foundation
 
-**Story 1.1: Expand shell bootstrap to all workspaces**  
+**Story 1.1: Expand shell bootstrap to all workspaces**
 Acceptance criteria:
 
 - `useWorkstationData()` or its successor prefetches session, research, trading, Data Operations, and Governance summary payloads.
@@ -302,7 +302,7 @@ Acceptance criteria:
 - Top-level workspace switching is instant after bootstrap success.
 - Bootstrap tests cover mixed-success and full-failure cases.
 
-**Story 1.2: Add route and command palette coverage for all primary workflows**  
+**Story 1.2: Add route and command palette coverage for all primary workflows**
 Acceptance criteria:
 
 - Trading, Data Operations, and Governance subroutes exist for the primary release workflows.
@@ -310,7 +310,7 @@ Acceptance criteria:
 - No quick action routes to `/` as a placeholder for non-research workflows.
 - Navigation smoke tests cover one route and one command per workspace.
 
-**Story 1.3: Replace Data Operations and Governance placeholders with MVP screens**  
+**Story 1.3: Replace Data Operations and Governance placeholders with MVP screens**
 Acceptance criteria:
 
 - `/data-operations` renders provider health, backfill, and export summaries.
@@ -320,7 +320,7 @@ Acceptance criteria:
 
 ### Sprint 2: Trading write-path release slice
 
-**Story 2.1: Implement Trading action endpoints and typed client wrappers**  
+**Story 2.1: Implement Trading action endpoints and typed client wrappers**
 Acceptance criteria:
 
 - API routes exist for cancel order, cancel all open orders, close position, and pause strategy.
@@ -328,7 +328,7 @@ Acceptance criteria:
 - Action responses return a structured action result.
 - Contract tests verify success, validation failure, and unauthorized access behavior.
 
-**Story 2.2: Add Trading action UX with confirmations and safe busy states**  
+**Story 2.2: Add Trading action UX with confirmations and safe busy states**
 Acceptance criteria:
 
 - Orders and positions tables expose contextual action affordances.
@@ -336,7 +336,7 @@ Acceptance criteria:
 - Double submission is prevented while a request is in flight.
 - Success and failure are shown inline without forcing a full page reload.
 
-**Story 2.3: Wire audit and telemetry for Trading mutations**  
+**Story 2.3: Wire audit and telemetry for Trading mutations**
 Acceptance criteria:
 
 - Each Trading write action logs actor, action, target, timestamp, and outcome.
@@ -346,7 +346,7 @@ Acceptance criteria:
 
 ### Sprint 3: Release hardening and operator confidence
 
-**Story 3.1: Finish workspace-level resilience behavior**  
+**Story 3.1: Finish workspace-level resilience behavior**
 Acceptance criteria:
 
 - Prefetched summaries can be refreshed without dropping the shell.
@@ -354,7 +354,7 @@ Acceptance criteria:
 - Last successful payload remains visible during transient refresh failures.
 - Error copy is specific to the failed workspace or action.
 
-**Story 3.2: Add end-to-end operator smoke coverage**  
+**Story 3.2: Add end-to-end operator smoke coverage**
 Acceptance criteria:
 
 - Automated smoke flow opens the shell and visits all four workspaces.
@@ -362,7 +362,7 @@ Acceptance criteria:
 - Trading smoke covers at least one write action in a test-safe environment.
 - No route returns 404 and no shell-breaking console errors occur.
 
-**Story 3.3: Release review checklist and sign-off pack**  
+**Story 3.3: Release review checklist and sign-off pack**
 Acceptance criteria:
 
 - Release checklist exists for Trading write controls, Data Operations readiness, and Governance minimum slice coverage.

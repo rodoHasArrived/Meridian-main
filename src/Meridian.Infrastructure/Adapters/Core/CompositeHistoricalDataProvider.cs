@@ -177,7 +177,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
                 var bars = await provider.GetDailyBarsAsync(resolvedSymbol, from, to, ct).ConfigureAwait(false);
                 var elapsed = DateTimeOffset.UtcNow - startTime;
 
-                if (bars.Count > 0)
+                if (bars is { Count: > 0 })
                 {
                     // Update health status and clear any rate limit state
                     UpdateHealthStatus(provider.Name, true, $"Retrieved {bars.Count} bars", elapsed);
@@ -360,7 +360,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
 
                 var bars = await provider.GetAdjustedDailyBarsAsync(resolvedSymbol, from, to, ct).ConfigureAwait(false);
 
-                if (bars.Count > 0)
+                if (bars is { Count: > 0 })
                 {
                     ClearFailure(provider.Name);
                     _rateLimitTracker.ClearRateLimitState(provider.Name);

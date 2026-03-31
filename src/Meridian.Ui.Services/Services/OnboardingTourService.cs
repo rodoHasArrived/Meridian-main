@@ -241,7 +241,6 @@ public sealed class OnboardingTourService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[OnboardingTourService] Failed to load progress: {ex.Message}");
         }
     }
 
@@ -262,12 +261,11 @@ public sealed class OnboardingTourService
                 Directory.CreateDirectory(dir);
             }
 
-            var json = JsonSerializer.Serialize(progress, new JsonSerializerOptions { WriteIndented = true });
+            var json = JsonSerializer.Serialize(progress, DesktopJsonOptions.PrettyPrint);
             await File.WriteAllTextAsync(ProgressFilePath, json);
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[OnboardingTourService] Failed to save progress: {ex.Message}");
         }
     }
 

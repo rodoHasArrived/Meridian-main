@@ -468,7 +468,6 @@ public sealed class SymbolSearchService : IDisposable
         _figiClient?.Dispose();
     }
 
-    #region Cache Types
 
     private sealed record CachedSearchResult(SymbolSearchResponse Response, TimeSpan Duration)
     {
@@ -482,7 +481,6 @@ public sealed class SymbolSearchService : IDisposable
         public bool IsExpired => DateTimeOffset.UtcNow - CreatedAt > Duration;
     }
 
-    #endregion
 }
 
 /// <summary>

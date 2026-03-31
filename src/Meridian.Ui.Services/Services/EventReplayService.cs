@@ -262,7 +262,6 @@ public sealed class EventReplayService
     }
 }
 
-#region Event Args
 
 public sealed class ReplayStateChangedEventArgs : EventArgs
 {
@@ -285,9 +284,7 @@ public sealed class ReplayProgressEventArgs : EventArgs
     public TimeSpan Remaining { get; set; }
 }
 
-#endregion
 
-#region Result Classes
 
 public sealed class ReplayFilesResult
 {
@@ -378,9 +375,7 @@ public sealed class ReplayFileStats
     public Dictionary<string, long>? EventTypeCounts { get; set; }
 }
 
-#endregion
 
-#region API Response Classes
 
 public sealed class ReplayFilesResponse
 {
@@ -400,4 +395,3 @@ public sealed class EventPreviewResponse
     public long TotalCount { get; set; }
 }
 
-#endregion

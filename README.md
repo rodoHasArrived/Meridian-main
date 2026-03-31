@@ -281,6 +281,7 @@ Use these documents together when planning or implementing new work:
 │       ├── readme-tree.yml
 │       ├── release.yml
 │       ├── repo-health.yml
+│       ├── reusable-ai-analysis.yml
 │       ├── reusable-dotnet-build.yml
 │       ├── scheduled-maintenance.yml
 │       ├── security.yml
@@ -1156,7 +1157,20 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── SecurityMasterStartup.cs
 │   │   │   ├── ServiceCompositionRoot.cs
 │   │   │   └── Startup
-│   │   │       └── SharedStartupBootstrapper.cs
+│   │   │       ├── ModeRunners
+│   │   │       │   ├── BackfillModeRunner.cs
+│   │   │       │   ├── CollectorModeRunner.cs
+│   │   │       │   ├── CommandModeRunner.cs
+│   │   │       │   ├── DesktopModeRunner.cs
+│   │   │       │   └── WebModeRunner.cs
+│   │   │       ├── SharedStartupBootstrapper.cs
+│   │   │       ├── StartupModels
+│   │   │       │   ├── HostMode.cs
+│   │   │       │   ├── StartupContext.cs
+│   │   │       │   ├── StartupPlan.cs
+│   │   │       │   ├── StartupRequest.cs
+│   │   │       │   └── StartupValidationResult.cs
+│   │   │       └── StartupOrchestrator.cs
 │   │   ├── Config
 │   │   │   ├── AppConfigJsonOptions.cs
 │   │   │   ├── ConfigDtoMapper.cs
@@ -2600,6 +2614,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── ClusterStatusViewModel.cs
 │       │   ├── CredentialManagementViewModel.cs
 │       │   ├── DashboardViewModel.cs
+│       │   ├── DataCalendarViewModel.cs
 │       │   ├── DataQualityViewModel.cs
 │       │   ├── DiagnosticsPageViewModel.cs
 │       │   ├── DirectLendingViewModel.cs
@@ -2608,9 +2623,11 @@ Use these documents together when planning or implementing new work:
 │       │   ├── LeanIntegrationViewModel.cs
 │       │   ├── LiveDataViewerViewModel.cs
 │       │   ├── MainPageViewModel.cs
+│       │   ├── MessagingHubViewModel.cs
 │       │   ├── NotificationCenterViewModel.cs
 │       │   ├── OrderBookHeatmapViewModel.cs
 │       │   ├── OrderBookViewModel.cs
+│       │   ├── PackageManagerViewModel.cs
 │       │   ├── PluginManagementViewModel.cs
 │       │   ├── ProviderHealthViewModel.cs
 │       │   ├── ProviderPageModels.cs
@@ -2625,12 +2642,16 @@ Use these documents together when planning or implementing new work:
 │       │   ├── ServiceManagerViewModel.cs
 │       │   ├── SplitPaneViewModel.cs
 │       │   ├── StatusBarViewModel.cs
+│       │   ├── StorageViewModel.cs
 │       │   ├── StrategyRunBrowserViewModel.cs
 │       │   ├── StrategyRunDetailViewModel.cs
 │       │   ├── StrategyRunLedgerViewModel.cs
 │       │   ├── StrategyRunPortfolioViewModel.cs
 │       │   ├── SymbolsPageViewModel.cs
-│       │   └── TickerStripViewModel.cs
+│       │   ├── SystemHealthViewModel.cs
+│       │   ├── TickerStripViewModel.cs
+│       │   ├── TradingHoursViewModel.cs
+│       │   └── WelcomePageViewModel.cs
 │       └── Views
 │           ├── ActivityLogPage.xaml
 │           ├── ActivityLogPage.xaml.cs
@@ -2843,6 +2864,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── TestPriceSeriesBuilder.cs
 │   │   ├── Meridian.QuantScript.Tests.csproj
 │   │   ├── PlotQueueTests.cs
+│   │   ├── PortfolioBuilderTests.cs
 │   │   ├── PriceSeriesTests.cs
 │   │   ├── RoslynScriptCompilerTests.cs
 │   │   ├── ScriptRunnerTests.cs
@@ -3047,7 +3069,9 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── PolygonRecordedSessionReplayTests.cs
 │   │   │   │   ├── PolygonSubscriptionTests.cs
 │   │   │   │   ├── ProviderBehaviorBuilderTests.cs
+│   │   │   │   ├── ProviderFactoryCredentialContextTests.cs
 │   │   │   │   ├── ProviderResilienceTests.cs
+│   │   │   │   ├── ProviderTemplateFactoryCredentialTests.cs
 │   │   │   │   ├── RobinhoodHistoricalDataProviderTests.cs
 │   │   │   │   ├── RobinhoodSymbolSearchProviderTests.cs
 │   │   │   │   ├── StockSharpConnectorFactoryTests.cs
@@ -3156,7 +3180,10 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── WriteAheadLogTests.cs
 │   │   ├── Strategies
 │   │   │   ├── CashFlowProjectionTests.cs
+│   │   │   ├── LedgerReadServiceTests.cs
+│   │   │   ├── PortfolioReadServiceTests.cs
 │   │   │   ├── PromotionServiceTests.cs
+│   │   │   ├── ReconciliationProjectionServiceTests.cs
 │   │   │   ├── StrategyLifecycleManagerTests.cs
 │   │   │   ├── StrategyRunDrillInTests.cs
 │   │   │   └── StrategyRunReadServiceTests.cs
@@ -3229,6 +3256,7 @@ Use these documents together when planning or implementing new work:
 │   │       ├── ScheduledMaintenanceServiceTests.cs
 │   │       ├── SchemaServiceTests.cs
 │   │       ├── SearchServiceTests.cs
+│   │       ├── SettingsConfigurationServiceTests.cs
 │   │       ├── SmartRecommendationsServiceTests.cs
 │   │       ├── StatusServiceBaseTests.cs
 │   │       ├── StorageAnalyticsServiceTests.cs
@@ -3287,6 +3315,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-484 directories, 2741 files
+486 directories, 2767 files
 ```
 <!-- readme-tree end -->

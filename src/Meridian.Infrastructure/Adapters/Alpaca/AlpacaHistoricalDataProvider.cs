@@ -42,18 +42,15 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
     private readonly string _feed;
     private readonly string _adjustment;
     private readonly int _priority;
-    private readonly int _maxRequestsPerWindow;
+    private readonly int _maxRequestsPerWindow = 200; // default; overridden by constructor parameter
 
-    #region Abstract Property Implementations
 
     public override string Name => "alpaca";
     public override string DisplayName => "Alpaca Markets";
     public override string Description => "Daily and intraday OHLCV bars with split/dividend adjustments for US equities.";
     protected override string HttpClientName => HttpClientNames.AlpacaHistorical;
 
-    #endregion
 
-    #region Virtual Property Overrides
 
     public override int Priority => _priority;
     public override TimeSpan RateLimitDelay => TimeSpan.FromMilliseconds(300);
@@ -65,7 +62,6 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
     /// </summary>
     public override HistoricalDataCapabilities Capabilities { get; } = HistoricalDataCapabilities.FullFeatured;
 
-    #endregion
 
     /// <summary>
     /// Creates a new Alpaca historical data provider.
@@ -245,7 +241,6 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
         return allBars.OrderBy(b => b.SessionDate).ToList();
     }
 
-    #region Historical Quotes (NBBO)
 
     /// <summary>
     /// Fetch historical NBBO quotes for a single symbol.
@@ -362,9 +357,7 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
         return url;
     }
 
-    #endregion
 
-    #region Historical Trades
 
     /// <summary>
     /// Fetch historical trades for a single symbol.
@@ -479,9 +472,7 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
         return url;
     }
 
-    #endregion
 
-    #region Historical Auctions
 
     /// <summary>
     /// Fetch historical auction data for a single symbol.
@@ -614,9 +605,7 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
         return url;
     }
 
-    #endregion
 
-    #region Helper Methods
 
     private void ValidateCredentials()
     {
@@ -647,9 +636,7 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
         return symbol.ToUpperInvariant().Trim();
     }
 
-    #endregion
 
-    #region Alpaca API Models
 
     private sealed class AlpacaBarsResponse
     {
@@ -804,5 +791,4 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
         public string? Condition { get; set; }
     }
 
-    #endregion
 }

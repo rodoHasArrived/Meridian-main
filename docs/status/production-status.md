@@ -1,7 +1,6 @@
 # Meridian - Production Status
 
-**Version:** 1.7.2
-**Last Updated:** 2026-03-24
+**Last Updated:** 2026-03-31
 **Status:** Development / Pilot Ready (comprehensive fund-management planning active)
 
 This document summarizes the current production-readiness posture and the next product-delivery gaps from the current repository state.
