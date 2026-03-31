@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Meridian.Core\Meridian.Core.csproj" />
     <ProjectReference Include="..\Meridian.FSharp.Ledger\Meridian.FSharp.Ledger.fsproj" />
   </ItemGroup>
 
