@@ -1759,6 +1759,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── AlpacaConstants.cs
 │   │   │   │   ├── AlpacaHistoricalDataProvider.cs
 │   │   │   │   ├── AlpacaMarketDataClient.cs
+│   │   │   │   ├── AlpacaProviderModule.cs
 │   │   │   │   └── AlpacaSymbolSearchProviderRefactored.cs
 │   │   │   ├── AlphaVantage
 │   │   │   │   └── AlphaVantageHistoricalDataProvider.cs
@@ -1779,6 +1780,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   └── DataQualityMonitor.cs
 │   │   │   │   ├── IHistoricalDataProvider.cs
 │   │   │   │   ├── ISymbolSearchProvider.cs
+│   │   │   │   ├── ProviderBehaviorBuilder.cs
 │   │   │   │   ├── ProviderFactory.cs
 │   │   │   │   ├── ProviderRegistry.cs
 │   │   │   │   ├── ProviderServiceExtensions.cs
@@ -2005,6 +2007,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── ImplementsAdrAttribute.cs
 │   │   ├── Meridian.ProviderSdk.csproj
 │   │   ├── ProviderHttpUtilities.cs
+│   │   ├── ProviderModuleLoader.cs
 │   │   └── RequiresCredentialAttribute.cs
 │   ├── Meridian.QuantScript
 │   │   ├── Api
@@ -2997,6 +3000,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── PolygonMessageParsingTests.cs
 │   │   │   │   ├── PolygonRecordedSessionReplayTests.cs
 │   │   │   │   ├── PolygonSubscriptionTests.cs
+│   │   │   │   ├── ProviderBehaviorBuilderTests.cs
 │   │   │   │   ├── ProviderResilienceTests.cs
 │   │   │   │   ├── RobinhoodHistoricalDataProviderTests.cs
 │   │   │   │   ├── RobinhoodSymbolSearchProviderTests.cs
@@ -3056,7 +3060,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── CredentialValidatorTests.cs
 │   │   │   ├── DataSourceAttributeTests.cs
 │   │   │   ├── DataSourceRegistryTests.cs
-│   │   │   └── ExceptionTypeTests.cs
+│   │   │   ├── ExceptionTypeTests.cs
+│   │   │   └── ProviderModuleLoaderTests.cs
 │   │   ├── Risk
 │   │   │   └── CompositeRiskValidatorTests.cs
 │   │   ├── SecurityMaster
@@ -3231,6 +3236,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-477 directories, 2716 files
+477 directories, 2721 files
 ```
 <!-- readme-tree end -->
