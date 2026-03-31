@@ -2,9 +2,9 @@
 
 **Owner:** Core Team  
 **Audience:** Product, architecture, domain, storage, and application contributors  
-**Last Updated:** 2026-03-26  
+**Last Updated:** 2026-03-31  
 **Status:** active  
-**Reviewed:** 2026-03-26
+**Reviewed:** 2026-03-31
 
 ## Summary
 
@@ -46,6 +46,10 @@ All new F# types and C# DTOs proposed in these packages must follow the
 - [UFL Cash Sweep Target-State Package V2](ufl-cash-sweep-target-state-v2.md)
 - [UFL Other Security Target-State Package V2](ufl-other-security-target-state-v2.md)
 - [UFL Swap Target-State Package V2](ufl-swap-target-state-v2.md)
+- [UFL Commodity Target-State Package V2](ufl-commodity-target-state-v2.md)
+- [UFL Crypto Target-State Package V2](ufl-crypto-target-state-v2.md)
+- [UFL CFD Target-State Package V2](ufl-cfd-target-state-v2.md)
+- [UFL Warrant Target-State Package V2](ufl-warrant-target-state-v2.md)
 
 ## Notes
 

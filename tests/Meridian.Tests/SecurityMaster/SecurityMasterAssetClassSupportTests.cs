@@ -19,6 +19,10 @@ public sealed class SecurityMasterAssetClassSupportTests
     [InlineData("Repo")]
     [InlineData("CashSweep")]
     [InlineData("OtherSecurity")]
+    [InlineData("Commodity")]
+    [InlineData("CryptoCurrency")]
+    [InlineData("Cfd")]
+    [InlineData("Warrant")]
     public async Task CreateAsync_SupportsCashAndShortTermSecurityAssetClasses(string assetClass)
     {
         var securityId = Guid.NewGuid();
@@ -153,6 +157,32 @@ public sealed class SecurityMasterAssetClassSupportTests
                 maturity = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(7)),
                 issuerName = "US Treasury",
                 settlementType = "T+1"
+            }),
+            "Commodity" => JsonSerializer.SerializeToElement(new
+            {
+                commodityType = "Metal",
+                denomination = "USD/troy oz",
+                contractSize = 100m
+            }),
+            "CryptoCurrency" => JsonSerializer.SerializeToElement(new
+            {
+                baseCurrency = "BTC",
+                quoteCurrency = "USD",
+                network = "Bitcoin"
+            }),
+            "Cfd" => JsonSerializer.SerializeToElement(new
+            {
+                underlyingAssetClass = "Equity",
+                underlyingDescription = "S&P 500 CFD",
+                leverage = 10m
+            }),
+            "Warrant" => JsonSerializer.SerializeToElement(new
+            {
+                underlyingId = Guid.NewGuid(),
+                warrantType = "Call",
+                strike = 150m,
+                expiry = DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(12)),
+                multiplier = 1m
             }),
             _ => throw new ArgumentOutOfRangeException(nameof(assetClass), assetClass, "Unsupported test asset class.")
         };
