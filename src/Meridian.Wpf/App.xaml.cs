@@ -302,6 +302,7 @@ public partial class App : System.Windows.Application
         services.AddTransient<AdvancedAnalyticsPage>();
         services.AddTransient<ChartingPage>();
         services.AddTransient<OrderBookPage>();
+        services.AddTransient<Meridian.Ui.Services.DataCalendarService>();
         services.AddTransient<DataCalendarPage>();
         services.AddTransient<StorageOptimizationPage>();
         services.AddTransient<RetentionAssurancePage>();
