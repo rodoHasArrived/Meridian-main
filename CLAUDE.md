@@ -2897,7 +2897,9 @@ Meridian-main
 │   │   │   │   ├── PolygonRecordedSessionReplayTests.cs
 │   │   │   │   ├── PolygonSubscriptionTests.cs
 │   │   │   │   ├── ProviderBehaviorBuilderTests.cs
+│   │   │   │   ├── ProviderFactoryCredentialContextTests.cs
 │   │   │   │   ├── ProviderResilienceTests.cs
+│   │   │   │   ├── ProviderTemplateFactoryCredentialTests.cs
 │   │   │   │   ├── RobinhoodHistoricalDataProviderTests.cs
 │   │   │   │   ├── RobinhoodSymbolSearchProviderTests.cs
 │   │   │   │   ├── StockSharpConnectorFactoryTests.cs
@@ -3078,6 +3080,7 @@ Meridian-main
 │   │   │   ├── ScheduleManagerServiceTests.cs
 │   │   │   ├── SchemaServiceTests.cs
 │   │   │   ├── SearchServiceTests.cs
+│   │   │   ├── SettingsConfigurationServiceTests.cs
 │   │   │   ├── SmartRecommendationsServiceTests.cs
 │   │   │   ├── StatusServiceBaseTests.cs
 │   │   │   ├── StorageAnalyticsServiceTests.cs

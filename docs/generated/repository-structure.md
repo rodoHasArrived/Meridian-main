@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-03-31 06:34:03 UTC. Do not edit manually.
+> Auto-generated on 2026-03-31 12:11:00 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -2771,7 +2771,9 @@ Meridian-main
 │   │   │   │   ├── PolygonRecordedSessionReplayTests.cs
 │   │   │   │   ├── PolygonSubscriptionTests.cs
 │   │   │   │   ├── ProviderBehaviorBuilderTests.cs
+│   │   │   │   ├── ProviderFactoryCredentialContextTests.cs
 │   │   │   │   ├── ProviderResilienceTests.cs
+│   │   │   │   ├── ProviderTemplateFactoryCredentialTests.cs
 │   │   │   │   ├── RobinhoodHistoricalDataProviderTests.cs
 │   │   │   │   ├── RobinhoodSymbolSearchProviderTests.cs
 │   │   │   │   ├── StockSharpConnectorFactoryTests.cs
@@ -2952,6 +2954,7 @@ Meridian-main
 │   │   │   ├── ScheduleManagerServiceTests.cs
 │   │   │   ├── SchemaServiceTests.cs
 │   │   │   ├── SearchServiceTests.cs
+│   │   │   ├── SettingsConfigurationServiceTests.cs
 │   │   │   ├── SmartRecommendationsServiceTests.cs
 │   │   │   ├── StatusServiceBaseTests.cs
 │   │   │   ├── StorageAnalyticsServiceTests.cs
