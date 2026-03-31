@@ -150,7 +150,9 @@ public sealed class JsonlFilePaperSessionStore : IPaperSessionStore
         }
         catch
         {
-            try { File.Delete(tmpPath); } catch { /* best-effort cleanup */ }
+            try
+            { File.Delete(tmpPath); }
+            catch { /* best-effort cleanup */ }
             throw;
         }
     }

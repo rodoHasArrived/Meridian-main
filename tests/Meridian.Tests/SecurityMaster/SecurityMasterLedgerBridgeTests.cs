@@ -5,6 +5,7 @@ using Meridian.Ledger;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using Xunit;
+using ISecurityMasterQueryService = Meridian.Application.SecurityMaster.ISecurityMasterQueryService;
 
 namespace Meridian.Tests.SecurityMaster;
 

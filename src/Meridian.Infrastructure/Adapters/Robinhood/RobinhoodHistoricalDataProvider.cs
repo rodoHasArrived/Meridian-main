@@ -139,14 +139,21 @@ public sealed class RobinhoodHistoricalDataProvider : BaseHistoricalDataProvider
 
             var date = DateOnly.FromDateTime(ts.UtcDateTime);
 
-            if (from is not null && date < from.Value) continue;
-            if (to is not null && date > to.Value) continue;
+            if (from is not null && date < from.Value)
+                continue;
+            if (to is not null && date > to.Value)
+                continue;
 
-            if (!decimal.TryParse(item.OpenPrice, NumberStyles.Any, CultureInfo.InvariantCulture, out var open)) continue;
-            if (!decimal.TryParse(item.ClosePrice, NumberStyles.Any, CultureInfo.InvariantCulture, out var close)) continue;
-            if (!decimal.TryParse(item.HighPrice, NumberStyles.Any, CultureInfo.InvariantCulture, out var high)) continue;
-            if (!decimal.TryParse(item.LowPrice, NumberStyles.Any, CultureInfo.InvariantCulture, out var low)) continue;
-            if (!long.TryParse(item.Volume, NumberStyles.Any, CultureInfo.InvariantCulture, out var volume)) continue;
+            if (!decimal.TryParse(item.OpenPrice, NumberStyles.Any, CultureInfo.InvariantCulture, out var open))
+                continue;
+            if (!decimal.TryParse(item.ClosePrice, NumberStyles.Any, CultureInfo.InvariantCulture, out var close))
+                continue;
+            if (!decimal.TryParse(item.HighPrice, NumberStyles.Any, CultureInfo.InvariantCulture, out var high))
+                continue;
+            if (!decimal.TryParse(item.LowPrice, NumberStyles.Any, CultureInfo.InvariantCulture, out var low))
+                continue;
+            if (!long.TryParse(item.Volume, NumberStyles.Any, CultureInfo.InvariantCulture, out var volume))
+                continue;
 
             if (!IsValidOhlc(open, high, low, close))
                 continue;
