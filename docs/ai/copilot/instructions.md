@@ -2692,6 +2692,7 @@ Meridian-main
 │   │   ├── GlobalUsings.cs
 │   │   ├── Meridian.QuantScript.Tests.csproj
 │   │   ├── PlotQueueTests.cs
+│   │   ├── PortfolioBuilderTests.cs
 │   │   ├── PriceSeriesTests.cs
 │   │   ├── RoslynScriptCompilerTests.cs
 │   │   ├── ScriptRunnerTests.cs
@@ -3005,7 +3006,10 @@ Meridian-main
 │   │   │   └── WriteAheadLogTests.cs
 │   │   ├── Strategies
 │   │   │   ├── CashFlowProjectionTests.cs
+│   │   │   ├── LedgerReadServiceTests.cs
+│   │   │   ├── PortfolioReadServiceTests.cs
 │   │   │   ├── PromotionServiceTests.cs
+│   │   │   ├── ReconciliationProjectionServiceTests.cs
 │   │   │   ├── StrategyLifecycleManagerTests.cs
 │   │   │   ├── StrategyRunDrillInTests.cs
 │   │   │   └── StrategyRunReadServiceTests.cs

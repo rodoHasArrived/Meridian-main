@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-03-31 17:31:18 UTC. Do not edit manually.
+> Auto-generated on 2026-03-31 20:27:28 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -2581,6 +2581,7 @@ Meridian-main
 │   │   ├── GlobalUsings.cs
 │   │   ├── Meridian.QuantScript.Tests.csproj
 │   │   ├── PlotQueueTests.cs
+│   │   ├── PortfolioBuilderTests.cs
 │   │   ├── PriceSeriesTests.cs
 │   │   ├── RoslynScriptCompilerTests.cs
 │   │   ├── ScriptRunnerTests.cs
@@ -2894,7 +2895,10 @@ Meridian-main
 │   │   │   └── WriteAheadLogTests.cs
 │   │   ├── Strategies
 │   │   │   ├── CashFlowProjectionTests.cs
+│   │   │   ├── LedgerReadServiceTests.cs
+│   │   │   ├── PortfolioReadServiceTests.cs
 │   │   │   ├── PromotionServiceTests.cs
+│   │   │   ├── ReconciliationProjectionServiceTests.cs
 │   │   │   ├── StrategyLifecycleManagerTests.cs
 │   │   │   ├── StrategyRunDrillInTests.cs
 │   │   │   └── StrategyRunReadServiceTests.cs
