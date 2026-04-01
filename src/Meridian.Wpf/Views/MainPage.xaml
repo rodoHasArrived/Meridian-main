@@ -499,6 +499,14 @@
                                             <TextBlock Text="Trading Hours" Style="{StaticResource ShellNavLabelStyle}" />
                                         </StackPanel>
                                     </ListBoxItem>
+                                    <ListBoxItem Tag="PositionBlotter"
+                                                 AutomationProperties.AutomationId="TradingNavPositionBlotter"
+                                                 AutomationProperties.Name="Position Blotter Navigation">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{StaticResource IconList}" Style="{StaticResource ShellNavIconStyle}" />
+                                            <TextBlock Text="Position Blotter" Style="{StaticResource ShellNavLabelStyle}" />
+                                        </StackPanel>
+                                    </ListBoxItem>
                                     <ListBoxItem Tag="DirectLending"
                                                  AutomationProperties.AutomationId="TradingNavDirectLending">
                                         <StackPanel Orientation="Horizontal">
