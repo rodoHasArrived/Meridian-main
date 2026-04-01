@@ -853,6 +853,7 @@ Use these documents together when planning or implementing new work:
 │   ├── operations
 │   │   ├── README.md
 │   │   ├── deployment.md
+│   │   ├── governance-operator-workflow.md
 │   │   ├── high-availability.md
 │   │   ├── msix-packaging.md
 │   │   ├── operator-runbook.md
@@ -3277,6 +3278,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-442 directories, 2707 files
+442 directories, 2708 files
 ```
 <!-- readme-tree end -->
