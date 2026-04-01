@@ -947,7 +947,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── BackfillResult.cs
 │   │   │   ├── BackfillStatusStore.cs
 │   │   │   ├── GapBackfillService.cs
-│   │   │   └── HistoricalBackfillService.cs
+│   │   │   ├── HistoricalBackfillService.cs
+│   │   │   └── SymbolValidationSignal.cs
 │   │   ├── Banking
 │   │   │   ├── BankingException.cs
 │   │   │   ├── IBankingService.cs
@@ -3188,6 +3189,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-441 directories, 2685 files
+441 directories, 2686 files
 ```
 <!-- readme-tree end -->
