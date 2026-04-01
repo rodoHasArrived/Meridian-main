@@ -32,7 +32,54 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
     private FileSystemWatcher? _fileWatcher;
     private bool _disposed;
 
-    // ── Script editor ────────────────────────────────────────────────────────
+    // ── Asset / date context ─────────────────────────────────────────────────
+
+    private string _assetSymbol = string.Empty;
+    public string AssetSymbol { get => _assetSymbol; set => SetProperty(ref _assetSymbol, value); }
+
+    private DateTime _fromDate = DateTime.Today.AddYears(-1);
+    public DateTime FromDate { get => _fromDate; set => SetProperty(ref _fromDate, value); }
+
+    private DateTime _toDate = DateTime.Today;
+    public DateTime ToDate { get => _toDate; set => SetProperty(ref _toDate, value); }
+
+    private string _selectedInterval = "Daily (Custom)";
+    public string SelectedInterval { get => _selectedInterval; set => SetProperty(ref _selectedInterval, value); }
+
+    public static IReadOnlyList<string> Intervals { get; } =
+        ["Daily", "Daily (Custom)", "Weekly", "Monthly"];
+
+    // ── Primary chart (shown in top chart area) ──────────────────────────────
+
+    /// <summary>The <see cref="PlotRequest"/> of the first chart result, or <c>null</c> when no charts exist.</summary>
+    public PlotRequest? PrimaryChartRequest => Charts.Count > 0 ? Charts[0].Request : null;
+
+    /// <summary>Title of the first chart result, or empty when no charts exist.</summary>
+    public string PrimaryChartTitle => Charts.Count > 0 ? Charts[0].Title : string.Empty;
+
+    /// <summary>True once the script has produced at least one chart.</summary>
+    public bool HasChart => Charts.Count > 0;
+
+    /// <summary>True when no chart result exists — drives empty-state placeholder visibility.</summary>
+    public bool HasNoChart => Charts.Count == 0;
+
+    /// <summary>True when the primary chart has at least one named legend entry.</summary>
+    public bool HasLegend => LegendEntries.Count > 0;
+
+    // Series palette matching PlotRenderBehavior so legend colors stay in sync.
+    private static readonly System.Windows.Media.Color[] _legendPalette =
+    [
+        System.Windows.Media.Color.FromRgb(66,  153, 225),  // ChartPrimary   blue
+        System.Windows.Media.Color.FromRgb(159, 122, 234),  // ChartSecondary purple
+        System.Windows.Media.Color.FromRgb(56,  178, 172),  // ChartTertiary  teal
+        System.Windows.Media.Color.FromRgb(72,  187, 120),  // ChartPositive  green
+        System.Windows.Media.Color.FromRgb(245, 101, 101),  // ChartNegative  red
+    ];
+
+    /// <summary>Legend entries extracted from the first chart result.</summary>
+    public ObservableCollection<ChartLegendEntry> LegendEntries { get; } = [];
+
+
 
     private string _scriptSource = string.Empty;
     public string ScriptSource
@@ -157,7 +204,11 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         ClearConsoleCommand = new RelayCommand(ClearConsole);
 
         ConsoleOutput.CollectionChanged += (_, _) => RaisePropertyChanged(nameof(ConsoleTabHeader));
-        Charts.CollectionChanged += (_, _) => RaisePropertyChanged(nameof(ChartsTabHeader));
+        Charts.CollectionChanged += (_, _) =>
+        {
+            RaisePropertyChanged(nameof(ChartsTabHeader));
+            UpdatePrimaryChart();
+        };
         Metrics.CollectionChanged += (_, _) => RaisePropertyChanged(nameof(MetricsTabHeader));
         Trades.CollectionChanged += (_, _) => RaisePropertyChanged(nameof(TradesTabHeader));
         Diagnostics.CollectionChanged += (_, _) => RaisePropertyChanged(nameof(DiagnosticsTabHeader));
@@ -166,12 +217,12 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
     // ── Lifecycle ────────────────────────────────────────────────────────────
 
     /// <summary>
-    /// Called from code-behind on every page load. Returns the persisted column widths so
+    /// Called from code-behind on every page load. Returns the persisted row heights so
     /// the view can apply them to its Grid — the ViewModel must not touch UI elements directly.
     /// </summary>
-    internal (double LeftWidth, double RightWidth) OnActivated()
+    internal (double ChartHeight, double EditorHeight) OnActivated()
     {
-        var (leftWidth, rightWidth) = _layoutService.LoadColumnWidths();
+        var (chartHeight, editorHeight) = _layoutService.LoadRowHeights();
         ActiveResultsTab = _layoutService.LoadLastActiveTab();
 
         if (_elapsedTimer is null)
@@ -186,12 +237,12 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
 
         SetupFileWatcher();
         RefreshScripts();
-        return (leftWidth, rightWidth);
+        return (chartHeight, editorHeight);
     }
 
-    public void SaveLayout(double leftWidth, double rightWidth)
+    public void SaveLayout(double chartHeight, double editorHeight)
     {
-        _layoutService.SaveColumnWidths(leftWidth, rightWidth);
+        _layoutService.SaveRowHeights(chartHeight, editorHeight);
         _layoutService.SaveLastActiveTab(ActiveResultsTab);
     }
 
@@ -283,10 +334,10 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         foreach (var plot in result.Plots)
             Charts.Add(new PlotViewModel(plot.Title, plot));
 
-        if (result.Plots.Count > 0 && Charts.Count == result.Plots.Count)
-            ActiveResultsTab = 1;
-        else if (result.Metrics.Count > 0 && Metrics.Count == result.Metrics.Count && result.Plots.Count == 0)
-            ActiveResultsTab = 2;
+        if (result.Metrics.Count > 0 && result.Plots.Count == 0)
+            ActiveResultsTab = 1; // Data Sheet
+        else if (result.Trades.Count > 0 && result.Plots.Count == 0)
+            ActiveResultsTab = 4; // Backtest Output
 
         Diagnostics.Add(new DiagnosticEntry("Wall clock", $"{result.Elapsed.TotalSeconds:F2}s"));
         Diagnostics.Add(new DiagnosticEntry("Compile time", $"{result.CompileTime.TotalMilliseconds:F0}ms"));
@@ -345,10 +396,40 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
 
     // ── Helpers ──────────────────────────────────────────────────────────────
 
+    private void UpdatePrimaryChart()
+    {
+        LegendEntries.Clear();
+
+        if (Charts.Count > 0)
+        {
+            var req = Charts[0].Request;
+
+            if (req.MultiSeries is { Count: > 0 } multi)
+            {
+                var idx = 0;
+                foreach (var (label, _) in multi)
+                {
+                    LegendEntries.Add(new ChartLegendEntry(label, _legendPalette[idx % _legendPalette.Length]));
+                    idx++;
+                }
+            }
+            else if (req.Series is { Count: > 0 })
+            {
+                LegendEntries.Add(new ChartLegendEntry(Charts[0].Title, _legendPalette[0]));
+            }
+        }
+
+        RaisePropertyChanged(nameof(PrimaryChartRequest));
+        RaisePropertyChanged(nameof(PrimaryChartTitle));
+        RaisePropertyChanged(nameof(HasChart));
+        RaisePropertyChanged(nameof(HasNoChart));
+        RaisePropertyChanged(nameof(HasLegend));
+    }
+
     private void ClearResults()
     {
         ConsoleOutput.Clear();
-        Charts.Clear();
+        Charts.Clear(); // triggers UpdatePrimaryChart via CollectionChanged
         Metrics.Clear();
         Trades.Clear();
         Diagnostics.Clear();
