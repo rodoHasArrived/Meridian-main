@@ -332,7 +332,7 @@ public sealed class WorkspaceService
             {
                 Id = "research",
                 Name = "Research",
-                Description = "Backtests, experiments, charts, replay, and result analysis.",
+                Description = "Backtests, experiments, charts, strategy runs, and result analysis.",
                 PreferredPageTag = "Dashboard",
                 Category = WorkspaceCategory.Research,
                 IsBuiltIn = true,
@@ -342,18 +342,26 @@ public sealed class WorkspaceService
                 {
                     new WorkspacePage { PageTag = "Dashboard", Title = "Dashboard", IsDefault = true },
                     new WorkspacePage { PageTag = "Backtest", Title = "Backtest" },
+                    new WorkspacePage { PageTag = "BatchBacktest", Title = "Batch Backtest" },
+                    new WorkspacePage { PageTag = "QuantScript", Title = "QuantScript" },
                     new WorkspacePage { PageTag = "StrategyRuns", Title = "Strategy Runs" },
+                    new WorkspacePage { PageTag = "RunDetail", Title = "Run Detail" },
+                    new WorkspacePage { PageTag = "RunPortfolio", Title = "Run Portfolio" },
+                    new WorkspacePage { PageTag = "RunCashFlow", Title = "Run Cash Flow" },
                     new WorkspacePage { PageTag = "LeanIntegration", Title = "Lean Integration" },
                     new WorkspacePage { PageTag = "Charts", Title = "Charts" },
+                    new WorkspacePage { PageTag = "AdvancedAnalytics", Title = "Advanced Analytics" },
                     new WorkspacePage { PageTag = "RunMat", Title = "RunMat Lab" },
-                    new WorkspacePage { PageTag = "EventReplay", Title = "Event Replay" }
+                    new WorkspacePage { PageTag = "OrderBook", Title = "Order Book" },
+                    new WorkspacePage { PageTag = "Watchlist", Title = "Watchlist" },
+                    new WorkspacePage { PageTag = "ResearchShell", Title = "Research Shell" }
                 }
             },
             new WorkspaceTemplate
             {
                 Id = "trading",
                 Name = "Trading",
-                Description = "Live monitoring, order flow, portfolio promotion, and trading controls.",
+                Description = "Live monitoring, order flow, and trading controls.",
                 PreferredPageTag = "LiveData",
                 Category = WorkspaceCategory.Trading,
                 IsBuiltIn = true,
@@ -362,13 +370,8 @@ public sealed class WorkspaceService
                 Pages = new List<WorkspacePage>
                 {
                     new WorkspacePage { PageTag = "LiveData", Title = "Live Data", IsDefault = true },
-                    new WorkspacePage { PageTag = "StrategyRuns", Title = "Strategy Runs" },
-                    new WorkspacePage { PageTag = "RunPortfolio", Title = "Run Portfolio" },
-                    new WorkspacePage { PageTag = "RunLedger", Title = "Run Ledger" },
-                    new WorkspacePage { PageTag = "OrderBook", Title = "Order Book" },
-                    new WorkspacePage { PageTag = "PortfolioImport", Title = "Portfolio Import" },
                     new WorkspacePage { PageTag = "TradingHours", Title = "Trading Hours" },
-                    new WorkspacePage { PageTag = "Watchlist", Title = "Watchlist" }
+                    new WorkspacePage { PageTag = "TradingShell", Title = "Trading Shell" }
                 }
             },
             new WorkspaceTemplate
@@ -384,19 +387,34 @@ public sealed class WorkspaceService
                 Pages = new List<WorkspacePage>
                 {
                     new WorkspacePage { PageTag = "Provider", Title = "Provider", IsDefault = true },
+                    new WorkspacePage { PageTag = "DataSources", Title = "Data Sources" },
                     new WorkspacePage { PageTag = "Symbols", Title = "Symbols" },
+                    new WorkspacePage { PageTag = "SymbolMapping", Title = "Symbol Mapping" },
+                    new WorkspacePage { PageTag = "SymbolStorage", Title = "Symbol Storage" },
                     new WorkspacePage { PageTag = "Backfill", Title = "Backfill" },
                     new WorkspacePage { PageTag = "Schedules", Title = "Schedules" },
+                    new WorkspacePage { PageTag = "IndexSubscription", Title = "Index Subscription" },
                     new WorkspacePage { PageTag = "Storage", Title = "Storage" },
                     new WorkspacePage { PageTag = "PackageManager", Title = "Packages" },
-                    new WorkspacePage { PageTag = "DataExport", Title = "Data Export" }
+                    new WorkspacePage { PageTag = "DataExport", Title = "Data Export" },
+                    new WorkspacePage { PageTag = "ExportPresets", Title = "Export Presets" },
+                    new WorkspacePage { PageTag = "AnalysisExport", Title = "Analysis Export" },
+                    new WorkspacePage { PageTag = "AnalysisExportWizard", Title = "Analysis Export Wizard" },
+                    new WorkspacePage { PageTag = "DataBrowser", Title = "Data Browser" },
+                    new WorkspacePage { PageTag = "DataCalendar", Title = "Data Calendar" },
+                    new WorkspacePage { PageTag = "DataSampling", Title = "Data Sampling" },
+                    new WorkspacePage { PageTag = "TimeSeriesAlignment", Title = "Time Series Alignment" },
+                    new WorkspacePage { PageTag = "EventReplay", Title = "Event Replay" },
+                    new WorkspacePage { PageTag = "Options", Title = "Options / Derivatives" },
+                    new WorkspacePage { PageTag = "PortfolioImport", Title = "Portfolio Import" },
+                    new WorkspacePage { PageTag = "AddProviderWizard", Title = "Add Provider Wizard" }
                 }
             },
             new WorkspaceTemplate
             {
                 Id = "governance",
                 Name = "Governance",
-                Description = "Portfolio, ledger-adjacent workflows, diagnostics, retention, and settings.",
+                Description = "Quality, audit, health, diagnostics, retention, security, and settings.",
                 PreferredPageTag = "DataQuality",
                 Category = WorkspaceCategory.Governance,
                 IsBuiltIn = true,
@@ -409,8 +427,20 @@ public sealed class WorkspaceService
                     new WorkspacePage { PageTag = "ProviderHealth", Title = "Provider Health" },
                     new WorkspacePage { PageTag = "SystemHealth", Title = "System Health" },
                     new WorkspacePage { PageTag = "Diagnostics", Title = "Diagnostics" },
+                    new WorkspacePage { PageTag = "ArchiveHealth", Title = "Archive Health" },
+                    new WorkspacePage { PageTag = "ServiceManager", Title = "Service Manager" },
+                    new WorkspacePage { PageTag = "CollectionSessions", Title = "Collection Sessions" },
+                    new WorkspacePage { PageTag = "StorageOptimization", Title = "Storage Optimization" },
                     new WorkspacePage { PageTag = "RetentionAssurance", Title = "Retention Assurance" },
                     new WorkspacePage { PageTag = "AdminMaintenance", Title = "Admin Maintenance" },
+                    new WorkspacePage { PageTag = "ActivityLog", Title = "Activity Log" },
+                    new WorkspacePage { PageTag = "MessagingHub", Title = "Messaging Hub" },
+                    new WorkspacePage { PageTag = "NotificationCenter", Title = "Notification Center" },
+                    new WorkspacePage { PageTag = "SecurityMaster", Title = "Security Master" },
+                    new WorkspacePage { PageTag = "DirectLending", Title = "Direct Lending" },
+                    new WorkspacePage { PageTag = "CredentialManagement", Title = "Credential Management" },
+                    new WorkspacePage { PageTag = "SetupWizard", Title = "Setup Wizard" },
+                    new WorkspacePage { PageTag = "KeyboardShortcuts", Title = "Keyboard Shortcuts" },
                     new WorkspacePage { PageTag = "Settings", Title = "Settings" }
                 }
             }
