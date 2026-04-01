@@ -454,11 +454,12 @@ public static class WorkstationEndpoints
             var comparison = await readService.CompareRunsAsync(request.RunIds, context.RequestAborted).ConfigureAwait(false);
             if (request.Modes is { Count: > 0 })
             {
-                var modeFilter = new HashSet<StrategyRunMode>(
-                    request.Modes
-                        .Select(static m => Enum.TryParse<StrategyRunMode>(m, true, out var v) ? (StrategyRunMode?)v : null)
-                        .OfType<StrategyRunMode>());
-                comparison = comparison.Where(row => modeFilter.Contains(row.Mode)).ToArray();
+                var parsedModes = ParseModes(request.Modes);
+                if (parsedModes is { Count: > 0 })
+                {
+                    var modeFilter = new HashSet<StrategyRunMode>(parsedModes);
+                    comparison = comparison.Where(row => modeFilter.Contains(row.Mode)).ToArray();
+                }
             }
 
             return Results.Json(comparison, jsonOptions);
@@ -1528,6 +1529,25 @@ public static class WorkstationEndpoints
 
         var parsed = mode
             .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(static token => Enum.TryParse<StrategyRunMode>(token, true, out var modeValue)
+                ? (StrategyRunMode?)modeValue
+                : null)
+            .Where(static item => item.HasValue)
+            .Select(static item => item!.Value)
+            .Distinct()
+            .ToArray();
+
+        return parsed.Length == 0 ? null : parsed;
+    }
+
+    private static IReadOnlyList<StrategyRunMode>? ParseModes(IReadOnlyList<string>? modes)
+    {
+        if (modes is not { Count: > 0 })
+        {
+            return null;
+        }
+
+        var parsed = modes
             .Select(static token => Enum.TryParse<StrategyRunMode>(token, true, out var modeValue)
                 ? (StrategyRunMode?)modeValue
                 : null)

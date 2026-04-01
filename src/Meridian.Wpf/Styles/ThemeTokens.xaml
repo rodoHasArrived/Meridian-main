@@ -2,131 +2,143 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!-- Institutional premium palette -->
-    <Color x:Key="ConsoleBackgroundDark">#08111B</Color>
-    <Color x:Key="ConsoleBackgroundMedium">#0E1824</Color>
-    <Color x:Key="ConsoleBackgroundLight">#152131</Color>
-    <Color x:Key="ConsoleBackgroundHover">#1B2A3D</Color>
-    <Color x:Key="ConsoleBackgroundActive">#213349</Color>
+    <!-- Goldman Sachs Marquee-inspired institutional light palette -->
 
-    <Color x:Key="ConsoleBorderColor">#24384C</Color>
-    <Color x:Key="ConsoleBorderHover">#33506B</Color>
-    <Color x:Key="ConsoleBorderFocus">#42C6D6</Color>
+    <!-- Backgrounds: light content area, white sidebar, near-black top bar -->
+    <Color x:Key="ConsoleBackgroundDark">#F5F5F5</Color>
+    <Color x:Key="ConsoleBackgroundMedium">#FFFFFF</Color>
+    <Color x:Key="ConsoleBackgroundLight">#FFFFFF</Color>
+    <Color x:Key="ConsoleBackgroundHover">#F1F5F9</Color>
+    <Color x:Key="ConsoleBackgroundActive">#E2EAF6</Color>
 
-    <Color x:Key="ConsoleTextPrimary">#E8F1FA</Color>
-    <Color x:Key="ConsoleTextSecondary">#AABCCD</Color>
-    <Color x:Key="ConsoleTextMuted">#6E859C</Color>
-    <Color x:Key="ConsoleTextDisabled">#526579</Color>
+    <!-- Borders: very subtle, Marquee-style fine 1px lines -->
+    <Color x:Key="ConsoleBorderColor">#E5E7EB</Color>
+    <Color x:Key="ConsoleBorderHover">#CBD5E1</Color>
+    <Color x:Key="ConsoleBorderFocus">#1A6BB5</Color>
 
-    <Color x:Key="ConsoleAccentGreen">#2CC68F</Color>
-    <Color x:Key="ConsoleAccentGreenDim">#1F8F67</Color>
-    <Color x:Key="ConsoleAccentGreenLight">#58DDB0</Color>
-    <Color x:Key="ConsoleAccentBlue">#42C6D6</Color>
-    <Color x:Key="ConsoleAccentBlueDim">#2694A6</Color>
-    <Color x:Key="ConsoleAccentPurple">#7AB3FF</Color>
-    <Color x:Key="ConsoleAccentPurpleDim">#4F78C3</Color>
-    <Color x:Key="ConsoleAccentRed">#E56A72</Color>
-    <Color x:Key="ConsoleAccentRedDim">#B24A52</Color>
-    <Color x:Key="ConsoleAccentOrange">#E4A84B</Color>
-    <Color x:Key="ConsoleAccentOrangeDim">#B47F34</Color>
-    <Color x:Key="ConsoleAccentCyan">#6FD7FF</Color>
-    <Color x:Key="ConsoleAccentCyanDim">#3599C5</Color>
-    <Color x:Key="ConsoleAccentPink">#D48BC9</Color>
-    <Color x:Key="ConsoleAccentYellow">#F0C86A</Color>
+    <!-- Text: near-black primary, graded secondaries -->
+    <Color x:Key="ConsoleTextPrimary">#111827</Color>
+    <Color x:Key="ConsoleTextSecondary">#4B5563</Color>
+    <Color x:Key="ConsoleTextMuted">#9CA3AF</Color>
+    <Color x:Key="ConsoleTextDisabled">#D1D5DB</Color>
 
-    <Color x:Key="ConsoleAccentGreenAlpha10">#1A2CC68F</Color>
-    <Color x:Key="ConsoleAccentGreenAlpha20">#332CC68F</Color>
-    <Color x:Key="ConsoleAccentBlueAlpha10">#1A42C6D6</Color>
-    <Color x:Key="ConsoleAccentBlueAlpha20">#3342C6D6</Color>
-    <Color x:Key="ConsoleAccentRedAlpha10">#1AE56A72</Color>
-    <Color x:Key="ConsoleAccentRedAlpha20">#33E56A72</Color>
-    <Color x:Key="ConsoleAccentOrangeAlpha10">#1AE4A84B</Color>
-    <Color x:Key="ConsoleAccentOrangeAlpha20">#33E4A84B</Color>
-    <Color x:Key="ConsoleAccentPurpleAlpha10">#1A7AB3FF</Color>
+    <!-- Accents: Goldman institutional blue + semantic colors -->
+    <Color x:Key="ConsoleAccentGreen">#16A34A</Color>
+    <Color x:Key="ConsoleAccentGreenDim">#15803D</Color>
+    <Color x:Key="ConsoleAccentGreenLight">#86EFAC</Color>
+    <Color x:Key="ConsoleAccentBlue">#1A6BB5</Color>
+    <Color x:Key="ConsoleAccentBlueDim">#0F4882</Color>
+    <Color x:Key="ConsoleAccentPurple">#7C3AED</Color>
+    <Color x:Key="ConsoleAccentPurpleDim">#5B21B6</Color>
+    <Color x:Key="ConsoleAccentRed">#DC2626</Color>
+    <Color x:Key="ConsoleAccentRedDim">#B91C1C</Color>
+    <Color x:Key="ConsoleAccentOrange">#D97706</Color>
+    <Color x:Key="ConsoleAccentOrangeDim">#B45309</Color>
+    <Color x:Key="ConsoleAccentCyan">#0EA5E9</Color>
+    <Color x:Key="ConsoleAccentCyanDim">#0369A1</Color>
+    <Color x:Key="ConsoleAccentPink">#DB2777</Color>
+    <Color x:Key="ConsoleAccentYellow">#CA8A04</Color>
 
-    <Color x:Key="ModeLiveColor">#42C6D6</Color>
-    <Color x:Key="ModePaperColor">#7AB3FF</Color>
-    <Color x:Key="ModeFixtureColor">#E4A84B</Color>
-    <Color x:Key="ModeHealthyColor">#2CC68F</Color>
-    <Color x:Key="ModeCriticalColor">#E56A72</Color>
+    <!-- Alpha overlays for active/badge backgrounds -->
+    <Color x:Key="ConsoleAccentGreenAlpha10">#1A16A34A</Color>
+    <Color x:Key="ConsoleAccentGreenAlpha20">#3316A34A</Color>
+    <Color x:Key="ConsoleAccentBlueAlpha10">#1A1A6BB5</Color>
+    <Color x:Key="ConsoleAccentBlueAlpha20">#331A6BB5</Color>
+    <Color x:Key="ConsoleAccentRedAlpha10">#1ADC2626</Color>
+    <Color x:Key="ConsoleAccentRedAlpha20">#33DC2626</Color>
+    <Color x:Key="ConsoleAccentOrangeAlpha10">#1AD97706</Color>
+    <Color x:Key="ConsoleAccentOrangeAlpha20">#33D97706</Color>
+    <Color x:Key="ConsoleAccentPurpleAlpha10">#1A7C3AED</Color>
 
-    <SolidColorBrush x:Key="ConsoleBackgroundDarkBrush" Color="{StaticResource ConsoleBackgroundDark}" />
-    <SolidColorBrush x:Key="ConsoleBackgroundMediumBrush" Color="{StaticResource ConsoleBackgroundMedium}" />
-    <SolidColorBrush x:Key="ConsoleBackgroundLightBrush" Color="{StaticResource ConsoleBackgroundLight}" />
-    <SolidColorBrush x:Key="ConsoleBackgroundHoverBrush" Color="{StaticResource ConsoleBackgroundHover}" />
-    <SolidColorBrush x:Key="ConsoleBackgroundActiveBrush" Color="{StaticResource ConsoleBackgroundActive}" />
-    <SolidColorBrush x:Key="ConsoleBorderBrush" Color="{StaticResource ConsoleBorderColor}" />
-    <SolidColorBrush x:Key="ConsoleBorderHoverBrush" Color="{StaticResource ConsoleBorderHover}" />
-    <SolidColorBrush x:Key="ConsoleBorderFocusBrush" Color="{StaticResource ConsoleBorderFocus}" />
-    <SolidColorBrush x:Key="ConsoleTextPrimaryBrush" Color="{StaticResource ConsoleTextPrimary}" />
-    <SolidColorBrush x:Key="ConsoleTextSecondaryBrush" Color="{StaticResource ConsoleTextSecondary}" />
-    <SolidColorBrush x:Key="ConsoleTextMutedBrush" Color="{StaticResource ConsoleTextMuted}" />
-    <SolidColorBrush x:Key="ConsoleTextDisabledBrush" Color="{StaticResource ConsoleTextDisabled}" />
-    <SolidColorBrush x:Key="SuccessColorBrush" Color="{StaticResource ConsoleAccentGreen}" />
-    <SolidColorBrush x:Key="WarningColorBrush" Color="{StaticResource ConsoleAccentOrange}" />
-    <SolidColorBrush x:Key="ErrorColorBrush" Color="{StaticResource ConsoleAccentRed}" />
-    <SolidColorBrush x:Key="InfoColorBrush" Color="{StaticResource ConsoleAccentBlue}" />
-    <SolidColorBrush x:Key="AccentCyanBrush" Color="{StaticResource ConsoleAccentCyan}" />
-    <SolidColorBrush x:Key="AccentPurpleBrush" Color="{StaticResource ConsoleAccentPurple}" />
-    <SolidColorBrush x:Key="ConsoleAccentGreenDimBrush" Color="{StaticResource ConsoleAccentGreenDim}" />
-    <SolidColorBrush x:Key="ConsoleAccentGreenLightBrush" Color="{StaticResource ConsoleAccentGreenLight}" />
-    <SolidColorBrush x:Key="ConsoleAccentGreenAlpha10Brush" Color="{StaticResource ConsoleAccentGreenAlpha10}" />
-    <SolidColorBrush x:Key="ConsoleAccentGreenAlpha20Brush" Color="{StaticResource ConsoleAccentGreenAlpha20}" />
-    <SolidColorBrush x:Key="ConsoleAccentBlueAlpha10Brush" Color="{StaticResource ConsoleAccentBlueAlpha10}" />
-    <SolidColorBrush x:Key="ConsoleAccentBlueAlpha20Brush" Color="{StaticResource ConsoleAccentBlueAlpha20}" />
-    <SolidColorBrush x:Key="ConsoleAccentRedAlpha10Brush" Color="{StaticResource ConsoleAccentRedAlpha10}" />
-    <SolidColorBrush x:Key="ConsoleAccentRedAlpha20Brush" Color="{StaticResource ConsoleAccentRedAlpha20}" />
+    <!-- Mode indicator colors -->
+    <Color x:Key="ModeLiveColor">#1A6BB5</Color>
+    <Color x:Key="ModePaperColor">#7C3AED</Color>
+    <Color x:Key="ModeFixtureColor">#D97706</Color>
+    <Color x:Key="ModeHealthyColor">#16A34A</Color>
+    <Color x:Key="ModeCriticalColor">#DC2626</Color>
+
+    <!-- Top bar colors: near-black Marquee brand bar -->
+    <Color x:Key="TopBarBackground">#0A0A0A</Color>
+    <Color x:Key="TopBarText">#FFFFFF</Color>
+    <Color x:Key="TopBarBorder">#1F2937</Color>
+    <Color x:Key="TopBarIconAccent">#60A5FA</Color>
+
+    <!-- ── Solid brushes ── -->
+    <SolidColorBrush x:Key="ConsoleBackgroundDarkBrush"    Color="{StaticResource ConsoleBackgroundDark}" />
+    <SolidColorBrush x:Key="ConsoleBackgroundMediumBrush"  Color="{StaticResource ConsoleBackgroundMedium}" />
+    <SolidColorBrush x:Key="ConsoleBackgroundLightBrush"   Color="{StaticResource ConsoleBackgroundLight}" />
+    <SolidColorBrush x:Key="ConsoleBackgroundHoverBrush"   Color="{StaticResource ConsoleBackgroundHover}" />
+    <SolidColorBrush x:Key="ConsoleBackgroundActiveBrush"  Color="{StaticResource ConsoleBackgroundActive}" />
+    <SolidColorBrush x:Key="ConsoleBorderBrush"            Color="{StaticResource ConsoleBorderColor}" />
+    <SolidColorBrush x:Key="ConsoleBorderHoverBrush"       Color="{StaticResource ConsoleBorderHover}" />
+    <SolidColorBrush x:Key="ConsoleBorderFocusBrush"       Color="{StaticResource ConsoleBorderFocus}" />
+    <SolidColorBrush x:Key="ConsoleTextPrimaryBrush"       Color="{StaticResource ConsoleTextPrimary}" />
+    <SolidColorBrush x:Key="ConsoleTextSecondaryBrush"     Color="{StaticResource ConsoleTextSecondary}" />
+    <SolidColorBrush x:Key="ConsoleTextMutedBrush"         Color="{StaticResource ConsoleTextMuted}" />
+    <SolidColorBrush x:Key="ConsoleTextDisabledBrush"      Color="{StaticResource ConsoleTextDisabled}" />
+    <SolidColorBrush x:Key="SuccessColorBrush"             Color="{StaticResource ConsoleAccentGreen}" />
+    <SolidColorBrush x:Key="WarningColorBrush"             Color="{StaticResource ConsoleAccentOrange}" />
+    <SolidColorBrush x:Key="ErrorColorBrush"               Color="{StaticResource ConsoleAccentRed}" />
+    <SolidColorBrush x:Key="InfoColorBrush"                Color="{StaticResource ConsoleAccentBlue}" />
+    <SolidColorBrush x:Key="AccentCyanBrush"               Color="{StaticResource ConsoleAccentCyan}" />
+    <SolidColorBrush x:Key="AccentPurpleBrush"             Color="{StaticResource ConsoleAccentPurple}" />
+    <SolidColorBrush x:Key="ConsoleAccentGreenDimBrush"    Color="{StaticResource ConsoleAccentGreenDim}" />
+    <SolidColorBrush x:Key="ConsoleAccentGreenLightBrush"  Color="{StaticResource ConsoleAccentGreenLight}" />
+    <SolidColorBrush x:Key="ConsoleAccentGreenAlpha10Brush"  Color="{StaticResource ConsoleAccentGreenAlpha10}" />
+    <SolidColorBrush x:Key="ConsoleAccentGreenAlpha20Brush"  Color="{StaticResource ConsoleAccentGreenAlpha20}" />
+    <SolidColorBrush x:Key="ConsoleAccentBlueAlpha10Brush"   Color="{StaticResource ConsoleAccentBlueAlpha10}" />
+    <SolidColorBrush x:Key="ConsoleAccentBlueAlpha20Brush"   Color="{StaticResource ConsoleAccentBlueAlpha20}" />
+    <SolidColorBrush x:Key="ConsoleAccentRedAlpha10Brush"    Color="{StaticResource ConsoleAccentRedAlpha10}" />
+    <SolidColorBrush x:Key="ConsoleAccentRedAlpha20Brush"    Color="{StaticResource ConsoleAccentRedAlpha20}" />
     <SolidColorBrush x:Key="ConsoleAccentOrangeAlpha10Brush" Color="{StaticResource ConsoleAccentOrangeAlpha10}" />
     <SolidColorBrush x:Key="ConsoleAccentOrangeAlpha20Brush" Color="{StaticResource ConsoleAccentOrangeAlpha20}" />
     <SolidColorBrush x:Key="ConsoleAccentPurpleAlpha10Brush" Color="{StaticResource ConsoleAccentPurpleAlpha10}" />
 
-    <SolidColorBrush x:Key="ModeLiveBrush" Color="{StaticResource ModeLiveColor}" />
-    <SolidColorBrush x:Key="ModePaperBrush" Color="{StaticResource ModePaperColor}" />
-    <SolidColorBrush x:Key="ModeFixtureBrush" Color="{StaticResource ModeFixtureColor}" />
-    <SolidColorBrush x:Key="ModeHealthyBrush" Color="{StaticResource ModeHealthyColor}" />
+    <SolidColorBrush x:Key="ModeLiveBrush"     Color="{StaticResource ModeLiveColor}" />
+    <SolidColorBrush x:Key="ModePaperBrush"    Color="{StaticResource ModePaperColor}" />
+    <SolidColorBrush x:Key="ModeFixtureBrush"  Color="{StaticResource ModeFixtureColor}" />
+    <SolidColorBrush x:Key="ModeHealthyBrush"  Color="{StaticResource ModeHealthyColor}" />
     <SolidColorBrush x:Key="ModeCriticalBrush" Color="{StaticResource ModeCriticalColor}" />
 
+    <!-- Goldman blue accent gradient (used sparingly for data viz / progress bars) -->
     <LinearGradientBrush x:Key="GlowGradientBrush" StartPoint="0,0" EndPoint="1,0">
         <GradientStop Color="{StaticResource ConsoleAccentBlue}" Offset="0" />
         <GradientStop Color="{StaticResource ConsoleAccentGreen}" Offset="1" />
     </LinearGradientBrush>
 
-    <LinearGradientBrush x:Key="ShellWindowBackgroundBrush" StartPoint="0,0" EndPoint="1,1">
-        <GradientStop Color="#08111B" Offset="0" />
-        <GradientStop Color="#0C1520" Offset="0.55" />
-        <GradientStop Color="#132234" Offset="1" />
-    </LinearGradientBrush>
+    <!-- Shell surfaces: flat, Marquee-inspired -->
+    <SolidColorBrush x:Key="ShellWindowBackgroundBrush" Color="{StaticResource ConsoleBackgroundDark}" />
+    <SolidColorBrush x:Key="ShellRailBackgroundBrush"   Color="{StaticResource ConsoleBackgroundMedium}" />
 
-    <LinearGradientBrush x:Key="ShellRailBackgroundBrush" StartPoint="0,0" EndPoint="0,1">
-        <GradientStop Color="#0D1722" Offset="0" />
-        <GradientStop Color="#0A121B" Offset="1" />
-    </LinearGradientBrush>
+    <!-- Top bar: near-black, Marquee brand bar -->
+    <SolidColorBrush x:Key="TopBarBackgroundBrush"      Color="{StaticResource TopBarBackground}" />
+    <SolidColorBrush x:Key="TopBarTextBrush"            Color="{StaticResource TopBarText}" />
+    <SolidColorBrush x:Key="TopBarBorderBrush"          Color="{StaticResource TopBarBorder}" />
+    <SolidColorBrush x:Key="TopBarIconAccentBrush"      Color="{StaticResource TopBarIconAccent}" />
 
-    <LinearGradientBrush x:Key="HeaderBandBackgroundBrush" StartPoint="0,0" EndPoint="1,0">
-        <GradientStop Color="#102131" Offset="0" />
-        <GradientStop Color="#0C1B29" Offset="1" />
-    </LinearGradientBrush>
+    <!-- HeaderBandBackgroundBrush retained for compatibility; maps to top bar color -->
+    <SolidColorBrush x:Key="HeaderBandBackgroundBrush"  Color="#0A0A0A" />
 
-    <LinearGradientBrush x:Key="PremiumPanelBrush" StartPoint="0,0" EndPoint="1,1">
-        <GradientStop Color="#162232" Offset="0" />
-        <GradientStop Color="#111B28" Offset="1" />
-    </LinearGradientBrush>
+    <!-- PremiumPanelBrush: white panel surface -->
+    <SolidColorBrush x:Key="PremiumPanelBrush"          Color="#FFFFFF" />
 
-    <SolidColorBrush x:Key="ProgressSuccessBrush" Color="{StaticResource ConsoleAccentGreen}" />
-    <SolidColorBrush x:Key="ProgressWarningBrush" Color="{StaticResource ConsoleAccentOrange}" />
-    <SolidColorBrush x:Key="ProgressErrorBrush" Color="{StaticResource ConsoleAccentRed}" />
-    <SolidColorBrush x:Key="ProgressInfoBrush" Color="{StaticResource ConsoleAccentBlue}" />
-    <SolidColorBrush x:Key="SkeletonBackgroundBrush" Color="{StaticResource ConsoleBackgroundLight}" />
-    <SolidColorBrush x:Key="SkeletonHighlightBrush" Color="{StaticResource ConsoleBorderColor}" />
-    <SolidColorBrush x:Key="FocusVisualPrimaryBrush" Color="{StaticResource ConsoleAccentBlue}" />
-    <SolidColorBrush x:Key="FocusVisualSecondaryBrush" Color="{StaticResource ConsoleBackgroundDark}" />
+    <SolidColorBrush x:Key="ProgressSuccessBrush"       Color="{StaticResource ConsoleAccentGreen}" />
+    <SolidColorBrush x:Key="ProgressWarningBrush"       Color="{StaticResource ConsoleAccentOrange}" />
+    <SolidColorBrush x:Key="ProgressErrorBrush"         Color="{StaticResource ConsoleAccentRed}" />
+    <SolidColorBrush x:Key="ProgressInfoBrush"          Color="{StaticResource ConsoleAccentBlue}" />
+    <SolidColorBrush x:Key="SkeletonBackgroundBrush"    Color="{StaticResource ConsoleBackgroundHover}" />
+    <SolidColorBrush x:Key="SkeletonHighlightBrush"     Color="{StaticResource ConsoleBorderColor}" />
+    <SolidColorBrush x:Key="FocusVisualPrimaryBrush"    Color="{StaticResource ConsoleAccentBlue}" />
+    <SolidColorBrush x:Key="FocusVisualSecondaryBrush"  Color="{StaticResource ConsoleBackgroundLight}" />
 
-    <!-- MaterialDesign3 key aliases: map MD3 resource names to the institutional palette so any
-         DynamicResource references to these keys (in custom views or MD3 control templates) resolve
-         to the correct dark-theme colours rather than falling through to the MD Light theme. -->
-    <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource ConsoleBackgroundLight}" />
-    <SolidColorBrush x:Key="OnSurfaceBrush" Color="{StaticResource ConsoleTextPrimary}" />
-    <SolidColorBrush x:Key="SurfaceVariantBrush" Color="{StaticResource ConsoleBackgroundMedium}" />
+    <!-- Surface alias keys for components that use MD3-style resource names -->
+    <SolidColorBrush x:Key="SurfaceBrush"          Color="{StaticResource ConsoleBackgroundLight}" />
+    <SolidColorBrush x:Key="OnSurfaceBrush"        Color="{StaticResource ConsoleTextPrimary}" />
+    <SolidColorBrush x:Key="SurfaceVariantBrush"   Color="{StaticResource ConsoleBackgroundHover}" />
     <SolidColorBrush x:Key="OnSurfaceVariantBrush" Color="{StaticResource ConsoleTextSecondary}" />
-    <SolidColorBrush x:Key="OutlineDimBrush" Color="{StaticResource ConsoleBorderColor}" />
+    <SolidColorBrush x:Key="OutlineDimBrush"       Color="{StaticResource ConsoleBorderColor}" />
+
+    <!-- Nav active state: pale blue background + Goldman blue left indicator -->
+    <SolidColorBrush x:Key="NavActiveBackgroundBrush"   Color="#EFF6FF" />
+    <SolidColorBrush x:Key="NavActiveBorderBrush"       Color="{StaticResource ConsoleAccentBlue}" />
 </ResourceDictionary>

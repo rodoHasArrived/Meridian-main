@@ -359,6 +359,7 @@ public partial class App : System.Windows.Application
         services.AddTransient<Meridian.Wpf.ViewModels.StrategyRunDetailViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.StrategyRunPortfolioViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.StrategyRunLedgerViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.RunRiskViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.PluginManagementViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.AgentViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.BacktestViewModel>();

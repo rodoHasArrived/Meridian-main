@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Meridian.Contracts.SecurityMaster;
 
 namespace Meridian.Contracts.Workstation;
@@ -5,6 +6,7 @@ namespace Meridian.Contracts.Workstation;
 /// <summary>
 /// Shared workstation-facing mode for a strategy run.
 /// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter<StrategyRunMode>))]
 public enum StrategyRunMode : byte
 {
     Backtest,
@@ -15,6 +17,7 @@ public enum StrategyRunMode : byte
 /// <summary>
 /// Shared workstation-facing execution engine for a strategy run.
 /// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter<StrategyRunEngine>))]
 public enum StrategyRunEngine : byte
 {
     Unknown,
@@ -27,6 +30,7 @@ public enum StrategyRunEngine : byte
 /// <summary>
 /// Normalized status used by workstation surfaces across backtest, paper, and live runs.
 /// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter<StrategyRunStatus>))]
 public enum StrategyRunStatus : byte
 {
     Pending,
@@ -41,6 +45,7 @@ public enum StrategyRunStatus : byte
 /// <summary>
 /// Promotion-oriented readiness signal derived from the current run state.
 /// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter<StrategyRunPromotionState>))]
 public enum StrategyRunPromotionState : byte
 {
     None,

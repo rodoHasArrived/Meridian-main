@@ -1,0 +1,184 @@
+<Page x:Class="Meridian.Wpf.Views.RunRiskPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:behaviors="clr-namespace:Meridian.Wpf.Behaviors"
+      xmlns:scottplot="clr-namespace:ScottPlot.WPF;assembly=ScottPlot.WPF"
+      Background="{DynamicResource ShellWindowBackgroundBrush}"
+      AutomationProperties.Name="Portfolio Risk Analytics">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="28,20,28,32" MaxWidth="1200">
+
+            <!-- ── Page header ──────────────────────────────────────────────── -->
+            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,20">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <StackPanel Orientation="Horizontal">
+                            <Border Width="44" Height="44" CornerRadius="14"
+                                    Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                                    BorderBrush="{StaticResource InfoColorBrush}" BorderThickness="1" Margin="0,0,12,0">
+                                <TextBlock Text="&#xE9D9;" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                           FontSize="24" Foreground="{StaticResource InfoColorBrush}"
+                                           VerticalAlignment="Center" HorizontalAlignment="Center" />
+                            </Border>
+                            <StackPanel>
+                                <TextBlock Text="{Binding Title}" Style="{StaticResource PageTitleStyle}" />
+                                <TextBlock Text="{Binding StatusText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" />
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Button Content="Run Browser" Command="{Binding OpenBrowserCommand}"
+                                Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,0" />
+                        <Button Content="Run Detail" Command="{Binding OpenRunDetailCommand}"
+                                Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0" />
+                        <Button Content="Portfolio" Command="{Binding OpenPortfolioCommand}"
+                                Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0" />
+                        <Button Content="Cash Flow" Command="{Binding OpenCashFlowCommand}"
+                                Style="{StaticResource PrimaryButtonStyle}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- ── Summary metric cards ────────────────────────────────────── -->
+            <UniformGrid Columns="4" Margin="0,0,0,20">
+                <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                    <StackPanel>
+                        <TextBlock Text="Positions" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                        <TextBlock Text="{Binding PositionCountText}" Style="{StaticResource CardHeaderStyle}" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                    <StackPanel>
+                        <TextBlock Text="Long Exposure" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                        <TextBlock Text="{Binding LongExposureText}" Style="{StaticResource CardHeaderStyle}" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                    <StackPanel>
+                        <TextBlock Text="Net Exposure" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                        <TextBlock Text="{Binding NetExposureText}" Style="{StaticResource CardHeaderStyle}" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="Final Equity" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                        <TextBlock Text="{Binding EquityText}" Style="{StaticResource CardHeaderStyle}" />
+                    </StackPanel>
+                </Border>
+            </UniformGrid>
+
+            <UniformGrid Columns="4" Margin="0,0,0,20">
+                <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                    <StackPanel>
+                        <TextBlock Text="Total Risk (Ann. Vol)" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                        <TextBlock Text="{Binding TotalRiskText}" Style="{StaticResource CardHeaderStyle}" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                    <StackPanel>
+                        <TextBlock Text="Short Exposure" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                        <TextBlock Text="{Binding ShortExposureText}" Style="{StaticResource CardHeaderStyle}" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                    <StackPanel>
+                        <TextBlock Text="Sharpe Ratio" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                        <TextBlock Text="{Binding SharpeText}" Style="{StaticResource CardHeaderStyle}" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="Max Drawdown" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                        <TextBlock Text="{Binding MaxDrawdownText}" Style="{StaticResource CardHeaderStyle}" />
+                    </StackPanel>
+                </Border>
+            </UniformGrid>
+
+            <!-- ── Historical Risk chart ────────────────────────────────────── -->
+            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,20">
+                <StackPanel>
+                    <Grid Margin="0,0,0,14">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Historical Risk" Style="{StaticResource CardHeaderStyle}" />
+                            <TextBlock Text="21-day rolling annualised volatility (ex-post) from daily returns"
+                                       FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,4,0,0" />
+                        </StackPanel>
+                    </Grid>
+                    <scottplot:WpfPlot x:Name="VolatilityChart" Height="280"
+                                       behaviors:PlotRenderBehavior.Request="{Binding RollingVolatilityPlot}" />
+                </StackPanel>
+            </Border>
+
+            <!-- ── By Symbol Attribution (chart + grid) ────────────────────── -->
+            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,20">
+                <StackPanel>
+                    <TextBlock Text="By Symbol Attribution" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,14" />
+
+                    <!-- Attribution chart -->
+                    <scottplot:WpfPlot x:Name="AttributionChart" Height="220"
+                                       behaviors:PlotRenderBehavior.Request="{Binding AttributionPlot}"
+                                       Margin="0,0,0,16" />
+
+                    <!-- Attribution data grid -->
+                    <DataGrid ItemsSource="{Binding Attribution}"
+                              AutoGenerateColumns="False"
+                              IsReadOnly="True"
+                              GridLinesVisibility="Horizontal"
+                              HeadersVisibility="Column"
+                              RowBackground="Transparent"
+                              AlternatingRowBackground="{DynamicResource SubtleBackgroundBrush}"
+                              BorderThickness="0"
+                              CanUserResizeRows="False"
+                              CanUserSortColumns="True"
+                              SelectionMode="Single"
+                              MaxHeight="340">
+                        <DataGrid.ColumnHeaderStyle>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="Background" Value="Transparent" />
+                                <Setter Property="Foreground" Value="{DynamicResource ConsoleTextMutedBrush}" />
+                                <Setter Property="FontSize" Value="11" />
+                                <Setter Property="Padding" Value="8,6" />
+                                <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}" />
+                                <Setter Property="BorderThickness" Value="0,0,0,1" />
+                            </Style>
+                        </DataGrid.ColumnHeaderStyle>
+                        <DataGrid.CellStyle>
+                            <Style TargetType="DataGridCell">
+                                <Setter Property="Background" Value="Transparent" />
+                                <Setter Property="BorderThickness" Value="0" />
+                                <Setter Property="Padding" Value="8,5" />
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="DataGridCell">
+                                            <Border Padding="{TemplateBinding Padding}"
+                                                    Background="{TemplateBinding Background}">
+                                                <ContentPresenter VerticalAlignment="Center" />
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </DataGrid.CellStyle>
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Symbol" Binding="{Binding Symbol}" Width="120" />
+                            <DataGridTextColumn Header="Total PnL" Binding="{Binding TotalPnlText}" Width="120" />
+                            <DataGridTextColumn Header="Realized PnL" Binding="{Binding RealizedPnlText}" Width="120" />
+                            <DataGridTextColumn Header="Unrealized PnL" Binding="{Binding UnrealizedPnlText}" Width="130" />
+                            <DataGridTextColumn Header="Trades" Binding="{Binding TradeCountText}" Width="80" />
+                            <DataGridTextColumn Header="Commissions" Binding="{Binding CommissionsText}" Width="*" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
+    </ScrollViewer>
+</Page>

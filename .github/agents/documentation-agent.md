@@ -840,7 +840,8 @@ Meridian-main
 │   ├── README.md
 │   └── toc.yml
 ├── issues
-│   └── phase-1-5-add-equityclassification-discriminator-and-preferredterms-domain-model.md
+│   ├── phase-1-5-add-equityclassification-discriminator-and-preferredterms-domain-model.md
+│   └── phase_1_5_1_add_equityclassification_discriminator_and_preferredterms_domain_model.md
 ├── make
 │   ├── ai.mk
 │   ├── build.mk
