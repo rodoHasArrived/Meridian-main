@@ -2,7 +2,7 @@
 
 **Status:** Active
 **Owner:** Core Team
-**Reviewed:** 2026-03-23
+**Reviewed:** 2026-04-01
 
 This folder contains architecture diagrams for the Meridian system, updated to reflect the current monolithic runtime, UI options, and provider list. It is the single home for all visual assets:
 
@@ -187,16 +187,18 @@ Comprehensive reference for all 24+ CLI flags:
 
 ### Project Dependencies
 
-Shows the project layer dependencies:
+Shows all 28 source projects as a layered dependency graph, derived directly from `.csproj`/`.fsproj` `ProjectReference` entries:
 
-- **Layer 0 (Foundation)**: Contracts, F# Domain
-- **Layer 1 (Core)**: ProviderSdk, Domain, Core
-- **Layer 2 (Infrastructure)**: Infrastructure, Storage
-- **Layer 3 (Application)**: Application logic
-- **Layer 4 (UI)**: Ui.Shared, Ui.Services, Ui (web), Wpf (desktop)
-- **Layer 5 (Entry Point)**: Meridian main app
-- **Tests**: 140 main tests, 4 F# tests, 19 WPF tests, 50 UI tests
-- **Benchmarks**: BenchmarkDotNet performance tests
+- **Layer 0 (Foundation)**: Contracts · F# Domain family (FSharp, FSharp.Ledger, FSharp.Trading, FSharp.DirectLending.Aggregates)
+- **Layer 1 (SDK & Core Interfaces)**: ProviderSdk · Execution.Sdk · IbApi.SmokeStub
+- **Layer 2 (Core Domain)**: Domain · Core · Ledger (double-entry journal)
+- **Layer 3 (Infrastructure & Storage)**: Infrastructure · Storage · Infrastructure.CppTrader
+- **Layer 4 (Application & Backtesting SDK)**: Application · Backtesting.Sdk
+- **Layer 5 (Execution, Backtesting, Risk, Strategies)**: Execution · Backtesting · Risk · Strategies · QuantScript
+- **Layer 6 (UI & Presentation)**: Ui.Shared · Ui.Services · Ui (web) · Wpf (desktop) · McpServer · Mcp
+- **Layer 7 (Entry Point)**: Meridian main app
+- **Tests (8 projects · 371 test files)**: Tests (251) · FSharp.Tests (10) · Backtesting.Tests (13) · DirectLending.Tests (5) · McpServer.Tests (2) · QuantScript.Tests (6) · Wpf.Tests (30) · Ui.Tests (54)
+- **Benchmarks**: BenchmarkDotNet — pipeline, storage, and serialization hot paths
 
 ### Backtesting Engine
 
