@@ -117,6 +117,78 @@ jobs:
           name: codecov-Linux
           fail_ci_if_error: true
 
+  # PostgreSQL integration tests — only on push to main to keep PR latency low
+  test-db:
+    name: Test (PostgreSQL)
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: meridian_test
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: meridian
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U meridian_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      MERIDIAN_SECURITY_MASTER_CONNECTION_STRING: "Host=localhost;Port=5432;Database=meridian;Username=meridian_test;Password=testpass"
+      MERIDIAN_DIRECT_LENDING_CONNECTION_STRING: "Host=localhost;Port=5432;Database=meridian;Username=meridian_test;Password=testpass"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup .NET with Cache
+        uses: ./.github/actions/setup-dotnet-cache
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore Meridian.sln /p:EnableWindowsTargeting=true --verbosity minimal
+
+      - name: Build
+        run: dotnet build Meridian.sln -c Release --no-restore /p:EnableWindowsTargeting=true --verbosity minimal
+
+      - name: Run Security Master PostgreSQL tests
+        shell: bash
+        run: |
+          dotnet test tests/Meridian.Tests/Meridian.Tests.csproj \
+            -c Release \
+            --no-build \
+            --verbosity minimal \
+            --logger "trx;LogFileName=test-results-secmaster-db.trx" \
+            --results-directory ./TestResults \
+            --filter "Collection=SecurityMasterDatabaseCollection" \
+            --blame-hang-timeout 120s
+
+      - name: Run Direct Lending PostgreSQL tests
+        shell: bash
+        run: |
+          dotnet test tests/Meridian.DirectLending.Tests/Meridian.DirectLending.Tests.csproj \
+            -c Release \
+            --no-build \
+            --verbosity minimal \
+            --logger "trx;LogFileName=test-results-directlending-db.trx" \
+            --results-directory ./TestResults \
+            --blame-hang-timeout 120s
+
+      - name: Upload test results on failure
+        uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: test-results-postgresql
+          path: ./TestResults/
+          retention-days: 3
+
   # Windows and macOS tests only run on pushes to main (not on PRs) to reduce billing
   test-other-platforms:
     name: Test (${{ matrix.os_name }})
@@ -201,7 +273,7 @@ jobs:
   test-summary:
     name: Test Summary
     runs-on: ubuntu-latest
-    needs: [test-ubuntu, test-other-platforms]
+    needs: [test-ubuntu, test-other-platforms, test-db]
     if: always()
     timeout-minutes: 30
 
@@ -231,3 +303,12 @@ jobs:
           esac
           echo "| Windows | $WIN_LABEL |" >> $GITHUB_STEP_SUMMARY
           echo "| macOS | $MAC_LABEL |" >> $GITHUB_STEP_SUMMARY
+
+          # PostgreSQL DB tests only run on push to main; skipped on PRs
+          DB_STATUS="${{ needs.test-db.result }}"
+          case "$DB_STATUS" in
+            success) DB_LABEL="✅ Passed" ;;
+            skipped) DB_LABEL="⏭️ Skipped (PR)" ;;
+            *) DB_LABEL="❌ Failed" ;;
+          esac
+          echo "| PostgreSQL | $DB_LABEL |" >> $GITHUB_STEP_SUMMARY
