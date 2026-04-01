@@ -212,4 +212,104 @@ public sealed class StrategyRunBrowserViewModelTests
         vm.OpenPortfolioCommand.CanExecute(null).Should().BeTrue();
         vm.OpenLedgerCommand.CanExecute(null).Should().BeTrue();
     }
+
+    // ── Comparison flow tests ─────────────────────────────────────────────
+
+    [Fact]
+    public void CanCompareRuns_WhenBothRunsSetToDistinctIds_ShouldBeTrue()
+    {
+        var vm = CreateEmpty();
+        var now = DateTimeOffset.UtcNow;
+
+        vm.SelectedRun = MakeSummary("run-a", "Momentum", StrategyRunMode.Backtest, now.AddHours(-2));
+        vm.ComparisonRun = MakeSummary("run-b", "Momentum", StrategyRunMode.Paper, now.AddHours(-1));
+
+        vm.CanCompareRuns.Should().BeTrue();
+        vm.CompareRunsCommand.CanExecute(null).Should().BeTrue();
+    }
+
+    [Fact]
+    public void CanCompareRuns_WhenBothRunsAreSameId_ShouldBeFalse()
+    {
+        var vm = CreateEmpty();
+        var now = DateTimeOffset.UtcNow;
+        var summary = MakeSummary("run-same", "Strategy", StrategyRunMode.Backtest, now);
+
+        vm.SelectedRun = summary;
+        vm.ComparisonRun = summary;
+
+        vm.CanCompareRuns.Should().BeFalse();
+    }
+
+    [Fact]
+    public void CanCompareRuns_WhenComparisonRunIsNull_ShouldBeFalse()
+    {
+        var vm = CreateEmpty();
+        vm.SelectedRun = MakeSummary("run-a", "Strategy", StrategyRunMode.Backtest, DateTimeOffset.UtcNow);
+        vm.ComparisonRun = null;
+
+        vm.CanCompareRuns.Should().BeFalse();
+    }
+
+    [Fact]
+    public void ComparisonRows_WhenNoComparisonResult_ShouldBeEmpty()
+    {
+        var vm = CreateEmpty();
+
+        vm.ComparisonRows.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void IsComparisonVisible_WhenNoResult_ShouldBeFalse()
+    {
+        var vm = CreateEmpty();
+
+        vm.IsComparisonVisible.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task ClearComparisonCommand_ResetsComparisonState()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(MakeEntry("Alpha Strategy"));
+        await store.RecordRunAsync(MakeEntry("Beta Strategy"));
+
+        var runService = new StrategyRunWorkspaceService(store, new PortfolioReadService(), new LedgerReadService());
+        var vm = new StrategyRunBrowserViewModel(runService, NavigationService.Instance, WorkspaceService.Instance);
+
+        await vm.RefreshAsync();
+
+        vm.SelectedRun = vm.Runs.FirstOrDefault();
+        vm.ComparisonRun = vm.Runs.LastOrDefault();
+
+        vm.ClearComparisonCommand.Execute(null);
+
+        vm.ComparisonRun.Should().BeNull();
+        vm.IsComparisonVisible.Should().BeFalse();
+        vm.ComparisonRows.Should().BeEmpty();
+    }
+
+    private static StrategyRunSummary MakeSummary(
+        string runId,
+        string strategyName,
+        StrategyRunMode mode,
+        DateTimeOffset startedAt)
+        => new StrategyRunSummary(
+            RunId: runId,
+            StrategyId: strategyName.ToLowerInvariant().Replace(" ", "-"),
+            StrategyName: strategyName,
+            Mode: mode,
+            Engine: StrategyRunEngine.MeridianNative,
+            Status: StrategyRunStatus.Completed,
+            StartedAt: startedAt,
+            CompletedAt: startedAt.AddHours(1),
+            DatasetReference: null,
+            FeedReference: null,
+            PortfolioId: null,
+            LedgerReference: null,
+            NetPnl: null,
+            TotalReturn: null,
+            FinalEquity: null,
+            FillCount: 0,
+            LastUpdatedAt: startedAt.AddHours(1));
 }

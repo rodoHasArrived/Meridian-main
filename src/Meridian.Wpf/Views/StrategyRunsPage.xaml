@@ -4,6 +4,9 @@
       Background="{DynamicResource ShellWindowBackgroundBrush}"
       Loaded="OnPageLoaded"
       AutomationProperties.Name="Strategy Runs">
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </Page.Resources>
     <Grid Margin="24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -69,31 +72,141 @@
                             Margin="0,0,8,0" />
                     <Button Content="Ledger"
                             Command="{Binding OpenLedgerCommand}"
-                            Style="{StaticResource GhostButtonStyle}" />
+                            Style="{StaticResource GhostButtonStyle}"
+                            Margin="0,0,8,0" />
+                    <Button Content="Compare"
+                            Command="{Binding CompareRunsCommand}"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            ToolTip="Select a Comparison Run then click Compare to diff the two runs"
+                            Margin="0,0,8,0" />
+                    <Button Content="Clear"
+                            Command="{Binding ClearComparisonCommand}"
+                            Style="{StaticResource GhostButtonStyle}"
+                            Visibility="{Binding IsComparisonVisible, Converter={StaticResource BoolToVisibilityConverter}}" />
                 </StackPanel>
             </Grid>
         </Border>
 
-        <Border Grid.Row="2" Style="{StaticResource CardStyle}">
-            <DataGrid ItemsSource="{Binding Runs}"
-                      SelectedItem="{Binding SelectedRun, Mode=TwoWay}"
-                      AutoGenerateColumns="False"
-                      IsReadOnly="True"
-                      CanUserSortColumns="True"
-                      HeadersVisibility="Column"
-                      Background="{StaticResource ConsoleBackgroundLightBrush}"
-                      BorderThickness="0">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Started" Binding="{Binding StartedAt, StringFormat={}{0:g}}" Width="140" />
-                    <DataGridTextColumn Header="Strategy" Binding="{Binding StrategyName}" Width="180" />
-                    <DataGridTextColumn Header="Mode" Binding="{Binding Mode}" Width="90" />
-                    <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100" />
-                    <DataGridTextColumn Header="Equity" Binding="{Binding FinalEquity, StringFormat={}{0:C2}}" Width="110" />
-                    <DataGridTextColumn Header="Net PnL" Binding="{Binding NetPnl, StringFormat={}{0:C2}}" Width="110" />
-                    <DataGridTextColumn Header="Fills" Binding="{Binding FillCount}" Width="70" />
-                    <DataGridTextColumn Header="Run Id" Binding="{Binding RunId}" Width="*" />
-                </DataGrid.Columns>
-            </DataGrid>
-        </Border>
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Style="{StaticResource CardStyle}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <DataGrid Grid.Row="0"
+                              ItemsSource="{Binding Runs}"
+                              SelectedItem="{Binding SelectedRun, Mode=TwoWay}"
+                              AutoGenerateColumns="False"
+                              IsReadOnly="True"
+                              CanUserSortColumns="True"
+                              HeadersVisibility="Column"
+                              Background="{StaticResource ConsoleBackgroundLightBrush}"
+                              BorderThickness="0">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Started" Binding="{Binding StartedAt, StringFormat={}{0:g}}" Width="140" />
+                            <DataGridTextColumn Header="Strategy" Binding="{Binding StrategyName}" Width="180" />
+                            <DataGridTextColumn Header="Mode" Binding="{Binding Mode}" Width="90" />
+                            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100" />
+                            <DataGridTextColumn Header="Equity" Binding="{Binding FinalEquity, StringFormat={}{0:C2}}" Width="110" />
+                            <DataGridTextColumn Header="Net PnL" Binding="{Binding NetPnl, StringFormat={}{0:C2}}" Width="110" />
+                            <DataGridTextColumn Header="Fills" Binding="{Binding FillCount}" Width="70" />
+                            <DataGridTextColumn Header="Run Id" Binding="{Binding RunId}" Width="*" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <!-- Comparison run picker -->
+                    <Border Grid.Row="1" Margin="0,12,0,0" Padding="10,8"
+                            Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                            CornerRadius="6"
+                            BorderBrush="{StaticResource InfoColorBrush}"
+                            BorderThickness="1">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Compare with:" FontSize="11"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       VerticalAlignment="Center" Margin="0,0,8,0" />
+                            <ComboBox Grid.Column="1"
+                                      ItemsSource="{Binding Runs}"
+                                      SelectedItem="{Binding ComparisonRun, Mode=TwoWay}"
+                                      ToolTip="Select a second run to diff against the primary selection">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock>
+                                            <Run Text="{Binding StrategyName}" />
+                                            <Run Text=" (" /><Run Text="{Binding Mode}" /><Run Text=")" />
+                                            <Run Text=" " />
+                                            <Run Text="{Binding StartedAt, StringFormat={}{0:yyyy-MM-dd}}" Foreground="{DynamicResource ConsoleTextMutedBrush}" />
+                                        </TextBlock>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <TextBlock Grid.Column="2" FontSize="11"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       VerticalAlignment="Center" Margin="8,0,0,0"
+                                       Text="{Binding ComparisonRun.Mode, StringFormat='({0})'}" />
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- Side-by-side comparison diff panel -->
+            <Border Grid.Column="1"
+                    Width="380"
+                    Margin="16,0,0,0"
+                    Style="{StaticResource CardStyle}"
+                    Visibility="{Binding IsComparisonVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="0">
+                        <TextBlock Text="Run Comparison" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,14" />
+
+                        <!-- Column headers -->
+                        <Grid Margin="0,0,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="110" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Metric" FontSize="11"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}" FontWeight="SemiBold" />
+                            <TextBlock Grid.Column="1" FontSize="11" FontWeight="SemiBold"
+                                       Foreground="{StaticResource InfoColorBrush}"
+                                       Text="{Binding ComparisonResult[0].Mode, StringFormat='A ({0})'}" />
+                            <TextBlock Grid.Column="2" FontSize="11" FontWeight="SemiBold"
+                                       Foreground="{StaticResource SuccessColorBrush}"
+                                       Text="{Binding ComparisonResult[1].Mode, StringFormat='B ({0})'}" />
+                        </Grid>
+
+                        <Rectangle Height="1" Fill="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,0,8" Opacity="0.2" />
+
+                        <ItemsControl ItemsSource="{Binding ComparisonRows}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,3,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="110" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="{Binding Label}" FontSize="11"
+                                                   Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                        <TextBlock Grid.Column="1" Text="{Binding ValueA}" FontSize="11" />
+                                        <TextBlock Grid.Column="2" Text="{Binding ValueB}" FontSize="11" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
     </Grid>
 </Page>
