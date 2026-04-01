@@ -51,6 +51,7 @@ public static class UiApiRoutes
     // Backfill checkpoint/resume endpoints (P0: expose checkpoint semantics to users)
     public const string BackfillCheckpoints = "/api/backfill/checkpoints";
     public const string BackfillCheckpointsResumable = "/api/backfill/checkpoints/resumable";
+    public const string BackfillCheckpointsValidation = "/api/backfill/checkpoints/validation";
     public const string BackfillCheckpointById = "/api/backfill/checkpoints/{jobId}";
     public const string BackfillCheckpointResume = "/api/backfill/checkpoints/{jobId}/resume";
     public const string BackfillCheckpointPending = "/api/backfill/checkpoints/{jobId}/pending";
