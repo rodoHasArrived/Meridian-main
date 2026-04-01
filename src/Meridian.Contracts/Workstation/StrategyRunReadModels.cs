@@ -236,6 +236,46 @@ public sealed record StrategyRunComparison(
     bool HasLedger = false,
     bool HasAuditTrail = false);
 
+/// <summary>
+/// Normalized cross-mode run comparison DTO that includes the full set of
+/// <c>BacktestMetrics</c> fields plus equity curve data and parentage chain info.
+/// Returned by <c>GET /api/strategies/runs/compare?ids=a,b</c>.
+/// </summary>
+public sealed record RunComparisonDto(
+    string RunId,
+    string? ParentRunId,
+    string StrategyName,
+    StrategyRunMode Mode,
+    StrategyRunEngine Engine,
+    StrategyRunStatus Status,
+    DateTimeOffset StartedAt,
+    DateTimeOffset? CompletedAt,
+    decimal? NetPnl,
+    decimal? TotalReturn,
+    decimal? AnnualizedReturn,
+    decimal? FinalEquity,
+    double? SharpeRatio,
+    double? SortinoRatio,
+    double? CalmarRatio,
+    decimal? MaxDrawdown,
+    decimal? MaxDrawdownPercent,
+    int MaxDrawdownRecoveryDays,
+    double? ProfitFactor,
+    double? WinRate,
+    int TotalTrades,
+    int WinningTrades,
+    int LosingTrades,
+    int FillCount,
+    decimal TotalCommissions,
+    decimal TotalMarginInterest,
+    decimal TotalShortRebates,
+    double? Xirr,
+    EquityCurveSummary? EquityCurve,
+    DateTimeOffset LastUpdatedAt,
+    StrategyRunPromotionState PromotionState = StrategyRunPromotionState.None,
+    bool HasLedger = false,
+    bool HasAuditTrail = false);
+
 // ---------------------------------------------------------------------------
 // Track C drill-in models
 // ---------------------------------------------------------------------------

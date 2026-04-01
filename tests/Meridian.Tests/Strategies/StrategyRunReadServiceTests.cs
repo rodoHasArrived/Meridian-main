@@ -734,4 +734,156 @@ public sealed class StrategyRunReadServiceTests
             r.StrategyId.Should().Be("strategy-1");
         });
     }
+
+    [Fact]
+    public async Task GetRunComparisonDtosAsync_ReturnsDtoWithFullMetricsAndEquityCurve()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(BuildCompletedRun(
+            runId: "dto-run-a",
+            strategyId: "momentum-1",
+            strategyName: "Momentum",
+            finalEquity: 130_000m,
+            netPnl: 30_000m,
+            totalReturn: 0.30m,
+            realizedPnl: 12_000m,
+            unrealizedPnl: 18_000m,
+            fillCount: 3,
+            sharpeRatio: 1.7,
+            maxDrawdown: 6_000m));
+        await store.RecordRunAsync(BuildCompletedRun(
+            runId: "dto-run-b",
+            strategyId: "momentum-1",
+            strategyName: "Momentum",
+            finalEquity: 108_000m,
+            netPnl: 8_000m,
+            totalReturn: 0.08m,
+            realizedPnl: 3_000m,
+            unrealizedPnl: 5_000m,
+            fillCount: 1,
+            sharpeRatio: 0.6,
+            maxDrawdown: 9_000m));
+
+        var service = new StrategyRunReadService(
+            store,
+            new PortfolioReadService(),
+            new LedgerReadService());
+
+        var dtos = await service.GetRunComparisonDtosAsync(["dto-run-a", "dto-run-b"]);
+
+        dtos.Should().HaveCount(2);
+
+        // Ordered by FinalEquity descending
+        var a = dtos[0];
+        var b = dtos[1];
+
+        a.RunId.Should().Be("dto-run-a");
+        a.FinalEquity.Should().Be(130_000m);
+        a.NetPnl.Should().Be(30_000m);
+        a.TotalReturn.Should().Be(0.30m);
+        a.SharpeRatio.Should().Be(1.7);
+        a.SortinoRatio.Should().Be(1.7);
+        a.CalmarRatio.Should().BeApproximately(0.85, 0.001);
+        a.MaxDrawdown.Should().Be(6_000m);
+        a.MaxDrawdownPercent.Should().Be(0.06m);
+        a.MaxDrawdownRecoveryDays.Should().Be(3);
+        a.ProfitFactor.Should().Be(1.8);
+        a.WinRate.Should().Be(0.65);
+        a.TotalTrades.Should().Be(3);
+        a.FillCount.Should().Be(3);
+        a.TotalCommissions.Should().Be(125m);
+        a.Xirr.Should().Be(0.19);
+        a.Mode.Should().Be(StrategyRunMode.Backtest);
+        a.EquityCurve.Should().NotBeNull();
+        a.EquityCurve!.Points.Should().NotBeEmpty();
+        a.ParentRunId.Should().BeNull();
+        a.HasLedger.Should().BeTrue();
+        a.HasAuditTrail.Should().BeTrue();
+
+        b.RunId.Should().Be("dto-run-b");
+        b.FinalEquity.Should().Be(108_000m);
+        b.SharpeRatio.Should().Be(0.6);
+    }
+
+    [Fact]
+    public async Task GetRunComparisonDtosAsync_WithParentRunId_IncludesParentageChain()
+    {
+        var store = new StrategyRunStore();
+        var backtestEntry = BuildCompletedRun(
+            runId: "bt-parent",
+            strategyId: "strat-chain",
+            strategyName: "Chain Strategy",
+            finalEquity: 120_000m,
+            netPnl: 20_000m,
+            totalReturn: 0.20m,
+            realizedPnl: 8_000m,
+            unrealizedPnl: 12_000m,
+            fillCount: 2,
+            sharpeRatio: 1.2,
+            maxDrawdown: 4_000m);
+        await store.RecordRunAsync(backtestEntry);
+
+        // Paper run promoted from the backtest, linked via ParentRunId
+        var paperEntry = new StrategyRunEntry(
+            RunId: "paper-child",
+            StrategyId: "strat-chain",
+            StrategyName: "Chain Strategy",
+            RunType: RunType.Paper,
+            StartedAt: backtestEntry.EndedAt!.Value.AddDays(1),
+            EndedAt: backtestEntry.EndedAt.Value.AddDays(8),
+            Metrics: null,
+            Engine: "BrokerPaper",
+            ParentRunId: "bt-parent");
+        await store.RecordRunAsync(paperEntry);
+
+        var service = new StrategyRunReadService(
+            store,
+            new PortfolioReadService(),
+            new LedgerReadService());
+
+        var dtos = await service.GetRunComparisonDtosAsync(["bt-parent", "paper-child"]);
+
+        dtos.Should().HaveCount(2);
+        var btDto = dtos.Single(d => d.RunId == "bt-parent");
+        var paperDto = dtos.Single(d => d.RunId == "paper-child");
+
+        btDto.ParentRunId.Should().BeNull();
+        paperDto.ParentRunId.Should().Be("bt-parent");
+        paperDto.Mode.Should().Be(StrategyRunMode.Paper);
+    }
+
+    [Fact]
+    public async Task GetRunComparisonDtosAsync_WhenIdsEmpty_ReturnsEmpty()
+    {
+        var store = new StrategyRunStore();
+        var service = new StrategyRunReadService(store, new PortfolioReadService(), new LedgerReadService());
+
+        var result = await service.GetRunComparisonDtosAsync([]);
+
+        result.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetRunComparisonDtosAsync_WhenOnlyOneIdProvided_ReturnsSingleDto()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(BuildCompletedRun(
+            runId: "solo-run",
+            strategyId: "strat-1",
+            strategyName: "Solo",
+            finalEquity: 115_000m,
+            netPnl: 15_000m,
+            totalReturn: 0.15m,
+            realizedPnl: 6_000m,
+            unrealizedPnl: 9_000m,
+            fillCount: 2,
+            sharpeRatio: 1.1,
+            maxDrawdown: 3_000m));
+
+        var service = new StrategyRunReadService(store, new PortfolioReadService(), new LedgerReadService());
+
+        var result = await service.GetRunComparisonDtosAsync(["solo-run"]);
+
+        result.Should().ContainSingle(d => d.RunId == "solo-run");
+    }
 }
