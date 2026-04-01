@@ -1,20 +1,28 @@
 {
   "description": "Recorded-style Polygon stock feed session for NVDA testing multi-event batched WebSocket frames. A single message frame contains multiple T+Q events and another contains both A+AM events. A third frame mixes non-subscribed symbols (AMD, TSLA) that must all be dropped. Verifies correct unpacking of batched Polygon frames.",
   "subscriptions": {
-    "trades": ["NVDA"],
-    "quotes": ["NVDA"],
-    "aggregates": ["NVDA"]
+    "trades": [
+      "NVDA"
+    ],
+    "quotes": [
+      "NVDA"
+    ],
+    "aggregates": [
+      "NVDA"
+    ]
   },
   "expected": {
     "trade": {
       "symbol": "NVDA",
-      "price": 875.60,
+      "price": 875.6,
       "size": 150,
       "timestampMs": 1742654400100,
       "streamId": "99123456",
       "venue": "NASDAQ",
       "aggressor": "Sell",
-      "rawConditions": ["29"]
+      "rawConditions": [
+        "29"
+      ]
     },
     "quote": {
       "symbol": "NVDA",
@@ -29,10 +37,10 @@
       {
         "timeframe": "Second",
         "symbol": "NVDA",
-        "open": 875.50,
-        "high": 875.70,
+        "open": 875.5,
+        "high": 875.7,
         "low": 875.45,
-        "close": 875.60,
+        "close": 875.6,
         "volume": 3200,
         "vwap": 875.58,
         "tradeCount": 48,
@@ -42,10 +50,10 @@
       {
         "timeframe": "Minute",
         "symbol": "NVDA",
-        "open": 874.80,
+        "open": 874.8,
         "high": 875.75,
-        "low": 874.70,
-        "close": 875.60,
+        "low": 874.7,
+        "close": 875.6,
         "volume": 198000,
         "vwap": 875.22,
         "tradeCount": 2940,
@@ -53,7 +61,12 @@
         "endTimeMs": 1742654400000
       }
     ],
-    "expectedIntegrityEvents": 0
+    "expectedIntegrityEvents": 0,
+    "statusMarkers": [
+      "connected",
+      "auth_success",
+      "success"
+    ]
   },
   "messages": [
     "[{\"ev\":\"status\",\"status\":\"connected\",\"message\":\"Connected Successfully\"}]",

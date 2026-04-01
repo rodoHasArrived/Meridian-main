@@ -54,6 +54,30 @@ public sealed class PolygonMessageParsingTests
     }
 
     [Fact]
+    public void ParseStatusAuthFailedMessage_Recognized()
+    {
+        var json = """[{"ev":"status","status":"auth_failed","message":"invalid key"}]""";
+        using var doc = JsonDocument.Parse(json);
+        var elem = doc.RootElement[0];
+
+        Assert.Equal("status", elem.GetProperty("ev").GetString());
+        Assert.Equal("auth_failed", elem.GetProperty("status").GetString());
+        Assert.Equal("invalid key", elem.GetProperty("message").GetString());
+    }
+
+    [Fact]
+    public void ParseStatusRateLimitErrorMessage_Recognized()
+    {
+        var json = """[{"ev":"status","status":"error","message":"429: too many requests"}]""";
+        using var doc = JsonDocument.Parse(json);
+        var elem = doc.RootElement[0];
+
+        Assert.Equal("status", elem.GetProperty("ev").GetString());
+        Assert.Equal("error", elem.GetProperty("status").GetString());
+        Assert.Contains("429", elem.GetProperty("message").GetString());
+    }
+
+    [Fact]
     public void ParseTradeWithConditions_ExtractsCodes()
     {
         var json = """[{"ev":"T","sym":"AAPL","p":150.25,"s":100,"t":1704067200000,"c":[12,37]}]""";
@@ -65,6 +89,35 @@ public sealed class PolygonMessageParsingTests
         var codes = conditions.EnumerateArray().Select(c => c.GetInt32()).ToList();
         Assert.Contains(12, codes);
         Assert.Contains(37, codes);
+    }
+
+    [Fact]
+    public void ParseSecondAggregateMessage_ExtractsFields()
+    {
+        var json = """[{"ev":"A","sym":"AAPL","o":150.10,"h":150.50,"l":149.90,"c":150.25,"v":1200,"vw":150.20,"s":1704067200000,"e":1704067201000,"n":45}]""";
+        using var doc = JsonDocument.Parse(json);
+        var elem = doc.RootElement[0];
+
+        Assert.Equal("A", elem.GetProperty("ev").GetString());
+        Assert.Equal("AAPL", elem.GetProperty("sym").GetString());
+        Assert.Equal(150.10m, elem.GetProperty("o").GetDecimal());
+        Assert.Equal(150.50m, elem.GetProperty("h").GetDecimal());
+        Assert.Equal(149.90m, elem.GetProperty("l").GetDecimal());
+        Assert.Equal(150.25m, elem.GetProperty("c").GetDecimal());
+        Assert.Equal(1200L, elem.GetProperty("v").GetInt64());
+    }
+
+    [Fact]
+    public void ParseMinuteAggregateMessage_ExtractsFields()
+    {
+        var json = """[{"ev":"AM","sym":"MSFT","o":400.00,"h":401.00,"l":399.50,"c":400.75,"v":55000,"vw":400.35,"s":1704067140000,"e":1704067200000,"n":820}]""";
+        using var doc = JsonDocument.Parse(json);
+        var elem = doc.RootElement[0];
+
+        Assert.Equal("AM", elem.GetProperty("ev").GetString());
+        Assert.Equal("MSFT", elem.GetProperty("sym").GetString());
+        Assert.Equal(55000L, elem.GetProperty("v").GetInt64());
+        Assert.Equal(820, elem.GetProperty("n").GetInt32());
     }
 
     [Fact]

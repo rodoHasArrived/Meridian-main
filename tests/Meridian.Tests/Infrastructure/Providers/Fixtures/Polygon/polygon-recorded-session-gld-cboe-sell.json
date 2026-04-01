@@ -1,9 +1,15 @@
 {
   "description": "Recorded-style Polygon stock feed session for GLD (SPDR Gold Shares ETF) on CBOE exchange (code 15). Covers CBOE venue mapping, Sell aggressor via condition code 29 (Seller-initiated), and IEX exchange (code 9) for quote. Verifies exchange codes not previously exercised in other fixtures.",
   "subscriptions": {
-    "trades": ["GLD"],
-    "quotes": ["GLD"],
-    "aggregates": ["GLD"]
+    "trades": [
+      "GLD"
+    ],
+    "quotes": [
+      "GLD"
+    ],
+    "aggregates": [
+      "GLD"
+    ]
   },
   "expected": {
     "trade": {
@@ -14,11 +20,13 @@
       "streamId": "77654321",
       "venue": "CBOE",
       "aggressor": "Sell",
-      "rawConditions": ["29"]
+      "rawConditions": [
+        "29"
+      ]
     },
     "quote": {
       "symbol": "GLD",
-      "bidPrice": 189.40,
+      "bidPrice": 189.4,
       "bidSize": 500,
       "askPrice": 189.44,
       "askSize": 400,
@@ -42,8 +50,8 @@
       {
         "timeframe": "Minute",
         "symbol": "GLD",
-        "open": 189.20,
-        "high": 189.50,
+        "open": 189.2,
+        "high": 189.5,
         "low": 189.15,
         "close": 189.42,
         "volume": 680000,
@@ -53,7 +61,12 @@
         "endTimeMs": 1742740800000
       }
     ],
-    "expectedIntegrityEvents": 0
+    "expectedIntegrityEvents": 0,
+    "statusMarkers": [
+      "connected",
+      "auth_success",
+      "success"
+    ]
   },
   "messages": [
     "[{\"ev\":\"status\",\"status\":\"connected\",\"message\":\"Connected Successfully\"}]",

@@ -32,7 +32,7 @@ The active plan now has two connected delivery tracks:
 | Security Master baseline | Implemented in code, not yet productized | Contracts, application, storage, and F# domain anchors exist |
 | Governance product surfaces | Planned | Trial balance, multi-ledger, cash-flow, reconciliation, investor reporting, and governed reporting are blueprint-backed but not fully implemented |
 | Monitoring and observability | Implemented | Prometheus and OpenTelemetry foundations are in place |
-| Provider confidence | Mixed | Alpaca is solid; Polygon, StockSharp, IB, and NYSE still need setup or hardening work |
+| Provider confidence | Mixed | Evidence-backed matrix now tracked in `provider-validation-matrix.md` with per-scenario pass/fail status and links |
 | Improvement tracking | Core baseline complete | 35/35 core items are complete; current focus has moved to workstation and governance expansion |
 
 ## Current Strengths
@@ -71,10 +71,23 @@ The target governance capability set is now defined, but still mostly pending im
 
 Some providers remain conditionally operator-ready:
 
-- **Polygon**: broader replay/live validation still needed
-- **Interactive Brokers**: requires `IBAPI` plus the official vendor surface for real runtime use
-- **StockSharp**: depends on connector-specific setup and validated adapter coverage
-- **NYSE**: requires external credentials and setup
+- **Polygon**: replay fixture and parser coverage is passing in-repo, but live reconnect/rate-limit runtime proof is still partial ([pass evidence](../../tests/Meridian.Tests/Infrastructure/Providers/PolygonRecordedSessionReplayTests.cs), [partial gap evidence](provider-validation-matrix.md)).
+- **Interactive Brokers**: non-`IBAPI` guidance and smoke-build checks pass, but full live runtime path remains partially validated ([pass evidence](../../tests/Meridian.Tests/Infrastructure/Providers/IBRuntimeGuidanceTests.cs), [prerequisites](../providers/interactive-brokers-setup.md)).
+- **StockSharp**: connector capability and subscription-guidance tests pass, with runtime connector validation still partial ([pass evidence](../../tests/Meridian.Tests/Infrastructure/Providers/StockSharpSubscriptionTests.cs), [runbook](../providers/stocksharp-connectors.md)).
+- **NYSE**: reconnect and parser lifecycle tests pass; auth/rate-limit explicit evidence still pending ([pass evidence](../../tests/Meridian.Tests/Infrastructure/Providers/NyseMarketDataClientTests.cs), [open checks](provider-validation-matrix.md)).
+
+## Provider Evidence Links (Pass/Fail)
+
+| Provider | Scenario | Status | Evidence |
+|---|---|---|---|
+| Polygon | Replay fixtures (trades/quotes/aggregates/status) | ✅ Pass | `PolygonRecordedSessionReplayTests`, `PolygonMessageParsingTests`, fixtures in `tests/.../Fixtures/Polygon` |
+| Polygon | Reconnect + live rate-limit runtime proof | ⚠️ Partial | `ProviderResilienceTests` baseline + outstanding live validation in matrix |
+| IB | Non-IBAPI runtime guidance + smoke compile path | ✅ Pass | `IBRuntimeGuidanceTests`, `scripts/dev/build-ibapi-smoke.ps1` |
+| IB | Real vendor runtime (`IBAPI` + TWS/Gateway) | ⚠️ Partial | prerequisites/checklist in `docs/providers/interactive-brokers-setup.md` |
+| StockSharp | Subscription guidance + conversion contracts | ✅ Pass | `StockSharpSubscriptionTests`, `StockSharpMessageConversionTests`, `StockSharpConnectorFactoryTests` |
+| StockSharp | End-to-end connector runtime profile | ⚠️ Partial | validated baseline + runbook in `docs/providers/stocksharp-connectors.md` |
+| NYSE | Reconnect lifecycle behavior | ✅ Pass | `NyseMarketDataClientTests` |
+| NYSE | Auth failure and rate-limit behavior | ❌ Fail (evidence missing) | tracked in `provider-validation-matrix.md` |
 
 ## Blueprint References
 
@@ -83,6 +96,7 @@ The current planning set is synchronized around these documents:
 - [ROADMAP.md](ROADMAP.md)
 - [FEATURE_INVENTORY.md](FEATURE_INVENTORY.md)
 - [IMPROVEMENTS.md](IMPROVEMENTS.md)
+- [Provider Validation Matrix](provider-validation-matrix.md)
 - [Trading Workstation Migration Blueprint](../plans/trading-workstation-migration-blueprint.md)
 - [Governance and Fund Operations Blueprint](../plans/governance-fund-ops-blueprint.md)
 

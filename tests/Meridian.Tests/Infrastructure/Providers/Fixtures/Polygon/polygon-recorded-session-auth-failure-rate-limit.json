@@ -1,0 +1,70 @@
+{
+  "description": "Recorded-style Polygon feed variant exercising auth failure and rate-limit style status messages while still replaying valid trade/quote/aggregate payloads.",
+  "subscriptions": {
+    "trades": [
+      "META"
+    ],
+    "quotes": [
+      "META"
+    ],
+    "aggregates": [
+      "META"
+    ]
+  },
+  "expected": {
+    "trade": {
+      "symbol": "META",
+      "price": 499.12,
+      "size": 75,
+      "timestampMs": 1742481300123,
+      "streamId": "rate-limit-trade-1",
+      "venue": "NASDAQ",
+      "aggressor": "Unknown",
+      "rawConditions": [
+        "12"
+      ]
+    },
+    "quote": {
+      "symbol": "META",
+      "bidPrice": 499.1,
+      "bidSize": 40,
+      "askPrice": 499.15,
+      "askSize": 45,
+      "timestampMs": 1742481300225,
+      "venue": "NASDAQ"
+    },
+    "aggregates": [
+      {
+        "timeframe": "Second",
+        "symbol": "META",
+        "open": 499.0,
+        "high": 499.2,
+        "low": 498.9,
+        "close": 499.12,
+        "volume": 3500,
+        "vwap": 499.08,
+        "tradeCount": 41,
+        "startTimeMs": 1742481300000,
+        "endTimeMs": 1742481301000
+      }
+    ],
+    "statusMarkers": [
+      "connected",
+      "auth_failed",
+      "error",
+      "auth_success",
+      "success"
+    ],
+    "expectedIntegrityEvents": 0
+  },
+  "messages": [
+    "[{\"ev\":\"status\",\"status\":\"connected\",\"message\":\"Connected Successfully\"}]",
+    "[{\"ev\":\"status\",\"status\":\"auth_failed\",\"message\":\"invalid key\"}]",
+    "[{\"ev\":\"status\",\"status\":\"error\",\"message\":\"429: too many requests\"}]",
+    "[{\"ev\":\"status\",\"status\":\"auth_success\",\"message\":\"authenticated\"}]",
+    "[{\"ev\":\"status\",\"status\":\"success\",\"message\":\"subscribed to: T.META,Q.META,A.META\"}]",
+    "[{\"ev\":\"T\",\"sym\":\"META\",\"p\":499.12,\"s\":75,\"t\":1742481300123,\"i\":\"rate-limit-trade-1\",\"x\":4,\"c\":[12]}]",
+    "[{\"ev\":\"Q\",\"sym\":\"META\",\"bp\":499.10,\"bs\":40,\"ap\":499.15,\"as\":45,\"t\":1742481300225,\"x\":4}]",
+    "[{\"ev\":\"A\",\"sym\":\"META\",\"o\":499.00,\"h\":499.20,\"l\":498.90,\"c\":499.12,\"v\":3500,\"vw\":499.08,\"s\":1742481300000,\"e\":1742481301000,\"n\":41}]"
+  ]
+}

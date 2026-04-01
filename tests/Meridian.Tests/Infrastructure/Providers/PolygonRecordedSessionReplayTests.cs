@@ -58,6 +58,8 @@ public sealed class PolygonRecordedSessionReplayTests
         expected.TryGetProperty("trade", out _).Should().BeTrue();
         expected.TryGetProperty("quote", out _).Should().BeTrue();
         expected.TryGetProperty("aggregates", out _).Should().BeTrue();
+        expected.TryGetProperty("statusMarkers", out _).Should().BeTrue(
+            because: $"[{fixtureFileName}] should encode expected status-frame variants for auth/reconnect/rate-limit coverage");
     }
 
     [Theory]
@@ -104,6 +106,11 @@ public sealed class PolygonRecordedSessionReplayTests
         orderFlowEvents.Should().HaveCount(tradeEvents.Length, because: $"[{fixtureFileName}] each accepted trade should also emit order-flow statistics");
         integrityEvents.Should().HaveCount(fixture.Expected.ExpectedIntegrityEvents, because: $"[{fixtureFileName}] malformed-but-skipped frames should not create unexpected integrity events");
         unexpectedEvents.Should().BeEmpty(because: $"[{fixtureFileName}] replay fixtures should only produce the documented trade, quote, aggregate, order-flow, or integrity event types");
+        foreach (var marker in fixture.Expected.StatusMarkers)
+        {
+            fixture.Messages.Should().Contain(msg => msg.Contains($"\"status\":\"{marker}\"", StringComparison.OrdinalIgnoreCase),
+                because: $"[{fixtureFileName}] should include status marker '{marker}' to validate Polygon status variant parsing");
+        }
 
         var trade = tradeEvents[0].Payload.Should().BeOfType<Trade>().Subject;
         trade.Symbol.Should().Be(fixture.Expected.Trade.Symbol);
@@ -161,6 +168,7 @@ public sealed class PolygonRecordedSessionReplayTests
                 Trade: ReadExpectedTrade(expected.GetProperty("trade")),
                 Quote: ReadExpectedQuote(expected.GetProperty("quote")),
                 Aggregates: expected.GetProperty("aggregates").EnumerateArray().Select(ReadExpectedAggregate).ToArray(),
+                StatusMarkers: ReadStringArray(expected, "statusMarkers"),
                 ExpectedIntegrityEvents: expected.TryGetProperty("expectedIntegrityEvents", out var integrityCount) ? integrityCount.GetInt32() : 0));
     }
 
@@ -201,6 +209,7 @@ public sealed class PolygonRecordedSessionReplayTests
         ExpectedTrade Trade,
         ExpectedQuote Quote,
         ExpectedAggregate[] Aggregates,
+        string[] StatusMarkers,
         int ExpectedIntegrityEvents);
 
     private sealed record ExpectedTrade(
