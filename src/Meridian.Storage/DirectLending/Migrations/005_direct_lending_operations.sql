@@ -71,9 +71,6 @@ create table if not exists __SCHEMA__.projection_run (
     generated_at                 timestamptz not null default now()
 );
 
--- A functional index is required because market_data_as_of is nullable; the
--- sentinel date '1900-01-01' substitutes for NULL so that two projection runs
--- with no market data as-of date are treated as duplicates of each other.
 create unique index if not exists ux_projection_run_lineage
     on __SCHEMA__.projection_run (
         loan_id,
@@ -81,7 +78,8 @@ create unique index if not exists ux_projection_run_lineage
         servicing_revision,
         engine_version,
         projection_as_of,
-        coalesce(market_data_as_of, date '1900-01-01'));
+        coalesce(market_data_as_of, date '1900-01-01')
+    );
 
 create index if not exists ix_projection_run_loan
     on __SCHEMA__.projection_run(loan_id, generated_at desc);
