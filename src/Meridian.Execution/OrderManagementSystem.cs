@@ -17,6 +17,7 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
     private readonly ConcurrentDictionary<string, OrderState> _orders = new();
     private readonly IExecutionGateway _gateway;
     private readonly IRiskValidator? _riskValidator;
+    private readonly ISecurityMasterGate? _securityMasterGate;
     private readonly ILogger<OrderManagementSystem> _logger;
     private readonly Channel<ExecutionReport> _executionChannel;
     private int _orderSequence;
@@ -24,11 +25,13 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
     public OrderManagementSystem(
         IExecutionGateway gateway,
         ILogger<OrderManagementSystem> logger,
-        IRiskValidator? riskValidator = null)
+        IRiskValidator? riskValidator = null,
+        ISecurityMasterGate? securityMasterGate = null)
     {
         _gateway = gateway ?? throw new ArgumentNullException(nameof(gateway));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _riskValidator = riskValidator;
+        _securityMasterGate = securityMasterGate;
         // Use custom EventPipelinePolicy for execution reports: high capacity with backpressure
         var executionPolicy = new EventPipelinePolicy(
             Capacity: 1000,
@@ -45,6 +48,24 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         ArgumentNullException.ThrowIfNull(request);
 
         var orderId = request.ClientOrderId ?? GenerateOrderId();
+
+        // Security Master gate — reject orders for symbols not in the master (when gate is wired)
+        if (_securityMasterGate is not null)
+        {
+            var gateResult = await _securityMasterGate.CheckAsync(request.Symbol, ct).ConfigureAwait(false);
+            if (!gateResult.IsApproved)
+            {
+                _logger.LogWarning("Order {OrderId} for {Symbol} rejected by Security Master gate: {Reason}",
+                    orderId, request.Symbol, gateResult.Reason);
+
+                return new OrderResult
+                {
+                    Success = false,
+                    OrderId = orderId,
+                    ErrorMessage = gateResult.Reason
+                };
+            }
+        }
 
         // Pre-trade risk check
         if (_riskValidator is not null)

@@ -400,9 +400,13 @@ public partial class App : System.Windows.Application
             services.AddSingleton<SecurityMasterCsvParser>();
             services.AddSingleton<ISecurityMasterImportService, SecurityMasterImportService>();
 
-            // Corporate action adjustment for backtesting
+            // Corporate action adjustment for backtesting and live paper trading.
             services.AddSingleton<ISecurityResolver, SecurityResolver>();
-            services.AddSingleton<Meridian.Backtesting.ICorporateActionAdjustmentService, Meridian.Backtesting.CorporateActionAdjustmentService>();
+            services.AddSingleton<Meridian.Backtesting.CorporateActionAdjustmentService>();
+            services.AddSingleton<Meridian.Backtesting.ICorporateActionAdjustmentService>(
+                sp => sp.GetRequiredService<Meridian.Backtesting.CorporateActionAdjustmentService>());
+            services.AddSingleton<Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster>(
+                sp => sp.GetRequiredService<Meridian.Backtesting.CorporateActionAdjustmentService>());
         }
 
         // Wire optional Security Master collaborators into the BacktestService singleton when available.

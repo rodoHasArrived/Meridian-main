@@ -75,6 +75,21 @@ public sealed class PaperExecutionContext : IExecutionContext
     }
 
     /// <summary>
+    /// Applies corporate-action adjustments (splits, dividends) to an open position by delegating
+    /// to <see cref="PaperTradingPortfolio.ApplyCorporateActionsAsync"/>.
+    /// This should be called by the session coordinator whenever a corporate action ex-date
+    /// is detected for a symbol that is currently held.
+    /// </summary>
+    /// <param name="symbol">Ticker symbol of the position to adjust.</param>
+    /// <param name="positionOpenedAt">When the position was first opened (UTC).</param>
+    /// <param name="ct">Cancellation token.</param>
+    public Task ApplyCorporateActionsAsync(
+        string symbol,
+        DateTimeOffset positionOpenedAt,
+        CancellationToken ct = default)
+        => _portfolio.ApplyCorporateActionsAsync(symbol, positionOpenedAt, ct);
+
+    /// <summary>
     /// Applies an execution report (fill or partial fill) to the portfolio and
     /// posts the corresponding double-entry journal entries to the ledger.
     /// </summary>
