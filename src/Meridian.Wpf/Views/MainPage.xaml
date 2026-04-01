@@ -14,33 +14,43 @@
       AutomationProperties.AutomationId="MainPage">
 
     <Page.Resources>
+        <!-- Marquee-inspired nav item: left-bar indicator on active, flat hover -->
         <Style x:Key="ShellNavItemStyle" TargetType="ListBoxItem">
             <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="Padding" Value="14,12" />
-            <Setter Property="Margin" Value="0,0,0,6" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="0,1,0,0" />
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             <Setter Property="Foreground" Value="{StaticResource ConsoleTextSecondaryBrush}" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ListBoxItem">
-                        <Border x:Name="ItemBorder"
-                                Background="Transparent"
-                                BorderBrush="Transparent"
-                                BorderThickness="1"
-                                CornerRadius="12"
-                                Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" />
-                        </Border>
+                        <Grid x:Name="ItemGrid" Background="Transparent">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="3" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <!-- Left indicator bar: visible only when selected -->
+                            <Rectangle x:Name="ActiveIndicator"
+                                       Grid.Column="0"
+                                       Fill="{StaticResource NavActiveBorderBrush}"
+                                       Visibility="Collapsed" />
+                            <Border x:Name="ItemContent"
+                                    Grid.Column="1"
+                                    Background="Transparent"
+                                    Padding="12,9">
+                                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" />
+                            </Border>
+                        </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ItemBorder" Property="Background" Value="{StaticResource ConsoleBackgroundHoverBrush}" />
-                                <Setter TargetName="ItemBorder" Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
+                                <Setter TargetName="ItemContent" Property="Background" Value="{StaticResource ConsoleBackgroundHoverBrush}" />
                                 <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
                             </Trigger>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="ItemBorder" Property="Background" Value="{StaticResource ConsoleAccentBlueAlpha10Brush}" />
-                                <Setter TargetName="ItemBorder" Property="BorderBrush" Value="{StaticResource InfoColorBrush}" />
-                                <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
+                                <Setter TargetName="ItemContent" Property="Background" Value="{StaticResource NavActiveBackgroundBrush}" />
+                                <Setter TargetName="ActiveIndicator" Property="Visibility" Value="Visible" />
+                                <Setter Property="Foreground" Value="{StaticResource InfoColorBrush}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -50,46 +60,49 @@
 
         <Style x:Key="ShellNavIconStyle" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource SymbolThemeFontFamily}" />
-            <Setter Property="FontSize" Value="16" />
-            <Setter Property="Width" Value="22" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Width" Value="18" />
             <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
 
         <Style x:Key="ShellNavLabelStyle" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource MeridianBodyFontFamily}" />
             <Setter Property="FontSize" Value="13" />
-            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontWeight" Value="Normal" />
             <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="Margin" Value="12,0,0,0" />
+            <Setter Property="Margin" Value="10,0,0,0" />
         </Style>
 
+        <!-- Marquee: uppercase muted section labels -->
         <Style x:Key="ShellSectionLabelStyle" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource MeridianBodyFontFamily}" />
-            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontSize" Value="10" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Foreground" Value="{StaticResource ConsoleTextMutedBrush}" />
             <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
             <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="Typography.Capitals" Value="AllSmallCaps" />
         </Style>
 
+        <!-- Compact workspace tiles for the narrower sidebar -->
         <Style x:Key="WorkspaceTileStyle" TargetType="Button" BasedOn="{StaticResource GhostButtonStyle}">
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             <Setter Property="VerticalContentAlignment" Value="Stretch" />
-            <Setter Property="Padding" Value="14" />
-            <Setter Property="MinHeight" Value="86" />
+            <Setter Property="Padding" Value="10" />
+            <Setter Property="MinHeight" Value="52" />
         </Style>
 
         <Style x:Key="ActiveWorkspaceTileStyle" TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             <Setter Property="VerticalContentAlignment" Value="Stretch" />
-            <Setter Property="Padding" Value="14" />
-            <Setter Property="MinHeight" Value="86" />
+            <Setter Property="Padding" Value="10" />
+            <Setter Property="MinHeight" Value="52" />
         </Style>
 
         <Style x:Key="RecentPageButtonStyle" TargetType="Button" BasedOn="{StaticResource GhostButtonStyle}">
             <Setter Property="HorizontalAlignment" Value="Left" />
-            <Setter Property="Padding" Value="10,6" />
-            <Setter Property="Margin" Value="0,0,8,8" />
+            <Setter Property="Padding" Value="8,4" />
+            <Setter Property="Margin" Value="0,0,6,6" />
             <Setter Property="FontSize" Value="12" />
         </Style>
         <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
@@ -162,13 +175,68 @@
         </Grid>
 
         <DockPanel LastChildFill="True">
+            <!-- ── Marquee-style dark top header bar ── -->
+            <Border DockPanel.Dock="Top"
+                    Height="44"
+                    Background="{StaticResource TopBarBackgroundBrush}"
+                    BorderBrush="{StaticResource TopBarBorderBrush}"
+                    BorderThickness="0,0,0,1">
+                <DockPanel Margin="16,0" LastChildFill="False">
+                    <!-- Brand -->
+                    <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="{StaticResource IconChart}"
+                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="16"
+                                   Foreground="{StaticResource TopBarIconAccentBrush}"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,8,0" />
+                        <TextBlock Text="Meridian"
+                                   FontFamily="{StaticResource MeridianDisplayFontFamily}"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource TopBarTextBrush}"
+                                   VerticalAlignment="Center" />
+                        <TextBlock Text="Operator Workstation"
+                                   FontFamily="{StaticResource MeridianBodyFontFamily}"
+                                   FontSize="12"
+                                   Foreground="#6B7280"
+                                   VerticalAlignment="Center"
+                                   Margin="12,0,0,0" />
+                    </StackPanel>
+                    <!-- Mode badge + search icon -->
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border Background="{StaticResource TopBarBorderBrush}"
+                                CornerRadius="3"
+                                Padding="8,3"
+                                Margin="0,0,12,0">
+                            <TextBlock Text="{Binding CurrentModeName}"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="#60A5FA" />
+                        </Border>
+                        <Button Style="{StaticResource IconButtonStyle}"
+                                Click="OnOpenCommandPaletteClick"
+                                ToolTip="Search (Ctrl+K)"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Foreground="{StaticResource TopBarTextBrush}"
+                                Width="28" Height="28" Padding="4"
+                                AutomationProperties.Name="Search">
+                            <TextBlock Text="{StaticResource IconSearch}"
+                                       FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                       FontSize="14"
+                                       Foreground="#9CA3AF" />
+                        </Button>
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+
+            <!-- ── Marquee-style flat white sidebar ── -->
             <Border DockPanel.Dock="Left"
-                    Width="340"
-                    Margin="16"
-                    CornerRadius="24"
+                    Width="220"
                     Background="{StaticResource ShellRailBackgroundBrush}"
                     BorderBrush="{StaticResource ConsoleBorderBrush}"
-                    BorderThickness="1">
+                    BorderThickness="0,0,1,0">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -177,53 +245,15 @@
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
+                    <!-- Compact workspace selector -->
                     <Border Grid.Row="0"
-                            Padding="24,24,24,18"
-                            BorderBrush="{StaticResource ConsoleBorderBrush}"
-                            BorderThickness="0,0,0,1">
-                        <StackPanel>
-                            <StackPanel Orientation="Horizontal">
-                                <Border Width="48"
-                                        Height="48"
-                                        CornerRadius="16"
-                                        Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
-                                        BorderBrush="{StaticResource InfoColorBrush}"
-                                        BorderThickness="1">
-                                    <TextBlock Text="{StaticResource IconChart}"
-                                               FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                               FontSize="24"
-                                               Foreground="{StaticResource InfoColorBrush}"
-                                               HorizontalAlignment="Center"
-                                               VerticalAlignment="Center" />
-                                </Border>
-                                <StackPanel Margin="14,0,0,0">
-                                    <TextBlock Text="Meridian"
-                                               FontFamily="{StaticResource MeridianDisplayFontFamily}"
-                                               FontSize="22"
-                                               FontWeight="SemiBold"
-                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                    <TextBlock Text="Operator Workstation"
-                                               FontFamily="{StaticResource MeridianBodyFontFamily}"
-                                               FontSize="12"
-                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
-                                </StackPanel>
-                            </StackPanel>
-                            <TextBlock Text="A clearer shell for research, trading, data operations, and governance."
-                                       Margin="0,14,0,0"
-                                       Style="{StaticResource CardDescriptionStyle}" />
-                        </StackPanel>
-                    </Border>
-
-                    <Border Grid.Row="1"
-                            Padding="24,18"
+                            Padding="12,10"
                             BorderBrush="{StaticResource ConsoleBorderBrush}"
                             BorderThickness="0,0,0,1">
                         <StackPanel>
                             <TextBlock Text="Workspaces"
-                                       Style="{StaticResource ShellSectionLabelStyle}" />
-                            <TextBlock Text="Choose the workflow you want in focus. The navigation below updates with the active workspace."
-                                       Margin="0,6,0,14"
-                                       Style="{StaticResource CardDescriptionStyle}" />
+                                       Style="{StaticResource ShellSectionLabelStyle}"
+                                       Margin="4,0,0,4"/>
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto" />
@@ -235,148 +265,124 @@
                                 </Grid.ColumnDefinitions>
 
                                 <Button x:Name="ResearchWorkspaceButton"
-                                        Grid.Row="0"
-                                        Grid.Column="0"
+                                        Grid.Row="0" Grid.Column="0"
                                         Command="{Binding SelectWorkspaceCommand}"
                                         CommandParameter="research"
-                                        Margin="0,0,8,8">
+                                        Margin="0,0,4,4">
                                     <Button.Style>
                                         <Style TargetType="Button" BasedOn="{StaticResource WorkspaceTileStyle}">
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding IsResearchWorkspaceActive}" Value="True">
-                                                    <Setter Property="Background" Value="{StaticResource ConsoleAccentBlueAlpha10Brush}" />
+                                                    <Setter Property="Background" Value="{StaticResource NavActiveBackgroundBrush}" />
                                                     <Setter Property="BorderBrush" Value="{StaticResource InfoColorBrush}" />
                                                     <Setter Property="BorderThickness" Value="1" />
-                                                    <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
+                                                    <Setter Property="Foreground" Value="{StaticResource InfoColorBrush}" />
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
                                     </Button.Style>
                                     <StackPanel>
-                                        <TextBlock Text="Research" FontSize="13" FontWeight="SemiBold" />
-                                        <TextBlock Text="Runs, charts, replay"
-                                                   Margin="0,4,0,0"
-                                                   FontSize="11"
-                                                   Opacity="0.8"
-                                                   TextWrapping="Wrap" />
+                                        <TextBlock Text="Research" FontSize="12" FontWeight="SemiBold" />
+                                        <TextBlock Text="Runs · Charts"
+                                                   Margin="0,2,0,0" FontSize="10"
+                                                   Opacity="0.75" TextWrapping="Wrap" />
                                     </StackPanel>
                                 </Button>
 
                                 <Button x:Name="TradingWorkspaceButton"
-                                        Grid.Row="0"
-                                        Grid.Column="1"
+                                        Grid.Row="0" Grid.Column="1"
                                         Command="{Binding SelectWorkspaceCommand}"
                                         CommandParameter="trading"
-                                        Margin="8,0,0,8">
+                                        Margin="4,0,0,4">
                                     <Button.Style>
                                         <Style TargetType="Button" BasedOn="{StaticResource WorkspaceTileStyle}">
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding IsTradingWorkspaceActive}" Value="True">
-                                                    <Setter Property="Background" Value="{StaticResource ConsoleAccentBlueAlpha10Brush}" />
+                                                    <Setter Property="Background" Value="{StaticResource NavActiveBackgroundBrush}" />
                                                     <Setter Property="BorderBrush" Value="{StaticResource InfoColorBrush}" />
                                                     <Setter Property="BorderThickness" Value="1" />
-                                                    <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
+                                                    <Setter Property="Foreground" Value="{StaticResource InfoColorBrush}" />
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
                                     </Button.Style>
                                     <StackPanel>
-                                        <TextBlock Text="Trading" FontSize="13" FontWeight="SemiBold" />
-                                        <TextBlock Text="Live monitoring, order flow"
-                                                   Margin="0,4,0,0"
-                                                   FontSize="11"
-                                                   Opacity="0.8"
-                                                   TextWrapping="Wrap" />
+                                        <TextBlock Text="Trading" FontSize="12" FontWeight="SemiBold" />
+                                        <TextBlock Text="Live · Orders"
+                                                   Margin="0,2,0,0" FontSize="10"
+                                                   Opacity="0.75" TextWrapping="Wrap" />
                                     </StackPanel>
                                 </Button>
 
                                 <Button x:Name="DataOperationsWorkspaceButton"
-                                        Grid.Row="1"
-                                        Grid.Column="0"
+                                        Grid.Row="1" Grid.Column="0"
                                         Command="{Binding SelectWorkspaceCommand}"
                                         CommandParameter="data-operations"
-                                        Margin="0,8,8,0">
+                                        Margin="0,0,4,0">
                                     <Button.Style>
                                         <Style TargetType="Button" BasedOn="{StaticResource WorkspaceTileStyle}">
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding IsDataOperationsWorkspaceActive}" Value="True">
-                                                    <Setter Property="Background" Value="{StaticResource ConsoleAccentBlueAlpha10Brush}" />
+                                                    <Setter Property="Background" Value="{StaticResource NavActiveBackgroundBrush}" />
                                                     <Setter Property="BorderBrush" Value="{StaticResource InfoColorBrush}" />
                                                     <Setter Property="BorderThickness" Value="1" />
-                                                    <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
+                                                    <Setter Property="Foreground" Value="{StaticResource InfoColorBrush}" />
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
                                     </Button.Style>
                                     <StackPanel>
-                                        <TextBlock Text="Data Operations" FontSize="13" FontWeight="SemiBold" />
-                                        <TextBlock Text="Providers, symbols, storage"
-                                                   Margin="0,4,0,0"
-                                                   FontSize="11"
-                                                   Opacity="0.8"
-                                                   TextWrapping="Wrap" />
+                                        <TextBlock Text="Data Ops" FontSize="12" FontWeight="SemiBold" />
+                                        <TextBlock Text="Providers · Storage"
+                                                   Margin="0,2,0,0" FontSize="10"
+                                                   Opacity="0.75" TextWrapping="Wrap" />
                                     </StackPanel>
                                 </Button>
 
                                 <Button x:Name="GovernanceWorkspaceButton"
-                                        Grid.Row="1"
-                                        Grid.Column="1"
+                                        Grid.Row="1" Grid.Column="1"
                                         Command="{Binding SelectWorkspaceCommand}"
                                         CommandParameter="governance"
-                                        Margin="8,8,0,0">
+                                        Margin="4,0,0,0">
                                     <Button.Style>
                                         <Style TargetType="Button" BasedOn="{StaticResource WorkspaceTileStyle}">
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding IsGovernanceWorkspaceActive}" Value="True">
-                                                    <Setter Property="Background" Value="{StaticResource ConsoleAccentBlueAlpha10Brush}" />
+                                                    <Setter Property="Background" Value="{StaticResource NavActiveBackgroundBrush}" />
                                                     <Setter Property="BorderBrush" Value="{StaticResource InfoColorBrush}" />
                                                     <Setter Property="BorderThickness" Value="1" />
-                                                    <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
+                                                    <Setter Property="Foreground" Value="{StaticResource InfoColorBrush}" />
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
                                     </Button.Style>
                                     <StackPanel>
-                                        <TextBlock Text="Governance" FontSize="13" FontWeight="SemiBold" />
-                                        <TextBlock Text="Quality, diagnostics, policy"
-                                                   Margin="0,4,0,0"
-                                                   FontSize="11"
-                                                   Opacity="0.8"
-                                                   TextWrapping="Wrap" />
+                                        <TextBlock Text="Governance" FontSize="12" FontWeight="SemiBold" />
+                                        <TextBlock Text="Quality · Policy"
+                                                   Margin="0,2,0,0" FontSize="10"
+                                                   Opacity="0.75" TextWrapping="Wrap" />
                                     </StackPanel>
                                 </Button>
                             </Grid>
                         </StackPanel>
                     </Border>
 
+                    <!-- Current workspace label -->
+                    <Border Grid.Row="1"
+                            Padding="16,8"
+                            BorderBrush="{StaticResource ConsoleBorderBrush}"
+                            BorderThickness="0,0,0,1">
+                        <StackPanel>
+                            <TextBlock Text="{Binding ActiveNavigationLabel}"
+                                       Style="{StaticResource ShellSectionLabelStyle}" />
+                        </StackPanel>
+                    </Border>
+
                     <ScrollViewer Grid.Row="2"
                                   VerticalScrollBarVisibility="Auto"
                                   HorizontalScrollBarVisibility="Disabled"
-                                  Padding="24,18,24,18">
+                                  Padding="0,6,0,12">
                         <StackPanel>
-                            <Border Style="{StaticResource CompactCardStyle}">
-                                <StackPanel>
-                                    <TextBlock Text="Current Workspace"
-                                               Style="{StaticResource ShellSectionLabelStyle}" />
-                                    <TextBlock Text="{Binding WorkspaceHeading}"
-                                               Margin="0,8,0,0"
-                                               FontFamily="{StaticResource MeridianDisplayFontFamily}"
-                                               FontSize="20"
-                                               FontWeight="SemiBold"
-                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                    <TextBlock Text="{Binding WorkspaceDescription}"
-                                               Margin="0,6,0,0"
-                                               Style="{StaticResource CardDescriptionStyle}" />
-                                    <TextBlock Text="{Binding WorkspaceSummary}"
-                                               Margin="0,10,0,0"
-                                               Style="{StaticResource BodyStrongTextBlockStyle}" />
-                                </StackPanel>
-                            </Border>
-
-                            <TextBlock Text="{Binding ActiveNavigationLabel}"
-                                       Margin="0,20,0,8"
-                                       Style="{StaticResource ShellSectionLabelStyle}" />
-
                             <StackPanel Visibility="{Binding IsResearchWorkspaceActive, Converter={StaticResource BoolToVisibility}}">
                                 <ListBox x:Name="ResearchNavList"
                                          Background="Transparent"
@@ -385,8 +391,7 @@
                                          SelectedValuePath="Tag"
                                          SelectedValue="{Binding CurrentPageTag, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                          AutomationProperties.AutomationId="ResearchNavList"
-                                         AutomationProperties.Name="Research Navigation"
-                                         >
+                                         AutomationProperties.Name="Research Navigation">
                                     <ListBoxItem Tag="Dashboard"
                                                  AutomationProperties.AutomationId="ResearchNavDashboard"
                                                  AutomationProperties.Name="Dashboard Navigation">
@@ -425,14 +430,6 @@
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Text="{StaticResource IconCode}" Style="{StaticResource ShellNavIconStyle}" />
                                             <TextBlock Text="RunMat Lab" Style="{StaticResource ShellNavLabelStyle}" />
-                                        </StackPanel>
-                                    </ListBoxItem>
-                                    <ListBoxItem Tag="QuantScript"
-                                                 AutomationProperties.AutomationId="ResearchNavQuantScript"
-                                                 AutomationProperties.Name="QuantScript Navigation">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{StaticResource IconCode}" Style="{StaticResource ShellNavIconStyle}" />
-                                            <TextBlock Text="QuantScript" Style="{StaticResource ShellNavLabelStyle}" />
                                         </StackPanel>
                                     </ListBoxItem>
                                     <ListBoxItem Tag="StrategyRuns"
@@ -601,17 +598,15 @@
                                 </ListBox>
                             </StackPanel>
 
-                            <Rectangle Style="{StaticResource HorizontalDividerStyle}" Margin="0,18,0,18" />
+                            <Rectangle Style="{StaticResource HorizontalDividerStyle}" Margin="16,10,16,10" />
 
-                            <TextBlock Text="Recent Pages"
-                                       Style="{StaticResource ShellSectionLabelStyle}" />
-                            <TextBlock Text="{Binding RecentPagesHintText}"
-                                       Margin="0,6,0,10"
-                                       Style="{StaticResource CardDescriptionStyle}" />
+                            <TextBlock Text="Recent"
+                                       Style="{StaticResource ShellSectionLabelStyle}"
+                                       Margin="16,0,0,6" />
                             <ItemsControl ItemsSource="{Binding RecentPages}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
-                                        <WrapPanel />
+                                        <WrapPanel Margin="12,0" />
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
@@ -624,79 +619,73 @@
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
                             <TextBlock x:Name="RecentPagesEmptyText"
-                                       Text="Recent pages will appear here as you move around the workstation."
+                                       Text="Navigate to any page to start building history."
                                        Visibility="{Binding RecentPagesEmptyVisibility}"
-                                       Style="{StaticResource CardDescriptionStyle}" />
+                                       Style="{StaticResource CardDescriptionStyle}"
+                                       Margin="16,0,0,0" />
                         </StackPanel>
                     </ScrollViewer>
 
+                    <!-- Compact footer actions -->
                     <Border Grid.Row="3"
-                            Padding="24,18"
+                            Padding="12,10"
                             BorderBrush="{StaticResource ConsoleBorderBrush}"
                             BorderThickness="0,1,0,0">
                         <StackPanel>
                             <Button Style="{StaticResource GhostButtonStyle}"
                                     HorizontalAlignment="Stretch"
                                     Click="OnOpenCommandPaletteClick"
-                                    AutomationProperties.AutomationId="OpenCommandPaletteButton"
+                                    Padding="10,6" FontSize="12"
                                     AutomationProperties.Name="Open Command Palette"
                                     ToolTip="Quick Command (Ctrl+K)">
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="{StaticResource IconSearch}"
                                                FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                               FontSize="14"
-                                               VerticalAlignment="Center" />
-                                    <TextBlock Text="Open Command Palette"
-                                               Margin="8,0,0,0"
-                                               VerticalAlignment="Center" />
+                                               FontSize="12" VerticalAlignment="Center" />
+                                    <TextBlock Text="Command Palette"
+                                               Margin="8,0,0,0" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
                             <Button Style="{StaticResource GhostButtonStyle}"
                                     HorizontalAlignment="Stretch"
                                     Command="{Binding OpenNotificationsCommand}"
-                                    Margin="0,8,0,0"
-                                    ToolTip="Open Notifications">
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                    Margin="0,4,0,0"
+                                    Padding="10,6" FontSize="12"
+                                    ToolTip="Notifications">
+                                <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="{StaticResource IconBell}"
                                                FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                               FontSize="14"
-                                               VerticalAlignment="Center" />
-                                    <TextBlock Text="Notification Center"
-                                               Margin="8,0,0,0"
-                                               VerticalAlignment="Center" />
+                                               FontSize="12" VerticalAlignment="Center" />
+                                    <TextBlock Text="Notifications"
+                                               Margin="8,0,0,0" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
                             <Button Style="{StaticResource GhostButtonStyle}"
                                     HorizontalAlignment="Stretch"
                                     Command="{Binding OpenHelpCommand}"
-                                    Margin="0,8,0,0"
-                                    AutomationProperties.AutomationId="HelpSupportButton"
+                                    Margin="0,4,0,0"
+                                    Padding="10,6" FontSize="12"
                                     AutomationProperties.Name="Help and Support">
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="{StaticResource IconHelp}"
                                                FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                               FontSize="16"
-                                               VerticalAlignment="Center" />
-                                    <TextBlock Text="Help and Support"
-                                               Margin="8,0,0,0"
-                                               VerticalAlignment="Center" />
+                                               FontSize="12" VerticalAlignment="Center" />
+                                    <TextBlock Text="Help"
+                                               Margin="8,0,0,0" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
                             <Button x:Name="TickerStripToggleButton"
                                     Style="{StaticResource GhostButtonStyle}"
                                     HorizontalAlignment="Stretch"
                                     Command="{Binding ToggleTickerStripCommand}"
-                                    Margin="0,8,0,0"
-                                    AutomationProperties.AutomationId="TickerStripToggleButton"
+                                    Margin="0,4,0,0"
+                                    Padding="10,6" FontSize="12"
                                     AutomationProperties.Name="Toggle Ticker Strip"
-                                    ToolTip="Toggle always-on-top live ticker strip (bid/ask/last)">
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                    <TextBlock Text="&#x1F4C8;"
-                                               FontSize="13"
-                                               VerticalAlignment="Center" />
+                                    ToolTip="Toggle live ticker strip">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#x1F4C8;" FontSize="11" VerticalAlignment="Center" />
                                     <TextBlock Text="{Binding TickerStripLabel}"
-                                               Margin="8,0,0,0"
-                                               VerticalAlignment="Center" />
+                                               Margin="8,0,0,0" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
                         </StackPanel>
@@ -704,7 +693,7 @@
                 </Grid>
             </Border>
 
-            <Grid Margin="0,16,16,16">
+            <Grid Margin="0">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
@@ -713,9 +702,9 @@
 
                 <Border x:Name="FixtureModeBanner"
                         Grid.Row="0"
-                        Margin="0,0,0,12"
-                        Padding="16,12"
-                        CornerRadius="16"
+                        Margin="0"
+                        Padding="16,10"
+                        CornerRadius="0"
                         Visibility="{Binding FixtureModeBannerVisibility}"
                         Panel.ZIndex="10">
                     <Border.Background>
@@ -757,12 +746,12 @@
                 </Border>
 
                 <Border Grid.Row="1"
-                        Background="{StaticResource HeaderBandBackgroundBrush}"
+                        Background="{StaticResource ConsoleBackgroundLightBrush}"
                         BorderBrush="{StaticResource ConsoleBorderBrush}"
-                        BorderThickness="1"
-                        CornerRadius="22"
-                        Padding="28,22"
-                        Margin="0,0,0,12">
+                        BorderThickness="0,0,0,1"
+                        CornerRadius="0"
+                        Padding="24,16"
+                        Margin="0,0,0,0">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
@@ -786,9 +775,9 @@
                                            Style="{StaticResource ShellSectionLabelStyle}" />
                             </StackPanel>
                             <TextBlock Text="{Binding CurrentPageTitle}"
-                                       Margin="0,12,0,0"
+                                       Margin="0,6,0,0"
                                        FontFamily="{StaticResource MeridianDisplayFontFamily}"
-                                       FontSize="28"
+                                       FontSize="20"
                                        FontWeight="SemiBold"
                                        Foreground="{StaticResource ConsoleTextPrimaryBrush}"
                                        AutomationProperties.AutomationId="PageTitleText"
