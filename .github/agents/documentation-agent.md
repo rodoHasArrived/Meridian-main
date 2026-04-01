@@ -839,6 +839,8 @@ Meridian-main
 │   ├── HELP.md
 │   ├── README.md
 │   └── toc.yml
+├── issues
+│   └── phase-1-5-add-equityclassification-discriminator-and-preferredterms-domain-model.md
 ├── make
 │   ├── ai.mk
 │   ├── build.mk

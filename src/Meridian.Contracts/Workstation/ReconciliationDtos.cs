@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Meridian.Contracts.Banking;
 
 namespace Meridian.Contracts.Workstation;
@@ -5,6 +6,7 @@ namespace Meridian.Contracts.Workstation;
 /// <summary>
 /// Source type participating in a reconciliation comparison.
 /// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter<ReconciliationSourceKind>))]
 public enum ReconciliationSourceKind : byte
 {
     Unknown = 0,
@@ -16,6 +18,7 @@ public enum ReconciliationSourceKind : byte
 /// <summary>
 /// Current workflow state for a reconciliation break.
 /// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter<ReconciliationBreakStatus>))]
 public enum ReconciliationBreakStatus : byte
 {
     Open = 0,
@@ -27,6 +30,7 @@ public enum ReconciliationBreakStatus : byte
 /// <summary>
 /// Canonical classification for reconciliation outcomes.
 /// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter<ReconciliationBreakCategory>))]
 public enum ReconciliationBreakCategory : byte
 {
     AmountMismatch = 0,
@@ -77,8 +81,8 @@ public sealed record ReconciliationRunSummary(
 public sealed record ReconciliationMatchDto(
     string CheckId,
     string Label,
-    ReconciliationSourceKind ExpectedSource,
-    ReconciliationSourceKind ActualSource,
+    string ExpectedSource,
+    string ActualSource,
     decimal? ExpectedAmount,
     decimal? ActualAmount,
     decimal Variance,
@@ -93,7 +97,7 @@ public sealed record ReconciliationBreakDto(
     string Label,
     ReconciliationBreakCategory Category,
     ReconciliationBreakStatus Status,
-    ReconciliationSourceKind MissingSource,
+    string MissingSource,
     decimal? ExpectedAmount,
     decimal? ActualAmount,
     decimal Variance,
