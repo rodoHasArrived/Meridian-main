@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-04-01 18:50:04 UTC. Do not edit manually.
+> Auto-generated on 2026-04-01 18:56:31 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -126,7 +126,9 @@ Meridian-main
 │   │   └── README.md
 │   └── config.toml
 ├── .devcontainer
-│   └── devcontainer.json
+│   ├── devcontainer.json
+│   ├── docker-compose.yml
+│   └── Dockerfile
 ├── .githooks
 │   └── pre-commit
 ├── .github
@@ -2947,6 +2949,12 @@ Meridian-main
 │   │   │   └── Golden
 │   │   │       └── alpaca-quote-pipeline.json
 │   │   ├── TestHelpers
+│   │   │   ├── Builders
+│   │   │   │   ├── BacktestRequestBuilder.cs
+│   │   │   │   ├── HistoricalBarBuilder.cs
+│   │   │   │   ├── MarketEventBuilder.cs
+│   │   │   │   ├── SecurityBuilder.cs
+│   │   │   │   └── TradeBuilder.cs
 │   │   │   ├── PolygonStubClient.cs
 │   │   │   ├── StubHttpMessageHandler.cs
 │   │   │   └── TestMarketEventPublisher.cs
