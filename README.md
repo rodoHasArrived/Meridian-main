@@ -250,7 +250,9 @@ Use these documents together when planning or implementing new work:
 │           └── references
 │               └── test-patterns.md
 ├── .devcontainer
-│   └── devcontainer.json
+│   ├── Dockerfile
+│   ├── devcontainer.json
+│   └── docker-compose.yml
 ├── .editorconfig
 ├── .flake8
 ├── .gitattributes
@@ -3259,6 +3261,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-441 directories, 2690 files
+441 directories, 2692 files
 ```
 <!-- readme-tree end -->
