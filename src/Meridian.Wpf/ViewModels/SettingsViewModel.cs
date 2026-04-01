@@ -33,6 +33,8 @@ public sealed class SettingsViewModel : BindableBase
     private string _collectorStatusText = "Running";
     private SolidColorBrush _collectorStatusDot = new(Color.FromRgb(63, 185, 80));
     private string _credentialsStatusText = string.Empty;
+    private SolidColorBrush _credentialsStatusDot = new(Color.FromRgb(63, 185, 80));
+    private string _lastAuthText = "Never";
     private string _lastSyncText = "2 min ago";
     private string _storagePreviewText = string.Empty;
     private string _storageSizeEstimateText = string.Empty;
@@ -124,6 +126,18 @@ public sealed class SettingsViewModel : BindableBase
     {
         get => _credentialsStatusText;
         private set => SetProperty(ref _credentialsStatusText, value);
+    }
+
+    public SolidColorBrush CredentialsStatusDot
+    {
+        get => _credentialsStatusDot;
+        private set => SetProperty(ref _credentialsStatusDot, value);
+    }
+
+    public string LastAuthText
+    {
+        get => _lastAuthText;
+        private set => SetProperty(ref _lastAuthText, value);
     }
 
     public string LastSyncText
