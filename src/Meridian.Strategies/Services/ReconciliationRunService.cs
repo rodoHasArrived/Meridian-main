@@ -70,8 +70,8 @@ public sealed class ReconciliationRunService : IReconciliationRunService
                 matches.Add(new ReconciliationMatchDto(
                     result.CheckId,
                     result.Label,
-                    MapSource(result.ExpectedSource),
-                    MapSource(result.ActualSource),
+                    result.ExpectedSource,
+                    result.ActualSource,
                     result.HasExpectedAmount ? result.ExpectedAmount : null,
                     result.HasActualAmount ? result.ActualAmount : null,
                     result.Variance,
@@ -85,7 +85,7 @@ public sealed class ReconciliationRunService : IReconciliationRunService
                 result.Label,
                 MapCategory(result.Category, result.MissingSource),
                 MapStatus(result.Status),
-                MapSource(result.MissingSource),
+                result.MissingSource,
                 result.HasExpectedAmount ? result.ExpectedAmount : null,
                 result.HasActualAmount ? result.ActualAmount : null,
                 result.Variance,
@@ -153,14 +153,6 @@ public sealed class ReconciliationRunService : IReconciliationRunService
         "investigating" => ReconciliationBreakStatus.Investigating,
         "resolved" => ReconciliationBreakStatus.Resolved,
         _ => ReconciliationBreakStatus.Open
-    };
-
-    private static ReconciliationSourceKind MapSource(string source) => source switch
-    {
-        "portfolio" => ReconciliationSourceKind.Portfolio,
-        "ledger" => ReconciliationSourceKind.Ledger,
-        "bank" => ReconciliationSourceKind.Bank,
-        _ => ReconciliationSourceKind.Unknown
     };
 
     private static IReadOnlyList<ReconciliationSecurityCoverageIssueDto> BuildSecurityCoverageIssues(StrategyRunDetail detail)
