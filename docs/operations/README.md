@@ -13,7 +13,7 @@ Guides for deploying, monitoring, and maintaining the Meridian in production.
 | [Service Level Objectives](service-level-objectives.md) | SLO definitions and monitoring |
 | [Portable Data Packager](portable-data-packager.md) | Creating and importing data packages |
 | [MSIX Packaging](msix-packaging.md) | Desktop application packaging |
-| [Preflight Checklist](preflight-checklist.md) | Pre-production go/no-go checklist mapped to production status |
+| [Governance Operator Workflow](governance-operator-workflow.md) | Security Master, reconciliation queue, and governance export operations |
 
 ## Quick Links
 
