@@ -42,14 +42,80 @@ The solution currently includes these major areas:
 
 ## Verified Entry Points
 
-The repo exposes a few main ways to work locally:
+### Main CLI host — `src/Meridian`
 
-- `make help` for the current task catalog
-- `make run-ui` for the cross-platform web dashboard flow
-- `dotnet run --project src/Meridian/Meridian.csproj -- --help` for the CLI host
-- `dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj -p:EnableFullWpfBuild=true` for the full Windows WPF desktop app
+The primary runnable project. Supports multiple modes via `--mode <mode>` or legacy flags:
 
-The CLI currently supports verified flows for configuration/bootstrap, provider recommendation, symbol management, backfill, package operations, schema validation, diagnostics, and Security Master-related commands. See [docs/HELP.md](docs/HELP.md) for the current operator/developer quick reference.
+| Mode / flag | What runs |
+|---|---|
+| `--mode web` or `--ui` | ASP.NET web dashboard + REST API on `http://localhost:8080` |
+| `--mode desktop` | Collector + embedded web server with config hot-reload |
+| `--mode headless` | Collector only, no HTTP server |
+| `--backfill` | Historical data backfill (combine with `--backfill-provider`, `--backfill-symbols`, `--backfill-from`, `--backfill-to`) |
+| `--selftest` | Wiring self-test; exits with pass/fail |
+| `--simulate-feed` | Synthetic feed simulation for offline development |
+| `--validate-config` / `--check-config` | Config validation without starting any services |
+| `--recommend-providers` | Print a provider recommendation report and exit |
+| `--symbols` / `--symbols-add` / `--symbols-remove` | Symbol management commands |
+| `--dry-run` | Validate configuration and connectivity without side effects |
+| `--quickstart` | Interactive first-run bootstrap wizard |
+
+```bash
+dotnet run --project src/Meridian/Meridian.csproj -- --help
+dotnet run --project src/Meridian/Meridian.csproj -- --mode web --http-port 8080
+dotnet run --project src/Meridian/Meridian.csproj -- --backfill --backfill-symbols AAPL,MSFT --backfill-from 2024-01-01 --backfill-to 2024-12-31
+```
+
+Config path resolution: `--config <path>` → `MDC_CONFIG_PATH` env var → `config/appsettings.json`.
+
+### Standalone web dashboard — `src/Meridian.Ui`
+
+A thin ASP.NET Core host that serves only the web dashboard and REST API. All endpoint logic and services come from `Meridian.Ui.Shared`. Use this instead of the main CLI host when you want a minimal web-only process.
+
+```bash
+dotnet run --project src/Meridian.Ui/Meridian.Ui.csproj
+```
+
+### MCP server (minimal) — `src/Meridian.Mcp`
+
+A lightweight [Model Context Protocol](https://modelcontextprotocol.io/) server. Loads tools, prompts, and resources from the assembly and communicates over stdio. Intended for repo-navigation and code-review AI tooling. All diagnostic output goes to stderr; stdout is reserved for the MCP protocol.
+
+```bash
+dotnet run --project src/Meridian.Mcp/Meridian.Mcp.csproj
+```
+
+### MCP server (market data) — `src/Meridian.McpServer`
+
+A full-featured MCP server that exposes market data capabilities (provider queries, backfill, storage catalog, symbol management) as MCP tools, resources, and prompts. Lets LLMs interact with live provider data over the stdio transport.
+
+```bash
+dotnet run --project src/Meridian.McpServer/Meridian.McpServer.csproj -- --config config/appsettings.json
+```
+
+Config path resolution: `--config <path>` → `MDC_CONFIG_PATH` env var → `config/appsettings.json`.
+
+### Windows WPF desktop app — `src/Meridian.Wpf`
+
+The full Windows workstation shell. Requires Windows and the full WPF build flag. On non-Windows the project builds as a stub for CI compatibility.
+
+```bash
+dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj /p:EnableFullWpfBuild=true
+```
+
+### Makefile shortcuts
+
+```bash
+make help           # List all task targets
+make run            # Collector with config hot-reload (--mode desktop)
+make run-ui         # Web dashboard (--mode web, port 8080)
+make run-backfill   # Historical backfill
+make run-selftest   # Wiring self-test
+make benchmark      # Full BenchmarkDotNet suite
+make bench-quick    # Quick bottleneck benchmarks (~10 min)
+make setup-dev      # One-shot local dev setup (hooks, config, restore, build)
+```
+
+See [docs/HELP.md](docs/HELP.md) for the full operator/developer quick reference including environment variables, configuration schema, and provider credential setup.
 
 ## Planning Source of Truth
 
