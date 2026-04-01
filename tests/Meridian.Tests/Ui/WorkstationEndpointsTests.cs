@@ -77,6 +77,14 @@ public sealed class WorkstationEndpointsTests
         latestRun.GetProperty("status").GetString().Should().Be("Completed");
         latestRun.GetProperty("dataset").GetString().Should().Be("dataset/fx/spot");
         latestRun.GetProperty("notes").GetString().Should().Contain("review");
+        latestRun.GetProperty("drillIn").GetProperty("fills").GetString().Should().Be("/api/workstation/runs/run-latest/fills");
+
+        var comparisons = research.RootElement.GetProperty("comparisons");
+        comparisons.GetArrayLength().Should().BeGreaterThan(0);
+        comparisons[0].GetProperty("modes").EnumerateArray()
+            .Should()
+            .Contain(mode => mode.GetProperty("drillIn").GetProperty("attribution").GetString() is not null);
+        research.RootElement.GetProperty("timeline").GetArrayLength().Should().Be(2);
 
         research.RootElement.GetProperty("metrics").EnumerateArray()
             .Should()
@@ -593,6 +601,83 @@ public sealed class WorkstationEndpointsTests
         var response = await client.PostAsJsonAsync("/api/workstation/runs/compare", new { runIds = new[] { "only-one" } });
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_CompareRuns_ShouldFilterByModeWhenRequested()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+        });
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildRun(
+            runId: "cmp-filter-paper",
+            strategyId: "s1",
+            strategyName: "Alpha Strategy",
+            runType: RunType.Paper,
+            startedAt: new DateTimeOffset(2026, 3, 21, 10, 0, 0, TimeSpan.Zero)));
+        await store.RecordRunAsync(BuildRun(
+            runId: "cmp-filter-backtest",
+            strategyId: "s1",
+            strategyName: "Alpha Strategy",
+            runType: RunType.Backtest,
+            startedAt: new DateTimeOffset(2026, 3, 21, 9, 0, 0, TimeSpan.Zero)));
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsJsonAsync("/api/workstation/runs/compare", new
+        {
+            runIds = new[] { "cmp-filter-paper", "cmp-filter-backtest" },
+            modes = new[] { "paper" }
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var doc = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
+        var rows = doc.RootElement.EnumerateArray().ToArray();
+        rows.Should().HaveCount(1);
+        rows[0].GetProperty("runId").GetString().Should().Be("cmp-filter-paper");
+        rows[0].GetProperty("mode").GetString().Should().Be("Paper");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_RunHistoryAndTimeline_ShouldRespectCrossModeFilteringAndSorting()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+        });
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildRun(
+            runId: "hist-backtest",
+            strategyId: "s-history",
+            strategyName: "History Strategy",
+            runType: RunType.Backtest,
+            startedAt: new DateTimeOffset(2026, 3, 20, 10, 0, 0, TimeSpan.Zero)));
+        await store.RecordRunAsync(BuildRun(
+            runId: "hist-paper",
+            strategyId: "s-history",
+            strategyName: "History Strategy",
+            runType: RunType.Paper,
+            startedAt: new DateTimeOffset(2026, 3, 21, 10, 0, 0, TimeSpan.Zero)));
+        await store.RecordRunAsync(BuildRun(
+            runId: "hist-live",
+            strategyId: "s-history",
+            strategyName: "History Strategy",
+            runType: RunType.Live,
+            startedAt: new DateTimeOffset(2026, 3, 22, 10, 0, 0, TimeSpan.Zero)));
+
+        var client = app.GetTestClient();
+        using var history = await ReadJsonAsync(client, "/api/workstation/runs/history?mode=paper,live&limit=10");
+        history.RootElement.GetArrayLength().Should().Be(2);
+        history.RootElement[0].GetProperty("runId").GetString().Should().Be("hist-live");
+        history.RootElement[1].GetProperty("runId").GetString().Should().Be("hist-paper");
+
+        using var timeline = await ReadJsonAsync(client, "/api/workstation/runs/timeline?mode=paper,live&limit=10");
+        timeline.RootElement.GetArrayLength().Should().Be(2);
+        timeline.RootElement[0].GetProperty("mode").GetString().Should().Be("Live");
+        timeline.RootElement[1].GetProperty("mode").GetString().Should().Be("Paper");
     }
 
     [Fact]
@@ -1132,6 +1217,7 @@ public sealed class WorkstationEndpointsTests
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         using var doc = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
         doc.RootElement.GetProperty("runId").GetString().Should().Be("drillfills-1");
+        doc.RootElement.GetProperty("mode").GetString().Should().Be("Backtest");
         doc.RootElement.GetProperty("totalFills").GetInt32().Should().Be(3);
         doc.RootElement.GetProperty("fills").GetArrayLength().Should().Be(3);
     }
@@ -1168,6 +1254,7 @@ public sealed class WorkstationEndpointsTests
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         using var doc = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
         doc.RootElement.GetProperty("runId").GetString().Should().Be("drillattr-1");
+        doc.RootElement.GetProperty("mode").GetString().Should().Be("Backtest");
         doc.RootElement.GetProperty("bySymbol").GetArrayLength().Should().BeGreaterThan(0);
     }
 
