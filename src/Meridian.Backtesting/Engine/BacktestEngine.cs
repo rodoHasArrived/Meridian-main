@@ -66,7 +66,7 @@ public sealed class BacktestEngine(
         var portfolio = new SimulatedPortfolio(accounts, request.DefaultBrokerageAccountId, commissionModel, ledger, startTimestamp);
         var ctx = new BacktestContext(portfolio, universe, ledger, request.DefaultBrokerageAccountId);
         var orderBookFillModel = new OrderBookFillModel(commissionModel, tickSizes);
-        var barFillModel = new BarMidpointFillModel(commissionModel, request.SlippageBasisPoints, spreadAware: true, tickSizes, request.MaxParticipationRate);
+        var barFillModel = new BarMidpointFillModel(commissionModel, request.SlippageBasisPoints, spreadAware: true, tickSizes: tickSizes, maxParticipationRate: request.MaxParticipationRate);
         var marketImpactFillModel = new MarketImpactFillModel(commissionModel, request.MarketImpactCoefficient, request.SlippageBasisPoints);
 
         var pendingOrders = new List<Order>();

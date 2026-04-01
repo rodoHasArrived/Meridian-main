@@ -10,7 +10,10 @@ namespace Meridian.Backtesting.FillModels;
 /// Supports market, limit, stop-market, and stop-limit semantics with a
 /// configurable midpoint slippage assumption. When <paramref name="spreadAware"/>
 /// is enabled, slippage is scaled by the bar's intrabar volatility (range / midpoint),
-/// simulating wider spreads in volatile conditions.
+/// simulating wider spreads in volatile conditions. The scaling formula is
+/// <c>slippageBasisPoints × (1 + volatilityFactor × <paramref name="volatilityMultiplier"/>)</c>;
+/// the default multiplier of 50 is an empirical calibration that maps a typical 1–2% intraday
+/// bar range to a 50–100% slippage increase — adjust when calibrating against real microstructure data.
 /// When <paramref name="tickSizes"/> is provided, fill prices are rounded to the
 /// instrument's tick grid before being returned.
 /// When <paramref name="maxParticipationRate"/> is greater than zero, the fill is
@@ -22,6 +25,7 @@ internal sealed class BarMidpointFillModel(
     ICommissionModel commissionModel,
     decimal slippageBasisPoints = 5m,
     bool spreadAware = false,
+    decimal volatilityMultiplier = 50m,
     IReadOnlyDictionary<string, decimal>? tickSizes = null,
     decimal maxParticipationRate = 0m) : IFillModel
 {
@@ -151,12 +155,8 @@ internal sealed class BarMidpointFillModel(
                 {
                     var range = bar.High - bar.Low;
                     var volatilityFactor = range / mid; // e.g., 0.02 for a 2% bar range
-                    // Scale: base slippage * (1 + volatility multiplier × 50).
-                    // The 50× factor is an empirical calibration: it maps a typical equity
-                    // intraday range of 1–2 % to a slippage increase of 50–100 %, approximating
-                    // the widening of quoted spreads in high-volatility conditions. Adjust this
-                    // constant when calibrating the model against actual market microstructure data.
-                    effectiveSlippage = slippageBasisPoints * (1m + volatilityFactor * 50m);
+                    // volatilityMultiplier is a calibration factor (default 50×); see constructor doc.
+                    effectiveSlippage = slippageBasisPoints * (1m + volatilityFactor * volatilityMultiplier);
                 }
 
                 var slip = mid * (effectiveSlippage / 10_000m);
