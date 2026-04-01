@@ -3140,6 +3140,12 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── Golden
 │   │   │       └── alpaca-quote-pipeline.json
 │   │   ├── TestHelpers
+│   │   │   ├── Builders
+│   │   │   │   ├── BacktestRequestBuilder.cs
+│   │   │   │   ├── HistoricalBarBuilder.cs
+│   │   │   │   ├── MarketEventBuilder.cs
+│   │   │   │   ├── SecurityBuilder.cs
+│   │   │   │   └── TradeBuilder.cs
 │   │   │   ├── PolygonStubClient.cs
 │   │   │   ├── StubHttpMessageHandler.cs
 │   │   │   └── TestMarketEventPublisher.cs
@@ -3261,6 +3267,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-441 directories, 2692 files
+442 directories, 2697 files
 ```
 <!-- readme-tree end -->
