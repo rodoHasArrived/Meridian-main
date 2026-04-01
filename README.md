@@ -1156,6 +1156,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── OperationalScheduler.cs
 │   │   │   └── ScheduledBackfillService.cs
 │   │   ├── SecurityMaster
+│   │   │   ├── ILivePositionCorporateActionAdjuster.cs
 │   │   │   ├── ISecurityMasterQueryService.cs
 │   │   │   ├── ISecurityMasterService.cs
 │   │   │   ├── ISecurityResolver.cs
@@ -1551,6 +1552,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── UnsupportedOrderRequestException.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── IRiskValidator.cs
+│   │   ├── ISecurityMasterGate.cs
 │   │   ├── Interfaces
 │   │   │   ├── IExecutionContext.cs
 │   │   │   ├── ILiveFeedAdapter.cs
@@ -1567,6 +1569,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── OrderManagementSystem.cs
 │   │   ├── PaperExecutionContext.cs
 │   │   ├── PaperTradingGateway.cs
+│   │   ├── SecurityMasterGate.cs
 │   │   ├── Serialization
 │   │   │   └── ExecutionJsonContext.cs
 │   │   └── Services
@@ -3189,6 +3192,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-441 directories, 2686 files
+441 directories, 2689 files
 ```
 <!-- readme-tree end -->
