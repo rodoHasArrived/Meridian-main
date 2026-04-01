@@ -83,7 +83,7 @@ public sealed class WorkstationEndpointsTests
         comparisons.GetArrayLength().Should().BeGreaterThan(0);
         comparisons[0].GetProperty("modes").EnumerateArray()
             .Should()
-            .Contain(mode => mode.GetProperty("drillIn").GetProperty("attribution").GetString() is not null);
+            .Contain(mode => mode.GetProperty("drillIn").GetProperty("attribution").GetString() != null);
         research.RootElement.GetProperty("timeline").GetArrayLength().Should().Be(2);
 
         research.RootElement.GetProperty("metrics").EnumerateArray()

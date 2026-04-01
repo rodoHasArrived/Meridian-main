@@ -262,7 +262,7 @@ public sealed class AlertDispatcherTests : IDisposable
 
             // The internal queue trims to maxRecentAlerts
             var alerts = sut.GetRecentAlerts(count: 100);
-            alerts.Should().HaveCountLessOrEqualTo(3);
+            alerts.Should().HaveCount(3);
         }
     }
 
