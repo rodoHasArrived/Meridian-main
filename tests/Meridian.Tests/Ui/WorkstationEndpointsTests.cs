@@ -25,11 +25,13 @@ namespace Meridian.Tests.Ui;
 
 public sealed class WorkstationEndpointsTests
 {
-    private static readonly JsonSerializerOptions JsonReadOptions = new(JsonSerializerDefaults.Web)
+    // Must match the JsonSerializerOptions used in CreateAppAsync so that enum fields
+    // serialized as strings by the server (via JsonStringEnumConverter) can be round-tripped.
+    private static readonly JsonSerializerOptions ServerJsonOptions = new()
     {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         Converters = { new JsonStringEnumConverter() }
     };
-
     [Fact]
     public async Task MapWorkstationEndpoints_WithStrategyReadService_ShouldReturnServiceBackedBootstrapPayloads()
     {
@@ -292,7 +294,7 @@ public sealed class WorkstationEndpointsTests
         var response = await client.PostAsJsonAsync("/api/workstation/reconciliation/runs", new ReconciliationRunRequest("run-recon"));
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var created = await response.Content.ReadFromJsonAsync<ReconciliationRunDetail>(JsonReadOptions);
+        var created = await response.Content.ReadFromJsonAsync<ReconciliationRunDetail>(ServerJsonOptions);
         created.Should().NotBeNull();
         created!.Summary.RunId.Should().Be("run-recon");
         created.Summary.BreakCount.Should().Be(0);
@@ -300,13 +302,13 @@ public sealed class WorkstationEndpointsTests
 
         var latestResponse = await client.GetAsync("/api/workstation/runs/run-recon/reconciliation");
         latestResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var latest = await latestResponse.Content.ReadFromJsonAsync<ReconciliationRunDetail>(JsonReadOptions);
+        var latest = await latestResponse.Content.ReadFromJsonAsync<ReconciliationRunDetail>(ServerJsonOptions);
         latest.Should().NotBeNull();
         latest!.Summary.ReconciliationRunId.Should().Be(created.Summary.ReconciliationRunId);
 
         var byIdResponse = await client.GetAsync($"/api/workstation/reconciliation/runs/{created.Summary.ReconciliationRunId}");
         byIdResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var byId = await byIdResponse.Content.ReadFromJsonAsync<ReconciliationRunDetail>(JsonReadOptions);
+        var byId = await byIdResponse.Content.ReadFromJsonAsync<ReconciliationRunDetail>(ServerJsonOptions);
         byId.Should().NotBeNull();
         byId!.Summary.MatchCount.Should().BeGreaterThan(0);
     }
@@ -424,7 +426,7 @@ public sealed class WorkstationEndpointsTests
         var response = await client.PostAsJsonAsync("/api/workstation/reconciliation/runs", new ReconciliationRunRequest("run-breaks"));
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var created = await response.Content.ReadFromJsonAsync<ReconciliationRunDetail>(JsonReadOptions);
+        var created = await response.Content.ReadFromJsonAsync<ReconciliationRunDetail>(ServerJsonOptions);
         created.Should().NotBeNull();
         created!.Summary.BreakCount.Should().BeGreaterThan(0);
         created.Breaks.Should().NotBeEmpty();
