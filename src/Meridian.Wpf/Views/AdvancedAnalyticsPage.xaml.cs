@@ -9,6 +9,8 @@ namespace Meridian.Wpf.Views;
 /// Page for advanced analytics including gap analysis, cross-provider comparison,
 /// latency histograms, anomaly detection, and detailed quality reports.
 /// All state is bound directly to <see cref="AdvancedAnalyticsViewModel"/> via XAML.
+/// MVVM compliant: code-behind contains only constructor DI wiring and minimal event-handler
+/// delegation to the ViewModel — no direct UI element mutation.
 /// </summary>
 public partial class AdvancedAnalyticsPage : Page
 {

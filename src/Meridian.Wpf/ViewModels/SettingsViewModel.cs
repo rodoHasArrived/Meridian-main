@@ -43,6 +43,18 @@ public sealed class SettingsViewModel : BindableBase
     private Visibility _noCredentialsVisibility = Visibility.Collapsed;
     private Visibility _credentialListVisibility = Visibility.Visible;
 
+    // ── Appearance / notification / performance settings (bindable defaults) ──
+    private int _themeIndex;
+    private int _accentColorIndex;
+    private bool _isCompactMode;
+    private bool _isNotificationsEnabled = true;
+    private string _maxConcurrentDownloads = "4";
+    private string _writeBufferSize = "64";
+    private bool _isMetricsEnabled = true;
+    private bool _isDebugLoggingEnabled;
+    private string _apiBaseUrl = "http://localhost:8080";
+    private string _statusRefreshInterval = "2";
+
     public SettingsViewModel(
         WpfServices.ConfigService configService,
         WpfServices.NotificationService notificationService,
@@ -180,6 +192,82 @@ public sealed class SettingsViewModel : BindableBase
     {
         get => _credentialListVisibility;
         private set => SetProperty(ref _credentialListVisibility, value);
+    }
+
+    // ── Appearance / notification / performance settings ──────────────────────
+
+    /// <summary>Selected index of the theme ComboBox (0 = system, 1 = light, 2 = dark).</summary>
+    public int ThemeIndex
+    {
+        get => _themeIndex;
+        set => SetProperty(ref _themeIndex, value);
+    }
+
+    /// <summary>Selected index of the accent-color ComboBox.</summary>
+    public int AccentColorIndex
+    {
+        get => _accentColorIndex;
+        set => SetProperty(ref _accentColorIndex, value);
+    }
+
+    public bool IsCompactMode
+    {
+        get => _isCompactMode;
+        set => SetProperty(ref _isCompactMode, value);
+    }
+
+    /// <summary>
+    /// Whether Windows notifications are enabled.
+    /// The XAML NotificationSettingsPanel binds its Opacity to
+    /// <see cref="NotificationsPanelOpacity"/> which is derived from this flag.
+    /// </summary>
+    public bool IsNotificationsEnabled
+    {
+        get => _isNotificationsEnabled;
+        set
+        {
+            if (SetProperty(ref _isNotificationsEnabled, value))
+                RaisePropertyChanged(nameof(NotificationsPanelOpacity));
+        }
+    }
+
+    /// <summary>1.0 when notifications are enabled, 0.5 when disabled.</summary>
+    public double NotificationsPanelOpacity => _isNotificationsEnabled ? 1.0 : 0.5;
+
+    public string MaxConcurrentDownloads
+    {
+        get => _maxConcurrentDownloads;
+        set => SetProperty(ref _maxConcurrentDownloads, value);
+    }
+
+    public string WriteBufferSize
+    {
+        get => _writeBufferSize;
+        set => SetProperty(ref _writeBufferSize, value);
+    }
+
+    public bool IsMetricsEnabled
+    {
+        get => _isMetricsEnabled;
+        set => SetProperty(ref _isMetricsEnabled, value);
+    }
+
+    public bool IsDebugLoggingEnabled
+    {
+        get => _isDebugLoggingEnabled;
+        set => SetProperty(ref _isDebugLoggingEnabled, value);
+    }
+
+    public string ApiBaseUrl
+    {
+        get => _apiBaseUrl;
+        set => SetProperty(ref _apiBaseUrl, value);
+    }
+
+    public string StatusRefreshInterval
+    {
+        get => _statusRefreshInterval;
+        set => SetProperty(ref _statusRefreshInterval, value);
     }
 
     // ── Commands ──────────────────────────────────────────────────────────────
@@ -413,15 +501,20 @@ public sealed class SettingsViewModel : BindableBase
 
         if (result == MessageBoxResult.Yes)
         {
+            ThemeIndex             = 0;
+            AccentColorIndex       = 0;
+            IsCompactMode          = false;
+            IsNotificationsEnabled = true;
+            MaxConcurrentDownloads = "4";
+            WriteBufferSize        = "64";
+            IsMetricsEnabled       = true;
+            IsDebugLoggingEnabled  = false;
+            ApiBaseUrl             = "http://localhost:8080";
+            StatusRefreshInterval  = "2";
+
             _notificationService.ShowNotification("Reset Complete", "Settings have been reset to defaults.", NotificationType.Success);
-            RaisePropertyChanged(nameof(ResetRequested));
         }
     }
-
-    /// <summary>
-    /// Raised after a reset so the code-behind can restore default control values.
-    /// </summary>
-    public bool ResetRequested { get; private set; }
 
     // ── Test / support ────────────────────────────────────────────────────────
 
