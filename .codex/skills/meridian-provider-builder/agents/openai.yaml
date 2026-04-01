@@ -1,4 +1,0 @@
-interface:
-  display_name: "Meridian Provider Builder"
-  short_description: "Build Meridian market data providers"
-  default_prompt: "Use $meridian-provider-builder to add or extend a Meridian provider with the right contracts, DI wiring, resilience, and tests."

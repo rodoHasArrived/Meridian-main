@@ -189,3 +189,98 @@ public sealed class OrderManagementSystemTests : IDisposable
         completedIds[0].Should().Be(ids[^1]);
     }
 }
+
+// ---------------------------------------------------------------------------
+// Security Master gate tests (separate fixture to keep constructor clean)
+// ---------------------------------------------------------------------------
+
+public sealed class OrderManagementSystemGateTests : IDisposable
+{
+    private readonly ExecutionGateway _gateway;
+
+    public OrderManagementSystemGateTests()
+    {
+        _gateway = new ExecutionGateway(NullLogger<ExecutionGateway>.Instance);
+    }
+
+    public void Dispose() { }
+
+    [Fact]
+    public async Task PlaceOrderAsync_WhenGateApproves_OrderIsAccepted()
+    {
+        var gate = new ApproveAllGate();
+        using var oms = new OrderManagementSystem(_gateway, NullLogger<OrderManagementSystem>.Instance,
+            securityMasterGate: gate);
+
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 5
+        });
+
+        result.Success.Should().BeTrue("the gate approved the symbol");
+        gate.CheckCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task PlaceOrderAsync_WhenGateRejects_ReturnsFailureWithoutSubmittingToGateway()
+    {
+        var gate = new RejectAllGate("UNKNWN is not in Security Master");
+        using var oms = new OrderManagementSystem(_gateway, NullLogger<OrderManagementSystem>.Instance,
+            securityMasterGate: gate);
+
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "UNKNWN",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 10
+        });
+
+        result.Success.Should().BeFalse("the gate rejected the symbol");
+        result.ErrorMessage.Should().Contain("UNKNWN");
+        oms.GetOpenOrders().Should().BeEmpty("rejected orders must not be tracked");
+    }
+
+    [Fact]
+    public async Task PlaceOrderAsync_WithNoGateWired_AcceptsAnySymbol()
+    {
+        using var oms = new OrderManagementSystem(_gateway, NullLogger<OrderManagementSystem>.Instance);
+
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "ANYTHING",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 1
+        });
+
+        // Gateway fills market orders immediately, so no rejection from missing gate
+        result.Success.Should().BeTrue("no gate means any symbol is accepted");
+    }
+
+    // ---- Stubs ----
+
+    private sealed class ApproveAllGate : ISecurityMasterGate
+    {
+        public int CheckCount { get; private set; }
+
+        public Task<SecurityMasterGateResult> CheckAsync(string symbol, CancellationToken ct = default)
+        {
+            CheckCount++;
+            return Task.FromResult(new SecurityMasterGateResult(true));
+        }
+    }
+
+    private sealed class RejectAllGate : ISecurityMasterGate
+    {
+        private readonly string _reason;
+
+        public RejectAllGate(string reason) => _reason = reason;
+
+        public Task<SecurityMasterGateResult> CheckAsync(string symbol, CancellationToken ct = default)
+            => Task.FromResult(new SecurityMasterGateResult(false, _reason));
+    }
+}

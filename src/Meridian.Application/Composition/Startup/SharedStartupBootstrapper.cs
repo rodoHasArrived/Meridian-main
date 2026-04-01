@@ -93,8 +93,6 @@ public static class SharedStartupBootstrapper
 /// </summary>
 public static class SharedStartupHelpers
 {
-    private const string DefaultConfigFileName = "appsettings.json";
-    private const string ConfigDirectoryDefaultConfigFileName = "config/appsettings.json";
     private const string ConfigPathEnvVar = "MDC_CONFIG_PATH";
 
     /// <summary>
@@ -123,7 +121,7 @@ public static class SharedStartupHelpers
             if (!File.Exists(path))
             {
                 Console.Error.WriteLine($"[Warning] Configuration file not found: {path}");
-                Console.Error.WriteLine("Using default configuration. Copy appsettings.sample.json to appsettings.json to customize.");
+                Console.Error.WriteLine("Using default configuration. Copy config/appsettings.sample.json to config/appsettings.json to customize.");
                 return new AppConfig();
             }
 
@@ -201,12 +199,7 @@ public static class SharedStartupHelpers
         => DateOnly.TryParse(value, out var date) ? date : null;
 
     private static string ResolveDefaultConfigPath()
-    {
-        if (File.Exists(ConfigDirectoryDefaultConfigFileName))
-            return ConfigDirectoryDefaultConfigFileName;
-
-        return DefaultConfigFileName;
-    }
+        => DefaultConfigPathResolver.Resolve();
 }
 
 internal sealed record CommandDispatchPlan(CommandDispatcher Dispatcher);

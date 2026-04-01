@@ -2,8 +2,11 @@ using System.IO;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
+using Meridian.Wpf.Contracts;
+using Meridian.Ui.Services.Services;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
 using Meridian.Wpf.Views;
@@ -144,7 +147,23 @@ internal sealed class RunMatUiAutomationFacade : IDisposable
             });
             dictionaries.Add(new ResourceDictionary
             {
+                Source = new Uri("pack://application:,,,/Meridian.Desktop;component/Styles/ThemeTokens.xaml", UriKind.Absolute)
+            });
+            dictionaries.Add(new ResourceDictionary
+            {
                 Source = new Uri("pack://application:,,,/Meridian.Desktop;component/Styles/AppStyles.xaml", UriKind.Absolute)
+            });
+            dictionaries.Add(new ResourceDictionary
+            {
+                Source = new Uri("pack://application:,,,/Meridian.Desktop;component/Styles/ThemeTypography.xaml", UriKind.Absolute)
+            });
+            dictionaries.Add(new ResourceDictionary
+            {
+                Source = new Uri("pack://application:,,,/Meridian.Desktop;component/Styles/ThemeSurfaces.xaml", UriKind.Absolute)
+            });
+            dictionaries.Add(new ResourceDictionary
+            {
+                Source = new Uri("pack://application:,,,/Meridian.Desktop;component/Styles/ThemeControls.xaml", UriKind.Absolute)
             });
             dictionaries.Add(new ResourceDictionary
             {
@@ -154,6 +173,9 @@ internal sealed class RunMatUiAutomationFacade : IDisposable
             {
                 Source = new Uri("pack://application:,,,/Meridian.Desktop;component/Styles/Animations.xaml", UriKind.Absolute)
             });
+
+            System.Windows.Application.Current.Resources["CommandBarBackground"] = new SolidColorBrush(Color.FromRgb(24, 28, 34));
+            System.Windows.Application.Current.Resources["CommandBarBorderBrush"] = new SolidColorBrush(Color.FromRgb(52, 58, 68));
             _resourcesInitialized = true;
         }
     }
@@ -162,14 +184,19 @@ internal sealed class RunMatUiAutomationFacade : IDisposable
     {
         var services = new ServiceCollection();
         services.AddSingleton<NavigationService>(_ => NavigationService.Instance);
+        services.AddSingleton<INavigationService>(_ => NavigationService.Instance);
         services.AddSingleton<ConnectionService>(_ => ConnectionService.Instance);
         services.AddSingleton<StatusService>(_ => StatusService.Instance);
         services.AddSingleton<MessagingService>(_ => MessagingService.Instance);
         services.AddSingleton<Meridian.Wpf.Services.NotificationService>(_ => Meridian.Wpf.Services.NotificationService.Instance);
+        services.AddSingleton(_ => FixtureModeDetector.Instance);
         services.AddTransient<DashboardPage>();
-        services.AddSingleton(runMatService ?? RunMatService.Instance);
-        services.AddTransient<RunMatViewModel>();
+        var resolvedRunMatService = runMatService ?? RunMatService.Instance;
+        services.AddSingleton(resolvedRunMatService);
+        services.AddTransient(_ => CreateViewModel(resolvedRunMatService));
         services.AddTransient<RunMatPage>();
+        services.AddTransient<MainPageViewModel>();
+        services.AddTransient<MainPage>();
         return services.BuildServiceProvider();
     }
 
@@ -183,9 +210,9 @@ internal sealed class RunMatUiAutomationFacade : IDisposable
 
     public static void InvokeNavigateToPage(MainPage page, string pageTag)
     {
-        var method = typeof(MainPage).GetMethod("NavigateToPage", BindingFlags.Instance | BindingFlags.NonPublic);
-        method.Should().NotBeNull();
-        method!.Invoke(page, new object[] { pageTag });
+        page.DataContext.Should().BeOfType<MainPageViewModel>();
+        var viewModel = (MainPageViewModel)page.DataContext!;
+        viewModel.NavigateToPageCommand.Execute(pageTag);
         DrainDispatcher();
     }
 

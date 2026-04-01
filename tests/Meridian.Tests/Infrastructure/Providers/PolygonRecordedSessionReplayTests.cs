@@ -43,6 +43,25 @@ public sealed class PolygonRecordedSessionReplayTests
 
     [Theory]
     [MemberData(nameof(FixtureFiles))]
+    public void FixtureMetadata_ContainsDescriptionAndExpectedSections(string fixtureFileName)
+    {
+        using var doc = JsonDocument.Parse(File.ReadAllText(Path.Combine(FixturesDir, fixtureFileName)));
+        var root = doc.RootElement;
+
+        root.TryGetProperty("description", out var description).Should().BeTrue(
+            because: $"[{fixtureFileName}] should explain which Polygon feed shapes it is validating");
+        description.GetString().Should().NotBeNullOrWhiteSpace(
+            because: $"[{fixtureFileName}] should document the replay scenario for future operators and maintainers");
+
+        root.TryGetProperty("expected", out var expected).Should().BeTrue(
+            because: $"[{fixtureFileName}] should encode its expected replay output explicitly");
+        expected.TryGetProperty("trade", out _).Should().BeTrue();
+        expected.TryGetProperty("quote", out _).Should().BeTrue();
+        expected.TryGetProperty("aggregates", out _).Should().BeTrue();
+    }
+
+    [Theory]
+    [MemberData(nameof(FixtureFiles))]
     public void RecordedSessionReplay_EmitsExpectedTradeQuoteAndAggregateEvents(string fixtureFileName)
     {
         var fixture = LoadFixture(fixtureFileName);
@@ -69,12 +88,22 @@ public sealed class PolygonRecordedSessionReplayTests
         var tradeEvents = publisher.PublishedEvents.Where(static evt => evt.Type == MarketEventType.Trade).ToArray();
         var quoteEvents = publisher.PublishedEvents.Where(static evt => evt.Type == MarketEventType.BboQuote).ToArray();
         var aggregateEvents = publisher.PublishedEvents.Where(static evt => evt.Type == MarketEventType.AggregateBar).ToArray();
+        var orderFlowEvents = publisher.PublishedEvents.Where(static evt => evt.Type == MarketEventType.OrderFlow).ToArray();
         var integrityEvents = publisher.PublishedEvents.Where(static evt => evt.Type == MarketEventType.Integrity).ToArray();
+        var unexpectedEvents = publisher.PublishedEvents
+            .Where(static evt => evt.Type is not MarketEventType.Trade
+                and not MarketEventType.BboQuote
+                and not MarketEventType.AggregateBar
+                and not MarketEventType.OrderFlow
+                and not MarketEventType.Integrity)
+            .ToArray();
 
         tradeEvents.Should().ContainSingle(because: $"[{fixtureFileName}] only the subscribed trade should be emitted");
         quoteEvents.Should().ContainSingle(because: $"[{fixtureFileName}] only the subscribed quote should be emitted");
         aggregateEvents.Should().HaveCount(fixture.Expected.Aggregates.Length, because: $"[{fixtureFileName}] expected aggregate frames should be emitted");
+        orderFlowEvents.Should().HaveCount(tradeEvents.Length, because: $"[{fixtureFileName}] each accepted trade should also emit order-flow statistics");
         integrityEvents.Should().HaveCount(fixture.Expected.ExpectedIntegrityEvents, because: $"[{fixtureFileName}] malformed-but-skipped frames should not create unexpected integrity events");
+        unexpectedEvents.Should().BeEmpty(because: $"[{fixtureFileName}] replay fixtures should only produce the documented trade, quote, aggregate, order-flow, or integrity event types");
 
         var trade = tradeEvents[0].Payload.Should().BeOfType<Trade>().Subject;
         trade.Symbol.Should().Be(fixture.Expected.Trade.Symbol);

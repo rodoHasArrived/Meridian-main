@@ -4,6 +4,9 @@
       Background="{DynamicResource ShellWindowBackgroundBrush}"
       Loaded="OnPageLoaded"
       AutomationProperties.Name="Options">
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+    </Page.Resources>
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
         <StackPanel MaxWidth="1200">
 
@@ -42,7 +45,7 @@
                         <!-- Tracked Contracts -->
                         <Border Grid.Column="0" Background="{StaticResource PremiumPanelBrush}" BorderBrush="{StaticResource ConsoleBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="16">
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock x:Name="TrackedContractsText" Text="--" FontSize="28" FontWeight="Bold"
+                                <TextBlock Text="{Binding TrackedContracts}" FontSize="28" FontWeight="Bold"
                                            Foreground="{StaticResource InfoColorBrush}" HorizontalAlignment="Center" />
                                 <TextBlock Text="Contracts" FontSize="12" Foreground="{StaticResource ConsoleTextMutedBrush}"
                                            HorizontalAlignment="Center" Margin="0,4,0,0" />
@@ -52,7 +55,7 @@
                         <!-- Tracked Chains -->
                         <Border Grid.Column="2" Background="{StaticResource PremiumPanelBrush}" BorderBrush="{StaticResource ConsoleBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="16">
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock x:Name="TrackedChainsText" Text="--" FontSize="28" FontWeight="Bold"
+                                <TextBlock Text="{Binding TrackedChains}" FontSize="28" FontWeight="Bold"
                                            Foreground="{StaticResource SuccessColorBrush}" HorizontalAlignment="Center" />
                                 <TextBlock Text="Chains" FontSize="12" Foreground="{StaticResource ConsoleTextMutedBrush}"
                                            HorizontalAlignment="Center" Margin="0,4,0,0" />
@@ -62,7 +65,7 @@
                         <!-- Underlyings -->
                         <Border Grid.Column="4" Background="{StaticResource PremiumPanelBrush}" BorderBrush="{StaticResource ConsoleBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="16">
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock x:Name="TrackedUnderlyingsText" Text="--" FontSize="28" FontWeight="Bold"
+                                <TextBlock Text="{Binding TrackedUnderlyings}" FontSize="28" FontWeight="Bold"
                                            Foreground="{StaticResource WarningColorBrush}" HorizontalAlignment="Center" />
                                 <TextBlock Text="Underlyings" FontSize="12" Foreground="{StaticResource ConsoleTextMutedBrush}"
                                            HorizontalAlignment="Center" Margin="0,4,0,0" />
@@ -72,7 +75,7 @@
                         <!-- With Greeks -->
                         <Border Grid.Column="6" Background="{StaticResource PremiumPanelBrush}" BorderBrush="{StaticResource ConsoleBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="16">
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock x:Name="WithGreeksText" Text="--" FontSize="28" FontWeight="Bold"
+                                <TextBlock Text="{Binding WithGreeks}" FontSize="28" FontWeight="Bold"
                                            Foreground="{StaticResource ConsoleTextPrimaryBrush}" HorizontalAlignment="Center" />
                                 <TextBlock Text="With Greeks" FontSize="12" Foreground="{StaticResource ConsoleTextMutedBrush}"
                                            HorizontalAlignment="Center" Margin="0,4,0,0" />
@@ -82,9 +85,19 @@
 
                     <!-- Provider Status -->
                     <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
-                        <Ellipse x:Name="ProviderStatusDot" Width="8" Height="8" Margin="0,0,8,0"
-                                 Fill="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" />
-                        <TextBlock x:Name="ProviderStatusText" Text="Provider status unknown"
+                        <Ellipse Width="8" Height="8" Margin="0,0,8,0" VerticalAlignment="Center">
+                            <Ellipse.Style>
+                                <Style TargetType="Ellipse">
+                                    <Setter Property="Fill" Value="{StaticResource ConsoleTextMutedBrush}" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsProviderAvailable}" Value="True">
+                                            <Setter Property="Fill" Value="{StaticResource SuccessColorBrush}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Ellipse.Style>
+                        </Ellipse>
+                        <TextBlock Text="{Binding ProviderStatusText}"
                                    FontSize="12" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" />
                     </StackPanel>
                 </StackPanel>
@@ -98,11 +111,12 @@
                                FontSize="12" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,0,12" />
                     <StackPanel Orientation="Horizontal">
                         <TextBox x:Name="SymbolInput" Width="160" Margin="0,0,12,0"
+                                 Text="{Binding SymbolInputText, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource FormTextBoxStyle}"
                                  KeyDown="SymbolInput_KeyDown" />
                         <Button Content="Load Expirations" Click="LoadExpirations_Click"
                                 Style="{StaticResource PrimaryButtonStyle}" />
-                        <Button x:Name="RefreshButton" Content="Refresh" Click="RefreshData_Click"
+                        <Button Content="Refresh" Click="RefreshData_Click"
                                 Style="{StaticResource SecondaryButtonStyle}" Margin="8,0,0,0" />
                     </StackPanel>
                 </StackPanel>
@@ -112,7 +126,7 @@
             <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
                 <StackPanel>
                     <TextBlock Text="Tracked Underlyings" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,16" />
-                    <ListView x:Name="UnderlyingsList" SelectionMode="Single" MaxHeight="200"
+                    <ListView ItemsSource="{Binding Underlyings}" SelectionMode="Single" MaxHeight="200"
                               Background="Transparent" BorderThickness="0"
                               SelectionChanged="UnderlyingsList_SelectionChanged">
                         <ListView.ItemContainerStyle>
@@ -135,19 +149,21 @@
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>
-                    <TextBlock x:Name="NoUnderlyingsText" Text="No tracked underlyings. Use the lookup above to load option chain data."
+                    <TextBlock Text="No tracked underlyings. Use the lookup above to load option chain data."
                                FontSize="12" Foreground="{StaticResource ConsoleTextMutedBrush}"
-                               Visibility="Visible" Margin="0,8,0,0" />
+                               Visibility="{Binding NoUnderlyingsVisible, Converter={StaticResource BoolToVisibility}}"
+                               Margin="0,8,0,0" />
                 </StackPanel>
             </Border>
 
             <!-- Expirations -->
-            <Border x:Name="ExpirationsPanel" Style="{StaticResource CardStyle}" Margin="0,0,0,24" Visibility="Collapsed">
+            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24"
+                    Visibility="{Binding ExpirationsPanelVisible, Converter={StaticResource BoolToVisibility}}">
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                        <TextBlock x:Name="ExpirationsHeader" Text="Expirations" Style="{StaticResource CardHeaderStyle}" />
+                        <TextBlock Text="{Binding ExpirationsHeader}" Style="{StaticResource CardHeaderStyle}" />
                     </StackPanel>
-                    <ListView x:Name="ExpirationsList" SelectionMode="Single" MaxHeight="250"
+                    <ListView ItemsSource="{Binding Expirations}" SelectionMode="Single" MaxHeight="250"
                               Background="Transparent" BorderThickness="0"
                               SelectionChanged="ExpirationsList_SelectionChanged">
                         <ListView.ItemContainerStyle>
@@ -174,26 +190,27 @@
             </Border>
 
             <!-- Option Chain Table -->
-            <Border x:Name="ChainPanel" Style="{StaticResource CardStyle}" Margin="0,0,0,24" Visibility="Collapsed">
+            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24"
+                    Visibility="{Binding ChainPanelVisible, Converter={StaticResource BoolToVisibility}}">
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                        <TextBlock x:Name="ChainHeader" Text="Option Chain" Style="{StaticResource CardHeaderStyle}" />
+                        <TextBlock Text="{Binding ChainHeader}" Style="{StaticResource CardHeaderStyle}" />
                     </StackPanel>
 
                     <!-- Chain Summary Info -->
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
-                        <TextBlock x:Name="ChainUnderlyingPrice" Text="" FontSize="13"
+                        <TextBlock Text="{Binding ChainUnderlyingPrice}" FontSize="13"
                                    Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="0,0,16,0" />
-                        <TextBlock x:Name="ChainDTE" Text="" FontSize="13"
+                        <TextBlock Text="{Binding ChainDte}" FontSize="13"
                                    Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,16,0" />
-                        <TextBlock x:Name="ChainPCRatio" Text="" FontSize="13"
+                        <TextBlock Text="{Binding ChainPcRatio}" FontSize="13"
                                    Foreground="{StaticResource ConsoleTextMutedBrush}" />
                     </StackPanel>
 
                     <!-- Calls -->
                     <TextBlock Text="Calls" FontSize="14" FontWeight="SemiBold"
                                Foreground="{StaticResource SuccessColorBrush}" Margin="0,0,0,8" />
-                    <ListView x:Name="CallsList" MaxHeight="300"
+                    <ListView ItemsSource="{Binding Calls}" MaxHeight="300"
                               Background="Transparent" BorderThickness="0">
                         <ListView.View>
                             <GridView>
@@ -213,7 +230,7 @@
                     <!-- Puts -->
                     <TextBlock Text="Puts" FontSize="14" FontWeight="SemiBold"
                                Foreground="{StaticResource ErrorColorBrush}" Margin="0,16,0,8" />
-                    <ListView x:Name="PutsList" MaxHeight="300"
+                    <ListView ItemsSource="{Binding Puts}" MaxHeight="300"
                               Background="Transparent" BorderThickness="0">
                         <ListView.View>
                             <GridView>
@@ -233,12 +250,14 @@
             </Border>
 
             <!-- Status -->
-            <Border x:Name="StatusPanel" Style="{StaticResource CardStyle}" Visibility="Collapsed">
+            <Border Style="{StaticResource CardStyle}"
+                    Visibility="{Binding IsStatusVisible, Converter={StaticResource BoolToVisibility}}">
                 <StackPanel>
-                    <TextBlock x:Name="StatusText" Text="" FontSize="13"
+                    <TextBlock Text="{Binding StatusText}" FontSize="13"
                                Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                    <ProgressBar x:Name="LoadingProgress" IsIndeterminate="True" Height="4" Margin="0,8,0,0"
-                                 Visibility="Collapsed" Foreground="{StaticResource InfoColorBrush}" />
+                    <ProgressBar IsIndeterminate="True" Height="4" Margin="0,8,0,0"
+                                 Visibility="{Binding IsLoadingVisible, Converter={StaticResource BoolToVisibility}}"
+                                 Foreground="{StaticResource InfoColorBrush}" />
                 </StackPanel>
             </Border>
 

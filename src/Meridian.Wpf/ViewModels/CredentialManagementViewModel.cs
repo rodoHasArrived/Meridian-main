@@ -7,6 +7,8 @@ using System.Windows;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Ui.Services.Services;
+using CredentialFieldInfo = Meridian.Contracts.Api.CredentialFieldInfo;
+using ProviderCatalogEntry = Meridian.Ui.Services.Services.ProviderCatalogEntry;
 using WpfServices = Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.ViewModels;
@@ -239,9 +241,7 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
             foreach (var field in provider.CredentialFields)
             {
                 var envVar = field.EnvironmentVariable ?? string.Empty;
-                var existing = string.IsNullOrEmpty(envVar)
-                    ? string.Empty
-                    : Environment.GetEnvironmentVariable(envVar) ?? string.Empty;
+                var existing = GetConfiguredEnvironmentValue(field) ?? string.Empty;
                 var isSecret = field.DisplayName.Contains("secret", StringComparison.OrdinalIgnoreCase)
                     || field.Name.Contains("secret", StringComparison.OrdinalIgnoreCase)
                     || field.Name.Contains("token", StringComparison.OrdinalIgnoreCase)
@@ -360,9 +360,9 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
             {
                 foreach (var field in provider.CredentialFields)
                 {
-                    if (!string.IsNullOrWhiteSpace(field.EnvironmentVariable))
+                    foreach (var envVar in field.AllEnvironmentVariables)
                     {
-                        Environment.SetEnvironmentVariable(field.EnvironmentVariable, null, EnvironmentVariableTarget.User);
+                        Environment.SetEnvironmentVariable(envVar, null, EnvironmentVariableTarget.User);
                     }
                 }
             }
@@ -425,8 +425,7 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
         bool success = provider is null || provider.CredentialFields.Length == 0
             || provider.CredentialFields
                 .Where(field => field.Required)
-                .All(field => !string.IsNullOrWhiteSpace(field.EnvironmentVariable) &&
-                    !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(field.EnvironmentVariable)));
+                .All(HasConfiguredEnvironmentValue);
 
         await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
         {
@@ -479,6 +478,26 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
             1 => "API Key",
             _ => "Key + Secret",
         };
+    }
+
+    private static bool HasConfiguredEnvironmentValue(CredentialFieldInfo field)
+    {
+        return field.AllEnvironmentVariables
+            .Any(envVar => !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(envVar)));
+    }
+
+    private static string? GetConfiguredEnvironmentValue(CredentialFieldInfo field)
+    {
+        foreach (var envVar in field.AllEnvironmentVariables)
+        {
+            var value = Environment.GetEnvironmentVariable(envVar);
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                return value;
+            }
+        }
+
+        return null;
     }
 
     public void Dispose() { }

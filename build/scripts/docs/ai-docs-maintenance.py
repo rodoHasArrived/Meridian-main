@@ -60,6 +60,8 @@ def _build_path_lists(root: Path) -> tuple[list[Path], list[Path], list[Path]]:
         root / "CLAUDE.md",
         root / "docs" / "ai" / "README.md",
         root / "docs" / "ai" / "ai-known-errors.md",
+        root / "docs" / "ai" / "navigation" / "README.md",
+        root / "docs" / "ai" / "generated" / "repo-navigation.md",
         root / "docs" / "ai" / "claude" / "CLAUDE.providers.md",
         root / "docs" / "ai" / "claude" / "CLAUDE.storage.md",
         root / "docs" / "ai" / "claude" / "CLAUDE.fsharp.md",
@@ -70,6 +72,9 @@ def _build_path_lists(root: Path) -> tuple[list[Path], list[Path], list[Path]]:
         root / ".github" / "copilot-instructions.md",
         root / ".github" / "agents" / "code-review-agent.md",
         root / ".github" / "agents" / "documentation-agent.md",
+        root / ".github" / "agents" / "repo-navigation-agent.md",
+        root / ".claude" / "agents" / "meridian-navigation.md",
+        root / ".codex" / "skills" / "meridian-repo-navigation" / "SKILL.md",
         root / ".claude" / "skills" / "meridian-code-review" / "SKILL.md",
     ]
     instruction_files: list[Path] = [

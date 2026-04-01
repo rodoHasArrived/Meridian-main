@@ -47,7 +47,8 @@ public sealed class DesktopModeRunner
         }
         finally
         {
-            await uiServer.StopAsync(ct);
+            var shutdownToken = ct.IsCancellationRequested ? CancellationToken.None : ct;
+            await uiServer.StopAsync(shutdownToken);
             await uiServer.DisposeAsync();
         }
     }

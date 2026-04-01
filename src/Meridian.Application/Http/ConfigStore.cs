@@ -17,17 +17,14 @@ namespace Meridian.Application.UI;
 /// <list type="bullet">
 /// <item><description>If configPath is provided, it is used directly</description></item>
 /// <item><description>If configPath is null, uses PathResolver delegate if set</description></item>
-/// <item><description>Otherwise defaults to "appsettings.json" in the current directory</description></item>
+/// <item><description>Otherwise searches the current directory and its ancestors for config/appsettings.json or appsettings.json</description></item>
 /// </list>
 /// </remarks>
 [ImplementsAdr("ADR-001", "Consolidated configuration store shared by all hosts")]
 public sealed class ConfigStore
 {
-    private const string DefaultConfigFileName = "appsettings.json";
-    private const string ConfigDirectoryDefaultConfigFileName = "config/appsettings.json";
-
     /// <summary>
-    /// Default path resolver that returns the standard appsettings.json path.
+    /// Default path resolver that returns the nearest standard Meridian configuration path.
     /// </summary>
     public static Func<string> DefaultPathResolver { get; set; } = ResolveDefaultPath;
 
@@ -60,12 +57,7 @@ public sealed class ConfigStore
     }
 
     private static string ResolveDefaultPath()
-    {
-        if (File.Exists(ConfigDirectoryDefaultConfigFileName))
-            return ConfigDirectoryDefaultConfigFileName;
-
-        return DefaultConfigFileName;
-    }
+        => DefaultConfigPathResolver.Resolve();
 
     /// <summary>
     /// Static method to load configuration from a path.
@@ -78,6 +70,7 @@ public sealed class ConfigStore
             if (!File.Exists(path))
             {
                 Console.WriteLine($"[Warning] Configuration file not found: {path}");
+                Console.WriteLine("Using default configuration. Copy config/appsettings.sample.json to config/appsettings.json to customize.");
                 return new AppConfig();
             }
 

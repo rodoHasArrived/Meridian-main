@@ -1,44 +1,75 @@
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
+using Testcontainers.PostgreSql;
 
 namespace Meridian.Tests.SecurityMaster;
 
 public sealed class SecurityMasterDatabaseFixture : IAsyncLifetime
 {
-    private readonly SecurityMasterMigrationRunner? _migrationRunner;
+    private const string EnvVar = "MERIDIAN_SECURITY_MASTER_CONNECTION_STRING";
+
+    // Non-null only when no external connection string is supplied.
+    private readonly PostgreSqlContainer? _container;
+
+    // Stable once InitializeAsync completes. Initialised with a placeholder when using a
+    // container so that the property is never null at runtime (xUnit calls InitializeAsync
+    // before any test method executes).
+    public SecurityMasterOptions Options { get; private set; }
 
     public SecurityMasterDatabaseFixture()
     {
-        var connectionString = Environment.GetEnvironmentVariable("MERIDIAN_SECURITY_MASTER_CONNECTION_STRING");
-        if (string.IsNullOrWhiteSpace(connectionString))
+        var externalConnectionString = Environment.GetEnvironmentVariable(EnvVar);
+
+        if (!string.IsNullOrWhiteSpace(externalConnectionString))
         {
-            IsConfigured = false;
-            Options = new SecurityMasterOptions();
-            return;
+            Options = new SecurityMasterOptions
+            {
+                ConnectionString = externalConnectionString,
+                Schema = $"sm_test_{Guid.NewGuid():N}",
+                PreloadProjectionCache = false
+            };
         }
-
-        IsConfigured = true;
-        Options = new SecurityMasterOptions
+        else
         {
-            ConnectionString = connectionString,
-            Schema = $"security_master_test_{Guid.NewGuid():N}",
-            PreloadProjectionCache = false
-        };
+            _container = new PostgreSqlBuilder("postgres:16-alpine")
+                .WithDatabase("meridian_test")
+                .WithUsername("testuser")
+                .WithPassword("testpass")
+                .Build();
 
-        _migrationRunner = new SecurityMasterMigrationRunner(Options);
+            // Placeholder — overwritten in InitializeAsync once the container is running.
+            Options = new SecurityMasterOptions { PreloadProjectionCache = false };
+        }
     }
 
-    public SecurityMasterOptions Options { get; }
-    public bool IsConfigured { get; }
+    public async Task InitializeAsync()
+    {
+        if (_container is not null)
+        {
+            await _container.StartAsync().ConfigureAwait(false);
 
-    public Task InitializeAsync()
-        => _migrationRunner is null ? Task.CompletedTask : _migrationRunner.EnsureMigratedAsync();
+            Options = new SecurityMasterOptions
+            {
+                ConnectionString = _container.GetConnectionString(),
+                Schema = $"sm_test_{Guid.NewGuid():N}",
+                PreloadProjectionCache = false
+            };
+        }
+
+        var runner = new SecurityMasterMigrationRunner(Options);
+        await runner.EnsureMigratedAsync().ConfigureAwait(false);
+    }
 
     public async Task DisposeAsync()
     {
-        if (_migrationRunner is not null)
+        if (_container is not null)
         {
-            await _migrationRunner.ResetSchemaAsync().ConfigureAwait(false);
+            await _container.DisposeAsync().ConfigureAwait(false);
+        }
+        else
+        {
+            var runner = new SecurityMasterMigrationRunner(Options);
+            await runner.ResetSchemaAsync().ConfigureAwait(false);
         }
     }
 }

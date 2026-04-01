@@ -90,11 +90,11 @@
   </ItemGroup>
 
   <ItemGroup Label="CLI Tools">
-    <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
+    <PackageVersion Include="System.CommandLine" Version="2.0.5" />
   </ItemGroup>
 
   <ItemGroup Label="System Libraries">
-    <PackageVersion Include="SSH.NET" Version="2024.2.0" />
+    <PackageVersion Include="SSH.NET" Version="2025.1.0" />
     <PackageVersion Include="System.Threading.Channels" Version="10.0.5" />
     <PackageVersion Include="System.IO.Pipelines" Version="10.0.5" />
     <PackageVersion Include="System.IO.Compression" Version="4.3.0" />
@@ -128,7 +128,7 @@
   </ItemGroup>
 
   <ItemGroup Label="QuantScript">
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="5.0.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="5.3.0" />
     <PackageVersion Include="AvalonEdit" Version="6.3.1.120" />
     <PackageVersion Include="ScottPlot.WPF" Version="5.0.55" />
   </ItemGroup>
@@ -161,6 +161,7 @@
     <PackageVersion Include="FsUnit.xUnit" Version="7.1.1" />
     <PackageVersion Include="TngTech.ArchUnitNET" Version="0.13.3" />
     <PackageVersion Include="TngTech.ArchUnitNET.xUnit" Version="0.13.3" />
+    <PackageVersion Include="Testcontainers.PostgreSql" Version="4.11.0" />
   </ItemGroup>
 
   <ItemGroup Label="FSharp Event Sourcing">

@@ -3,6 +3,7 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       Background="{DynamicResource ShellWindowBackgroundBrush}"
       Loaded="OnPageLoaded"
+      Unloaded="OnPageUnloaded"
       AutomationProperties.Name="Watchlist">
     <Page.Resources>
         <Style x:Key="WatchlistCardStyle" TargetType="Border">
@@ -64,7 +65,7 @@
                                  Foreground="{DynamicResource ConsoleTextBrush}"
                                  BorderBrush="{DynamicResource ConsoleBorderBrush}"
                                  Padding="8,6" Margin="0,0,12,0"
-                                 TextChanged="SearchBox_TextChanged">
+                                 Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}">
                             <TextBox.Style>
                                 <Style TargetType="TextBox">
                                     <Style.Triggers>
@@ -81,16 +82,18 @@
                     </StackPanel>
 
                     <StackPanel Grid.Column="1" Orientation="Horizontal">
-                        <Button Content="+ New Watchlist" Click="CreateWatchlist_Click"
+                        <Button Content="+ New Watchlist" Command="{Binding CreateWatchlistCommand}"
                                 Style="{StaticResource PrimaryButtonStyle}" Margin="0,0,8,0"/>
-                        <Button Content="Import" Click="ImportWatchlist_Click"
+                        <Button Content="Import" Command="{Binding ImportWatchlistCommand}"
                                 Style="{StaticResource SecondaryButtonStyle}"/>
                     </StackPanel>
                 </Grid>
             </Border>
 
             <!-- Watchlist Grid -->
-            <ItemsControl x:Name="WatchlistsContainer" Grid.Row="2">
+            <ItemsControl x:Name="WatchlistsContainer" Grid.Row="2"
+                          ItemsSource="{Binding FilteredWatchlists}"
+                          Visibility="{Binding ListVisibility}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <WrapPanel/>
@@ -184,7 +187,7 @@
             </ItemsControl>
 
             <!-- Empty State -->
-            <Border x:Name="EmptyState" Grid.Row="2" Visibility="Collapsed"
+            <Border x:Name="EmptyState" Grid.Row="2" Visibility="{Binding EmptyStateVisibility}"
                     Style="{StaticResource CardStyle}" Padding="48" HorizontalAlignment="Center">
                 <StackPanel HorizontalAlignment="Center">
                     <TextBlock Text="&#xE8F1;" FontFamily="{StaticResource SymbolThemeFontFamily}"
@@ -196,7 +199,7 @@
                     <TextBlock Text="Create your first watchlist to organize your symbols."
                                Foreground="{DynamicResource ConsoleTextMutedBrush}"
                                HorizontalAlignment="Center" Margin="0,0,0,16"/>
-                    <Button Content="Create Watchlist" Click="CreateWatchlist_Click"
+                    <Button Content="Create Watchlist" Command="{Binding CreateWatchlistCommand}"
                             Background="{StaticResource SuccessColorBrush}" Foreground="White"
                             BorderThickness="0" Padding="24,12" HorizontalAlignment="Center"/>
                 </StackPanel>

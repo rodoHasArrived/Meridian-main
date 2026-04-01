@@ -2,6 +2,14 @@
 
 This document provides instructions for setting up the Interactive Brokers API (IBApi) with the Meridian project.
 
+Use this guide together with [Provider Confidence Baseline](provider-confidence-baseline.md). Meridian currently validates three distinct IB modes, and operators should treat them differently:
+
+| Mode | What the repo validates | What it does **not** prove |
+|---|---|---|
+| Non-`IBAPI` simulation/runtime-guidance | `IBRuntimeGuidanceTests` confirm the provider metadata and exceptions point back to this guide and to the smoke-build path | Real TWS/Gateway connectivity, entitlements, or vendor DLL compatibility |
+| `EnableIbApiSmoke=true` compile-only smoke | `scripts/dev/build-ibapi-smoke.ps1` keeps the gated infrastructure code path buildable in automation | Real market-data flow or runtime compatibility with the official vendor surface |
+| Official `IBAPI` vendor path | Build-time path documented here for local/manual use | CI coverage in the default repo build; this still requires local TWS/Gateway and entitlements |
+
 ## Overview
 
 The Interactive Brokers API is **not available as a standard NuGet package** and must be installed manually. The Meridian uses conditional compilation (`#if IBAPI`) to allow the project to build with or without IB API support.
@@ -123,9 +131,21 @@ If you don't need Interactive Brokers support, the project will build successful
 # Build without IBAPI defined
 dotnet build
 
-# The IBMarketDataClient will use IBSimulationClient internally
-# This keeps the IB provider surface buildable and testable without a live IB installation
+# The IBMarketDataClient will use IBSimulationClient internally.
+# This keeps the IB provider surface visible and testable without a live IB installation,
+# but it is guidance/simulation mode rather than real broker connectivity.
 ```
+
+## Repo-Validated Offline Checks
+
+Use these commands when you want repo-grounded confidence before attempting a local vendor setup:
+
+```powershell
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~IBRuntimeGuidanceTests|FullyQualifiedName~IBOrderSampleTests"
+./scripts/dev/build-ibapi-smoke.ps1
+```
+
+These checks validate Meridian's simulation/runtime-guidance messages, committed sample order fixtures, and the compile-only smoke path. They do not replace a local TWS/Gateway connectivity check.
 
 ## Enabling IB API Support
 

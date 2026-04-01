@@ -1,5 +1,5 @@
 using System;
-using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -18,26 +18,16 @@ namespace Meridian.Wpf.Views;
 public partial class BackfillPage : Page
 {
     private readonly WpfServices.WorkspaceService _workspaceService;
-    private readonly WpfServices.ConfigService _configService;
     private readonly BackfillViewModel _viewModel;
 
     public BackfillPage(
-        WpfServices.NotificationService notificationService,
         WpfServices.WorkspaceService workspaceService,
-        WpfServices.ConfigService configService,
         BackfillViewModel viewModel)
     {
         InitializeComponent();
 
         _workspaceService = workspaceService;
-        _configService = configService;
         _viewModel = viewModel;
-
-        // Bind lists to ViewModel collections so UI updates automatically
-        SymbolProgressList.ItemsSource = _viewModel.SymbolProgress;
-        ScheduledJobsList.ItemsSource = _viewModel.ScheduledJobs;
-        ResumableJobsList.ItemsSource = _viewModel.ResumableJobs;
-        GapAnalysisList.ItemsSource = _viewModel.GapItems;
 
         DataContext = _viewModel;
     }
@@ -260,36 +250,21 @@ public partial class BackfillPage : Page
 
     private async void AddAllSubscribed_Click(object sender, RoutedEventArgs e)
     {
-        try
-        {
-            var configSymbols = await _configService.GetConfiguredSymbolsAsync();
-            if (configSymbols.Length > 0)
-            {
-                SymbolsBox.Text = string.Join(", ", configSymbols.Select(s => s.Symbol));
-            }
-            else
-            {
-                SymbolsBox.Text = "SPY, QQQ, AAPL, MSFT, GOOGL, AMZN, NVDA, META, TSLA";
-            }
-        }
-        catch
-        {
-            SymbolsBox.Text = "SPY, QQQ, AAPL, MSFT, GOOGL, AMZN, NVDA, META, TSLA";
-        }
+        SymbolsBox.Text = await _viewModel.GetSubscribedSymbolsTextAsync();
     }
 
     private void AddMajorETFs_Click(object sender, RoutedEventArgs e)
     {
-        var current = SymbolsBox.Text?.Trim() ?? "";
-        var etfs = "SPY, QQQ, IWM";
-        SymbolsBox.Text = string.IsNullOrEmpty(current) ? etfs : $"{current}, {etfs}";
+        SymbolsBox.Text = _viewModel.AppendSymbols(SymbolsBox.Text, "SPY", "QQQ", "IWM");
     }
 
-    private void UpdateLatest_Click(object sender, RoutedEventArgs e)
+    private async void UpdateLatest_Click(object sender, RoutedEventArgs e)
     {
-        FromDatePicker.SelectedDate = DateTime.Today.AddDays(-5);
-        ToDatePicker.SelectedDate = DateTime.Today;
-        AddAllSubscribed_Click(sender, e);
+        var subscribedSymbols = await _viewModel.GetSubscribedSymbolsTextAsync();
+        var preset = _viewModel.BuildLatestUpdatePreset(subscribedSymbols);
+        FromDatePicker.SelectedDate = preset.From;
+        ToDatePicker.SelectedDate = preset.To;
+        SymbolsBox.Text = preset.SymbolsText;
 
         // M3: notification belongs in ViewModel.
         _viewModel.HandleUpdateToLatest();
@@ -299,35 +274,47 @@ public partial class BackfillPage : Page
 
     private async void StartBackfill_Click(object sender, RoutedEventArgs e)
     {
-        if (string.IsNullOrWhiteSpace(SymbolsBox.Text))
+        var provider = (ProviderCombo?.SelectedItem as ComboBoxItem)?.Tag?.ToString();
+        var granularity = (GranularityCombo?.SelectedItem as ComboBoxItem)?.Tag?.ToString();
+
+        if (!_viewModel.TryCreateStartRequest(
+                SymbolsBox.Text,
+                FromDatePicker.SelectedDate,
+                ToDatePicker.SelectedDate,
+                provider,
+                granularity,
+                out var request,
+                out var symbolValidationError,
+                out var fromDateValidationError,
+                out var toDateValidationError))
         {
-            SymbolsValidationError.Text = "Please enter at least one symbol";
-            SymbolsValidationError.Visibility = Visibility.Visible;
+            SymbolsValidationError.Text = symbolValidationError ?? string.Empty;
+            SymbolsValidationError.Visibility = string.IsNullOrWhiteSpace(symbolValidationError)
+                ? Visibility.Collapsed
+                : Visibility.Visible;
+
+            FromDateValidationError.Text = fromDateValidationError ?? string.Empty;
+            FromDateValidationError.Visibility = string.IsNullOrWhiteSpace(fromDateValidationError)
+                ? Visibility.Collapsed
+                : Visibility.Visible;
+
+            ToDateValidationError.Text = toDateValidationError ?? string.Empty;
+            ToDateValidationError.Visibility = string.IsNullOrWhiteSpace(toDateValidationError)
+                ? Visibility.Collapsed
+                : Visibility.Visible;
             return;
         }
 
         SymbolsValidationError.Visibility = Visibility.Collapsed;
-
-        var fromDate = FromDatePicker.SelectedDate ?? DateTime.Today.AddDays(-30);
-        var toDate = ToDatePicker.SelectedDate ?? DateTime.Today;
-
-        if (fromDate > toDate)
-        {
-            FromDateValidationError.Text = "From date must be earlier than To date";
-            FromDateValidationError.Visibility = Visibility.Visible;
-            ToDateValidationError.Text = "To date must be on or after From date";
-            ToDateValidationError.Visibility = Visibility.Visible;
-            return;
-        }
-
         FromDateValidationError.Visibility = Visibility.Collapsed;
         ToDateValidationError.Visibility = Visibility.Collapsed;
 
-        var symbols = SymbolsBox.Text.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        var provider = (ProviderCombo?.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "composite";
-        var granularity = (GranularityCombo?.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "Daily";
-
-        await _viewModel.StartBackfillAsync(symbols, provider, fromDate, toDate, granularity);
+        await _viewModel.StartBackfillAsync(
+            request.Symbols,
+            request.Provider,
+            request.FromDate,
+            request.ToDate,
+            request.Granularity);
     }
 
     private void PauseBackfill_Click(object sender, RoutedEventArgs e)

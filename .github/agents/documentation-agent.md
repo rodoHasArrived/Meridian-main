@@ -81,7 +81,8 @@ Meridian-main
 │   ├── agents
 │   │   ├── meridian-blueprint.md
 │   │   ├── meridian-cleanup.md
-│   │   └── meridian-docs.md
+│   │   ├── meridian-docs.md
+│   │   └── meridian-navigation.md
 │   ├── skills
 │   │   ├── _shared
 │   │   │   └── project-context.md
@@ -148,28 +149,18 @@ Meridian-main
 │   │   ├── _shared
 │   │   │   └── project-context.md
 │   │   ├── meridian-blueprint
-│   │   │   ├── agents
-│   │   │   │   └── openai.yaml
 │   │   │   ├── references
 │   │   │   │   └── blueprint-patterns.md
 │   │   │   └── SKILL.md
 │   │   ├── meridian-brainstorm
-│   │   │   ├── agents
-│   │   │   │   └── openai.yaml
 │   │   │   ├── references
 │   │   │   │   └── competitive-landscape.md
 │   │   │   └── SKILL.md
 │   │   ├── meridian-cleanup
-│   │   │   ├── agents
-│   │   │   │   └── openai.yaml
 │   │   │   └── SKILL.md
 │   │   ├── meridian-code-review
-│   │   │   ├── agents
-│   │   │   │   └── openai.yaml
 │   │   │   └── SKILL.md
 │   │   ├── meridian-implementation-assurance
-│   │   │   ├── agents
-│   │   │   │   └── openai.yaml
 │   │   │   ├── evals
 │   │   │   │   ├── artifacts
 │   │   │   │   │   ├── eval-1.jsonl
@@ -190,20 +181,18 @@ Meridian-main
 │   │   │   │   └── score_eval.py
 │   │   │   └── SKILL.md
 │   │   ├── meridian-provider-builder
-│   │   │   ├── agents
-│   │   │   │   └── openai.yaml
 │   │   │   ├── references
 │   │   │   │   └── provider-patterns.md
 │   │   │   └── SKILL.md
-│   │   ├── meridian-roadmap-strategist
+│   │   ├── meridian-repo-navigation
 │   │   │   ├── agents
 │   │   │   │   └── openai.yaml
+│   │   │   └── SKILL.md
+│   │   ├── meridian-roadmap-strategist
 │   │   │   ├── references
 │   │   │   │   └── roadmap-source-map.md
 │   │   │   └── SKILL.md
 │   │   ├── meridian-test-writer
-│   │   │   ├── agents
-│   │   │   │   └── openai.yaml
 │   │   │   ├── references
 │   │   │   │   └── test-patterns.md
 │   │   │   └── SKILL.md
@@ -228,6 +217,7 @@ Meridian-main
 │   │   ├── implementation-assurance-agent.md
 │   │   ├── performance-agent.md
 │   │   ├── provider-builder-agent.md
+│   │   ├── repo-navigation-agent.md
 │   │   └── test-writer-agent.md
 │   ├── instructions
 │   │   ├── csharp.instructions.md
@@ -284,6 +274,7 @@ Meridian-main
 │   │   ├── README.md
 │   │   ├── release.yml
 │   │   ├── repo-health.yml
+│   │   ├── reusable-ai-analysis.yml
 │   │   ├── reusable-dotnet-build.yml
 │   │   ├── scheduled-maintenance.yml
 │   │   ├── security.yml
@@ -372,6 +363,7 @@ Meridian-main
 │       │   ├── add-todos.py
 │       │   ├── ai-docs-maintenance.py
 │       │   ├── create-todo-issues.py
+│       │   ├── generate-ai-navigation.py
 │       │   ├── generate-changelog.py
 │       │   ├── generate-coverage.py
 │       │   ├── generate-dependency-graph.py
@@ -410,6 +402,7 @@ Meridian-main
 │       │   ├── stop-collector.ps1
 │       │   └── stop-collector.sh
 │       ├── tests
+│       │   ├── test_generate_ai_navigation.py
 │       │   └── test_validate_budget.py
 │       ├── ai-architecture-check.py
 │       ├── ai-repo-updater.py
@@ -486,7 +479,12 @@ Meridian-main
 │   │   ├── copilot
 │   │   │   ├── ai-sync-workflow.md
 │   │   │   └── instructions.md
+│   │   ├── generated
+│   │   │   ├── repo-navigation.json
+│   │   │   └── repo-navigation.md
 │   │   ├── instructions
+│   │   │   └── README.md
+│   │   ├── navigation
 │   │   │   └── README.md
 │   │   ├── prompts
 │   │   │   └── README.md
@@ -506,7 +504,8 @@ Meridian-main
 │   │   ├── README.md
 │   │   ├── storage-design.md
 │   │   ├── ui-redesign.md
-│   │   └── why-this-architecture.md
+│   │   ├── why-this-architecture.md
+│   │   └── wpf-shell-mvvm.md
 │   ├── audits
 │   │   ├── audit-architecture-results.txt
 │   │   ├── audit-code-results.json
@@ -793,6 +792,7 @@ Meridian-main
 │   │   ├── interactive-brokers-free-equity-reference.md
 │   │   ├── interactive-brokers-setup.md
 │   │   ├── provider-comparison.md
+│   │   ├── provider-confidence-baseline.md
 │   │   ├── README.md
 │   │   ├── security-master-guide.md
 │   │   └── stocksharp-connectors.md
@@ -983,6 +983,7 @@ Meridian-main
 │   │   │   ├── ConfigValidationHelper.cs
 │   │   │   ├── ConfigValidatorCli.cs
 │   │   │   ├── ConfigWatcher.cs
+│   │   │   ├── DefaultConfigPathResolver.cs
 │   │   │   ├── DeploymentContext.cs
 │   │   │   ├── IConfigValidator.cs
 │   │   │   ├── SensitiveValueMasker.cs
@@ -1830,13 +1831,17 @@ Meridian-main
 │   │   ├── Meridian.Mcp.csproj
 │   │   └── Program.cs
 │   ├── Meridian.McpServer
+│   │   ├── Navigation
+│   │   │   └── RepoNavigationCatalog.cs
 │   │   ├── Prompts
 │   │   │   └── MarketDataPrompts.cs
 │   │   ├── Resources
-│   │   │   └── MarketDataResources.cs
+│   │   │   ├── MarketDataResources.cs
+│   │   │   └── RepoNavigationResources.cs
 │   │   ├── Tools
 │   │   │   ├── BackfillTools.cs
 │   │   │   ├── ProviderTools.cs
+│   │   │   ├── RepoNavigationTools.cs
 │   │   │   ├── StorageTools.cs
 │   │   │   └── SymbolTools.cs
 │   │   ├── GlobalUsings.cs
@@ -2334,6 +2339,7 @@ Meridian-main
 │       │   ├── SettingsModels.cs
 │       │   ├── StorageDisplayModels.cs
 │       │   ├── SymbolsModels.cs
+│       │   ├── WatchlistModels.cs
 │       │   ├── WorkspaceDefinition.cs
 │       │   ├── WorkspaceRegistry.cs
 │       │   └── WorkspaceShellModels.cs
@@ -2394,7 +2400,11 @@ Meridian-main
 │       │   └── ThemeTypography.xaml
 │       ├── ViewModels
 │       │   ├── ActivityLogViewModel.cs
+│       │   ├── AdminMaintenanceViewModel.cs
+│       │   ├── AdvancedAnalyticsViewModel.cs
 │       │   ├── AgentViewModel.cs
+│       │   ├── AnalysisExportViewModel.cs
+│       │   ├── AnalysisExportWizardViewModel.cs
 │       │   ├── BackfillViewModel.cs
 │       │   ├── BacktestViewModel.cs
 │       │   ├── BatchBacktestViewModel.cs
@@ -2404,7 +2414,10 @@ Meridian-main
 │       │   ├── ClusterStatusViewModel.cs
 │       │   ├── CredentialManagementViewModel.cs
 │       │   ├── DashboardViewModel.cs
+│       │   ├── DataCalendarViewModel.cs
+│       │   ├── DataExportViewModel.cs
 │       │   ├── DataQualityViewModel.cs
+│       │   ├── DataSourcesViewModel.cs
 │       │   ├── DiagnosticsPageViewModel.cs
 │       │   ├── DirectLendingViewModel.cs
 │       │   ├── ExportPresetsViewModel.cs
@@ -2412,9 +2425,13 @@ Meridian-main
 │       │   ├── LeanIntegrationViewModel.cs
 │       │   ├── LiveDataViewerViewModel.cs
 │       │   ├── MainPageViewModel.cs
+│       │   ├── MainWindowViewModel.cs
+│       │   ├── MessagingHubViewModel.cs
 │       │   ├── NotificationCenterViewModel.cs
+│       │   ├── OptionsViewModel.cs
 │       │   ├── OrderBookHeatmapViewModel.cs
 │       │   ├── OrderBookViewModel.cs
+│       │   ├── PackageManagerViewModel.cs
 │       │   ├── PluginManagementViewModel.cs
 │       │   ├── ProviderHealthViewModel.cs
 │       │   ├── ProviderPageModels.cs
@@ -2427,14 +2444,20 @@ Meridian-main
 │       │   ├── SecurityMasterEditViewModel.cs
 │       │   ├── SecurityMasterViewModel.cs
 │       │   ├── ServiceManagerViewModel.cs
+│       │   ├── SettingsViewModel.cs
 │       │   ├── SplitPaneViewModel.cs
 │       │   ├── StatusBarViewModel.cs
+│       │   ├── StorageViewModel.cs
 │       │   ├── StrategyRunBrowserViewModel.cs
 │       │   ├── StrategyRunDetailViewModel.cs
 │       │   ├── StrategyRunLedgerViewModel.cs
 │       │   ├── StrategyRunPortfolioViewModel.cs
 │       │   ├── SymbolsPageViewModel.cs
-│       │   └── TickerStripViewModel.cs
+│       │   ├── SystemHealthViewModel.cs
+│       │   ├── TickerStripViewModel.cs
+│       │   ├── TradingHoursViewModel.cs
+│       │   ├── WatchlistViewModel.cs
+│       │   └── WelcomePageViewModel.cs
 │       ├── Views
 │       │   ├── ActivityLogPage.xaml
 │       │   ├── ActivityLogPage.xaml.cs
@@ -2468,6 +2491,7 @@ Meridian-main
 │       │   ├── CollectionSessionPage.xaml.cs
 │       │   ├── CommandPaletteWindow.xaml
 │       │   ├── CommandPaletteWindow.xaml.cs
+│       │   ├── CreateWatchlistDialog.cs
 │       │   ├── CredentialManagementPage.xaml
 │       │   ├── CredentialManagementPage.xaml.cs
 │       │   ├── DashboardPage.xaml
@@ -2490,6 +2514,7 @@ Meridian-main
 │       │   ├── DirectLendingPage.xaml.cs
 │       │   ├── EditScheduledJobDialog.xaml
 │       │   ├── EditScheduledJobDialog.xaml.cs
+│       │   ├── EditWatchlistDialog.cs
 │       │   ├── EventReplayPage.xaml
 │       │   ├── EventReplayPage.xaml.cs
 │       │   ├── ExportPresetsPage.xaml
@@ -2643,6 +2668,7 @@ Meridian-main
 │   ├── Meridian.McpServer.Tests
 │   │   ├── Tools
 │   │   │   ├── BackfillToolsTests.cs
+│   │   │   ├── RepoNavigationToolsTests.cs
 │   │   │   └── StorageToolsTests.cs
 │   │   ├── GlobalUsings.cs
 │   │   └── Meridian.McpServer.Tests.csproj
@@ -2654,6 +2680,7 @@ Meridian-main
 │   │   ├── GlobalUsings.cs
 │   │   ├── Meridian.QuantScript.Tests.csproj
 │   │   ├── PlotQueueTests.cs
+│   │   ├── PortfolioBuilderTests.cs
 │   │   ├── PriceSeriesTests.cs
 │   │   ├── RoslynScriptCompilerTests.cs
 │   │   ├── ScriptRunnerTests.cs
@@ -2697,7 +2724,9 @@ Meridian-main
 │   │   │   ├── Composition
 │   │   │   │   ├── Startup
 │   │   │   │   │   └── SharedStartupBootstrapperTests.cs
-│   │   │   │   └── SecurityMasterStartupTests.cs
+│   │   │   │   ├── DirectLendingStartupTests.cs
+│   │   │   │   ├── SecurityMasterStartupTests.cs
+│   │   │   │   └── StorageFeatureRegistrationTests.cs
 │   │   │   ├── Config
 │   │   │   │   ├── ConfigJsonSchemaGeneratorTests.cs
 │   │   │   │   ├── ConfigSchemaIntegrationTests.cs
@@ -2713,6 +2742,8 @@ Meridian-main
 │   │   │   │   ├── CredentialStatusTests.cs
 │   │   │   │   ├── CredentialTestingServiceTests.cs
 │   │   │   │   └── OAuthTokenTests.cs
+│   │   │   ├── DirectLending
+│   │   │   │   └── DirectLendingOutboxDispatcherTests.cs
 │   │   │   ├── Etl
 │   │   │   │   ├── EtlJobDefinitionStoreTests.cs
 │   │   │   │   ├── EtlJobOrchestratorTests.cs
@@ -2774,6 +2805,8 @@ Meridian-main
 │   │   │   │   ├── PreflightCheckerTests.cs
 │   │   │   │   ├── TradingCalendarTests.cs
 │   │   │   │   └── VenueMicMapperTests.cs
+│   │   │   ├── Ui
+│   │   │   │   └── ConfigStoreTests.cs
 │   │   │   ├── DirectLendingServiceTests.cs
 │   │   │   └── ReconciliationRunServiceTests.cs
 │   │   ├── Architecture
@@ -2831,7 +2864,8 @@ Meridian-main
 │   │   │   │   │       ├── polygon-recorded-session-gld-cboe-sell.json
 │   │   │   │   │       ├── polygon-recorded-session-msft-edge.json
 │   │   │   │   │       ├── polygon-recorded-session-nvda-multi-batch.json
-│   │   │   │   │       └── polygon-recorded-session-spy-etf.json
+│   │   │   │   │       ├── polygon-recorded-session-spy-etf.json
+│   │   │   │   │       └── polygon-recorded-session-tsla-opening-cross.json
 │   │   │   │   ├── AlpacaCredentialAndReconnectTests.cs
 │   │   │   │   ├── AlpacaMessageParsingTests.cs
 │   │   │   │   ├── AlpacaQuotePipelineGoldenTests.cs
@@ -2967,7 +3001,10 @@ Meridian-main
 │   │   │   └── WriteAheadLogTests.cs
 │   │   ├── Strategies
 │   │   │   ├── CashFlowProjectionTests.cs
+│   │   │   ├── LedgerReadServiceTests.cs
+│   │   │   ├── PortfolioReadServiceTests.cs
 │   │   │   ├── PromotionServiceTests.cs
+│   │   │   ├── ReconciliationProjectionServiceTests.cs
 │   │   │   ├── StrategyLifecycleManagerTests.cs
 │   │   │   ├── StrategyRunDrillInTests.cs
 │   │   │   └── StrategyRunReadServiceTests.cs
@@ -3084,6 +3121,7 @@ Meridian-main
 │   │   ├── ViewModels
 │   │   │   ├── CashFlowViewModelTests.cs
 │   │   │   ├── DataQualityViewModelCharacterizationTests.cs
+│   │   │   ├── MainShellViewModelTests.cs
 │   │   │   ├── QuantScriptViewModelTests.cs
 │   │   │   ├── RunMatViewModelTests.cs
 │   │   │   └── StrategyRunBrowserViewModelTests.cs
@@ -3108,25 +3146,18 @@ Meridian-main
 ├── .globalconfig
 ├── .markdownlint.json
 ├── .vsconfig
-├── AGENT_IMPLEMENTATION_SUMMARY.md
-├── AGENT_QUICK_REFERENCE.md
 ├── CLAUDE.md
-├── CONTEXTUAL_COMMANDS_IMPLEMENTATION_SUMMARY.md
-├── CORPACTIONS_IMPLEMENTATION.md
 ├── desktop.ini
 ├── Directory.Build.props
 ├── Directory.Packages.props
 ├── environment.yml
 ├── global.json
-├── IMPLEMENTATION_CHECKLIST.md
-├── IMPLEMENTATION_SUMMARY.md
 ├── LICENSE
 ├── Makefile
 ├── Meridian.sln
 ├── package-lock.json
 ├── package.json
-├── README.md
-└── SYSTEM_TRAY_IMPLEMENTATION.md
+└── README.md
 ```
 ## Standard Workflow
 

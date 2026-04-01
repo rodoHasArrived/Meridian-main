@@ -88,6 +88,14 @@ public sealed class HistoricalBackfillService
         long barsWritten = 0;
         var failedSymbols = new ConcurrentBag<string>();
         var errorMessages = new ConcurrentBag<string>();
+        var skippedSymbols = new ConcurrentBag<string>();
+        var perSymbolBars = new System.Collections.Concurrent.ConcurrentDictionary<string, long>(StringComparer.OrdinalIgnoreCase);
+        var validationSignals = new ConcurrentBag<SymbolValidationSignal>();
+
+        // Pre-load bar counts from checkpoint sidecar for skip reconciliation.
+        IReadOnlyDictionary<string, long>? checkpointBarCounts = null;
+        if (request.ResumeFromCheckpoint && _checkpointStore is not null)
+            checkpointBarCounts = _checkpointStore.TryReadSymbolBarCounts();
 
         // Adaptive concurrency gate: starts at maxConcurrent, decrements by 1 on RateLimitException
         int currentConcurrency = maxConcurrent;
@@ -110,6 +118,9 @@ public sealed class HistoricalBackfillService
                     if (request.To.HasValue && resumeFrom > request.To.Value)
                     {
                         _log.Debug("Skipping {Symbol}: fully covered by checkpoint through {LastCompleted}", symbol, lastCompleted);
+                        skippedSymbols.Add(symbol);
+                        var checkpointBarCount = checkpointBarCounts is not null && checkpointBarCounts.TryGetValue(symbol, out var cpCount) ? cpCount : 0L;
+                        validationSignals.Add(SymbolValidationSignal.PassSkipped(symbol, checkpointBarCount, lastCompleted));
                         return;
                     }
                     // Advance the start date to the day after the last checkpoint.
@@ -125,21 +136,31 @@ public sealed class HistoricalBackfillService
 
                 var bars = await provider.GetDailyBarsAsync(symbol, effectiveFrom, request.To, ct).ConfigureAwait(false);
                 DateOnly? lastBarDate = null;
+                long symbolBars = 0;
                 foreach (var bar in bars)
                 {
                     var evt = MarketEvent.HistoricalBar(bar.ToTimestampUtc(), bar.Symbol, bar, bar.SequenceNumber, provider.Name);
                     await pipeline.PublishAsync(evt, ct).ConfigureAwait(false);
                     _metrics.IncHistoricalBars();
                     Interlocked.Increment(ref barsWritten);
+                    symbolBars++;
                     if (lastBarDate is null || bar.SessionDate > lastBarDate.Value)
                         lastBarDate = bar.SessionDate;
                 }
 
+                perSymbolBars[symbol] = symbolBars;
+
                 // Persist per-symbol checkpoint after successful completion.
                 if (_checkpointStore is not null && lastBarDate.HasValue)
                 {
-                    await _checkpointStore.WriteSymbolCheckpointAsync(symbol, lastBarDate.Value, ct).ConfigureAwait(false);
+                    await _checkpointStore.WriteSymbolCheckpointAsync(symbol, lastBarDate.Value, symbolBars, ct).ConfigureAwait(false);
                 }
+
+                // Emit validation signal.
+                if (symbolBars > 0)
+                    validationSignals.Add(SymbolValidationSignal.Pass(symbol, symbolBars, effectiveFrom, lastBarDate));
+                else
+                    validationSignals.Add(SymbolValidationSignal.Warn(symbol, effectiveFrom, request.To, "Provider returned zero bars for the requested date range"));
             }
             catch (OperationCanceledException) { throw; }
             catch (RateLimitException ex)
@@ -158,12 +179,14 @@ public sealed class HistoricalBackfillService
                     symbol, provider.Name, Volatile.Read(ref currentConcurrency));
                 failedSymbols.Add(symbol);
                 errorMessages.Add($"{symbol}: {ex.Message}");
+                validationSignals.Add(SymbolValidationSignal.Fail(symbol, request.From, request.To, $"Rate limit exceeded: {ex.Message}"));
             }
             catch (Exception ex)
             {
                 _log.Error(ex, "Backfill failed for symbol {Symbol} via {Provider}, continuing with remaining symbols", symbol, provider.Name);
                 failedSymbols.Add(symbol);
                 errorMessages.Add($"{symbol}: {ex.Message}");
+                validationSignals.Add(SymbolValidationSignal.Fail(symbol, request.From, request.To, ex.Message));
             }
             finally
             {
@@ -190,9 +213,13 @@ public sealed class HistoricalBackfillService
             ? $"Failed symbols ({failedList.Length}/{symbols.Length}): {string.Join("; ", errorMessages)}"
             : null;
 
-        _log.Information("Backfill complete: {Count} bars written across {Total} symbols ({Failed} failed)",
-            barsWritten, symbols.Length, failedList.Length);
+        _log.Information("Backfill complete: {Count} bars written across {Total} symbols ({Failed} failed, {Skipped} skipped)",
+            barsWritten, symbols.Length, failedList.Length, skippedSymbols.Count);
 
-        return new BackfillResult(allSucceeded, provider.Name, symbols, request.From, request.To, barsWritten, started, completed, Error: errorSummary);
+        return new BackfillResult(
+            allSucceeded, provider.Name, symbols, request.From, request.To, barsWritten, started, completed,
+            Error: errorSummary,
+            SkippedSymbols: skippedSymbols.ToArray(),
+            SymbolValidationSignals: validationSignals.ToArray());
     }
 }

@@ -1,11 +1,19 @@
-import { DatabaseZap, Download, RadioTower, RefreshCcw } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { CheckCircle, DatabaseZap, Download, RadioTower, RefreshCcw, XCircle } from "lucide-react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle
+} from "@/components/ui/dialog";
+import { getBackfillProgress, previewBackfill, triggerBackfill } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import type { DataOperationsWorkspaceResponse } from "@/types";
+import type { BackfillProgressResponse, BackfillTriggerRequest, BackfillTriggerResult, DataOperationsWorkspaceResponse } from "@/types";
 
 interface DataOperationsScreenProps {
   data: DataOperationsWorkspaceResponse | null;
@@ -30,6 +38,32 @@ const workstreamCopy: Record<string, { title: string; description: string }> = {
     title: "Export delivery focus",
     description: "Monitor operational export targets and handoff readiness without leaving the workstation shell."
   }
+};
+
+// --- Trigger backfill dialog state ---
+
+type TriggerPhase = "idle" | "previewing" | "previewed" | "running" | "done" | "error";
+
+interface TriggerState {
+  phase: TriggerPhase;
+  symbolsInput: string;
+  provider: string;
+  from: string;
+  to: string;
+  preview: BackfillTriggerResult | null;
+  result: BackfillTriggerResult | null;
+  error: string | null;
+}
+
+const INITIAL_TRIGGER: TriggerState = {
+  phase: "idle",
+  symbolsInput: "",
+  provider: "",
+  from: "",
+  to: "",
+  preview: null,
+  result: null,
+  error: null
 };
 
 export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
@@ -59,6 +93,88 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
 
     setSelectedBackfillJobId(data.backfills[0].jobId);
   }, [data, selectedBackfillJobId]);
+
+  // --- Trigger backfill state ---
+  const [triggerOpen, setTriggerOpen] = useState(false);
+  const [trigger, setTrigger] = useState<TriggerState>(INITIAL_TRIGGER);
+
+  // --- Live progress polling ---
+  const [progress, setProgress] = useState<BackfillProgressResponse | null>(null);
+  const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    if (trigger.phase !== "running") {
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = null;
+      }
+      return;
+    }
+
+    progressIntervalRef.current = setInterval(() => {
+      getBackfillProgress()
+        .then(setProgress)
+        .catch((err) => {
+          console.warn("Backfill progress poll failed:", err instanceof Error ? err.message : err);
+        });
+    }, 2000);
+
+    return () => {
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+      }
+    };
+  }, [trigger.phase]);
+
+  function openTrigger() {
+    setTrigger(INITIAL_TRIGGER);
+    setProgress(null);
+    setTriggerOpen(true);
+  }
+
+  function closeTrigger() {
+    if (trigger.phase === "running") return;
+    setTriggerOpen(false);
+    setTrigger(INITIAL_TRIGGER);
+    setProgress(null);
+  }
+
+  function buildRequest(): BackfillTriggerRequest {
+    return {
+      provider: trigger.provider.trim() || null,
+      symbols: parseSymbols(trigger.symbolsInput),
+      from: trigger.from.trim() || null,
+      to: trigger.to.trim() || null
+    };
+  }
+
+  async function handlePreview() {
+    setTrigger((prev) => ({ ...prev, phase: "previewing", error: null }));
+    try {
+      const preview = await previewBackfill(buildRequest());
+      setTrigger((prev) => ({ ...prev, phase: "previewed", preview }));
+    } catch (err) {
+      setTrigger((prev) => ({
+        ...prev,
+        phase: "error",
+        error: err instanceof Error ? err.message : "Preview failed."
+      }));
+    }
+  }
+
+  async function handleRun() {
+    setTrigger((prev) => ({ ...prev, phase: "running", error: null }));
+    try {
+      const result = await triggerBackfill(buildRequest());
+      setTrigger((prev) => ({ ...prev, phase: "done", result }));
+    } catch (err) {
+      setTrigger((prev) => ({
+        ...prev,
+        phase: "error",
+        error: err instanceof Error ? err.message : "Backfill failed."
+      }));
+    }
+  }
 
   if (!data) {
     return (
@@ -130,9 +246,14 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
         <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <DatabaseZap className="h-4 w-4 text-primary" />
-                Backfill queue detail
+              <CardTitle className="flex items-center justify-between gap-2 text-base">
+                <span className="flex items-center gap-2">
+                  <DatabaseZap className="h-4 w-4 text-primary" />
+                  Backfill queue detail
+                </span>
+                <Button size="sm" onClick={openTrigger}>
+                  Trigger backfill
+                </Button>
               </CardTitle>
               <CardDescription>Select a queued job to inspect its operational detail panel.</CardDescription>
             </CardHeader>
@@ -178,9 +299,11 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
                 {buildBackfillNarrative(selectedBackfill)}
               </div>
               <div className="flex gap-3">
-                <Button variant="secondary">Inspect checkpoints</Button>
-                <Button variant="outline" className="border-white/20 bg-transparent text-slate-50 hover:bg-white/10">
-                  Review queue prerequisites
+                <Button variant="secondary" onClick={openTrigger}>
+                  Trigger new backfill
+                </Button>
+                <Button variant="outline" className="border-white/20 bg-transparent text-slate-50 hover:bg-white/10" onClick={openTrigger}>
+                  Trigger backfill from this scope
                 </Button>
               </div>
             </CardContent>
@@ -216,9 +339,14 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
 
         <Card className="xl:col-span-1">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <DatabaseZap className="h-4 w-4 text-primary" />
-              Backfill queue
+            <CardTitle className="flex items-center justify-between gap-2 text-base">
+              <span className="flex items-center gap-2">
+                <DatabaseZap className="h-4 w-4 text-primary" />
+                Backfill queue
+              </span>
+              <Button size="sm" variant="outline" onClick={openTrigger}>
+                Trigger backfill
+              </Button>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -258,6 +386,18 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
           </CardContent>
         </Card>
       </section>
+
+      <TriggerBackfillDialog
+        open={triggerOpen}
+        trigger={trigger}
+        progress={progress}
+        onClose={closeTrigger}
+        onFieldChange={(field, value) =>
+          setTrigger((prev) => ({ ...prev, [field]: value }))
+        }
+        onPreview={handlePreview}
+        onRun={handleRun}
+      />
     </div>
   );
 }
@@ -335,6 +475,174 @@ function CompactTable({ columns, rows }: { columns: string[]; rows: string[][] }
           ))}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+function parseSymbols(input: string): string[] {
+  return input
+    .split(/[\s,]+/)
+    .map((s) => s.trim().toUpperCase())
+    .filter(Boolean);
+}
+
+// --- Trigger Backfill Dialog ---
+
+interface TriggerBackfillDialogProps {
+  open: boolean;
+  trigger: TriggerState;
+  progress: BackfillProgressResponse | null;
+  onClose: () => void;
+  onFieldChange: (field: keyof Pick<TriggerState, "symbolsInput" | "provider" | "from" | "to">, value: string) => void;
+  onPreview: () => void;
+  onRun: () => void;
+}
+
+function TriggerBackfillDialog({
+  open,
+  trigger,
+  progress,
+  onClose,
+  onFieldChange,
+  onPreview,
+  onRun
+}: TriggerBackfillDialogProps) {
+  const { phase, symbolsInput, provider, from, to, preview, result, error } = trigger;
+  const busy = phase === "previewing" || phase === "running";
+  const isDone = phase === "done";
+  const canPreview = phase === "idle" || phase === "previewed" || phase === "error";
+  const canRun = phase === "previewed";
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Trigger backfill</DialogTitle>
+          <DialogDescription>
+            Enter symbols, an optional provider, and an optional date range. Preview first to see what will be fetched before committing.
+          </DialogDescription>
+        </DialogHeader>
+
+        {!isDone ? (
+          <div className="space-y-4">
+            <LabeledField label="Symbols (comma or space separated)">
+              <input
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary/50"
+                placeholder="AAPL MSFT SPY"
+                value={symbolsInput}
+                onChange={(e) => onFieldChange("symbolsInput", e.target.value)}
+                disabled={busy}
+              />
+            </LabeledField>
+
+            <LabeledField label="Provider (optional — leave blank for default chain)">
+              <input
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary/50"
+                placeholder="e.g. polygon"
+                value={provider}
+                onChange={(e) => onFieldChange("provider", e.target.value)}
+                disabled={busy}
+              />
+            </LabeledField>
+
+            <div className="grid grid-cols-2 gap-3">
+              <LabeledField label="From (YYYY-MM-DD)">
+                <input
+                  type="date"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  value={from}
+                  onChange={(e) => onFieldChange("from", e.target.value)}
+                  disabled={busy}
+                />
+              </LabeledField>
+              <LabeledField label="To (YYYY-MM-DD)">
+                <input
+                  type="date"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  value={to}
+                  onChange={(e) => onFieldChange("to", e.target.value)}
+                  disabled={busy}
+                />
+              </LabeledField>
+            </div>
+
+            {error ? (
+              <div className="flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                <XCircle className="h-4 w-4 shrink-0" />
+                {error}
+              </div>
+            ) : null}
+
+            {preview && phase === "previewed" ? (
+              <div className="rounded-lg border border-primary/30 bg-primary/10 p-4 text-sm space-y-2">
+                <div className="font-semibold text-primary">Preview — {preview.provider}</div>
+                <div className="text-muted-foreground">Symbols: <span className="font-mono">{preview.symbols.join(", ")}</span></div>
+                {preview.from ? <div className="text-muted-foreground">From: <span className="font-mono">{preview.from}</span></div> : null}
+                {preview.to ? <div className="text-muted-foreground">To: <span className="font-mono">{preview.to}</span></div> : null}
+                <div className="text-muted-foreground">Estimated bars: <span className="font-mono">{preview.barsWritten.toLocaleString()}</span></div>
+              </div>
+            ) : null}
+
+            {phase === "running" && progress ? (
+              <div className="rounded-lg border border-border/70 bg-secondary/30 p-4 text-sm space-y-2">
+                <div className="font-semibold">Running — {progress.provider ?? "…"}</div>
+                {progress.symbols.map((entry) => (
+                  <div key={entry.symbol} className="flex items-center justify-between gap-2 font-mono text-xs">
+                    <span>{entry.symbol}</span>
+                    <span>{entry.completed ? "✓" : `${entry.barsWritten.toLocaleString()} bars`}</span>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+
+            <div className="flex justify-end gap-3 pt-2">
+              <Button variant="outline" onClick={onClose} disabled={busy}>
+                Cancel
+              </Button>
+              {canPreview ? (
+                <Button variant="secondary" onClick={onPreview} disabled={busy || !symbolsInput.trim()}>
+                  {phase === "previewing" ? "Previewing…" : "Preview"}
+                </Button>
+              ) : null}
+              {canRun ? (
+                <Button onClick={onRun} disabled={busy}>
+                  {phase === "running" ? "Running…" : "Run backfill"}
+                </Button>
+              ) : null}
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {result?.success ? (
+              <div className="flex flex-col gap-2 rounded-lg border border-success/30 bg-success/10 px-4 py-4 text-sm text-success">
+                <div className="flex items-center gap-2 font-semibold">
+                  <CheckCircle className="h-4 w-4 shrink-0" />
+                  Backfill complete — {result.provider}
+                </div>
+                <div>Symbols: <span className="font-mono">{result.symbols.join(", ")}</span></div>
+                <div>Bars written: <span className="font-mono">{result.barsWritten.toLocaleString()}</span></div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                <XCircle className="h-4 w-4 shrink-0" />
+                {result?.error ?? "Backfill failed."}
+              </div>
+            )}
+            <div className="flex justify-end pt-2">
+              <Button variant="outline" onClick={onClose}>Close</Button>
+            </div>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function LabeledField({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-1.5">
+      <label className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">{label}</label>
+      {children}
     </div>
   );
 }

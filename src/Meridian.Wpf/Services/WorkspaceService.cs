@@ -221,6 +221,10 @@ public sealed class WorkspaceService
             Category = WorkspaceCategory.Custom,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
+            PreferredPageTag = _lastSession?.ActivePageTag
+                ?? _activeWorkspace?.LastActivePageTag
+                ?? _activeWorkspace?.PreferredPageTag
+                ?? "Dashboard",
             Pages = _lastSession?.OpenPages ?? new List<WorkspacePage>(),
             WidgetLayout = _lastSession?.WidgetLayout ?? new Dictionary<string, WidgetPosition>(),
             Filters = _lastSession?.ActiveFilters ?? new Dictionary<string, string>(),

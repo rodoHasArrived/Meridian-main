@@ -85,12 +85,14 @@ public sealed class CashFlowViewModelTests
                 TotalTrades: 2,
                 WinningTrades: 1,
                 LosingTrades: 1,
-                AverageTradeDuration: TimeSpan.FromDays(1),
                 TotalCommissions: 1m,
                 TotalMarginInterest: 0m,
-                TotalShortRebates: 0m),
+                TotalShortRebates: 0m,
+                Xirr: 0.01,
+                SymbolAttribution: new Dictionary<string, SymbolAttribution>(StringComparer.OrdinalIgnoreCase)),
             ElapsedTime: TimeSpan.FromSeconds(2),
-            Ledger: null);
+            Ledger: new Meridian.Ledger.Ledger(),
+            TotalEventsProcessed: cashFlows.Length);
     }
 
     // ── Initial state ─────────────────────────────────────────────────────
@@ -182,7 +184,7 @@ public sealed class CashFlowViewModelTests
         vm.Parameter = runId;
         await Task.Delay(100);
 
-        vm.LadderBuckets.Should().NotBeEmpty("the projection service builds buckets from events");
+        vm.BucketSummaryText.Should().NotBe("-");
     }
 
     [Fact]

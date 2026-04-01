@@ -943,6 +943,30 @@ public sealed class StockSharpMessageConversionTests
     }
 
     [Fact]
+    public void ConnectorCapabilities_InteractiveBrokers_SupportsGlobalBrokerWorkflow()
+    {
+        var caps = StockSharpConnectorCapabilities.GetCapabilities("InteractiveBrokers");
+
+        caps.ConnectorType.Should().Be("InteractiveBrokers");
+        caps.SupportsStreaming.Should().BeTrue();
+        caps.SupportsHistorical.Should().BeTrue();
+        caps.SupportsDepth.Should().BeTrue();
+        caps.SupportedMarkets.Should().Contain("NYSE");
+        caps.Notes.Should().Contain(note => note.Contains("TWS", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void ConnectorCapabilities_Kraken_ExplainsCryptoPackageRequirements()
+    {
+        var caps = StockSharpConnectorCapabilities.GetCapabilities("Kraken");
+
+        caps.ConnectorType.Should().Be("Kraken");
+        caps.SupportsStreaming.Should().BeTrue();
+        caps.SupportedAssetTypes.Should().Contain("Crypto");
+        caps.Warnings.Should().Contain(warning => warning.Contains("StockSharp.Kraken"));
+    }
+
+    [Fact]
     public void ConnectorCapabilities_GetCapabilities_CaseInsensitive()
     {
         StockSharpConnectorCapabilities.GetCapabilities("rithmic").ConnectorType.Should().Be("Rithmic");
@@ -1067,7 +1091,19 @@ public sealed class StockSharpMessageConversionTests
 
         var ex = Record.Exception(() => StockSharpConnectorFactory.Create(config));
 
-        ex.Should().BeOfType<NotSupportedException>();
+        ex.Should().BeOfType<NotSupportedException>()
+            .Which.Message.Should().Contain("Binance");
+    }
+
+    [Fact]
+    public void ConnectorFactory_Kraken_Stub_ThrowsWithGuidePathAndConnectorName()
+    {
+        var config = new StockSharpConfig(Enabled: true, ConnectorType: "Kraken");
+
+        var ex = Record.Exception(() => StockSharpConnectorFactory.Create(config));
+
+        ex.Should().BeOfType<NotSupportedException>()
+            .Which.Message.Should().ContainAll("Kraken", "EnableStockSharp=true", "stocksharp-connectors.md");
     }
 
     [Fact]

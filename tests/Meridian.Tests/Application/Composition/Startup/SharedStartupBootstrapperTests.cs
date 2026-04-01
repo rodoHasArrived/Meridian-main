@@ -12,6 +12,7 @@ namespace Meridian.Tests.Application.Composition.Startup;
 public sealed class SharedStartupBootstrapperTests : IDisposable
 {
     private readonly string? _originalConfigPath = Environment.GetEnvironmentVariable("MDC_CONFIG_PATH");
+    private readonly string _originalCurrentDirectory = Environment.CurrentDirectory;
     private readonly ILogger _log = new LoggerConfiguration().CreateLogger();
     private readonly List<string> _tempDirectories = [];
 
@@ -35,6 +36,27 @@ public sealed class SharedStartupBootstrapperTests : IDisposable
         var resolved = SharedStartupHelpers.ResolveConfigPath(cliArgs);
 
         resolved.Should().Be("/env/config.json");
+    }
+
+    [Fact]
+    public void ResolveConfigPath_FindsConfigDirectoryInAncestorDirectory()
+    {
+        Environment.SetEnvironmentVariable("MDC_CONFIG_PATH", null);
+
+        var repositoryRoot = CreateTempDirectory();
+        var configDirectory = Path.Combine(repositoryRoot, "config");
+        Directory.CreateDirectory(configDirectory);
+
+        var expectedPath = Path.Combine(configDirectory, "appsettings.json");
+        File.WriteAllText(expectedPath, "{}");
+
+        var nestedWorkingDirectory = Path.Combine(repositoryRoot, "src", "Meridian.Ui");
+        Directory.CreateDirectory(nestedWorkingDirectory);
+        Environment.CurrentDirectory = nestedWorkingDirectory;
+
+        var resolved = SharedStartupHelpers.ResolveConfigPath(CliArguments.Parse([]));
+
+        resolved.Should().Be(expectedPath);
     }
 
     [Fact]
@@ -70,6 +92,7 @@ public sealed class SharedStartupBootstrapperTests : IDisposable
     public void Dispose()
     {
         Environment.SetEnvironmentVariable("MDC_CONFIG_PATH", _originalConfigPath);
+        Environment.CurrentDirectory = _originalCurrentDirectory;
         (_log as IDisposable)?.Dispose();
 
         foreach (var path in _tempDirectories.Where(Directory.Exists))

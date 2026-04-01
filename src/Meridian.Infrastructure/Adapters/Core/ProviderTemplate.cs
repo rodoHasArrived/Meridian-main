@@ -215,7 +215,8 @@ public static class ProviderTemplateFactory
                 attribute.Name,
                 attribute.EnvironmentVariables.FirstOrDefault(),
                 attribute.DisplayName ?? FormatCredentialDisplayName(attribute.Name),
-                !attribute.Optional))
+                !attribute.Optional,
+                EnvironmentVariableAliases: attribute.EnvironmentVariables.Skip(1).ToArray()))
             .ToArray();
 
         return attributeFields;

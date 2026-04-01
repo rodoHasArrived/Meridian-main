@@ -90,6 +90,17 @@ public sealed class BackfillCoordinator : IDisposable
     }
 
     /// <summary>
+    /// Returns the per-symbol bar-count map saved during the last backfill run,
+    /// or <c>null</c> when no bar-count data has been persisted yet.
+    /// </summary>
+    public IReadOnlyDictionary<string, long>? TryReadSymbolBarCounts()
+    {
+        var cfg = _store.Load();
+        var statusStore = new BackfillStatusStore(_store.GetDataRoot(cfg));
+        return statusStore.TryReadSymbolBarCounts();
+    }
+
+    /// <summary>
     /// Gets current backfill progress. Returns null if no active backfill.
     /// </summary>
     public object? GetProgress()

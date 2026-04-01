@@ -155,6 +155,7 @@ public sealed class GlobalHotkeyService
             else
             {
                 int err = Marshal.GetLastWin32Error();
+                Debug.WriteLine(
                     $"[GlobalHotkeyService] WARNING: Failed to register {def.KeyGesture} " +
                     $"(id=0x{def.Id:X4}, win32err={err}). " +
                     "Another application may be using this combination.");

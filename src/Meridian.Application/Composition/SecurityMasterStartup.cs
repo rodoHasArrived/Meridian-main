@@ -8,16 +8,13 @@ internal static class SecurityMasterStartup
 {
     internal const string ConnectionStringVariable = "MERIDIAN_SECURITY_MASTER_CONNECTION_STRING";
     internal const string SchemaVariable = "MERIDIAN_SECURITY_MASTER_SCHEMA";
-    internal const string DefaultConnectionString = "Host=localhost;Port=5432;Database=postgres;Username=postgres;Password=secret";
     internal const string DefaultSchema = "security_master";
+
+    public static bool IsConfigured()
+        => !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(ConnectionStringVariable));
 
     public static void EnsureEnvironmentDefaults()
     {
-        if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(ConnectionStringVariable)))
-        {
-            Environment.SetEnvironmentVariable(ConnectionStringVariable, DefaultConnectionString);
-        }
-
         if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(SchemaVariable)))
         {
             Environment.SetEnvironmentVariable(SchemaVariable, DefaultSchema);
@@ -27,6 +24,13 @@ internal static class SecurityMasterStartup
     public static void EnsureDatabaseReady(IServiceProvider serviceProvider, ILogger? logger = null)
     {
         EnsureEnvironmentDefaults();
+        if (!IsConfigured())
+        {
+            logger?.LogDebug(
+                "Skipping Security Master database readiness because {ConnectionStringVariable} is not configured.",
+                ConnectionStringVariable);
+            return;
+        }
 
         var migrationRunner = serviceProvider.GetService<SecurityMasterMigrationRunner>();
         if (migrationRunner is null)

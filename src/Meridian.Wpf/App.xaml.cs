@@ -17,10 +17,12 @@ using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
 using Meridian.Ui.Shared.Services;
 using Meridian.Wpf.Contracts;
+using Meridian.Wpf.ViewModels;
 using WpfServices = Meridian.Wpf.Services;
 using Meridian.Wpf.Views;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.DataQuality;
+using Meridian.Ui.Services.Services;
 
 namespace Meridian.Wpf;
 
@@ -212,6 +214,7 @@ public partial class App : System.Windows.Application
 
         // ── Fixture mode service (offline mock data) ────────────────────────
         services.AddSingleton(_ => Meridian.Ui.Services.Services.FixtureDataService.Instance);
+        services.AddSingleton(_ => Meridian.Ui.Services.Services.FixtureModeDetector.Instance);
 
         // ── Core services (by interface + concrete type) ────────────────────
         services.AddSingleton<IConnectionService>(_ => WpfServices.ConnectionService.Instance);
@@ -266,9 +269,11 @@ public partial class App : System.Windows.Application
         services.AddSingleton<WpfServices.ISystemTrayService>(sp => sp.GetRequiredService<WpfServices.SystemTrayService>());
 
         // ── MainWindow ──────────────────────────────────────────────────────
+        services.AddSingleton<Meridian.Wpf.ViewModels.MainWindowViewModel>();
         services.AddSingleton<MainWindow>();
 
         // ── Pages (transient — created per navigation) ──────────────────────
+        services.AddTransient<Meridian.Wpf.ViewModels.MainPageViewModel>();
         services.AddTransient<MainPage>();
         services.AddTransient<DashboardPage>();
         services.AddTransient<WatchlistPage>();
@@ -302,6 +307,7 @@ public partial class App : System.Windows.Application
         services.AddTransient<AdvancedAnalyticsPage>();
         services.AddTransient<ChartingPage>();
         services.AddTransient<OrderBookPage>();
+        services.AddTransient<Meridian.Ui.Services.DataCalendarService>();
         services.AddTransient<DataCalendarPage>();
         services.AddTransient<StorageOptimizationPage>();
         services.AddTransient<RetentionAssurancePage>();
@@ -358,6 +364,8 @@ public partial class App : System.Windows.Application
         services.AddTransient<Meridian.Wpf.ViewModels.BacktestViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.ChartingPageViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.TickerStripViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.WatchlistViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.SettingsViewModel>();
 
         // ── Plugin loader service ────────────────────────────────────────────
         services.AddSingleton<Meridian.Infrastructure.DataSources.DataSourceRegistry>();
@@ -392,9 +400,13 @@ public partial class App : System.Windows.Application
             services.AddSingleton<SecurityMasterCsvParser>();
             services.AddSingleton<ISecurityMasterImportService, SecurityMasterImportService>();
 
-            // Corporate action adjustment for backtesting
+            // Corporate action adjustment for backtesting and live paper trading.
             services.AddSingleton<ISecurityResolver, SecurityResolver>();
-            services.AddSingleton<Meridian.Backtesting.ICorporateActionAdjustmentService, Meridian.Backtesting.CorporateActionAdjustmentService>();
+            services.AddSingleton<Meridian.Backtesting.CorporateActionAdjustmentService>();
+            services.AddSingleton<Meridian.Backtesting.ICorporateActionAdjustmentService>(
+                sp => sp.GetRequiredService<Meridian.Backtesting.CorporateActionAdjustmentService>());
+            services.AddSingleton<Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster>(
+                sp => sp.GetRequiredService<Meridian.Backtesting.CorporateActionAdjustmentService>());
         }
 
         // Wire optional Security Master collaborators into the BacktestService singleton when available.
@@ -645,7 +657,16 @@ public partial class App : System.Windows.Application
             await Task.WhenAll(shutdownTasks);
 
             // Dispose the NotifyIcon so the system-tray icon is removed cleanly.
-            try { WpfServices.ToastNotificationService.Instance.Dispose(); }
+            try
+            {
+                WpfServices.ToastNotificationService.Instance.Dispose();
+            }
+            catch (Exception ex)
+            {
+                WpfServices.LoggingService.Instance.LogWarning(
+                    "Failed to dispose toast notification service during shutdown",
+                    ("Error", ex.Message));
+            }
 
         }
         catch (OperationCanceledException)

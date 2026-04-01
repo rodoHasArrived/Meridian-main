@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - '.github/workflows/**'
+      - '.github/actions/**'
       - '.github/dependabot.yml'
       - '.github/labeler.yml'
   workflow_dispatch:
@@ -101,6 +102,27 @@ jobs:
         
         exit $EXIT_CODE
 
+    - name: Validate composite action YAML files
+      run: |
+        EXIT_CODE=0
+        echo "Validating composite action YAML files..."
+        shopt -s globstar nullglob
+        files=(.github/actions/**/action.yml .github/actions/**/action.yaml)
+        if [ ${#files[@]} -eq 0 ]; then
+          echo "  (no composite action files found)"
+        fi
+        for file in "${files[@]}"; do
+          echo "Checking $file..."
+          if python -c "import yaml; yaml.safe_load(open('$file'))" 2>/dev/null; then
+            echo "  ✓ Valid"
+          else
+            echo "  ✗ Invalid YAML syntax"
+            EXIT_CODE=1
+          fi
+        done
+        
+        exit $EXIT_CODE
+
   validate-actions:
     name: Validate GitHub Actions
     runs-on: ubuntu-latest
@@ -124,6 +146,11 @@ jobs:
         if grep -r "actions/setup-dotnet@v[1-4]" .github/workflows/; then
           echo "⚠️  Warning: Found deprecated setup-dotnet action versions"
           echo "   Consider upgrading to actions/setup-dotnet@v5.2.0"
+        fi
+
+        if grep -r "actions/setup-dotnet@v5\.[0-1]\." .github/workflows/ .github/actions/; then
+          echo "⚠️  Warning: setup-dotnet version below v5.2.0 found (inconsistency with reusable workflow)"
+          echo "   Pin all direct setup-dotnet references to actions/setup-dotnet@v5.2.0"
         fi
 
         if grep -r "actions/github-script@v[1-7]" .github/workflows/; then

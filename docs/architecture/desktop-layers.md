@@ -58,6 +58,14 @@ Both surfaces share contracts and application logic through shared libraries, wi
 - Contains truly platform-specific implementations (theme, keyboard shortcuts, windowing, etc.).
 - References `Meridian.Ui.Services` for shared UI/domain helpers.
 
+#### WPF shell MVVM boundary
+
+- `MainWindowViewModel` owns shell-level commands and transient shell state such as fixture/clipboard banners, collector actions, and status-bar orchestration.
+- `MainPageViewModel` owns workstation workspace focus, current-page metadata, command-palette state, recent-page history, and shell navigation commands.
+- `MainWindow.xaml.cs` and `Views/MainPage.xaml.cs` stay intentionally thin: they handle WPF-only concerns such as window lifecycle hooks, `Frame` initialization, focus management, drag/drop, and other visual-tree interactions that do not belong in reusable state.
+- Navigation and shared operator behavior continue to flow through `Meridian.Wpf.Services` and `Meridian.Ui.Services`; code-behind should not become the source of truth for shell state.
+- Detailed shell notes: see [WPF Shell MVVM](wpf-shell-mvvm.md).
+
 ### `src/Meridian.Ui/` (Web host)
 
 - Intentionally thin host (`Program.cs`) that delegates setup to shared endpoint composition.
@@ -128,4 +136,4 @@ HTTP Request
 
 ---
 
-*Last Updated: 2026-03-18*
+*Last Updated: 2026-03-31*

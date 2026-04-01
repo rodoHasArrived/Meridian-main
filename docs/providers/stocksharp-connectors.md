@@ -1,8 +1,13 @@
 # StockSharp Connector Guide
 
-**Last Updated:** 2026-03-21
+**Last Updated:** 2026-03-31
 
 This guide documents the StockSharp connector types currently recognized by Meridian and shows the minimum configuration shape for each one.
+
+Use this guide together with [Provider Confidence Baseline](provider-confidence-baseline.md). Meridian currently validates StockSharp in two layers:
+
+- Offline / CI baseline: connector metadata, stub guidance, and representative conversion contracts.
+- Manual runtime verification: installed connector packages plus the local vendor software or credentials that each connector needs.
 
 The runtime wiring is implemented in:
 
@@ -26,6 +31,8 @@ Supported named connector types in the current code:
 | Coinbase | `Coinbase` | Yes | Yes | Yes | Yes | Yes | Supports sandbox mode |
 | Kraken | `Kraken` | Yes | Yes | Yes | Yes | Yes | Configurable order book depth |
 | Custom adapter | custom `ConnectorType` + `AdapterType` | Depends | Depends | Depends | Depends | Depends | Use when loading a StockSharp adapter by type name |
+
+The table above describes the named connector types Meridian recognizes in code. It is not a claim that every connector is available in the default build. The current repo baseline validates representative capability metadata and stub guidance for these connectors; actual runtime availability still depends on `EnableStockSharp=true` plus the required package surfaces.
 
 ## Common Settings
 
@@ -207,6 +214,20 @@ Example:
 - Crypto connectors may require separate StockSharp packages or crowdfunding access beyond the packages currently referenced by Meridian.
 - Interactive Brokers support exists both natively (`IBMarketDataClient`) and through StockSharp; use the native path when you specifically want Meridian's direct IB integration.
 
+## Repo-Validated Offline Checks
+
+```bash
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~StockSharpSubscriptionTests|FullyQualifiedName~StockSharpMessageConversionTests|FullyQualifiedName~StockSharpConnectorFactoryTests"
+```
+
+These tests validate:
+
+- stub guidance when `STOCKSHARP` is not enabled
+- representative connector capability metadata for Rithmic, IQFeed, Interactive Brokers, and Kraken
+- conversion contracts for representative futures and equities flows
+
+They do not prove that a given connector package is installed locally or that the corresponding vendor runtime is reachable.
+
 ## Validated Adapter Samples
 
 The tests in
@@ -336,8 +357,7 @@ call throws `NotSupportedException`. The error message always contains:
 - The list of supported named connector types.
 - A link to this guide (`docs/providers/stocksharp-connectors.md`).
 
-This is verified for both Rithmic and IQFeed in the test file under the
-`Connector Factory Stub — Rithmic and IQFeed` region.
+This is verified in the test file under the connector-factory stub coverage, including named connector guidance paths for Rithmic, IQFeed, Binance, and Kraken.
 
 ---
 

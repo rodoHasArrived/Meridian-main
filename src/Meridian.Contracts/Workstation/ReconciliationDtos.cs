@@ -118,4 +118,9 @@ public sealed record ReconciliationRunDetail(
     IReadOnlyList<ReconciliationMatchDto> Matches,
     IReadOnlyList<ReconciliationBreakDto> Breaks,
     IReadOnlyList<ReconciliationSecurityCoverageIssueDto>? SecurityCoverageIssues = null,
-    IReadOnlyList<BankTransactionDto>? BankTransactions = null);
+    IReadOnlyList<BankTransactionDto>? BankTransactions = null,
+    /// <summary>
+    /// Security Master classification keyed by ticker symbol, populated for every symbol whose
+    /// Security Master entry was resolved at reconciliation time. Suitable for audit reporting.
+    /// </summary>
+    IReadOnlyDictionary<string, SecurityClassificationSummaryDto>? SecurityClassifications = null);

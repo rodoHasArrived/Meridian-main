@@ -1,9 +1,11 @@
 using System.IO;
 using System.Windows.Automation;
 using System.Windows.Controls;
+using Microsoft.Extensions.DependencyInjection;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
+using Meridian.Wpf.ViewModels;
 using Meridian.Wpf.Views;
 
 namespace Meridian.Wpf.Tests.Views;
@@ -18,27 +20,25 @@ public sealed class RunMatUiSmokeTests
             RunMatUiAutomationFacade.EnsureApplicationResources();
 
             var navigationService = NavigationService.Instance;
-            navigationService.SetServiceProvider(RunMatUiAutomationFacade.CreateMainPageServiceProvider());
-            var page = new MainPage(
-                navigationService,
-                ConnectionService.Instance,
-                SearchService.Instance,
-                MessagingService.Instance);
+            var serviceProvider = RunMatUiAutomationFacade.CreateMainPageServiceProvider();
+            navigationService.SetServiceProvider(serviceProvider);
+            var page = serviceProvider.GetRequiredService<MainPage>();
 
             RunMatUiAutomationFacade.InvokeMainPageLoaded(page);
 
             var commandPaletteInput = page.FindName("CommandPaletteTextBox").Should().BeOfType<TextBox>().Subject;
             var commandPaletteResults = page.FindName("CommandPaletteResults").Should().BeOfType<ListBox>().Subject;
             var researchNavList = page.FindName("ResearchNavList").Should().BeOfType<ListBox>().Subject;
-            var pageTitle = page.FindName("PageTitleText").Should().BeOfType<TextBlock>().Subject;
             var contentFrame = page.FindName("ContentFrame").Should().BeOfType<Frame>().Subject;
             var shellAutomationState = page.FindName("ShellAutomationStateText").Should().BeOfType<TextBlock>().Subject;
+            var viewModel = page.DataContext.Should().BeOfType<MainPageViewModel>().Subject;
 
             AutomationProperties.GetAutomationId(page).Should().Be("MainPage");
             AutomationProperties.GetAutomationId(commandPaletteInput).Should().Be("CommandPaletteInput");
             AutomationProperties.GetAutomationId(commandPaletteResults).Should().Be("CommandPaletteResults");
             AutomationProperties.GetAutomationId(contentFrame).Should().Be("ContentFrame");
-            shellAutomationState.Text.Should().Contain("PageTag=Dashboard");
+            shellAutomationState.Text.Should().Be("Dashboard");
+            viewModel.CurrentPageTitle.Should().Be("Dashboard");
 
             var runMatNavItem = researchNavList.Items
                 .OfType<ListBoxItem>()
@@ -50,8 +50,8 @@ public sealed class RunMatUiSmokeTests
             RunMatUiAutomationFacade.InvokeNavigateToPage(page, "RunMat");
 
             contentFrame.Content.Should().BeOfType<RunMatPage>();
-            pageTitle.Text.Should().Be("RunMat Lab");
-            shellAutomationState.Text.Should().Contain("PageTag=RunMat").And.Contain("PageTitle=RunMat Lab");
+            shellAutomationState.Text.Should().Be("RunMat");
+            viewModel.CurrentPageTitle.Should().Be("Run Mat");
 
             var runMatXaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\RunMatPage.xaml"));
             runMatXaml.Should().Contain("AutomationProperties.AutomationId=\"RunMatPageTitle\"");

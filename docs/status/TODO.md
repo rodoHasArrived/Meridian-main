@@ -1,6 +1,6 @@
 # TODO / FIXME / NOTE Scan
 
-Total items: **204**
+Total items: **205**
 
 | File | Line | Tag | Linked Issue | Text |
 |---|---:|---|:---:|---|
@@ -21,8 +21,8 @@ Total items: **204**
 | `.claude/skills/meridian-code-review/evals/evals.json` | 166 | `TODO` | ❌ | "prompt": "Review this ViewModel and its paired View code-behind together for MVVM compliance:\n\nFile 1: SymbolsViewModel.cs\n```csharp\nusing System.Collections.ObjectModel;\nusing Meridian.Ui.Services;\nusing Meridian.Contracts;\n\nnamespace Meridian.Wpf.ViewModels;\n\npublic class SymbolsViewModel : BindableBase\n{\n    private readonly ISymbolService _symbolService;\n    private ObservableCollection<SymbolStatus> _symbols = new();\n    private string _searchText = string.Empty;\n    private bool _isLoading;\n\n    public SymbolsViewModel(ISymbolService symbolService)\n    {\n        _symbolService = symbolService;\n        LoadSymbolsCommand = new RelayCommand(async _ => await LoadSymbolsAsync());\n        RemoveSymbolCommand = new RelayCommand(async p => await RemoveSymbolAsync((string)p!));\n    }\n\n    public ObservableCollection<SymbolStatus> Symbols\n    {\n        get => _symbols;\n        private set => SetProperty(ref _symbols, value);\n    }\n\n    public string SearchText\n    {\n        get => _searchText;\n        set\n        {\n            SetProperty(ref _searchText, value);\n            FilterSymbols();\n        }\n    }\n\n    public bool IsLoading\n    {\n        get => _isLoading;\n        private set => SetProperty(ref _isLoading, value);\n    }\n\n    public RelayCommand LoadSymbolsCommand { get; }\n    public RelayCommand RemoveSymbolCommand { get; }\n\n    private async Task LoadSymbolsAsync()\n    {\n        IsLoading = true;\n        var symbols = await _symbolService.GetSymbolsAsync();\n        Symbols = new ObservableCollection<SymbolStatus>(symbols);\n        IsLoading = false;\n    }\n\n    private async Task RemoveSymbolAsync(string symbol)\n    {\n        await _symbolService.RemoveSymbolAsync(symbol);\n        var item = _symbols.FirstOrDefault(s => s.Symbol == symbol);\n        if (item != null) _symbols.Remove(item);\n    }\n\n    private void FilterSymbols()\n    {\n        // TODO: implement filtering\n    }\n}\n```\n\nFile 2: SymbolsPage.xaml.cs\n```csharp\nusing System.Windows.Controls;\nusing Meridian.Wpf.ViewModels;\nusing Meridian.Ui.Services;\n\nnamespace Meridian.Wpf.Views;\n\npublic partial class SymbolsPage : Page\n{\n    private readonly SymbolsViewModel _viewModel;\n\n    public SymbolsPage(ISymbolService symbolService)\n    {\n        InitializeComponent();\n        _viewModel = new SymbolsViewModel(symbolService);\n        DataContext = _viewModel;\n        Loaded += async (_, _) => await _viewModel.LoadSymbolsCommand.Execute(null);\n    }\n\n    private void OnSearchTextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)\n    {\n        _viewModel.SearchText = ((TextBox)sender).Text;\n    }\n\n    private async void RemoveButton_Click(object sender, System.Windows.RoutedEventArgs e)\n    {\n        var symbol = (string)((System.Windows.FrameworkElement)sender).Tag;\n        await _viewModel._symbolService.RemoveSymbolAsync(symbol);\n        await _viewModel.LoadSymbolsCommand.Execute(null);\n    }\n}\n```", |
 | `.claude/skills/meridian-code-review/scripts/aggregate_benchmark.py` | 332 | `NOTE` | ❌ | for note in benchmark["notes"]: |
 | `.claude/skills/meridian-code-review/scripts/aggregate_benchmark.py` | 333 | `NOTE` | ❌ | lines.append(f"- {note}") |
-| `.claude/skills/meridian-implementation-assurance/SKILL.md` | 41 | `NOTE` | ❌ | - **Performance-sensitive paths are annotated:** any hot-path touched by the change includes an explicit note on allocation, async, or buffering risk. |
-| `.codex/skills/meridian-implementation-assurance/SKILL.md` | 25 | `NOTE` | ❌ | - **Performance-sensitive paths are annotated**: any hot-path touched by the change includes an explicit note on allocation, async, or buffering risk. |
+| `.claude/skills/meridian-implementation-assurance/SKILL.md` | 43 | `NOTE` | ❌ | - **Performance-sensitive paths are annotated:** any hot-path touched by the change includes an explicit note on allocation, async, or buffering risk. |
+| `.codex/skills/meridian-implementation-assurance/SKILL.md` | 35 | `NOTE` | ❌ | - **Performance-sensitive paths are annotated**: any hot-path touched by the change includes an explicit note on allocation, async, or buffering risk. |
 | `.codex/skills/meridian-implementation-assurance/evals/evals.json` | 9 | `NOTE` | ❌ | "prompt": "Use $meridian-implementation-assurance to certify this EventPipeline refactor is complete.\n\nThe change moves bounded-channel creation to EventPipelinePolicy.Default.CreateChannel<T>() (ADR-013 compliance). The existing ADR-013 doc at docs/adr/013-bounded-channel-policy.md covers the pattern and needs a note that direct Channel.CreateBounded calls are now disallowed outside the policy helper.\n\nProvide: validation commands, doc update evidence, rubric scores.", |
 | `.codex/skills/meridian-implementation-assurance/evals/evals.json` | 13 | `NOTE` | ❌ | "Must note the hot-path risk of channel capacity and DropOldest policy", |
 | `.codex/skills/meridian-implementation-assurance/evals/evals.json` | 53 | `NOTE` | ❌ | "Must note DataSourceAttribute decoration requirement (ADR-005)", |
@@ -34,10 +34,10 @@ Total items: **204**
 | `.github/agents/cleanup-agent.md` | 393 | `TODO` | ❌ | - `// TODO:` or `// FIXME:` comments that describe genuine open work items — flag |
 | `.github/agents/cleanup-agent.md` | 436 | `NOTE` | ❌ | - **No new features** — cleanup only; if something is missing, note it but do not add it. |
 | `.github/agents/cleanup-agent.md` | 438 | `NOTE` | ❌ | - **No ViewModel extraction** — flag it as a note; full MVVM refactors belong in code review. |
-| `.github/agents/documentation-agent.md` | 374 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
+| `.github/agents/documentation-agent.md` | 365 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
 | `.github/agents/documentation-agent.md` | 831 | `TODO` | ❌ | │   │   └── TODO.md |
-| `.github/agents/documentation-agent.md` | 3236 | `TODO` | ❌ | - `TODO.md` - Pending work items |
-| `.github/agents/implementation-assurance-agent.md` | 59 | `NOTE` | ❌ | - **Performance-sensitive paths are noted:** any hot-path touched by the change includes an explicit note on allocation, async, or buffering risk. |
+| `.github/agents/documentation-agent.md` | 3267 | `TODO` | ❌ | - `TODO.md` - Pending work items |
+| `.github/agents/implementation-assurance-agent.md` | 61 | `NOTE` | ❌ | - **Performance-sensitive paths are noted:** any hot-path touched by the change includes an explicit note on allocation, async, or buffering risk. |
 | `.github/agents/performance-agent.md` | 248 | `NOTE` | ❌ | - **No new features** — if a performance win requires a new feature, note it but defer it. |
 | `.github/agents/provider-builder-agent.md` | 81 | `TODO` | ❌ | Read the full template before writing any code. Templates contain inline `// TODO:` comments |
 | `.github/workflows/README.md` | 11 | `TODO` | ❌ | \| `documentation.yml` \| `docs-comprehensive.yml`, `docs-auto-update.yml`, `docs-structure-sync.yml`, `ai-instructions-sync.yml`, `todo-automation.yml`, `docs-check.yml` \| AI documentation quality review, AI TODO triage \| |
@@ -48,7 +48,7 @@ Total items: **204**
 | `.github/workflows/README.md` | 150 | `TODO` | ❌ | - **AI**: Documentation quality review, TODO triage recommendations |
 | `.github/workflows/README.md` | 323 | `TODO` | ❌ | \| `documentation.yml` \| Doc Quality Review, TODO Triage \| Completeness/accuracy assessment, TODO prioritization \| |
 | `.github/workflows/desktop-builds.yml` | 9 | `NOTE` | ❌ | # NOTE: UWP/WinUI 3 application has been removed. WPF is the sole desktop client. |
-| `.github/workflows/nightly.yml` | 214 | `NOTE` | ❌ | 4) If only certain platforms failed, note platform-specific issues |
+| `.github/workflows/nightly.yml` | 208 | `NOTE` | ❌ | 4) If only certain platforms failed, note platform-specific issues |
 | `.github/workflows/prompt-generation.yml` | 269 | `NOTE` | ❌ | - name: Note skipped AI review |
 | `.github/workflows/prompt-generation.yml` | 473 | `NOTE` | ❌ | - name: Note Copilot trigger status |
 | `.github/workflows/scheduled-maintenance.yml` | 311 | `TODO` | ❌ | echo "### TODO/FIXME/HACK Markers" >> $GITHUB_STEP_SUMMARY |
@@ -59,12 +59,12 @@ Total items: **204**
 | `.github/workflows/scheduled-maintenance.yml` | 330 | `FIXME` | ❌ | echo "<details><summary>FIXME locations (click to expand)</summary>" >> $GITHUB_STEP_SUMMARY |
 | `.github/workflows/scheduled-maintenance.yml` | 333 | `FIXME` | ❌ | grep -rn "FIXME" src/ tests/ --include="*.cs" --include="*.fs" 2>/dev/null \| head -25 >> $GITHUB_STEP_SUMMARY |
 | `.github/workflows/test-matrix.yml` | 5 | `NOTE` | ❌ | # NOTE: This workflow intentionally does NOT use reusable-dotnet-build.yml because it needs |
-| `.github/workflows/validate-workflows.yml` | 206 | `NOTE` | ❌ | echo "Note: Ensure cron schedules are distributed to avoid rate limits" |
+| `.github/workflows/validate-workflows.yml` | 233 | `NOTE` | ❌ | echo "Note: Ensure cron schedules are distributed to avoid rate limits" |
 | `CLAUDE.md` | 100 | `NOTE` | ❌ | **Note:** Always use `/p:EnableWindowsTargeting=true` on non-Windows systems to avoid NETSDK1100 errors. |
-| `CLAUDE.md` | 427 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
+| `CLAUDE.md` | 418 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
 | `CLAUDE.md` | 884 | `TODO` | ❌ | │   │   └── TODO.md |
-| `README.md` | 573 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
-| `README.md` | 1020 | `TODO` | ❌ | │   │   ├── TODO.md |
+| `README.md` | 411 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
+| `README.md` | 867 | `TODO` | ❌ | │   │   ├── TODO.md |
 | `benchmarks/run-bottleneck-benchmarks.sh` | 111 | `NOTE` | ❌ | # Note: --filter is intentionally not added here; each phase below supplies its own |
 | `build/scripts/run/start-collector.ps1` | 109 | `NOTE` | ❌ | if ($depth -gt 0) { Write-Host "[NOTE] L2 depth requires provider depth entitlements for venues." } |
 | `build/scripts/run/start-collector.sh` | 114 | `NOTE` | ❌ | print("[NOTE] L2 depth requires provider depth subscription for venues.") |
@@ -78,12 +78,12 @@ Total items: **204**
 | `docs/ai/claude/CLAUDE.structure.md` | 160 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
 | `docs/ai/claude/CLAUDE.structure.md` | 473 | `TODO` | ❌ | │   │   └── TODO.md |
 | `docs/ai/copilot/instructions.md` | 5 | `NOTE` | ❌ | > **Note:** For comprehensive project context, see [CLAUDE.md](https://github.com/rodoHasArrived/Meridian/blob/main/CLAUDE.md) in the repository root. For the master AI resource index, see [docs/ai/README.md](https://github.com/rodoHasArrived/Meridian/blob/main/docs/ai/README.md). |
-| `docs/ai/copilot/instructions.md` | 412 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
+| `docs/ai/copilot/instructions.md` | 403 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
 | `docs/ai/copilot/instructions.md` | 869 | `TODO` | ❌ | │   │   └── TODO.md |
-| `docs/ai/copilot/instructions.md` | 3182 | `TODO` | ❌ | - `documentation.yml` — Doc generation, TODO scanning, AI error intake |
-| `docs/ai/skills/README.md` | 179 | `NOTE` | ❌ | > **Note:** The Direct Lending module (`src/Meridian.FSharp/Domain/DirectLending.fs`, |
+| `docs/ai/copilot/instructions.md` | 3213 | `TODO` | ❌ | - `documentation.yml` — Doc generation, TODO scanning, AI error intake |
 | `docs/architecture/deterministic-canonicalization.md` | 365 | `NOTE` | ❌ | Note: Polygon does not define buyer-initiated codes. Only ~5% of trades carry definitive aggressor inference. The canonicalization layer preserves `Unknown` as a valid canonical value rather than attempting inference. |
 | `docs/architecture/domains.md` | 111 | `NOTE` | ❌ | > Note: not every enum member is currently emitted by the three core collectors (`TradeDataCollector`, `MarketDepthCollector`, `QuoteCollector`); several are used by adapters, backfill paths, or the `L3OrderBookCollector`. |
+| `docs/architecture/wpf-shell-mvvm.md` | 5 | `NOTE` | ❌ | This note defines the MVVM boundary for the Meridian desktop shell so workstation state, navigation, and operator actions stay testable and do not drift back into WPF code-behind. |
 | `docs/audits/BACKTEST_ENGINE_CODE_REVIEW_2026_03_25.md` | 150 | `NOTE` | ❌ | **Fix:** Add a note to the XML doc comment explaining the open/close midpoint convention and when to use `BarMidpointFillModel` vs. `OrderBookFillModel`. Consider offering `(bar.High + bar.Low) / 2m` as an alternative mode. |
 | `docs/development/documentation-contribution-guide.md` | 84 | `TODO` | ❌ | ├── status/                    # Project status, roadmap, TODO |
 | `docs/development/documentation-contribution-guide.md` | 154 | `TODO` | ❌ | \| Project roadmap, changelog, TODO, feature inventory \| `status/` \| |
@@ -108,7 +108,7 @@ Total items: **204**
 | `docs/evaluations/nautilus-inspired-restructuring-proposal.md` | 190 | `TODO` | ❌ | => throw new NotImplementedException("TODO: Implement connection logic"); |
 | `docs/evaluations/nautilus-inspired-restructuring-proposal.md` | 193 | `TODO` | ❌ | => throw new NotImplementedException("TODO: Implement disconnection logic"); |
 | `docs/evaluations/quant-script-blueprint-brainstorm.md` | 275 | `NOTE` | ❌ | **`decimal` vs `double` note.** `NumericSeries` uses `decimal` to preserve the precision of price data sourced from `PriceSeries` (which is already `decimal`). Libraries such as `Skender.Stock.Indicators` accept `double` inputs; callers that bridge to such libraries must explicitly cast (`(double)value`) at the adapter boundary rather than silently losing precision inside the core series type. |
-| `docs/operations/operator-runbook.md` | 202 | `NOTE` | ❌ | - note: L2 depth requires provider depth entitlements |
+| `docs/operations/operator-runbook.md` | 205 | `NOTE` | ❌ | - note: L2 depth requires provider depth entitlements |
 | `docs/operations/portable-data-packager.md` | 303 | `NOTE` | ❌ | 2. **Document filters**: Note any symbols, dates, or types that were excluded |
 | `docs/plans/l3-inference-implementation-plan.md` | 180 | `NOTE` | ❌ | > **Note:** Providers that supply L2 depth data include Interactive Brokers, Polygon, NYSE, and StockSharp. Providers that supply only daily OHLCV bars (e.g. Stooq, Yahoo Finance) are **not sufficient** for queue inference — depth tick data is required. |
 | `docs/plans/quant-script-environment-blueprint.md` | 1193 | `TODO` | ❌ | - [ ] `Api/PortfolioBuilder.cs` + `PortfolioResult.cs` (`EfficientFrontier` returns equal-weight stub + `// TODO` comment) |
@@ -122,18 +122,18 @@ Total items: **204**
 | `docs/plans/ufl-treasury-bill-target-state-v2.md` | 105 | `NOTE` | ❌ | 5. Future note and bond packages should reuse the same government-security patterns where possible. |
 | `docs/providers/interactive-brokers-free-equity-reference.md` | 254 | `NOTE` | ❌ | Note: It is important to understand the concept of market data lines since it has an impact not only on the live real time requests but also for requesting market depth and real time bars. |
 | `docs/providers/interactive-brokers-free-equity-reference.md` | 265 | `NOTE` | ❌ | - Note: BID_ASK requests count as **two** requests |
-| `docs/providers/interactive-brokers-setup.md` | 215 | `NOTE` | ❌ | > **Note**: "Server version" is the integer exchanged during the TCP handshake |
+| `docs/providers/interactive-brokers-setup.md` | 235 | `NOTE` | ❌ | > **Note**: "Server version" is the integer exchanged during the TCP handshake |
 | `docs/reference/data-dictionary.md` | 724 | `NOTE` | ❌ | **Note:** Aligns with Interactive Brokers conventions. |
 | `docs/reference/data-uniformity.md` | 5 | `NOTE` | ❌ | This note expands on the data-quality goals for the collector so downstream users receive a uniform, analysis-ready tape regardless of provider quirks. |
 | `docs/status/EVALUATIONS_AND_AUDITS.md` | 394 | `NOTE` | ❌ | - Historical note: the original audit flagged generated docs as stale, but `docs/generated/` has since been refreshed and expanded |
-| `docs/status/IMPROVEMENTS.md` | 1344 | `TODO` | ❌ | - **[TODO.md](TODO.md)** — Auto-generated task marker tracking from code comments |
+| `docs/status/IMPROVEMENTS.md` | 1343 | `TODO` | ❌ | - **[TODO.md](TODO.md)** — Auto-generated task marker tracking from code comments |
 | `docs/status/README.md` | 30 | `TODO` | ❌ | \| [TODO.md](TODO.md) \| Auto-generated TODO tracking from source comments \| |
 | `docs/status/docs-automation-summary.json` | 25 | `TODO` | ❌ | "docs/status/TODO.md", |
 | `docs/status/docs-automation-summary.json` | 27 | `TODO` | ❌ | "docs/status/todo-scan-results.json" |
 | `docs/status/docs-automation-summary.json` | 32 | `TODO` | ❌ | "output_file": "docs/status/TODO.md", |
 | `docs/status/docs-automation-summary.md` | 9 | `TODO` | ❌ | \| `scan-todos` \| `success` \| `175.615` \| `docs/status/TODO.md` \| |
 | `docs/status/example-validation.md` | 148 | `TODO` | ❌ | \| `docs\status\TODO.md` \| 1 \| |
-| `docs/status/health-dashboard.md` | 23 | `TODO` | ❌ | \| TODO/FIXME markers \| 318 \| |
+| `docs/status/health-dashboard.md` | 23 | `TODO` | ❌ | \| TODO/FIXME markers \| 316 \| |
 | `docs/status/health-dashboard.md` | 33 | `TODO` | ❌ | \| TODO density \| 15 pts \| Lower density of TODO/FIXME markers \| |
 | `docs/status/rules-report.md` | 431 | `TODO` | ❌ | \| `docs\status\TODO.md` \| No hardcoded API keys in docs \| error \| |
 | `docs/status/rules-report.md` | 432 | `TODO` | ❌ | \| `docs\status\TODO.md` \| No hardcoded localhost URLs in docs \| info \| |
@@ -161,7 +161,6 @@ Total items: **204**
 | `src/Meridian.FSharp/Domain/SecMasterDomain.fs` | 98 | `NOTE` | ❌ | \| Note |
 | `src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs` | 91 | `NOTE` | ❌ | return !json.Contains("Note") && !json.Contains("Thank you for using Alpha Vantage"); |
 | `src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs` | 245 | `NOTE` | ❌ | return json.Contains("\"Note\"") \|\| json.Contains("Thank you for using Alpha Vantage"); |
-| `src/Meridian.QuantScript/Api/PortfolioBuilder.cs` | 136 | `TODO` | ❌ | // TODO: Implement full MV quadratic optimisation (e.g. via MathNet.Numerics or custom QP solver) |
 | `src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs` | 28 | `NOTE` | ❌ | string? Note); |
 | `src/Meridian.Storage/DirectLending/Migrations/005_direct_lending_operations.sql` | 54 | `NOTE` | ❌ | note                     text, |
 | `src/Meridian.Storage/DirectLending/Migrations/005_direct_lending_workflows.sql` | 64 | `NOTE` | ❌ | note text, |
@@ -188,8 +187,8 @@ Total items: **204**
 | `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 1055 | `NOTE` | ❌ | new { provider = "Polygon", status = "Healthy", capability = "Streaming equities", latency = "16ms p50", note = "Realtime subscriptions are steady." }, |
 | `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 1056 | `NOTE` | ❌ | new { provider = "Databento", status = "Warning", capability = "Historical replay", latency = "69ms p50", note = "Replay queue is elevated but within tolerance." } |
 | `src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs` | 55 | `NOTE` | ❌ | /// <para><b>Migration Note:</b> This class wraps the core implementation from |
-| `src/Meridian.Ui/dashboard/src/screens/data-operations-screen.test.tsx` | 20 | `NOTE` | ❌ | note: "Realtime subscriptions are stable." |
-| `src/Meridian.Ui/dashboard/src/screens/data-operations-screen.tsx` | 211 | `NOTE` | ❌ | <div className="mt-3 text-sm leading-6 text-foreground">{provider.note}</div> |
+| `src/Meridian.Ui/dashboard/src/screens/data-operations-screen.test.tsx` | 22 | `NOTE` | ❌ | note: "Realtime subscriptions are stable." |
+| `src/Meridian.Ui/dashboard/src/screens/data-operations-screen.tsx` | 334 | `NOTE` | ❌ | <div className="mt-3 text-sm leading-6 text-foreground">{provider.note}</div> |
 | `src/Meridian.Ui/dashboard/src/types.ts` | 115 | `NOTE` | ❌ | note: string; |
 | `src/Meridian.Wpf/GlobalUsings.cs` | 7 | `NOTE` | ❌ | // NOTE: Type aliases and Contracts namespaces are NOT re-defined here because |
 | `src/Meridian.Wpf/Services/ContextMenuService.cs` | 117 | `NOTE` | ❌ | "Add Note", "\uE70B", |
@@ -200,7 +199,9 @@ Total items: **204**
 | `tests/Meridian.Tests/Application/Monitoring/DataQuality/DataFreshnessSlaMonitorTests.cs` | 525 | `NOTE` | ❌ | // NOTE: Actual result depends on current time, so we check the logic is working |
 | `tests/Meridian.Tests/Application/Pipeline/FSharpEventValidatorTests.cs` | 72 | `NOTE` | ❌ | // Note: Trade.ctor only checks Price > 0, so $2,000,000 is constructible. |
 | `tests/Meridian.Tests/Infrastructure/Providers/IBRuntimeGuidanceTests.cs` | 46 | `NOTE` | ❌ | client.ProviderNotes.Should().Contain(note => note.Contains("interactive-brokers-setup.md")); |
-| `tests/Meridian.Tests/Infrastructure/Providers/IBRuntimeGuidanceTests.cs` | 55 | `NOTE` | ❌ | provider.ProviderNotes.Should().Contain(note => note.Contains("build-ibapi-smoke.ps1")); |
+| `tests/Meridian.Tests/Infrastructure/Providers/IBRuntimeGuidanceTests.cs` | 57 | `NOTE` | ❌ | provider.ProviderNotes.Should().Contain(note => note.Contains("build-ibapi-smoke.ps1")); |
+| `tests/Meridian.Tests/Infrastructure/Providers/IBRuntimeGuidanceTests.cs` | 68 | `NOTE` | ❌ | provider.ProviderNotes.Should().Contain(note => note.Contains("official IBApi surface")); |
+| `tests/Meridian.Tests/Infrastructure/Providers/StockSharpMessageConversionTests.cs` | 955 | `NOTE` | ❌ | caps.Notes.Should().Contain(note => note.Contains("TWS", StringComparison.OrdinalIgnoreCase)); |
 | `tests/Meridian.Tests/Storage/AnalysisExportServiceTests.cs` | 281 | `NOTE` | ❌ | new { Timestamp = "2026-01-03T10:00:00Z", Symbol = "TEST", Note = "Price < 100 & Volume > 50" } |
 | `tests/Meridian.Tests/Storage/StorageChecksumServiceTests.cs` | 121 | `NOTE` | ❌ | // NOTE: File.WriteAllTextAsync uses UTF-8 with BOM by default on some platforms, |
 | `tests/Meridian.Ui.Tests/Services/DiagnosticsServiceTests.cs` | 9 | `NOTE` | ❌ | /// Note: The service methods require a running backend (ApiClientService), |

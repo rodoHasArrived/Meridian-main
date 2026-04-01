@@ -14,6 +14,8 @@ Use this harness to evaluate whether outputs from `meridian-implementation-assur
 
 - Use `scripts/score_eval.py` to enforce rubric key coverage, compute totals, and emit a report block.
 - Use `scripts/doc_route.py` before documentation edits when placement is unclear.
+<<<<<<< ours
+<<<<<<< ours
 - Use `scripts/run_evals.py` to run deterministic checks against `evals/evals.json` cases and compare against `evals/benchmark_baseline.json`.
 
 ## Prompt-Based Eval Infrastructure
@@ -98,6 +100,10 @@ Add new rows to `evals/evals.json` and corresponding baselines to `benchmark_bas
 - A real fix was made to address a skill regression.
 
 Every manual correction to the skill is a candidate for a new eval case so the behavior is locked in.
+=======
+>>>>>>> theirs
+=======
+>>>>>>> theirs
 
 ## Scenario Set
 
