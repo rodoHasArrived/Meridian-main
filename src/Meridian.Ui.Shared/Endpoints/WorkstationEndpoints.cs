@@ -454,7 +454,10 @@ public static class WorkstationEndpoints
             var comparison = await readService.CompareRunsAsync(request.RunIds, context.RequestAborted).ConfigureAwait(false);
             if (request.Modes is { Count: > 0 })
             {
-                var modeFilter = new HashSet<StrategyRunMode>(request.Modes);
+                var modeFilter = new HashSet<StrategyRunMode>(
+                    request.Modes
+                        .Select(static m => Enum.TryParse<StrategyRunMode>(m, true, out var v) ? (StrategyRunMode?)v : null)
+                        .OfType<StrategyRunMode>());
                 comparison = comparison.Where(row => modeFilter.Contains(row.Mode)).ToArray();
             }
 
@@ -2219,7 +2222,7 @@ public static class WorkstationEndpoints
 /// <summary>Request to compare multiple strategy runs side by side.</summary>
 public sealed record RunComparisonRequest(
     IReadOnlyList<string> RunIds,
-    IReadOnlyList<StrategyRunMode>? Modes = null);
+    IReadOnlyList<string>? Modes = null);
 
 /// <summary>Request to diff two strategy runs.</summary>
 public sealed record RunDiffRequest(string BaseRunId, string TargetRunId);

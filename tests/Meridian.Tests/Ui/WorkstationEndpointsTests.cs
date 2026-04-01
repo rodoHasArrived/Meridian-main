@@ -25,6 +25,11 @@ namespace Meridian.Tests.Ui;
 
 public sealed class WorkstationEndpointsTests
 {
+    private static readonly JsonSerializerOptions JsonReadOptions = new(JsonSerializerDefaults.Web)
+    {
+        Converters = { new JsonStringEnumConverter() }
+    };
+
     [Fact]
     public async Task MapWorkstationEndpoints_WithStrategyReadService_ShouldReturnServiceBackedBootstrapPayloads()
     {
@@ -287,7 +292,7 @@ public sealed class WorkstationEndpointsTests
         var response = await client.PostAsJsonAsync("/api/workstation/reconciliation/runs", new ReconciliationRunRequest("run-recon"));
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var created = await response.Content.ReadFromJsonAsync<ReconciliationRunDetail>();
+        var created = await response.Content.ReadFromJsonAsync<ReconciliationRunDetail>(JsonReadOptions);
         created.Should().NotBeNull();
         created!.Summary.RunId.Should().Be("run-recon");
         created.Summary.BreakCount.Should().Be(0);
@@ -295,13 +300,13 @@ public sealed class WorkstationEndpointsTests
 
         var latestResponse = await client.GetAsync("/api/workstation/runs/run-recon/reconciliation");
         latestResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var latest = await latestResponse.Content.ReadFromJsonAsync<ReconciliationRunDetail>();
+        var latest = await latestResponse.Content.ReadFromJsonAsync<ReconciliationRunDetail>(JsonReadOptions);
         latest.Should().NotBeNull();
         latest!.Summary.ReconciliationRunId.Should().Be(created.Summary.ReconciliationRunId);
 
         var byIdResponse = await client.GetAsync($"/api/workstation/reconciliation/runs/{created.Summary.ReconciliationRunId}");
         byIdResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var byId = await byIdResponse.Content.ReadFromJsonAsync<ReconciliationRunDetail>();
+        var byId = await byIdResponse.Content.ReadFromJsonAsync<ReconciliationRunDetail>(JsonReadOptions);
         byId.Should().NotBeNull();
         byId!.Summary.MatchCount.Should().BeGreaterThan(0);
     }
@@ -419,7 +424,7 @@ public sealed class WorkstationEndpointsTests
         var response = await client.PostAsJsonAsync("/api/workstation/reconciliation/runs", new ReconciliationRunRequest("run-breaks"));
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var created = await response.Content.ReadFromJsonAsync<ReconciliationRunDetail>();
+        var created = await response.Content.ReadFromJsonAsync<ReconciliationRunDetail>(JsonReadOptions);
         created.Should().NotBeNull();
         created!.Summary.BreakCount.Should().BeGreaterThan(0);
         created.Breaks.Should().NotBeEmpty();
@@ -1077,8 +1082,8 @@ public sealed class WorkstationEndpointsTests
             .Select(index => new ReconciliationMatchDto(
                 CheckId: $"match-{index + 1}",
                 Label: $"Match {index + 1}",
-                ExpectedSource: ReconciliationSourceKind.Portfolio,
-                ActualSource: ReconciliationSourceKind.Ledger,
+                ExpectedSource: "portfolio",
+                ActualSource: "ledger",
                 ExpectedAmount: 100m + index,
                 ActualAmount: 100m + index,
                 Variance: 0m,
@@ -1092,7 +1097,7 @@ public sealed class WorkstationEndpointsTests
                 Label: $"Break {index + 1}",
                 Category: ReconciliationBreakCategory.AmountMismatch,
                 Status: ReconciliationBreakStatus.Open,
-                MissingSource: ReconciliationSourceKind.Ledger,
+                MissingSource: "ledger",
                 ExpectedAmount: 100m + index,
                 ActualAmount: 95m + index,
                 Variance: 5m,
