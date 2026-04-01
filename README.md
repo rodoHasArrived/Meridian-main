@@ -1238,6 +1238,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── ISecurityMasterQueryService.cs
 │   │   │   ├── ISecurityMasterService.cs
 │   │   │   ├── ISecurityResolver.cs
+│   │   │   ├── NullSecurityMasterServices.cs
 │   │   │   ├── SecurityEconomicDefinitionAdapter.cs
 │   │   │   ├── SecurityMasterAggregateRebuilder.cs
 │   │   │   ├── SecurityMasterConflictService.cs
@@ -3291,6 +3292,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-444 directories, 2719 files
+444 directories, 2720 files
 ```
 <!-- readme-tree end -->
