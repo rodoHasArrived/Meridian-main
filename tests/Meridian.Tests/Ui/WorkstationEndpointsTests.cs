@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.UI;
@@ -742,7 +743,8 @@ public sealed class WorkstationEndpointsTests
         var app = builder.Build();
         app.MapWorkstationEndpoints(new JsonSerializerOptions
         {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            Converters = { new JsonStringEnumConverter() }
         });
 
         await app.StartAsync();
