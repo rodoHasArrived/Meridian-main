@@ -316,6 +316,9 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         try
         {
             ApplyCurrentPage(e.PageTag);
+            var inferredWorkspace = InferWorkspaceFromPage(e.PageTag);
+            if (inferredWorkspace is not null)
+                SelectWorkspace(inferredWorkspace);
         }
         finally
         {
@@ -353,6 +356,37 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         RaisePropertyChanged(nameof(IsDataOperationsWorkspaceActive));
         RaisePropertyChanged(nameof(IsGovernanceWorkspaceActive));
     }
+
+    private static string? InferWorkspaceFromPage(string? pageTag) => pageTag switch
+    {
+        "Backtest" or "BatchBacktest" or "RunMat" or "Charts" or "QuantScript"
+            or "LeanIntegration" or "AdvancedAnalytics" or "ResearchShell"
+            or "Watchlist" or "OrderBook" or "StrategyRuns" or "RunDetail"
+            or "RunCashFlow" or "RunPortfolio"
+            => "research",
+
+        "LiveData" or "TradingShell" or "TradingHours"
+            => "trading",
+
+        "Provider" or "DataSources" or "Symbols" or "Backfill" or "Storage"
+            or "DataExport" or "PackageManager" or "Schedules" or "DataBrowser"
+            or "DataCalendar" or "DataSampling" or "TimeSeriesAlignment"
+            or "ExportPresets" or "IndexSubscription" or "SymbolMapping" or "SymbolStorage"
+            or "Options" or "EventReplay" or "AnalysisExport" or "AnalysisExportWizard"
+            or "PortfolioImport"
+            => "data-operations",
+
+        "DataQuality" or "ProviderHealth" or "SystemHealth" or "Diagnostics"
+            or "Settings" or "AdminMaintenance" or "RetentionAssurance"
+            or "NotificationCenter" or "Help" or "RunLedger" or "ArchiveHealth"
+            or "ServiceManager" or "CollectionSessions" or "StorageOptimization"
+            or "ActivityLog" or "MessagingHub" or "SecurityMaster" or "DirectLending"
+            or "CredentialManagement" or "SetupWizard" or "KeyboardShortcuts"
+            or "AddProviderWizard"
+            => "governance",
+
+        _ => null  // Dashboard, Welcome, Workspaces — stay in current workspace
+    };
 
     private void NavigateToPage(string? pageTag)
     {
