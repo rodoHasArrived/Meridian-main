@@ -71,6 +71,63 @@ public sealed class ReconciliationRunServiceTests
     }
 
     [Fact]
+    public async Task RunAsync_WithSecurityLookup_ShouldPopulateSecurityClassifications()
+    {
+        // Arrange — register both AAPL and TSLA so the lookup returns full data for both
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun("run-classifications"));
+
+        var lookup = new StubSecurityReferenceLookup();
+        lookup.Register("AAPL", new WorkstationSecurityReference(
+            SecurityId: Guid.Parse("11111111-1111-1111-1111-111111111111"),
+            DisplayName: "Apple Inc.",
+            AssetClass: "Equity",
+            Currency: "USD",
+            Status: SecurityStatusDto.Active,
+            PrimaryIdentifier: "AAPL",
+            SubType: "CommonShare"));
+        lookup.Register("TSLA", new WorkstationSecurityReference(
+            SecurityId: Guid.Parse("22222222-2222-2222-2222-222222222222"),
+            DisplayName: "Tesla Inc.",
+            AssetClass: "Equity",
+            Currency: "USD",
+            Status: SecurityStatusDto.Active,
+            PrimaryIdentifier: "TSLA",
+            SubType: "CommonShare"));
+
+        var service = CreateService(store, new InMemoryReconciliationRunRepository(), lookup);
+
+        // Act
+        var detail = await service.RunAsync(new ReconciliationRunRequest("run-classifications"));
+
+        // Assert
+        detail.Should().NotBeNull();
+        detail!.SecurityClassifications.Should().NotBeNull(
+            "a Security Master lookup was wired, so classifications must be populated");
+
+        detail.SecurityClassifications!.Should().ContainKey("AAPL");
+        detail.SecurityClassifications["AAPL"].AssetClass.Should().Be("Equity");
+        detail.SecurityClassifications["AAPL"].SubType.Should().Be("CommonShare");
+        detail.SecurityClassifications["AAPL"].PrimaryIdentifierValue.Should().Be("AAPL");
+    }
+
+    [Fact]
+    public async Task RunAsync_WithNoSecurityLookup_ShouldHaveNullOrEmptyClassifications()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun("run-no-classifications"));
+        var service = CreateService(store, new InMemoryReconciliationRunRepository());
+
+        var detail = await service.RunAsync(new ReconciliationRunRequest("run-no-classifications"));
+
+        detail.Should().NotBeNull();
+        // When no lookup is wired, the map is either null or empty — never populated
+        var hasClassifications = detail!.SecurityClassifications is { Count: > 0 };
+        hasClassifications.Should().BeFalse(
+            "no Security Master lookup was wired so no classifications can be resolved");
+    }
+
+    [Fact]
     public async Task GetHistoryForRunAsync_ShouldReturnNewestFirst()
     {
         var store = new StrategyRunStore();

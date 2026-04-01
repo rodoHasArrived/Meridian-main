@@ -8,7 +8,7 @@ namespace Meridian.Backtesting;
 /// Adjusts historical bar prices and volumes for corporate actions (stock splits and dividends)
 /// using Security Master data.
 /// </summary>
-public sealed class CorporateActionAdjustmentService : ICorporateActionAdjustmentService
+public sealed class CorporateActionAdjustmentService : ICorporateActionAdjustmentService, ILivePositionCorporateActionAdjuster
 {
     private readonly Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService _queryService;
     private readonly ISecurityResolver _resolver;
@@ -110,5 +110,75 @@ public sealed class CorporateActionAdjustmentService : ICorporateActionAdjustmen
         }
 
         return adjustedBars;
+    }
+
+    /// <inheritdoc />
+    public async Task<PositionCorporateActionAdjustment> AdjustPositionAsync(
+        string ticker,
+        decimal quantity,
+        decimal costBasis,
+        DateTimeOffset positionOpenedAt,
+        CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(ticker) || quantity == 0m)
+        {
+            return new PositionCorporateActionAdjustment(
+                ticker ?? string.Empty, quantity, quantity, costBasis, costBasis, ActionCount: 0);
+        }
+
+        var securityId = await _resolver.ResolveAsync(
+            new ResolveSecurityRequest(
+                IdentifierKind: SecurityIdentifierKind.Ticker,
+                IdentifierValue: ticker,
+                Provider: null,
+                AsOfUtc: null),
+            ct).ConfigureAwait(false);
+
+        if (securityId is null)
+        {
+            _logger.LogDebug(
+                "AdjustPositionAsync: symbol '{Ticker}' not found in Security Master — no adjustment applied",
+                ticker);
+            return new PositionCorporateActionAdjustment(ticker, quantity, quantity, costBasis, costBasis, ActionCount: 0);
+        }
+
+        var actions = await _queryService.GetCorporateActionsAsync(securityId.Value, ct)
+            .ConfigureAwait(false);
+
+        var relevantActions = actions
+            .Where(a => a.ExDate > DateOnly.FromDateTime(positionOpenedAt.UtcDateTime))
+            .OrderBy(static a => a.ExDate)
+            .ToList();
+
+        if (relevantActions.Count == 0)
+        {
+            return new PositionCorporateActionAdjustment(ticker, quantity, quantity, costBasis, costBasis, ActionCount: 0);
+        }
+
+        var adjustedQuantity = quantity;
+        var adjustedCostBasis = costBasis;
+
+        foreach (var action in relevantActions)
+        {
+            if (action.EventType == "StockSplit" && action.SplitRatio.HasValue && action.SplitRatio.Value != 0m)
+            {
+                // Split: quantity multiplies by ratio, cost basis divides by ratio.
+                adjustedQuantity *= action.SplitRatio.Value;
+                adjustedCostBasis /= action.SplitRatio.Value;
+            }
+            else if (action.EventType == "Dividend" && action.DividendPerShare.HasValue)
+            {
+                // Dividend: reduce cost basis by the dividend per share (return of capital view).
+                adjustedCostBasis -= action.DividendPerShare.Value;
+            }
+        }
+
+        _logger.LogInformation(
+            "AdjustPositionAsync: applied {ActionCount} corporate action(s) to {Ticker} position; " +
+            "quantity {OrigQty} → {AdjQty}, cost basis {OrigCb:F4} → {AdjCb:F4}",
+            relevantActions.Count, ticker, quantity, adjustedQuantity, costBasis, adjustedCostBasis);
+
+        return new PositionCorporateActionAdjustment(
+            ticker, quantity, adjustedQuantity, costBasis, adjustedCostBasis, relevantActions.Count);
     }
 }
