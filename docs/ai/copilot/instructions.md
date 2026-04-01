@@ -937,7 +937,8 @@ Meridian-main
 │   │   │   ├── BackfillResult.cs
 │   │   │   ├── BackfillStatusStore.cs
 │   │   │   ├── GapBackfillService.cs
-│   │   │   └── HistoricalBackfillService.cs
+│   │   │   ├── HistoricalBackfillService.cs
+│   │   │   └── SymbolValidationSignal.cs
 │   │   ├── Banking
 │   │   │   ├── BankingException.cs
 │   │   │   ├── IBankingService.cs
@@ -1143,6 +1144,7 @@ Meridian-main
 │   │   │   ├── OperationalScheduler.cs
 │   │   │   └── ScheduledBackfillService.cs
 │   │   ├── SecurityMaster
+│   │   │   ├── ILivePositionCorporateActionAdjuster.cs
 │   │   │   ├── ISecurityMasterQueryService.cs
 │   │   │   ├── ISecurityMasterService.cs
 │   │   │   ├── ISecurityResolver.cs
@@ -1561,10 +1563,12 @@ Meridian-main
 │   │   ├── BrokerageServiceRegistration.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── IRiskValidator.cs
+│   │   ├── ISecurityMasterGate.cs
 │   │   ├── Meridian.Execution.csproj
 │   │   ├── OrderManagementSystem.cs
 │   │   ├── PaperExecutionContext.cs
-│   │   └── PaperTradingGateway.cs
+│   │   ├── PaperTradingGateway.cs
+│   │   └── SecurityMasterGate.cs
 │   ├── Meridian.Execution.Sdk
 │   │   ├── BrokerageConfiguration.cs
 │   │   ├── IBrokerageGateway.cs
