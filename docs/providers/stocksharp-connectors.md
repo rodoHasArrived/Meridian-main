@@ -318,6 +318,53 @@ Example validated output:
 
 ```csharp
 // Normal market (bid < ask)
+
+## Validated End-to-End Adapter Profile (Baseline)
+
+The currently documented **validated baseline profile** is:
+
+- **Connector:** `Rithmic`
+- **Use case:** Futures trade + depth collection
+- **Meridian evidence:** conversion and capability contract tests, plus subscription/runtime guidance tests
+- **Scope of validation:** adapter mapping, subscription lifecycle semantics, and connector capability metadata
+- **Out of scope:** live credential entitlement checks in CI
+
+### Baseline Profile Checklist (Rithmic)
+
+1. `EnableStockSharp=true` is set in build/runtime config.
+2. `ConnectorType` is set to `Rithmic`.
+3. Required package surfaces resolve for StockSharp runtime (`StockSharp.Algo` and connector-specific packages).
+4. Trade and depth subscriptions can be requested without unsupported-connector exceptions.
+5. Converted `ExecutionMessage` and `QuoteChangeMessage` payloads map to Meridian domain contracts (as locked by tests).
+
+## Troubleshooting Runbook
+
+Use this sequence when StockSharp startup or subscription fails.
+
+1. **Build-time gate**
+   - Symptom: StockSharp code path unavailable.
+   - Check: build with `EnableStockSharp=true`.
+   - Fix: set build/property flag and rebuild.
+
+2. **Missing runtime package**
+   - Symptom: `NotSupportedException` references `StockSharp.Algo` or connector package.
+   - Check: required connector assemblies installed and resolvable.
+   - Fix: install missing StockSharp package(s) for the selected connector; re-run startup.
+
+3. **Unsupported connector type**
+   - Symptom: message lists supported connectors and asks for `AdapterType` / `AdapterAssembly`.
+   - Check: `ConnectorType` spelling and whether using named vs custom connector mode.
+   - Fix: switch to supported named connector or supply custom adapter metadata.
+
+4. **Credential/runtime handshake failure**
+   - Symptom: connect attempts fail after package load succeeds.
+   - Check: vendor endpoint reachability, credentials, cert paths (Rithmic), and connector-specific host/port fields.
+   - Fix: correct connector config and verify vendor software/session is running.
+
+5. **No market data despite connection**
+   - Symptom: connected state but no trades/quotes/depth events.
+   - Check: entitlement scope, subscribed symbols/instruments, and market-session timing.
+   - Fix: validate vendor entitlements/instrument mapping and retry with known liquid symbols.
 var payload = new BboQuotePayload(
     Timestamp: ts,
     Symbol: "AAPL",

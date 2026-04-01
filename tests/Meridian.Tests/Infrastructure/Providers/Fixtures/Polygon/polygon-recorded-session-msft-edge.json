@@ -1,9 +1,15 @@
 {
   "description": "Recorded-style Polygon stock feed session for MSFT covering valid replay frames plus malformed and ignored edge cases.",
   "subscriptions": {
-    "trades": ["MSFT"],
-    "quotes": ["MSFT"],
-    "aggregates": ["MSFT"]
+    "trades": [
+      "MSFT"
+    ],
+    "quotes": [
+      "MSFT"
+    ],
+    "aggregates": [
+      "MSFT"
+    ]
   },
   "expected": {
     "trade": {
@@ -14,11 +20,13 @@
       "streamId": "88442211",
       "venue": "MEMX",
       "aggressor": "Sell",
-      "rawConditions": ["29"]
+      "rawConditions": [
+        "29"
+      ]
     },
     "quote": {
       "symbol": "MSFT",
-      "bidPrice": 401.10,
+      "bidPrice": 401.1,
       "bidSize": 180,
       "askPrice": 401.15,
       "askSize": 220,
@@ -29,7 +37,7 @@
       {
         "timeframe": "Second",
         "symbol": "MSFT",
-        "open": 401.00,
+        "open": 401.0,
         "high": 401.18,
         "low": 400.98,
         "close": 401.12,
@@ -42,8 +50,8 @@
       {
         "timeframe": "Minute",
         "symbol": "MSFT",
-        "open": 400.70,
-        "high": 401.20,
+        "open": 400.7,
+        "high": 401.2,
         "low": 400.65,
         "close": 401.12,
         "volume": 64200,
@@ -53,7 +61,12 @@
         "endTimeMs": 1742484600000
       }
     ],
-    "expectedIntegrityEvents": 0
+    "expectedIntegrityEvents": 0,
+    "statusMarkers": [
+      "connected",
+      "auth_success",
+      "success"
+    ]
   },
   "messages": [
     "[{\"ev\":\"status\",\"status\":\"connected\",\"message\":\"Connected Successfully\"}]",
