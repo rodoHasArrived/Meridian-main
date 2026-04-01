@@ -1,7 +1,7 @@
 # Documentation Health Dashboard
 
 > Auto-generated documentation health report. Do not edit manually.
-> Last updated: 2026-04-01T04:44:22.900346+00:00
+> Last updated: 2026-04-01T06:36:35.513088+00:00
 
 ## Overall Health Score
 
@@ -14,10 +14,10 @@
 
 | Metric | Value |
 |--------|-------|
-| Total documentation files | 299 |
-| Total lines | 114,845 |
-| Average file size (lines) | 384.1 |
-| Orphaned files | 65 |
+| Total documentation files | 305 |
+| Total lines | 115,385 |
+| Average file size (lines) | 378.3 |
+| Orphaned files | 75 |
 | Files without headings | 0 |
 | Stale files (>90 days) | 0 |
 | TODO/FIXME markers | 316 |
@@ -39,27 +39,27 @@
 
 These files are not linked from any other Markdown file in the repository:
 
-- `.codex/skills/meridian-code-review/SKILL.md`
-- `.codex/skills/meridian-implementation-assurance/SKILL.md`
+- `.claude/agents/meridian-blueprint.md`
+- `.claude/agents/meridian-cleanup.md`
+- `.claude/agents/meridian-docs.md`
+- `.claude/skills/meridian-blueprint/references/blueprint-patterns.md`
+- `.claude/skills/meridian-blueprint/references/pipeline-position.md`
+- `.claude/skills/meridian-brainstorm/SKILL.md`
+- `.claude/skills/meridian-brainstorm/references/competitive-landscape.md`
+- `.claude/skills/meridian-brainstorm/references/idea-dimensions.md`
+- `.claude/skills/meridian-code-review/agents/grader.md`
+- `.claude/skills/meridian-code-review/references/architecture.md`
+- `.claude/skills/meridian-code-review/references/schemas.md`
+- `.claude/skills/meridian-provider-builder/SKILL.md`
+- `.claude/skills/meridian-test-writer/SKILL.md`
+- `.codex/skills/meridian-blueprint/references/blueprint-patterns.md`
+- `.codex/skills/meridian-brainstorm/references/competitive-landscape.md`
 - `.codex/skills/meridian-implementation-assurance/references/documentation-routing.md`
 - `.codex/skills/meridian-implementation-assurance/references/evaluation-harness.md`
-- `.codex/skills/meridian-provider-builder/SKILL.md`
 - `.codex/skills/meridian-provider-builder/references/provider-patterns.md`
-- `.codex/skills/meridian-roadmap-strategist/SKILL.md`
 - `.codex/skills/meridian-roadmap-strategist/references/roadmap-source-map.md`
-- `.codex/skills/meridian-test-writer/SKILL.md`
 - `.codex/skills/meridian-test-writer/references/test-patterns.md`
-- `AGENT_IMPLEMENTATION_SUMMARY.md`
-- `AGENT_QUICK_REFERENCE.md`
-- `CONTEXTUAL_COMMANDS_IMPLEMENTATION_SUMMARY.md`
-- `CORPACTIONS_IMPLEMENTATION.md`
-- `IMPLEMENTATION_CHECKLIST.md`
-- `IMPLEMENTATION_SUMMARY.md`
-- `SYSTEM_TRAY_IMPLEMENTATION.md`
-- `archive/docs/assessments/ARTIFACT_ACTIONS_DOWNGRADE.md`
-- `archive/docs/assessments/CONFIG_CONSOLIDATION_REPORT.md`
-- `archive/docs/assessments/UWP_COMPREHENSIVE_AUDIT.md`
-- ... and 45 more
+- ... and 55 more
 
 ## Trend
 
@@ -67,7 +67,7 @@ These files are not linked from any other Markdown file in the repository:
 
 | Date | Score | Files | Orphans | Stale |
 |------|-------|-------|---------|-------|
-| 2026-04-01 | 89 | 299 | 65 | 0 |
+| 2026-04-01 | 89 | 305 | 75 | 0 |
 
 ---
 

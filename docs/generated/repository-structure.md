@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-04-01 04:44:18 UTC. Do not edit manually.
+> Auto-generated on 2026-04-01 06:36:31 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -8,7 +8,8 @@ Meridian-main
 │   ├── agents
 │   │   ├── meridian-blueprint.md
 │   │   ├── meridian-cleanup.md
-│   │   └── meridian-docs.md
+│   │   ├── meridian-docs.md
+│   │   └── meridian-navigation.md
 │   ├── skills
 │   │   ├── _shared
 │   │   │   └── project-context.md
@@ -122,6 +123,10 @@ Meridian-main
 │   │   │   ├── references
 │   │   │   │   └── provider-patterns.md
 │   │   │   └── SKILL.md
+│   │   ├── meridian-repo-navigation
+│   │   │   ├── agents
+│   │   │   │   └── openai.yaml
+│   │   │   └── SKILL.md
 │   │   ├── meridian-roadmap-strategist
 │   │   │   ├── agents
 │   │   │   │   └── openai.yaml
@@ -155,6 +160,7 @@ Meridian-main
 │   │   ├── implementation-assurance-agent.md
 │   │   ├── performance-agent.md
 │   │   ├── provider-builder-agent.md
+│   │   ├── repo-navigation-agent.md
 │   │   └── test-writer-agent.md
 │   ├── instructions
 │   │   ├── csharp.instructions.md
@@ -300,6 +306,7 @@ Meridian-main
 │       │   ├── add-todos.py
 │       │   ├── ai-docs-maintenance.py
 │       │   ├── create-todo-issues.py
+│       │   ├── generate-ai-navigation.py
 │       │   ├── generate-changelog.py
 │       │   ├── generate-coverage.py
 │       │   ├── generate-dependency-graph.py
@@ -338,6 +345,7 @@ Meridian-main
 │       │   ├── stop-collector.ps1
 │       │   └── stop-collector.sh
 │       ├── tests
+│       │   ├── test_generate_ai_navigation.py
 │       │   └── test_validate_budget.py
 │       ├── ai-architecture-check.py
 │       ├── ai-repo-updater.py
@@ -414,7 +422,12 @@ Meridian-main
 │   │   ├── copilot
 │   │   │   ├── ai-sync-workflow.md
 │   │   │   └── instructions.md
+│   │   ├── generated
+│   │   │   ├── repo-navigation.json
+│   │   │   └── repo-navigation.md
 │   │   ├── instructions
+│   │   │   └── README.md
+│   │   ├── navigation
 │   │   │   └── README.md
 │   │   ├── prompts
 │   │   │   └── README.md
@@ -434,7 +447,8 @@ Meridian-main
 │   │   ├── README.md
 │   │   ├── storage-design.md
 │   │   ├── ui-redesign.md
-│   │   └── why-this-architecture.md
+│   │   ├── why-this-architecture.md
+│   │   └── wpf-shell-mvvm.md
 │   ├── audits
 │   │   ├── audit-architecture-results.txt
 │   │   ├── audit-code-results.json
@@ -721,6 +735,7 @@ Meridian-main
 │   │   ├── interactive-brokers-free-equity-reference.md
 │   │   ├── interactive-brokers-setup.md
 │   │   ├── provider-comparison.md
+│   │   ├── provider-confidence-baseline.md
 │   │   ├── README.md
 │   │   ├── security-master-guide.md
 │   │   └── stocksharp-connectors.md
@@ -911,6 +926,7 @@ Meridian-main
 │   │   │   ├── ConfigValidationHelper.cs
 │   │   │   ├── ConfigValidatorCli.cs
 │   │   │   ├── ConfigWatcher.cs
+│   │   │   ├── DefaultConfigPathResolver.cs
 │   │   │   ├── DeploymentContext.cs
 │   │   │   ├── IConfigValidator.cs
 │   │   │   ├── SensitiveValueMasker.cs
@@ -1758,13 +1774,17 @@ Meridian-main
 │   │   ├── Meridian.Mcp.csproj
 │   │   └── Program.cs
 │   ├── Meridian.McpServer
+│   │   ├── Navigation
+│   │   │   └── RepoNavigationCatalog.cs
 │   │   ├── Prompts
 │   │   │   └── MarketDataPrompts.cs
 │   │   ├── Resources
-│   │   │   └── MarketDataResources.cs
+│   │   │   ├── MarketDataResources.cs
+│   │   │   └── RepoNavigationResources.cs
 │   │   ├── Tools
 │   │   │   ├── BackfillTools.cs
 │   │   │   ├── ProviderTools.cs
+│   │   │   ├── RepoNavigationTools.cs
 │   │   │   ├── StorageTools.cs
 │   │   │   └── SymbolTools.cs
 │   │   ├── GlobalUsings.cs
@@ -2348,6 +2368,7 @@ Meridian-main
 │       │   ├── LeanIntegrationViewModel.cs
 │       │   ├── LiveDataViewerViewModel.cs
 │       │   ├── MainPageViewModel.cs
+│       │   ├── MainWindowViewModel.cs
 │       │   ├── MessagingHubViewModel.cs
 │       │   ├── NotificationCenterViewModel.cs
 │       │   ├── OptionsViewModel.cs
@@ -2590,6 +2611,7 @@ Meridian-main
 │   ├── Meridian.McpServer.Tests
 │   │   ├── Tools
 │   │   │   ├── BackfillToolsTests.cs
+│   │   │   ├── RepoNavigationToolsTests.cs
 │   │   │   └── StorageToolsTests.cs
 │   │   ├── GlobalUsings.cs
 │   │   └── Meridian.McpServer.Tests.csproj
@@ -2645,7 +2667,9 @@ Meridian-main
 │   │   │   ├── Composition
 │   │   │   │   ├── Startup
 │   │   │   │   │   └── SharedStartupBootstrapperTests.cs
-│   │   │   │   └── SecurityMasterStartupTests.cs
+│   │   │   │   ├── DirectLendingStartupTests.cs
+│   │   │   │   ├── SecurityMasterStartupTests.cs
+│   │   │   │   └── StorageFeatureRegistrationTests.cs
 │   │   │   ├── Config
 │   │   │   │   ├── ConfigJsonSchemaGeneratorTests.cs
 │   │   │   │   ├── ConfigSchemaIntegrationTests.cs
@@ -2661,6 +2685,8 @@ Meridian-main
 │   │   │   │   ├── CredentialStatusTests.cs
 │   │   │   │   ├── CredentialTestingServiceTests.cs
 │   │   │   │   └── OAuthTokenTests.cs
+│   │   │   ├── DirectLending
+│   │   │   │   └── DirectLendingOutboxDispatcherTests.cs
 │   │   │   ├── Etl
 │   │   │   │   ├── EtlJobDefinitionStoreTests.cs
 │   │   │   │   ├── EtlJobOrchestratorTests.cs
@@ -2722,6 +2748,8 @@ Meridian-main
 │   │   │   │   ├── PreflightCheckerTests.cs
 │   │   │   │   ├── TradingCalendarTests.cs
 │   │   │   │   └── VenueMicMapperTests.cs
+│   │   │   ├── Ui
+│   │   │   │   └── ConfigStoreTests.cs
 │   │   │   ├── DirectLendingServiceTests.cs
 │   │   │   └── ReconciliationRunServiceTests.cs
 │   │   ├── Architecture
@@ -2779,7 +2807,8 @@ Meridian-main
 │   │   │   │   │       ├── polygon-recorded-session-gld-cboe-sell.json
 │   │   │   │   │       ├── polygon-recorded-session-msft-edge.json
 │   │   │   │   │       ├── polygon-recorded-session-nvda-multi-batch.json
-│   │   │   │   │       └── polygon-recorded-session-spy-etf.json
+│   │   │   │   │       ├── polygon-recorded-session-spy-etf.json
+│   │   │   │   │       └── polygon-recorded-session-tsla-opening-cross.json
 │   │   │   │   ├── AlpacaCredentialAndReconnectTests.cs
 │   │   │   │   ├── AlpacaMessageParsingTests.cs
 │   │   │   │   ├── AlpacaQuotePipelineGoldenTests.cs
@@ -3035,6 +3064,7 @@ Meridian-main
 │   │   ├── ViewModels
 │   │   │   ├── CashFlowViewModelTests.cs
 │   │   │   ├── DataQualityViewModelCharacterizationTests.cs
+│   │   │   ├── MainShellViewModelTests.cs
 │   │   │   ├── QuantScriptViewModelTests.cs
 │   │   │   ├── RunMatViewModelTests.cs
 │   │   │   └── StrategyRunBrowserViewModelTests.cs
