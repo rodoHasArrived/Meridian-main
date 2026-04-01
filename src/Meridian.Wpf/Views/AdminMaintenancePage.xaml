@@ -1,8 +1,13 @@
 <Page x:Class="Meridian.Wpf.Views.AdminMaintenancePage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:conv="clr-namespace:Meridian.Wpf.Converters"
       Background="{DynamicResource ShellWindowBackgroundBrush}"
       AutomationProperties.Name="Admin Maintenance">
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <conv:InvertBoolConverter x:Key="InvertBoolConverter" />
+    </Page.Resources>
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
         <StackPanel MaxWidth="1400">
             <!-- Header -->
@@ -38,6 +43,7 @@
 
                     <StackPanel Grid.Column="1" Orientation="Horizontal">
                         <Button x:Name="QuickCheckButton" Click="QuickCheck_Click" Margin="0,0,8,0"
+                                IsEnabled="{Binding IsQuickCheckBusy, Converter={StaticResource InvertBoolConverter}}"
                                 Style="{StaticResource GhostButtonStyle}">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="&#xE73E;" FontFamily="{StaticResource SymbolThemeFontFamily}"
@@ -46,6 +52,7 @@
                             </StackPanel>
                         </Button>
                         <Button x:Name="RunMaintenanceButton" Click="RunMaintenance_Click"
+                                IsEnabled="{Binding IsMaintenanceBusy, Converter={StaticResource InvertBoolConverter}}"
                                 Style="{StaticResource PrimaryButtonStyle}">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="&#xE895;" FontFamily="{StaticResource SymbolThemeFontFamily}"
@@ -58,18 +65,19 @@
             </Border>
 
             <!-- Quick Check Results -->
-            <Border x:Name="QuickCheckResultsCard" Style="{StaticResource CardStyle}" Margin="0,0,0,16" Visibility="Collapsed">
+            <Border x:Name="QuickCheckResultsCard" Style="{StaticResource CardStyle}" Margin="0,0,0,16"
+                    Visibility="{Binding IsQuickCheckResultsVisible, Converter={StaticResource BoolToVisibilityConverter}}">
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
-                        <TextBlock x:Name="QuickCheckIcon" Text="&#xE73E;" FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                   FontSize="24" VerticalAlignment="Center" />
+                        <TextBlock x:Name="QuickCheckIcon" Text="{Binding QuickCheckIcon}" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="24" Foreground="{Binding QuickCheckIconBrush}" VerticalAlignment="Center" />
                         <StackPanel Margin="12,0,0,0">
-                            <TextBlock x:Name="QuickCheckStatusText" Text="System Status" Style="{StaticResource CardHeaderStyle}" />
-                            <TextBlock x:Name="QuickCheckOverallText" Text="" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                            <TextBlock x:Name="QuickCheckStatusText" Text="{Binding QuickCheckStatusText}" Style="{StaticResource CardHeaderStyle}" />
+                            <TextBlock x:Name="QuickCheckOverallText" Text="{Binding QuickCheckOverallText}" Foreground="{StaticResource ConsoleTextMutedBrush}" />
                         </StackPanel>
                     </StackPanel>
 
-                    <ListView x:Name="QuickCheckList" MaxHeight="200" Background="Transparent"
+                    <ListView x:Name="QuickCheckList" ItemsSource="{Binding QuickCheckItems}" MaxHeight="200" Background="Transparent"
                               BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                         <ListView.ItemContainerStyle>
                             <Style TargetType="ListViewItem">
@@ -98,18 +106,19 @@
             </Border>
 
             <!-- Status InfoBar -->
-            <Border x:Name="StatusInfoBar" Style="{StaticResource CardStyle}" Margin="0,0,0,16" Visibility="Collapsed">
+            <Border x:Name="StatusInfoBar" Style="{StaticResource CardStyle}" Margin="0,0,0,16"
+                    Visibility="{Binding IsStatusVisible, Converter={StaticResource BoolToVisibilityConverter}}">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <TextBlock x:Name="StatusInfoIcon" Text="&#xE73E;" FontFamily="{StaticResource SymbolThemeFontFamily}"
-                               FontSize="20" VerticalAlignment="Center" Margin="0,0,12,0" />
+                    <TextBlock x:Name="StatusInfoIcon" Text="{Binding StatusIcon}" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                               FontSize="20" Foreground="{Binding StatusBrush}" VerticalAlignment="Center" Margin="0,0,12,0" />
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                        <TextBlock x:Name="StatusInfoTitle" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextBrush}" />
-                        <TextBlock x:Name="StatusInfoMessage" Foreground="{StaticResource ConsoleTextMutedBrush}" TextWrapping="Wrap" />
+                        <TextBlock x:Name="StatusInfoTitle" Text="{Binding StatusTitle}" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextBrush}" />
+                        <TextBlock x:Name="StatusInfoMessage" Text="{Binding StatusMessage}" Foreground="{StaticResource ConsoleTextMutedBrush}" TextWrapping="Wrap" />
                     </StackPanel>
                     <Button Grid.Column="2" Content="&#xE711;" FontFamily="{StaticResource SymbolThemeFontFamily}"
                             Click="CloseInfoBar_Click" Background="Transparent" BorderThickness="0"
@@ -136,13 +145,17 @@
 
                         <StackPanel Margin="0,0,0,16">
                             <TextBlock Text="Enable Scheduled Maintenance" Foreground="{StaticResource ConsoleTextBrush}" Margin="0,0,0,4" />
-                            <CheckBox x:Name="EnableScheduleToggle" Checked="EnableSchedule_Toggled" Unchecked="EnableSchedule_Toggled"
+                            <CheckBox x:Name="EnableScheduleToggle"
+                                      IsChecked="{Binding ScheduleEnabled, Mode=TwoWay}"
+                                      Checked="EnableSchedule_Toggled" Unchecked="EnableSchedule_Toggled"
                                       Foreground="{StaticResource ConsoleTextBrush}" />
                         </StackPanel>
 
                         <StackPanel Margin="0,0,0,16">
                             <TextBlock Text="Frequency" Foreground="{StaticResource ConsoleTextBrush}" Margin="0,0,0,4" />
                             <ComboBox x:Name="ScheduleFrequencyCombo" SelectionChanged="ScheduleFrequency_Changed"
+                                      SelectedValue="{Binding CronExpression, Mode=TwoWay}"
+                                      SelectedValuePath="Tag"
                                       Background="{StaticResource ConsoleBackgroundBrush}"
                                       Foreground="{StaticResource ConsoleTextBrush}" Width="250">
                                 <ComboBoxItem Content="Daily at 2 AM" Tag="0 2 * * *" />
@@ -155,22 +168,26 @@
 
                         <StackPanel Margin="0,0,0,16">
                             <TextBlock Text="Operations to Run" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextBrush}" Margin="0,0,0,8" />
-                            <CheckBox x:Name="RunCompressionCheck" Content="Compress older files" IsChecked="True"
+                            <CheckBox x:Name="RunCompressionCheck" Content="Compress older files"
+                                      IsChecked="{Binding RunCompression, Mode=TwoWay}"
                                       Foreground="{StaticResource ConsoleTextBrush}" Margin="0,0,0,4" />
-                            <CheckBox x:Name="RunCleanupCheck" Content="Clean up temp files" IsChecked="True"
+                            <CheckBox x:Name="RunCleanupCheck" Content="Clean up temp files"
+                                      IsChecked="{Binding RunCleanup, Mode=TwoWay}"
                                       Foreground="{StaticResource ConsoleTextBrush}" Margin="0,0,0,4" />
-                            <CheckBox x:Name="RunIntegrityCheck" Content="Verify data integrity" IsChecked="True"
+                            <CheckBox x:Name="RunIntegrityCheck" Content="Verify data integrity"
+                                      IsChecked="{Binding RunIntegrityCheck, Mode=TwoWay}"
                                       Foreground="{StaticResource ConsoleTextBrush}" Margin="0,0,0,4" />
-                            <CheckBox x:Name="RunTierMigrationCheck" Content="Migrate to archive tier" IsChecked="False"
+                            <CheckBox x:Name="RunTierMigrationCheck" Content="Migrate to archive tier"
+                                      IsChecked="{Binding RunTierMigration, Mode=TwoWay}"
                                       Foreground="{StaticResource ConsoleTextBrush}" />
                         </StackPanel>
 
                         <Border Background="{StaticResource ConsoleBackgroundBrush}" CornerRadius="4" Padding="12" Margin="0,0,0,16">
                             <StackPanel>
                                 <TextBlock Text="Next Run" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
-                                <TextBlock x:Name="NextRunText" Text="Not scheduled" Foreground="{StaticResource ConsoleTextBrush}" Margin="0,2,0,8" />
+                                <TextBlock x:Name="NextRunText" Text="{Binding NextRunText}" Foreground="{StaticResource ConsoleTextBrush}" Margin="0,2,0,8" />
                                 <TextBlock Text="Last Run" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
-                                <TextBlock x:Name="LastRunText" Text="Never" Foreground="{StaticResource ConsoleTextBrush}" Margin="0,2,0,0" />
+                                <TextBlock x:Name="LastRunText" Text="{Binding LastRunText}" Foreground="{StaticResource ConsoleTextBrush}" Margin="0,2,0,0" />
                             </StackPanel>
                         </Border>
 
@@ -187,7 +204,7 @@
                             <TextBlock Text="Storage Tiers" Style="{StaticResource CardHeaderStyle}" Margin="8,0,0,0" VerticalAlignment="Center" />
                         </StackPanel>
 
-                        <ListView x:Name="TiersList" MaxHeight="250" Background="Transparent"
+                        <ListView x:Name="TiersList" ItemsSource="{Binding TierItems}" MaxHeight="250" Background="Transparent"
                                   BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                             <ListView.ItemContainerStyle>
                                 <Style TargetType="ListViewItem">
@@ -256,7 +273,7 @@
                         <Button Grid.Column="1" Content="Add Policy" Click="AddPolicy_Click" Style="{StaticResource ConsoleButtonStyle}" />
                     </Grid>
 
-                    <ListView x:Name="PoliciesList" MaxHeight="300" Background="Transparent"
+                    <ListView x:Name="PoliciesList" ItemsSource="{Binding PolicyItems}" MaxHeight="300" Background="Transparent"
                               BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                         <ListView.ItemContainerStyle>
                             <Style TargetType="ListViewItem">
@@ -308,7 +325,8 @@
             </Border>
 
             <!-- Cleanup Preview / Results -->
-            <Border x:Name="CleanupResultsCard" Style="{StaticResource CardStyle}" Margin="0,0,0,16" Visibility="Collapsed">
+            <Border x:Name="CleanupResultsCard" Style="{StaticResource CardStyle}" Margin="0,0,0,16"
+                    Visibility="{Binding IsCleanupResultsVisible, Converter={StaticResource BoolToVisibilityConverter}}">
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                         <TextBlock Text="&#xE74D;" FontFamily="{StaticResource SymbolThemeFontFamily}"
@@ -325,13 +343,13 @@
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Margin="0,0,24,0">
-                            <TextBlock x:Name="CleanupFilesText" Text="0" FontSize="24" FontWeight="Bold"
+                            <TextBlock x:Name="CleanupFilesText" Text="{Binding CleanupFilesText}" FontSize="24" FontWeight="Bold"
                                        Foreground="{StaticResource InfoColorBrush}" />
                             <TextBlock Text="Files to delete" Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
                         </StackPanel>
 
                         <StackPanel Grid.Column="1">
-                            <TextBlock x:Name="CleanupSizeText" Text="0 MB" FontSize="24" FontWeight="Bold"
+                            <TextBlock x:Name="CleanupSizeText" Text="{Binding CleanupSizeText}" FontSize="24" FontWeight="Bold"
                                        Foreground="{StaticResource InfoColorBrush}" />
                             <TextBlock Text="Space to free" Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
                         </StackPanel>
@@ -340,7 +358,7 @@
                                 Style="{StaticResource AccentButtonStyle}" VerticalAlignment="Center" />
                     </Grid>
 
-                    <ListView x:Name="CleanupFilesList" MaxHeight="200" Background="Transparent"
+                    <ListView x:Name="CleanupFilesList" ItemsSource="{Binding CleanupItems}" MaxHeight="200" Background="Transparent"
                               BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                         <ListView.ItemContainerStyle>
                             <Style TargetType="ListViewItem">
@@ -379,7 +397,7 @@
                         <TextBlock Text="Maintenance History" Style="{StaticResource CardHeaderStyle}" Margin="8,0,0,0" VerticalAlignment="Center" />
                     </StackPanel>
 
-                    <ListView x:Name="HistoryList" MaxHeight="200" Background="Transparent"
+                    <ListView x:Name="HistoryList" ItemsSource="{Binding HistoryItems}" MaxHeight="200" Background="Transparent"
                               BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                         <ListView.ItemContainerStyle>
                             <Style TargetType="ListViewItem">

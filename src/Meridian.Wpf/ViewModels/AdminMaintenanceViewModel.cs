@@ -127,8 +127,15 @@ public sealed class AdminMaintenanceViewModel : BindableBase
     public Color QuickCheckIconColor
     {
         get => _quickCheckIconColor;
-        private set => SetProperty(ref _quickCheckIconColor, value);
+        private set
+        {
+            if (SetProperty(ref _quickCheckIconColor, value))
+                RaisePropertyChanged(nameof(QuickCheckIconBrush));
+        }
     }
+
+    /// <summary>Brush derived from <see cref="QuickCheckIconColor"/> for direct XAML binding.</summary>
+    public SolidColorBrush QuickCheckIconBrush => new(_quickCheckIconColor);
 
     public string QuickCheckStatusText
     {
@@ -184,8 +191,15 @@ public sealed class AdminMaintenanceViewModel : BindableBase
     public Color StatusColor
     {
         get => _statusColor;
-        private set => SetProperty(ref _statusColor, value);
+        private set
+        {
+            if (SetProperty(ref _statusColor, value))
+                RaisePropertyChanged(nameof(StatusBrush));
+        }
     }
+
+    /// <summary>Brush derived from <see cref="StatusColor"/> for direct XAML binding.</summary>
+    public SolidColorBrush StatusBrush => new(_statusColor);
 
     public string StatusTitle
     {
@@ -201,12 +215,25 @@ public sealed class AdminMaintenanceViewModel : BindableBase
 
     // ---- Init ----
 
+    private bool _isInitialized;
+
+    /// <summary>
+    /// True after <see cref="InitializeAsync"/> has completed. Code-behind uses this
+    /// instead of a local <c>_isLoaded</c> flag to gate save handlers.
+    /// </summary>
+    public bool IsInitialized
+    {
+        get => _isInitialized;
+        private set => SetProperty(ref _isInitialized, value);
+    }
+
     public async Task InitializeAsync(CancellationToken ct = default)
     {
         await LoadMaintenanceScheduleAsync(ct);
         await LoadTierUsageAsync(ct);
         await LoadRetentionPoliciesAsync(ct);
         await LoadMaintenanceHistoryAsync(ct);
+        IsInitialized = true;
     }
 
     // ---- Quick check ----
