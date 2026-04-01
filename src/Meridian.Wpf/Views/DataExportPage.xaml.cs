@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Views;
 
@@ -12,13 +13,17 @@ namespace Meridian.Wpf.Views;
 /// </summary>
 public partial class DataExportPage : Page
 {
-    public ObservableCollection<string> SelectedSymbols { get; } = new();
-    public ObservableCollection<ExportHistoryItem> ExportHistory { get; } = new();
+    private readonly DataExportViewModel _viewModel;
+
+    // Surface ViewModel collections so XAML x:Name bindings still resolve via DataContext.
+    private ObservableCollection<string> SelectedSymbols => _viewModel.SelectedSymbols;
+    private ObservableCollection<ExportHistoryItem> ExportHistory => _viewModel.ExportHistory;
 
     public DataExportPage()
     {
         InitializeComponent();
-        DataContext = this;
+        _viewModel = new DataExportViewModel();
+        DataContext = _viewModel;
     }
 
     private void OnPageLoaded(object sender, RoutedEventArgs e)
@@ -312,14 +317,5 @@ public partial class DataExportPage : Page
             ? (System.Windows.Media.Brush)FindResource("ErrorColorBrush")
             : (System.Windows.Media.Brush)FindResource("SuccessColorBrush");
         ActionInfoText.Text = message;
-    }
-
-    public sealed class ExportHistoryItem
-    {
-        public string Timestamp { get; set; } = string.Empty;
-        public string Format { get; set; } = string.Empty;
-        public string SymbolCount { get; set; } = string.Empty;
-        public string Size { get; set; } = string.Empty;
-        public string Destination { get; set; } = string.Empty;
     }
 }

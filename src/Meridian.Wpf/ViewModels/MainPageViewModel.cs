@@ -43,6 +43,12 @@ public sealed class MainPageViewModel : BindableBase
                 RaisePropertyChanged(nameof(WorkspaceHeading));
                 RaisePropertyChanged(nameof(WorkspaceDescription));
                 RaisePropertyChanged(nameof(WorkspaceSummary));
+                RaisePropertyChanged(nameof(ActiveNavigationLabel));
+                RaisePropertyChanged(nameof(RecentPagesHintText));
+                RaisePropertyChanged(nameof(IsResearchWorkspaceActive));
+                RaisePropertyChanged(nameof(IsTradingWorkspaceActive));
+                RaisePropertyChanged(nameof(IsDataOperationsWorkspaceActive));
+                RaisePropertyChanged(nameof(IsGovernanceWorkspaceActive));
             }
         }
     }
@@ -55,6 +61,24 @@ public sealed class MainPageViewModel : BindableBase
 
     /// <summary>Gets the summary text for the active workspace.</summary>
     public string WorkspaceSummary => WorkspaceData[_currentWorkspace].Summary;
+
+    /// <summary>Gets the navigation section label for the active workspace.</summary>
+    public string ActiveNavigationLabel => $"{WorkspaceHeading} Navigation";
+
+    /// <summary>Gets the recent pages hint text for the active workspace.</summary>
+    public string RecentPagesHintText => $"Recent {WorkspaceHeading.ToLowerInvariant()} pages.";
+
+    /// <summary>Gets whether the Research workspace is active.</summary>
+    public bool IsResearchWorkspaceActive => _currentWorkspace == "research";
+
+    /// <summary>Gets whether the Trading workspace is active.</summary>
+    public bool IsTradingWorkspaceActive => _currentWorkspace == "trading";
+
+    /// <summary>Gets whether the Data Operations workspace is active.</summary>
+    public bool IsDataOperationsWorkspaceActive => _currentWorkspace == "data-operations";
+
+    /// <summary>Gets whether the Governance workspace is active.</summary>
+    public bool IsGovernanceWorkspaceActive => _currentWorkspace == "governance";
 
     // ── Navigation state ─────────────────────────────────────────────────
 

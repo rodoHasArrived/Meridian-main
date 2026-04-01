@@ -33,12 +33,6 @@ public partial class BackfillPage : Page
         _configService = configService;
         _viewModel = viewModel;
 
-        // Bind lists to ViewModel collections so UI updates automatically
-        SymbolProgressList.ItemsSource = _viewModel.SymbolProgress;
-        ScheduledJobsList.ItemsSource = _viewModel.ScheduledJobs;
-        ResumableJobsList.ItemsSource = _viewModel.ResumableJobs;
-        GapAnalysisList.ItemsSource = _viewModel.GapItems;
-
         DataContext = _viewModel;
     }
 
