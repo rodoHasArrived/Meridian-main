@@ -1,9 +1,11 @@
 # Data Sources Reference
 
-**Last Updated:** 2026-03-21
+**Last Updated:** 2026-03-31
 **Version:** 1.7.0
 
 This document catalogs the current provider inventory in Meridian across historical backfill, streaming, symbol search, and reference-data workflows.
+
+For the current validation baseline for Polygon, NYSE, Interactive Brokers, and StockSharp, see [Provider Confidence Baseline](provider-confidence-baseline.md). That document is the source of truth for what Meridian validates offline today versus what still requires manual vendor/runtime checks.
 
 ---
 
@@ -54,6 +56,17 @@ This document catalogs the current provider inventory in Meridian across histori
 
 ---
 
+## Validation Baseline
+
+| Provider | Offline / CI evidence | Manual follow-on checks |
+|----------|------------------------|-------------------------|
+| Polygon | Replay fixtures plus `PolygonRecordedSessionReplayTests`, parsing tests, and subscription tests | Live credentials, entitlements, and plan-tier/runtime confirmation |
+| NYSE Streaming | Shared-lifecycle, parser, and client tests around `NyseMarketDataClient` / `NYSEDataSource` | Credentialed auth/connectivity and entitlement checks |
+| Interactive Brokers | Runtime-guidance tests, order fixtures, and compile-only smoke build | Official vendor `IBApi` path with local TWS/Gateway validation |
+| StockSharp | Subscription, connector-factory, and message-conversion capability tests | `EnableStockSharp=true`, connector package installation, and connector-specific local runtime validation |
+
+---
+
 ## Provider Notes
 
 ### Composite Provider
@@ -70,11 +83,11 @@ The synthetic providers are intended for offline development, demos, determinist
 
 ### StockSharp
 
-StockSharp support is connector-dependent and gated by the `STOCKSHARP` build path. Available coverage depends on the configured connector and any applicable StockSharp licensing.
+StockSharp support is connector-dependent and gated by the `STOCKSHARP` build path. Available coverage depends on the configured connector, installed package surfaces, and any applicable StockSharp licensing or crowdfunding access. The default CI-friendly path validates guidance and metadata without claiming live connector availability.
 
 ### Interactive Brokers
 
-Interactive Brokers support has three distinct modes that operators should not conflate: the real `IBAPI` vendor-DLL/project path for live TWS/Gateway use, the `EnableIbApiSmoke=true` compile-only smoke path for automation, and the non-`IBAPI` simulation/runtime-guidance path that keeps the provider visible without exposing real broker connectivity.
+Interactive Brokers support has three distinct modes that operators should not conflate: the real `IBAPI` vendor-DLL/project path for live TWS/Gateway use, the `EnableIbApiSmoke=true` compile-only smoke path for automation, and the non-`IBAPI` simulation/runtime-guidance path that keeps the provider visible without exposing real broker connectivity. The repo validates the latter two paths offline; real connectivity still requires the official vendor path and local runtime checks.
 
 ---
 

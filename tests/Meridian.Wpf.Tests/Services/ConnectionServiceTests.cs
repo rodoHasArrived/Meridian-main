@@ -19,8 +19,11 @@ public sealed class ConnectionServiceTests : IDisposable
 
     public void Dispose()
     {
-        // Cleanup: Stop monitoring and reset state to defaults so other tests see defaults
-        _service.ResetToDefaults();
+        // Cleanup: restore the singleton to a reasonable default shape for later tests.
+        _service.StopMonitoring();
+        _service.ResumeAutoReconnect();
+        _service.UpdateSettings(new ConnectionSettings());
+        _service.DisconnectAsync().GetAwaiter().GetResult();
     }
 
     [Fact]

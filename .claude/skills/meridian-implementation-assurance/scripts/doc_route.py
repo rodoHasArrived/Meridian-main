@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+<<<<<<< ours
+<<<<<<< ours
 <<<<<<< Updated upstream
 """
 Lightweight router for AI/agent documentation updates.
@@ -9,11 +11,19 @@ for catalog updates along with rationale to keep discovery in sync.
 =======
 """Suggest documentation location for Meridian changes."""
 >>>>>>> Stashed changes
+=======
+"""Suggest documentation location for Meridian changes."""
+>>>>>>> theirs
+=======
+"""Suggest documentation location for Meridian changes."""
+>>>>>>> theirs
 
 from __future__ import annotations
 
 import argparse
 import json
+<<<<<<< ours
+<<<<<<< ours
 <<<<<<< Updated upstream
 from dataclasses import dataclass, asdict
 from typing import Dict, List
@@ -110,6 +120,10 @@ def main() -> None:
 if __name__ == "__main__":
     main()
 =======
+=======
+>>>>>>> theirs
+=======
+>>>>>>> theirs
 
 ROUTES = {
     "architecture": "docs/architecture/",
@@ -183,4 +197,10 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+<<<<<<< ours
+<<<<<<< ours
 >>>>>>> Stashed changes
+=======
+>>>>>>> theirs
+=======
+>>>>>>> theirs

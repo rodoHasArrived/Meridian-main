@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using Meridian.Ui.Services.Contracts;
 using Meridian.Wpf.ViewModels;
 using WpfServices = Meridian.Wpf.Services;
 
@@ -24,10 +25,6 @@ public partial class SettingsPage : Page
     {
         _viewModel.Initialize();
 
-        // Wire storage preview combos: delegate to ViewModel on selection change.
-        PreviewNamingCombo.SelectionChanged += OnPreviewSettingsChanged;
-        PreviewCompressionCombo.SelectionChanged += OnPreviewSettingsChanged;
-
         // Wire hotkeys panel
         GlobalHotkeysEnabledCheckBox.IsChecked = WpfServices.GlobalHotkeyService.Instance.IsEnabled;
         GlobalHotkeysList.ItemsSource = WpfServices.GlobalHotkeyService.Instance.Definitions;
@@ -40,13 +37,25 @@ public partial class SettingsPage : Page
         };
     }
 
-    // Storage preview combo change handler — retrieves combo tags and delegates to ViewModel.
-    private void OnPreviewSettingsChanged(object sender, SelectionChangedEventArgs e)
+    // Storage preview combo change handler — keeps legacy XAML event names intact.
+    private void PreviewSettings_Changed(object sender, SelectionChangedEventArgs e)
     {
         if (StoragePreviewText == null) return;
         var naming = GetSelectedTag(PreviewNamingCombo) ?? "BySymbol";
         var compression = GetSelectedTag(PreviewCompressionCombo) ?? "gzip";
         _viewModel.RefreshStoragePreview(naming, compression);
+    }
+
+    private void ThemeCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        var selectedTheme = GetSelectedTag(ThemeCombo) switch
+        {
+            "Dark" => AppTheme.Dark,
+            "Light" => AppTheme.Light,
+            _ => WpfServices.ThemeService.Instance.GetSystemTheme()
+        };
+
+        WpfServices.ThemeService.Instance.SetTheme(selectedTheme);
     }
 
     // Credential test/remove delegates — tag carries resource or name string.

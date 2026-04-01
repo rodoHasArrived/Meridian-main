@@ -116,7 +116,7 @@ public sealed class WatchlistViewModel : BindableBase, IDisposable
 
     private void OnWatchlistsChanged(object? sender, WpfServices.WatchlistsChangedEventArgs e)
     {
-        _ = Application.Current?.Dispatcher.InvokeAsync(async () =>
+        _ = System.Windows.Application.Current?.Dispatcher.InvokeAsync(async () =>
         {
             try
             {

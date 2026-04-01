@@ -464,7 +464,7 @@ public sealed class AdvancedAnalyticsViewModel : BindableBase
     {
         try
         {
-            var result = await _analyticsService.GetLatencyHistogramAsync(ct);
+            var result = await _analyticsService.GetLatencyHistogramAsync(ct: ct);
 
             LatencyItems.Clear();
             if (result.Success)

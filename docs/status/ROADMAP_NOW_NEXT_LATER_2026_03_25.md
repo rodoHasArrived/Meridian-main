@@ -2,8 +2,8 @@
 
 **Generated:** 2026-03-31
 **Format:** Now / Next / Later
-**Basis:** Wave 1–5 roadmap + FEATURE_INVENTORY.md + codebase audit (2026-03-31)
-**Change from prior roadmap:** Adds Security Master productization as a **Next** initiative; reorganises delivery waves into horizon buckets; retains all existing wave goals; marks the WPF workstation as an active Windows delivery track again as of March 26, 2026.
+**Basis:** ROADMAP.md + FEATURE_INVENTORY.md + production-status.md + workstation/governance blueprints (2026-03-31)
+**Change from prior roadmap:** Reconciles the horizon plan with the 2026-03-31 status set, keeps the WPF workstation as an active Windows delivery track, and reframes Security Master as an existing platform seam that now needs operator-facing productization and governance integration.
 
 ---
 
@@ -73,9 +73,9 @@ The WPF workstation is no longer parked as a passive maintenance surface. Native
 
 **Background and rationale:**
 
-The Security Master backend is complete: contracts (`SecurityCommands`, `SecurityDtos`, `SecurityEvents`), services (`SecurityMasterService`, `SecurityMasterQueryService`, `SecurityMasterProjectionService`), PostgreSQL storage, migration runner, F# domain modules (`SecurityMaster.fs`, `SecurityClassification.fs`, `SecurityEconomicDefinition.fs`), and snapshot/event stores are all present in the codebase.
+The Security Master platform baseline is already present in code: contracts, query/services, PostgreSQL storage, F# domain modules, corporate actions, trading parameters, bulk ingest, conflict resolution endpoints, and a WPF browser. The remaining gap is the shared operator layer.
 
-The gap is the operator layer. Today, Security Master data is invisible to an operator running the platform. There is no way to search, browse, classify, or reconcile security definitions without writing code. This limits the platform's value for the governance and data lineage use cases that Security Master exists to serve.
+Today, Security Master is still underrepresented in the web dashboard and broader workstation workflows. The next step is not "build Security Master" but "make Security Master visible and useful across portfolio, ledger, reconciliation, and governance flows."
 
 **Delivery scope:**
 
@@ -84,18 +84,33 @@ The gap is the operator layer. Today, Security Master data is invisible to an op
 - Economic definition editor: view and edit economic definition fields (coupon, maturity, strike, put/call, etc.) for supported asset classes
 - Cross-provider reconciliation surface: surface provider mapping conflicts and gaps
 - Provider coverage metrics: which symbols have Security Master entries vs. which are streaming without backing definitions
-- Workstation REST endpoints for security search and detail (extend `SecurityMasterEndpoints.cs` with workstation-facing read models)
+- Workstation-facing enrichment so portfolio, ledger, and reconciliation DTOs consume one authoritative instrument layer
 
 **Dependencies:**
 
 - Stable provider registry (Now → 1) ensures Security Master entries can be cross-referenced against active providers
 - Web dashboard cockpit infrastructure (Now → 2) establishes the component and layout patterns these panels follow
 
-**Exit gate:** An operator can search for a security, inspect its classification and economic definition, and see which providers have conflicting or missing mappings — entirely through the web dashboard with no code required.
+**Exit gate:** An operator can search for a security, inspect its classification and economic definition, and see which providers have conflicting or missing mappings through the dashboard and shared workstation flows with no code required.
 
 ---
 
-### 5. Portfolio and Strategy Tracking Depth *(Wave 3)*
+### 5. Governance and Fund-Operations Foundation
+
+The active planning set now treats governance as a connected delivery track rather than a distant optional add-on. Shared run, portfolio, ledger, reconciliation, direct-lending, and export seams already exist; the gap is turning them into explicit operator workflows.
+
+**Delivery scope:**
+
+- Multi-ledger grouping, selection, and consolidated trial-balance read paths
+- Cash-flow modeling and realized-vs-projected governance views
+- Reconciliation expansion from run-scoped history into explicit break queues and operator review flows
+- Governance quick actions and report-pack entry points built on the existing export stack
+
+**Exit gate:** Governance is represented by concrete operator workflows and shared DTOs, not only blueprints and backend services.
+
+---
+
+### 6. Portfolio and Strategy Tracking Depth *(Wave 3)*
 
 Strengthen the portfolio read models and multi-run comparison so strategy research produces durable, comparable results.
 
@@ -110,7 +125,7 @@ Strengthen the portfolio read models and multi-run comparison so strategy resear
 
 ---
 
-### 6. Backtest Studio Unification *(Wave 4)*
+### 7. Backtest Studio Unification *(Wave 4)*
 
 Consolidate the native and Lean backtest experiences into one coherent workflow. The native engine and QuantConnect Lean integration are both operational; the gap is a unified UI and result model.
 
@@ -127,7 +142,7 @@ Consolidate the native and Lean backtest experiences into one coherent workflow.
 
 ## Later
 
-### 7. Live Integration Readiness *(Wave 5)*
+### 8. Live Integration Readiness *(Wave 5)*
 
 The brokerage gateway framework (`IBrokerageGateway`, `BaseBrokerageGateway`) and provider-specific adapters (Alpaca, IB, StockSharp) are implemented. The remaining work is validating these adapters against live vendor surfaces and adding execution audit trail.
 
@@ -144,7 +159,7 @@ The brokerage gateway framework (`IBrokerageGateway`, `BaseBrokerageGateway`) an
 
 ---
 
-### 8. Advanced Research and Scale *(Optional Wave)*
+### 9. Advanced Research and Scale *(Optional Wave)*
 
 Depth multipliers that require a stable platform foundation to deliver value. None of these are prerequisites for core operator value.
 
@@ -166,7 +181,8 @@ Meridian can claim core-platform readiness when all of the following are true:
 3. The `Backtest → Paper` promotion workflow is explicit and auditable
 4. Portfolio and run history cover backtest, paper, and live-adjacent results through one consistent model
 5. Backfill checkpoint reliability is validated across providers and date ranges
-6. Security Master is operator-accessible via the web dashboard for search, classification, and provider reconciliation
+6. Security Master is operator-accessible via the web dashboard and shared workstation flows for search, classification, and provider reconciliation
+7. Governance has concrete multi-ledger / reconciliation / reporting seams on top of shared platform contracts
 
 ---
 
@@ -184,6 +200,8 @@ Meridian can claim core-platform readiness when all of the following are true:
 
 **Security Master productization competes for dashboard resources.** The cockpit and Security Master panels share the same React dashboard. Sequencing them (cockpit first) avoids UI layout conflicts and lets Security Master follow established component patterns.
 
+**Governance can sprawl if it outruns shared contracts.** Cash-flow, reconciliation, and reporting work should extend shared run / portfolio / ledger read models rather than invent separate query paths.
+
 **Test coverage must grow with the platform.** Strategy correctness, fill model edge cases, and provider adapters need explicit regression coverage before live integration.
 
 ---
@@ -194,3 +212,5 @@ Meridian can claim core-platform readiness when all of the following are true:
 - [`FEATURE_INVENTORY.md`](FEATURE_INVENTORY.md) — Current-vs-target capability status
 - [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md) — Normalised backlog
 - [`EVALUATIONS_AND_AUDITS.md`](EVALUATIONS_AND_AUDITS.md)
+- [`../plans/trading-workstation-migration-blueprint.md`](../plans/trading-workstation-migration-blueprint.md)
+- [`../plans/governance-fund-ops-blueprint.md`](../plans/governance-fund-ops-blueprint.md)

@@ -32,4 +32,13 @@
     <ProjectReference Include="..\Meridian.Core\Meridian.Core.csproj" />
     <ProjectReference Include="..\Meridian.Storage\Meridian.Storage.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\..\docs\ai\generated\repo-navigation.json" Link="navigation-data\repo-navigation.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\docs\ai\generated\repo-navigation.md" Link="navigation-data\repo-navigation.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>

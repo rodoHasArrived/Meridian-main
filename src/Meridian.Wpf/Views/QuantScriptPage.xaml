@@ -115,7 +115,7 @@
                      Minimum="0"
                      Maximum="1"
                      IsIndeterminate="{Binding IsRunning}"
-                     Value="{Binding ProgressFraction}"
+                     Value="{Binding ProgressFraction, Mode=OneWay}"
                      Visibility="{Binding IsRunning, Converter={StaticResource BoolVis}}" />
         <TextBlock Margin="6,0"
                    VerticalAlignment="Center"

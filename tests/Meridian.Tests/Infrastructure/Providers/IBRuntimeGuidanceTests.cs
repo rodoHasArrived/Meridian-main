@@ -44,6 +44,8 @@ public sealed class IBRuntimeGuidanceTests
 
         client.ProviderDescription.Should().Contain("interactive-brokers-setup.md");
         client.ProviderNotes.Should().Contain(note => note.Contains("interactive-brokers-setup.md"));
+        client.ProviderDescription.Should().Contain("IBSimulationClient");
+        client.ProviderWarnings.Should().Contain(warning => warning.Contains("simulated data"));
     }
 
     [Fact]
@@ -54,5 +56,16 @@ public sealed class IBRuntimeGuidanceTests
         provider.Description.Should().Contain("interactive-brokers-setup.md");
         provider.ProviderNotes.Should().Contain(note => note.Contains("build-ibapi-smoke.ps1"));
         provider.ProviderWarnings.Should().Contain(warning => warning.Contains("interactive-brokers-setup.md"));
+    }
+
+    [Fact]
+    public void IbHistoricalProvider_Metadata_ExplainsCompileOnlyAndVendorBuildModes()
+    {
+        var provider = new IBHistoricalDataProvider();
+
+        provider.Description.Should().Contain("DefineConstants=IBAPI");
+        provider.Description.Should().Contain("EnableIbApiSmoke=true");
+        provider.ProviderNotes.Should().Contain(note => note.Contains("official IBApi surface"));
+        provider.ProviderWarnings.Should().Contain(warning => warning.Contains("empty results"));
     }
 }

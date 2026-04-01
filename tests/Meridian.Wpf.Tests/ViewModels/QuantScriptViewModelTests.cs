@@ -134,7 +134,7 @@ public sealed class QuantScriptViewModelTests
 
         vm.NewScriptCommand.Execute(null);
 
-        vm.ScriptSource.Should().BeEmpty();
+        vm.ScriptSource.Should().Contain("New QuantScript");
     }
 
     // ── Dispose ───────────────────────────────────────────────────────────────

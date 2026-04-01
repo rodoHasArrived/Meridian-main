@@ -1,0 +1,2098 @@
+{
+  "generatedAt": "2026-04-01T06:20:16Z",
+  "generatorVersion": "1.0",
+  "repositoryRoot": "C:/Users/Andrew James Rowden/OneDrive/Documents/OneDrive/Documents/Desktop/Meridian-main",
+  "subsystems": [
+    {
+      "id": "host-shell",
+      "title": "Host and Composition",
+      "summary": "Runtime startup, application composition, shared contracts, and cross-cutting infrastructure.",
+      "projects": [
+        "Meridian",
+        "Meridian.Application",
+        "Meridian.Contracts",
+        "Meridian.Core"
+      ],
+      "projectPaths": [
+        "src/Meridian",
+        "src/Meridian.Application",
+        "src/Meridian.Contracts",
+        "src/Meridian.Core"
+      ],
+      "commonTasks": [
+        "startup debugging",
+        "service composition",
+        "configuration",
+        "shared contracts"
+      ],
+      "keywords": [
+        "api",
+        "application",
+        "appsettings",
+        "cli",
+        "composition",
+        "config",
+        "contracts",
+        "core",
+        "dto",
+        "exceptions",
+        "host",
+        "logging",
+        "orchestration",
+        "pipeline",
+        "serialization",
+        "services",
+        "shared",
+        "startup"
+      ],
+      "keyContracts": [
+        "src/Meridian.Application/Pipeline/EventPipeline.cs",
+        "src/Meridian.Contracts",
+        "src/Meridian.Core/Serialization/MarketDataJsonContext.cs",
+        "src/Meridian/Program.cs"
+      ],
+      "entrypoints": [
+        "src/Meridian.Application/Composition",
+        "src/Meridian.Application/Pipeline",
+        "src/Meridian.Contracts",
+        "src/Meridian.Core/Serialization",
+        "src/Meridian/Program.cs"
+      ],
+      "relatedDocs": [
+        "docs/ai/README.md",
+        "docs/ai/ai-known-errors.md",
+        "docs/ai/navigation/README.md"
+      ],
+      "recommendedStart": "Meridian",
+      "docCoverageHint": "medium"
+    },
+    {
+      "id": "providers-data",
+      "title": "Providers and Storage",
+      "summary": "Provider contracts, adapter implementations, storage catalog, WAL, and archival behavior.",
+      "projects": [
+        "Meridian.Infrastructure",
+        "Meridian.ProviderSdk",
+        "Meridian.Storage"
+      ],
+      "projectPaths": [
+        "src/Meridian.Infrastructure",
+        "src/Meridian.ProviderSdk",
+        "src/Meridian.Storage"
+      ],
+      "commonTasks": [
+        "add provider",
+        "provider bug",
+        "storage regression",
+        "catalog query"
+      ],
+      "keywords": [
+        "adapter",
+        "adapters",
+        "archival",
+        "backfill",
+        "catalog",
+        "historical",
+        "http",
+        "infrastructure",
+        "market data",
+        "provider",
+        "providers",
+        "reconnect",
+        "sdk",
+        "sink",
+        "storage",
+        "streaming",
+        "wal"
+      ],
+      "keyContracts": [
+        "src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs",
+        "src/Meridian.ProviderSdk/IMarketDataClient.cs",
+        "src/Meridian.Storage/Archival/WriteAheadLog.cs",
+        "src/Meridian.Storage/Interfaces/IStorageSink.cs"
+      ],
+      "entrypoints": [
+        "src/Meridian.Infrastructure/Adapters",
+        "src/Meridian.ProviderSdk/IMarketDataClient.cs",
+        "src/Meridian.Storage/Archival",
+        "src/Meridian.Storage/Interfaces"
+      ],
+      "relatedDocs": [
+        "docs/ai/README.md",
+        "docs/ai/ai-known-errors.md",
+        "docs/ai/claude/CLAUDE.providers.md",
+        "docs/ai/claude/CLAUDE.storage.md",
+        "docs/ai/navigation/README.md",
+        "docs/development/provider-implementation.md"
+      ],
+      "recommendedStart": "Meridian.Infrastructure",
+      "docCoverageHint": "high"
+    },
+    {
+      "id": "workstation-ui",
+      "title": "Desktop and UI Workflows",
+      "summary": "WPF desktop shell, shared UI services, and browser-facing UI surfaces.",
+      "projects": [
+        "Meridian.Ui",
+        "Meridian.Ui.Services",
+        "Meridian.Ui.Shared",
+        "Meridian.Wpf"
+      ],
+      "projectPaths": [
+        "src/Meridian.Ui",
+        "src/Meridian.Ui.Services",
+        "src/Meridian.Ui.Shared",
+        "src/Meridian.Wpf"
+      ],
+      "commonTasks": [
+        "wpf issue",
+        "viewmodel routing",
+        "workspace flow",
+        "ui polish"
+      ],
+      "keywords": [
+        "components",
+        "contracts",
+        "desktop",
+        "frontend",
+        "page",
+        "shared state",
+        "shared ui",
+        "shell",
+        "ui",
+        "ui services",
+        "viewmodel",
+        "viewmodel services",
+        "web",
+        "workspace",
+        "wpf"
+      ],
+      "keyContracts": [
+        "src/Meridian.Ui",
+        "src/Meridian.Ui.Services",
+        "src/Meridian.Ui.Shared",
+        "src/Meridian.Wpf/App.xaml.cs",
+        "src/Meridian.Wpf/MainWindow.xaml"
+      ],
+      "entrypoints": [
+        "src/Meridian.Ui.Services",
+        "src/Meridian.Ui.Shared",
+        "src/Meridian.Ui/Program.cs",
+        "src/Meridian.Wpf/App.xaml.cs",
+        "src/Meridian.Wpf/MainWindow.xaml",
+        "src/Meridian.Wpf/ViewModels"
+      ],
+      "relatedDocs": [
+        "docs/ai/README.md",
+        "docs/ai/ai-known-errors.md",
+        "docs/ai/navigation/README.md",
+        "docs/plans/trading-workstation-migration-blueprint.md"
+      ],
+      "recommendedStart": "Meridian.Ui",
+      "docCoverageHint": "high"
+    },
+    {
+      "id": "backtesting-research",
+      "title": "Backtesting and Research",
+      "summary": "Replay engine, backtesting SDK, and quant research workflows.",
+      "projects": [
+        "Meridian.Backtesting",
+        "Meridian.Backtesting.Sdk",
+        "Meridian.QuantScript"
+      ],
+      "projectPaths": [
+        "src/Meridian.Backtesting",
+        "src/Meridian.Backtesting.Sdk",
+        "src/Meridian.QuantScript"
+      ],
+      "commonTasks": [
+        "backtesting bug",
+        "simulation",
+        "research scripting"
+      ],
+      "keywords": [
+        "analytics",
+        "backtesting",
+        "backtesting sdk",
+        "interfaces",
+        "quant",
+        "quantscript",
+        "replay",
+        "research",
+        "script",
+        "simulation",
+        "strategy sdk"
+      ],
+      "keyContracts": [
+        "src/Meridian.Backtesting",
+        "src/Meridian.Backtesting.Sdk",
+        "src/Meridian.QuantScript"
+      ],
+      "entrypoints": [
+        "src/Meridian.Backtesting",
+        "src/Meridian.Backtesting.Sdk",
+        "src/Meridian.QuantScript"
+      ],
+      "relatedDocs": [
+        "docs/ai/README.md",
+        "docs/ai/ai-known-errors.md",
+        "docs/ai/navigation/README.md"
+      ],
+      "recommendedStart": "Meridian.Backtesting",
+      "docCoverageHint": "medium"
+    },
+    {
+      "id": "execution-risk",
+      "title": "Execution, Risk, and Strategies",
+      "summary": "Order routing, gateways, risk rules, and strategy lifecycle management.",
+      "projects": [
+        "Meridian.Execution",
+        "Meridian.Execution.Sdk",
+        "Meridian.Risk",
+        "Meridian.Strategies"
+      ],
+      "projectPaths": [
+        "src/Meridian.Execution",
+        "src/Meridian.Execution.Sdk",
+        "src/Meridian.Risk",
+        "src/Meridian.Strategies"
+      ],
+      "commonTasks": [
+        "execution issue",
+        "risk validation",
+        "strategy lifecycle"
+      ],
+      "keywords": [
+        "contracts",
+        "execution",
+        "execution sdk",
+        "gateway",
+        "lifecycle",
+        "orders",
+        "pre-trade",
+        "risk",
+        "routing",
+        "rules",
+        "runs",
+        "strategies",
+        "validation"
+      ],
+      "keyContracts": [
+        "src/Meridian.Execution.Sdk",
+        "src/Meridian.Execution/Interfaces/IOrderGateway.cs",
+        "src/Meridian.Risk/IRiskRule.cs",
+        "src/Meridian.Strategies/Interfaces/IStrategyLifecycle.cs"
+      ],
+      "entrypoints": [
+        "src/Meridian.Execution.Sdk",
+        "src/Meridian.Execution/Interfaces",
+        "src/Meridian.Risk/IRiskRule.cs",
+        "src/Meridian.Strategies/Interfaces"
+      ],
+      "relatedDocs": [
+        "docs/ai/README.md",
+        "docs/ai/ai-known-errors.md",
+        "docs/ai/navigation/README.md"
+      ],
+      "recommendedStart": "Meridian.Execution",
+      "docCoverageHint": "medium"
+    },
+    {
+      "id": "domain-ledger-fsharp",
+      "title": "Domain, Ledger, and F#",
+      "summary": "Core domain rules, F# interop, ledger logic, and direct lending aggregates.",
+      "projects": [
+        "Meridian.Domain",
+        "Meridian.Ledger",
+        "Meridian.FSharp",
+        "Meridian.FSharp.DirectLending.Aggregates",
+        "Meridian.FSharp.Ledger",
+        "Meridian.FSharp.Trading"
+      ],
+      "projectPaths": [
+        "src/Meridian.Domain",
+        "src/Meridian.Ledger",
+        "src/Meridian.FSharp",
+        "src/Meridian.FSharp.DirectLending.Aggregates",
+        "src/Meridian.FSharp.Ledger",
+        "src/Meridian.FSharp.Trading"
+      ],
+      "commonTasks": [
+        "fsharp interop",
+        "domain rule",
+        "ledger behavior",
+        "direct lending"
+      ],
+      "keywords": [
+        "accounting",
+        "aggregates",
+        "collectors",
+        "direct lending",
+        "domain",
+        "events",
+        "fsharp",
+        "interop",
+        "ledger",
+        "posting",
+        "trading"
+      ],
+      "keyContracts": [
+        "src/Meridian.Domain",
+        "src/Meridian.FSharp",
+        "src/Meridian.FSharp.DirectLending.Aggregates",
+        "src/Meridian.FSharp.Ledger",
+        "src/Meridian.FSharp.Trading",
+        "src/Meridian.Ledger"
+      ],
+      "entrypoints": [
+        "src/Meridian.Domain/Collectors",
+        "src/Meridian.FSharp.DirectLending.Aggregates",
+        "src/Meridian.FSharp.Ledger",
+        "src/Meridian.FSharp.Trading",
+        "src/Meridian.FSharp/Domain",
+        "src/Meridian.Ledger"
+      ],
+      "relatedDocs": [
+        "docs/ai/README.md",
+        "docs/ai/ai-known-errors.md",
+        "docs/ai/claude/CLAUDE.fsharp.md",
+        "docs/ai/navigation/README.md"
+      ],
+      "recommendedStart": "Meridian.Domain",
+      "docCoverageHint": "high"
+    },
+    {
+      "id": "mcp-integration",
+      "title": "MCP Integration",
+      "summary": "MCP hosts, tools, prompts, and resources that expose Meridian capabilities to LLMs.",
+      "projects": [
+        "Meridian.Mcp",
+        "Meridian.McpServer"
+      ],
+      "projectPaths": [
+        "src/Meridian.Mcp",
+        "src/Meridian.McpServer"
+      ],
+      "commonTasks": [
+        "mcp work",
+        "new mcp tool",
+        "resource routing"
+      ],
+      "keywords": [
+        "client",
+        "mcp",
+        "prompt",
+        "prompts",
+        "resource",
+        "resources",
+        "server",
+        "tool",
+        "tools"
+      ],
+      "keyContracts": [
+        "src/Meridian.Mcp/Program.cs",
+        "src/Meridian.McpServer/Program.cs"
+      ],
+      "entrypoints": [
+        "src/Meridian.Mcp/Program.cs",
+        "src/Meridian.McpServer/Program.cs",
+        "src/Meridian.McpServer/Prompts",
+        "src/Meridian.McpServer/Resources",
+        "src/Meridian.McpServer/Tools"
+      ],
+      "relatedDocs": [
+        "docs/ai/README.md",
+        "docs/ai/ai-known-errors.md",
+        "docs/ai/navigation/README.md"
+      ],
+      "recommendedStart": "Meridian.Mcp",
+      "docCoverageHint": "medium"
+    }
+  ],
+  "projects": [
+    {
+      "name": "Meridian",
+      "path": "src/Meridian",
+      "kind": "host",
+      "subsystem": "host-shell",
+      "summary": "Application host, CLI surface, and top-level composition entrypoint.",
+      "commonTasks": [
+        "host startup",
+        "composition wiring",
+        "config bootstrapping",
+        "CLI entrypoints"
+      ],
+      "keywords": [
+        "appsettings",
+        "cli",
+        "composition",
+        "host",
+        "startup"
+      ],
+      "entrypoints": [
+        "src/Meridian/Program.cs"
+      ],
+      "keyContracts": [
+        "src/Meridian/Program.cs"
+      ],
+      "projectReferences": [
+        "Meridian.Application",
+        "Meridian.Contracts",
+        "Meridian.Core",
+        "Meridian.Domain",
+        "Meridian.Infrastructure",
+        "Meridian.Infrastructure.CppTrader",
+        "Meridian.ProviderSdk",
+        "Meridian.Storage",
+        "Meridian.Ui.Shared"
+      ],
+      "relatedDocs": []
+    },
+    {
+      "name": "Meridian.Application",
+      "path": "src/Meridian.Application",
+      "kind": "application",
+      "subsystem": "host-shell",
+      "summary": "Application services, orchestration, pipeline coordination, and runtime workflows.",
+      "commonTasks": [
+        "service orchestration",
+        "pipeline flow",
+        "application services",
+        "composition"
+      ],
+      "keywords": [
+        "application",
+        "composition",
+        "orchestration",
+        "pipeline",
+        "services"
+      ],
+      "entrypoints": [
+        "src/Meridian.Application/Composition",
+        "src/Meridian.Application/Pipeline"
+      ],
+      "keyContracts": [
+        "src/Meridian.Application/Pipeline/EventPipeline.cs"
+      ],
+      "projectReferences": [
+        "Meridian.Contracts",
+        "Meridian.Core",
+        "Meridian.Domain",
+        "Meridian.FSharp",
+        "Meridian.FSharp.DirectLending.Aggregates",
+        "Meridian.FSharp.Ledger",
+        "Meridian.Infrastructure",
+        "Meridian.Ledger",
+        "Meridian.ProviderSdk",
+        "Meridian.Storage"
+      ],
+      "relatedDocs": []
+    },
+    {
+      "name": "Meridian.Backtesting",
+      "path": "src/Meridian.Backtesting",
+      "kind": "backtesting",
+      "subsystem": "backtesting-research",
+      "summary": "Replay engine and backtesting runtime for historical simulations.",
+      "commonTasks": [
+        "backtesting engine",
+        "replay flow",
+        "historical simulation"
+      ],
+      "keywords": [
+        "backtesting",
+        "replay",
+        "research",
+        "simulation"
+      ],
+      "entrypoints": [
+        "src/Meridian.Backtesting"
+      ],
+      "keyContracts": [
+        "src/Meridian.Backtesting"
+      ],
+      "projectReferences": [
+        "Meridian.Application",
+        "Meridian.Backtesting.Sdk",
+        "Meridian.Storage"
+      ],
+      "relatedDocs": []
+    },
+    {
+      "name": "Meridian.Backtesting.Sdk",
+      "path": "src/Meridian.Backtesting.Sdk",
+      "kind": "sdk",
+      "subsystem": "backtesting-research",
+      "summary": "Strategy SDK surface for backtesting and simulation integrations.",
+      "commonTasks": [
+        "sdk integration",
+        "strategy hooks",
+        "backtesting api"
+      ],
+      "keywords": [
+        "backtesting sdk",
+        "interfaces",
+        "strategy sdk"
+      ],
+      "entrypoints": [
+        "src/Meridian.Backtesting.Sdk"
+      ],
+      "keyContracts": [
+        "src/Meridian.Backtesting.Sdk"
+      ],
+      "projectReferences": [
+        "Meridian.Contracts",
+        "Meridian.Ledger"
+      ],
+      "relatedDocs": []
+    },
+    {
+      "name": "Meridian.Contracts",
+      "path": "src/Meridian.Contracts",
+      "kind": "contracts",
+      "subsystem": "host-shell",
+      "summary": "Cross-project DTOs and shared contracts consumed across layers.",
+      "commonTasks": [
+        "DTO changes",
+        "contract routing",
+        "cross-layer payloads"
+      ],
+      "keywords": [
+        "api",
+        "contracts",
+        "dto",
+        "shared"
+      ],
+      "entrypoints": [
+        "src/Meridian.Contracts"
+      ],
+      "keyContracts": [
+        "src/Meridian.Contracts"
+      ],
+      "projectReferences": [],
+      "relatedDocs": []
+    },
+    {
+      "name": "Meridian.Core",
+      "path": "src/Meridian.Core",
+      "kind": "core",
+      "subsystem": "host-shell",
+      "summary": "Cross-cutting configuration, exceptions, logging, and serialization infrastructure.",
+      "commonTasks": [
+        "config",
+        "exceptions",
+        "logging",
+        "serialization"
+      ],
+      "keywords": [
+        "config",
+        "core",
+        "exceptions",
+        "logging",
+        "serialization"
+      ],
+      "entrypoints": [
+        "src/Meridian.Core/Serialization"
+      ],
+      "keyContracts": [
+        "src/Meridian.Core/Serialization/MarketDataJsonContext.cs"
+      ],
+      "projectReferences": [
+        "Meridian.Contracts",
+        "Meridian.Domain",
+        "Meridian.ProviderSdk"
+      ],
+      "relatedDocs": []
+    },
+    {
+      "name": "Meridian.Domain",
+      "path": "src/Meridian.Domain",
+      "kind": "domain",
+      "subsystem": "domain-ledger-fsharp",
+      "summary": "Core trading domain logic, collectors, and event-level behavior.",
+      "commonTasks": [
+        "domain rules",
+        "event modeling",
+        "collector behavior"
+      ],
+      "keywords": [
+        "collectors",
+        "domain",
+        "events"
+      ],
+      "entrypoints": [
+        "src/Meridian.Domain/Collectors"
+      ],
+      "keyContracts": [
+        "src/Meridian.Domain"
+      ],
+      "projectReferences": [
+        "Meridian.Contracts",
+        "Meridian.ProviderSdk"
+      ],
+      "relatedDocs": [
+        "docs/ai/claude/CLAUDE.fsharp.md"
+      ]
+    },
+    {
+      "name": "Meridian.Execution",
+      "path": "src/Meridian.Execution",
+      "kind": "execution",
+      "subsystem": "execution-risk",
+      "summary": "Execution engine and order-routing implementation layer.",
+      "commonTasks": [
+        "order routing",
+        "gateway issue",
+        "execution flow"
+      ],
+      "keywords": [
+        "execution",
+        "gateway",
+        "orders",
+        "routing"
+      ],
+      "entrypoints": [
+        "src/Meridian.Execution/Interfaces"
+      ],
+      "keyContracts": [
+        "src/Meridian.Execution/Interfaces/IOrderGateway.cs"
+      ],
+      "projectReferences": [
+        "Meridian.Application",
+        "Meridian.Contracts",
+        "Meridian.Core",
+        "Meridian.Execution.Sdk",
+        "Meridian.Ledger"
+      ],
+      "relatedDocs": []
+    },
+    {
+      "name": "Meridian.Execution.Sdk",
+      "path": "src/Meridian.Execution.Sdk",
+      "kind": "sdk",
+      "subsystem": "execution-risk",
+      "summary": "Execution-facing abstractions shared by gateways and brokers.",
+      "commonTasks": [
+        "execution sdk",
+        "gateway contracts"
+      ],
+      "keywords": [
+        "contracts",
+        "execution sdk",
+        "gateway"
+      ],
+      "entrypoints": [
+        "src/Meridian.Execution.Sdk"
+      ],
+      "keyContracts": [
+        "src/Meridian.Execution.Sdk"
+      ],
+      "projectReferences": [
+        "Meridian.Contracts"
+      ],
+      "relatedDocs": []
+    },
+    {
+      "name": "Meridian.Infrastructure",
+      "path": "src/Meridian.Infrastructure",
+      "kind": "infrastructure",
+      "subsystem": "providers-data",
+      "summary": "Provider adapters, HTTP integration, resilience helpers, and adapter templates.",
+      "commonTasks": [
+        "provider implementation",
+        "HTTP integration",
+        "adapter templates",
+        "symbol search"
+      ],
+      "keywords": [
+        "adapters",
+        "http",
+        "infrastructure",
+        "providers",
+        "reconnect"
+      ],
+      "entrypoints": [
+        "src/Meridian.Infrastructure/Adapters"
+      ],
+      "keyContracts": [
+        "src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs"
+      ],
+      "projectReferences": [
+        "Meridian.Contracts",
+        "Meridian.Core",
+        "Meridian.Domain",
+        "Meridian.Execution.Sdk",
+        "Meridian.IbApi.SmokeStub",
+        "Meridian.ProviderSdk",
+        "Meridian.Storage"
+      ],
+      "relatedDocs": [
+        "docs/ai/claude/CLAUDE.providers.md"
+      ]
+    },
+    {
+      "name": "Meridian.Ledger",
+      "path": "src/Meridian.Ledger",
+      "kind": "ledger",
+      "subsystem": "domain-ledger-fsharp",
+      "summary": "Double-entry ledger implementation and accounting workflow support.",
+      "commonTasks": [
+        "ledger issue",
+        "posting flow",
+        "accounting state"
+      ],
+      "keywords": [
+        "accounting",
+        "ledger",
+        "posting"
+      ],
+      "entrypoints": [
+        "src/Meridian.Ledger"
+      ],
+      "keyContracts": [
+        "src/Meridian.Ledger"
+      ],
+      "projectReferences": [
+        "Meridian.Core",
+        "Meridian.FSharp.Ledger"
+      ],
+      "relatedDocs": []
+    },
+    {
+      "name": "Meridian.Mcp",
+      "path": "src/Meridian.Mcp",
+      "kind": "mcp-client",
+      "subsystem": "mcp-integration",
+      "summary": "MCP client/host surface for interacting with Meridian capabilities.",
+      "commonTasks": [
+        "mcp client",
+        "tooling surface",
+        "prompt routing"
+      ],
+      "keywords": [
+        "client",
+        "mcp",
+        "tools"
+      ],
+      "entrypoints": [
+        "src/Meridian.Mcp/Program.cs"
+      ],
+      "keyContracts": [
+        "src/Meridian.Mcp/Program.cs"
+      ],
+      "projectReferences": [],
+      "relatedDocs": []
+    },
+    {
+      "name": "Meridian.McpServer",
+      "path": "src/Meridian.McpServer",
+      "kind": "mcp-server",
+      "subsystem": "mcp-integration",
+      "summary": "Attribute-driven MCP server exposing tools, prompts, and resources over stdio.",
+      "commonTasks": [
+        "mcp server",
+        "new tool",
+        "resource surface",
+        "prompt integration"
+      ],
+      "keywords": [
+        "mcp",
+        "prompts",
+        "resources",
+        "server",
+        "tools"
+      ],
+      "entrypoints": [
+        "src/Meridian.McpServer/Program.cs",
+        "src/Meridian.McpServer/Tools",
+        "src/Meridian.McpServer/Resources",
+        "src/Meridian.McpServer/Prompts"
+      ],
+      "keyContracts": [
+        "src/Meridian.McpServer/Program.cs"
+      ],
+      "projectReferences": [
+        "Meridian.Application",
+        "Meridian.Contracts",
+        "Meridian.Core",
+        "Meridian.Storage"
+      ],
+      "relatedDocs": []
+    },
+    {
+      "name": "Meridian.ProviderSdk",
+      "path": "src/Meridian.ProviderSdk",
+      "kind": "sdk",
+      "subsystem": "providers-data",
+      "summary": "Provider-facing contracts and abstractions for streaming and historical integrations.",
+      "commonTasks": [
+        "new provider",
+        "provider contract lookup",
+        "adapter routing"
+      ],
+      "keywords": [
+        "historical",
+        "market data",
+        "provider",
+        "sdk",
+        "streaming"
+      ],
+      "entrypoints": [
+        "src/Meridian.ProviderSdk/IMarketDataClient.cs"
+      ],
+      "keyContracts": [
+        "src/Meridian.ProviderSdk/IMarketDataClient.cs"
+      ],
+      "projectReferences": [
+        "Meridian.Contracts"
+      ],
+      "relatedDocs": [
+        "docs/ai/claude/CLAUDE.providers.md",
+        "docs/development/provider-implementation.md"
+      ]
+    },
+    {
+      "name": "Meridian.QuantScript",
+      "path": "src/Meridian.QuantScript",
+      "kind": "research",
+      "subsystem": "backtesting-research",
+      "summary": "Research and scripting layer for strategy and analytics workflows.",
+      "commonTasks": [
+        "quantscript",
+        "research workflow",
+        "scripting"
+      ],
+      "keywords": [
+        "analytics",
+        "quant",
+        "research",
+        "script"
+      ],
+      "entrypoints": [
+        "src/Meridian.QuantScript"
+      ],
+      "keyContracts": [
+        "src/Meridian.QuantScript"
+      ],
+      "projectReferences": [
+        "Meridian.Application",
+        "Meridian.Backtesting",
+        "Meridian.Backtesting.Sdk",
+        "Meridian.Contracts",
+        "Meridian.Domain",
+        "Meridian.ProviderSdk",
+        "Meridian.Storage"
+      ],
+      "relatedDocs": []
+    },
+    {
+      "name": "Meridian.Risk",
+      "path": "src/Meridian.Risk",
+      "kind": "risk",
+      "subsystem": "execution-risk",
+      "summary": "Pre-trade validation rules and risk orchestration layer.",
+      "commonTasks": [
+        "risk rule",
+        "pre-trade validation",
+        "limit enforcement"
+      ],
+      "keywords": [
+        "pre-trade",
+        "risk",
+        "rules",
+        "validation"
+      ],
+      "entrypoints": [
+        "src/Meridian.Risk/IRiskRule.cs"
+      ],
+      "keyContracts": [
+        "src/Meridian.Risk/IRiskRule.cs"
+      ],
+      "projectReferences": [
+        "Meridian.Contracts",
+        "Meridian.Execution",
+        "Meridian.Execution.Sdk",
+        "Meridian.FSharp"
+      ],
+      "relatedDocs": []
+    },
+    {
+      "name": "Meridian.Storage",
+      "path": "src/Meridian.Storage",
+      "kind": "storage",
+      "subsystem": "providers-data",
+      "summary": "Tiered persistence, WAL handling, archival packaging, and storage catalog services.",
+      "commonTasks": [
+        "storage bug",
+        "WAL integrity",
+        "catalog queries",
+        "archival"
+      ],
+      "keywords": [
+        "archival",
+        "catalog",
+        "sink",
+        "storage",
+        "wal"
+      ],
+      "entrypoints": [
+        "src/Meridian.Storage/Archival",
+        "src/Meridian.Storage/Interfaces"
+      ],
+      "keyContracts": [
+        "src/Meridian.Storage/Interfaces/IStorageSink.cs",
+        "src/Meridian.Storage/Archival/WriteAheadLog.cs"
+      ],
+      "projectReferences": [
+        "Meridian.Contracts",
+        "Meridian.Core",
+        "Meridian.Domain",
+        "Meridian.ProviderSdk"
+      ],
+      "relatedDocs": [
+        "docs/ai/claude/CLAUDE.storage.md"
+      ]
+    },
+    {
+      "name": "Meridian.Strategies",
+      "path": "src/Meridian.Strategies",
+      "kind": "strategies",
+      "subsystem": "execution-risk",
+      "summary": "Strategy lifecycle, run orchestration, and strategy persistence.",
+      "commonTasks": [
+        "strategy run",
+        "lifecycle issue",
+        "strategy storage"
+      ],
+      "keywords": [
+        "lifecycle",
+        "runs",
+        "strategies"
+      ],
+      "entrypoints": [
+        "src/Meridian.Strategies/Interfaces"
+      ],
+      "keyContracts": [
+        "src/Meridian.Strategies/Interfaces/IStrategyLifecycle.cs"
+      ],
+      "projectReferences": [
+        "Meridian.Backtesting.Sdk",
+        "Meridian.Contracts",
+        "Meridian.Core",
+        "Meridian.Execution",
+        "Meridian.Execution.Sdk",
+        "Meridian.FSharp",
+        "Meridian.FSharp.Ledger",
+        "Meridian.FSharp.Trading",
+        "Meridian.Infrastructure"
+      ],
+      "relatedDocs": []
+    },
+    {
+      "name": "Meridian.Ui",
+      "path": "src/Meridian.Ui",
+      "kind": "web-ui",
+      "subsystem": "workstation-ui",
+      "summary": "Web UI surface and browser-facing application experiences.",
+      "commonTasks": [
+        "web ui",
+        "frontend route",
+        "page issue"
+      ],
+      "keywords": [
+        "frontend",
+        "page",
+        "ui",
+        "web"
+      ],
+      "entrypoints": [
+        "src/Meridian.Ui/Program.cs"
+      ],
+      "keyContracts": [
+        "src/Meridian.Ui"
+      ],
+      "projectReferences": [
+        "Meridian.Ui.Shared"
+      ],
+      "relatedDocs": [
+        "docs/ai/README.md"
+      ]
+    },
+    {
+      "name": "Meridian.Ui.Services",
+      "path": "src/Meridian.Ui.Services",
+      "kind": "ui-services",
+      "subsystem": "workstation-ui",
+      "summary": "Shared services that support UI workflows and state transitions.",
+      "commonTasks": [
+        "ui services",
+        "shared view state",
+        "workflow services"
+      ],
+      "keywords": [
+        "shared state",
+        "ui services",
+        "viewmodel services"
+      ],
+      "entrypoints": [
+        "src/Meridian.Ui.Services"
+      ],
+      "keyContracts": [
+        "src/Meridian.Ui.Services"
+      ],
+      "projectReferences": [
+        "Meridian.Contracts"
+      ],
+      "relatedDocs": []
+    },
+    {
+      "name": "Meridian.Ui.Shared",
+      "path": "src/Meridian.Ui.Shared",
+      "kind": "shared-ui",
+      "subsystem": "workstation-ui",
+      "summary": "Shared UI components and contracts reused across interfaces.",
+      "commonTasks": [
+        "shared component",
+        "ui contract",
+        "cross-ui reuse"
+      ],
+      "keywords": [
+        "components",
+        "contracts",
+        "shared ui"
+      ],
+      "entrypoints": [
+        "src/Meridian.Ui.Shared"
+      ],
+      "keyContracts": [
+        "src/Meridian.Ui.Shared"
+      ],
+      "projectReferences": [
+        "Meridian.Application",
+        "Meridian.Contracts",
+        "Meridian.Execution",
+        "Meridian.Infrastructure.CppTrader",
+        "Meridian.Storage",
+        "Meridian.Strategies"
+      ],
+      "relatedDocs": []
+    },
+    {
+      "name": "Meridian.Wpf",
+      "path": "src/Meridian.Wpf",
+      "kind": "desktop-ui",
+      "subsystem": "workstation-ui",
+      "summary": "WPF desktop shell and workstation-facing desktop workflows.",
+      "commonTasks": [
+        "WPF bug",
+        "shell navigation",
+        "desktop MVVM",
+        "workspace flow"
+      ],
+      "keywords": [
+        "desktop",
+        "shell",
+        "viewmodel",
+        "workspace",
+        "wpf"
+      ],
+      "entrypoints": [
+        "src/Meridian.Wpf/App.xaml.cs",
+        "src/Meridian.Wpf/MainWindow.xaml",
+        "src/Meridian.Wpf/ViewModels"
+      ],
+      "keyContracts": [
+        "src/Meridian.Wpf/App.xaml.cs",
+        "src/Meridian.Wpf/MainWindow.xaml"
+      ],
+      "projectReferences": [
+        "Meridian.Backtesting",
+        "Meridian.QuantScript",
+        "Meridian.Strategies",
+        "Meridian.Ui.Services",
+        "Meridian.Ui.Shared"
+      ],
+      "relatedDocs": [
+        "docs/plans/trading-workstation-migration-blueprint.md"
+      ]
+    },
+    {
+      "name": "Meridian.FSharp",
+      "path": "src/Meridian.FSharp",
+      "kind": "fsharp-domain",
+      "subsystem": "domain-ledger-fsharp",
+      "summary": "F# domain library and shared functional model implementations.",
+      "commonTasks": [
+        "fsharp interop",
+        "domain calculations",
+        "functional models"
+      ],
+      "keywords": [
+        "domain",
+        "fsharp",
+        "interop"
+      ],
+      "entrypoints": [
+        "src/Meridian.FSharp/Domain"
+      ],
+      "keyContracts": [
+        "src/Meridian.FSharp"
+      ],
+      "projectReferences": [
+        "Meridian.Backtesting.Sdk",
+        "Meridian.Contracts",
+        "Meridian.Execution.Sdk"
+      ],
+      "relatedDocs": [
+        "docs/ai/claude/CLAUDE.fsharp.md"
+      ]
+    },
+    {
+      "name": "Meridian.FSharp.DirectLending.Aggregates",
+      "path": "src/Meridian.FSharp.DirectLending.Aggregates",
+      "kind": "fsharp-domain",
+      "subsystem": "domain-ledger-fsharp",
+      "summary": "Direct lending aggregates and specialized financial domain behavior.",
+      "commonTasks": [
+        "direct lending",
+        "aggregate rules",
+        "financial calculations"
+      ],
+      "keywords": [
+        "aggregates",
+        "direct lending",
+        "fsharp"
+      ],
+      "entrypoints": [
+        "src/Meridian.FSharp.DirectLending.Aggregates"
+      ],
+      "keyContracts": [
+        "src/Meridian.FSharp.DirectLending.Aggregates"
+      ],
+      "projectReferences": [
+        "Meridian.Contracts",
+        "Meridian.FSharp"
+      ],
+      "relatedDocs": [
+        "docs/ai/claude/CLAUDE.fsharp.md"
+      ]
+    },
+    {
+      "name": "Meridian.FSharp.Ledger",
+      "path": "src/Meridian.FSharp.Ledger",
+      "kind": "fsharp-domain",
+      "subsystem": "domain-ledger-fsharp",
+      "summary": "Ledger-focused F# models and interop helpers.",
+      "commonTasks": [
+        "ledger models",
+        "fsharp ledger logic"
+      ],
+      "keywords": [
+        "fsharp",
+        "interop",
+        "ledger"
+      ],
+      "entrypoints": [
+        "src/Meridian.FSharp.Ledger"
+      ],
+      "keyContracts": [
+        "src/Meridian.FSharp.Ledger"
+      ],
+      "projectReferences": [],
+      "relatedDocs": [
+        "docs/ai/claude/CLAUDE.fsharp.md"
+      ]
+    },
+    {
+      "name": "Meridian.FSharp.Trading",
+      "path": "src/Meridian.FSharp.Trading",
+      "kind": "fsharp-domain",
+      "subsystem": "domain-ledger-fsharp",
+      "summary": "Trading-focused F# domain models and calculations.",
+      "commonTasks": [
+        "trading models",
+        "fsharp trading logic"
+      ],
+      "keywords": [
+        "domain",
+        "fsharp",
+        "trading"
+      ],
+      "entrypoints": [
+        "src/Meridian.FSharp.Trading"
+      ],
+      "keyContracts": [
+        "src/Meridian.FSharp.Trading"
+      ],
+      "projectReferences": [],
+      "relatedDocs": [
+        "docs/ai/claude/CLAUDE.fsharp.md"
+      ]
+    }
+  ],
+  "documents": [
+    {
+      "path": "CLAUDE.md",
+      "title": "Root project context",
+      "area": "root-context",
+      "whenToConsult": "Before any substantial change for commands, architecture, and repo-wide conventions.",
+      "keywords": [
+        "overview",
+        "commands",
+        "architecture",
+        "conventions"
+      ]
+    },
+    {
+      "path": "docs/ai/README.md",
+      "title": "AI resource index",
+      "area": "ai-navigation",
+      "whenToConsult": "When deciding which AI guide, agent, or prompt to read next.",
+      "keywords": [
+        "ai",
+        "index",
+        "navigation",
+        "guidance"
+      ]
+    },
+    {
+      "path": "docs/ai/ai-known-errors.md",
+      "title": "Known AI errors",
+      "area": "guardrails",
+      "whenToConsult": "Before changes in areas where AI mistakes recur and after fixing a new AI-caused issue.",
+      "keywords": [
+        "errors",
+        "guardrails",
+        "pitfalls",
+        "prevention"
+      ]
+    },
+    {
+      "path": "docs/ai/navigation/README.md",
+      "title": "AI navigation workflow",
+      "area": "ai-navigation",
+      "whenToConsult": "When orienting an assistant to a task or deciding how to route work across subsystems.",
+      "keywords": [
+        "navigation",
+        "orientation",
+        "routing",
+        "repo map"
+      ]
+    },
+    {
+      "path": "docs/ai/claude/CLAUDE.providers.md",
+      "title": "Provider implementation guide",
+      "area": "providers",
+      "whenToConsult": "When working on market data providers, adapter contracts, or provider-facing tests.",
+      "keywords": [
+        "providers",
+        "adapter",
+        "backfill",
+        "market data"
+      ]
+    },
+    {
+      "path": "docs/ai/claude/CLAUDE.storage.md",
+      "title": "Storage guide",
+      "area": "storage",
+      "whenToConsult": "When touching WAL, archival, cataloging, or persistent sink behavior.",
+      "keywords": [
+        "storage",
+        "wal",
+        "archival",
+        "sink"
+      ]
+    },
+    {
+      "path": "docs/ai/claude/CLAUDE.testing.md",
+      "title": "Testing guide",
+      "area": "testing",
+      "whenToConsult": "When adding or repairing tests, especially across C#, F#, UI, or provider layers.",
+      "keywords": [
+        "tests",
+        "xunit",
+        "coverage",
+        "qa"
+      ]
+    },
+    {
+      "path": "docs/ai/claude/CLAUDE.fsharp.md",
+      "title": "F# interop guide",
+      "area": "fsharp",
+      "whenToConsult": "When tracing domain behavior into F# projects or extending interop boundaries.",
+      "keywords": [
+        "fsharp",
+        "interop",
+        "domain"
+      ]
+    },
+    {
+      "path": "docs/plans/trading-workstation-migration-blueprint.md",
+      "title": "Trading workstation migration blueprint",
+      "area": "ui",
+      "whenToConsult": "When a task affects workflow-centric desktop or workspace experiences.",
+      "keywords": [
+        "workstation",
+        "wpf",
+        "workspace",
+        "migration"
+      ]
+    },
+    {
+      "path": "docs/development/provider-implementation.md",
+      "title": "Provider implementation developer guide",
+      "area": "providers",
+      "whenToConsult": "When scaffolding or reviewing provider work from outside the AI guides.",
+      "keywords": [
+        "provider",
+        "implementation",
+        "adapter"
+      ]
+    }
+  ],
+  "symbols": [
+    {
+      "name": "IMarketDataClient",
+      "kind": "interface",
+      "path": "src/Meridian.ProviderSdk/IMarketDataClient.cs",
+      "project": "Meridian.ProviderSdk",
+      "reason": "Primary entrypoint for streaming provider work.",
+      "keywords": [
+        "provider",
+        "streaming",
+        "market data"
+      ]
+    },
+    {
+      "name": "IHistoricalDataProvider",
+      "kind": "interface",
+      "path": "src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs",
+      "project": "Meridian.Infrastructure",
+      "reason": "Primary contract for historical/backfill providers.",
+      "keywords": [
+        "provider",
+        "historical",
+        "backfill"
+      ]
+    },
+    {
+      "name": "MarketDataJsonContext",
+      "kind": "json-context",
+      "path": "src/Meridian.Core/Serialization/MarketDataJsonContext.cs",
+      "project": "Meridian.Core",
+      "reason": "Source-generated JSON context used in hot-path and provider serialization.",
+      "keywords": [
+        "json",
+        "serialization",
+        "adr-014"
+      ]
+    },
+    {
+      "name": "EventPipeline",
+      "kind": "pipeline",
+      "path": "src/Meridian.Application/Pipeline/EventPipeline.cs",
+      "project": "Meridian.Application",
+      "reason": "High-signal coordination point for runtime event flow.",
+      "keywords": [
+        "pipeline",
+        "events",
+        "runtime"
+      ]
+    },
+    {
+      "name": "WriteAheadLog",
+      "kind": "storage",
+      "path": "src/Meridian.Storage/Archival/WriteAheadLog.cs",
+      "project": "Meridian.Storage",
+      "reason": "Authoritative WAL implementation for durability and storage integrity work.",
+      "keywords": [
+        "storage",
+        "wal",
+        "durability"
+      ]
+    },
+    {
+      "name": "AtomicFileWriter",
+      "kind": "storage",
+      "path": "src/Meridian.Storage/Archival/AtomicFileWriter.cs",
+      "project": "Meridian.Storage",
+      "reason": "Crash-safe file write boundary used by storage-sensitive changes.",
+      "keywords": [
+        "storage",
+        "file io",
+        "durability"
+      ]
+    },
+    {
+      "name": "IOrderGateway",
+      "kind": "interface",
+      "path": "src/Meridian.Execution/Interfaces/IOrderGateway.cs",
+      "project": "Meridian.Execution",
+      "reason": "Primary execution abstraction for routing order-flow investigations.",
+      "keywords": [
+        "execution",
+        "orders",
+        "gateway"
+      ]
+    },
+    {
+      "name": "IRiskRule",
+      "kind": "interface",
+      "path": "src/Meridian.Risk/IRiskRule.cs",
+      "project": "Meridian.Risk",
+      "reason": "Key contract for pre-trade risk validation work.",
+      "keywords": [
+        "risk",
+        "validation",
+        "rules"
+      ]
+    },
+    {
+      "name": "IStrategyLifecycle",
+      "kind": "interface",
+      "path": "src/Meridian.Strategies/Interfaces/IStrategyLifecycle.cs",
+      "project": "Meridian.Strategies",
+      "reason": "Primary lifecycle abstraction for strategy run work.",
+      "keywords": [
+        "strategy",
+        "lifecycle",
+        "runs"
+      ]
+    },
+    {
+      "name": "MainWindow",
+      "kind": "wpf-shell",
+      "path": "src/Meridian.Wpf/MainWindow.xaml",
+      "project": "Meridian.Wpf",
+      "reason": "Desktop shell entrypoint for WPF workflow and navigation issues.",
+      "keywords": [
+        "wpf",
+        "shell",
+        "desktop"
+      ]
+    },
+    {
+      "name": "Program",
+      "kind": "mcp-entrypoint",
+      "path": "src/Meridian.McpServer/Program.cs",
+      "project": "Meridian.McpServer",
+      "reason": "Registration point for MCP tools, resources, and prompts.",
+      "keywords": [
+        "mcp",
+        "server",
+        "registration"
+      ]
+    }
+  ],
+  "taskRoutes": [
+    {
+      "id": "provider-work",
+      "title": "Provider implementation and provider bugs",
+      "description": "Use when adding, debugging, or reviewing streaming, historical, or symbol-search providers.",
+      "keywords": [
+        "provider",
+        "adapter",
+        "backfill",
+        "market data",
+        "symbol search"
+      ],
+      "subsystems": [
+        "providers-data"
+      ],
+      "subsystemTitles": [
+        "Providers and Storage"
+      ],
+      "startProjects": [
+        "Meridian.ProviderSdk",
+        "Meridian.Infrastructure",
+        "Meridian.Storage"
+      ],
+      "startSymbols": [
+        {
+          "name": "IMarketDataClient",
+          "path": "src/Meridian.ProviderSdk/IMarketDataClient.cs",
+          "reason": "Primary entrypoint for streaming provider work."
+        },
+        {
+          "name": "IHistoricalDataProvider",
+          "path": "src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs",
+          "reason": "Primary contract for historical/backfill providers."
+        },
+        {
+          "name": "MarketDataJsonContext",
+          "path": "src/Meridian.Core/Serialization/MarketDataJsonContext.cs",
+          "reason": "Source-generated JSON context used in hot-path and provider serialization."
+        }
+      ],
+      "authoritativeDocs": [
+        "docs/ai/claude/CLAUDE.providers.md",
+        "docs/development/provider-implementation.md",
+        "docs/ai/ai-known-errors.md"
+      ],
+      "recommendedSkill": "meridian-provider-builder",
+      "recommendedAgent": "provider-builder-agent"
+    },
+    {
+      "id": "wpf-workflow",
+      "title": "WPF and workstation workflow issues",
+      "description": "Use when the task involves shell navigation, workspace composition, desktop view models, or desktop UX flows.",
+      "keywords": [
+        "wpf",
+        "desktop",
+        "workspace",
+        "viewmodel",
+        "shell"
+      ],
+      "subsystems": [
+        "workstation-ui"
+      ],
+      "subsystemTitles": [
+        "Desktop and UI Workflows"
+      ],
+      "startProjects": [
+        "Meridian.Wpf",
+        "Meridian.Ui.Services",
+        "Meridian.Ui.Shared"
+      ],
+      "startSymbols": [
+        {
+          "name": "MainWindow",
+          "path": "src/Meridian.Wpf/MainWindow.xaml",
+          "reason": "Desktop shell entrypoint for WPF workflow and navigation issues."
+        }
+      ],
+      "authoritativeDocs": [
+        "docs/plans/trading-workstation-migration-blueprint.md",
+        "docs/ai/ai-known-errors.md"
+      ],
+      "recommendedSkill": "meridian-blueprint",
+      "recommendedAgent": "code-review-agent"
+    },
+    {
+      "id": "storage-investigation",
+      "title": "Storage and WAL investigations",
+      "description": "Use when tracing archival bugs, sink registration, WAL sequencing, or storage catalog behavior.",
+      "keywords": [
+        "storage",
+        "wal",
+        "archival",
+        "catalog",
+        "sink"
+      ],
+      "subsystems": [
+        "providers-data"
+      ],
+      "subsystemTitles": [
+        "Providers and Storage"
+      ],
+      "startProjects": [
+        "Meridian.Storage",
+        "Meridian.Application"
+      ],
+      "startSymbols": [
+        {
+          "name": "WriteAheadLog",
+          "path": "src/Meridian.Storage/Archival/WriteAheadLog.cs",
+          "reason": "Authoritative WAL implementation for durability and storage integrity work."
+        },
+        {
+          "name": "AtomicFileWriter",
+          "path": "src/Meridian.Storage/Archival/AtomicFileWriter.cs",
+          "reason": "Crash-safe file write boundary used by storage-sensitive changes."
+        },
+        {
+          "name": "EventPipeline",
+          "path": "src/Meridian.Application/Pipeline/EventPipeline.cs",
+          "reason": "High-signal coordination point for runtime event flow."
+        }
+      ],
+      "authoritativeDocs": [
+        "docs/ai/claude/CLAUDE.storage.md",
+        "docs/ai/ai-known-errors.md"
+      ],
+      "recommendedSkill": "meridian-code-review",
+      "recommendedAgent": "code-review-agent"
+    },
+    {
+      "id": "mcp-surface",
+      "title": "MCP tools, prompts, and resources",
+      "description": "Use when adding or debugging MCP server behavior, prompt registration, or stdio tool/resource exposure.",
+      "keywords": [
+        "mcp",
+        "tool",
+        "resource",
+        "prompt",
+        "server"
+      ],
+      "subsystems": [
+        "mcp-integration"
+      ],
+      "subsystemTitles": [
+        "MCP Integration"
+      ],
+      "startProjects": [
+        "Meridian.McpServer",
+        "Meridian.Mcp"
+      ],
+      "startSymbols": [
+        {
+          "name": "Program",
+          "path": "src/Meridian.McpServer/Program.cs",
+          "reason": "Registration point for MCP tools, resources, and prompts."
+        }
+      ],
+      "authoritativeDocs": [
+        "docs/ai/navigation/README.md",
+        "docs/ai/README.md"
+      ],
+      "recommendedSkill": "meridian-repo-navigation",
+      "recommendedAgent": "repo-navigation-agent"
+    }
+  ],
+  "dependencies": [
+    {
+      "from": "Meridian",
+      "to": "Meridian.Application",
+      "reason": "Meridian references Meridian.Application directly via project reference."
+    },
+    {
+      "from": "Meridian",
+      "to": "Meridian.Contracts",
+      "reason": "Meridian references Meridian.Contracts directly via project reference."
+    },
+    {
+      "from": "Meridian",
+      "to": "Meridian.Core",
+      "reason": "Meridian references Meridian.Core directly via project reference."
+    },
+    {
+      "from": "Meridian",
+      "to": "Meridian.Domain",
+      "reason": "Meridian references Meridian.Domain directly via project reference."
+    },
+    {
+      "from": "Meridian",
+      "to": "Meridian.Infrastructure",
+      "reason": "Meridian references Meridian.Infrastructure directly via project reference."
+    },
+    {
+      "from": "Meridian",
+      "to": "Meridian.ProviderSdk",
+      "reason": "Meridian references Meridian.ProviderSdk directly via project reference."
+    },
+    {
+      "from": "Meridian",
+      "to": "Meridian.Storage",
+      "reason": "Meridian references Meridian.Storage directly via project reference."
+    },
+    {
+      "from": "Meridian",
+      "to": "Meridian.Ui.Shared",
+      "reason": "Meridian references Meridian.Ui.Shared directly via project reference."
+    },
+    {
+      "from": "Meridian.Application",
+      "to": "Meridian.Contracts",
+      "reason": "Meridian.Application references Meridian.Contracts directly via project reference."
+    },
+    {
+      "from": "Meridian.Application",
+      "to": "Meridian.Core",
+      "reason": "Meridian.Application references Meridian.Core directly via project reference."
+    },
+    {
+      "from": "Meridian.Application",
+      "to": "Meridian.Domain",
+      "reason": "Meridian.Application references Meridian.Domain directly via project reference."
+    },
+    {
+      "from": "Meridian.Application",
+      "to": "Meridian.FSharp",
+      "reason": "Meridian.Application references Meridian.FSharp directly via project reference."
+    },
+    {
+      "from": "Meridian.Application",
+      "to": "Meridian.FSharp.DirectLending.Aggregates",
+      "reason": "Meridian.Application references Meridian.FSharp.DirectLending.Aggregates directly via project reference."
+    },
+    {
+      "from": "Meridian.Application",
+      "to": "Meridian.FSharp.Ledger",
+      "reason": "Meridian.Application references Meridian.FSharp.Ledger directly via project reference."
+    },
+    {
+      "from": "Meridian.Application",
+      "to": "Meridian.Infrastructure",
+      "reason": "Meridian.Application references Meridian.Infrastructure directly via project reference."
+    },
+    {
+      "from": "Meridian.Application",
+      "to": "Meridian.Ledger",
+      "reason": "Meridian.Application references Meridian.Ledger directly via project reference."
+    },
+    {
+      "from": "Meridian.Application",
+      "to": "Meridian.ProviderSdk",
+      "reason": "Meridian.Application references Meridian.ProviderSdk directly via project reference."
+    },
+    {
+      "from": "Meridian.Application",
+      "to": "Meridian.Storage",
+      "reason": "Meridian.Application references Meridian.Storage directly via project reference."
+    },
+    {
+      "from": "Meridian.Backtesting",
+      "to": "Meridian.Application",
+      "reason": "Meridian.Backtesting references Meridian.Application directly via project reference."
+    },
+    {
+      "from": "Meridian.Backtesting",
+      "to": "Meridian.Backtesting.Sdk",
+      "reason": "Meridian.Backtesting references Meridian.Backtesting.Sdk directly via project reference."
+    },
+    {
+      "from": "Meridian.Backtesting",
+      "to": "Meridian.Storage",
+      "reason": "Meridian.Backtesting references Meridian.Storage directly via project reference."
+    },
+    {
+      "from": "Meridian.Backtesting.Sdk",
+      "to": "Meridian.Contracts",
+      "reason": "Meridian.Backtesting.Sdk references Meridian.Contracts directly via project reference."
+    },
+    {
+      "from": "Meridian.Backtesting.Sdk",
+      "to": "Meridian.Ledger",
+      "reason": "Meridian.Backtesting.Sdk references Meridian.Ledger directly via project reference."
+    },
+    {
+      "from": "Meridian.Core",
+      "to": "Meridian.Contracts",
+      "reason": "Meridian.Core references Meridian.Contracts directly via project reference."
+    },
+    {
+      "from": "Meridian.Core",
+      "to": "Meridian.Domain",
+      "reason": "Meridian.Core references Meridian.Domain directly via project reference."
+    },
+    {
+      "from": "Meridian.Core",
+      "to": "Meridian.ProviderSdk",
+      "reason": "Meridian.Core references Meridian.ProviderSdk directly via project reference."
+    },
+    {
+      "from": "Meridian.Domain",
+      "to": "Meridian.Contracts",
+      "reason": "Meridian.Domain references Meridian.Contracts directly via project reference."
+    },
+    {
+      "from": "Meridian.Domain",
+      "to": "Meridian.ProviderSdk",
+      "reason": "Meridian.Domain references Meridian.ProviderSdk directly via project reference."
+    },
+    {
+      "from": "Meridian.Execution",
+      "to": "Meridian.Application",
+      "reason": "Meridian.Execution references Meridian.Application directly via project reference."
+    },
+    {
+      "from": "Meridian.Execution",
+      "to": "Meridian.Contracts",
+      "reason": "Meridian.Execution references Meridian.Contracts directly via project reference."
+    },
+    {
+      "from": "Meridian.Execution",
+      "to": "Meridian.Core",
+      "reason": "Meridian.Execution references Meridian.Core directly via project reference."
+    },
+    {
+      "from": "Meridian.Execution",
+      "to": "Meridian.Execution.Sdk",
+      "reason": "Meridian.Execution references Meridian.Execution.Sdk directly via project reference."
+    },
+    {
+      "from": "Meridian.Execution",
+      "to": "Meridian.Ledger",
+      "reason": "Meridian.Execution references Meridian.Ledger directly via project reference."
+    },
+    {
+      "from": "Meridian.Execution.Sdk",
+      "to": "Meridian.Contracts",
+      "reason": "Meridian.Execution.Sdk references Meridian.Contracts directly via project reference."
+    },
+    {
+      "from": "Meridian.Infrastructure",
+      "to": "Meridian.Contracts",
+      "reason": "Meridian.Infrastructure references Meridian.Contracts directly via project reference."
+    },
+    {
+      "from": "Meridian.Infrastructure",
+      "to": "Meridian.Core",
+      "reason": "Meridian.Infrastructure references Meridian.Core directly via project reference."
+    },
+    {
+      "from": "Meridian.Infrastructure",
+      "to": "Meridian.Domain",
+      "reason": "Meridian.Infrastructure references Meridian.Domain directly via project reference."
+    },
+    {
+      "from": "Meridian.Infrastructure",
+      "to": "Meridian.Execution.Sdk",
+      "reason": "Meridian.Infrastructure references Meridian.Execution.Sdk directly via project reference."
+    },
+    {
+      "from": "Meridian.Infrastructure",
+      "to": "Meridian.ProviderSdk",
+      "reason": "Meridian.Infrastructure references Meridian.ProviderSdk directly via project reference."
+    },
+    {
+      "from": "Meridian.Infrastructure",
+      "to": "Meridian.Storage",
+      "reason": "Meridian.Infrastructure references Meridian.Storage directly via project reference."
+    },
+    {
+      "from": "Meridian.Ledger",
+      "to": "Meridian.Core",
+      "reason": "Meridian.Ledger references Meridian.Core directly via project reference."
+    },
+    {
+      "from": "Meridian.Ledger",
+      "to": "Meridian.FSharp.Ledger",
+      "reason": "Meridian.Ledger references Meridian.FSharp.Ledger directly via project reference."
+    },
+    {
+      "from": "Meridian.McpServer",
+      "to": "Meridian.Application",
+      "reason": "Meridian.McpServer references Meridian.Application directly via project reference."
+    },
+    {
+      "from": "Meridian.McpServer",
+      "to": "Meridian.Contracts",
+      "reason": "Meridian.McpServer references Meridian.Contracts directly via project reference."
+    },
+    {
+      "from": "Meridian.McpServer",
+      "to": "Meridian.Core",
+      "reason": "Meridian.McpServer references Meridian.Core directly via project reference."
+    },
+    {
+      "from": "Meridian.McpServer",
+      "to": "Meridian.Storage",
+      "reason": "Meridian.McpServer references Meridian.Storage directly via project reference."
+    },
+    {
+      "from": "Meridian.ProviderSdk",
+      "to": "Meridian.Contracts",
+      "reason": "Meridian.ProviderSdk references Meridian.Contracts directly via project reference."
+    },
+    {
+      "from": "Meridian.QuantScript",
+      "to": "Meridian.Application",
+      "reason": "Meridian.QuantScript references Meridian.Application directly via project reference."
+    },
+    {
+      "from": "Meridian.QuantScript",
+      "to": "Meridian.Backtesting",
+      "reason": "Meridian.QuantScript references Meridian.Backtesting directly via project reference."
+    },
+    {
+      "from": "Meridian.QuantScript",
+      "to": "Meridian.Backtesting.Sdk",
+      "reason": "Meridian.QuantScript references Meridian.Backtesting.Sdk directly via project reference."
+    },
+    {
+      "from": "Meridian.QuantScript",
+      "to": "Meridian.Contracts",
+      "reason": "Meridian.QuantScript references Meridian.Contracts directly via project reference."
+    },
+    {
+      "from": "Meridian.QuantScript",
+      "to": "Meridian.Domain",
+      "reason": "Meridian.QuantScript references Meridian.Domain directly via project reference."
+    },
+    {
+      "from": "Meridian.QuantScript",
+      "to": "Meridian.ProviderSdk",
+      "reason": "Meridian.QuantScript references Meridian.ProviderSdk directly via project reference."
+    },
+    {
+      "from": "Meridian.QuantScript",
+      "to": "Meridian.Storage",
+      "reason": "Meridian.QuantScript references Meridian.Storage directly via project reference."
+    },
+    {
+      "from": "Meridian.Risk",
+      "to": "Meridian.Contracts",
+      "reason": "Meridian.Risk references Meridian.Contracts directly via project reference."
+    },
+    {
+      "from": "Meridian.Risk",
+      "to": "Meridian.Execution",
+      "reason": "Meridian.Risk references Meridian.Execution directly via project reference."
+    },
+    {
+      "from": "Meridian.Risk",
+      "to": "Meridian.Execution.Sdk",
+      "reason": "Meridian.Risk references Meridian.Execution.Sdk directly via project reference."
+    },
+    {
+      "from": "Meridian.Risk",
+      "to": "Meridian.FSharp",
+      "reason": "Meridian.Risk references Meridian.FSharp directly via project reference."
+    },
+    {
+      "from": "Meridian.Storage",
+      "to": "Meridian.Contracts",
+      "reason": "Meridian.Storage references Meridian.Contracts directly via project reference."
+    },
+    {
+      "from": "Meridian.Storage",
+      "to": "Meridian.Core",
+      "reason": "Meridian.Storage references Meridian.Core directly via project reference."
+    },
+    {
+      "from": "Meridian.Storage",
+      "to": "Meridian.Domain",
+      "reason": "Meridian.Storage references Meridian.Domain directly via project reference."
+    },
+    {
+      "from": "Meridian.Storage",
+      "to": "Meridian.ProviderSdk",
+      "reason": "Meridian.Storage references Meridian.ProviderSdk directly via project reference."
+    },
+    {
+      "from": "Meridian.Strategies",
+      "to": "Meridian.Backtesting.Sdk",
+      "reason": "Meridian.Strategies references Meridian.Backtesting.Sdk directly via project reference."
+    },
+    {
+      "from": "Meridian.Strategies",
+      "to": "Meridian.Contracts",
+      "reason": "Meridian.Strategies references Meridian.Contracts directly via project reference."
+    },
+    {
+      "from": "Meridian.Strategies",
+      "to": "Meridian.Core",
+      "reason": "Meridian.Strategies references Meridian.Core directly via project reference."
+    },
+    {
+      "from": "Meridian.Strategies",
+      "to": "Meridian.Execution",
+      "reason": "Meridian.Strategies references Meridian.Execution directly via project reference."
+    },
+    {
+      "from": "Meridian.Strategies",
+      "to": "Meridian.Execution.Sdk",
+      "reason": "Meridian.Strategies references Meridian.Execution.Sdk directly via project reference."
+    },
+    {
+      "from": "Meridian.Strategies",
+      "to": "Meridian.FSharp",
+      "reason": "Meridian.Strategies references Meridian.FSharp directly via project reference."
+    },
+    {
+      "from": "Meridian.Strategies",
+      "to": "Meridian.FSharp.Ledger",
+      "reason": "Meridian.Strategies references Meridian.FSharp.Ledger directly via project reference."
+    },
+    {
+      "from": "Meridian.Strategies",
+      "to": "Meridian.FSharp.Trading",
+      "reason": "Meridian.Strategies references Meridian.FSharp.Trading directly via project reference."
+    },
+    {
+      "from": "Meridian.Strategies",
+      "to": "Meridian.Infrastructure",
+      "reason": "Meridian.Strategies references Meridian.Infrastructure directly via project reference."
+    },
+    {
+      "from": "Meridian.Ui",
+      "to": "Meridian.Ui.Shared",
+      "reason": "Meridian.Ui references Meridian.Ui.Shared directly via project reference."
+    },
+    {
+      "from": "Meridian.Ui.Services",
+      "to": "Meridian.Contracts",
+      "reason": "Meridian.Ui.Services references Meridian.Contracts directly via project reference."
+    },
+    {
+      "from": "Meridian.Ui.Shared",
+      "to": "Meridian.Application",
+      "reason": "Meridian.Ui.Shared references Meridian.Application directly via project reference."
+    },
+    {
+      "from": "Meridian.Ui.Shared",
+      "to": "Meridian.Contracts",
+      "reason": "Meridian.Ui.Shared references Meridian.Contracts directly via project reference."
+    },
+    {
+      "from": "Meridian.Ui.Shared",
+      "to": "Meridian.Execution",
+      "reason": "Meridian.Ui.Shared references Meridian.Execution directly via project reference."
+    },
+    {
+      "from": "Meridian.Ui.Shared",
+      "to": "Meridian.Storage",
+      "reason": "Meridian.Ui.Shared references Meridian.Storage directly via project reference."
+    },
+    {
+      "from": "Meridian.Ui.Shared",
+      "to": "Meridian.Strategies",
+      "reason": "Meridian.Ui.Shared references Meridian.Strategies directly via project reference."
+    },
+    {
+      "from": "Meridian.Wpf",
+      "to": "Meridian.Backtesting",
+      "reason": "Meridian.Wpf references Meridian.Backtesting directly via project reference."
+    },
+    {
+      "from": "Meridian.Wpf",
+      "to": "Meridian.QuantScript",
+      "reason": "Meridian.Wpf references Meridian.QuantScript directly via project reference."
+    },
+    {
+      "from": "Meridian.Wpf",
+      "to": "Meridian.Strategies",
+      "reason": "Meridian.Wpf references Meridian.Strategies directly via project reference."
+    },
+    {
+      "from": "Meridian.Wpf",
+      "to": "Meridian.Ui.Services",
+      "reason": "Meridian.Wpf references Meridian.Ui.Services directly via project reference."
+    },
+    {
+      "from": "Meridian.Wpf",
+      "to": "Meridian.Ui.Shared",
+      "reason": "Meridian.Wpf references Meridian.Ui.Shared directly via project reference."
+    },
+    {
+      "from": "Meridian.FSharp",
+      "to": "Meridian.Backtesting.Sdk",
+      "reason": "Meridian.FSharp references Meridian.Backtesting.Sdk directly via project reference."
+    },
+    {
+      "from": "Meridian.FSharp",
+      "to": "Meridian.Contracts",
+      "reason": "Meridian.FSharp references Meridian.Contracts directly via project reference."
+    },
+    {
+      "from": "Meridian.FSharp",
+      "to": "Meridian.Execution.Sdk",
+      "reason": "Meridian.FSharp references Meridian.Execution.Sdk directly via project reference."
+    },
+    {
+      "from": "Meridian.FSharp.DirectLending.Aggregates",
+      "to": "Meridian.Contracts",
+      "reason": "Meridian.FSharp.DirectLending.Aggregates references Meridian.Contracts directly via project reference."
+    },
+    {
+      "from": "Meridian.FSharp.DirectLending.Aggregates",
+      "to": "Meridian.FSharp",
+      "reason": "Meridian.FSharp.DirectLending.Aggregates references Meridian.FSharp directly via project reference."
+    }
+  ],
+  "notes": {
+    "purpose": "Orientation-first navigation dataset for assistants working inside Meridian.",
+    "scope": "High-signal subsystems, contracts, docs, and task routes rather than exhaustive symbol search."
+  }
+}

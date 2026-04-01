@@ -29,6 +29,8 @@ on:
       - 'docs/**'
       - '*.md'
       - 'CLAUDE.md'
+      - '.claude/**'
+      - '.codex/**'
       - '.github/workflows/**'
       - '.github/agents/**'
       - 'build/scripts/docs/**'
@@ -44,6 +46,8 @@ on:
       - 'docs/**'
       - '*.md'
       - 'CLAUDE.md'
+      - '.claude/**'
+      - '.codex/**'
       - '.github/workflows/**'
       - '.github/agents/**'
       - 'build/scripts/docs/**'
@@ -373,6 +377,8 @@ jobs:
               - 'src/Microservices/**'
             ai_files:
               - 'docs/ai/**'
+              - '.claude/**'
+              - '.codex/**'
               - '.github/agents/**'
               - 'CLAUDE.md'
             src:
@@ -579,6 +585,15 @@ jobs:
           python3 build/scripts/docs/generate-structure-docs.py --output docs/generated/repository-structure.md --format markdown
           python3 build/scripts/docs/generate-structure-docs.py --output docs/generated/workflows-overview.md --workflows-only
 
+      - name: Generate AI navigation artifacts
+        run: |
+          set -euo pipefail
+          mkdir -p docs/ai/generated
+          python3 build/scripts/docs/generate-ai-navigation.py \
+            --json-output docs/ai/generated/repo-navigation.json \
+            --markdown-output docs/ai/generated/repo-navigation.md \
+            --summary
+
       # --- Provider docs ---
       - name: Generate provider registry
         if: |
@@ -699,8 +714,11 @@ jobs:
           set -euo pipefail
           required=(
             "build/scripts/docs/generate-structure-docs.py"
+            "build/scripts/docs/generate-ai-navigation.py"
             "build/scripts/docs/update-claude-md.py"
             "docs/generated/repository-structure.md"
+            "docs/ai/generated/repo-navigation.json"
+            "docs/ai/generated/repo-navigation.md"
           )
 
           for path in "${required[@]}"; do
@@ -781,6 +799,8 @@ jobs:
             - docs/generated/repository-structure.md
             - docs/generated/provider-registry.md
             - docs/generated/workflows-overview.md
+            - docs/ai/generated/repo-navigation.json
+            - docs/ai/generated/repo-navigation.md
             - docs/generated/project-context.md
             - docs/generated/adr-index.md
             - docs/generated/configuration-schema.md

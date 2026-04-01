@@ -32,24 +32,43 @@ public sealed class DirectLendingOutboxDispatcher : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            var messages = await _operationsStore.GetPendingOutboxMessagesAsync(_options.OutboxBatchSize, stoppingToken).ConfigureAwait(false);
-            if (messages.Count == 0)
+            try
             {
-                await Task.Delay(TimeSpan.FromSeconds(_options.OutboxPollIntervalSeconds), stoppingToken).ConfigureAwait(false);
-                continue;
-            }
+                var messages = await _operationsStore.GetPendingOutboxMessagesAsync(_options.OutboxBatchSize, stoppingToken).ConfigureAwait(false);
+                if (messages.Count == 0)
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(_options.OutboxPollIntervalSeconds), stoppingToken).ConfigureAwait(false);
+                    continue;
+                }
 
-            foreach (var message in messages)
+                foreach (var message in messages)
+                {
+                    try
+                    {
+                        await ProcessAsync(message, stoppingToken).ConfigureAwait(false);
+                        await _operationsStore.MarkOutboxProcessedAsync(message.OutboxMessageId, stoppingToken).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Direct lending outbox processing failed for {MessageId} ({Topic}).", message.OutboxMessageId, message.Topic);
+                        await _operationsStore.MarkOutboxFailedAsync(message.OutboxMessageId, ex.Message, stoppingToken).ConfigureAwait(false);
+                    }
+                }
+            }
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
+                break;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Direct lending outbox polling failed; retrying in {DelaySeconds} seconds.", _options.OutboxPollIntervalSeconds);
                 try
                 {
-                    await ProcessAsync(message, stoppingToken).ConfigureAwait(false);
-                    await _operationsStore.MarkOutboxProcessedAsync(message.OutboxMessageId, stoppingToken).ConfigureAwait(false);
+                    await Task.Delay(TimeSpan.FromSeconds(_options.OutboxPollIntervalSeconds), stoppingToken).ConfigureAwait(false);
                 }
-                catch (Exception ex)
+                catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
                 {
-                    _logger.LogWarning(ex, "Direct lending outbox processing failed for {MessageId} ({Topic}).", message.OutboxMessageId, message.Topic);
-                    await _operationsStore.MarkOutboxFailedAsync(message.OutboxMessageId, ex.Message, stoppingToken).ConfigureAwait(false);
+                    break;
                 }
             }
         }

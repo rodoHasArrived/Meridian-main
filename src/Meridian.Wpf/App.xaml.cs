@@ -17,10 +17,12 @@ using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
 using Meridian.Ui.Shared.Services;
 using Meridian.Wpf.Contracts;
+using Meridian.Wpf.ViewModels;
 using WpfServices = Meridian.Wpf.Services;
 using Meridian.Wpf.Views;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.DataQuality;
+using Meridian.Ui.Services.Services;
 
 namespace Meridian.Wpf;
 
@@ -212,6 +214,7 @@ public partial class App : System.Windows.Application
 
         // ── Fixture mode service (offline mock data) ────────────────────────
         services.AddSingleton(_ => Meridian.Ui.Services.Services.FixtureDataService.Instance);
+        services.AddSingleton(_ => Meridian.Ui.Services.Services.FixtureModeDetector.Instance);
 
         // ── Core services (by interface + concrete type) ────────────────────
         services.AddSingleton<IConnectionService>(_ => WpfServices.ConnectionService.Instance);
@@ -266,9 +269,11 @@ public partial class App : System.Windows.Application
         services.AddSingleton<WpfServices.ISystemTrayService>(sp => sp.GetRequiredService<WpfServices.SystemTrayService>());
 
         // ── MainWindow ──────────────────────────────────────────────────────
+        services.AddSingleton<Meridian.Wpf.ViewModels.MainWindowViewModel>();
         services.AddSingleton<MainWindow>();
 
         // ── Pages (transient — created per navigation) ──────────────────────
+        services.AddTransient<Meridian.Wpf.ViewModels.MainPageViewModel>();
         services.AddTransient<MainPage>();
         services.AddTransient<DashboardPage>();
         services.AddTransient<WatchlistPage>();

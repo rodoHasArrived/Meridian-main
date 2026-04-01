@@ -1,5 +1,7 @@
 # Operator Runbook
 
+Use [Provider Confidence Baseline](../providers/provider-confidence-baseline.md) as the source of truth for what Meridian validates offline today for Polygon, NYSE, Interactive Brokers, and StockSharp. This runbook focuses on operator workflows and deliberately avoids implying broader provider readiness than the repo evidence supports.
+
 ## Startup
 
 ### Headless / Test Mode
@@ -24,6 +26,7 @@ dotnet run --project src/Meridian/Meridian.csproj -- --watch-config --http-port 
 
 - `--watch-config`: Enables hot reload of `appsettings.json` (handled by `ConfigWatcher`)
 - `--http-port 8080`: Starts HTTP monitoring server on port 8080 (recommended for production monitoring)
+- Building with `IBAPI` enables the official Interactive Brokers vendor path only when the vendor DLL/project reference is present; use the baseline/provider setup docs to distinguish that from simulation or smoke-build modes.
 
 ### UI
 ```bash
@@ -42,7 +45,7 @@ Supported:
 * Add/remove symbols
 * Toggle trades/depth subscriptions
 * Change depth levels
-* Switch between data providers (IB, Alpaca)
+* Switch between configured data providers
 
 ---
 
@@ -230,6 +233,16 @@ Build with IBAPI support:
 dotnet build -p:DefineConstants=IBAPI
 ```
 
+Offline baseline before local vendor checks:
+```bash
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~IBRuntimeGuidanceTests|FullyQualifiedName~IBOrderSampleTests"
+```
+
+Notes:
+- Non-`IBAPI` builds stay on `IBSimulationClient` / runtime-guidance mode rather than real broker connectivity.
+- `EnableIbApiSmoke=true` is compile-only verification, not a live runtime check.
+- Use [`docs/providers/interactive-brokers-setup.md`](../providers/interactive-brokers-setup.md) for the three-mode setup guidance.
+
 ### Alpaca
 
 Set `DataSource` to `Alpaca` in `appsettings.json`:
@@ -270,12 +283,30 @@ Set `DataSource` to `Polygon` in `appsettings.json`:
 ```
 
 Notes:
-- Current implementation is a stub that validates the provider abstraction
-- Emits synthetic heartbeat events to verify connectivity
-- Ready for expansion to full Polygon WebSocket integration
+- Meridian's Polygon client is a real websocket parser for trades, quotes, and aggregates.
+- The repo baseline validates Polygon primarily through committed replay fixtures and targeted parser/subscription tests rather than live vendor connectivity.
+- Use [`docs/providers/provider-confidence-baseline.md`](../providers/provider-confidence-baseline.md) for the exact offline commands and fixture paths.
 
 ### Startup scripts
 If you set `DataSource` to `Alpaca` or `Polygon`, set `USE_IBAPI=false` in the startup scripts (or omit it). IB connectivity checks are skipped when IB is disabled.
+
+### NYSE Streaming
+
+Use NYSE when you need exchange-oriented trade, quote, and depth semantics and you have NYSE credentials plus the required feed entitlements.
+
+Notes:
+- The repo baseline validates NYSE lifecycle behavior offline through `NyseMarketDataClient` / `NYSEDataSource` tests.
+- Live websocket and REST checks still require local credentials and entitlement validation.
+- Treat Level 2 depth as entitlement-dependent.
+
+### StockSharp
+
+Use StockSharp when you need a connector-runtime path that Meridian's native providers do not cover directly.
+
+Notes:
+- The default repo baseline validates stub guidance and representative connector metadata without claiming that every connector is live in the current build.
+- Real StockSharp use requires `EnableStockSharp=true`, the needed connector packages, and any local vendor software that connector depends on.
+- Use [`docs/providers/stocksharp-connectors.md`](../providers/stocksharp-connectors.md) for supported connector types and runtime expectations.
 
 ---
 

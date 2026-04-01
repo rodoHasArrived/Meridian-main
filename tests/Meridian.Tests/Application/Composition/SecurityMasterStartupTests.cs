@@ -15,7 +15,7 @@ public sealed class SecurityMasterStartupTests : IDisposable
     }
 
     [Fact]
-    public void EnsureEnvironmentDefaults_SetsExpectedDefaults_WhenVariablesAreMissing()
+    public void EnsureEnvironmentDefaults_SetsSchemaDefaultWithoutInventingConnectionString()
     {
         Environment.SetEnvironmentVariable(SecurityMasterStartup.ConnectionStringVariable, null);
         Environment.SetEnvironmentVariable(SecurityMasterStartup.SchemaVariable, null);
@@ -23,9 +23,10 @@ public sealed class SecurityMasterStartupTests : IDisposable
         SecurityMasterStartup.EnsureEnvironmentDefaults();
 
         Environment.GetEnvironmentVariable(SecurityMasterStartup.ConnectionStringVariable)
-            .Should().Be(SecurityMasterStartup.DefaultConnectionString);
+            .Should().BeNull();
         Environment.GetEnvironmentVariable(SecurityMasterStartup.SchemaVariable)
             .Should().Be(SecurityMasterStartup.DefaultSchema);
+        SecurityMasterStartup.IsConfigured().Should().BeFalse();
     }
 
     [Fact]
@@ -43,6 +44,7 @@ public sealed class SecurityMasterStartupTests : IDisposable
             .Should().Be(existingConnectionString);
         Environment.GetEnvironmentVariable(SecurityMasterStartup.SchemaVariable)
             .Should().Be(existingSchema);
+        SecurityMasterStartup.IsConfigured().Should().BeTrue();
     }
 
     public void Dispose()

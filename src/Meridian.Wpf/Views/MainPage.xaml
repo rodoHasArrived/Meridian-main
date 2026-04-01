@@ -9,6 +9,7 @@
       d:DesignWidth="1400"
       Background="{DynamicResource ShellWindowBackgroundBrush}"
       Loaded="OnPageLoaded"
+      Unloaded="OnPageUnloaded"
       AutomationProperties.Name="Main"
       AutomationProperties.AutomationId="MainPage">
 
@@ -95,7 +96,7 @@
     </Page.Resources>
 
     <Page.InputBindings>
-        <KeyBinding Key="K" Modifiers="Control" Command="{x:Null}" />
+        <KeyBinding Key="K" Modifiers="Control" Command="{Binding ShowCommandPaletteCommand}" />
     </Page.InputBindings>
 
     <Grid Background="{DynamicResource ShellWindowBackgroundBrush}">
@@ -106,7 +107,7 @@
                    AutomationProperties.Name="Shell Automation State" />
 
         <Grid x:Name="CommandPaletteOverlay"
-              Visibility="Collapsed"
+              Visibility="{Binding CommandPaletteVisibility}"
               Panel.ZIndex="100"
               Background="#80000000"
               AutomationProperties.AutomationId="CommandPaletteOverlay"
@@ -133,14 +134,20 @@
                              BorderThickness="1"
                              AutomationProperties.AutomationId="CommandPaletteInput"
                              AutomationProperties.Name="Command Palette Input"
-                             TextChanged="CommandPaletteTextBox_TextChanged"
-                             KeyDown="CommandPaletteTextBox_KeyDown" />
+                             Text="{Binding CommandPaletteQuery, UpdateSourceTrigger=PropertyChanged}">
+                        <TextBox.InputBindings>
+                            <KeyBinding Key="Escape" Command="{Binding HideCommandPaletteCommand}" />
+                            <KeyBinding Key="Enter" Command="{Binding OpenSelectedCommandPalettePageCommand}" />
+                        </TextBox.InputBindings>
+                    </TextBox>
                     <ListBox x:Name="CommandPaletteResults"
                              MaxHeight="360"
                              Background="Transparent"
                              BorderThickness="0"
                              ItemContainerStyle="{StaticResource ShellNavItemStyle}"
                              SelectionChanged="CommandPaletteResults_SelectionChanged"
+                             ItemsSource="{Binding CommandPalettePages}"
+                             SelectedItem="{Binding SelectedCommandPalettePage, Mode=TwoWay}"
                              AutomationProperties.AutomationId="CommandPaletteResults"
                              AutomationProperties.Name="Command Palette Results"
                              Margin="10,0,10,8" />
@@ -230,10 +237,21 @@
                                 <Button x:Name="ResearchWorkspaceButton"
                                         Grid.Row="0"
                                         Grid.Column="0"
-                                        Tag="research"
-                                        Style="{StaticResource WorkspaceTileStyle}"
-                                        Click="OnWorkspaceButtonClick"
+                                        Command="{Binding SelectWorkspaceCommand}"
+                                        CommandParameter="research"
                                         Margin="0,0,8,8">
+                                    <Button.Style>
+                                        <Style TargetType="Button" BasedOn="{StaticResource WorkspaceTileStyle}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsResearchWorkspaceActive}" Value="True">
+                                                    <Setter Property="Background" Value="{StaticResource ConsoleAccentBlueAlpha10Brush}" />
+                                                    <Setter Property="BorderBrush" Value="{StaticResource InfoColorBrush}" />
+                                                    <Setter Property="BorderThickness" Value="1" />
+                                                    <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
                                     <StackPanel>
                                         <TextBlock Text="Research" FontSize="13" FontWeight="SemiBold" />
                                         <TextBlock Text="Runs, charts, replay"
@@ -247,10 +265,21 @@
                                 <Button x:Name="TradingWorkspaceButton"
                                         Grid.Row="0"
                                         Grid.Column="1"
-                                        Tag="trading"
-                                        Style="{StaticResource WorkspaceTileStyle}"
-                                        Click="OnWorkspaceButtonClick"
+                                        Command="{Binding SelectWorkspaceCommand}"
+                                        CommandParameter="trading"
                                         Margin="8,0,0,8">
+                                    <Button.Style>
+                                        <Style TargetType="Button" BasedOn="{StaticResource WorkspaceTileStyle}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsTradingWorkspaceActive}" Value="True">
+                                                    <Setter Property="Background" Value="{StaticResource ConsoleAccentBlueAlpha10Brush}" />
+                                                    <Setter Property="BorderBrush" Value="{StaticResource InfoColorBrush}" />
+                                                    <Setter Property="BorderThickness" Value="1" />
+                                                    <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
                                     <StackPanel>
                                         <TextBlock Text="Trading" FontSize="13" FontWeight="SemiBold" />
                                         <TextBlock Text="Live monitoring, order flow"
@@ -264,10 +293,21 @@
                                 <Button x:Name="DataOperationsWorkspaceButton"
                                         Grid.Row="1"
                                         Grid.Column="0"
-                                        Tag="data-operations"
-                                        Style="{StaticResource WorkspaceTileStyle}"
-                                        Click="OnWorkspaceButtonClick"
+                                        Command="{Binding SelectWorkspaceCommand}"
+                                        CommandParameter="data-operations"
                                         Margin="0,8,8,0">
+                                    <Button.Style>
+                                        <Style TargetType="Button" BasedOn="{StaticResource WorkspaceTileStyle}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsDataOperationsWorkspaceActive}" Value="True">
+                                                    <Setter Property="Background" Value="{StaticResource ConsoleAccentBlueAlpha10Brush}" />
+                                                    <Setter Property="BorderBrush" Value="{StaticResource InfoColorBrush}" />
+                                                    <Setter Property="BorderThickness" Value="1" />
+                                                    <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
                                     <StackPanel>
                                         <TextBlock Text="Data Operations" FontSize="13" FontWeight="SemiBold" />
                                         <TextBlock Text="Providers, symbols, storage"
@@ -281,10 +321,21 @@
                                 <Button x:Name="GovernanceWorkspaceButton"
                                         Grid.Row="1"
                                         Grid.Column="1"
-                                        Tag="governance"
-                                        Style="{StaticResource WorkspaceTileStyle}"
-                                        Click="OnWorkspaceButtonClick"
+                                        Command="{Binding SelectWorkspaceCommand}"
+                                        CommandParameter="governance"
                                         Margin="8,8,0,0">
+                                    <Button.Style>
+                                        <Style TargetType="Button" BasedOn="{StaticResource WorkspaceTileStyle}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsGovernanceWorkspaceActive}" Value="True">
+                                                    <Setter Property="Background" Value="{StaticResource ConsoleAccentBlueAlpha10Brush}" />
+                                                    <Setter Property="BorderBrush" Value="{StaticResource InfoColorBrush}" />
+                                                    <Setter Property="BorderThickness" Value="1" />
+                                                    <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
                                     <StackPanel>
                                         <TextBlock Text="Governance" FontSize="13" FontWeight="SemiBold" />
                                         <TextBlock Text="Quality, diagnostics, policy"
@@ -331,9 +382,11 @@
                                          Background="Transparent"
                                          BorderThickness="0"
                                          ItemContainerStyle="{StaticResource ShellNavItemStyle}"
+                                         SelectedValuePath="Tag"
+                                         SelectedValue="{Binding CurrentPageTag, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                          AutomationProperties.AutomationId="ResearchNavList"
                                          AutomationProperties.Name="Research Navigation"
-                                         SelectionChanged="OnResearchNavSelectionChanged">
+                                         >
                                     <ListBoxItem Tag="Dashboard"
                                                  AutomationProperties.AutomationId="ResearchNavDashboard"
                                                  AutomationProperties.Name="Dashboard Navigation">
@@ -414,7 +467,8 @@
                                          Background="Transparent"
                                          BorderThickness="0"
                                          ItemContainerStyle="{StaticResource ShellNavItemStyle}"
-                                         SelectionChanged="OnTradingNavSelectionChanged">
+                                         SelectedValuePath="Tag"
+                                         SelectedValue="{Binding CurrentPageTag, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                                     <ListBoxItem Tag="Backtest">
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Text="{StaticResource IconPlay}" Style="{StaticResource ShellNavIconStyle}" />
@@ -460,7 +514,8 @@
                                          Background="Transparent"
                                          BorderThickness="0"
                                          ItemContainerStyle="{StaticResource ShellNavItemStyle}"
-                                         SelectionChanged="OnDataOpsNavSelectionChanged">
+                                         SelectedValuePath="Tag"
+                                         SelectedValue="{Binding CurrentPageTag, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                                     <ListBoxItem Tag="Provider">
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Text="{StaticResource IconNetwork}" Style="{StaticResource ShellNavIconStyle}" />
@@ -505,7 +560,8 @@
                                          Background="Transparent"
                                          BorderThickness="0"
                                          ItemContainerStyle="{StaticResource ShellNavItemStyle}"
-                                         SelectionChanged="OnGovernanceNavSelectionChanged">
+                                         SelectedValuePath="Tag"
+                                         SelectedValue="{Binding CurrentPageTag, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                                     <ListBoxItem Tag="DataQuality">
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Text="{StaticResource IconCheckmark}" Style="{StaticResource ShellNavIconStyle}" />
@@ -552,10 +608,24 @@
                             <TextBlock Text="{Binding RecentPagesHintText}"
                                        Margin="0,6,0,10"
                                        Style="{StaticResource CardDescriptionStyle}" />
-                            <WrapPanel x:Name="RecentPagesPanel" />
+                            <ItemsControl ItemsSource="{Binding RecentPages}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button Style="{StaticResource RecentPageButtonStyle}"
+                                                Command="{Binding DataContext.NavigateToPageCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                                CommandParameter="{Binding PageTag}"
+                                                Content="{Binding DisplayName}" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
                             <TextBlock x:Name="RecentPagesEmptyText"
                                        Text="Recent pages will appear here as you move around the workstation."
-                                       Visibility="Collapsed"
+                                       Visibility="{Binding RecentPagesEmptyVisibility}"
                                        Style="{StaticResource CardDescriptionStyle}" />
                         </StackPanel>
                     </ScrollViewer>
@@ -567,7 +637,7 @@
                         <StackPanel>
                             <Button Style="{StaticResource GhostButtonStyle}"
                                     HorizontalAlignment="Stretch"
-                                    Click="OnCommandPaletteButtonClick"
+                                    Click="OnOpenCommandPaletteClick"
                                     AutomationProperties.AutomationId="OpenCommandPaletteButton"
                                     AutomationProperties.Name="Open Command Palette"
                                     ToolTip="Quick Command (Ctrl+K)">
@@ -583,7 +653,7 @@
                             </Button>
                             <Button Style="{StaticResource GhostButtonStyle}"
                                     HorizontalAlignment="Stretch"
-                                    Click="OnNotificationsButtonClick"
+                                    Command="{Binding OpenNotificationsCommand}"
                                     Margin="0,8,0,0"
                                     ToolTip="Open Notifications">
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
@@ -598,7 +668,7 @@
                             </Button>
                             <Button Style="{StaticResource GhostButtonStyle}"
                                     HorizontalAlignment="Stretch"
-                                    Click="OnHelpButtonClick"
+                                    Command="{Binding OpenHelpCommand}"
                                     Margin="0,8,0,0"
                                     AutomationProperties.AutomationId="HelpSupportButton"
                                     AutomationProperties.Name="Help and Support">
@@ -615,7 +685,7 @@
                             <Button x:Name="TickerStripToggleButton"
                                     Style="{StaticResource GhostButtonStyle}"
                                     HorizontalAlignment="Stretch"
-                                    Click="OnTickerStripToggleClick"
+                                    Command="{Binding ToggleTickerStripCommand}"
                                     Margin="0,8,0,0"
                                     AutomationProperties.AutomationId="TickerStripToggleButton"
                                     AutomationProperties.Name="Toggle Ticker Strip"
@@ -625,7 +695,6 @@
                                                FontSize="13"
                                                VerticalAlignment="Center" />
                                     <TextBlock Text="{Binding TickerStripLabel}"
-                                               Text="Ticker Strip"
                                                Margin="8,0,0,0"
                                                VerticalAlignment="Center" />
                                 </StackPanel>
@@ -647,7 +716,7 @@
                         Margin="0,0,0,12"
                         Padding="16,12"
                         CornerRadius="16"
-                        Visibility="Collapsed"
+                        Visibility="{Binding FixtureModeBannerVisibility}"
                         Panel.ZIndex="10">
                     <Border.Background>
                         <LinearGradientBrush x:Name="FixtureModeBannerBrush" StartPoint="0,0" EndPoint="1,0">
@@ -667,7 +736,7 @@
                                        VerticalAlignment="Center"
                                        Margin="0,0,8,0" />
                             <TextBlock x:Name="FixtureModeLabel"
-                                       Text="FIXTURE MODE - Showing sample data, not connected to live backend"
+                                       Text="{Binding FixtureModeBannerText}"
                                        FontSize="12"
                                        FontWeight="SemiBold"
                                        Foreground="#1A1A2E"
@@ -678,7 +747,7 @@
                                 Style="{StaticResource IconButtonStyle}"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Center"
-                                Click="OnFixtureModeDismiss"
+                                Command="{Binding DismissFixtureModeBannerCommand}"
                                 ToolTip="Dismiss banner">
                             <TextBlock Text="&#x2715;"
                                        FontSize="12"
@@ -704,8 +773,8 @@
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <Button x:Name="BackButton"
                                         Style="{StaticResource IconButtonStyle}"
-                                        Visibility="Collapsed"
-                                        Click="OnBackButtonClick"
+                                        Visibility="{Binding BackButtonVisibility}"
+                                        Command="{Binding GoBackCommand}"
                                         ToolTip="Go Back">
                                     <TextBlock Text="{StaticResource IconBack}"
                                                FontFamily="{StaticResource SymbolThemeFontFamily}"
@@ -716,9 +785,8 @@
                                            VerticalAlignment="Center"
                                            Style="{StaticResource ShellSectionLabelStyle}" />
                             </StackPanel>
-                            <TextBlock Text="{Binding CurrentPageTag}"
+                            <TextBlock Text="{Binding CurrentPageTitle}"
                                        Margin="0,12,0,0"
-                                       Text="Dashboard"
                                        FontFamily="{StaticResource MeridianDisplayFontFamily}"
                                        FontSize="28"
                                        FontWeight="SemiBold"
@@ -727,7 +795,7 @@
                                        AutomationProperties.Name="Current Page Title" />
                             <TextBlock x:Name="PageSubtitleText"
                                        Margin="0,8,0,0"
-                                       Text="High-trust operator view with live posture, alerts, and action shortcuts."
+                                       Text="{Binding CurrentPageSubtitle}"
                                        Style="{StaticResource CardDescriptionStyle}" />
                         </StackPanel>
 
@@ -761,7 +829,7 @@
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                                 <Button Style="{StaticResource GhostButtonStyle}"
                                         ToolTip="Refresh (F5)"
-                                        Click="OnRefreshButtonClick"
+                                        Command="{Binding RefreshPageCommand}"
                                         Margin="0,0,8,0">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="{StaticResource IconRefresh}"
@@ -777,7 +845,7 @@
                                 <Button Style="{StaticResource GhostButtonStyle}"
                                         ToolTip="Notifications"
                                         Margin="0,0,8,0"
-                                        Click="OnNotificationsButtonClick">
+                                        Command="{Binding OpenNotificationsCommand}">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="{StaticResource IconBell}"
                                                    FontFamily="{StaticResource SymbolThemeFontFamily}"
@@ -791,7 +859,7 @@
 
                                 <Button Style="{StaticResource PrimaryButtonStyle}"
                                         ToolTip="Command Palette (Ctrl+K)"
-                                        Click="OnCommandPaletteButtonClick">
+                                        Click="OnOpenCommandPaletteClick">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="{StaticResource IconSearch}"
                                                    FontFamily="{StaticResource SymbolThemeFontFamily}"

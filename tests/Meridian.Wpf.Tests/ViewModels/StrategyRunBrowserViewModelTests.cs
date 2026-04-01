@@ -191,7 +191,7 @@ public sealed class StrategyRunBrowserViewModelTests
             StrategyId: "strat-1",
             StrategyName: "Test Strat",
             Mode: StrategyRunMode.Backtest,
-            Engine: StrategyRunEngine.Internal,
+            Engine: StrategyRunEngine.MeridianNative,
             Status: StrategyRunStatus.Completed,
             StartedAt: DateTimeOffset.UtcNow.AddHours(-1),
             CompletedAt: DateTimeOffset.UtcNow,

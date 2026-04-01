@@ -1,12 +1,22 @@
 ---
 name: meridian-implementation-assurance
+<<<<<<< ours
+<<<<<<< ours
 description: Deliver production-ready Meridian changes with correctness checks, performance guardrails, doc synchronization, and rubric-based self-evaluation. Use when a change must be verified, certified, or rolled out with traceable evidence.
+=======
+description: Implement Meridian changes with built-in correctness checks, performance guardrails, documentation synchronization, and structured self-evaluation. Use when Codex is asked to build or refactor code and must also verify behavior, prevent performance regressions, update existing docs, or add new docs in the correct repository section when none exists.
+>>>>>>> theirs
+=======
+description: Implement Meridian changes with built-in correctness checks, performance guardrails, documentation synchronization, and structured self-evaluation. Use when Codex is asked to build or refactor code and must also verify behavior, prevent performance regressions, update existing docs, or add new docs in the correct repository section when none exists.
+>>>>>>> theirs
 ---
 
 # Meridian Implementation Assurance
 
 Deliver production-ready code changes and leave documentation in a consistent, current state.
 
+<<<<<<< ours
+<<<<<<< ours
 > **GitHub Copilot equivalent:** [`.github/agents/implementation-assurance-agent.md`](../../../.github/agents/implementation-assurance-agent.md)
 > **Claude Code equivalent:** [`.claude/skills/meridian-implementation-assurance/SKILL.md`](../../../.claude/skills/meridian-implementation-assurance/SKILL.md)
 > **Navigation index:** [`docs/ai/skills/README.md`](../../../docs/ai/skills/README.md)
@@ -25,6 +35,14 @@ A task delivered by this skill is complete when **all** of the following are tru
 - **Performance-sensitive paths are annotated**: any hot-path touched by the change includes an explicit note on allocation, async, or buffering risk.
 - **Summary is traceable**: the closing summary links requirement → files changed → validation artifact → doc update.
 
+=======
+Read `../_shared/project-context.md` before coding. Read `references/documentation-routing.md` before writing docs. Read `references/evaluation-harness.md` before finalizing output.
+
+>>>>>>> theirs
+=======
+Read `../_shared/project-context.md` before coding. Read `references/documentation-routing.md` before writing docs. Read `references/evaluation-harness.md` before finalizing output.
+
+>>>>>>> theirs
 ## Workflow
 
 1. Define requested behavior, risks, and acceptance checks.
@@ -35,6 +53,8 @@ A task delivered by this skill is complete when **all** of the following are tru
 6. Run the evaluation harness and report pass/fail with evidence.
 7. Summarize code + docs updates and call out residual risk.
 
+<<<<<<< ours
+<<<<<<< ours
 ## Requirement Type Detection
 
 Use this decision tree before starting any task to pick the right validation lane:
@@ -55,6 +75,10 @@ What are you assuring?
 
 Each lane produces different required artifacts — match the lane to the task before collecting evidence.
 
+=======
+>>>>>>> theirs
+=======
+>>>>>>> theirs
 ## Correctness Guardrails
 
 - Preserve existing contracts, nullability expectations, and cancellation flow.
@@ -86,10 +110,16 @@ Use bundled scripts to keep execution fast and consistent:
   - Example: `python3 scripts/doc_route.py --kind architecture --topic "provider orchestration retries"`
 - `scripts/score_eval.py`: compute rubric totals and generate a standardized eval report.
   - Example: `python3 scripts/score_eval.py --scenario C --scores '{"behavior_correctness":2,"validation_evidence":2,"performance_safety":2,"documentation_sync":1,"traceable_summary":2}'`
+<<<<<<< ours
+<<<<<<< ours
 - `scripts/run_evals.py`: run the deterministic eval harness against `evals/evals.json` cases.
   - Dry-run (validate setup): `python3 scripts/run_evals.py --all --dry-run`
   - Single case: `python3 scripts/run_evals.py --eval-id 1`
   - All cases with regression check: `python3 scripts/run_evals.py --all --summary`
+=======
+>>>>>>> theirs
+=======
+>>>>>>> theirs
 
 Run these scripts from the skill directory or with full paths.
 
