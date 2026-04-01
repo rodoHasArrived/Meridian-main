@@ -51,6 +51,24 @@ public sealed record DiagnosticEntry(string Key, string Value);
 /// <summary>A chart title + data pair shown in the Charts tab.</summary>
 public sealed record PlotViewModel(string Title, PlotRequest Request);
 
+// ── Chart legend ──────────────────────────────────────────────────────────────
+
+/// <summary>
+/// A single colored legend entry displayed below the primary chart.
+/// Exposes a pre-built <see cref="System.Windows.Media.Brush"/> for direct WPF binding.
+/// </summary>
+public sealed class ChartLegendEntry
+{
+    public ChartLegendEntry(string label, System.Windows.Media.Color seriesColor)
+    {
+        Label = label;
+        SeriesColorBrush = new System.Windows.Media.SolidColorBrush(seriesColor);
+    }
+
+    public string Label { get; }
+    public System.Windows.Media.Brush SeriesColorBrush { get; }
+}
+
 // ── Parameters sidebar ────────────────────────────────────────────────────────
 
 /// <summary>
