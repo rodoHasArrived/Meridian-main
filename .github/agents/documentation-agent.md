@@ -739,6 +739,7 @@ Meridian-main
 │   │   └── README.md
 │   ├── operations
 │   │   ├── deployment.md
+│   │   ├── governance-operator-workflow.md
 │   │   ├── high-availability.md
 │   │   ├── msix-packaging.md
 │   │   ├── operator-runbook.md
@@ -828,6 +829,7 @@ Meridian-main
 │   │   ├── link-repair-report.md
 │   │   ├── metrics-dashboard.md
 │   │   ├── production-status.md
+│   │   ├── provider-validation-matrix.md
 │   │   ├── README.md
 │   │   ├── ROADMAP.md
 │   │   ├── ROADMAP_NOW_NEXT_LATER_2026_03_25.md
@@ -2082,6 +2084,7 @@ Meridian-main
 │   │   │   │   ├── hooks
 │   │   │   │   │   └── use-workstation-data.ts
 │   │   │   │   ├── lib
+│   │   │   │   │   ├── api.trading.test.ts
 │   │   │   │   │   ├── api.ts
 │   │   │   │   │   ├── utils.ts
 │   │   │   │   │   └── workspace.ts
@@ -2872,6 +2875,7 @@ Meridian-main
 │   │   │   │   │   │   └── ib_order_trailing_stop_sell_gtc.json
 │   │   │   │   │   └── Polygon
 │   │   │   │   │       ├── polygon-recorded-session-aapl.json
+│   │   │   │   │       ├── polygon-recorded-session-auth-failure-rate-limit.json
 │   │   │   │   │       ├── polygon-recorded-session-gld-cboe-sell.json
 │   │   │   │   │       ├── polygon-recorded-session-msft-edge.json
 │   │   │   │   │       ├── polygon-recorded-session-nvda-multi-batch.json
