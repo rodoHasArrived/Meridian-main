@@ -2461,6 +2461,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── ActivityLogModels.cs
 │       │   ├── AppConfig.cs
 │       │   ├── BackfillModels.cs
+│       │   ├── BlotterModels.cs
 │       │   ├── DashboardModels.cs
 │       │   ├── DataQualityModels.cs
 │       │   ├── LeanModels.cs
@@ -2570,6 +2571,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── OrderBookViewModel.cs
 │       │   ├── PackageManagerViewModel.cs
 │       │   ├── PluginManagementViewModel.cs
+│       │   ├── PositionBlotterViewModel.cs
 │       │   ├── ProviderHealthViewModel.cs
 │       │   ├── ProviderPageModels.cs
 │       │   ├── ProviderViewModel.cs
@@ -2689,6 +2691,8 @@ Use these documents together when planning or implementing new work:
 │           ├── PluginManagementPage.xaml.cs
 │           ├── PortfolioImportPage.xaml
 │           ├── PortfolioImportPage.xaml.cs
+│           ├── PositionBlotterPage.xaml
+│           ├── PositionBlotterPage.xaml.cs
 │           ├── ProviderHealthPage.xaml
 │           ├── ProviderHealthPage.xaml.cs
 │           ├── ProviderPage.xaml
@@ -3284,6 +3288,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-443 directories, 2713 files
+443 directories, 2717 files
 ```
 <!-- readme-tree end -->
