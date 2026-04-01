@@ -66,7 +66,8 @@ Use these documents together when planning or implementing new work:
 │   ├── agents
 │   │   ├── meridian-blueprint.md
 │   │   ├── meridian-cleanup.md
-│   │   └── meridian-docs.md
+│   │   ├── meridian-docs.md
+│   │   └── meridian-navigation.md
 │   ├── settings.json
 │   ├── settings.local.json
 │   └── skills
@@ -182,6 +183,10 @@ Use these documents together when planning or implementing new work:
 │       │   │   └── openai.yaml
 │       │   └── references
 │       │       └── provider-patterns.md
+│       ├── meridian-repo-navigation
+│       │   ├── SKILL.md
+│       │   └── agents
+│       │       └── openai.yaml
 │       ├── meridian-roadmap-strategist
 │       │   ├── SKILL.md
 │       │   ├── agents
@@ -222,6 +227,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── implementation-assurance-agent.md
 │   │   ├── performance-agent.md
 │   │   ├── provider-builder-agent.md
+│   │   ├── repo-navigation-agent.md
 │   │   └── test-writer-agent.md
 │   ├── copilot-instructions.md
 │   ├── dependabot.yml
@@ -572,6 +578,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── add-todos.py
 │       │   ├── ai-docs-maintenance.py
 │       │   ├── create-todo-issues.py
+│       │   ├── generate-ai-navigation.py
 │       │   ├── generate-changelog.py
 │       │   ├── generate-coverage.py
 │       │   ├── generate-dependency-graph.py
@@ -609,6 +616,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── stop-collector.ps1
 │       │   └── stop-collector.sh
 │       ├── tests
+│       │   ├── test_generate_ai_navigation.py
 │       │   └── test_validate_budget.py
 │       ├── validate-tooling-metadata.py
 │       └── validate_budget.py
@@ -689,7 +697,12 @@ Use these documents together when planning or implementing new work:
 │   │   ├── copilot
 │   │   │   ├── ai-sync-workflow.md
 │   │   │   └── instructions.md
+│   │   ├── generated
+│   │   │   ├── repo-navigation.json
+│   │   │   └── repo-navigation.md
 │   │   ├── instructions
+│   │   │   └── README.md
+│   │   ├── navigation
 │   │   │   └── README.md
 │   │   ├── prompts
 │   │   │   └── README.md
@@ -707,7 +720,8 @@ Use these documents together when planning or implementing new work:
 │   │   ├── provider-management.md
 │   │   ├── storage-design.md
 │   │   ├── ui-redesign.md
-│   │   └── why-this-architecture.md
+│   │   ├── why-this-architecture.md
+│   │   └── wpf-shell-mvvm.md
 │   ├── audits
 │   │   ├── AUDIT_REPORT.md
 │   │   ├── BACKTEST_ENGINE_CODE_REVIEW_2026_03_25.md
@@ -995,6 +1009,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── interactive-brokers-free-equity-reference.md
 │   │   ├── interactive-brokers-setup.md
 │   │   ├── provider-comparison.md
+│   │   ├── provider-confidence-baseline.md
 │   │   ├── security-master-guide.md
 │   │   └── stocksharp-connectors.md
 │   ├── reference
@@ -1185,6 +1200,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── OAuthToken.cs
 │   │   │   │   ├── OAuthTokenRefreshService.cs
 │   │   │   │   └── ProviderCredentialResolver.cs
+│   │   │   ├── DefaultConfigPathResolver.cs
 │   │   │   ├── DeploymentContext.cs
 │   │   │   ├── IConfigValidator.cs
 │   │   │   ├── SensitiveValueMasker.cs
@@ -2034,14 +2050,18 @@ Use these documents together when planning or implementing new work:
 │   ├── Meridian.McpServer
 │   │   ├── GlobalUsings.cs
 │   │   ├── Meridian.McpServer.csproj
+│   │   ├── Navigation
+│   │   │   └── RepoNavigationCatalog.cs
 │   │   ├── Program.cs
 │   │   ├── Prompts
 │   │   │   └── MarketDataPrompts.cs
 │   │   ├── Resources
-│   │   │   └── MarketDataResources.cs
+│   │   │   ├── MarketDataResources.cs
+│   │   │   └── RepoNavigationResources.cs
 │   │   └── Tools
 │   │       ├── BackfillTools.cs
 │   │       ├── ProviderTools.cs
+│   │       ├── RepoNavigationTools.cs
 │   │       ├── StorageTools.cs
 │   │       └── SymbolTools.cs
 │   ├── Meridian.ProviderSdk
@@ -2630,6 +2650,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── LeanIntegrationViewModel.cs
 │       │   ├── LiveDataViewerViewModel.cs
 │       │   ├── MainPageViewModel.cs
+│       │   ├── MainWindowViewModel.cs
 │       │   ├── MessagingHubViewModel.cs
 │       │   ├── NotificationCenterViewModel.cs
 │       │   ├── OptionsViewModel.cs
@@ -2867,6 +2888,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Meridian.McpServer.Tests.csproj
 │   │   └── Tools
 │   │       ├── BackfillToolsTests.cs
+│   │       ├── RepoNavigationToolsTests.cs
 │   │       └── StorageToolsTests.cs
 │   ├── Meridian.QuantScript.Tests
 │   │   ├── GlobalUsings.cs
@@ -2918,9 +2940,11 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── SymbolCommandsTests.cs
 │   │   │   │   └── ValidateConfigCommandTests.cs
 │   │   │   ├── Composition
+│   │   │   │   ├── DirectLendingStartupTests.cs
 │   │   │   │   ├── SecurityMasterStartupTests.cs
-│   │   │   │   └── Startup
-│   │   │   │       └── SharedStartupBootstrapperTests.cs
+│   │   │   │   ├── Startup
+│   │   │   │   │   └── SharedStartupBootstrapperTests.cs
+│   │   │   │   └── StorageFeatureRegistrationTests.cs
 │   │   │   ├── Config
 │   │   │   │   ├── ConfigJsonSchemaGeneratorTests.cs
 │   │   │   │   ├── ConfigSchemaIntegrationTests.cs
@@ -2936,6 +2960,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── CredentialStatusTests.cs
 │   │   │   │   ├── CredentialTestingServiceTests.cs
 │   │   │   │   └── OAuthTokenTests.cs
+│   │   │   ├── DirectLending
+│   │   │   │   └── DirectLendingOutboxDispatcherTests.cs
 │   │   │   ├── DirectLendingServiceTests.cs
 │   │   │   ├── Etl
 │   │   │   │   ├── EtlJobDefinitionStoreTests.cs
@@ -2979,26 +3005,28 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── SpscRingBufferTests.cs
 │   │   │   │   └── WalEventPipelineTests.cs
 │   │   │   ├── ReconciliationRunServiceTests.cs
-│   │   │   └── Services
-│   │   │       ├── CanonicalizingPublisherTests.cs
-│   │   │       ├── CliModeResolverTests.cs
-│   │   │       ├── ConditionCodeMapperTests.cs
-│   │   │       ├── ConfigurationPresetsTests.cs
-│   │   │       ├── ConfigurationServiceTests.cs
-│   │   │       ├── CronExpressionParserTests.cs
-│   │   │       ├── DataQuality
-│   │   │       │   ├── AnomalyDetectorTests.cs
-│   │   │       │   ├── CompletenessScoreCalculatorTests.cs
-│   │   │       │   ├── GapAnalyzerTests.cs
-│   │   │       │   └── SequenceErrorTrackerTests.cs
-│   │   │       ├── ErrorCodeMappingTests.cs
-│   │   │       ├── EventCanonicalizerTests.cs
-│   │   │       ├── GracefulShutdownTests.cs
-│   │   │       ├── OperationalSchedulerTests.cs
-│   │   │       ├── OptionsChainServiceTests.cs
-│   │   │       ├── PreflightCheckerTests.cs
-│   │   │       ├── TradingCalendarTests.cs
-│   │   │       └── VenueMicMapperTests.cs
+│   │   │   ├── Services
+│   │   │   │   ├── CanonicalizingPublisherTests.cs
+│   │   │   │   ├── CliModeResolverTests.cs
+│   │   │   │   ├── ConditionCodeMapperTests.cs
+│   │   │   │   ├── ConfigurationPresetsTests.cs
+│   │   │   │   ├── ConfigurationServiceTests.cs
+│   │   │   │   ├── CronExpressionParserTests.cs
+│   │   │   │   ├── DataQuality
+│   │   │   │   │   ├── AnomalyDetectorTests.cs
+│   │   │   │   │   ├── CompletenessScoreCalculatorTests.cs
+│   │   │   │   │   ├── GapAnalyzerTests.cs
+│   │   │   │   │   └── SequenceErrorTrackerTests.cs
+│   │   │   │   ├── ErrorCodeMappingTests.cs
+│   │   │   │   ├── EventCanonicalizerTests.cs
+│   │   │   │   ├── GracefulShutdownTests.cs
+│   │   │   │   ├── OperationalSchedulerTests.cs
+│   │   │   │   ├── OptionsChainServiceTests.cs
+│   │   │   │   ├── PreflightCheckerTests.cs
+│   │   │   │   ├── TradingCalendarTests.cs
+│   │   │   │   └── VenueMicMapperTests.cs
+│   │   │   └── Ui
+│   │   │       └── ConfigStoreTests.cs
 │   │   ├── Architecture
 │   │   │   └── LayerBoundaryTests.cs
 │   │   ├── Domain
@@ -3061,7 +3089,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │       ├── polygon-recorded-session-gld-cboe-sell.json
 │   │   │   │   │       ├── polygon-recorded-session-msft-edge.json
 │   │   │   │   │       ├── polygon-recorded-session-nvda-multi-batch.json
-│   │   │   │   │       └── polygon-recorded-session-spy-etf.json
+│   │   │   │   │       ├── polygon-recorded-session-spy-etf.json
+│   │   │   │   │       └── polygon-recorded-session-tsla-opening-cross.json
 │   │   │   │   ├── FreeHistoricalProviderParsingTests.cs
 │   │   │   │   ├── FreeProviderContractTests.cs
 │   │   │   │   ├── HistoricalDataProviderContractTests.cs
@@ -3312,6 +3341,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── ViewModels
 │   │   │   ├── CashFlowViewModelTests.cs
 │   │   │   ├── DataQualityViewModelCharacterizationTests.cs
+│   │   │   ├── MainShellViewModelTests.cs
 │   │   │   ├── QuantScriptViewModelTests.cs
 │   │   │   ├── RunMatViewModelTests.cs
 │   │   │   └── StrategyRunBrowserViewModelTests.cs
@@ -3327,6 +3357,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-486 directories, 2779 files
+493 directories, 2802 files
 ```
 <!-- readme-tree end -->
