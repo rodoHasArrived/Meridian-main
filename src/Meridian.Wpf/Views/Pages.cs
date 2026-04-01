@@ -72,6 +72,9 @@ public partial class RunLedgerPage : Page { }
 public partial class RunCashFlowPage : Page { }
 public partial class RunRiskPage : Page { }
 
+// Position Blotter page
+public partial class PositionBlotterPage : Page { }
+
 // Security Master workstation page
 public partial class SecurityMasterPage : Page { }
 
