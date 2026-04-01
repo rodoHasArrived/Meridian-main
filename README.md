@@ -361,6 +361,8 @@ Use these documents together when planning or implementing new work:
 ├── LICENSE
 ├── Makefile
 ├── Meridian.sln
+├── PROJECTS
+│   └── Phase_1.5_Preferred_and_Convertible_Equity_Support.md
 ├── README.md
 ├── archive
 │   └── docs
@@ -3288,6 +3290,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-443 directories, 2717 files
+444 directories, 2718 files
 ```
 <!-- readme-tree end -->
