@@ -2464,7 +2464,9 @@ Meridian-main
 │       │   ├── CredentialManagementViewModel.cs
 │       │   ├── DashboardViewModel.cs
 │       │   ├── DataCalendarViewModel.cs
+│       │   ├── DataExportViewModel.cs
 │       │   ├── DataQualityViewModel.cs
+│       │   ├── DataSourcesViewModel.cs
 │       │   ├── DiagnosticsPageViewModel.cs
 │       │   ├── DirectLendingViewModel.cs
 │       │   ├── ExportPresetsViewModel.cs
@@ -2474,6 +2476,7 @@ Meridian-main
 │       │   ├── MainPageViewModel.cs
 │       │   ├── MessagingHubViewModel.cs
 │       │   ├── NotificationCenterViewModel.cs
+│       │   ├── OptionsViewModel.cs
 │       │   ├── OrderBookHeatmapViewModel.cs
 │       │   ├── OrderBookViewModel.cs
 │       │   ├── PackageManagerViewModel.cs
