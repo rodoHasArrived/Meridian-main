@@ -6,6 +6,7 @@ using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Models;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
+using Meridian.Infrastructure.DataSources;
 using Meridian.Infrastructure.Http;
 using Serilog;
 
@@ -21,8 +22,11 @@ namespace Meridian.Infrastructure.Adapters.Alpaca;
 /// - Rate limit tracking with IRateLimitAwareProvider
 /// - Centralized error handling
 /// </summary>
+[DataSource("alpaca", "Alpaca Markets", DataSourceType.Historical, DataSourceCategory.Broker,
+    Priority = 5, Description = "Daily and intraday OHLCV bars with split/dividend adjustments for US equities")]
 [ImplementsAdr("ADR-001", "Alpaca historical data provider implementation")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
+[ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
 [RequiresCredential("ALPACA_KEY_ID",
     EnvironmentVariables = new[] { "ALPACA_KEY_ID", "ALPACA__KEYID" },
     DisplayName = "API Key ID",
@@ -133,6 +137,8 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
 
         try
         {
+            await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
+
             // Quick health check with a known symbol
             var url = $"{BaseUrl}/AAPL/bars?timeframe=1Day&start=2024-01-02&end=2024-01-03&limit=1&feed={_feed}";
             using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
