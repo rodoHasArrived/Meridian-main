@@ -2,15 +2,27 @@ using Meridian.Application.DirectLending;
 using Meridian.Contracts.DirectLending;
 using Meridian.Storage.DirectLending;
 using Npgsql;
+using Testcontainers.PostgreSql;
 
 namespace Meridian.DirectLending.Tests;
 
+/// <summary>
+/// Provides an isolated PostgreSQL database for Direct Lending integration tests.
+/// When <c>MERIDIAN_DIRECT_LENDING_CONNECTION_STRING</c> is set the fixture connects
+/// to that external database; otherwise a Docker container is started automatically
+/// via Testcontainers.  Set <c>MERIDIAN_DISABLE_DOCKER_TESTS=true</c> to skip the
+/// entire suite on runners that have no Docker daemon.
+/// </summary>
 internal sealed class DirectLendingPostgresTestDatabase : IAsyncDisposable
 {
-    private const string DefaultConnectionString = "Host=localhost;Port=5432;Database=postgres;Username=postgres;Password=secret";
+    private const string EnvVar = "MERIDIAN_DIRECT_LENDING_CONNECTION_STRING";
+    private const string DisableDockerEnvVar = "MERIDIAN_DISABLE_DOCKER_TESTS";
 
-    private DirectLendingPostgresTestDatabase(string connectionString, string schema)
+    private readonly PostgreSqlContainer? _container;
+
+    private DirectLendingPostgresTestDatabase(string connectionString, string schema, PostgreSqlContainer? container)
     {
+        _container = container;
         ConnectionString = connectionString;
         Schema = schema;
         Options = new DirectLendingOptions
@@ -44,25 +56,49 @@ internal sealed class DirectLendingPostgresTestDatabase : IAsyncDisposable
 
     public PostgresDirectLendingService Service { get; }
 
+    /// <summary>
+    /// Creates and migrates a test database.  Returns <see langword="null"/> only when
+    /// <c>MERIDIAN_DISABLE_DOCKER_TESTS=true</c> is set, allowing the caller to skip
+    /// the test.  In all other cases a real database (container or external) is used.
+    /// </summary>
     public static async Task<DirectLendingPostgresTestDatabase?> CreateOrSkipAsync()
     {
-        var connectionString = Environment.GetEnvironmentVariable("MERIDIAN_DIRECT_LENDING_CONNECTION_STRING") ?? DefaultConnectionString;
-        try
+        if (string.Equals(
+                Environment.GetEnvironmentVariable(DisableDockerEnvVar),
+                "true",
+                StringComparison.OrdinalIgnoreCase))
         {
-            await using var connection = new NpgsqlConnection(connectionString);
-            await connection.OpenAsync().ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Skipping direct-lending PostgreSQL integration test because the database is unavailable: {ex.Message}");
+            Console.WriteLine(
+                $"Skipping Direct Lending PostgreSQL integration tests because {DisableDockerEnvVar}=true.");
             return null;
         }
 
-        var schema = $"direct_lending_test_{Guid.NewGuid():N}".Substring(0, 33);
-        var database = new DirectLendingPostgresTestDatabase(connectionString, schema);
-        var runner = new DirectLendingMigrationRunner(database.Options);
-        await runner.EnsureMigratedAsync().ConfigureAwait(false);
-        return database;
+        var schema = $"dl_test_{Guid.NewGuid():N}";
+
+        var externalConnectionString = Environment.GetEnvironmentVariable(EnvVar);
+        if (!string.IsNullOrWhiteSpace(externalConnectionString))
+        {
+            var database = new DirectLendingPostgresTestDatabase(externalConnectionString, schema, container: null);
+            var runner = new DirectLendingMigrationRunner(database.Options);
+            await runner.EnsureMigratedAsync().ConfigureAwait(false);
+            return database;
+        }
+
+        // No external connection string — spin up a container.
+        var container = new PostgreSqlBuilder("postgres:16-alpine")
+            .WithDatabase("meridian_dl_test")
+            .WithUsername("testuser")
+            .WithPassword("testpass")
+            .Build();
+
+        await container.StartAsync().ConfigureAwait(false);
+
+        var containerDatabase = new DirectLendingPostgresTestDatabase(
+            container.GetConnectionString(), schema, container);
+
+        var migrationRunner = new DirectLendingMigrationRunner(containerDatabase.Options);
+        await migrationRunner.EnsureMigratedAsync().ConfigureAwait(false);
+        return containerDatabase;
     }
 
     public async Task<long> CountSnapshotsAsync(Guid loanId)
@@ -87,10 +123,17 @@ internal sealed class DirectLendingPostgresTestDatabase : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        await using var connection = new NpgsqlConnection(ConnectionString);
-        await connection.OpenAsync().ConfigureAwait(false);
-        await using var command = connection.CreateCommand();
-        command.CommandText = $"drop schema if exists {Schema} cascade;";
-        await command.ExecuteNonQueryAsync().ConfigureAwait(false);
+        if (_container is not null)
+        {
+            await _container.DisposeAsync().ConfigureAwait(false);
+        }
+        else
+        {
+            await using var connection = new NpgsqlConnection(ConnectionString);
+            await connection.OpenAsync().ConfigureAwait(false);
+            await using var command = connection.CreateCommand();
+            command.CommandText = $"drop schema if exists {Schema} cascade;";
+            await command.ExecuteNonQueryAsync().ConfigureAwait(false);
+        }
     }
 }

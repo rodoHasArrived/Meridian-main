@@ -5,13 +5,18 @@ namespace Meridian.Tests.SecurityMaster;
 [AttributeUsage(AttributeTargets.Method)]
 public sealed class SecurityMasterDatabaseFactAttribute : FactAttribute
 {
-    private const string ConnectionStringVariable = "MERIDIAN_SECURITY_MASTER_CONNECTION_STRING";
+    private const string DisableDockerVariable = "MERIDIAN_DISABLE_DOCKER_TESTS";
 
     public SecurityMasterDatabaseFactAttribute()
     {
-        if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(ConnectionStringVariable)))
+        if (string.Equals(
+                Environment.GetEnvironmentVariable(DisableDockerVariable),
+                "true",
+                StringComparison.OrdinalIgnoreCase))
         {
-            Skip = $"Set {ConnectionStringVariable} to run Security Master PostgreSQL integration tests.";
+            Skip = $"Security Master PostgreSQL tests are skipped because {DisableDockerVariable}=true. " +
+                   "Set MERIDIAN_SECURITY_MASTER_CONNECTION_STRING to an external Postgres instance, " +
+                   "or ensure Docker is available and unset that variable.";
         }
     }
 }
