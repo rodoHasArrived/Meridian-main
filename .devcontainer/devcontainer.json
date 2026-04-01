@@ -1,37 +1,43 @@
 {
-  "name": "Meridian",
-  "image": "mcr.microsoft.com/devcontainers/dotnet:9.0",
+  "name": "Meridian Dev",
 
-  "features": {
-    "ghcr.io/devcontainers/features/node:1": {
-      "version": "20"
-    },
-    "ghcr.io/devcontainers/features/python:1": {
-      "version": "3.12"
-    }
-  },
+  // Use docker-compose so a PostgreSQL service is available automatically.
+  // The compose file lives alongside this file in .devcontainer/.
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "devcontainer",
+  "workspaceFolder": "/workspaces/meridian",
 
-  "containerEnv": {
-    "DOTNET_SKIP_FIRST_TIME_EXPERIENCE": "1",
-    "DOTNET_NOLOGO": "true",
-    "DOTNET_CLI_TELEMETRY_OPTOUT": "1",
-    "DOTNET_GENERATE_ASPNET_CERTIFICATE": "false"
-  },
+  // -------------------------------------------------------------------------
+  // Lifecycle hooks
+  // -------------------------------------------------------------------------
 
+  // Restore NuGet + npm packages when the image is first built (cached layer).
   "onCreateCommand": "dotnet restore Meridian.sln /p:EnableWindowsTargeting=true --verbosity minimal && npm ci --silent",
 
+  // Rebuild and copy sample config when the repo content changes.
   "updateContentCommand": "cp -n config/appsettings.sample.json config/appsettings.json 2>/dev/null || true && mkdir -p data logs && dotnet build Meridian.sln -c Debug --no-restore /p:EnableWindowsTargeting=true --verbosity quiet",
 
-  "postCreateCommand": "./build/scripts/hooks/install-hooks.sh",
+  // Install git hooks and run make doctor so contributors see green checks.
+  "postCreateCommand": "./build/scripts/hooks/install-hooks.sh && make doctor",
 
-  "forwardPorts": [8080],
+  // -------------------------------------------------------------------------
+  // Ports
+  // -------------------------------------------------------------------------
+  "forwardPorts": [8080, 5432],
   "portsAttributes": {
     "8080": {
       "label": "Web Dashboard",
       "onAutoForward": "notify"
+    },
+    "5432": {
+      "label": "PostgreSQL",
+      "onAutoForward": "silent"
     }
   },
 
+  // -------------------------------------------------------------------------
+  // VS Code customisations
+  // -------------------------------------------------------------------------
   "customizations": {
     "vscode": {
       "extensions": [
@@ -42,7 +48,9 @@
         "editorconfig.editorconfig",
         "DavidAnson.vscode-markdownlint",
         "eamodio.gitlens",
-        "GitHub.copilot"
+        "GitHub.copilot",
+        "mtxr.sqltools",
+        "mtxr.sqltools-driver-pg"
       ],
       "settings": {
         "dotnet.defaultSolution": "Meridian.sln",
