@@ -123,6 +123,17 @@ public sealed class ApiKeyRateLimitMiddleware
             return;
         }
 
+        // Allow tests and dev environments to opt out of rate limiting via env var.
+        // This mirrors the behaviour of the ASP.NET Core mutation rate limiter in UiEndpoints.cs.
+        if (string.Equals(
+                Environment.GetEnvironmentVariable("MDC_DISABLE_RATE_LIMIT"),
+                "true",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            await _next(context);
+            return;
+        }
+
         // Partition by API key if present, otherwise by IP
         var partitionKey = context.Items.TryGetValue("ApiKey", out var apiKey) && apiKey is string key
             ? $"key:{key}"

@@ -16,6 +16,7 @@ using Meridian.Storage.Policies;
 using Meridian.Storage.SecurityMaster;
 using Meridian.Storage.Services;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
 namespace Meridian.Application.Composition.Features;
@@ -107,6 +108,16 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<ISecurityMasterImportService, SecurityMasterImportService>();
             services.AddSingleton<ISecurityMasterConflictService, SecurityMasterConflictService>();
         }
+
+        // Register null/stub implementations as fallbacks when Security Master is not configured.
+        // These ensure that ASP.NET Core Minimal API routing initialises correctly (unregistered
+        // service parameters cause startup crashes) while returning sensible empty / error responses.
+        services.TryAddSingleton<Meridian.Application.SecurityMaster.ISecurityMasterQueryService, NullSecurityMasterQueryService>();
+        services.TryAddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService, NullSecurityMasterQueryService>();
+        services.TryAddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterService, NullSecurityMasterService>();
+        services.TryAddSingleton<ISecurityMasterConflictService, NullSecurityMasterConflictService>();
+        services.TryAddSingleton<ISecurityMasterImportService, NullSecurityMasterImportService>();
+        services.TryAddSingleton<ISecurityMasterEventStore, NullSecurityMasterEventStore>();
 
         if (DirectLendingStartup.IsConfigured())
         {
