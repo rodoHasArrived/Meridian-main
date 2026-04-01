@@ -34,9 +34,9 @@ Total items: **205**
 | `.github/agents/cleanup-agent.md` | 393 | `TODO` | ❌ | - `// TODO:` or `// FIXME:` comments that describe genuine open work items — flag |
 | `.github/agents/cleanup-agent.md` | 436 | `NOTE` | ❌ | - **No new features** — cleanup only; if something is missing, note it but do not add it. |
 | `.github/agents/cleanup-agent.md` | 438 | `NOTE` | ❌ | - **No ViewModel extraction** — flag it as a note; full MVVM refactors belong in code review. |
-| `.github/agents/documentation-agent.md` | 375 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
-| `.github/agents/documentation-agent.md` | 832 | `TODO` | ❌ | │   │   └── TODO.md |
-| `.github/agents/documentation-agent.md` | 3260 | `TODO` | ❌ | - `TODO.md` - Pending work items |
+| `.github/agents/documentation-agent.md` | 381 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
+| `.github/agents/documentation-agent.md` | 847 | `TODO` | ❌ | │   │   └── TODO.md |
+| `.github/agents/documentation-agent.md` | 3290 | `TODO` | ❌ | - `TODO.md` - Pending work items |
 | `.github/agents/implementation-assurance-agent.md` | 61 | `NOTE` | ❌ | - **Performance-sensitive paths are noted:** any hot-path touched by the change includes an explicit note on allocation, async, or buffering risk. |
 | `.github/agents/performance-agent.md` | 248 | `NOTE` | ❌ | - **No new features** — if a performance win requires a new feature, note it but defer it. |
 | `.github/agents/provider-builder-agent.md` | 81 | `TODO` | ❌ | Read the full template before writing any code. Templates contain inline `// TODO:` comments |
@@ -61,8 +61,8 @@ Total items: **205**
 | `.github/workflows/test-matrix.yml` | 5 | `NOTE` | ❌ | # NOTE: This workflow intentionally does NOT use reusable-dotnet-build.yml because it needs |
 | `.github/workflows/validate-workflows.yml` | 233 | `NOTE` | ❌ | echo "Note: Ensure cron schedules are distributed to avoid rate limits" |
 | `CLAUDE.md` | 100 | `NOTE` | ❌ | **Note:** Always use `/p:EnableWindowsTargeting=true` on non-Windows systems to avoid NETSDK1100 errors. |
-| `CLAUDE.md` | 428 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
-| `CLAUDE.md` | 885 | `TODO` | ❌ | │   │   └── TODO.md |
+| `CLAUDE.md` | 434 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
+| `CLAUDE.md` | 900 | `TODO` | ❌ | │   │   └── TODO.md |
 | `README.md` | 580 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
 | `README.md` | 1036 | `TODO` | ❌ | │   │   ├── TODO.md |
 | `benchmarks/run-bottleneck-benchmarks.sh` | 111 | `NOTE` | ❌ | # Note: --filter is intentionally not added here; each phase below supplies its own |
@@ -78,9 +78,9 @@ Total items: **205**
 | `docs/ai/claude/CLAUDE.structure.md` | 160 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
 | `docs/ai/claude/CLAUDE.structure.md` | 473 | `TODO` | ❌ | │   │   └── TODO.md |
 | `docs/ai/copilot/instructions.md` | 5 | `NOTE` | ❌ | > **Note:** For comprehensive project context, see [CLAUDE.md](https://github.com/rodoHasArrived/Meridian/blob/main/CLAUDE.md) in the repository root. For the master AI resource index, see [docs/ai/README.md](https://github.com/rodoHasArrived/Meridian/blob/main/docs/ai/README.md). |
-| `docs/ai/copilot/instructions.md` | 413 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
-| `docs/ai/copilot/instructions.md` | 870 | `TODO` | ❌ | │   │   └── TODO.md |
-| `docs/ai/copilot/instructions.md` | 3206 | `TODO` | ❌ | - `documentation.yml` — Doc generation, TODO scanning, AI error intake |
+| `docs/ai/copilot/instructions.md` | 419 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
+| `docs/ai/copilot/instructions.md` | 885 | `TODO` | ❌ | │   │   └── TODO.md |
+| `docs/ai/copilot/instructions.md` | 3236 | `TODO` | ❌ | - `documentation.yml` — Doc generation, TODO scanning, AI error intake |
 | `docs/architecture/deterministic-canonicalization.md` | 365 | `NOTE` | ❌ | Note: Polygon does not define buyer-initiated codes. Only ~5% of trades carry definitive aggressor inference. The canonicalization layer preserves `Unknown` as a valid canonical value rather than attempting inference. |
 | `docs/architecture/domains.md` | 111 | `NOTE` | ❌ | > Note: not every enum member is currently emitted by the three core collectors (`TradeDataCollector`, `MarketDepthCollector`, `QuoteCollector`); several are used by adapters, backfill paths, or the `L3OrderBookCollector`. |
 | `docs/architecture/wpf-shell-mvvm.md` | 5 | `NOTE` | ❌ | This note defines the MVVM boundary for the Meridian desktop shell so workstation state, navigation, and operator actions stay testable and do not drift back into WPF code-behind. |
