@@ -250,7 +250,9 @@ Use these documents together when planning or implementing new work:
 │           └── references
 │               └── test-patterns.md
 ├── .devcontainer
-│   └── devcontainer.json
+│   ├── Dockerfile
+│   ├── devcontainer.json
+│   └── docker-compose.yml
 ├── .editorconfig
 ├── .flake8
 ├── .gitattributes
@@ -841,7 +843,8 @@ Use these documents together when planning or implementing new work:
 │   │   ├── repository-structure.md
 │   │   └── workflows-overview.md
 │   ├── getting-started
-│   │   └── README.md
+│   │   ├── README.md
+│   │   └── pilot-operator-quickstart.md
 │   ├── integrations
 │   │   ├── README.md
 │   │   ├── fsharp-integration.md
@@ -855,6 +858,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── operator-runbook.md
 │   │   ├── performance-tuning.md
 │   │   ├── portable-data-packager.md
+│   │   ├── preflight-checklist.md
 │   │   └── service-level-objectives.md
 │   ├── plans
 │   │   ├── README.md
@@ -941,6 +945,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── link-repair-report.md
 │   │   ├── metrics-dashboard.md
 │   │   ├── production-status.md
+│   │   ├── provider-validation-matrix.md
 │   │   └── rules-report.md
 │   └── toc.yml
 ├── environment.yml
@@ -2200,6 +2205,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── hooks
 │   │   │   │   │   └── use-workstation-data.ts
 │   │   │   │   ├── lib
+│   │   │   │   │   ├── api.trading.test.ts
 │   │   │   │   │   ├── api.ts
 │   │   │   │   │   ├── utils.ts
 │   │   │   │   │   └── workspace.ts
@@ -2526,6 +2532,7 @@ Use these documents together when planning or implementing new work:
 │       │   └── ThemeTypography.xaml
 │       ├── ViewModels
 │       │   ├── ActivityLogViewModel.cs
+│       │   ├── AddProviderWizardViewModel.cs
 │       │   ├── AdminMaintenanceViewModel.cs
 │       │   ├── AdvancedAnalyticsViewModel.cs
 │       │   ├── AgentViewModel.cs
@@ -2871,8 +2878,10 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── Indicators
 │   │   │   │   └── TechnicalIndicatorServiceTests.cs
 │   │   │   ├── Monitoring
+│   │   │   │   ├── AlertDispatcherTests.cs
 │   │   │   │   ├── BackpressureAlertServiceTests.cs
 │   │   │   │   ├── BadTickFilterTests.cs
+│   │   │   │   ├── ClockSkewEstimatorTests.cs
 │   │   │   │   ├── DataQuality
 │   │   │   │   │   ├── DataFreshnessSlaMonitorTests.cs
 │   │   │   │   │   ├── DataQualityTests.cs
@@ -2987,6 +2996,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   │   └── ib_order_trailing_stop_sell_gtc.json
 │   │   │   │   │   └── Polygon
 │   │   │   │   │       ├── polygon-recorded-session-aapl.json
+│   │   │   │   │       ├── polygon-recorded-session-auth-failure-rate-limit.json
 │   │   │   │   │       ├── polygon-recorded-session-gld-cboe-sell.json
 │   │   │   │   │       ├── polygon-recorded-session-msft-edge.json
 │   │   │   │   │       ├── polygon-recorded-session-nvda-multi-batch.json
@@ -3075,7 +3085,10 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── ExceptionTypeTests.cs
 │   │   │   └── ProviderModuleLoaderTests.cs
 │   │   ├── Risk
-│   │   │   └── CompositeRiskValidatorTests.cs
+│   │   │   ├── CompositeRiskValidatorTests.cs
+│   │   │   ├── DrawdownCircuitBreakerTests.cs
+│   │   │   ├── OrderRateThrottleTests.cs
+│   │   │   └── PositionLimitRuleTests.cs
 │   │   ├── SecurityMaster
 │   │   │   ├── SecurityEnrichmentTests.cs
 │   │   │   ├── SecurityMasterAggregateRebuilderTests.cs
@@ -3137,6 +3150,12 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── Golden
 │   │   │       └── alpaca-quote-pipeline.json
 │   │   ├── TestHelpers
+│   │   │   ├── Builders
+│   │   │   │   ├── BacktestRequestBuilder.cs
+│   │   │   │   ├── HistoricalBarBuilder.cs
+│   │   │   │   ├── MarketEventBuilder.cs
+│   │   │   │   ├── SecurityBuilder.cs
+│   │   │   │   └── TradeBuilder.cs
 │   │   │   ├── PolygonStubClient.cs
 │   │   │   ├── StubHttpMessageHandler.cs
 │   │   │   └── TestMarketEventPublisher.cs
@@ -3258,6 +3277,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-441 directories, 2689 files
+442 directories, 2707 files
 ```
 <!-- readme-tree end -->

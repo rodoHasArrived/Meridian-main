@@ -1,9 +1,15 @@
 {
   "description": "Recorded-style Polygon stock feed session for AAPL covering status, trade, quote, second aggregate, minute aggregate, and ignored frames.",
   "subscriptions": {
-    "trades": ["AAPL"],
-    "quotes": ["AAPL"],
-    "aggregates": ["AAPL"]
+    "trades": [
+      "AAPL"
+    ],
+    "quotes": [
+      "AAPL"
+    ],
+    "aggregates": [
+      "AAPL"
+    ]
   },
   "expected": {
     "trade": {
@@ -14,7 +20,10 @@
       "streamId": "71620539",
       "venue": "NASDAQ",
       "aggressor": "Unknown",
-      "rawConditions": ["12", "37"]
+      "rawConditions": [
+        "12",
+        "37"
+      ]
     },
     "quote": {
       "symbol": "AAPL",
@@ -29,7 +38,7 @@
       {
         "timeframe": "Second",
         "symbol": "AAPL",
-        "open": 213.40,
+        "open": 213.4,
         "high": 213.47,
         "low": 213.39,
         "close": 213.45,
@@ -42,9 +51,9 @@
       {
         "timeframe": "Minute",
         "symbol": "AAPL",
-        "open": 213.10,
-        "high": 213.50,
-        "low": 213.00,
+        "open": 213.1,
+        "high": 213.5,
+        "low": 213.0,
         "close": 213.45,
         "volume": 58000,
         "vwap": 213.28,
@@ -53,7 +62,12 @@
         "endTimeMs": 1742481000000
       }
     ],
-    "expectedIntegrityEvents": 0
+    "expectedIntegrityEvents": 0,
+    "statusMarkers": [
+      "connected",
+      "auth_success",
+      "success"
+    ]
   },
   "messages": [
     "[{\"ev\":\"status\",\"status\":\"connected\",\"message\":\"Connected Successfully\"}]",

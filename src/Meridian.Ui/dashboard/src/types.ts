@@ -88,6 +88,31 @@ export interface PaperSessionSummary {
   createdAt: string;
 }
 
+export interface PaperSessionDetail extends PaperSessionSummary {
+  closedAt: string | null;
+}
+
+export interface ReplayFileRecord {
+  path: string;
+  name: string;
+  symbol: string | null;
+  eventType: string | null;
+  sizeBytes: number;
+  isCompressed: boolean;
+  lastModified: string;
+}
+
+export interface ReplayStatus {
+  sessionId: string;
+  filePath: string;
+  status: string;
+  speedMultiplier: number;
+  eventsProcessed: number;
+  totalEvents: number;
+  progressPercent: number;
+  startedAt: string;
+}
+
 export interface OrderSubmitRequest {
   symbol: string;
   side: "Buy" | "Sell";

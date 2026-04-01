@@ -236,6 +236,66 @@ public sealed record StrategyRunComparison(
     bool HasLedger = false,
     bool HasAuditTrail = false);
 
+/// <summary>Filter options used for workstation run history retrieval.</summary>
+public sealed record StrategyRunHistoryQuery(
+    IReadOnlyList<StrategyRunMode>? Modes = null,
+    StrategyRunStatus? Status = null,
+    string? StrategyId = null,
+    int Limit = 50);
+
+/// <summary>Merged run timeline entry used by research and trading surfaces.</summary>
+public sealed record StrategyRunTimelineEntry(
+    string RunId,
+    string StrategyId,
+    string StrategyName,
+    StrategyRunMode Mode,
+    StrategyRunStatus Status,
+    DateTimeOffset StartedAt,
+    DateTimeOffset? CompletedAt,
+    DateTimeOffset LastUpdatedAt,
+    decimal? NetPnl,
+    decimal? TotalReturn,
+    int FillCount);
+/// <summary>
+/// Normalized cross-mode run comparison DTO that includes the full set of
+/// <c>BacktestMetrics</c> fields plus equity curve data and parentage chain info.
+/// Returned by <c>GET /api/strategies/runs/compare?ids=a,b</c>.
+/// </summary>
+public sealed record RunComparisonDto(
+    string RunId,
+    string? ParentRunId,
+    string StrategyName,
+    StrategyRunMode Mode,
+    StrategyRunEngine Engine,
+    StrategyRunStatus Status,
+    DateTimeOffset StartedAt,
+    DateTimeOffset? CompletedAt,
+    decimal? NetPnl,
+    decimal? TotalReturn,
+    decimal? AnnualizedReturn,
+    decimal? FinalEquity,
+    double? SharpeRatio,
+    double? SortinoRatio,
+    double? CalmarRatio,
+    decimal? MaxDrawdown,
+    decimal? MaxDrawdownPercent,
+    int MaxDrawdownRecoveryDays,
+    double? ProfitFactor,
+    double? WinRate,
+    int TotalTrades,
+    int WinningTrades,
+    int LosingTrades,
+    int FillCount,
+    decimal TotalCommissions,
+    decimal TotalMarginInterest,
+    decimal TotalShortRebates,
+    double? Xirr,
+    EquityCurveSummary? EquityCurve,
+    DateTimeOffset LastUpdatedAt,
+    StrategyRunPromotionState PromotionState = StrategyRunPromotionState.None,
+    bool HasLedger = false,
+    bool HasAuditTrail = false);
+
 // ---------------------------------------------------------------------------
 // Track C drill-in models
 // ---------------------------------------------------------------------------
@@ -275,6 +335,7 @@ public sealed record RunFillEntry(
 /// <summary>Trade-level fill list for one run.</summary>
 public sealed record RunFillSummary(
     string RunId,
+    StrategyRunMode Mode,
     int TotalFills,
     decimal TotalCommissions,
     IReadOnlyList<RunFillEntry> Fills);
@@ -292,6 +353,7 @@ public sealed record SymbolAttributionEntry(
 /// <summary>Complete attribution breakdown for one run.</summary>
 public sealed record RunAttributionSummary(
     string RunId,
+    StrategyRunMode Mode,
     decimal TotalRealizedPnl,
     decimal TotalUnrealizedPnl,
     decimal TotalCommissions,

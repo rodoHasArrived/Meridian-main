@@ -274,6 +274,32 @@ Minimum IB server version at runtime:       70   (TWS/Gateway 966+)
 Maximum tested IB server version:          178   (TWS 10.19)
 ```
 
+## Build and Runtime Prerequisites (Exact Checklist)
+
+Use this checklist before marking IB as runtime-validated.
+
+| Requirement | Required Value | Verification |
+|---|---|---|
+| Compile constant | `DefineConstants=IBAPI` | Build output includes `IBAPI` conditional path compilation. |
+| Smoke path (optional but recommended) | `EnableIbApiSmoke=true` | `scripts/dev/build-ibapi-smoke.ps1` completes successfully. |
+| Vendor API/DLL baseline | `IBApi`/`CSharpAPI` version `178+` | Inspect local installed vendor assembly metadata. |
+| Runtime server baseline | API server version `>= 70` | Startup logs from `IBApiVersionValidator.ValidateServerVersion`. |
+| Runtime tested ceiling | server version `<= 178`, or warning explicitly accepted | Startup warning captured if above tested max. |
+| Startup check execution | `EnhancedIBConnectionManager.ConnectInternalAsync` calls version validator | Confirm log path runs during real startup. |
+| Broker endpoint | TWS/Gateway reachable (`127.0.0.1:7497` paper or `:7496` live) | Connection handshake succeeds. |
+
+### Required Validation Commands
+
+```powershell
+dotnet build src/Meridian.Infrastructure/Meridian.Infrastructure.csproj `
+  -c Release `
+  -p:EnableWindowsTargeting=true `
+  -p:DefineConstants=IBAPI
+
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj `
+  --filter "FullyQualifiedName~IBRuntimeGuidanceTests|FullyQualifiedName~IBSimulationClientContractTests|FullyQualifiedName~IBOrderSampleTests"
+```
+
 
 
 ### Build Errors

@@ -9,6 +9,7 @@ import type {
   OrderResult,
   OrderSubmitRequest,
   PaperSessionSummary,
+  PaperSessionDetail,
   PromotionDecisionResult,
   PromotionEvaluationResult,
   PromotionRecord,
@@ -26,6 +27,8 @@ import type {
   SecurityMasterConflict,
   SecurityMasterEntry,
   SessionInfo,
+  ReplayFileRecord,
+  ReplayStatus,
   TradingActionResult,
   TradingWorkspaceResponse
 } from "@/types";
@@ -144,6 +147,10 @@ export function closePaperSession(sessionId: string) {
   return postJson<void>(`/api/execution/sessions/${encodeURIComponent(sessionId)}/close`);
 }
 
+export function getPaperSessionDetail(sessionId: string) {
+  return getJson<PaperSessionDetail>(`/api/execution/sessions/${encodeURIComponent(sessionId)}`);
+}
+
 // --- Strategy lifecycle ---
 
 export function pauseStrategy(strategyId: string) {
@@ -156,6 +163,44 @@ export function stopStrategy(strategyId: string) {
   return postJson<{ strategyId: string; action: string; success: boolean; reason: string | null }>(
     `/api/strategies/${encodeURIComponent(strategyId)}/stop`
   );
+}
+
+// --- Replay controls ---
+
+export function getReplayFiles(symbol?: string) {
+  const params = symbol ? `?symbol=${encodeURIComponent(symbol)}` : "";
+  return getJson<{ files: ReplayFileRecord[]; total: number; timestamp: string }>(`/api/replay/files${params}`);
+}
+
+export function startReplay(filePath: string, speedMultiplier = 1) {
+  return postJson<{ sessionId: string; filePath: string; status: string; speedMultiplier: number }>(
+    "/api/replay/start",
+    { filePath, speedMultiplier }
+  );
+}
+
+export function pauseReplay(sessionId: string) {
+  return postJson<{ sessionId: string; status: string; eventsProcessed: number }>(`/api/replay/${encodeURIComponent(sessionId)}/pause`);
+}
+
+export function resumeReplay(sessionId: string) {
+  return postJson<{ sessionId: string; status: string; eventsProcessed: number }>(`/api/replay/${encodeURIComponent(sessionId)}/resume`);
+}
+
+export function stopReplay(sessionId: string) {
+  return postJson<{ sessionId: string; status: string; eventsProcessed: number }>(`/api/replay/${encodeURIComponent(sessionId)}/stop`);
+}
+
+export function seekReplay(sessionId: string, positionMs: number) {
+  return postJson<{ sessionId: string; positionMs: number; status: string }>(`/api/replay/${encodeURIComponent(sessionId)}/seek`, { positionMs });
+}
+
+export function setReplaySpeed(sessionId: string, speedMultiplier: number) {
+  return postJson<{ sessionId: string; speedMultiplier: number; status: string }>(`/api/replay/${encodeURIComponent(sessionId)}/speed`, { speedMultiplier });
+}
+
+export function getReplayStatus(sessionId: string) {
+  return getJson<ReplayStatus>(`/api/replay/${encodeURIComponent(sessionId)}/status`);
 }
 
 // --- Strategy runs ---

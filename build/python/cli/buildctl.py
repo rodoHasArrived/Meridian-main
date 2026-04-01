@@ -29,6 +29,7 @@ import os
 import platform
 import re
 import shutil
+import socket
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -98,6 +99,28 @@ _REQUIRED_DIRS = [
 ]
 
 _DOTNET_MIN = (9, 0)
+
+# ---------------------------------------------------------------------------
+# Provider environment variable registry
+# Each tuple: (env_var_name, provider_label, affected_capability)
+# ---------------------------------------------------------------------------
+
+_PROVIDER_ENV_VARS: list[tuple[str, str, str]] = [
+    ("ALPACA_KEY_ID",         "Alpaca",          "streaming and historical data"),
+    ("ALPACA_SECRET_KEY",     "Alpaca",          "streaming and historical data"),
+    ("POLYGON_API_KEY",       "Polygon",         "streaming and historical tests"),
+    ("NYSE_API_KEY",          "NYSE",            "TAQ streaming"),
+    ("TIINGO_API_TOKEN",      "Tiingo",          "historical data"),
+    ("FINNHUB_API_KEY",       "Finnhub",         "historical data and symbol search"),
+    ("ALPHA_VANTAGE_API_KEY", "Alpha Vantage",   "historical data"),
+    ("NASDAQ_API_KEY",        "Nasdaq Data Link","historical data"),
+]
+
+_POSTGRES_DEFAULT_HOST = "localhost"
+_POSTGRES_DEFAULT_PORT = 5432
+_POSTGRES_DOCKER_FIX = (
+    "docker run --rm -p 5432:5432 -e POSTGRES_PASSWORD=secret postgres:16-alpine"
+)
 
 
 def _check_dotnet() -> tuple[bool, bool, str]:
@@ -181,6 +204,216 @@ def _check_solution_restore(quick: bool) -> tuple[bool, bool, str]:
     return False, False, f"dotnet restore failed: {result.stderr.strip()[:200]}"
 
 
+def _check_docker_daemon() -> tuple[bool, bool, str, str | None]:
+    """Check that Docker is installed AND its daemon is reachable."""
+    if not _have("docker"):
+        return (
+            False,
+            True,
+            "Docker not installed (optional — needed for Testcontainers and PostgreSQL)",
+            "Install Docker Desktop or Engine from https://docs.docker.com/get-docker/",
+        )
+    result = _run(["docker", "info"])
+    if result.returncode == 0:
+        ver_result = _run(["docker", "--version"])
+        ver = (
+            ver_result.stdout.strip().splitlines()[0]
+            if ver_result.returncode == 0
+            else "unknown"
+        )
+        return True, False, f"daemon reachable ({ver})", None
+    return (
+        False,
+        True,
+        "Docker installed but daemon not running",
+        "Start Docker Desktop, or run: sudo systemctl start docker",
+    )
+
+
+def _check_postgres() -> tuple[bool, bool, str, str | None]:
+    """Attempt a TCP connection to the PostgreSQL port and report fix hints."""
+    conn_str = os.getenv("MERIDIAN_SECURITY_MASTER_CONNECTION_STRING", "")
+    host = _POSTGRES_DEFAULT_HOST
+    port = _POSTGRES_DEFAULT_PORT
+
+    if conn_str:
+        host_m = re.search(r"[Hh]ost=([^;, ]+)", conn_str)
+        port_m = re.search(r"[Pp]ort=(\d+)", conn_str)
+        if host_m:
+            host = host_m.group(1)
+        if port_m:
+            port = int(port_m.group(1))
+
+    try:
+        with socket.create_connection((host, port), timeout=1.0):
+            pass
+        label = f"PostgreSQL on {host}:{port}"
+        return True, False, f"{label} — reachable", None
+    except (socket.timeout, ConnectionRefusedError, OSError):
+        label = f"PostgreSQL on {host}:{port}"
+        if conn_str:
+            fix = "Check MERIDIAN_SECURITY_MASTER_CONNECTION_STRING or start your PostgreSQL server"
+        else:
+            fix = _POSTGRES_DOCKER_FIX
+        return (
+            False,
+            True,
+            (
+                f"{label} — UNAVAILABLE"
+                " (set MERIDIAN_SECURITY_MASTER_CONNECTION_STRING or start Docker)"
+            ),
+            fix,
+        )
+
+
+def _check_env_vars() -> list[tuple[str, bool, bool, str, str | None]]:
+    """Return a check row per provider credential env var."""
+    results: list[tuple[str, bool, bool, str, str | None]] = []
+    for var, provider, purpose in _PROVIDER_ENV_VARS:
+        value = os.getenv(var, "")
+        if value:
+            if len(value) > 4:
+                masked = f"{value[:2]}***{value[-1]}"
+            else:
+                masked = "****"
+            results.append((var, True, False, f"set ({masked})", None))
+        else:
+            fix = f"export {var}=<your-key>  # enables {provider} {purpose}"
+            results.append(
+                (
+                    var,
+                    False,
+                    True,
+                    "not set — related tests will skip",
+                    fix,
+                )
+            )
+    return results
+
+
+def _check_global_json() -> tuple[bool, bool, str, str | None]:
+    """Verify the installed .NET SDK satisfies the global.json version constraint."""
+    global_json = REPO_ROOT / "global.json"
+    if not global_json.exists():
+        return True, False, "global.json not found (no constraint to verify)", None
+
+    try:
+        data = json.loads(global_json.read_text(encoding="utf-8"))
+        required = data.get("sdk", {}).get("version", "")
+        roll_forward = data.get("sdk", {}).get("rollForward", "latestMinor")
+    except (json.JSONDecodeError, OSError) as exc:
+        return False, True, f"global.json could not be parsed: {exc}", None
+
+    if not required:
+        return True, False, "global.json: no SDK version constraint", None
+
+    result = _run(["dotnet", "--version"])
+    if result.returncode != 0:
+        return False, False, "dotnet SDK not found", "Install from https://dot.net/download"
+
+    installed = result.stdout.strip()
+
+    try:
+        req_parts = [int(x) for x in required.split(".")]
+        ins_parts = [int(x) for x in installed.split(".")]
+        # For latestMinor / latestPatch / minor / patch: major must match,
+        # installed must be >= required
+        if roll_forward in ("latestMinor", "latestPatch", "minor", "patch", "feature"):
+            ok = ins_parts[0] == req_parts[0] and ins_parts >= req_parts
+        elif roll_forward == "disable":
+            ok = ins_parts == req_parts
+        else:
+            # "latestMajor" or unknown — only require installed >= required
+            ok = ins_parts >= req_parts
+    except (ValueError, IndexError):
+        return (
+            True,
+            True,
+            f"global.json constraint could not be verified (installed {installed})",
+            None,
+        )
+
+    if ok:
+        return (
+            True,
+            False,
+            f"satisfied — requires {required} (rollForward={roll_forward}), installed {installed}",
+            None,
+        )
+    return (
+        False,
+        True,
+        f"requires {required} (rollForward={roll_forward}), installed {installed}",
+        f"Install .NET SDK {required} from https://dot.net/download",
+    )
+
+
+def _check_packages_props() -> tuple[bool, bool, str, str | None]:
+    """Verify every PackageVersion entry in Directory.Packages.props has a Version."""
+    props = REPO_ROOT / "Directory.Packages.props"
+    if not props.exists():
+        return False, False, "Directory.Packages.props not found", None
+
+    try:
+        content = props.read_text(encoding="utf-8")
+    except OSError as exc:
+        return False, True, f"could not read Directory.Packages.props: {exc}", None
+
+    # Entries that have Include= but no Version=
+    no_version = re.findall(
+        r'<PackageVersion\s+Include="([^"]+)"(?![^>]*Version=)[^>]*/?>',
+        content,
+    )
+    if no_version:
+        sample = ", ".join(no_version[:3])
+        return (
+            False,
+            True,
+            f"PackageVersion entries without Version attribute: {sample}",
+            "Add Version=\"x.y.z\" to each flagged PackageVersion in Directory.Packages.props",
+        )
+
+    total = len(re.findall(r'<PackageVersion\s+Include=', content))
+    return True, False, f"all {total} package versions present", None
+
+
+def _check_native_tools() -> list[tuple[str, bool, bool, str, str | None]]:
+    """Check CMake and a C++ compiler (optional — needed for CppTrader)."""
+    results: list[tuple[str, bool, bool, str, str | None]] = []
+
+    if _have("cmake"):
+        ver_result = _run(["cmake", "--version"])
+        ver = (
+            ver_result.stdout.strip().splitlines()[0]
+            if ver_result.returncode == 0
+            else "unknown"
+        )
+        results.append(("CMake", True, False, ver, None))
+    else:
+        results.append((
+            "CMake",
+            False,
+            True,
+            "not found (optional — needed for CppTrader native engine)",
+            "Install CMake from https://cmake.org/download/",
+        ))
+
+    cpp = shutil.which("g++") or shutil.which("clang++") or shutil.which("cl")
+    if cpp:
+        compiler_name = Path(cpp).name
+        results.append(("C++ compiler", True, False, f"{compiler_name} found", None))
+    else:
+        results.append((
+            "C++ compiler",
+            False,
+            True,
+            "not found (optional — needed for CppTrader native engine)",
+            "Linux: apt install build-essential  |  macOS: xcode-select --install",
+        ))
+
+    return results
+
+
 def _print_check(label: str, ok: bool, is_warn: bool, detail: str, *, width: int = 38) -> None:
     if ok:
         status = PASS if sys.stdout.isatty() else "pass"
@@ -190,6 +423,12 @@ def _print_check(label: str, ok: bool, is_warn: bool, detail: str, *, width: int
         status = FAIL if sys.stdout.isatty() else "FAIL"
     padded = label.ljust(width)
     print(f"  {padded} {status}  {detail}")
+
+
+def _print_fix(fix: str) -> None:
+    """Print an actionable fix hint indented below the check line."""
+    arrow = _color("  →", YELLOW) if sys.stdout.isatty() else "  ->"
+    print(f"  {arrow} Run: {fix}")
 
 
 def cmd_doctor(args: argparse.Namespace) -> int:
@@ -222,20 +461,80 @@ def cmd_doctor(args: argparse.Namespace) -> int:
     if not ok:
         (warnings if is_warn else failures).append(f"Git: {detail}")
 
-    # Optional tools — only warn
-    for tool, label in [("docker", "Docker"), ("node", "Node.js")]:
-        if _have(tool):
-            result = _run([tool, "--version"])
-            ver = result.stdout.strip().splitlines()[0] if result.returncode == 0 else "unknown"
-            _print_check(label, True, False, ver)
-        else:
-            _print_check(label, False, True, f"{tool} not found (optional)")
-            warnings.append(f"{label} not installed (optional)")
+    if _have("node"):
+        result = _run(["node", "--version"])
+        ver = result.stdout.strip().splitlines()[0] if result.returncode == 0 else "unknown"
+        _print_check("Node.js", True, False, f"{ver} (optional — diagram generation)")
+    else:
+        _print_check("Node.js", False, True, "not found (optional — needed for diagram generation)")
+        _print_fix("Install from https://nodejs.org")
+        warnings.append("Node.js not installed (optional)")
+
+    print()
+
+    # --- Services ---
+    print(_color("Services", BLUE) if sys.stdout.isatty() else "Services")
+
+    ok, is_warn, detail, fix = _check_docker_daemon()
+    _print_check("Docker daemon", ok, is_warn, detail)
+    if fix:
+        _print_fix(fix)
+    if not ok:
+        (warnings if is_warn else failures).append(f"Docker: {detail}")
+
+    ok, is_warn, detail, fix = _check_postgres()
+    _print_check("PostgreSQL", ok, is_warn, detail)
+    if fix:
+        _print_fix(fix)
+    if not ok:
+        (warnings if is_warn else failures).append(f"PostgreSQL: {detail}")
+
+    print()
+
+    # --- Native tools (optional) ---
+    print(
+        _color("Native tools (optional — CppTrader)", BLUE)
+        if sys.stdout.isatty()
+        else "Native tools (optional — CppTrader)"
+    )
+
+    for label, ok, is_warn, detail, fix in _check_native_tools():
+        _print_check(label, ok, is_warn, detail)
+        if fix:
+            _print_fix(fix)
+        if not ok:
+            (warnings if is_warn else failures).append(f"{label}: {detail}")
+
+    print()
+
+    # --- Provider credentials ---
+    print(_color("Provider credentials", BLUE) if sys.stdout.isatty() else "Provider credentials")
+
+    for var, ok, is_warn, detail, fix in _check_env_vars():
+        _print_check(var, ok, is_warn, detail)
+        if fix:
+            _print_fix(fix)
+        if not ok:
+            (warnings if is_warn else failures).append(f"{var}: {detail}")
 
     print()
 
     # --- Repository files ---
     print(_color("Repository files", BLUE) if sys.stdout.isatty() else "Repository files")
+
+    ok, is_warn, detail, fix = _check_global_json()
+    _print_check("global.json SDK constraint", ok, is_warn, detail)
+    if fix:
+        _print_fix(fix)
+    if not ok:
+        (warnings if is_warn else failures).append(f"global.json: {detail}")
+
+    ok, is_warn, detail, fix = _check_packages_props()
+    _print_check("Directory.Packages.props", ok, is_warn, detail)
+    if fix:
+        _print_fix(fix)
+    if not ok:
+        (warnings if is_warn else failures).append(f"Directory.Packages.props: {detail}")
 
     for rel, ok, is_warn, detail in _check_files():
         _print_check(rel, ok, is_warn, detail)

@@ -46,6 +46,68 @@ public sealed class StrategyRunReadService
             .ToArray();
     }
 
+    public async Task<IReadOnlyList<StrategyRunSummary>> GetRunsAsync(
+        StrategyRunHistoryQuery query,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(query);
+
+        var modeFilter = query.Modes is { Count: > 0 }
+            ? new HashSet<StrategyRunMode>(query.Modes)
+            : null;
+        var limit = Math.Clamp(query.Limit, 1, 500);
+        var results = new List<StrategyRunSummary>();
+
+        await foreach (var run in _repository.GetAllRunsAsync(ct).WithCancellation(ct).ConfigureAwait(false))
+        {
+            if (!string.IsNullOrWhiteSpace(query.StrategyId) &&
+                !string.Equals(run.StrategyId, query.StrategyId, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            var summary = ToSummary(run);
+            if (query.Status.HasValue && summary.Status != query.Status.Value)
+            {
+                continue;
+            }
+
+            if (modeFilter is not null && !modeFilter.Contains(summary.Mode))
+            {
+                continue;
+            }
+
+            results.Add(summary);
+        }
+
+        return results
+            .OrderByDescending(static run => run.LastUpdatedAt)
+            .ThenByDescending(static run => run.StartedAt)
+            .Take(limit)
+            .ToArray();
+    }
+
+    public async Task<IReadOnlyList<StrategyRunTimelineEntry>> GetMergedTimelineAsync(
+        StrategyRunHistoryQuery query,
+        CancellationToken ct = default)
+    {
+        var runs = await GetRunsAsync(query, ct).ConfigureAwait(false);
+        return runs
+            .Select(static run => new StrategyRunTimelineEntry(
+                RunId: run.RunId,
+                StrategyId: run.StrategyId,
+                StrategyName: run.StrategyName,
+                Mode: run.Mode,
+                Status: run.Status,
+                StartedAt: run.StartedAt,
+                CompletedAt: run.CompletedAt,
+                LastUpdatedAt: run.LastUpdatedAt,
+                NetPnl: run.NetPnl,
+                TotalReturn: run.TotalReturn,
+                FillCount: run.FillCount))
+            .ToArray();
+    }
+
     public async Task<StrategyRunDetail?> GetRunDetailAsync(string runId, CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(runId);
@@ -134,8 +196,75 @@ public sealed class StrategyRunReadService
         }
 
         return results
-            .OrderByDescending(static result => result.FinalEquity ?? decimal.MinValue)
+            .OrderByDescending(static result => result.LastUpdatedAt)
+            .ThenByDescending(static result => result.FinalEquity ?? decimal.MinValue)
             .ThenBy(static result => result.RunId, StringComparer.Ordinal)
+            .ToArray();
+    }
+
+    public async Task<IReadOnlyList<RunComparisonDto>> GetRunComparisonDtosAsync(
+        IEnumerable<string> runIds,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(runIds);
+
+        var selectedIds = new HashSet<string>(
+            runIds.Where(static id => !string.IsNullOrWhiteSpace(id)),
+            StringComparer.Ordinal);
+        if (selectedIds.Count == 0)
+        {
+            return Array.Empty<RunComparisonDto>();
+        }
+
+        var results = new List<RunComparisonDto>();
+
+        await foreach (var run in _repository.GetAllRunsAsync(ct).WithCancellation(ct).ConfigureAwait(false))
+        {
+            if (!selectedIds.Contains(run.RunId))
+                continue;
+
+            var metrics = run.Metrics?.Metrics;
+            var curve = await GetEquityCurveAsync(run.RunId, ct).ConfigureAwait(false);
+
+            results.Add(new RunComparisonDto(
+                RunId: run.RunId,
+                ParentRunId: run.ParentRunId,
+                StrategyName: run.StrategyName,
+                Mode: MapMode(run.RunType),
+                Engine: MapEngine(run),
+                Status: MapStatus(run),
+                StartedAt: run.StartedAt,
+                CompletedAt: run.EndedAt,
+                NetPnl: metrics?.NetPnl,
+                TotalReturn: metrics?.TotalReturn,
+                AnnualizedReturn: metrics?.AnnualizedReturn,
+                FinalEquity: metrics?.FinalEquity,
+                SharpeRatio: metrics?.SharpeRatio,
+                SortinoRatio: metrics?.SortinoRatio,
+                CalmarRatio: metrics?.CalmarRatio,
+                MaxDrawdown: metrics?.MaxDrawdown,
+                MaxDrawdownPercent: metrics?.MaxDrawdownPercent,
+                MaxDrawdownRecoveryDays: metrics?.MaxDrawdownRecoveryDays ?? 0,
+                ProfitFactor: metrics?.ProfitFactor,
+                WinRate: metrics?.WinRate,
+                TotalTrades: metrics?.TotalTrades ?? 0,
+                WinningTrades: metrics?.WinningTrades ?? 0,
+                LosingTrades: metrics?.LosingTrades ?? 0,
+                FillCount: run.Metrics?.Fills.Count ?? 0,
+                TotalCommissions: metrics?.TotalCommissions ?? 0m,
+                TotalMarginInterest: metrics?.TotalMarginInterest ?? 0m,
+                TotalShortRebates: metrics?.TotalShortRebates ?? 0m,
+                Xirr: metrics?.Xirr,
+                EquityCurve: curve,
+                LastUpdatedAt: GetLastUpdatedAt(run),
+                PromotionState: BuildPromotionSummary(run).State,
+                HasLedger: !string.IsNullOrWhiteSpace(run.LedgerReference),
+                HasAuditTrail: !string.IsNullOrWhiteSpace(run.AuditReference)));
+        }
+
+        return results
+            .OrderByDescending(static r => r.FinalEquity ?? decimal.MinValue)
+            .ThenBy(static r => r.RunId, StringComparer.Ordinal)
             .ToArray();
     }
 
@@ -369,6 +498,7 @@ public sealed class StrategyRunReadService
 
             return new RunFillSummary(
                 RunId: run.RunId,
+                Mode: MapMode(run.RunType),
                 TotalFills: entries.Length,
                 TotalCommissions: entries.Sum(static e => e.Commission),
                 Fills: entries);
@@ -408,6 +538,7 @@ public sealed class StrategyRunReadService
 
             return new RunAttributionSummary(
                 RunId: run.RunId,
+                Mode: MapMode(run.RunType),
                 TotalRealizedPnl: bySymbol.Sum(static a => a.RealizedPnl),
                 TotalUnrealizedPnl: bySymbol.Sum(static a => a.UnrealizedPnl),
                 TotalCommissions: bySymbol.Sum(static a => a.Commissions),

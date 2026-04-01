@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-04-01 17:52:09 UTC. Do not edit manually.
+> Auto-generated on 2026-04-01 20:40:10 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -126,7 +126,9 @@ Meridian-main
 │   │   └── README.md
 │   └── config.toml
 ├── .devcontainer
-│   └── devcontainer.json
+│   ├── devcontainer.json
+│   ├── docker-compose.yml
+│   └── Dockerfile
 ├── .githooks
 │   └── pre-commit
 ├── .github
@@ -655,6 +657,7 @@ Meridian-main
 │   │   ├── repository-structure.md
 │   │   └── workflows-overview.md
 │   ├── getting-started
+│   │   ├── pilot-operator-quickstart.md
 │   │   └── README.md
 │   ├── integrations
 │   │   ├── fsharp-integration.md
@@ -668,6 +671,7 @@ Meridian-main
 │   │   ├── operator-runbook.md
 │   │   ├── performance-tuning.md
 │   │   ├── portable-data-packager.md
+│   │   ├── preflight-checklist.md
 │   │   ├── README.md
 │   │   └── service-level-objectives.md
 │   ├── plans
@@ -2331,6 +2335,7 @@ Meridian-main
 │       │   └── ThemeTypography.xaml
 │       ├── ViewModels
 │       │   ├── ActivityLogViewModel.cs
+│       │   ├── AddProviderWizardViewModel.cs
 │       │   ├── AdminMaintenanceViewModel.cs
 │       │   ├── AdvancedAnalyticsViewModel.cs
 │       │   ├── AgentViewModel.cs
@@ -2686,8 +2691,10 @@ Meridian-main
 │   │   │   │   │   ├── DataFreshnessSlaMonitorTests.cs
 │   │   │   │   │   ├── DataQualityTests.cs
 │   │   │   │   │   └── LiquidityProfileTests.cs
+│   │   │   │   ├── AlertDispatcherTests.cs
 │   │   │   │   ├── BackpressureAlertServiceTests.cs
 │   │   │   │   ├── BadTickFilterTests.cs
+│   │   │   │   ├── ClockSkewEstimatorTests.cs
 │   │   │   │   ├── ErrorRingBufferTests.cs
 │   │   │   │   ├── PriceContinuityCheckerTests.cs
 │   │   │   │   ├── PrometheusMetricsTests.cs
@@ -2885,7 +2892,10 @@ Meridian-main
 │   │   │   ├── ExceptionTypeTests.cs
 │   │   │   └── ProviderModuleLoaderTests.cs
 │   │   ├── Risk
-│   │   │   └── CompositeRiskValidatorTests.cs
+│   │   │   ├── CompositeRiskValidatorTests.cs
+│   │   │   ├── DrawdownCircuitBreakerTests.cs
+│   │   │   ├── OrderRateThrottleTests.cs
+│   │   │   └── PositionLimitRuleTests.cs
 │   │   ├── SecurityMaster
 │   │   │   ├── SecurityEnrichmentTests.cs
 │   │   │   ├── SecurityMasterAggregateRebuilderTests.cs
@@ -2946,6 +2956,12 @@ Meridian-main
 │   │   │   └── Golden
 │   │   │       └── alpaca-quote-pipeline.json
 │   │   ├── TestHelpers
+│   │   │   ├── Builders
+│   │   │   │   ├── BacktestRequestBuilder.cs
+│   │   │   │   ├── HistoricalBarBuilder.cs
+│   │   │   │   ├── MarketEventBuilder.cs
+│   │   │   │   ├── SecurityBuilder.cs
+│   │   │   │   └── TradeBuilder.cs
 │   │   │   ├── PolygonStubClient.cs
 │   │   │   ├── StubHttpMessageHandler.cs
 │   │   │   └── TestMarketEventPublisher.cs

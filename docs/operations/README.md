@@ -19,6 +19,7 @@ Guides for deploying, monitoring, and maintaining the Meridian in production.
 
 - **Getting started with deployment?** Start with [Deployment](deployment.md)
 - **Running in production?** See the [Operator Runbook](operator-runbook.md)
+- **Preparing pilot launch?** Use the [Preflight Checklist](preflight-checklist.md)
 - **Performance issues?** Check [Performance Tuning](performance-tuning.md)
 - **Need HA?** See [High Availability](high-availability.md)
 

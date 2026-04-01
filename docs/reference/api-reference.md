@@ -489,3 +489,17 @@ When adding or changing public APIs:
 **Version:** 1.6.2
 **Last Updated:** 2026-03-16
 **Audience:** Contributors maintaining the HTTP API surface and AI assistants working on endpoint documentation.
+
+
+### Coverage-Reported Gaps (Workstation + Config Alias)
+
+The coverage audit also tracks workstation shell routes and compatibility aliases.
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| GET | `/api/config/data-sources` | Backward-compatible alias for data source listing (`/api/config/datasources`). |
+| POST | `/api/config/data-sources` | Backward-compatible alias for create/update of data sources. |
+| GET | `/session` | Legacy/session route marker reported by coverage scanner; workstation session data is served at `/api/workstation/session`. |
+| GET | `/research` | Legacy/research route marker reported by coverage scanner; research payload is served at `/api/workstation/research`. |
+| GET | `/workstation` | Workstation shell entry point that serves the React index page. |
+| GET | `/workstation/{*path}` | SPA fallback route for workstation client-side navigation. |

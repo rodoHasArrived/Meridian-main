@@ -53,6 +53,8 @@ Use this document alongside [`ROADMAP.md`](ROADMAP.md) (delivery waves and seque
 | **IB Simulation Client** | ✅ | `IBSimulationClient` for testing without live connection |
 | **NoOp Client** | ✅ | `NoOpMarketDataClient` for dry-run / test harness scenarios |
 
+Provider validation matrix and evidence links now live in `docs/status/provider-validation-matrix.md` and are referenced by `production-status.md` for pass/fail readiness gating.
+
 ### Remaining work to reach full provider coverage
 
 - **Polygon**: Validate WebSocket message parsing against Polygon v2 feed schema (trades, quotes, aggregates, status messages). Add round-trip integration test with a recorded WebSocket session replay.
@@ -610,7 +612,6 @@ Meridian’s intended end state is a comprehensive fund management platform rath
 ---
 
 *Last Updated: 2026-03-31*
-
 
 
 

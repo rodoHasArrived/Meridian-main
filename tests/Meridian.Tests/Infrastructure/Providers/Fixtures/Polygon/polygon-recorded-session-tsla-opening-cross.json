@@ -1,9 +1,15 @@
 {
   "description": "Recorded-style Polygon stock feed session for TSLA covering opening-cross trade conditions, ignored malformed quote frames, and second-plus-minute aggregate replay.",
   "subscriptions": {
-    "trades": ["TSLA"],
-    "quotes": ["TSLA"],
-    "aggregates": ["TSLA"]
+    "trades": [
+      "TSLA"
+    ],
+    "quotes": [
+      "TSLA"
+    ],
+    "aggregates": [
+      "TSLA"
+    ]
   },
   "expected": {
     "trade": {
@@ -14,11 +20,14 @@
       "streamId": "tsla-open-001",
       "venue": "CHX",
       "aggressor": "Unknown",
-      "rawConditions": ["2", "37"]
+      "rawConditions": [
+        "2",
+        "37"
+      ]
     },
     "quote": {
       "symbol": "TSLA",
-      "bidPrice": 198.40,
+      "bidPrice": 198.4,
       "bidSize": 140,
       "askPrice": 198.45,
       "askSize": 160,
@@ -34,7 +43,7 @@
         "low": 198.31,
         "close": 198.42,
         "volume": 5200,
-        "vwap": 198.40,
+        "vwap": 198.4,
         "tradeCount": 46,
         "startTimeMs": 1743503400000,
         "endTimeMs": 1743503401000
@@ -42,7 +51,7 @@
       {
         "timeframe": "Minute",
         "symbol": "TSLA",
-        "open": 197.90,
+        "open": 197.9,
         "high": 198.55,
         "low": 197.88,
         "close": 198.42,
@@ -53,7 +62,12 @@
         "endTimeMs": 1743503400000
       }
     ],
-    "expectedIntegrityEvents": 0
+    "expectedIntegrityEvents": 0,
+    "statusMarkers": [
+      "connected",
+      "auth_success",
+      "success"
+    ]
   },
   "messages": [
     "[{\"ev\":\"status\",\"status\":\"connected\",\"message\":\"Connected Successfully\"}]",

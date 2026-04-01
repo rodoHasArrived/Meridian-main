@@ -452,6 +452,12 @@ public static class WorkstationEndpoints
             }
 
             var comparison = await readService.CompareRunsAsync(request.RunIds, context.RequestAborted).ConfigureAwait(false);
+            if (request.Modes is { Count: > 0 })
+            {
+                var modeFilter = new HashSet<StrategyRunMode>(request.Modes);
+                comparison = comparison.Where(row => modeFilter.Contains(row.Mode)).ToArray();
+            }
+
             return Results.Json(comparison, jsonOptions);
         })
         .WithName("CompareRuns")
@@ -505,7 +511,88 @@ public static class WorkstationEndpoints
         .WithTags("Strategies")
         .Produces<IReadOnlyList<StrategyRunSummary>>(200);
 
+        group.MapGet("/runs/history", async (
+            string? mode,
+            StrategyRunStatus? status,
+            string? strategyId,
+            int? limit,
+            HttpContext context) =>
+        app.MapGet("/api/strategies/runs/compare", async (string? ids, HttpContext context) =>
+        {
+            var readService = context.RequestServices.GetService<StrategyRunReadService>();
+            if (readService is null)
+            {
+                return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var modes = ParseModes(mode);
+            var runs = await readService.GetRunsAsync(
+                    new StrategyRunHistoryQuery(
+                        Modes: modes,
+                        Status: status,
+                        StrategyId: strategyId,
+                        Limit: Math.Clamp(limit ?? 50, 1, 500)),
+                    context.RequestAborted)
+                .ConfigureAwait(false);
+            return Results.Json(runs, jsonOptions);
+        })
+        .WithName("GetWorkstationRunHistory")
+        .Produces<IReadOnlyList<StrategyRunSummary>>(200)
+        .Produces(501);
+
+        group.MapGet("/runs/timeline", async (
+            string? mode,
+            StrategyRunStatus? status,
+            string? strategyId,
+            int? limit,
+            HttpContext context) =>
+        {
+            var readService = context.RequestServices.GetService<StrategyRunReadService>();
+            if (readService is null)
+            {
+                return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var modes = ParseModes(mode);
+            var timeline = await readService.GetMergedTimelineAsync(
+                    new StrategyRunHistoryQuery(
+                        Modes: modes,
+                        Status: status,
+                        StrategyId: strategyId,
+                        Limit: Math.Clamp(limit ?? 100, 1, 500)),
+                    context.RequestAborted)
+                .ConfigureAwait(false);
+            return Results.Json(timeline, jsonOptions);
+        })
+        .WithName("GetWorkstationMergedRunTimeline")
+        .Produces<IReadOnlyList<StrategyRunTimelineEntry>>(200)
+        .Produces(501);
+
         // --- Portfolio cash-flow projections ---
+            if (string.IsNullOrWhiteSpace(ids))
+            {
+                return Results.BadRequest(new { error = "At least two run IDs are required. Use ?ids=a,b" });
+            }
+
+            var runIds = ids
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .ToArray();
+
+            if (runIds.Length < 2)
+            {
+                return Results.BadRequest(new { error = "At least two run IDs are required for comparison." });
+            }
+
+            var comparison = await readService.GetRunComparisonDtosAsync(runIds, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(comparison, jsonOptions);
+        })
+        .WithName("CompareStrategyRuns")
+        .WithTags("Strategies")
+        .Produces<IReadOnlyList<RunComparisonDto>>(200)
+        .Produces(400)
+        .Produces(501);
+
+
         var portfolioGroup = app.MapGroup("/api/portfolio").WithTags("Portfolio");
 
         portfolioGroup.MapGet("/{runId}/cash-flows", async (
@@ -718,6 +805,8 @@ public static class WorkstationEndpoints
             runs = runs
                 .Zip(runDetails, static (run, detail) => BuildResearchRunCard(run, detail))
                 .ToArray(),
+            comparisons = BuildModeComparisons(runs),
+            timeline = runs.Select(BuildTimelineCard).ToArray(),
             workspace = new
             {
                 totalRuns = runs.Length,
@@ -944,7 +1033,9 @@ public static class WorkstationEndpoints
                 notes = portfolio is not null
                     ? "Live execution state from PaperTradingPortfolio and OrderManagementSystem."
                     : "Paper gateway not active. Start a paper session to see live position and order data."
-            }
+            },
+            comparisons = run is null ? Array.Empty<object>() : BuildModeComparisons([run]),
+            drillIn = run is null ? null : BuildRunDrillInLinks(run)
         };
     }
 
@@ -1366,8 +1457,75 @@ public static class WorkstationEndpoints
             netPnl = run.NetPnl,
             totalReturn = run.TotalReturn,
             finalEquity = run.FinalEquity,
-            securityCoverage = BuildSecurityCoverage(detail)
+            securityCoverage = BuildSecurityCoverage(detail),
+            drillIn = BuildRunDrillInLinks(run)
         };
+    }
+
+    private static object BuildTimelineCard(StrategyRunSummary run) => new
+    {
+        runId = run.RunId,
+        strategyName = run.StrategyName,
+        mode = run.Mode.ToString().ToLowerInvariant(),
+        status = run.Status.ToString(),
+        startedAt = run.StartedAt,
+        completedAt = run.CompletedAt,
+        lastUpdatedAt = run.LastUpdatedAt,
+        totalReturn = run.TotalReturn
+    };
+
+    private static object[] BuildModeComparisons(IReadOnlyList<StrategyRunSummary> runs)
+    {
+        return runs
+            .GroupBy(static run => run.StrategyName, StringComparer.OrdinalIgnoreCase)
+            .Select(group => new
+            {
+                strategyName = group.Key,
+                modes = group
+                    .OrderBy(static run => run.Mode)
+                    .Select(static run => new
+                    {
+                        runId = run.RunId,
+                        mode = run.Mode.ToString().ToLowerInvariant(),
+                        status = run.Status.ToString(),
+                        netPnl = run.NetPnl,
+                        totalReturn = run.TotalReturn,
+                        drillIn = BuildRunDrillInLinks(run)
+                    })
+                    .ToArray()
+            })
+            .Where(static comparison => comparison.modes.Length > 0)
+            .ToArray<object>();
+    }
+
+    private static object BuildRunDrillInLinks(StrategyRunSummary run) => new
+    {
+        equityCurve = $"/api/workstation/runs/{run.RunId}/equity-curve",
+        fills = $"/api/workstation/runs/{run.RunId}/fills",
+        attribution = $"/api/workstation/runs/{run.RunId}/attribution",
+        ledger = string.IsNullOrWhiteSpace(run.LedgerReference) ? null : $"/api/workstation/runs/{run.RunId}/ledger",
+        cashFlows = $"/api/portfolio/{run.RunId}/cash-flows",
+        comparison = "/api/workstation/runs/compare"
+    };
+
+    private static IReadOnlyList<StrategyRunMode>? ParseModes(string? mode)
+    {
+        if (string.IsNullOrWhiteSpace(mode))
+        {
+            return null;
+        }
+
+        var parsed = mode
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(static token => Enum.TryParse<StrategyRunMode>(token, true, out var modeValue)
+                ? (StrategyRunMode?)modeValue
+                : null)
+            .Where(static item => item.HasValue)
+            .Select(static item => item!.Value)
+            .Distinct()
+            .ToArray();
+
+        return parsed.Length == 0 ? null : parsed;
     }
 
     private static object BuildGovernanceRunCard(
@@ -2051,7 +2209,9 @@ public static class WorkstationEndpoints
 }
 
 /// <summary>Request to compare multiple strategy runs side by side.</summary>
-public sealed record RunComparisonRequest(IReadOnlyList<string> RunIds);
+public sealed record RunComparisonRequest(
+    IReadOnlyList<string> RunIds,
+    IReadOnlyList<StrategyRunMode>? Modes = null);
 
 /// <summary>Request to diff two strategy runs.</summary>
 public sealed record RunDiffRequest(string BaseRunId, string TargetRunId);

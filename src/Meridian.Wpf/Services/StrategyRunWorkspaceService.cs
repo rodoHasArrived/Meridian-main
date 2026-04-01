@@ -75,6 +75,11 @@ public sealed class StrategyRunWorkspaceService
         return detail?.Ledger;
     }
 
+    public Task<IReadOnlyList<RunComparisonDto>> CompareRunsAsync(
+        IEnumerable<string> runIds,
+        CancellationToken ct = default) =>
+        _readService.GetRunComparisonDtosAsync(runIds, ct);
+
     public Task<RunCashFlowSummary?> GetCashFlowAsync(
         string runId,
         string? currency = null,

@@ -149,6 +149,7 @@
   </ItemGroup>
 
   <ItemGroup Label="Testing">
+    <PackageVersion Include="Bogus" Version="35.6.1" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.3.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.12" />
     <PackageVersion Include="xunit" Version="2.9.3" />
@@ -169,7 +170,7 @@
   </ItemGroup>
 
   <ItemGroup Label="WinUI / Desktop">
-    <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+    <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <!-- WPF-specific packages -->
     <PackageVersion Include="MaterialDesignThemes" Version="5.2.0" />
     <PackageVersion Include="MaterialDesignColors" Version="5.2.0" />
