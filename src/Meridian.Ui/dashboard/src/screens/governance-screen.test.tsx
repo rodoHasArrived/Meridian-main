@@ -33,6 +33,25 @@ const data: GovernanceWorkspaceResponse = {
       reconciliationStatus: "Resolved"
     }
   ],
+  breakQueue: [
+    {
+      breakId: "run-42:cash",
+      runId: "run-42",
+      strategyName: "Paper Index Mean Reversion",
+      category: "AmountMismatch",
+      status: "Open",
+      variance: 500,
+      reason: "Cash variance over tolerance.",
+      assignedTo: null,
+      detectedAt: "2026-01-01T00:00:00Z",
+      lastUpdatedAt: "2026-01-01T00:00:00Z",
+      reviewedBy: null,
+      reviewedAt: null,
+      resolvedBy: null,
+      resolvedAt: null,
+      resolutionNote: null
+    }
+  ],
   cashFlow: {
     totalCash: 120000,
     totalLedgerCash: 120500,

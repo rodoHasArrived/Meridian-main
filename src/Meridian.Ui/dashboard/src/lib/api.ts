@@ -4,6 +4,8 @@ import type {
   DataOperationsWorkspaceResponse,
   EquityCurveSummary,
   GovernanceWorkspaceResponse,
+  LedgerSummary,
+  LedgerTrialBalanceLine,
   OrderResult,
   OrderSubmitRequest,
   PaperSessionSummary,
@@ -12,7 +14,10 @@ import type {
   PromotionRecord,
   ResearchRunRecord,
   ResearchWorkspaceResponse,
+  ReconciliationBreakQueueItem,
+  ResolveReconciliationBreakRequest,
   ResolveConflictRequest,
+  ReviewReconciliationBreakRequest,
   RunAttributionSummary,
   RunComparisonRow,
   RunDiff,
@@ -185,6 +190,15 @@ export function getRunEquityCurve(runId: string) {
   return getJson<EquityCurveSummary>(`/api/workstation/runs/${encodeURIComponent(runId)}/equity-curve`);
 }
 
+export function getRunLedger(runId: string) {
+  return getJson<LedgerSummary>(`/api/workstation/runs/${encodeURIComponent(runId)}/ledger`);
+}
+
+export function getRunTrialBalance(runId: string, accountType?: string) {
+  const params = accountType ? `?accountType=${encodeURIComponent(accountType)}` : "";
+  return getJson<LedgerTrialBalanceLine[]>(`/api/workstation/runs/${encodeURIComponent(runId)}/ledger/trial-balance${params}`);
+}
+
 // --- Security Master search ---
 
 export function searchSecurities(query: string, take = 25, activeOnly = true) {
@@ -204,6 +218,18 @@ export function getSecurityIdentity(securityId: string) {
   return getJson<SecurityIdentityDrillIn>(`/api/workstation/security-master/securities/${encodeURIComponent(securityId)}/identity`);
 }
 
+export function createSecurityMasterEntry(request: Record<string, unknown>) {
+  return postJson<SecurityMasterEntry>("/api/security-master", request);
+}
+
+export function amendSecurityMasterEntry(request: Record<string, unknown>) {
+  return postJson<SecurityMasterEntry>("/api/security-master/amend", request);
+}
+
+export function upsertSecurityAlias(request: Record<string, unknown>) {
+  return postJson<Record<string, unknown>>("/api/security-master/aliases/upsert", request);
+}
+
 // --- Security Master conflicts ---
 
 export function getSecurityConflicts() {
@@ -213,6 +239,25 @@ export function getSecurityConflicts() {
 export function resolveSecurityConflict(request: ResolveConflictRequest) {
   return postJson<SecurityMasterConflict>(
     `/api/security-master/conflicts/${encodeURIComponent(request.conflictId)}/resolve`,
+    request
+  );
+}
+
+export function getReconciliationBreakQueue(status?: string) {
+  const params = status ? `?status=${encodeURIComponent(status)}` : "";
+  return getJson<ReconciliationBreakQueueItem[]>(`/api/workstation/reconciliation/break-queue${params}`);
+}
+
+export function reviewReconciliationBreak(request: ReviewReconciliationBreakRequest) {
+  return postJson<ReconciliationBreakQueueItem>(
+    `/api/workstation/reconciliation/break-queue/${encodeURIComponent(request.breakId)}/review`,
+    request
+  );
+}
+
+export function resolveReconciliationBreak(request: ResolveReconciliationBreakRequest) {
+  return postJson<ReconciliationBreakQueueItem>(
+    `/api/workstation/reconciliation/break-queue/${encodeURIComponent(request.breakId)}/resolve`,
     request
   );
 }

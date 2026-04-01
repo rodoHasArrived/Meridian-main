@@ -124,3 +124,52 @@ public sealed record ReconciliationRunDetail(
     /// Security Master entry was resolved at reconciliation time. Suitable for audit reporting.
     /// </summary>
     IReadOnlyDictionary<string, SecurityClassificationSummaryDto>? SecurityClassifications = null);
+
+/// <summary>
+/// Operator queue state for a reconciliation break.
+/// </summary>
+public enum ReconciliationBreakQueueStatus : byte
+{
+    Open = 0,
+    InReview = 1,
+    Resolved = 2,
+    Dismissed = 3
+}
+
+/// <summary>
+/// Work item shown in the reconciliation break queue.
+/// </summary>
+public sealed record ReconciliationBreakQueueItem(
+    string BreakId,
+    string RunId,
+    string StrategyName,
+    ReconciliationBreakCategory Category,
+    ReconciliationBreakQueueStatus Status,
+    decimal Variance,
+    string Reason,
+    string? AssignedTo,
+    DateTimeOffset DetectedAt,
+    DateTimeOffset LastUpdatedAt,
+    string? ReviewedBy = null,
+    DateTimeOffset? ReviewedAt = null,
+    string? ResolvedBy = null,
+    DateTimeOffset? ResolvedAt = null,
+    string? ResolutionNote = null);
+
+/// <summary>
+/// Request to move a break into active review and assign an operator.
+/// </summary>
+public sealed record ReviewReconciliationBreakRequest(
+    string BreakId,
+    string AssignedTo,
+    string ReviewedBy,
+    string? ReviewNote = null);
+
+/// <summary>
+/// Request to resolve or dismiss a break with audit metadata.
+/// </summary>
+public sealed record ResolveReconciliationBreakRequest(
+    string BreakId,
+    ReconciliationBreakQueueStatus Status,
+    string ResolvedBy,
+    string ResolutionNote);

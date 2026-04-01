@@ -247,8 +247,43 @@ export interface GovernanceReportingSummary {
 export interface GovernanceWorkspaceResponse {
   metrics: MetricSnapshot[];
   reconciliationQueue: GovernanceReconciliationRecord[];
+  breakQueue: ReconciliationBreakQueueItem[];
   cashFlow: GovernanceCashFlowSummary;
   reporting: GovernanceReportingSummary;
+}
+
+export type ReconciliationBreakQueueStatus = "Open" | "InReview" | "Resolved" | "Dismissed";
+
+export interface ReconciliationBreakQueueItem {
+  breakId: string;
+  runId: string;
+  strategyName: string;
+  category: string;
+  status: ReconciliationBreakQueueStatus;
+  variance: number;
+  reason: string;
+  assignedTo: string | null;
+  detectedAt: string;
+  lastUpdatedAt: string;
+  reviewedBy: string | null;
+  reviewedAt: string | null;
+  resolvedBy: string | null;
+  resolvedAt: string | null;
+  resolutionNote: string | null;
+}
+
+export interface ReviewReconciliationBreakRequest {
+  breakId: string;
+  assignedTo: string;
+  reviewedBy: string;
+  reviewNote?: string;
+}
+
+export interface ResolveReconciliationBreakRequest {
+  breakId: string;
+  status: "Resolved" | "Dismissed";
+  resolvedBy: string;
+  resolutionNote: string;
 }
 
 // --- Trading action result ---

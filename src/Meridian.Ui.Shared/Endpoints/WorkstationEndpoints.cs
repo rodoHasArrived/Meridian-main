@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using Meridian.Contracts.Api;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Models;
@@ -20,6 +21,8 @@ namespace Meridian.Ui.Shared.Endpoints;
 public static class WorkstationEndpoints
 {
     private const int SecurityCoveragePreviewLimit = 5;
+    private static readonly object BreakQueueSync = new();
+    private static readonly Dictionary<string, ReconciliationBreakQueueItem> BreakQueue = new(StringComparer.OrdinalIgnoreCase);
 
     public static void MapWorkstationEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
@@ -131,6 +134,49 @@ public static class WorkstationEndpoints
         })
         .WithName("GetRunReconciliationHistory")
         .Produces<IReadOnlyList<ReconciliationRunSummary>>(200)
+        .Produces(404);
+
+        group.MapGet("/reconciliation/break-queue", (string? status) =>
+        {
+            var items = GetBreakQueueItems(status);
+            return Results.Json(items, jsonOptions);
+        })
+        .WithName("GetReconciliationBreakQueue")
+        .Produces<IReadOnlyList<ReconciliationBreakQueueItem>>(200);
+
+        group.MapPost("/reconciliation/break-queue/{breakId}/review", (string breakId, ReviewReconciliationBreakRequest request) =>
+        {
+            if (!string.Equals(request.BreakId, breakId, StringComparison.OrdinalIgnoreCase))
+            {
+                return Results.BadRequest(new { error = "BreakId in body must match route parameter." });
+            }
+
+            var updated = ReviewBreak(request);
+            return updated is null ? Results.NotFound() : Results.Json(updated, jsonOptions);
+        })
+        .WithName("ReviewReconciliationBreak")
+        .Produces<ReconciliationBreakQueueItem>(200)
+        .Produces(400)
+        .Produces(404);
+
+        group.MapPost("/reconciliation/break-queue/{breakId}/resolve", (string breakId, ResolveReconciliationBreakRequest request) =>
+        {
+            if (!string.Equals(request.BreakId, breakId, StringComparison.OrdinalIgnoreCase))
+            {
+                return Results.BadRequest(new { error = "BreakId in body must match route parameter." });
+            }
+
+            if (request.Status is not ReconciliationBreakQueueStatus.Resolved and not ReconciliationBreakQueueStatus.Dismissed)
+            {
+                return Results.BadRequest(new { error = "Status must be Resolved or Dismissed for resolve action." });
+            }
+
+            var updated = ResolveBreak(request);
+            return updated is null ? Results.NotFound() : Results.Json(updated, jsonOptions);
+        })
+        .WithName("ResolveReconciliationBreak")
+        .Produces<ReconciliationBreakQueueItem>(200)
+        .Produces(400)
         .Produces(404);
 
         group.MapGet("/runs/{runId}/ledger", async (string runId, HttpContext context) =>
@@ -1090,6 +1136,7 @@ public static class WorkstationEndpoints
                     new { id = "audit-ready", label = "Audit Ready", value = "0", tone = "default" }
                 },
                 reconciliationQueue = Array.Empty<object>(),
+                breakQueue = Array.Empty<ReconciliationBreakQueueItem>(),
                 workspace = new
                 {
                     totalRuns = 0,
@@ -1111,6 +1158,7 @@ public static class WorkstationEndpoints
 
         var details = await Task.WhenAll(detailTasks).ConfigureAwait(false);
         var reconciliations = await Task.WhenAll(reconciliationTasks).ConfigureAwait(false);
+        SeedBreakQueue(runs, reconciliations);
 
         var openBreaks = reconciliations.Sum(static detail => detail?.Summary.OpenBreakCount ?? 0);
         var timingDriftRuns = reconciliations.Count(static detail => detail?.Summary.HasTimingDrift == true);
@@ -1133,6 +1181,7 @@ public static class WorkstationEndpoints
                 .Zip(details, static (run, detail) => (run, detail))
                 .Zip(reconciliations, static (pair, reconciliation) => BuildGovernanceRunCard(pair.run, pair.detail, reconciliation))
                 .ToArray(),
+            breakQueue = GetBreakQueueItems(status: null),
             workspace = new
             {
                 totalRuns = allRuns.Length,
@@ -1229,6 +1278,34 @@ public static class WorkstationEndpoints
                         summary = "Cash and ledger balances diverge and should be reviewed."
                     }
                 }
+            },
+            breakQueue = new[]
+            {
+                new ReconciliationBreakQueueItem(
+                    BreakId: "BRK-gov-run-001-1",
+                    RunId: "gov-run-001",
+                    StrategyName: "Global Macro Overlay",
+                    Category: ReconciliationBreakCategory.AmountMismatch,
+                    Status: ReconciliationBreakQueueStatus.Open,
+                    Variance: 2500m,
+                    Reason: "Cash variance exceeds configured tolerance.",
+                    AssignedTo: null,
+                    DetectedAt: DateTimeOffset.UtcNow.AddMinutes(-18),
+                    LastUpdatedAt: DateTimeOffset.UtcNow.AddMinutes(-18)),
+                new ReconciliationBreakQueueItem(
+                    BreakId: "BRK-gov-run-001-2",
+                    RunId: "gov-run-001",
+                    StrategyName: "Global Macro Overlay",
+                    Category: ReconciliationBreakCategory.ClassificationGap,
+                    Status: ReconciliationBreakQueueStatus.InReview,
+                    Variance: 0m,
+                    Reason: "Security Master coverage is missing for XYZ.",
+                    AssignedTo: "ops.gov",
+                    DetectedAt: DateTimeOffset.UtcNow.AddMinutes(-16),
+                    LastUpdatedAt: DateTimeOffset.UtcNow.AddMinutes(-8),
+                    ReviewedBy: "ops.gov",
+                    ReviewedAt: DateTimeOffset.UtcNow.AddMinutes(-8),
+                    ResolutionNote: "Investigating ticker reclassification."))
             },
             workspace = new
             {
@@ -1827,6 +1904,110 @@ public static class WorkstationEndpoints
         "Repo" => "Repo",
         _ => null
     };
+
+    private static void SeedBreakQueue(
+        IReadOnlyList<StrategyRunSummary> runs,
+        IReadOnlyList<ReconciliationRunDetail?> reconciliations)
+    {
+        lock (BreakQueueSync)
+        {
+            for (var i = 0; i < runs.Count; i++)
+            {
+                var run = runs[i];
+                var reconciliation = i < reconciliations.Count ? reconciliations[i] : null;
+                if (reconciliation is null)
+                {
+                    continue;
+                }
+
+                foreach (var reconciliationBreak in reconciliation.Breaks)
+                {
+                    var breakId = $"{run.RunId}:{reconciliationBreak.CheckId}";
+                    if (BreakQueue.ContainsKey(breakId))
+                    {
+                        continue;
+                    }
+
+                    BreakQueue[breakId] = new ReconciliationBreakQueueItem(
+                        BreakId: breakId,
+                        RunId: run.RunId,
+                        StrategyName: run.StrategyName,
+                        Category: reconciliationBreak.Category,
+                        Status: ReconciliationBreakQueueStatus.Open,
+                        Variance: Math.Abs(reconciliationBreak.Variance),
+                        Reason: reconciliationBreak.Reason,
+                        AssignedTo: null,
+                        DetectedAt: DateTimeOffset.UtcNow,
+                        LastUpdatedAt: DateTimeOffset.UtcNow);
+                }
+            }
+        }
+    }
+
+    private static IReadOnlyList<ReconciliationBreakQueueItem> GetBreakQueueItems(string? status)
+    {
+        lock (BreakQueueSync)
+        {
+            IEnumerable<ReconciliationBreakQueueItem> items = BreakQueue.Values;
+            if (Enum.TryParse<ReconciliationBreakQueueStatus>(status, ignoreCase: true, out var parsed))
+            {
+                items = items.Where(item => item.Status == parsed);
+            }
+
+            return items
+                .OrderByDescending(item => item.LastUpdatedAt)
+                .ToArray();
+        }
+    }
+
+    private static ReconciliationBreakQueueItem? ReviewBreak(ReviewReconciliationBreakRequest request)
+    {
+        lock (BreakQueueSync)
+        {
+            if (!BreakQueue.TryGetValue(request.BreakId, out var item))
+            {
+                return null;
+            }
+
+            var now = DateTimeOffset.UtcNow;
+            var updated = item with
+            {
+                Status = ReconciliationBreakQueueStatus.InReview,
+                AssignedTo = request.AssignedTo,
+                ReviewedBy = request.ReviewedBy,
+                ReviewedAt = now,
+                ResolutionNote = request.ReviewNote,
+                LastUpdatedAt = now
+            };
+
+            BreakQueue[request.BreakId] = updated;
+            return updated;
+        }
+    }
+
+    private static ReconciliationBreakQueueItem? ResolveBreak(ResolveReconciliationBreakRequest request)
+    {
+        lock (BreakQueueSync)
+        {
+            if (!BreakQueue.TryGetValue(request.BreakId, out var item))
+            {
+                return null;
+            }
+
+            var now = DateTimeOffset.UtcNow;
+            var updated = item with
+            {
+                Status = request.Status,
+                ResolvedBy = request.ResolvedBy,
+                ResolvedAt = now,
+                LastUpdatedAt = now,
+                ResolutionNote = request.ResolutionNote
+            };
+
+            BreakQueue[request.BreakId] = updated;
+            return updated;
+        }
+    }
 
     private static IResult ServeWorkstationIndex(IWebHostEnvironment environment)
     {
