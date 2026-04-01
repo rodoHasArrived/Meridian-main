@@ -320,6 +320,7 @@ Use these documents together when planning or implementing new work:
 │       ├── canonicalization-fixture-maintenance.yml
 │       ├── close-duplicate-issues.yml
 │       ├── code-quality.yml
+│       ├── codeql.yml
 │       ├── copilot-pull-request-reviewer.yml
 │       ├── copilot-setup-steps.yml
 │       ├── copilot-swe-agent-copilot.yml
@@ -3290,6 +3291,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-444 directories, 2718 files
+444 directories, 2719 files
 ```
 <!-- readme-tree end -->
