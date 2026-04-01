@@ -307,7 +307,7 @@
                                    Margin="0" />
                     </StackPanel>
 
-                    <ListView x:Name="NotificationsList"
+                    <ListView ItemsSource="{Binding FilteredNotifications}"
                               SelectionMode="Single"
                               MaxHeight="500"
                               Background="Transparent"

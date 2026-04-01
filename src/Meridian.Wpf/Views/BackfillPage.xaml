@@ -404,7 +404,7 @@
                                    Foreground="{StaticResource ConsoleTextMutedBrush}"
                                    Margin="0,0,0,12" TextWrapping="Wrap" />
 
-                        <ListView x:Name="GapAnalysisList"
+                        <ListView ItemsSource="{Binding GapItems}"
                                   Background="Transparent"
                                   BorderThickness="0"
                                   MaxHeight="220"
@@ -506,7 +506,7 @@
                                      Foreground="{StaticResource SuccessColorBrush}"
                                      Margin="0,0,0,16" />
 
-                        <ListView x:Name="SymbolProgressList"
+                        <ListView ItemsSource="{Binding SymbolProgress}"
                                   Background="Transparent"
                                   BorderThickness="0"
                                   MaxHeight="300">
@@ -880,7 +880,7 @@
                                        VerticalAlignment="Center" />
                         </StackPanel>
 
-                        <ListView x:Name="ResumableJobsList"
+                        <ListView ItemsSource="{Binding ResumableJobs}"
                                   Background="Transparent"
                                   BorderThickness="0"
                                   MaxHeight="200">
@@ -948,7 +948,7 @@
                                    Foreground="{StaticResource ConsoleTextPrimaryBrush}"
                                    Margin="0,0,0,12" />
 
-                        <ListView x:Name="ScheduledJobsList"
+                        <ListView ItemsSource="{Binding ScheduledJobs}"
                                   Background="Transparent"
                                   BorderThickness="0"
                                   MaxHeight="200">

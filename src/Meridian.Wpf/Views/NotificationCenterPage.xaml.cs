@@ -32,8 +32,6 @@ public partial class NotificationCenterPage : Page
         _viewModel = new NotificationCenterViewModel(notificationService, _alertService);
         DataContext = _viewModel;
 
-        NotificationsList.ItemsSource = _viewModel.FilteredNotifications;
-
         // Sync preference checkboxes with current settings
         var settings = _notificationService.GetSettings();
         EnableDesktopNotificationsCheck.IsChecked = settings.Enabled;

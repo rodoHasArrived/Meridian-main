@@ -91,6 +91,7 @@
             <Setter Property="Margin" Value="0,0,8,8" />
             <Setter Property="FontSize" Value="12" />
         </Style>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
     </Page.Resources>
 
     <Page.InputBindings>
@@ -99,6 +100,7 @@
 
     <Grid Background="{DynamicResource ShellWindowBackgroundBrush}">
         <TextBlock x:Name="ShellAutomationStateText"
+                   Text="{Binding CurrentPageTag}"
                    Visibility="Collapsed"
                    AutomationProperties.AutomationId="ShellAutomationState"
                    AutomationProperties.Name="Shell Automation State" />
@@ -305,26 +307,26 @@
                                 <StackPanel>
                                     <TextBlock Text="Current Workspace"
                                                Style="{StaticResource ShellSectionLabelStyle}" />
-                                    <TextBlock x:Name="WorkspaceHeadingText"
+                                    <TextBlock Text="{Binding WorkspaceHeading}"
                                                Margin="0,8,0,0"
                                                FontFamily="{StaticResource MeridianDisplayFontFamily}"
                                                FontSize="20"
                                                FontWeight="SemiBold"
                                                Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                    <TextBlock x:Name="WorkspaceDescriptionText"
+                                    <TextBlock Text="{Binding WorkspaceDescription}"
                                                Margin="0,6,0,0"
                                                Style="{StaticResource CardDescriptionStyle}" />
-                                    <TextBlock x:Name="WorkspaceSummaryText"
+                                    <TextBlock Text="{Binding WorkspaceSummary}"
                                                Margin="0,10,0,0"
                                                Style="{StaticResource BodyStrongTextBlockStyle}" />
                                 </StackPanel>
                             </Border>
 
-                            <TextBlock x:Name="ActiveNavigationLabel"
+                            <TextBlock Text="{Binding ActiveNavigationLabel}"
                                        Margin="0,20,0,8"
                                        Style="{StaticResource ShellSectionLabelStyle}" />
 
-                            <StackPanel x:Name="ResearchNavigationSection">
+                            <StackPanel Visibility="{Binding IsResearchWorkspaceActive, Converter={StaticResource BoolToVisibility}}">
                                 <ListBox x:Name="ResearchNavList"
                                          Background="Transparent"
                                          BorderThickness="0"
@@ -407,7 +409,7 @@
                                 </ListBox>
                             </StackPanel>
 
-                            <StackPanel x:Name="TradingNavigationSection" Visibility="Collapsed">
+                            <StackPanel Visibility="{Binding IsTradingWorkspaceActive, Converter={StaticResource BoolToVisibility}}">
                                 <ListBox x:Name="TradingNavList"
                                          Background="Transparent"
                                          BorderThickness="0"
@@ -453,7 +455,7 @@
                                 </ListBox>
                             </StackPanel>
 
-                            <StackPanel x:Name="DataOperationsNavigationSection" Visibility="Collapsed">
+                            <StackPanel Visibility="{Binding IsDataOperationsWorkspaceActive, Converter={StaticResource BoolToVisibility}}">
                                 <ListBox x:Name="DataOpsNavList"
                                          Background="Transparent"
                                          BorderThickness="0"
@@ -498,7 +500,7 @@
                                 </ListBox>
                             </StackPanel>
 
-                            <StackPanel x:Name="GovernanceNavigationSection" Visibility="Collapsed">
+                            <StackPanel Visibility="{Binding IsGovernanceWorkspaceActive, Converter={StaticResource BoolToVisibility}}">
                                 <ListBox x:Name="GovernanceNavList"
                                          Background="Transparent"
                                          BorderThickness="0"
@@ -547,7 +549,7 @@
 
                             <TextBlock Text="Recent Pages"
                                        Style="{StaticResource ShellSectionLabelStyle}" />
-                            <TextBlock x:Name="RecentPagesHintText"
+                            <TextBlock Text="{Binding RecentPagesHintText}"
                                        Margin="0,6,0,10"
                                        Style="{StaticResource CardDescriptionStyle}" />
                             <WrapPanel x:Name="RecentPagesPanel" />
@@ -622,7 +624,7 @@
                                     <TextBlock Text="&#x1F4C8;"
                                                FontSize="13"
                                                VerticalAlignment="Center" />
-                                    <TextBlock x:Name="TickerStripButtonLabel"
+                                    <TextBlock Text="{Binding TickerStripLabel}"
                                                Text="Ticker Strip"
                                                Margin="8,0,0,0"
                                                VerticalAlignment="Center" />
@@ -709,12 +711,12 @@
                                                FontFamily="{StaticResource SymbolThemeFontFamily}"
                                                FontSize="16" />
                                 </Button>
-                                <TextBlock x:Name="WorkspaceBadgeText"
+                                <TextBlock Text="{Binding WorkspaceHeading}"
                                            Margin="12,0,0,0"
                                            VerticalAlignment="Center"
                                            Style="{StaticResource ShellSectionLabelStyle}" />
                             </StackPanel>
-                            <TextBlock x:Name="PageTitleText"
+                            <TextBlock Text="{Binding CurrentPageTag}"
                                        Margin="0,12,0,0"
                                        Text="Dashboard"
                                        FontFamily="{StaticResource MeridianDisplayFontFamily}"
@@ -750,7 +752,7 @@
                                 </Border>
 
                                 <Border Style="{StaticResource NeutralBadgeStyle}" Margin="0,0,10,10">
-                                    <TextBlock x:Name="HeaderWorkspaceSummaryText"
+                                    <TextBlock Text="{Binding WorkspaceSummary}"
                                                FontSize="12"
                                                Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
                                 </Border>

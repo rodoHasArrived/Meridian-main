@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using Meridian.Contracts.Configuration;
+using Meridian.Wpf.ViewModels;
 using WpfServices = Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.Views;
@@ -15,15 +16,17 @@ namespace Meridian.Wpf.Views;
 public partial class DataSourcesPage : Page
 {
     private readonly WpfServices.ConfigService _configService;
+    private readonly DataSourcesViewModel _viewModel;
     private string? _editingSourceId;
 
-    public ObservableCollection<DataSourceConfigDto> DataSources { get; } = new();
+    private ObservableCollection<DataSourceConfigDto> DataSources => _viewModel.DataSources;
 
     public DataSourcesPage(WpfServices.ConfigService configService)
     {
         InitializeComponent();
         _configService = configService;
-        DataContext = this;
+        _viewModel = new DataSourcesViewModel();
+        DataContext = _viewModel;
     }
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
