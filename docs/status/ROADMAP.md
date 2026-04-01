@@ -1,8 +1,8 @@
 # Meridian - Project Roadmap
 
-**Last Updated:** 2026-03-26
+**Last Updated:** 2026-03-31
 **Status:** Refocused on core platform functionality and active native desktop redevelopment
-**Repository Snapshot (2026-03-31):** solution projects: 1 | `src/` projects: 28 | test projects: 8 | workflow files: 35 | source files: 1,313 (1,262 C# + 51 F#) | test files: 380 (C# + F#) | tests: ~4,756
+**Repository Snapshot (2026-03-31):** solution projects: 36 | `src/` projects: 28 | test projects: 8 | workflow files: 35 | source files: 1,313 (1,262 C# + 51 F#) | test files: 380 (C# + F#) | tests: ~4,756
 
 Meridian is a self-hosted trading platform. The active delivery focus is the four core platform pillars: **data collection**, **backtesting**, **real-time execution**, and **portfolio/strategy tracking**. The web dashboard remains the primary cross-platform operator surface. As of **March 26, 2026**, the WPF desktop app is back in **active development** as the Windows-first workstation track, beginning with shell modernization and workflow-page redesigns in `src/Meridian.Wpf/`.
 

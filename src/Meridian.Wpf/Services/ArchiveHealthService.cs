@@ -487,7 +487,7 @@ public sealed class ArchiveHealthService
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"[ArchiveHealthService] Failed to save health status: {ex.Message}");
+            Trace.WriteLine($"[ArchiveHealthService] Failed to save health status to '{_healthStatusPath}': {ex}");
         }
     }
 }
