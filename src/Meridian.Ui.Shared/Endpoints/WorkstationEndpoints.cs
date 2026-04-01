@@ -517,7 +517,6 @@ public static class WorkstationEndpoints
             string? strategyId,
             int? limit,
             HttpContext context) =>
-        app.MapGet("/api/strategies/runs/compare", async (string? ids, HttpContext context) =>
         {
             var readService = context.RequestServices.GetService<StrategyRunReadService>();
             if (readService is null)
@@ -568,7 +567,14 @@ public static class WorkstationEndpoints
         .Produces<IReadOnlyList<StrategyRunTimelineEntry>>(200)
         .Produces(501);
 
-        // --- Portfolio cash-flow projections ---
+        app.MapGet("/api/strategies/runs/compare", async (string? ids, HttpContext context) =>
+        {
+            var readService = context.RequestServices.GetService<StrategyRunReadService>();
+            if (readService is null)
+            {
+                return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
             if (string.IsNullOrWhiteSpace(ids))
             {
                 return Results.BadRequest(new { error = "At least two run IDs are required. Use ?ids=a,b" });
@@ -591,6 +597,8 @@ public static class WorkstationEndpoints
         .Produces<IReadOnlyList<RunComparisonDto>>(200)
         .Produces(400)
         .Produces(501);
+
+        // --- Portfolio cash-flow projections ---
 
 
         var portfolioGroup = app.MapGroup("/api/portfolio").WithTags("Portfolio");
