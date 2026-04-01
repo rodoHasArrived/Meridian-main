@@ -329,7 +329,7 @@ public sealed class ArchiveHealthService
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"[ArchiveHealthService] Failed to read drive info: {ex.Message}");
+            Trace.WriteLine($"[ArchiveHealthService] Failed to read drive info for basePath '{basePath}': {ex}");
         }
 
         return Task.FromResult(info);
