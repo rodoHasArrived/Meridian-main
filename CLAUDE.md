@@ -2457,6 +2457,7 @@ Meridian-main
 │       │   └── ThemeTypography.xaml
 │       ├── ViewModels
 │       │   ├── ActivityLogViewModel.cs
+│       │   ├── AddProviderWizardViewModel.cs
 │       │   ├── AdminMaintenanceViewModel.cs
 │       │   ├── AdvancedAnalyticsViewModel.cs
 │       │   ├── AgentViewModel.cs
