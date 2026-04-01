@@ -4,6 +4,7 @@ using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using AppSecurityMaster = Meridian.Application.SecurityMaster;
 
 namespace Meridian.Ui.Shared.Endpoints;
@@ -15,6 +16,13 @@ public static class SecurityMasterEndpoints
 {
     public static void MapSecurityMasterEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
+        // Security Master services are only registered when a PostgreSQL connection string is
+        // provided (see StorageFeatureRegistration.IsConfigured). If the service is absent from
+        // DI, ASP.NET Core minimal-API route inference would misclassify ISecurityMasterQueryService
+        // as [FromBody], causing an InvalidOperationException on the first request to any endpoint.
+        if (app.Services.GetService<ISecurityMasterQueryService>() is null)
+            return;
+
         var group = app.MapGroup(string.Empty).WithTags("SecurityMaster");
 
         /// <summary>
