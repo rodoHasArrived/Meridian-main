@@ -1,12 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using WpfServices = Meridian.Wpf.Services;
-
 using Meridian.Ui.Services;
+using Meridian.Wpf.ViewModels;
+
 namespace Meridian.Wpf.Views;
 
 /// <summary>
@@ -15,120 +13,41 @@ namespace Meridian.Wpf.Views;
 /// </summary>
 public partial class AdminMaintenancePage : Page
 {
-    private readonly AdminMaintenanceServiceBase _adminService;
+    private readonly AdminMaintenanceViewModel _viewModel;
     private bool _isLoaded;
 
     public AdminMaintenancePage(AdminMaintenanceServiceBase adminService)
     {
         InitializeComponent();
-        _adminService = adminService;
+        _viewModel = new AdminMaintenanceViewModel(adminService);
+        DataContext = _viewModel;
 
+        // Wire ObservableCollections to named controls (transitional until XAML uses {Binding})
+        QuickCheckList.ItemsSource = _viewModel.QuickCheckItems;
+        TiersList.ItemsSource = _viewModel.TierItems;
+        PoliciesList.ItemsSource = _viewModel.PolicyItems;
+        CleanupFilesList.ItemsSource = _viewModel.CleanupItems;
+        HistoryList.ItemsSource = _viewModel.HistoryItems;
+
+        _viewModel.PropertyChanged += OnViewModelPropertyChanged;
         Loaded += AdminMaintenancePage_Loaded;
     }
 
     private async void AdminMaintenancePage_Loaded(object sender, RoutedEventArgs e)
     {
         _isLoaded = true;
-        await LoadMaintenanceScheduleAsync();
-        await LoadTierUsageAsync();
-        await LoadRetentionPoliciesAsync();
-        await LoadMaintenanceHistoryAsync();
+        await _viewModel.InitializeAsync();
+        SyncScheduleControls();
     }
 
-
-    private async void QuickCheck_Click(object sender, RoutedEventArgs e)
-    {
-        QuickCheckButton.IsEnabled = false;
-        try
-        {
-            var result = await _adminService.RunQuickCheckAsync();
-            if (result.Success)
-            {
-                ShowQuickCheckResults(result);
-            }
-            else
-            {
-                ShowError("Quick Check Failed", result.Error ?? "Unknown error");
-            }
-        }
-        catch (Exception ex)
-        {
-            ShowError("Quick Check Failed", ex.Message);
-        }
-        finally
-        {
-            QuickCheckButton.IsEnabled = true;
-        }
-    }
-
-    private void ShowQuickCheckResults(QuickCheckResult result)
-    {
-        QuickCheckResultsCard.Visibility = Visibility.Visible;
-
-        var isOk = result.Overall == "OK" || result.Overall == "Healthy";
-        QuickCheckIcon.Text = isOk ? "\uE73E" : "\uE7BA";
-        QuickCheckIcon.Foreground = new SolidColorBrush(
-            isOk ? Color.FromRgb(72, 187, 120) : Color.FromRgb(237, 137, 54));
-        QuickCheckStatusText.Text = isOk ? "System Healthy" : "Issues Detected";
-        QuickCheckOverallText.Text = result.Overall;
-
-        var items = result.Checks.Select(c => new QuickCheckDisplayItem
-        {
-            Name = c.Name,
-            Details = c.Details ?? "",
-            StatusIcon = c.Status == "OK" || c.Status == "Pass" ? "\uE73E" : "\uE7BA",
-            StatusColor = new SolidColorBrush(
-                c.Status == "OK" || c.Status == "Pass"
-                    ? Color.FromRgb(72, 187, 120)
-                    : Color.FromRgb(237, 137, 54))
-        }).ToList();
-
-        QuickCheckList.ItemsSource = items;
-    }
-
-
-
-    private async System.Threading.Tasks.Task LoadMaintenanceScheduleAsync()
-    {
-        try
-        {
-            var result = await _adminService.GetMaintenanceScheduleAsync();
-            if (result.Success && result.Schedule != null)
-            {
-                EnableScheduleToggle.IsChecked = result.Schedule.Enabled;
-
-                // Select matching schedule
-                foreach (ComboBoxItem item in ScheduleFrequencyCombo.Items)
-                {
-                    if (item.Tag?.ToString() == result.Schedule.CronExpression)
-                    {
-                        ScheduleFrequencyCombo.SelectedItem = item;
-                        break;
-                    }
-                }
-
-                NextRunText.Text = result.Schedule.NextRunTime?.ToString("g") ?? "Not scheduled";
-                LastRunText.Text = result.Schedule.LastRunTime?.ToString("g") ?? "Never";
-
-                // Set operation checkboxes
-                var ops = result.Schedule.EnabledOperations;
-                RunCompressionCheck.IsChecked = ops.Contains("compression");
-                RunCleanupCheck.IsChecked = ops.Contains("cleanup");
-                RunIntegrityCheck.IsChecked = ops.Contains("integrity");
-                RunTierMigrationCheck.IsChecked = ops.Contains("tiermigration");
-            }
-        }
-        catch
-        {
-            // Use defaults
-        }
-    }
+    // ---- Schedule controls ----
 
     private async void EnableSchedule_Toggled(object sender, RoutedEventArgs e)
     {
         if (_isLoaded)
         {
-            await SaveScheduleAsync();
+            _viewModel.ScheduleEnabled = EnableScheduleToggle.IsChecked == true;
+            await _viewModel.SaveScheduleAsync();
         }
     }
 
@@ -136,107 +55,30 @@ public partial class AdminMaintenancePage : Page
     {
         if (_isLoaded)
         {
-            await SaveScheduleAsync();
+            _viewModel.CronExpression = (ScheduleFrequencyCombo.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "0 2 * * *";
+            await _viewModel.SaveScheduleAsync();
         }
     }
 
     private async void SaveSchedule_Click(object sender, RoutedEventArgs e)
     {
-        await SaveScheduleAsync();
-        ShowSuccess("Schedule saved successfully.");
-    }
-
-    private async System.Threading.Tasks.Task SaveScheduleAsync()
-    {
-        try
-        {
-            var cronExpression = (ScheduleFrequencyCombo.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "0 2 * * *";
-
-            var config = new MaintenanceScheduleConfig
-            {
-                Enabled = EnableScheduleToggle.IsChecked == true,
-                CronExpression = cronExpression,
-                RunCompression = RunCompressionCheck.IsChecked == true,
-                RunCleanup = RunCleanupCheck.IsChecked == true,
-                RunIntegrityCheck = RunIntegrityCheck.IsChecked == true,
-                RunTierMigration = RunTierMigrationCheck.IsChecked == true
-            };
-
-            await _adminService.UpdateMaintenanceScheduleAsync(config);
-        }
-        catch (Exception ex)
-        {
-            ShowError("Failed to save schedule", ex.Message);
-        }
+        ReadScheduleCheckboxes();
+        await _viewModel.SaveScheduleAsync();
+        _viewModel.ShowSuccess("Schedule saved successfully.");
     }
 
     private async void RunMaintenance_Click(object sender, RoutedEventArgs e)
     {
-        RunMaintenanceButton.IsEnabled = false;
-        try
-        {
-            var options = new MaintenanceRunOptions
-            {
-                RunCompression = RunCompressionCheck.IsChecked == true,
-                RunCleanup = RunCleanupCheck.IsChecked == true,
-                RunIntegrityCheck = RunIntegrityCheck.IsChecked == true,
-                RunTierMigration = RunTierMigrationCheck.IsChecked == true
-            };
-
-            var result = await _adminService.RunMaintenanceNowAsync(options);
-
-            if (result.Success)
-            {
-                ShowSuccess($"Maintenance started. Run ID: {result.RunId}");
-                await LoadMaintenanceHistoryAsync();
-            }
-            else
-            {
-                ShowError("Maintenance Failed", result.Error ?? "Unknown error");
-            }
-        }
-        catch (Exception ex)
-        {
-            ShowError("Maintenance Failed", ex.Message);
-        }
-        finally
-        {
-            RunMaintenanceButton.IsEnabled = true;
-        }
+        ReadScheduleCheckboxes();
+        await _viewModel.RunMaintenanceNowAsync();
     }
 
-
-
-    private async System.Threading.Tasks.Task LoadTierUsageAsync()
+    private async void QuickCheck_Click(object sender, RoutedEventArgs e)
     {
-        try
-        {
-            var result = await _adminService.GetTierUsageAsync();
-            if (result.Success)
-            {
-                var items = result.TierUsage.Select(t => new TierDisplayItem
-                {
-                    Name = t.TierName,
-                    Path = "",
-                    SizeText = FormatHelpers.FormatBytes(t.SizeBytes),
-                    FileCountText = $"{t.FileCount:N0} files",
-                    RetentionText = $"{t.PercentOfTotal:F1}% of total"
-                }).ToList();
-
-                TiersList.ItemsSource = items;
-            }
-        }
-        catch
-        {
-            // Show default tiers
-            TiersList.ItemsSource = new List<TierDisplayItem>
-            {
-                new() { Name = "Hot (Live)", SizeText = "-- GB", FileCountText = "-- files", RetentionText = "Real-time data" },
-                new() { Name = "Warm (Historical)", SizeText = "-- GB", FileCountText = "-- files", RetentionText = "Recent data" },
-                new() { Name = "Cold (Archive)", SizeText = "-- GB", FileCountText = "-- files", RetentionText = "Compressed archive" }
-            };
-        }
+        await _viewModel.RunQuickCheckAsync();
     }
+
+    // ---- Tier ----
 
     private async void MigrateNow_Click(object sender, RoutedEventArgs e)
     {
@@ -246,74 +88,25 @@ public partial class AdminMaintenancePage : Page
             MessageBoxButton.YesNo,
             MessageBoxImage.Question);
 
-        if (result != MessageBoxResult.Yes) return;
-
-        try
+        if (result == MessageBoxResult.Yes)
         {
-            var migrationResult = await _adminService.MigrateToTierAsync("archive", new TierMigrationOptions
-            {
-                OlderThan = DateOnly.FromDateTime(DateTime.Today.AddDays(-30))
-            });
-
-            if (migrationResult.Success)
-            {
-                ShowSuccess($"Migration complete. {migrationResult.FilesProcessed} files migrated, {FormatHelpers.FormatBytes(migrationResult.SpaceSavedBytes)} saved.");
-                await LoadTierUsageAsync();
-            }
-            else
-            {
-                ShowError("Migration Failed", migrationResult.Error ?? "Unknown error");
-            }
-        }
-        catch (Exception ex)
-        {
-            ShowError("Migration Failed", ex.Message);
+            await _viewModel.MigrateToArchiveAsync();
         }
     }
 
-
-
-    private async System.Threading.Tasks.Task LoadRetentionPoliciesAsync()
-    {
-        try
-        {
-            var result = await _adminService.GetRetentionPoliciesAsync();
-            if (result.Success)
-            {
-                var items = result.Policies.Select(p => new RetentionPolicyDisplayItem
-                {
-                    Id = p.Id,
-                    Name = p.Name,
-                    Description = p.SymbolPattern ?? "All symbols",
-                    RetentionText = $"{p.RetentionDays} days",
-                    Enabled = p.Enabled
-                }).ToList();
-
-                PoliciesList.ItemsSource = items;
-            }
-        }
-        catch
-        {
-            // Show default policies
-            PoliciesList.ItemsSource = new List<RetentionPolicyDisplayItem>
-            {
-                new() { Name = "Default Policy", Description = "All symbols", RetentionText = "90 days", Enabled = true },
-                new() { Name = "Archive Policy", Description = "Archived data", RetentionText = "365 days", Enabled = true }
-            };
-        }
-    }
+    // ---- Retention policies ----
 
     private async void AddPolicy_Click(object sender, RoutedEventArgs e)
     {
-        ShowInfo("Add Policy", "Policy editor dialog will be implemented here.");
-        await LoadRetentionPoliciesAsync();
+        _viewModel.NotifyAddPolicy();
+        await _viewModel.LoadRetentionPoliciesAsync();
     }
 
     private void EditPolicy_Click(object sender, RoutedEventArgs e)
     {
         if (sender is Button btn && btn.Tag is string policyId)
         {
-            ShowInfo("Edit Policy", $"Editing policy: {policyId}");
+            _viewModel.NotifyEditPolicy(policyId);
         }
     }
 
@@ -327,24 +120,9 @@ public partial class AdminMaintenancePage : Page
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question);
 
-            if (result != MessageBoxResult.Yes) return;
-
-            try
+            if (result == MessageBoxResult.Yes)
             {
-                var deleteResult = await _adminService.DeleteRetentionPolicyAsync(policyId);
-                if (deleteResult.Success)
-                {
-                    await LoadRetentionPoliciesAsync();
-                    ShowSuccess("Policy deleted.");
-                }
-                else
-                {
-                    ShowError("Delete Failed", deleteResult.Error ?? "Unknown error");
-                }
-            }
-            catch (Exception ex)
-            {
-                ShowError("Delete Failed", ex.Message);
+                await _viewModel.DeletePolicyAsync(policyId);
             }
         }
     }
@@ -357,60 +135,17 @@ public partial class AdminMaintenancePage : Page
             MessageBoxButton.YesNo,
             MessageBoxImage.Warning);
 
-        if (result != MessageBoxResult.Yes) return;
-
-        try
+        if (result == MessageBoxResult.Yes)
         {
-            var applyResult = await _adminService.ApplyRetentionPoliciesAsync(dryRun: false);
-            if (applyResult.Success)
-            {
-                ShowSuccess($"Retention applied. {applyResult.FilesDeleted} files deleted, {FormatHelpers.FormatBytes(applyResult.BytesFreed)} freed.");
-            }
-            else
-            {
-                ShowError("Apply Failed", applyResult.Error ?? "Unknown error");
-            }
-        }
-        catch (Exception ex)
-        {
-            ShowError("Apply Failed", ex.Message);
+            await _viewModel.ApplyRetentionPoliciesAsync();
         }
     }
 
+    // ---- Cleanup ----
+
     private async void PreviewCleanup_Click(object sender, RoutedEventArgs e)
     {
-        try
-        {
-            var result = await _adminService.PreviewCleanupAsync(new CleanupOptions
-            {
-                DeleteEmptyDirectories = true,
-                DeleteTempFiles = true
-            });
-
-            if (result.Success)
-            {
-                CleanupResultsCard.Visibility = Visibility.Visible;
-                CleanupFilesText.Text = result.TotalFiles.ToString();
-                CleanupSizeText.Text = FormatHelpers.FormatBytes(result.TotalBytes);
-
-                var items = result.FilesToDelete.Select(f => new CleanupFileDisplayItem
-                {
-                    Path = f.Path,
-                    SizeText = FormatHelpers.FormatBytes(f.SizeBytes),
-                    Reason = f.Reason
-                }).ToList();
-
-                CleanupFilesList.ItemsSource = items;
-            }
-            else
-            {
-                ShowError("Preview Failed", result.Error ?? "Unknown error");
-            }
-        }
-        catch (Exception ex)
-        {
-            ShowError("Preview Failed", ex.Message);
-        }
+        await _viewModel.PreviewCleanupAsync();
     }
 
     private async void ExecuteCleanup_Click(object sender, RoutedEventArgs e)
@@ -421,145 +156,112 @@ public partial class AdminMaintenancePage : Page
             MessageBoxButton.YesNo,
             MessageBoxImage.Warning);
 
-        if (result != MessageBoxResult.Yes) return;
-
-        try
+        if (result == MessageBoxResult.Yes)
         {
-            var cleanupResult = await _adminService.ExecuteCleanupAsync(new CleanupOptions
-            {
-                DeleteEmptyDirectories = true,
-                DeleteTempFiles = true
-            });
-
-            if (cleanupResult.Success)
-            {
-                ShowSuccess($"Cleanup complete. {cleanupResult.FilesDeleted} files deleted, {FormatHelpers.FormatBytes(cleanupResult.BytesFreed)} freed.");
-                CleanupResultsCard.Visibility = Visibility.Collapsed;
-            }
-            else
-            {
-                ShowError("Cleanup Failed", cleanupResult.Error ?? "Unknown error");
-            }
-        }
-        catch (Exception ex)
-        {
-            ShowError("Cleanup Failed", ex.Message);
+            await _viewModel.ExecuteCleanupAsync();
         }
     }
 
-
-
-    private async System.Threading.Tasks.Task LoadMaintenanceHistoryAsync()
-    {
-        try
-        {
-            var result = await _adminService.GetMaintenanceHistoryAsync(limit: 10);
-            if (result.Success)
-            {
-                var items = result.Runs.Select(r => new MaintenanceHistoryItem
-                {
-                    RunId = r.RunId,
-                    TimeText = r.StartTime.ToString("g"),
-                    OperationsText = $"{r.OperationsCompleted} completed, {r.OperationsFailed} failed",
-                    DurationText = r.EndTime.HasValue
-                        ? $"{(r.EndTime.Value - r.StartTime).TotalMinutes:F1} min"
-                        : "In progress",
-                    StatusIcon = r.Status == "Completed" ? "\uE73E" : (r.Status == "Failed" ? "\uEA39" : "\uE895"),
-                    StatusColor = new SolidColorBrush(
-                        r.Status == "Completed"
-                            ? Color.FromRgb(72, 187, 120)
-                            : (r.Status == "Failed"
-                                ? Color.FromRgb(245, 101, 101)
-                                : Color.FromRgb(88, 166, 255)))
-                }).ToList();
-
-                HistoryList.ItemsSource = items;
-            }
-        }
-        catch
-        {
-            HistoryList.ItemsSource = null;
-        }
-    }
-
-
-
-    private void ShowSuccess(string message)
-    {
-        StatusInfoBar.Visibility = Visibility.Visible;
-        StatusInfoIcon.Text = "\uE73E";
-        StatusInfoIcon.Foreground = new SolidColorBrush(Color.FromRgb(72, 187, 120));
-        StatusInfoTitle.Text = "Success";
-        StatusInfoMessage.Text = message;
-    }
-
-    private void ShowError(string title, string message)
-    {
-        StatusInfoBar.Visibility = Visibility.Visible;
-        StatusInfoIcon.Text = "\uEA39";
-        StatusInfoIcon.Foreground = new SolidColorBrush(Color.FromRgb(245, 101, 101));
-        StatusInfoTitle.Text = title;
-        StatusInfoMessage.Text = message;
-    }
-
-    private void ShowInfo(string title, string message)
-    {
-        StatusInfoBar.Visibility = Visibility.Visible;
-        StatusInfoIcon.Text = "\uE946";
-        StatusInfoIcon.Foreground = new SolidColorBrush(Color.FromRgb(88, 166, 255));
-        StatusInfoTitle.Text = title;
-        StatusInfoMessage.Text = message;
-    }
+    // ---- InfoBar ----
 
     private void CloseInfoBar_Click(object sender, RoutedEventArgs e)
     {
-        StatusInfoBar.Visibility = Visibility.Collapsed;
+        _viewModel.DismissStatus();
     }
 
+    // ---- ViewModel → named-control sync (transitional bridge) ----
 
-}
+    private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        switch (e.PropertyName)
+        {
+            case nameof(AdminMaintenanceViewModel.ScheduleEnabled):
+                EnableScheduleToggle.IsChecked = _viewModel.ScheduleEnabled;
+                break;
 
+            case nameof(AdminMaintenanceViewModel.NextRunText):
+                NextRunText.Text = _viewModel.NextRunText;
+                break;
 
-public sealed class QuickCheckDisplayItem
-{
-    public string Name { get; set; } = string.Empty;
-    public string Details { get; set; } = string.Empty;
-    public string StatusIcon { get; set; } = string.Empty;
-    public SolidColorBrush? StatusColor { get; set; }
-}
+            case nameof(AdminMaintenanceViewModel.LastRunText):
+                LastRunText.Text = _viewModel.LastRunText;
+                break;
 
-public sealed class TierDisplayItem
-{
-    public string Name { get; set; } = string.Empty;
-    public string Path { get; set; } = string.Empty;
-    public string SizeText { get; set; } = string.Empty;
-    public string FileCountText { get; set; } = string.Empty;
-    public string RetentionText { get; set; } = string.Empty;
-}
+            case nameof(AdminMaintenanceViewModel.IsQuickCheckBusy):
+                QuickCheckButton.IsEnabled = !_viewModel.IsQuickCheckBusy;
+                break;
 
-public sealed class RetentionPolicyDisplayItem
-{
-    public string Id { get; set; } = string.Empty;
-    public string Name { get; set; } = string.Empty;
-    public string Description { get; set; } = string.Empty;
-    public string RetentionText { get; set; } = string.Empty;
-    public bool Enabled { get; set; }
-}
+            case nameof(AdminMaintenanceViewModel.IsMaintenanceBusy):
+                RunMaintenanceButton.IsEnabled = !_viewModel.IsMaintenanceBusy;
+                break;
 
-public sealed class CleanupFileDisplayItem
-{
-    public string Path { get; set; } = string.Empty;
-    public string SizeText { get; set; } = string.Empty;
-    public string Reason { get; set; } = string.Empty;
-}
+            case nameof(AdminMaintenanceViewModel.IsQuickCheckResultsVisible):
+                QuickCheckResultsCard.Visibility = _viewModel.IsQuickCheckResultsVisible
+                    ? Visibility.Visible : Visibility.Collapsed;
+                break;
 
-public sealed class MaintenanceHistoryItem
-{
-    public string RunId { get; set; } = string.Empty;
-    public string TimeText { get; set; } = string.Empty;
-    public string OperationsText { get; set; } = string.Empty;
-    public string DurationText { get; set; } = string.Empty;
-    public string StatusIcon { get; set; } = string.Empty;
-    public SolidColorBrush? StatusColor { get; set; }
+            case nameof(AdminMaintenanceViewModel.QuickCheckIcon):
+                QuickCheckIcon.Text = _viewModel.QuickCheckIcon;
+                QuickCheckIcon.Foreground = new SolidColorBrush(_viewModel.QuickCheckIconColor);
+                break;
+
+            case nameof(AdminMaintenanceViewModel.QuickCheckStatusText):
+                QuickCheckStatusText.Text = _viewModel.QuickCheckStatusText;
+                QuickCheckOverallText.Text = _viewModel.QuickCheckOverallText;
+                break;
+
+            case nameof(AdminMaintenanceViewModel.IsCleanupResultsVisible):
+                CleanupResultsCard.Visibility = _viewModel.IsCleanupResultsVisible
+                    ? Visibility.Visible : Visibility.Collapsed;
+                break;
+
+            case nameof(AdminMaintenanceViewModel.CleanupFilesText):
+                CleanupFilesText.Text = _viewModel.CleanupFilesText;
+                CleanupSizeText.Text = _viewModel.CleanupSizeText;
+                break;
+
+            case nameof(AdminMaintenanceViewModel.IsStatusVisible):
+                StatusInfoBar.Visibility = _viewModel.IsStatusVisible
+                    ? Visibility.Visible : Visibility.Collapsed;
+                break;
+
+            case nameof(AdminMaintenanceViewModel.StatusMessage):
+                StatusInfoIcon.Text = _viewModel.StatusIcon;
+                StatusInfoIcon.Foreground = new SolidColorBrush(_viewModel.StatusColor);
+                StatusInfoTitle.Text = _viewModel.StatusTitle;
+                StatusInfoMessage.Text = _viewModel.StatusMessage;
+                break;
+        }
+    }
+
+    // ---- Helpers ----
+
+    private void ReadScheduleCheckboxes()
+    {
+        _viewModel.RunCompression = RunCompressionCheck.IsChecked == true;
+        _viewModel.RunCleanup = RunCleanupCheck.IsChecked == true;
+        _viewModel.RunIntegrityCheck = RunIntegrityCheck.IsChecked == true;
+        _viewModel.RunTierMigration = RunTierMigrationCheck.IsChecked == true;
+    }
+
+    private void SyncScheduleControls()
+    {
+        EnableScheduleToggle.IsChecked = _viewModel.ScheduleEnabled;
+
+        // Select matching cron item
+        foreach (ComboBoxItem item in ScheduleFrequencyCombo.Items)
+        {
+            if (item.Tag?.ToString() == _viewModel.CronExpression)
+            {
+                ScheduleFrequencyCombo.SelectedItem = item;
+                break;
+            }
+        }
+
+        RunCompressionCheck.IsChecked = _viewModel.RunCompression;
+        RunCleanupCheck.IsChecked = _viewModel.RunCleanup;
+        RunIntegrityCheck.IsChecked = _viewModel.RunIntegrityCheck;
+        RunTierMigrationCheck.IsChecked = _viewModel.RunTierMigration;
+    }
 }
 
