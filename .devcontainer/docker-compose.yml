@@ -1,0 +1,65 @@
+# =============================================================================
+# Dev Container – Docker Compose
+# =============================================================================
+# Provides a full development environment with:
+#   - devcontainer  – the .NET / Node / Python development shell
+#   - db            – PostgreSQL 16 (Security Master + Direct Lending tests)
+#
+# Usage: VS Code "Reopen in Container" or GitHub Codespaces automatically
+# picks this up via devcontainer.json.
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # Development shell
+  # ---------------------------------------------------------------------------
+  devcontainer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ../..:/workspaces/meridian:cached
+    # Keep the container running so VS Code can attach
+    command: sleep infinity
+    environment:
+      # Database connection strings consumed by integration tests and app
+      MERIDIAN_SECURITY_MASTER_CONNECTION_STRING: "Host=db;Port=5432;Database=meridian;Username=dev;Password=devpass;Include Error Detail=true"
+      MERIDIAN_DIRECT_LENDING_CONNECTION_STRING: "Host=db;Port=5432;Database=meridian;Username=dev;Password=devpass;Include Error Detail=true"
+      # .NET telemetry / first-run noise suppression
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
+      DOTNET_NOLOGO: "true"
+      DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+      DOTNET_GENERATE_ASPNET_CERTIFICATE: "false"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - devnet
+
+  # ---------------------------------------------------------------------------
+  # PostgreSQL 16
+  # ---------------------------------------------------------------------------
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: devpass
+      POSTGRES_DB: meridian
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dev -d meridian"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - devnet
+
+networks:
+  devnet:
+    driver: bridge
+
+volumes:
+  postgres-data:
