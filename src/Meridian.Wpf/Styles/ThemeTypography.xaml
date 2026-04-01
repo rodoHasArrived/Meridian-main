@@ -2,13 +2,14 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <FontFamily x:Key="MeridianDisplayFontFamily">Segoe UI Variable Display Semib</FontFamily>
-    <FontFamily x:Key="MeridianBodyFontFamily">Segoe UI Variable Text</FontFamily>
+    <!-- Marquee-inspired type: clean system sans-serif, compact sizing -->
+    <FontFamily x:Key="MeridianDisplayFontFamily">Segoe UI</FontFamily>
+    <FontFamily x:Key="MeridianBodyFontFamily">Segoe UI</FontFamily>
     <FontFamily x:Key="MeridianDataFontFamily">Cascadia Mono</FontFamily>
 
     <Style x:Key="PageTitleStyle" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource MeridianDisplayFontFamily}" />
-        <Setter Property="FontSize" Value="31" />
+        <Setter Property="FontSize" Value="20" />
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
         <Setter Property="TextOptions.TextFormattingMode" Value="Ideal" />
@@ -16,7 +17,7 @@
 
     <Style x:Key="SectionHeaderStyle" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource MeridianDisplayFontFamily}" />
-        <Setter Property="FontSize" Value="18" />
+        <Setter Property="FontSize" Value="14" />
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
     </Style>
@@ -35,31 +36,35 @@
         <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
     </Style>
 
+    <!-- Metric value: compact, institutional weight -->
     <Style x:Key="MetricValueStyle" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource MeridianDisplayFontFamily}" />
-        <Setter Property="FontSize" Value="28" />
+        <Setter Property="FontSize" Value="22" />
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
     </Style>
 
+    <!-- Marquee-style label: small-caps/uppercase, very muted gray -->
     <Style x:Key="MetricLabelStyle" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource MeridianBodyFontFamily}" />
-        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontSize" Value="10" />
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Foreground" Value="{StaticResource ConsoleTextMutedBrush}" />
         <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
+        <Setter Property="Typography.Capitals" Value="AllSmallCaps" />
     </Style>
 
     <Style x:Key="DataValueStyle" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource MeridianDataFontFamily}" />
-        <Setter Property="FontSize" Value="22" />
+        <Setter Property="FontSize" Value="18" />
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
     </Style>
 
     <Style x:Key="DataLabelStyle" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource MeridianBodyFontFamily}" />
-        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontSize" Value="10" />
         <Setter Property="Foreground" Value="{StaticResource ConsoleTextMutedBrush}" />
+        <Setter Property="Typography.Capitals" Value="AllSmallCaps" />
     </Style>
 </ResourceDictionary>

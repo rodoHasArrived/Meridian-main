@@ -29,7 +29,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
-            <RowDefinition Height="32" />
+            <RowDefinition Height="28" />
         </Grid.RowDefinitions>
 
         <!-- Fixture/Offline Mode Banner (P0: Hard visual distinction for non-live modes) -->
@@ -107,15 +107,15 @@
             </Border>
         </Grid>
 
-        <!-- Clipboard symbol detection banner: floats at top of content area when symbols found -->
+        <!-- Clipboard symbol detection banner: light theme, Marquee-style -->
         <Border x:Name="ClipboardSymbolBanner"
                 Grid.Row="1"
                 VerticalAlignment="Top"
                 Visibility="{Binding ClipboardBannerVisibility}"
-                Padding="12,8"
+                Padding="16,8"
                 Panel.ZIndex="50"
-                Background="#1A2A4A"
-                BorderBrush="#4488CC" BorderThickness="0,0,0,1">
+                Background="{StaticResource ConsoleBackgroundLightBrush}"
+                BorderBrush="{StaticResource InfoColorBrush}" BorderThickness="0,0,0,2">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -126,11 +126,11 @@
                 <TextBlock Grid.Column="0"
                            Text="&#xE72D;"
                            FontFamily="{StaticResource SymbolThemeFontFamily}"
-                           Foreground="#66AAFF" FontSize="16"
+                           Foreground="{StaticResource InfoColorBrush}" FontSize="14"
                            VerticalAlignment="Center" Margin="0,0,8,0"/>
                 <TextBlock x:Name="ClipboardBannerText"
                            Grid.Column="1"
-                           Foreground="White" VerticalAlignment="Center" FontSize="13"
+                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" VerticalAlignment="Center" FontSize="13"
                            TextTrimming="CharacterEllipsis"
                            Text="{Binding ClipboardBannerText}"/>
                 <Button x:Name="ClipboardAddButton"
