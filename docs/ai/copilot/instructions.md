@@ -768,6 +768,7 @@ Meridian-main
 │   │   ├── repository-structure.md
 │   │   └── workflows-overview.md
 │   ├── getting-started
+│   │   ├── pilot-operator-quickstart.md
 │   │   └── README.md
 │   ├── integrations
 │   │   ├── fsharp-integration.md
@@ -781,6 +782,7 @@ Meridian-main
 │   │   ├── operator-runbook.md
 │   │   ├── performance-tuning.md
 │   │   ├── portable-data-packager.md
+│   │   ├── preflight-checklist.md
 │   │   ├── README.md
 │   │   └── service-level-objectives.md
 │   ├── plans
@@ -2800,8 +2802,10 @@ Meridian-main
 │   │   │   │   │   ├── DataFreshnessSlaMonitorTests.cs
 │   │   │   │   │   ├── DataQualityTests.cs
 │   │   │   │   │   └── LiquidityProfileTests.cs
+│   │   │   │   ├── AlertDispatcherTests.cs
 │   │   │   │   ├── BackpressureAlertServiceTests.cs
 │   │   │   │   ├── BadTickFilterTests.cs
+│   │   │   │   ├── ClockSkewEstimatorTests.cs
 │   │   │   │   ├── ErrorRingBufferTests.cs
 │   │   │   │   ├── PriceContinuityCheckerTests.cs
 │   │   │   │   ├── PrometheusMetricsTests.cs
@@ -2999,7 +3003,10 @@ Meridian-main
 │   │   │   ├── ExceptionTypeTests.cs
 │   │   │   └── ProviderModuleLoaderTests.cs
 │   │   ├── Risk
-│   │   │   └── CompositeRiskValidatorTests.cs
+│   │   │   ├── CompositeRiskValidatorTests.cs
+│   │   │   ├── DrawdownCircuitBreakerTests.cs
+│   │   │   ├── OrderRateThrottleTests.cs
+│   │   │   └── PositionLimitRuleTests.cs
 │   │   ├── SecurityMaster
 │   │   │   ├── SecurityEnrichmentTests.cs
 │   │   │   ├── SecurityMasterAggregateRebuilderTests.cs
