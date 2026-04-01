@@ -454,8 +454,12 @@ public static class WorkstationEndpoints
             var comparison = await readService.CompareRunsAsync(request.RunIds, context.RequestAborted).ConfigureAwait(false);
             if (request.Modes is { Count: > 0 })
             {
-                var modeFilter = new HashSet<StrategyRunMode>(request.Modes);
-                comparison = comparison.Where(row => modeFilter.Contains(row.Mode)).ToArray();
+                var parsedModes = ParseModes(request.Modes);
+                if (parsedModes is { Count: > 0 })
+                {
+                    var modeFilter = new HashSet<StrategyRunMode>(parsedModes);
+                    comparison = comparison.Where(row => modeFilter.Contains(row.Mode)).ToArray();
+                }
             }
 
             return Results.Json(comparison, jsonOptions);
@@ -1536,6 +1540,25 @@ public static class WorkstationEndpoints
         return parsed.Length == 0 ? null : parsed;
     }
 
+    private static IReadOnlyList<StrategyRunMode>? ParseModes(IReadOnlyList<string>? modes)
+    {
+        if (modes is not { Count: > 0 })
+        {
+            return null;
+        }
+
+        var parsed = modes
+            .Select(static token => Enum.TryParse<StrategyRunMode>(token, true, out var modeValue)
+                ? (StrategyRunMode?)modeValue
+                : null)
+            .Where(static item => item.HasValue)
+            .Select(static item => item!.Value)
+            .Distinct()
+            .ToArray();
+
+        return parsed.Length == 0 ? null : parsed;
+    }
+
     private static object BuildGovernanceRunCard(
         StrategyRunSummary run,
         StrategyRunDetail? detail,
@@ -2219,7 +2242,7 @@ public static class WorkstationEndpoints
 /// <summary>Request to compare multiple strategy runs side by side.</summary>
 public sealed record RunComparisonRequest(
     IReadOnlyList<string> RunIds,
-    IReadOnlyList<StrategyRunMode>? Modes = null);
+    IReadOnlyList<string>? Modes = null);
 
 /// <summary>Request to diff two strategy runs.</summary>
 public sealed record RunDiffRequest(string BaseRunId, string TargetRunId);
