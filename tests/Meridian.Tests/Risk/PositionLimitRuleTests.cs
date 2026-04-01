@@ -83,7 +83,7 @@ public sealed class PositionLimitRuleTests
     [Fact]
     public async Task EvaluateAsync_BuyFromFlatPosition_WithinLimit_ReturnsApproved()
     {
-        var tracker = TrackerWithPosition(DefaultSymbol, currentQuantity: 0m);
+        var tracker = TrackerWithPosition(DefaultSymbol, quantity: 0m);
         var sut = CreateSut(tracker, maxPositionSize: 100m);
 
         var result = await sut.EvaluateAsync(CreateBuyOrder(quantity: 50m));
@@ -94,7 +94,7 @@ public sealed class PositionLimitRuleTests
     [Fact]
     public async Task EvaluateAsync_BuyFromFlatPosition_ExceedsLimit_ReturnsRejected()
     {
-        var tracker = TrackerWithPosition(DefaultSymbol, currentQuantity: 0m);
+        var tracker = TrackerWithPosition(DefaultSymbol, quantity: 0m);
         var sut = CreateSut(tracker, maxPositionSize: 100m);
 
         var result = await sut.EvaluateAsync(CreateBuyOrder(quantity: 150m));
@@ -107,7 +107,7 @@ public sealed class PositionLimitRuleTests
     public async Task EvaluateAsync_BuyFromExistingPosition_ProjectedWithinLimit_ReturnsApproved()
     {
         // Current: 60 long, Buy 30 → projected 90, limit 100 → approve
-        var tracker = TrackerWithPosition(DefaultSymbol, currentQuantity: 60m);
+        var tracker = TrackerWithPosition(DefaultSymbol, quantity: 60m);
         var sut = CreateSut(tracker, maxPositionSize: 100m);
 
         var result = await sut.EvaluateAsync(CreateBuyOrder(quantity: 30m));
@@ -119,7 +119,7 @@ public sealed class PositionLimitRuleTests
     public async Task EvaluateAsync_BuyFromExistingPosition_ProjectedExceedsLimit_ReturnsRejected()
     {
         // Current: 80 long, Buy 30 → projected 110, limit 100 → reject
-        var tracker = TrackerWithPosition(DefaultSymbol, currentQuantity: 80m);
+        var tracker = TrackerWithPosition(DefaultSymbol, quantity: 80m);
         var sut = CreateSut(tracker, maxPositionSize: 100m);
 
         var result = await sut.EvaluateAsync(CreateBuyOrder(quantity: 30m));
@@ -131,7 +131,7 @@ public sealed class PositionLimitRuleTests
     public async Task EvaluateAsync_SellFromLongPosition_ProjectedWithinLimit_ReturnsApproved()
     {
         // Current: 80 long, Sell 60 → projected +20, abs(20) = 20 < 100 → approve
-        var tracker = TrackerWithPosition(DefaultSymbol, currentQuantity: 80m);
+        var tracker = TrackerWithPosition(DefaultSymbol, quantity: 80m);
         var sut = CreateSut(tracker, maxPositionSize: 100m);
 
         var result = await sut.EvaluateAsync(CreateSellOrder(quantity: 60m));
@@ -143,7 +143,7 @@ public sealed class PositionLimitRuleTests
     public async Task EvaluateAsync_SellFlipsToShortBeyondLimit_ReturnsRejected()
     {
         // Current: 50 long, Sell 200 → projected -150, abs(-150) = 150 > 100 → reject
-        var tracker = TrackerWithPosition(DefaultSymbol, currentQuantity: 50m);
+        var tracker = TrackerWithPosition(DefaultSymbol, quantity: 50m);
         var sut = CreateSut(tracker, maxPositionSize: 100m);
 
         var result = await sut.EvaluateAsync(CreateSellOrder(quantity: 200m));
@@ -155,7 +155,7 @@ public sealed class PositionLimitRuleTests
     public async Task EvaluateAsync_SellFlipsToShortWithinLimit_ReturnsApproved()
     {
         // Current: 50 long, Sell 120 → projected -70, abs(-70) = 70 < 100 → approve
-        var tracker = TrackerWithPosition(DefaultSymbol, currentQuantity: 50m);
+        var tracker = TrackerWithPosition(DefaultSymbol, quantity: 50m);
         var sut = CreateSut(tracker, maxPositionSize: 100m);
 
         var result = await sut.EvaluateAsync(CreateSellOrder(quantity: 120m));
@@ -167,7 +167,7 @@ public sealed class PositionLimitRuleTests
     public async Task EvaluateAsync_BuyExactlyAtLimit_ReturnsApproved()
     {
         // Exactly at limit: projected == maxPositionSize → abs(100) == 100, NOT > 100 → approve
-        var tracker = TrackerWithPosition(DefaultSymbol, currentQuantity: 0m);
+        var tracker = TrackerWithPosition(DefaultSymbol, quantity: 0m);
         var sut = CreateSut(tracker, maxPositionSize: 100m);
 
         var result = await sut.EvaluateAsync(CreateBuyOrder(quantity: 100m));
@@ -195,7 +195,7 @@ public sealed class PositionLimitRuleTests
     [Fact]
     public async Task EvaluateAsync_RejectedResult_ContainsSymbolInReason()
     {
-        var tracker = TrackerWithPosition(DefaultSymbol, currentQuantity: 0m);
+        var tracker = TrackerWithPosition(DefaultSymbol, quantity: 0m);
         var sut = CreateSut(tracker, maxPositionSize: 50m);
 
         var result = await sut.EvaluateAsync(CreateBuyOrder(quantity: 200m));
