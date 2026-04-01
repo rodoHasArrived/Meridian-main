@@ -843,7 +843,8 @@ Use these documents together when planning or implementing new work:
 │   │   ├── repository-structure.md
 │   │   └── workflows-overview.md
 │   ├── getting-started
-│   │   └── README.md
+│   │   ├── README.md
+│   │   └── pilot-operator-quickstart.md
 │   ├── integrations
 │   │   ├── README.md
 │   │   ├── fsharp-integration.md
@@ -857,6 +858,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── operator-runbook.md
 │   │   ├── performance-tuning.md
 │   │   ├── portable-data-packager.md
+│   │   ├── preflight-checklist.md
 │   │   └── service-level-objectives.md
 │   ├── plans
 │   │   ├── README.md
@@ -3267,6 +3269,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-442 directories, 2697 files
+442 directories, 2699 files
 ```
 <!-- readme-tree end -->
