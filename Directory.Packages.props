@@ -128,7 +128,7 @@
   </ItemGroup>
 
   <ItemGroup Label="QuantScript">
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="5.0.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="5.3.0" />
     <PackageVersion Include="AvalonEdit" Version="6.3.1.120" />
     <PackageVersion Include="ScottPlot.WPF" Version="5.0.55" />
   </ItemGroup>
