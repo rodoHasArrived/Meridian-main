@@ -309,6 +309,7 @@ Meridian-main
 │   │   ├── canonicalization-fixture-maintenance.yml
 │   │   ├── close-duplicate-issues.yml
 │   │   ├── code-quality.yml
+│   │   ├── codeql.yml
 │   │   ├── copilot-pull-request-reviewer.yml
 │   │   ├── copilot-setup-steps.yml
 │   │   ├── copilot-swe-agent-copilot.yml

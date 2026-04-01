@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-04-01 23:16:59 UTC. Do not edit manually.
+> Auto-generated on 2026-04-01 23:29:42 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -183,6 +183,7 @@ Meridian-main
 │   │   ├── canonicalization-fixture-maintenance.yml
 │   │   ├── close-duplicate-issues.yml
 │   │   ├── code-quality.yml
+│   │   ├── codeql.yml
 │   │   ├── copilot-pull-request-reviewer.yml
 │   │   ├── copilot-setup-steps.yml
 │   │   ├── copilot-swe-agent-copilot.yml

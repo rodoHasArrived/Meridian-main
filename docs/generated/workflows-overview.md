@@ -1,6 +1,6 @@
 # Workflows Overview
 
-> Auto-generated on 2026-04-01 23:16:59 UTC. Do not edit manually.
+> Auto-generated on 2026-04-01 23:29:42 UTC. Do not edit manually.
 
 | Workflow File | Name |
 |---|---|
@@ -10,6 +10,7 @@
 | `.github/workflows/canonicalization-fixture-maintenance.yml` | Canonicalization Fixture Maintenance |
 | `.github/workflows/close-duplicate-issues.yml` | Close Duplicate and Stale Auto-Generated Issues |
 | `.github/workflows/code-quality.yml` | Code Quality |
+| `.github/workflows/codeql.yml` | "CodeQL Advanced" |
 | `.github/workflows/copilot-pull-request-reviewer.yml` | Copilot Pull Request Reviewer |
 | `.github/workflows/copilot-setup-steps.yml` | Copilot Environment Setup |
 | `.github/workflows/copilot-swe-agent-copilot.yml` | Copilot SWE Agent / Copilot |
