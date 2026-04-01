@@ -296,6 +296,7 @@
                             <TextBlock Text="App Theme" Style="{StaticResource FormLabelStyle}" Margin="0,0,0,4" />
                             <ComboBox x:Name="ThemeCombo"
                                       Style="{StaticResource FormComboBoxStyle}"
+                                      SelectedIndex="{Binding ThemeIndex, Mode=TwoWay}"
                                       SelectionChanged="ThemeCombo_SelectionChanged">
                                 <ComboBoxItem Content="Use system setting" Tag="Default" IsSelected="True" />
                                 <ComboBoxItem Content="Light" Tag="Light" />
@@ -305,7 +306,9 @@
 
                         <StackPanel Margin="0,0,0,12">
                             <TextBlock Text="Accent Color" Style="{StaticResource FormLabelStyle}" Margin="0,0,0,4" />
-                            <ComboBox x:Name="AccentColorCombo" Style="{StaticResource FormComboBoxStyle}">
+                            <ComboBox x:Name="AccentColorCombo"
+                                      Style="{StaticResource FormComboBoxStyle}"
+                                      SelectedIndex="{Binding AccentColorIndex, Mode=TwoWay}">
                                 <ComboBoxItem Content="System default" Tag="System" IsSelected="True" />
                                 <ComboBoxItem Content="Blue" Tag="Blue" />
                                 <ComboBoxItem Content="Green" Tag="Green" />
@@ -316,6 +319,7 @@
 
                         <CheckBox x:Name="CompactModeToggle"
                                   Content="Compact Mode (Reduced padding)"
+                                  IsChecked="{Binding IsCompactMode, Mode=TwoWay}"
                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
                     </StackPanel>
                 </Border>
@@ -336,13 +340,12 @@
 
                         <CheckBox x:Name="NotificationsEnabledToggle"
                                   Content="Enable Windows Notifications"
-                                  IsChecked="True"
+                                  IsChecked="{Binding IsNotificationsEnabled, Mode=TwoWay}"
                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                  Checked="NotificationsEnabled_Changed"
-                                  Unchecked="NotificationsEnabled_Changed"
                                   Margin="0,0,0,16" />
 
-                        <StackPanel x:Name="NotificationSettingsPanel">
+                        <StackPanel x:Name="NotificationSettingsPanel"
+                                    Opacity="{Binding NotificationsPanelOpacity}">
                             <TextBlock Text="Notify me about:"
                                        FontWeight="SemiBold"
                                        Foreground="{StaticResource ConsoleTextPrimaryBrush}"
@@ -384,14 +387,14 @@
                             <TextBlock Text="Collector API Base URL" Style="{StaticResource FormLabelStyle}" Margin="0,0,0,4" />
                             <TextBox x:Name="ApiBaseUrlBox"
                                      Style="{StaticResource FormTextBoxStyle}"
-                                     Text="http://localhost:8080" />
+                                     Text="{Binding ApiBaseUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                         </StackPanel>
 
                         <StackPanel Margin="0,0,0,12">
                             <TextBlock Text="Status Refresh Interval (seconds)" Style="{StaticResource FormLabelStyle}" Margin="0,0,0,4" />
                             <TextBox x:Name="StatusRefreshIntervalBox"
                                      Style="{StaticResource FormTextBoxStyle}"
-                                     Text="2"
+                                     Text="{Binding StatusRefreshInterval, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      Width="100"
                                      HorizontalAlignment="Left" />
                         </StackPanel>
@@ -557,25 +560,26 @@
                                 <TextBlock Text="Max Concurrent Downloads" Style="{StaticResource FormLabelStyle}" Margin="0,0,0,4" />
                                 <TextBox x:Name="MaxConcurrentDownloadsBox"
                                          Style="{StaticResource FormTextBoxStyle}"
-                                         Text="4" />
+                                         Text="{Binding MaxConcurrentDownloads, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                             </StackPanel>
 
                             <StackPanel Grid.Column="1">
                                 <TextBlock Text="Write Buffer Size (KB)" Style="{StaticResource FormLabelStyle}" Margin="0,0,0,4" />
                                 <TextBox x:Name="WriteBufferSizeBox"
                                          Style="{StaticResource FormTextBoxStyle}"
-                                         Text="64" />
+                                         Text="{Binding WriteBufferSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                             </StackPanel>
                         </Grid>
 
                         <CheckBox x:Name="EnableMetricsToggle"
                                   Content="Enable Performance Metrics"
-                                  IsChecked="True"
+                                  IsChecked="{Binding IsMetricsEnabled, Mode=TwoWay}"
                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
                                   Margin="0,0,0,8" />
 
                         <CheckBox x:Name="EnableDebugLoggingToggle"
                                   Content="Enable Debug Logging (Verbose)"
+                                  IsChecked="{Binding IsDebugLoggingEnabled, Mode=TwoWay}"
                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
                     </StackPanel>
                 </Border>
