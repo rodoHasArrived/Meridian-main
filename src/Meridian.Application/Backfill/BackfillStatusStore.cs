@@ -14,6 +14,7 @@ public sealed class BackfillStatusStore
 {
     private readonly string _path;
     private readonly string _symbolCheckpointsPath;
+    private readonly string _symbolBarCountsPath;
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -28,6 +29,7 @@ public sealed class BackfillStatusStore
         var statusDir = Path.Combine(root, "_status");
         _path = Path.Combine(statusDir, "backfill.json");
         _symbolCheckpointsPath = Path.Combine(statusDir, "backfill-symbol-checkpoints.json");
+        _symbolBarCountsPath = Path.Combine(statusDir, "backfill-symbol-barcounts.json");
     }
 
     public static BackfillStatusStore FromConfig(AppConfig cfg) => new(cfg.DataRoot);
@@ -65,13 +67,15 @@ public sealed class BackfillStatusStore
 
     /// <summary>
     /// Records that <paramref name="symbol"/> was successfully backfilled up to and including
-    /// <paramref name="lastCompletedDate"/>. Subsequent calls update the stored date if the new
-    /// value is later than the previously recorded one.
+    /// <paramref name="lastCompletedDate"/> with <paramref name="barsWritten"/> bars.
+    /// Subsequent calls update the stored date if the new value is later than the previously
+    /// recorded one; the bar count is replaced unconditionally when the date advances.
     /// Thread-safe: concurrent writes are serialized through an internal lock.
     /// </summary>
     public async Task WriteSymbolCheckpointAsync(
         string symbol,
         DateOnly lastCompletedDate,
+        long barsWritten = 0,
         CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(symbol);
@@ -79,21 +83,29 @@ public sealed class BackfillStatusStore
         await _checkpointLock.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            // Load mutable copy from file, or start fresh.
+            // ---- date checkpoint ----
             var checkpoints = TryReadSymbolCheckpointsAsMutable() ?? new Dictionary<string, DateOnly>(StringComparer.OrdinalIgnoreCase);
 
-            // Keep the most recent (latest) date per symbol.
-            if (!checkpoints.TryGetValue(symbol, out var existing) || lastCompletedDate > existing)
+            bool dateAdvanced = !checkpoints.TryGetValue(symbol, out var existing) || lastCompletedDate > existing;
+            if (dateAdvanced)
                 checkpoints[symbol] = lastCompletedDate;
 
-            // Serialize as a flat object keyed by symbol (camelCase not applicable to dynamic keys).
             var serializable = checkpoints.ToDictionary(
                 kv => kv.Key,
                 kv => kv.Value.ToString("yyyy-MM-dd"),
                 StringComparer.OrdinalIgnoreCase);
 
-            var json = JsonSerializer.Serialize(serializable, JsonOptions);
-            await AtomicFileWriter.WriteAsync(_symbolCheckpointsPath, json, ct);
+            var checkpointJson = JsonSerializer.Serialize(serializable, JsonOptions);
+            await AtomicFileWriter.WriteAsync(_symbolCheckpointsPath, checkpointJson, ct);
+
+            // ---- bar-count sidecar ----
+            if (barsWritten > 0 && dateAdvanced)
+            {
+                var barCounts = TryReadSymbolBarCountsAsMutable() ?? new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
+                barCounts[symbol] = barsWritten;
+                var barCountJson = JsonSerializer.Serialize(barCounts, JsonOptions);
+                await AtomicFileWriter.WriteAsync(_symbolBarCountsPath, barCountJson, ct);
+            }
         }
         finally
         {
@@ -107,6 +119,15 @@ public sealed class BackfillStatusStore
     /// </summary>
     public IReadOnlyDictionary<string, DateOnly>? TryReadSymbolCheckpoints()
         => TryReadSymbolCheckpointsAsMutable();
+
+    /// <summary>
+    /// Returns the per-symbol bar-count map persisted alongside the checkpoints, or <c>null</c>
+    /// when no bar-count data has been saved yet.
+    /// Keys are symbol names (case-insensitive); values are the number of bars written in the run
+    /// that last advanced the checkpoint date for that symbol.
+    /// </summary>
+    public IReadOnlyDictionary<string, long>? TryReadSymbolBarCounts()
+        => TryReadSymbolBarCountsAsMutable();
 
     private Dictionary<string, DateOnly>? TryReadSymbolCheckpointsAsMutable()
     {
@@ -135,18 +156,36 @@ public sealed class BackfillStatusStore
         }
     }
 
+    private Dictionary<string, long>? TryReadSymbolBarCountsAsMutable()
+    {
+        try
+        {
+            if (!File.Exists(_symbolBarCountsPath))
+                return null;
+
+            var json = File.ReadAllText(_symbolBarCountsPath);
+            return JsonSerializer.Deserialize<Dictionary<string, long>>(json, JsonOptions)
+                   ?? new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
+        }
+        catch (Exception ex) when (ex is JsonException or IOException)
+        {
+            return null;
+        }
+    }
+
     /// <summary>
-    /// Removes all per-symbol checkpoints. Call when starting a fresh (non-resume) backfill run.
+    /// Removes all per-symbol checkpoints and bar-count data.
+    /// Call when starting a fresh (non-resume) backfill run.
     /// </summary>
     public async Task ClearSymbolCheckpointsAsync(CancellationToken ct = default)
     {
         try
         {
             if (File.Exists(_symbolCheckpointsPath))
-            {
-                // Overwrite with empty object rather than deleting, to preserve directory structure.
                 await AtomicFileWriter.WriteAsync(_symbolCheckpointsPath, "{}", ct);
-            }
+
+            if (File.Exists(_symbolBarCountsPath))
+                await AtomicFileWriter.WriteAsync(_symbolBarCountsPath, "{}", ct);
         }
         catch (IOException)
         {

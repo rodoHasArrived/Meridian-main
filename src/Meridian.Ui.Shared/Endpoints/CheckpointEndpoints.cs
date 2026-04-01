@@ -32,6 +32,60 @@ public static class CheckpointEndpoints
         .WithDescription("Returns checkpoint history for backfill jobs.")
         .Produces(200);
 
+        // Per-symbol completeness validation signals (pass/warn/fail operator trust badges)
+        group.MapGet(UiApiRoutes.BackfillCheckpointsValidation, (BackfillCoordinator backfill) =>
+        {
+            var lastRun = backfill.TryReadLast();
+
+            // Prefer signals embedded in the last BackfillResult (new runs populate this).
+            if (lastRun?.SymbolValidationSignals is { Length: > 0 } signals)
+            {
+                return Results.Json(new
+                {
+                    provider = lastRun.Provider,
+                    from = lastRun.From,
+                    to = lastRun.To,
+                    runCompletedUtc = lastRun.CompletedUtc,
+                    signals
+                }, jsonOptions);
+            }
+
+            // Fallback: derive signals from persisted checkpoint + bar-count sidecars.
+            // This handles runs performed before this feature was introduced.
+            var checkpoints = backfill.TryReadSymbolCheckpoints();
+            var barCounts = backfill.TryReadSymbolBarCounts();
+
+            if (checkpoints is null || checkpoints.Count == 0)
+                return Results.Json(new { signals = Array.Empty<object>() }, jsonOptions);
+
+            var derived = checkpoints.Select(kv =>
+            {
+                long bars = barCounts is not null && barCounts.TryGetValue(kv.Key, out var barCount) ? barCount : 0L;
+                return new
+                {
+                    symbol = kv.Key,
+                    status = bars > 0 ? "Pass" : "Warn",
+                    barsWritten = bars,
+                    checkpointBarsWritten = (long?)null,
+                    effectiveFrom = (DateOnly?)null,
+                    effectiveTo = kv.Value,
+                    reason = bars == 0 ? "No bar-count data available for this checkpoint (legacy run)" : (string?)null
+                };
+            }).ToArray();
+
+            return Results.Json(new
+            {
+                provider = lastRun?.Provider,
+                from = lastRun?.From,
+                to = lastRun?.To,
+                runCompletedUtc = lastRun?.CompletedUtc,
+                signals = derived
+            }, jsonOptions);
+        })
+        .WithName("GetCheckpointValidation")
+        .WithDescription("Returns per-symbol completeness signals (pass/warn/fail) for the last backfill run. Used as operator trust badges in the backfill UI.")
+        .Produces(200);
+
         // Get resumable jobs (incomplete/failed checkpoints)
         group.MapGet(UiApiRoutes.BackfillCheckpointsResumable, (BackfillCoordinator backfill) =>
         {
