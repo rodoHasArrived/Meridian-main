@@ -202,28 +202,18 @@ Meridian-main
 │   │   ├── _shared
 │   │   │   └── project-context.md
 │   │   ├── meridian-blueprint
-│   │   │   ├── agents
-│   │   │   │   └── openai.yaml
 │   │   │   ├── references
 │   │   │   │   └── blueprint-patterns.md
 │   │   │   └── SKILL.md
 │   │   ├── meridian-brainstorm
-│   │   │   ├── agents
-│   │   │   │   └── openai.yaml
 │   │   │   ├── references
 │   │   │   │   └── competitive-landscape.md
 │   │   │   └── SKILL.md
 │   │   ├── meridian-cleanup
-│   │   │   ├── agents
-│   │   │   │   └── openai.yaml
 │   │   │   └── SKILL.md
 │   │   ├── meridian-code-review
-│   │   │   ├── agents
-│   │   │   │   └── openai.yaml
 │   │   │   └── SKILL.md
 │   │   ├── meridian-implementation-assurance
-│   │   │   ├── agents
-│   │   │   │   └── openai.yaml
 │   │   │   ├── evals
 │   │   │   │   ├── artifacts
 │   │   │   │   │   ├── eval-1.jsonl
@@ -244,8 +234,6 @@ Meridian-main
 │   │   │   │   └── score_eval.py
 │   │   │   └── SKILL.md
 │   │   ├── meridian-provider-builder
-│   │   │   ├── agents
-│   │   │   │   └── openai.yaml
 │   │   │   ├── references
 │   │   │   │   └── provider-patterns.md
 │   │   │   └── SKILL.md
@@ -254,14 +242,10 @@ Meridian-main
 │   │   │   │   └── openai.yaml
 │   │   │   └── SKILL.md
 │   │   ├── meridian-roadmap-strategist
-│   │   │   ├── agents
-│   │   │   │   └── openai.yaml
 │   │   │   ├── references
 │   │   │   │   └── roadmap-source-map.md
 │   │   │   └── SKILL.md
 │   │   ├── meridian-test-writer
-│   │   │   ├── agents
-│   │   │   │   └── openai.yaml
 │   │   │   ├── references
 │   │   │   │   └── test-patterns.md
 │   │   │   └── SKILL.md
@@ -3215,25 +3199,18 @@ Meridian-main
 ├── .globalconfig
 ├── .markdownlint.json
 ├── .vsconfig
-├── AGENT_IMPLEMENTATION_SUMMARY.md
-├── AGENT_QUICK_REFERENCE.md
 ├── CLAUDE.md
-├── CONTEXTUAL_COMMANDS_IMPLEMENTATION_SUMMARY.md
-├── CORPACTIONS_IMPLEMENTATION.md
 ├── desktop.ini
 ├── Directory.Build.props
 ├── Directory.Packages.props
 ├── environment.yml
 ├── global.json
-├── IMPLEMENTATION_CHECKLIST.md
-├── IMPLEMENTATION_SUMMARY.md
 ├── LICENSE
 ├── Makefile
 ├── Meridian.sln
 ├── package-lock.json
 ├── package.json
-├── README.md
-└── SYSTEM_TRAY_IMPLEMENTATION.md
+└── README.md
 ```
 
 Full annotated file tree: [`docs/ai/claude/CLAUDE.structure.md`](docs/ai/claude/CLAUDE.structure.md)
