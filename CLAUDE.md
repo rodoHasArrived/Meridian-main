@@ -2393,6 +2393,7 @@ Meridian-main
 │       │   ├── ActivityLogModels.cs
 │       │   ├── AppConfig.cs
 │       │   ├── BackfillModels.cs
+│       │   ├── BlotterModels.cs
 │       │   ├── DashboardModels.cs
 │       │   ├── DataQualityModels.cs
 │       │   ├── LeanModels.cs
@@ -2501,6 +2502,7 @@ Meridian-main
 │       │   ├── OrderBookViewModel.cs
 │       │   ├── PackageManagerViewModel.cs
 │       │   ├── PluginManagementViewModel.cs
+│       │   ├── PositionBlotterViewModel.cs
 │       │   ├── ProviderHealthViewModel.cs
 │       │   ├── ProviderPageModels.cs
 │       │   ├── ProviderViewModel.cs
@@ -2508,6 +2510,7 @@ Meridian-main
 │       │   ├── QuantScriptViewModel.cs
 │       │   ├── QuoteFloatViewModel.cs
 │       │   ├── RunMatViewModel.cs
+│       │   ├── RunRiskViewModel.cs
 │       │   ├── SecurityMasterDeactivateViewModel.cs
 │       │   ├── SecurityMasterEditViewModel.cs
 │       │   ├── SecurityMasterViewModel.cs
@@ -2619,6 +2622,8 @@ Meridian-main
 │       │   ├── PluginManagementPage.xaml.cs
 │       │   ├── PortfolioImportPage.xaml
 │       │   ├── PortfolioImportPage.xaml.cs
+│       │   ├── PositionBlotterPage.xaml
+│       │   ├── PositionBlotterPage.xaml.cs
 │       │   ├── ProviderHealthPage.xaml
 │       │   ├── ProviderHealthPage.xaml.cs
 │       │   ├── ProviderPage.xaml
@@ -2643,6 +2648,8 @@ Meridian-main
 │       │   ├── RunMatPage.xaml.cs
 │       │   ├── RunPortfolioPage.xaml
 │       │   ├── RunPortfolioPage.xaml.cs
+│       │   ├── RunRiskPage.xaml
+│       │   ├── RunRiskPage.xaml.cs
 │       │   ├── SaveWatchlistDialog.xaml
 │       │   ├── SaveWatchlistDialog.xaml.cs
 │       │   ├── ScheduleManagerPage.xaml
