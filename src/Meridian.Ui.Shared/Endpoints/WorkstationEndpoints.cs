@@ -1404,7 +1404,7 @@ public static class WorkstationEndpoints
                     LastUpdatedAt: DateTimeOffset.UtcNow.AddMinutes(-8),
                     ReviewedBy: "ops.gov",
                     ReviewedAt: DateTimeOffset.UtcNow.AddMinutes(-8),
-                    ResolutionNote: "Investigating ticker reclassification."))
+                    ResolutionNote: "Investigating ticker reclassification.")
             },
             workspace = new
             {
