@@ -648,7 +648,16 @@ public partial class App : System.Windows.Application
             await Task.WhenAll(shutdownTasks);
 
             // Dispose the NotifyIcon so the system-tray icon is removed cleanly.
-            try { WpfServices.ToastNotificationService.Instance.Dispose(); }
+            try
+            {
+                WpfServices.ToastNotificationService.Instance.Dispose();
+            }
+            catch (Exception ex)
+            {
+                WpfServices.LoggingService.Instance.LogWarning(
+                    "Failed to dispose toast notification service during shutdown",
+                    ("Error", ex.Message));
+            }
 
         }
         catch (OperationCanceledException)

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
@@ -22,6 +23,7 @@ public sealed class SystemHealthViewModel : BindableBase, IDisposable
     private readonly WpfServices.LoggingService _loggingService;
     private readonly DispatcherTimer _refreshTimer;
     private readonly DateTime _startTime = DateTime.UtcNow;
+    private int _refreshInFlight;
 
     // ── Cached theme brushes — initialised lazily from Application resources ──────────
     private Brush? _errorBrush;
@@ -112,7 +114,7 @@ public sealed class SystemHealthViewModel : BindableBase, IDisposable
         _loggingService = loggingService;
 
         _refreshTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
-        _refreshTimer.Tick += async (_, _) => await LoadDataAsync();
+        _refreshTimer.Tick += OnRefreshTimerTick;
 
         RefreshCommand = new RelayCommand(() => _ = RefreshAsync());
         GenerateDiagnosticsCommand = new RelayCommand(() => _ = GenerateDiagnosticsAsync());
@@ -165,6 +167,9 @@ public sealed class SystemHealthViewModel : BindableBase, IDisposable
 
     private async Task LoadDataAsync()
     {
+        if (Interlocked.Exchange(ref _refreshInFlight, 1) == 1)
+            return;
+
         try
         {
             await Task.WhenAll(
@@ -177,6 +182,15 @@ public sealed class SystemHealthViewModel : BindableBase, IDisposable
         {
             _loggingService.LogError("Failed to load health data", ex);
         }
+        finally
+        {
+            Volatile.Write(ref _refreshInFlight, 0);
+        }
+    }
+
+    private async void OnRefreshTimerTick(object? sender, EventArgs e)
+    {
+        await LoadDataAsync();
     }
 
     private async Task LoadMetricsAsync()
@@ -184,7 +198,7 @@ public sealed class SystemHealthViewModel : BindableBase, IDisposable
         try
         {
             var metrics = await _healthService.GetSystemMetricsAsync();
-            await Application.Current.Dispatcher.InvokeAsync(() =>
+            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 if (metrics != null)
                 {
@@ -217,7 +231,7 @@ public sealed class SystemHealthViewModel : BindableBase, IDisposable
         try
         {
             var providers = await _healthService.GetProviderHealthAsync();
-            await Application.Current.Dispatcher.InvokeAsync(() =>
+            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 Providers.Clear();
                 if (providers is { Count: > 0 })
@@ -261,7 +275,7 @@ public sealed class SystemHealthViewModel : BindableBase, IDisposable
         try
         {
             var storage = await _healthService.GetStorageHealthAsync();
-            await Application.Current.Dispatcher.InvokeAsync(() =>
+            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 if (storage == null) return;
 
@@ -295,7 +309,7 @@ public sealed class SystemHealthViewModel : BindableBase, IDisposable
         try
         {
             var events = await _healthService.GetRecentEventsAsync(20);
-            await Application.Current.Dispatcher.InvokeAsync(() =>
+            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 Events.Clear();
                 if (events is { Count: > 0 })
@@ -363,7 +377,7 @@ public sealed class SystemHealthViewModel : BindableBase, IDisposable
     }
 
     private static Brush GetResource(string key, Brush fallback) =>
-        Application.Current?.TryFindResource(key) as Brush ?? fallback;
+        System.Windows.Application.Current?.TryFindResource(key) as Brush ?? fallback;
 
     public void Dispose() => _refreshTimer.Stop();
 

@@ -30,6 +30,7 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
     private readonly WpfServices.NotificationService _notificationService;
     private readonly WpfServices.NavigationService _navigationService;
     private readonly WpfServices.LoggingService _loggingService;
+    private readonly WpfServices.ConfigService _configService;
     private readonly BackfillApiService _backfillApiService;
     private readonly UiBackfillService _backfillService;
     private readonly BackfillCheckpointService _checkpointService;
@@ -361,6 +362,7 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
         WpfServices.NotificationService notificationService,
         WpfServices.NavigationService navigationService,
         WpfServices.LoggingService loggingService,
+        WpfServices.ConfigService configService,
         UiBackfillService backfillService,
         BackfillCheckpointService checkpointService,
         WpfServices.TaskbarProgressService taskbarProgressService,
@@ -370,6 +372,7 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
         _notificationService = notificationService;
         _navigationService = navigationService;
         _loggingService = loggingService;
+        _configService = configService;
 
         _backfillApiService = new BackfillApiService();
         _backfillService = backfillService;
@@ -912,6 +915,92 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
         _ => granularity.ToLowerInvariant()
     };
 
+    public bool TryCreateStartRequest(
+        string? symbolsText,
+        DateTime? fromDate,
+        DateTime? toDate,
+        string? provider,
+        string? granularity,
+        out BackfillStartRequest request,
+        out string? symbolValidationError,
+        out string? fromDateValidationError,
+        out string? toDateValidationError)
+    {
+        request = default;
+        symbolValidationError = null;
+        fromDateValidationError = null;
+        toDateValidationError = null;
+
+        if (string.IsNullOrWhiteSpace(symbolsText))
+        {
+            symbolValidationError = "Please enter at least one symbol";
+            return false;
+        }
+
+        var symbols = symbolsText
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(symbol => symbol.Trim().ToUpperInvariant())
+            .Where(symbol => !string.IsNullOrWhiteSpace(symbol))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        if (symbols.Length == 0)
+        {
+            symbolValidationError = "Please enter at least one symbol";
+            return false;
+        }
+
+        var resolvedFromDate = fromDate ?? DateTime.Today.AddDays(-30);
+        var resolvedToDate = toDate ?? DateTime.Today;
+
+        if (resolvedFromDate > resolvedToDate)
+        {
+            fromDateValidationError = "From date must be earlier than To date";
+            toDateValidationError = "To date must be on or after From date";
+            return false;
+        }
+
+        request = new BackfillStartRequest(
+            symbols,
+            provider ?? "composite",
+            resolvedFromDate,
+            resolvedToDate,
+            granularity ?? "Daily");
+
+        return true;
+    }
+
+    public async Task<string> GetSubscribedSymbolsTextAsync()
+    {
+        try
+        {
+            var configSymbols = await _configService.GetConfiguredSymbolsAsync();
+            if (configSymbols.Length > 0)
+                return string.Join(", ", configSymbols.Select(s => s.Symbol));
+        }
+        catch (Exception ex)
+        {
+            _loggingService.LogWarning("Failed to load configured symbols for backfill page", ("Error", ex.Message));
+        }
+
+        return "SPY, QQQ, AAPL, MSFT, GOOGL, AMZN, NVDA, META, TSLA";
+    }
+
+    public string AppendSymbols(string? existingSymbolsText, params string[] symbolsToAppend)
+    {
+        var mergedSymbols = (existingSymbolsText ?? string.Empty)
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Concat(symbolsToAppend)
+            .Select(symbol => symbol.Trim().ToUpperInvariant())
+            .Where(symbol => !string.IsNullOrWhiteSpace(symbol))
+            .Distinct(StringComparer.OrdinalIgnoreCase);
+
+        return string.Join(", ", mergedSymbols);
+    }
+
+    public (DateTime From, DateTime To, string SymbolsText) BuildLatestUpdatePreset(string? existingSymbolsText) =>
+        (DateTime.Today.AddDays(-5), DateTime.Today, AppendSymbols(existingSymbolsText));
+
     // ── API key management ──────────────────────────────────────────────────
     public void SetNasdaqApiKey(string apiKey)
     {
@@ -1028,4 +1117,11 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
     }
 
     public void Dispose() => Stop();
+
+    public readonly record struct BackfillStartRequest(
+        string[] Symbols,
+        string Provider,
+        DateTime FromDate,
+        DateTime ToDate,
+        string Granularity);
 }

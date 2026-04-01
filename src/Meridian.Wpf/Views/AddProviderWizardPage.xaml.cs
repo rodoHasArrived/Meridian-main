@@ -5,6 +5,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using Meridian.Ui.Services.Services;
+using CredentialFieldInfo = Meridian.Contracts.Api.CredentialFieldInfo;
+using ProviderCatalogEntry = Meridian.Ui.Services.Services.ProviderCatalogEntry;
 using WpfServices = Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.Views;

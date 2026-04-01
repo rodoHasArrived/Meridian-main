@@ -234,5 +234,5 @@ public sealed class PackageManagerViewModel : BindableBase
     // ── Helpers ───────────────────────────────────────────────────────────────────────
 
     private static Brush GetResource(string key, Brush fallback) =>
-        Application.Current?.TryFindResource(key) as Brush ?? fallback;
+        System.Windows.Application.Current?.TryFindResource(key) as Brush ?? fallback;
 }
