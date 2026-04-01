@@ -61,6 +61,13 @@ public enum BacktestCommissionKind
 /// Annualised risk-free rate used by <see cref="BacktestMetrics.SharpeRatio"/> and
 /// <see cref="BacktestMetrics.SortinoRatio"/> calculations (e.g. 0.04 for 4%). Defaults to 0.04.
 /// </param>
+/// <param name="MaxParticipationRate">
+/// Maximum fraction of a bar's traded volume that the <see cref="ExecutionModel.BarMidpoint"/> fill
+/// model is allowed to fill in a single bar. When set to a value greater than zero (e.g. 0.05 for
+/// 5 % participation), large orders will receive partial fills across multiple bars, improving
+/// fill-realism for strategies that trade illiquid names or hold large positions. Set to zero
+/// (default) to use the original unconstrained behaviour.
+/// </param>
 public sealed record BacktestRequest(
     DateOnly From,
     DateOnly To,
@@ -82,7 +89,8 @@ public sealed record BacktestRequest(
     decimal CommissionMaximum = decimal.MaxValue,
     decimal MarketImpactCoefficient = 0.1m,
     bool AdjustForCorporateActions = true,
-    double RiskFreeRate = 0.04)
+    double RiskFreeRate = 0.04,
+    decimal MaxParticipationRate = 0m)
 {
     /// <summary>
     /// Returns the normalized account list, falling back to a single default brokerage account for
