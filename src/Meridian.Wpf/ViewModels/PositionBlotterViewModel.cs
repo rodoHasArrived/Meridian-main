@@ -127,7 +127,7 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
 
     // ── Constructor ───────────────────────────────────────────────────────────
 
-    internal PositionBlotterViewModel(
+    public PositionBlotterViewModel(
         ApiClientService apiClient,
         NavigationService navigationService)
     {
@@ -147,7 +147,13 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
         {
             Interval = TimeSpan.FromSeconds(30)
         };
-        _refreshTimer.Tick += async (_, _) => await RefreshAsync(_cts.Token);
+        _refreshTimer.Tick += (_, _) =>
+        {
+            var ct = _cts.Token;
+            _ = RefreshAsync(ct).ContinueWith(
+                t => { /* exceptions are already handled inside RefreshAsync */ },
+                TaskContinuationOptions.OnlyOnFaulted);
+        };
     }
 
     // ── Lifecycle ─────────────────────────────────────────────────────────────
@@ -401,7 +407,9 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
     private static List<BlotterEntry> BuildDemoEntries()
     {
         var today = DateOnly.FromDateTime(DateTime.Today);
-        var thisFriday = today.AddDays(((int)DayOfWeek.Friday - (int)today.DayOfWeek + 7) % 7 is 0 ? 7 : ((int)DayOfWeek.Friday - (int)today.DayOfWeek + 7) % 7);
+        int daysUntilFriday = ((int)DayOfWeek.Friday - (int)today.DayOfWeek + 7) % 7;
+        if (daysUntilFriday == 0) daysUntilFriday = 7;
+        var thisFriday = today.AddDays(daysUntilFriday);
         var nextFriday = thisFriday.AddDays(7);
 
         return

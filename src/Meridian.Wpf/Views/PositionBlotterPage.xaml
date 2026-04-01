@@ -334,8 +334,7 @@
                                                     <!-- Group (symbol) -->
                                                     <TextBlock Grid.Column="2"
                                                                Text="{Binding Group}"
-                                                               FontSize="12" Foreground="{StaticResource ConsoleTextPrimaryBrush}" VerticalAlignment="Center" Margin="4,5,4,5"
-                                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                               FontSize="12" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" Margin="4,5,4,5"
                                                                Margin="20,0,4,0" />
 
                                                     <!-- Product Description -->
@@ -346,8 +345,7 @@
                                                     <!-- Trade ID -->
                                                     <TextBlock Grid.Column="4"
                                                                Text="{Binding TradeId}"
-                                                               FontSize="12" Foreground="{StaticResource ConsoleTextPrimaryBrush}" VerticalAlignment="Center" Margin="4,5,4,5"
-                                                               Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                               FontSize="12" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" Margin="4,5,4,5" />
 
                                                     <!-- Unit Price -->
                                                     <TextBlock Grid.Column="5"
@@ -367,14 +365,12 @@
                                                     <!-- Unrealised PnL -->
                                                     <TextBlock Grid.Column="8"
                                                                Text="{Binding UnrealisedPnlText}"
-                                                               FontSize="12" Foreground="{StaticResource ConsoleTextPrimaryBrush}" VerticalAlignment="Center" Margin="4,5,4,5"
-                                                               Foreground="{Binding PnlBrush}" />
+                                                               FontSize="12" Foreground="{Binding PnlBrush}" VerticalAlignment="Center" Margin="4,5,4,5" />
 
                                                     <!-- Status -->
                                                     <TextBlock Grid.Column="9"
                                                                Text="{Binding Status}"
-                                                               FontSize="12" Foreground="{StaticResource ConsoleTextPrimaryBrush}" VerticalAlignment="Center" Margin="4,5,4,5"
-                                                               Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                               FontSize="12" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" Margin="4,5,4,5" />
                                                 </Grid>
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>

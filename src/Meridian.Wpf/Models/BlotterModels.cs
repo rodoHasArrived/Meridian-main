@@ -10,6 +10,11 @@ namespace Meridian.Wpf.Models;
 /// </summary>
 public sealed class BlotterEntry : INotifyPropertyChanged
 {
+    private static readonly SolidColorBrush PnlPositiveBrush =
+        new(Color.FromRgb(0x4C, 0xAF, 0x50));
+
+    private static readonly SolidColorBrush PnlNegativeBrush =
+        new(Color.FromRgb(0xF4, 0x43, 0x36));
     public event PropertyChangedEventHandler? PropertyChanged;
 
     private bool _isSelected;
@@ -57,9 +62,7 @@ public sealed class BlotterEntry : INotifyPropertyChanged
     public string UnrealisedPnlText => UnrealisedPnl.ToString("+#,0.00;-#,0.00;0.00");
 
     /// <summary>Brush applied to the unrealised P&amp;L cell.</summary>
-    public SolidColorBrush PnlBrush => UnrealisedPnl >= 0
-        ? new SolidColorBrush(Color.FromRgb(0x4C, 0xAF, 0x50))
-        : new SolidColorBrush(Color.FromRgb(0xF4, 0x43, 0x36));
+    public SolidColorBrush PnlBrush => UnrealisedPnl >= 0 ? PnlPositiveBrush : PnlNegativeBrush;
 
     /// <summary>Whether the row is currently selected (checkbox).</summary>
     public bool IsSelected
@@ -79,6 +82,11 @@ public sealed class BlotterEntry : INotifyPropertyChanged
 /// </summary>
 public sealed class BlotterGroup : INotifyPropertyChanged
 {
+    private static readonly SolidColorBrush PnlPositiveBrush =
+        new(Color.FromRgb(0x4C, 0xAF, 0x50));
+
+    private static readonly SolidColorBrush PnlNegativeBrush =
+        new(Color.FromRgb(0xF4, 0x43, 0x36));
     public event PropertyChangedEventHandler? PropertyChanged;
 
     private bool _isExpanded = true;
@@ -100,9 +108,7 @@ public sealed class BlotterGroup : INotifyPropertyChanged
     public string TotalPnlText => TotalPnl.ToString("+#,0.00;-#,0.00;0.00");
 
     /// <summary>Colour brush for the total P&amp;L — green for gains, red for losses.</summary>
-    public System.Windows.Media.SolidColorBrush TotalPnlBrush => TotalPnl >= 0
-        ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x4C, 0xAF, 0x50))
-        : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xF4, 0x43, 0x36));
+    public SolidColorBrush TotalPnlBrush => TotalPnl >= 0 ? PnlPositiveBrush : PnlNegativeBrush;
 
     /// <summary>Whether the group row is expanded to show child entries.</summary>
     public bool IsExpanded

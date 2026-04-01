@@ -22,7 +22,11 @@ public partial class PositionBlotterPage : Page
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
     {
         Loaded -= OnPageLoaded;
-        await _viewModel.InitializeAsync();
+        try
+        {
+            await _viewModel.InitializeAsync();
+        }
+        catch (OperationCanceledException) { }
     }
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e) =>
