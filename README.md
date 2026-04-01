@@ -951,6 +951,8 @@ Use these documents together when planning or implementing new work:
 │   └── toc.yml
 ├── environment.yml
 ├── global.json
+├── issues
+│   └── phase-1-5-add-equityclassification-discriminator-and-preferredterms-domain-model.md
 ├── make
 │   ├── ai.mk
 │   ├── build.mk
@@ -3278,6 +3280,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-442 directories, 2708 files
+443 directories, 2709 files
 ```
 <!-- readme-tree end -->
