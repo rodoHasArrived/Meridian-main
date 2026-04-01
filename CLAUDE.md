@@ -909,6 +909,8 @@ Meridian-main
 │       │   └── main.cpp
 │       ├── CMakeLists.txt
 │       └── README.md
+├── PROJECTS
+│   └── Phase_1.5_Preferred_and_Convertible_Equity_Support.md
 ├── scripts
 │   ├── ai
 │   │   ├── cleanup.sh

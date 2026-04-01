@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-04-01 23:04:55 UTC. Do not edit manually.
+> Auto-generated on 2026-04-01 23:16:59 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -783,6 +783,8 @@ Meridian-main
 │       │   └── main.cpp
 │       ├── CMakeLists.txt
 │       └── README.md
+├── PROJECTS
+│   └── Phase_1.5_Preferred_and_Convertible_Equity_Support.md
 ├── scripts
 │   ├── ai
 │   │   ├── cleanup.sh
