@@ -183,10 +183,10 @@ Total items: **206**
 | `src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs` | 1043 | `NOTE` | ❌ | // Fallback: Note that tier migration requires storage configuration |
 | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs` | 721 | `NOTE` | ❌ | // ADR-014 note: DirectLendingCommandEnvelope<TCommand> and TCommand are open-generic type |
 | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs` | 733 | `NOTE` | ❌ | // ADR-014 note: Same open-generic constraint applies here — TCommand is not statically known. |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 1132 | `NOTE` | ❌ | note = p.IsConnected |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 1199 | `NOTE` | ❌ | new { provider = "Interactive Brokers", status = "Healthy", capability = "Execution + fills", latency = "21ms p50", note = "Paper adapter routing is available." }, |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 1200 | `NOTE` | ❌ | new { provider = "Polygon", status = "Healthy", capability = "Streaming equities", latency = "16ms p50", note = "Realtime subscriptions are steady." }, |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 1201 | `NOTE` | ❌ | new { provider = "Databento", status = "Warning", capability = "Historical replay", latency = "69ms p50", note = "Replay queue is elevated but within tolerance." } |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 1135 | `NOTE` | ❌ | note = p.IsConnected |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 1202 | `NOTE` | ❌ | new { provider = "Interactive Brokers", status = "Healthy", capability = "Execution + fills", latency = "21ms p50", note = "Paper adapter routing is available." }, |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 1203 | `NOTE` | ❌ | new { provider = "Polygon", status = "Healthy", capability = "Streaming equities", latency = "16ms p50", note = "Realtime subscriptions are steady." }, |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 1204 | `NOTE` | ❌ | new { provider = "Databento", status = "Warning", capability = "Historical replay", latency = "69ms p50", note = "Replay queue is elevated but within tolerance." } |
 | `src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs` | 55 | `NOTE` | ❌ | /// <para><b>Migration Note:</b> This class wraps the core implementation from |
 | `src/Meridian.Ui/dashboard/src/screens/data-operations-screen.test.tsx` | 22 | `NOTE` | ❌ | note: "Realtime subscriptions are stable." |
 | `src/Meridian.Ui/dashboard/src/screens/data-operations-screen.tsx` | 334 | `NOTE` | ❌ | <div className="mt-3 text-sm leading-6 text-foreground">{provider.note}</div> |

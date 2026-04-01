@@ -2,6 +2,7 @@ using System.Text.Json;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Core.Serialization;
 using Npgsql;
+using NpgsqlTypes;
 
 namespace Meridian.Storage.SecurityMaster;
 

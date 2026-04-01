@@ -205,6 +205,12 @@ jobs:
           - os: macos-latest
             os_name: macOS
 
+    env:
+      # Docker / Testcontainers are unreliable on Windows and unavailable on macOS
+      # GitHub Actions runners. The SecurityMaster PostgreSQL tests are covered by the
+      # dedicated test-db job; skip them here to avoid spurious failures.
+      MERIDIAN_DISABLE_DOCKER_TESTS: "true"
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
