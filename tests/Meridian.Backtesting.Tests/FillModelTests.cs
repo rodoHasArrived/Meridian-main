@@ -170,4 +170,62 @@ public sealed class FillModelTests
 
         result.Fills.Should().BeEmpty();
     }
+
+    // Bar: open=100, high=110, low=90, close=100 → mid=100, range=20, volatilityFactor=0.2
+
+    [Fact]
+    public void BarMidpointFillModel_SpreadAware_DefaultMultiplier_ProducesExpectedSlippage()
+    {
+        // effectiveSlippage = 10 * (1 + 0.2 * 50) = 110 bps; slip = 100 * 0.011 = 1.1; fillPrice = 101.1
+        var model = new BarMidpointFillModel(
+            new FixedCommissionModel(0m),
+            slippageBasisPoints: 10m,
+            spreadAware: true);
+
+        var order = new Order(Guid.NewGuid(), "SPY", OrderType.Market, 1L, null, null, DateTimeOffset.UtcNow);
+        var evt = MakeBarEvent("SPY", 100m, 110m, 90m, 100m);
+
+        var result = model.TryFill(order, evt);
+
+        result.Fills.Should().HaveCount(1);
+        result.Fills[0].FillPrice.Should().Be(101.1m);
+    }
+
+    [Fact]
+    public void BarMidpointFillModel_SpreadAware_CustomMultiplier100_IncreasesVolatilityScaling()
+    {
+        // effectiveSlippage = 10 * (1 + 0.2 * 100) = 210 bps; slip = 100 * 0.021 = 2.1; fillPrice = 102.1
+        var model = new BarMidpointFillModel(
+            new FixedCommissionModel(0m),
+            slippageBasisPoints: 10m,
+            spreadAware: true,
+            volatilityMultiplier: 100m);
+
+        var order = new Order(Guid.NewGuid(), "SPY", OrderType.Market, 1L, null, null, DateTimeOffset.UtcNow);
+        var evt = MakeBarEvent("SPY", 100m, 110m, 90m, 100m);
+
+        var result = model.TryFill(order, evt);
+
+        result.Fills.Should().HaveCount(1);
+        result.Fills[0].FillPrice.Should().Be(102.1m);
+    }
+
+    [Fact]
+    public void BarMidpointFillModel_SpreadAware_ZeroMultiplier_ProducesBaseSlippageOnly()
+    {
+        // effectiveSlippage = 10 * (1 + 0.2 * 0) = 10 bps (same as non-spread-aware); fillPrice = 100.1
+        var model = new BarMidpointFillModel(
+            new FixedCommissionModel(0m),
+            slippageBasisPoints: 10m,
+            spreadAware: true,
+            volatilityMultiplier: 0m);
+
+        var order = new Order(Guid.NewGuid(), "SPY", OrderType.Market, 1L, null, null, DateTimeOffset.UtcNow);
+        var evt = MakeBarEvent("SPY", 100m, 110m, 90m, 100m);
+
+        var result = model.TryFill(order, evt);
+
+        result.Fills.Should().HaveCount(1);
+        result.Fills[0].FillPrice.Should().Be(100.1m);
+    }
 }

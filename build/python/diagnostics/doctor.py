@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import shutil
 import socket
 import urllib.request
@@ -18,6 +19,24 @@ class DoctorResult:
     fix: str | None = None
 
 
+_PROVIDER_ENV_VARS: list[tuple[str, str, str]] = [
+    ("ALPACA_KEY_ID",         "Alpaca",          "streaming and historical data"),
+    ("ALPACA_SECRET_KEY",     "Alpaca",          "streaming and historical data"),
+    ("POLYGON_API_KEY",       "Polygon",         "streaming and historical tests"),
+    ("NYSE_API_KEY",          "NYSE",            "TAQ streaming"),
+    ("TIINGO_API_TOKEN",      "Tiingo",          "historical data"),
+    ("FINNHUB_API_KEY",       "Finnhub",         "historical data and symbol search"),
+    ("ALPHA_VANTAGE_API_KEY", "Alpha Vantage",   "historical data"),
+    ("NASDAQ_API_KEY",        "Nasdaq Data Link","historical data"),
+]
+
+_POSTGRES_DEFAULT_HOST = "localhost"
+_POSTGRES_DEFAULT_PORT = 5432
+_POSTGRES_DOCKER_FIX = (
+    "docker run --rm -p 5432:5432 -e POSTGRES_PASSWORD=secret postgres:16-alpine"
+)
+
+
 class Doctor:
     def __init__(self, root: Path, quick: bool) -> None:
         self.root = root
@@ -32,7 +51,12 @@ class Doctor:
         self._check_disk()
         self._check_ports()
         self._check_config()
-        self._check_docker()
+        self._check_docker_daemon()
+        self._check_postgres()
+        self._check_global_json()
+        self._check_packages_props()
+        self._check_env_vars()
+        self._check_native_tools()
         if not self.quick:
             self._check_network()
         return self.results
@@ -197,27 +221,274 @@ class Doctor:
                 )
             )
 
-    def _check_docker(self) -> None:
+    def _check_docker_daemon(self) -> None:
+        """Check Docker is installed and its daemon is reachable."""
         if shutil.which("docker") is None:
             self.results.append(
                 DoctorResult(
                     name="Docker",
                     status="warn",
-                    details="Not installed (optional)",
-                    expected="Docker installed for container builds",
-                    fix="Install Docker Desktop or Engine",
+                    details="Not installed (optional — needed for Testcontainers and PostgreSQL)",
+                    expected="Docker installed and daemon running",
+                    fix="Install Docker Desktop or Engine from https://docs.docker.com/get-docker/",
                 )
             )
             return
         version = self._command_version(["docker", "--version"])
+        # Verify the daemon is actually running
+        rc = os.system("docker info > /dev/null 2>&1")  # noqa: S605
+        if rc == 0:
+            self.results.append(
+                DoctorResult(
+                    name="Docker",
+                    status="pass",
+                    details=f"Installed and daemon reachable ({version})",
+                    expected="Docker daemon running",
+                )
+            )
+        else:
+            self.results.append(
+                DoctorResult(
+                    name="Docker",
+                    status="warn",
+                    details=f"Installed ({version}) but daemon not running",
+                    expected="Docker daemon running",
+                    fix="Start Docker Desktop, or run: sudo systemctl start docker",
+                )
+            )
+
+    def _check_postgres(self) -> None:
+        """Try a TCP connection to PostgreSQL and report fix hints."""
+        conn_str = os.getenv("MERIDIAN_SECURITY_MASTER_CONNECTION_STRING", "")
+        host = _POSTGRES_DEFAULT_HOST
+        port = _POSTGRES_DEFAULT_PORT
+
+        if conn_str:
+            host_m = re.search(r"[Hh]ost=([^;, ]+)", conn_str)
+            port_m = re.search(r"[Pp]ort=(\d+)", conn_str)
+            if host_m:
+                host = host_m.group(1)
+            if port_m:
+                port = int(port_m.group(1))
+
+        try:
+            with socket.create_connection((host, port), timeout=1.0):
+                pass
+            self.results.append(
+                DoctorResult(
+                    name=f"PostgreSQL {host}:{port}",
+                    status="pass",
+                    details="Reachable",
+                    expected="TCP connection to PostgreSQL",
+                )
+            )
+        except (socket.timeout, ConnectionRefusedError, OSError):
+            fix = (
+                f"Check MERIDIAN_SECURITY_MASTER_CONNECTION_STRING"
+                if conn_str
+                else _POSTGRES_DOCKER_FIX
+            )
+            self.results.append(
+                DoctorResult(
+                    name=f"PostgreSQL {host}:{port}",
+                    status="warn",
+                    details=(
+                        "UNAVAILABLE — set MERIDIAN_SECURITY_MASTER_CONNECTION_STRING"
+                        " or start Docker"
+                    ),
+                    expected="TCP connection to PostgreSQL",
+                    fix=fix,
+                )
+            )
+
+    def _check_global_json(self) -> None:
+        """Verify the installed .NET SDK satisfies the global.json version constraint."""
+        global_json = self.root / "global.json"
+        if not global_json.exists():
+            return
+
+        try:
+            data = json.loads(global_json.read_text(encoding="utf-8"))
+            required = data.get("sdk", {}).get("version", "")
+            roll_forward = data.get("sdk", {}).get("rollForward", "latestMinor")
+        except (json.JSONDecodeError, OSError):
+            self.results.append(
+                DoctorResult(
+                    name="global.json",
+                    status="warn",
+                    details="Could not parse global.json",
+                    expected="Valid global.json SDK constraint",
+                )
+            )
+            return
+
+        if not required:
+            return
+
+        dotnet = shutil.which("dotnet")
+        if dotnet is None:
+            return  # already reported by _check_dotnet
+
+        installed = os.popen("dotnet --version").read().strip()
+
+        try:
+            req_parts = [int(x) for x in required.split(".")]
+            ins_parts = [int(x) for x in installed.split(".")]
+            if roll_forward in ("latestMinor", "latestPatch", "minor", "patch", "feature"):
+                ok = ins_parts[0] == req_parts[0] and ins_parts >= req_parts
+            elif roll_forward == "disable":
+                ok = ins_parts == req_parts
+            else:
+                ok = ins_parts >= req_parts
+        except (ValueError, IndexError):
+            ok = True  # cannot verify, assume satisfied
+
+        if ok:
+            self.results.append(
+                DoctorResult(
+                    name="global.json SDK constraint",
+                    status="pass",
+                    details=f"requires {required} (rollForward={roll_forward}), installed {installed}",
+                    expected="SDK constraint satisfied",
+                )
+            )
+        else:
+            self.results.append(
+                DoctorResult(
+                    name="global.json SDK constraint",
+                    status="warn",
+                    details=f"requires {required} (rollForward={roll_forward}), installed {installed}",
+                    expected="SDK constraint satisfied",
+                    fix=f"Install .NET SDK {required} from https://dot.net/download",
+                )
+            )
+
+    def _check_packages_props(self) -> None:
+        """Verify every PackageVersion entry has a Version attribute."""
+        props = self.root / "Directory.Packages.props"
+        if not props.exists():
+            self.results.append(
+                DoctorResult(
+                    name="Directory.Packages.props",
+                    status="fail",
+                    details="File not found",
+                    expected="Central package management file present",
+                )
+            )
+            return
+
+        try:
+            content = props.read_text(encoding="utf-8")
+        except OSError:
+            self.results.append(
+                DoctorResult(
+                    name="Directory.Packages.props",
+                    status="warn",
+                    details="Could not read file",
+                    expected="All PackageVersion entries have Version attributes",
+                )
+            )
+            return
+
+        no_version = re.findall(
+            r'<PackageVersion\s+Include="([^"]+)"(?![^>]*Version=)[^>]*/?>',
+            content,
+        )
+        if no_version:
+            sample = ", ".join(no_version[:3])
+            self.results.append(
+                DoctorResult(
+                    name="Directory.Packages.props",
+                    status="warn",
+                    details=f"PackageVersion entries missing Version: {sample}",
+                    expected="All PackageVersion entries have Version attributes",
+                    fix='Add Version="x.y.z" to each flagged PackageVersion entry',
+                )
+            )
+            return
+
+        total = len(re.findall(r'<PackageVersion\s+Include=', content))
         self.results.append(
             DoctorResult(
-                name="Docker",
+                name="Directory.Packages.props",
                 status="pass",
-                details=f"Installed {version}",
-                expected="Docker available",
+                details=f"All {total} package versions present",
+                expected="All PackageVersion entries have Version attributes",
             )
         )
+
+    def _check_env_vars(self) -> None:
+        """Check provider credential environment variables."""
+        for var, provider, purpose in _PROVIDER_ENV_VARS:
+            value = os.getenv(var, "")
+            if value:
+                if len(value) > 4:
+                    masked = f"{value[:2]}***{value[-1]}"
+                else:
+                    masked = "****"
+                self.results.append(
+                    DoctorResult(
+                        name=var,
+                        status="pass",
+                        details=f"Set ({masked})",
+                        expected=f"{provider} credential",
+                    )
+                )
+            else:
+                self.results.append(
+                    DoctorResult(
+                        name=var,
+                        status="warn",
+                        details="Not set — related tests will skip",
+                        expected=f"{provider} credential for {purpose}",
+                        fix=f"export {var}=<your-key>",
+                    )
+                )
+
+    def _check_native_tools(self) -> None:
+        """Check CMake and C++ compiler (optional — needed for CppTrader)."""
+        if shutil.which("cmake"):
+            version = self._command_version(["cmake", "--version"])
+            self.results.append(
+                DoctorResult(
+                    name="CMake",
+                    status="pass",
+                    details=f"Installed {version.splitlines()[0]}",
+                    expected="CMake (optional — CppTrader)",
+                )
+            )
+        else:
+            self.results.append(
+                DoctorResult(
+                    name="CMake",
+                    status="warn",
+                    details="Not installed (optional — needed for CppTrader native engine)",
+                    expected="CMake (optional — CppTrader)",
+                    fix="Install CMake from https://cmake.org/download/",
+                )
+            )
+
+        cpp = shutil.which("g++") or shutil.which("clang++") or shutil.which("cl")
+        if cpp:
+            compiler_name = Path(cpp).name
+            self.results.append(
+                DoctorResult(
+                    name="C++ compiler",
+                    status="pass",
+                    details=f"{compiler_name} found",
+                    expected="C++ compiler (optional — CppTrader)",
+                )
+            )
+        else:
+            self.results.append(
+                DoctorResult(
+                    name="C++ compiler",
+                    status="warn",
+                    details="Not found (optional — needed for CppTrader native engine)",
+                    expected="C++ compiler (optional — CppTrader)",
+                    fix="Linux: apt install build-essential  |  macOS: xcode-select --install",
+                )
+            )
 
     def _check_network(self) -> None:
         try:
@@ -266,7 +537,7 @@ def format_results(results: list[DoctorResult]) -> str:
         lines.append(f"  Details: {result.details}")
         lines.append(f"  Expected: {result.expected}")
         if result.fix:
-            lines.append(f"  Fix: {result.fix}")
+            lines.append(f"  Fix: → Run: {result.fix}")
         lines.append("")
     return "\n".join(lines)
 

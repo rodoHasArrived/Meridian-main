@@ -94,11 +94,13 @@ See [Storage Design](../architecture/storage-design.md) for details on tiered st
 
 ## Next Steps
 
-1. **Backfill historical data**: [Backfill Guide](../providers/backfill-guide.md)
-2. **Monitor data quality**: Check the Data Quality page in the web dashboard
-3. **Export data**: [Portable Data Packager](../operations/portable-data-packager.md)
-4. **Run backtests**: [Lean Integration](../integrations/lean-integration.md)
-5. **Deploy to production**: [Deployment Guide](../operations/deployment.md)
+1. **Pilot operations path**: [Pilot Operator Quickstart](pilot-operator-quickstart.md)
+2. **Configuration keys**: [Generated Configuration Schema](../generated/configuration-schema.md)
+3. **Backfill historical data**: [Backfill Guide](../providers/backfill-guide.md)
+4. **Monitor data quality**: Check the Data Quality page in the web dashboard
+5. **Export data**: [Portable Data Packager](../operations/portable-data-packager.md)
+6. **Run backtests**: [Lean Integration](../integrations/lean-integration.md)
+7. **Deploy to production**: [Deployment Guide](../operations/deployment.md)
 
 ## Quick Reference
 

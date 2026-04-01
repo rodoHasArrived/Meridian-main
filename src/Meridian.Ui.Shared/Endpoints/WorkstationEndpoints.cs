@@ -471,6 +471,7 @@ public static class WorkstationEndpoints
             string? strategyId,
             int? limit,
             HttpContext context) =>
+        app.MapGet("/api/strategies/runs/compare", async (string? ids, HttpContext context) =>
         {
             var readService = context.RequestServices.GetService<StrategyRunReadService>();
             if (readService is null)
@@ -522,6 +523,30 @@ public static class WorkstationEndpoints
         .Produces(501);
 
         // --- Portfolio cash-flow projections ---
+            if (string.IsNullOrWhiteSpace(ids))
+            {
+                return Results.BadRequest(new { error = "At least two run IDs are required. Use ?ids=a,b" });
+            }
+
+            var runIds = ids
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .ToArray();
+
+            if (runIds.Length < 2)
+            {
+                return Results.BadRequest(new { error = "At least two run IDs are required for comparison." });
+            }
+
+            var comparison = await readService.GetRunComparisonDtosAsync(runIds, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(comparison, jsonOptions);
+        })
+        .WithName("CompareStrategyRuns")
+        .WithTags("Strategies")
+        .Produces<IReadOnlyList<RunComparisonDto>>(200)
+        .Produces(400)
+        .Produces(501);
+
+
         var portfolioGroup = app.MapGroup("/api/portfolio").WithTags("Portfolio");
 
         portfolioGroup.MapGet("/{runId}/cash-flows", async (

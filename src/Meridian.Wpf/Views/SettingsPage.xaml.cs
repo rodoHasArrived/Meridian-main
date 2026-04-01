@@ -28,13 +28,6 @@ public partial class SettingsPage : Page
         // Wire hotkeys panel
         GlobalHotkeysEnabledCheckBox.IsChecked = WpfServices.GlobalHotkeyService.Instance.IsEnabled;
         GlobalHotkeysList.ItemsSource = WpfServices.GlobalHotkeyService.Instance.Definitions;
-
-        // React to reset request by restoring default UI control values.
-        _viewModel.PropertyChanged += (_, args) =>
-        {
-            if (args.PropertyName == nameof(SettingsViewModel.ResetRequested))
-                ApplyDefaultControlValues();
-        };
     }
 
     // Storage preview combo change handler — keeps legacy XAML event names intact.
@@ -80,27 +73,6 @@ public partial class SettingsPage : Page
     private void GlobalHotkeysEnabled_Click(object sender, RoutedEventArgs e)
     {
         WpfServices.GlobalHotkeyService.Instance.IsEnabled = GlobalHotkeysEnabledCheckBox.IsChecked ?? true;
-    }
-
-    private void NotificationsEnabled_Changed(object sender, RoutedEventArgs e)
-    {
-        if (NotificationSettingsPanel != null)
-            NotificationSettingsPanel.Opacity = NotificationsEnabledToggle.IsChecked.GetValueOrDefault() ? 1.0 : 0.5;
-    }
-
-    // Restore WPF control default values after a settings reset (controls not data-bound).
-    private void ApplyDefaultControlValues()
-    {
-        ThemeCombo.SelectedIndex = 0;
-        AccentColorCombo.SelectedIndex = 0;
-        CompactModeToggle.IsChecked = false;
-        NotificationsEnabledToggle.IsChecked = true;
-        MaxConcurrentDownloadsBox.Text = "4";
-        WriteBufferSizeBox.Text = "64";
-        EnableMetricsToggle.IsChecked = true;
-        EnableDebugLoggingToggle.IsChecked = false;
-        ApiBaseUrlBox.Text = "http://localhost:8080";
-        StatusRefreshIntervalBox.Text = "2";
     }
 
     private static string? GetSelectedTag(ComboBox combo) =>

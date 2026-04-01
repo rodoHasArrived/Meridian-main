@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using Meridian.Ui.Services.Services;
+using Meridian.Wpf.ViewModels;
 using CredentialFieldInfo = Meridian.Contracts.Api.CredentialFieldInfo;
 using ProviderCatalogEntry = Meridian.Ui.Services.Services.ProviderCatalogEntry;
 using WpfServices = Meridian.Wpf.Services;
@@ -14,6 +15,8 @@ namespace Meridian.Wpf.Views;
 /// <summary>
 /// Multi-step wizard for adding and configuring a new data provider.
 /// Guides the user through provider selection, credential entry, connection testing, and configuration.
+/// MVVM compliant: all display state lives in <see cref="AddProviderWizardViewModel"/>.
+/// Code-behind handles DI wiring, dynamic credential field generation, and minimal event delegation.
 /// </summary>
 public partial class AddProviderWizardPage : Page
 {
@@ -21,7 +24,10 @@ public partial class AddProviderWizardPage : Page
     private readonly WpfServices.NotificationService _notificationService;
     private readonly WpfServices.ConfigService _configService;
     private readonly SettingsConfigurationService _settingsConfigService;
+    private readonly AddProviderWizardViewModel _viewModel;
 
+    // Provider data — kept in code-behind because filtering/selection logic also drives
+    // the CredentialFieldsPanel (dynamic WPF control tree), not just display-only bindings.
     private IReadOnlyList<ProviderCatalogEntry> _allProviders = Array.Empty<ProviderCatalogEntry>();
     private ProviderCatalogEntry? _selectedProvider;
     private string _activeFilter = "all";
@@ -32,10 +38,13 @@ public partial class AddProviderWizardPage : Page
     {
         InitializeComponent();
 
-        _navigationService = navigationService;
-        _notificationService = notificationService;
-        _configService = WpfServices.ConfigService.Instance;
-        _settingsConfigService = SettingsConfigurationService.Instance;
+        _navigationService      = navigationService;
+        _notificationService    = notificationService;
+        _configService          = WpfServices.ConfigService.Instance;
+        _settingsConfigService  = SettingsConfigurationService.Instance;
+
+        _viewModel  = new AddProviderWizardViewModel();
+        DataContext = _viewModel;
     }
 
     private void OnPageLoaded(object sender, RoutedEventArgs e)
@@ -43,14 +52,8 @@ public partial class AddProviderWizardPage : Page
         _allProviders = _settingsConfigService.GetProviderCatalog();
         var credentialStatuses = _settingsConfigService.GetProviderCredentialStatuses();
 
-        var viewModels = _allProviders.Select(p =>
-        {
-            var credStatus = credentialStatuses.FirstOrDefault(c => c.ProviderId == p.Id);
-            return new ProviderCatalogViewModel(p, credStatus);
-        }).ToList();
-
-        ProviderCatalogList.ItemsSource = viewModels;
-        UpdateStepProgress(1);
+        ProviderCatalogList.ItemsSource = BuildCatalogViewModels(_allProviders, credentialStatuses);
+        _viewModel.CurrentStep = 1;
     }
 
     private void BackButton_Click(object sender, RoutedEventArgs e)
@@ -58,8 +61,8 @@ public partial class AddProviderWizardPage : Page
         _navigationService.NavigateTo("Settings");
     }
 
-    private void FilterAll_Click(object sender, RoutedEventArgs e) => ApplyFilter("all");
-    private void FilterFree_Click(object sender, RoutedEventArgs e) => ApplyFilter("free");
+    private void FilterAll_Click(object sender, RoutedEventArgs e)       => ApplyFilter("all");
+    private void FilterFree_Click(object sender, RoutedEventArgs e)      => ApplyFilter("free");
     private void FilterStreaming_Click(object sender, RoutedEventArgs e) => ApplyFilter("streaming");
     private void FilterHistorical_Click(object sender, RoutedEventArgs e) => ApplyFilter("historical");
 
@@ -70,22 +73,18 @@ public partial class AddProviderWizardPage : Page
 
         var filtered = filter switch
         {
-            "free" => _allProviders.Where(p => p.Tier is ProviderTier.Free or ProviderTier.FreeWithAccount),
-            "streaming" => _allProviders.Where(p => p.SupportsStreaming),
+            "free"       => _allProviders.Where(p => p.Tier is ProviderTier.Free or ProviderTier.FreeWithAccount),
+            "streaming"  => _allProviders.Where(p => p.SupportsStreaming),
             "historical" => _allProviders.Where(p => p.SupportsHistorical),
-            _ => _allProviders.AsEnumerable(),
+            _            => _allProviders.AsEnumerable(),
         };
 
-        ProviderCatalogList.ItemsSource = filtered.Select(p =>
-        {
-            var credStatus = credentialStatuses.FirstOrDefault(c => c.ProviderId == p.Id);
-            return new ProviderCatalogViewModel(p, credStatus);
-        }).ToList();
+        ProviderCatalogList.ItemsSource = BuildCatalogViewModels(filtered, credentialStatuses);
 
-        // Update button styles
-        FilterAllBtn.Style = (Style)FindResource(filter == "all" ? "SecondaryButtonStyle" : "GhostButtonStyle");
-        FilterFreeBtn.Style = (Style)FindResource(filter == "free" ? "SecondaryButtonStyle" : "GhostButtonStyle");
-        FilterStreamingBtn.Style = (Style)FindResource(filter == "streaming" ? "SecondaryButtonStyle" : "GhostButtonStyle");
+        // Update filter button styles (view-cosmetic — which button appears "active")
+        FilterAllBtn.Style       = (Style)FindResource(filter == "all"        ? "SecondaryButtonStyle" : "GhostButtonStyle");
+        FilterFreeBtn.Style      = (Style)FindResource(filter == "free"       ? "SecondaryButtonStyle" : "GhostButtonStyle");
+        FilterStreamingBtn.Style = (Style)FindResource(filter == "streaming"  ? "SecondaryButtonStyle" : "GhostButtonStyle");
         FilterHistoricalBtn.Style = (Style)FindResource(filter == "historical" ? "SecondaryButtonStyle" : "GhostButtonStyle");
     }
 
@@ -96,28 +95,16 @@ public partial class AddProviderWizardPage : Page
         _selectedProvider = _allProviders.FirstOrDefault(p => p.Id == providerId);
         if (_selectedProvider == null) return;
 
-        // Update right panel
-        SelectedProviderName.Text = _selectedProvider.DisplayName;
-        SelectedProviderDescription.Text = _selectedProvider.Description;
-        ProviderDetailsGrid.Visibility = Visibility.Visible;
+        // Update ViewModel display properties (XAML binds to these)
+        _viewModel.ApplySelectedProvider(_selectedProvider);
 
-        DetailStreamingText.Text = _selectedProvider.SupportsStreaming ? "Yes" : "No";
-        DetailHistoricalText.Text = _selectedProvider.SupportsHistorical ? "Yes" : "No";
-        DetailSearchText.Text = _selectedProvider.SupportsSymbolSearch ? "Yes" : "No";
-        DetailRateLimitText.Text = _selectedProvider.RateLimitPerMinute > 0
-            ? $"{_selectedProvider.RateLimitPerMinute}/min"
-            : "None";
-        DetailCredentialsText.Text = _selectedProvider.CredentialFields.Length > 0
-            ? $"{_selectedProvider.CredentialFields.Length} required"
-            : "None";
-
-        // Show Step 2
+        // Show wizard step panels
         Step2Panel.Visibility = Visibility.Visible;
         Step3Panel.Visibility = Visibility.Visible;
         Step4Panel.Visibility = Visibility.Visible;
 
         BuildCredentialFields();
-        UpdateStepProgress(2);
+        _viewModel.CurrentStep = 2;
     }
 
     private void BuildCredentialFields()
@@ -126,42 +113,35 @@ public partial class AddProviderWizardPage : Page
 
         if (_selectedProvider == null) return;
 
-        if (_selectedProvider.CredentialFields.Length == 0)
-        {
-            CredentialsInfoText.Text = $"{_selectedProvider.DisplayName} does not require API credentials.";
-            NoCredentialsNeededText.Visibility = Visibility.Visible;
-            return;
-        }
+        _viewModel.ApplyCredentialsInfo(_selectedProvider.DisplayName, _selectedProvider.CredentialFields.Length > 0);
 
-        NoCredentialsNeededText.Visibility = Visibility.Collapsed;
-        CredentialsInfoText.Text = $"Enter your {_selectedProvider.DisplayName} credentials. " +
-            "These will be stored as user environment variables.";
+        if (_selectedProvider.CredentialFields.Length == 0) return;
 
         foreach (var field in _selectedProvider.CredentialFields)
         {
-            var envVar = field.EnvironmentVariable ?? string.Empty;
+            var envVar       = field.EnvironmentVariable ?? string.Empty;
             var currentValue = GetConfiguredEnvironmentValue(field) ?? "";
 
             var label = new TextBlock
             {
-                Text = field.DisplayName,
-                Style = (Style)FindResource("FormLabelStyle"),
-                Margin = new Thickness(0, 0, 0, 4)
+                Text   = field.DisplayName,
+                Style  = (Style)FindResource("FormLabelStyle"),
+                Margin = new Thickness(0, 0, 0, 4),
             };
 
             var textBox = new TextBox
             {
                 Style = (Style)FindResource("FormTextBoxStyle"),
-                Text = currentValue,
-                Tag = envVar,
+                Text  = currentValue,
+                Tag   = envVar,
             };
 
             var envHint = new TextBlock
             {
-                Text = $"Environment variable: {string.Join(", ", field.AllEnvironmentVariables)}",
-                FontSize = 11,
+                Text       = $"Environment variable: {string.Join(", ", field.AllEnvironmentVariables)}",
+                FontSize   = 11,
                 Foreground = (Brush)FindResource("ConsoleTextMutedBrush"),
-                Margin = new Thickness(0, 2, 0, 12)
+                Margin     = new Thickness(0, 2, 0, 12),
             };
 
             CredentialFieldsPanel.Children.Add(label);
@@ -174,13 +154,9 @@ public partial class AddProviderWizardPage : Page
     {
         if (_selectedProvider == null) return;
 
-        // Save credentials first so the connectivity test can use them
         SaveCredentials();
+        _viewModel.SetConnectionTestTesting(_selectedProvider.DisplayName);
 
-        ConnectionTestDot.Fill = (Brush)FindResource("WarningColorBrush");
-        ConnectionTestStatusText.Text = $"Testing {_selectedProvider.DisplayName} connectivity...";
-
-        // Simulate connection test (actual implementation would call ConnectivityTestService)
         var hasCredentials = _selectedProvider.CredentialFields.Length == 0 ||
             _selectedProvider.CredentialFields
                 .Where(field => field.Required)
@@ -188,14 +164,12 @@ public partial class AddProviderWizardPage : Page
 
         if (hasCredentials)
         {
-            ConnectionTestDot.Fill = (Brush)FindResource("SuccessColorBrush");
-            ConnectionTestStatusText.Text = "Credentials configured. Provider ready.";
-            UpdateStepProgress(3);
+            _viewModel.SetConnectionTestSuccess();
+            _viewModel.CurrentStep = 3;
         }
         else
         {
-            ConnectionTestDot.Fill = (Brush)FindResource("ErrorColorBrush");
-            ConnectionTestStatusText.Text = "Missing credentials. Please fill in all required fields above.";
+            _viewModel.SetConnectionTestError();
         }
     }
 
@@ -215,16 +189,13 @@ public partial class AddProviderWizardPage : Page
                 };
 
                 if (int.TryParse(PriorityBox.Text, out var priority) && priority >= 0)
-                {
                     options.Priority = priority;
-                }
 
                 await _configService.SetBackfillProviderOptionsAsync(_selectedProvider.Id, options);
             }
 
-            UpdateStepProgress(4);
-            SaveStatusText.Text = $"{_selectedProvider.DisplayName} configured successfully.";
-            SaveStatusText.Foreground = (Brush)FindResource("SuccessColorBrush");
+            _viewModel.CurrentStep = 4;
+            _viewModel.SetSaveSuccess(_selectedProvider.DisplayName);
 
             _notificationService.NotifySuccess(
                 "Provider Added",
@@ -232,8 +203,7 @@ public partial class AddProviderWizardPage : Page
         }
         catch (Exception ex)
         {
-            SaveStatusText.Text = $"Failed to save: {ex.Message}";
-            SaveStatusText.Foreground = (Brush)FindResource("ErrorColorBrush");
+            _viewModel.SetSaveError(ex.Message);
         }
     }
 
@@ -245,23 +215,20 @@ public partial class AddProviderWizardPage : Page
             {
                 var value = textBox.Text.Trim();
                 if (!string.IsNullOrWhiteSpace(value))
-                {
                     Environment.SetEnvironmentVariable(envVar, value, EnvironmentVariableTarget.User);
-                }
             }
         }
     }
 
-    private void UpdateStepProgress(int completedUpTo)
+    private static IEnumerable<ProviderCatalogViewModel> BuildCatalogViewModels(
+        IEnumerable<ProviderCatalogEntry> providers,
+        IEnumerable<ProviderCredentialStatus> credentialStatuses)
     {
-        var successBrush = (Brush)FindResource("SuccessColorBrush");
-        var activeBrush = (Brush)FindResource("InfoColorBrush");
-        var pendingBrush = (Brush)FindResource("ConsoleTextMutedBrush");
-
-        Step1Dot.Fill = completedUpTo >= 1 ? successBrush : pendingBrush;
-        Step2Dot.Fill = completedUpTo >= 2 ? (completedUpTo > 2 ? successBrush : activeBrush) : pendingBrush;
-        Step3Dot.Fill = completedUpTo >= 3 ? (completedUpTo > 3 ? successBrush : activeBrush) : pendingBrush;
-        Step4Dot.Fill = completedUpTo >= 4 ? successBrush : pendingBrush;
+        return providers.Select(p =>
+        {
+            var credStatus = credentialStatuses.FirstOrDefault(c => c.ProviderId == p.Id);
+            return new ProviderCatalogViewModel(p, credStatus);
+        });
     }
 
     private static bool HasConfiguredEnvironmentValue(CredentialFieldInfo field)
@@ -276,9 +243,7 @@ public partial class AddProviderWizardPage : Page
         {
             var value = Environment.GetEnvironmentVariable(envVar);
             if (!string.IsNullOrWhiteSpace(value))
-            {
                 return value;
-            }
         }
 
         return null;
@@ -292,19 +257,19 @@ internal sealed class ProviderCatalogViewModel
 {
     public ProviderCatalogViewModel(ProviderCatalogEntry entry, ProviderCredentialStatus? credStatus)
     {
-        Id = entry.Id;
+        Id          = entry.Id;
         DisplayName = entry.DisplayName;
         Description = entry.Description;
-        SupportsStreaming = entry.SupportsStreaming;
+        SupportsStreaming  = entry.SupportsStreaming;
         SupportsHistorical = entry.SupportsHistorical;
 
         TierLabel = entry.Tier switch
         {
-            ProviderTier.Free => "FREE",
+            ProviderTier.Free            => "FREE",
             ProviderTier.FreeWithAccount => "FREE*",
-            ProviderTier.LimitedFree => "LIMITED",
-            ProviderTier.Premium => "PREMIUM",
-            _ => "FREE",
+            ProviderTier.LimitedFree     => "LIMITED",
+            ProviderTier.Premium         => "PREMIUM",
+            _                            => "FREE",
         };
 
         TierBrush = entry.Tier switch
@@ -320,14 +285,14 @@ internal sealed class ProviderCatalogViewModel
 
         CredentialStatusBrush = credStatus?.State switch
         {
-            CredentialState.Configured => new SolidColorBrush(Color.FromRgb(63, 185, 80)),
-            CredentialState.Partial => new SolidColorBrush(Color.FromRgb(210, 153, 34)),
-            CredentialState.Missing => new SolidColorBrush(Color.FromRgb(248, 81, 73)),
+            CredentialState.Configured  => new SolidColorBrush(Color.FromRgb(63, 185, 80)),
+            CredentialState.Partial     => new SolidColorBrush(Color.FromRgb(210, 153, 34)),
+            CredentialState.Missing     => new SolidColorBrush(Color.FromRgb(248, 81, 73)),
             CredentialState.NotRequired => new SolidColorBrush(Color.FromRgb(63, 185, 80)),
-            _ => new SolidColorBrush(Color.FromRgb(139, 148, 158)),
+            _                           => new SolidColorBrush(Color.FromRgb(139, 148, 158)),
         };
 
-        StreamingVisibility = entry.SupportsStreaming ? Visibility.Visible : Visibility.Collapsed;
+        StreamingVisibility  = entry.SupportsStreaming  ? Visibility.Visible : Visibility.Collapsed;
         HistoricalVisibility = entry.SupportsHistorical ? Visibility.Visible : Visibility.Collapsed;
     }
 
@@ -342,3 +307,4 @@ internal sealed class ProviderCatalogViewModel
     public Visibility StreamingVisibility { get; }
     public Visibility HistoricalVisibility { get; }
 }
+
