@@ -341,12 +341,12 @@ public sealed class CommandPaletteService
             // Research workspace: analysis, strategy runs, charting, quant tooling
             "Dashboard" or "Backtest" or "BatchBacktest" or "LeanIntegration" or "RunMat"
                 or "Charts" or "QuantScript" or "Watchlist" or "OrderBook"
-                or "StrategyRuns" or "RunDetail" or "RunCashFlow" or "RunPortfolio"
+                or "StrategyRuns" or "RunDetail" or "RunCashFlow"
                 or "AdvancedAnalytics" or "ResearchShell"
                 => $"Research workspace — {pageTag}",
 
             // Trading workspace: live execution, positions, hours
-            "LiveData" or "TradingHours" or "TradingShell"
+            "LiveData" or "TradingHours" or "TradingShell" or "RunPortfolio"
                 => $"Trading workspace — {pageTag}",
 
             // Data Operations workspace: ingest, symbols, storage, tools
