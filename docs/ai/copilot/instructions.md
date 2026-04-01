@@ -2373,6 +2373,7 @@ Meridian-main
 │       │   ├── SettingsModels.cs
 │       │   ├── StorageDisplayModels.cs
 │       │   ├── SymbolsModels.cs
+│       │   ├── WatchlistModels.cs
 │       │   ├── WorkspaceDefinition.cs
 │       │   ├── WorkspaceRegistry.cs
 │       │   └── WorkspaceShellModels.cs
@@ -2469,6 +2470,7 @@ Meridian-main
 │       │   ├── SecurityMasterEditViewModel.cs
 │       │   ├── SecurityMasterViewModel.cs
 │       │   ├── ServiceManagerViewModel.cs
+│       │   ├── SettingsViewModel.cs
 │       │   ├── SplitPaneViewModel.cs
 │       │   ├── StatusBarViewModel.cs
 │       │   ├── StorageViewModel.cs
@@ -2480,6 +2482,7 @@ Meridian-main
 │       │   ├── SystemHealthViewModel.cs
 │       │   ├── TickerStripViewModel.cs
 │       │   ├── TradingHoursViewModel.cs
+│       │   ├── WatchlistViewModel.cs
 │       │   └── WelcomePageViewModel.cs
 │       ├── Views
 │       │   ├── ActivityLogPage.xaml
@@ -2514,6 +2517,7 @@ Meridian-main
 │       │   ├── CollectionSessionPage.xaml.cs
 │       │   ├── CommandPaletteWindow.xaml
 │       │   ├── CommandPaletteWindow.xaml.cs
+│       │   ├── CreateWatchlistDialog.cs
 │       │   ├── CredentialManagementPage.xaml
 │       │   ├── CredentialManagementPage.xaml.cs
 │       │   ├── DashboardPage.xaml
@@ -2536,6 +2540,7 @@ Meridian-main
 │       │   ├── DirectLendingPage.xaml.cs
 │       │   ├── EditScheduledJobDialog.xaml
 │       │   ├── EditScheduledJobDialog.xaml.cs
+│       │   ├── EditWatchlistDialog.cs
 │       │   ├── EventReplayPage.xaml
 │       │   ├── EventReplayPage.xaml.cs
 │       │   ├── ExportPresetsPage.xaml

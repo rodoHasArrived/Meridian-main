@@ -1,6 +1,6 @@
 # Architecture Decision Records
 
-> Auto-generated on 2026-03-31 23:40:49 UTC
+> Auto-generated on 2026-04-01 00:15:47 UTC
 
 | ADR | Title | Status |
 |-----|-------|--------|
