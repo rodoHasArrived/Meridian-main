@@ -1,4 +1,7 @@
 import type {
+  BackfillProgressResponse,
+  BackfillTriggerRequest,
+  BackfillTriggerResult,
   DataOperationsWorkspaceResponse,
   EquityCurveSummary,
   GovernanceWorkspaceResponse,
@@ -213,4 +216,22 @@ export function resolveSecurityConflict(request: ResolveConflictRequest) {
     `/api/security-master/conflicts/${encodeURIComponent(request.conflictId)}/resolve`,
     request
   );
+}
+
+// --- Backfill mutations ---
+
+export function getBackfillStatus() {
+  return getJson<BackfillTriggerResult | null>("/api/backfill/status");
+}
+
+export function getBackfillProgress() {
+  return getJson<BackfillProgressResponse>("/api/backfill/progress");
+}
+
+export function triggerBackfill(request: BackfillTriggerRequest) {
+  return postJson<BackfillTriggerResult>("/api/backfill/run", request);
+}
+
+export function previewBackfill(request: BackfillTriggerRequest) {
+  return postJson<BackfillTriggerResult>("/api/backfill/run/preview", request);
 }

@@ -556,3 +556,37 @@ export interface ResolveConflictRequest {
   resolvedBy: string;
   reason?: string;
 }
+
+// --- Backfill mutation types ---
+
+export interface BackfillTriggerRequest {
+  provider: string | null;
+  symbols: string[];
+  from: string | null;
+  to: string | null;
+}
+
+export interface BackfillTriggerResult {
+  success: boolean;
+  provider: string;
+  symbols: string[];
+  from: string | null;
+  to: string | null;
+  barsWritten: number;
+  startedUtc: string;
+  completedUtc: string;
+  error: string | null;
+}
+
+export interface BackfillProgressEntry {
+  symbol: string;
+  barsWritten: number;
+  completed: boolean;
+}
+
+export interface BackfillProgressResponse {
+  active: boolean;
+  provider: string | null;
+  symbols: BackfillProgressEntry[];
+  message: string | null;
+}
