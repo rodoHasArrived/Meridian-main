@@ -2605,7 +2605,11 @@ Use these documents together when planning or implementing new work:
 │       │   └── ThemeTypography.xaml
 │       ├── ViewModels
 │       │   ├── ActivityLogViewModel.cs
+│       │   ├── AdminMaintenanceViewModel.cs
+│       │   ├── AdvancedAnalyticsViewModel.cs
 │       │   ├── AgentViewModel.cs
+│       │   ├── AnalysisExportViewModel.cs
+│       │   ├── AnalysisExportWizardViewModel.cs
 │       │   ├── BackfillViewModel.cs
 │       │   ├── BacktestViewModel.cs
 │       │   ├── BatchBacktestViewModel.cs
@@ -3320,6 +3324,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-486 directories, 2772 files
+486 directories, 2776 files
 ```
 <!-- readme-tree end -->
