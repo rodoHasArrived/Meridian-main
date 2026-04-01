@@ -5,7 +5,7 @@ namespace Meridian.Wpf.ViewModels;
 /// <summary>
 /// ViewModel for the Advanced Analytics page. Manages quality reports, gap analysis,
 /// cross-provider comparison, latency histograms, and rate-limit status.
-/// Exposes ObservableCollections that the View wires to its ItemsControl elements.
+/// All state is exposed as bindable properties or ObservableCollections for direct XAML binding.
 /// </summary>
 public sealed class AdvancedAnalyticsViewModel : BindableBase
 {
@@ -20,6 +20,7 @@ public sealed class AdvancedAnalyticsViewModel : BindableBase
     // ---- Quality report state ----
     private string _overallScoreText = "--";
     private string _gradeText = "--";
+    private Brush _gradeBadgeBackground = new SolidColorBrush(Color.FromArgb(40, 245, 101, 101));
     private string _completenessText = "--";
 
     // ---- Gap analysis state ----
@@ -42,7 +43,7 @@ public sealed class AdvancedAnalyticsViewModel : BindableBase
     // ---- InfoBar ----
     private bool _isStatusVisible;
     private string _statusIcon = string.Empty;
-    private Color _statusColor = Color.FromRgb(72, 187, 120);
+    private Brush _statusBrush = new SolidColorBrush(Color.FromRgb(72, 187, 120));
     private string _statusTitle = string.Empty;
     private string _statusMessage = string.Empty;
 
@@ -92,7 +93,17 @@ public sealed class AdvancedAnalyticsViewModel : BindableBase
     public string GradeText
     {
         get => _gradeText;
-        private set => SetProperty(ref _gradeText, value);
+        private set
+        {
+            if (SetProperty(ref _gradeText, value))
+                GradeBadgeBackground = GetGradeBackground(value);
+        }
+    }
+
+    public Brush GradeBadgeBackground
+    {
+        get => _gradeBadgeBackground;
+        private set => SetProperty(ref _gradeBadgeBackground, value);
     }
 
     public string CompletenessText
@@ -190,10 +201,10 @@ public sealed class AdvancedAnalyticsViewModel : BindableBase
         private set => SetProperty(ref _statusIcon, value);
     }
 
-    public Color StatusColor
+    public Brush StatusBrush
     {
-        get => _statusColor;
-        private set => SetProperty(ref _statusColor, value);
+        get => _statusBrush;
+        private set => SetProperty(ref _statusBrush, value);
     }
 
     public string StatusTitle
@@ -550,7 +561,7 @@ public sealed class AdvancedAnalyticsViewModel : BindableBase
     private void SetStatus(string icon, Color color, string title, string message)
     {
         StatusIcon = icon;
-        StatusColor = color;
+        StatusBrush = new SolidColorBrush(color);
         StatusTitle = title;
         StatusMessage = message;
         IsStatusVisible = true;
