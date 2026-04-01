@@ -945,6 +945,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── link-repair-report.md
 │   │   ├── metrics-dashboard.md
 │   │   ├── production-status.md
+│   │   ├── provider-validation-matrix.md
 │   │   └── rules-report.md
 │   └── toc.yml
 ├── environment.yml
@@ -2204,6 +2205,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── hooks
 │   │   │   │   │   └── use-workstation-data.ts
 │   │   │   │   ├── lib
+│   │   │   │   │   ├── api.trading.test.ts
 │   │   │   │   │   ├── api.ts
 │   │   │   │   │   ├── utils.ts
 │   │   │   │   │   └── workspace.ts
@@ -2994,6 +2996,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   │   └── ib_order_trailing_stop_sell_gtc.json
 │   │   │   │   │   └── Polygon
 │   │   │   │   │       ├── polygon-recorded-session-aapl.json
+│   │   │   │   │       ├── polygon-recorded-session-auth-failure-rate-limit.json
 │   │   │   │   │       ├── polygon-recorded-session-gld-cboe-sell.json
 │   │   │   │   │       ├── polygon-recorded-session-msft-edge.json
 │   │   │   │   │       ├── polygon-recorded-session-nvda-multi-batch.json
@@ -3274,6 +3277,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-442 directories, 2704 files
+442 directories, 2707 files
 ```
 <!-- readme-tree end -->
