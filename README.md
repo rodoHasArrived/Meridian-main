@@ -2543,6 +2543,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── SettingsModels.cs
 │       │   ├── StorageDisplayModels.cs
 │       │   ├── SymbolsModels.cs
+│       │   ├── WatchlistModels.cs
 │       │   ├── WorkspaceDefinition.cs
 │       │   ├── WorkspaceRegistry.cs
 │       │   └── WorkspaceShellModels.cs
@@ -2640,6 +2641,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── SecurityMasterEditViewModel.cs
 │       │   ├── SecurityMasterViewModel.cs
 │       │   ├── ServiceManagerViewModel.cs
+│       │   ├── SettingsViewModel.cs
 │       │   ├── SplitPaneViewModel.cs
 │       │   ├── StatusBarViewModel.cs
 │       │   ├── StorageViewModel.cs
@@ -2651,6 +2653,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── SystemHealthViewModel.cs
 │       │   ├── TickerStripViewModel.cs
 │       │   ├── TradingHoursViewModel.cs
+│       │   ├── WatchlistViewModel.cs
 │       │   └── WelcomePageViewModel.cs
 │       └── Views
 │           ├── ActivityLogPage.xaml
@@ -2685,6 +2688,7 @@ Use these documents together when planning or implementing new work:
 │           ├── CollectionSessionPage.xaml.cs
 │           ├── CommandPaletteWindow.xaml
 │           ├── CommandPaletteWindow.xaml.cs
+│           ├── CreateWatchlistDialog.cs
 │           ├── CredentialManagementPage.xaml
 │           ├── CredentialManagementPage.xaml.cs
 │           ├── DashboardPage.xaml
@@ -2707,6 +2711,7 @@ Use these documents together when planning or implementing new work:
 │           ├── DirectLendingPage.xaml.cs
 │           ├── EditScheduledJobDialog.xaml
 │           ├── EditScheduledJobDialog.xaml.cs
+│           ├── EditWatchlistDialog.cs
 │           ├── EventReplayPage.xaml
 │           ├── EventReplayPage.xaml.cs
 │           ├── ExportPresetsPage.xaml
@@ -3315,6 +3320,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-486 directories, 2767 files
+486 directories, 2772 files
 ```
 <!-- readme-tree end -->
