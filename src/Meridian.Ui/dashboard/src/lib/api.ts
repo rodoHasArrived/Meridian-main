@@ -1,7 +1,6 @@
 import type {
   BackfillProgressResponse,
   BackfillTriggerRequest,
-  BackfillTriggerResult,
   DataOperationsWorkspaceResponse,
   EquityCurveSummary,
   GovernanceWorkspaceResponse,
@@ -219,10 +218,6 @@ export function resolveSecurityConflict(request: ResolveConflictRequest) {
 }
 
 // --- Backfill mutations ---
-
-export function getBackfillStatus() {
-  return getJson<BackfillTriggerResult | null>("/api/backfill/status");
-}
 
 export function getBackfillProgress() {
   return getJson<BackfillProgressResponse>("/api/backfill/progress");

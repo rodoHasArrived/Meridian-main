@@ -97,12 +97,12 @@ describe("DataOperationsScreen", () => {
     const user = userEvent.setup();
 
     render(
-      <MemoryRouter initialEntries={["/data-operations/backfills"]}>
+      <MemoryRouter initialEntries={["/data-operations"]}>
         <DataOperationsScreen data={data} />
       </MemoryRouter>
     );
 
-    await user.click(screen.getAllByRole("button", { name: /trigger backfill/i })[0]);
+    await user.click(screen.getByRole("button", { name: /trigger backfill/i }));
 
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     expect(screen.getByText("Trigger backfill")).toBeInTheDocument();
@@ -127,12 +127,12 @@ describe("DataOperationsScreen", () => {
     vi.spyOn(api, "previewBackfill").mockResolvedValueOnce(mockPreview);
 
     render(
-      <MemoryRouter initialEntries={["/data-operations/backfills"]}>
+      <MemoryRouter initialEntries={["/data-operations"]}>
         <DataOperationsScreen data={data} />
       </MemoryRouter>
     );
 
-    await user.click(screen.getAllByRole("button", { name: /trigger backfill/i })[0]);
+    await user.click(screen.getByRole("button", { name: /trigger backfill/i }));
     await user.type(screen.getByPlaceholderText(/AAPL MSFT SPY/i), "AAPL");
     await user.click(screen.getByRole("button", { name: /^preview$/i }));
 
@@ -174,12 +174,12 @@ describe("DataOperationsScreen", () => {
     vi.spyOn(api, "getBackfillProgress").mockResolvedValue(mockProgress);
 
     render(
-      <MemoryRouter initialEntries={["/data-operations/backfills"]}>
+      <MemoryRouter initialEntries={["/data-operations"]}>
         <DataOperationsScreen data={data} />
       </MemoryRouter>
     );
 
-    await user.click(screen.getAllByRole("button", { name: /trigger backfill/i })[0]);
+    await user.click(screen.getByRole("button", { name: /trigger backfill/i }));
     await user.type(screen.getByPlaceholderText(/AAPL MSFT SPY/i), "MSFT");
     await user.click(screen.getByRole("button", { name: /^preview$/i }));
 
@@ -199,12 +199,12 @@ describe("DataOperationsScreen", () => {
     vi.spyOn(api, "previewBackfill").mockRejectedValueOnce(new Error("Provider offline"));
 
     render(
-      <MemoryRouter initialEntries={["/data-operations/backfills"]}>
+      <MemoryRouter initialEntries={["/data-operations"]}>
         <DataOperationsScreen data={data} />
       </MemoryRouter>
     );
 
-    await user.click(screen.getAllByRole("button", { name: /trigger backfill/i })[0]);
+    await user.click(screen.getByRole("button", { name: /trigger backfill/i }));
     await user.type(screen.getByPlaceholderText(/AAPL MSFT SPY/i), "SPY");
     await user.click(screen.getByRole("button", { name: /^preview$/i }));
 

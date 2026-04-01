@@ -114,7 +114,9 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
     progressIntervalRef.current = setInterval(() => {
       getBackfillProgress()
         .then(setProgress)
-        .catch(() => null);
+        .catch((err) => {
+          console.warn("Backfill progress poll failed:", err instanceof Error ? err.message : err);
+        });
     }, 2000);
 
     return () => {
@@ -140,10 +142,7 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
   function buildRequest(): BackfillTriggerRequest {
     return {
       provider: trigger.provider.trim() || null,
-      symbols: trigger.symbolsInput
-        .split(/[\s,]+/)
-        .map((s) => s.trim().toUpperCase())
-        .filter(Boolean),
+      symbols: parseSymbols(trigger.symbolsInput),
       from: trigger.from.trim() || null,
       to: trigger.to.trim() || null
     };
@@ -301,10 +300,10 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
               </div>
               <div className="flex gap-3">
                 <Button variant="secondary" onClick={openTrigger}>
-                  Inspect checkpoints
+                  Trigger new backfill
                 </Button>
                 <Button variant="outline" className="border-white/20 bg-transparent text-slate-50 hover:bg-white/10" onClick={openTrigger}>
-                  Review queue prerequisites
+                  Trigger backfill from this scope
                 </Button>
               </div>
             </CardContent>
@@ -480,6 +479,13 @@ function CompactTable({ columns, rows }: { columns: string[]; rows: string[][] }
   );
 }
 
+function parseSymbols(input: string): string[] {
+  return input
+    .split(/[\s,]+/)
+    .map((s) => s.trim().toUpperCase())
+    .filter(Boolean);
+}
+
 // --- Trigger Backfill Dialog ---
 
 interface TriggerBackfillDialogProps {
@@ -508,7 +514,7 @@ function TriggerBackfillDialog({
   const canRun = phase === "previewed";
 
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) onClose(); }}>
+    <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Trigger backfill</DialogTitle>
