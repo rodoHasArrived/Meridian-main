@@ -1175,6 +1175,7 @@ Meridian-main
 │   │   │   ├── ISecurityMasterQueryService.cs
 │   │   │   ├── ISecurityMasterService.cs
 │   │   │   ├── ISecurityResolver.cs
+│   │   │   ├── NullSecurityMasterServices.cs
 │   │   │   ├── SecurityEconomicDefinitionAdapter.cs
 │   │   │   ├── SecurityMasterAggregateRebuilder.cs
 │   │   │   ├── SecurityMasterConflictService.cs
