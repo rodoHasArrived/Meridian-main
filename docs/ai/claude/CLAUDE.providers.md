@@ -41,7 +41,7 @@ The system uses a unified abstraction layer supporting both **real-time streamin
 
 ---
 
-## Current Provider Inventory (2026-03-20)
+## Current Provider Inventory (2026-03-31)
 
 The repository currently includes **30 concrete provider implementations** plus shared base and registry components.
 
@@ -872,4 +872,4 @@ See the [provider field audit](../../architecture/deterministic-canonicalization
 
 ---
 
-*Last Updated: 2026-03-16*
+*Last Updated: 2026-03-31*
