@@ -61,7 +61,7 @@ public sealed class RobinhoodHistoricalDataProvider : BaseHistoricalDataProvider
     #region Rate-limit overrides
 
     public override int Priority => 35;
-    public override TimeSpan RateLimitDelay => TimeSpan.FromMilliseconds(720); // ~100 req/min conservative
+    public override TimeSpan RateLimitDelay => TimeSpan.Zero; // Use the hourly window-based limit of 100 requests/hour.
     public override int MaxRequestsPerWindow => 100;
     public override TimeSpan RateLimitWindow => TimeSpan.FromHours(1);
 
