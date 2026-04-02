@@ -620,6 +620,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── deterministic-canonicalization.md
 │   │   ├── domains.md
 │   │   ├── layer-boundaries.md
+│   │   ├── ledger-architecture.md
 │   │   ├── overview.md
 │   │   ├── provider-management.md
 │   │   ├── storage-design.md
@@ -1080,6 +1081,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── EtlFeatureRegistration.cs
 │   │   │   │   ├── HttpClientFeatureRegistration.cs
 │   │   │   │   ├── IServiceFeatureRegistration.cs
+│   │   │   │   ├── LedgerFeatureRegistration.cs
 │   │   │   │   ├── MaintenanceFeatureRegistration.cs
 │   │   │   │   ├── PipelineFeatureRegistration.cs
 │   │   │   │   ├── ProviderFeatureRegistration.cs
@@ -3365,6 +3367,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-447 directories, 2790 files
+447 directories, 2792 files
 ```
 <!-- readme-tree end -->
