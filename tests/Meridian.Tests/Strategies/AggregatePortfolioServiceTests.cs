@@ -175,7 +175,7 @@ public sealed class AggregatePortfolioServiceTests
 
     private static StubPortfolio BuildPortfolioWithPosition(string symbol, decimal qty, decimal cost)
     {
-        var pos = new ExecutionPosition(symbol, (long)qty, cost, unrealisedPnl: 0m, realisedPnl: 0m);
+        var pos = new ExecutionPosition(symbol, (long)qty, cost, 0m, 0m);
 
         var account = new StubAccountPortfolio("acc-1", "Default", AccountKind.Brokerage,
             positions: new Dictionary<string, ExecutionPosition>(StringComparer.OrdinalIgnoreCase)

@@ -17,7 +17,8 @@ public sealed record FinancialAccountRules(
     bool AllowShortSelling = true,
     double AnnualMarginRate = 0.05,
     double AnnualShortRebateRate = 0.02,
-    double AnnualCashInterestRate = 0.0);
+    double AnnualCashInterestRate = 0.0,
+    LotSelectionMethod LotSelection = LotSelectionMethod.Fifo);
 
 /// <summary>
 /// Configures a user-owned cash or brokerage account participating in a simulation.

@@ -162,5 +162,6 @@ public sealed class MultiAccountPaperTradingPortfolioTests
         FillPrice = price,
         Commission = commission,
         Timestamp = DateTimeOffset.UtcNow,
+        OrderStatus = Meridian.Execution.Sdk.OrderStatus.Filled,
     };
 }

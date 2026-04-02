@@ -9,4 +9,10 @@ public sealed record FillEvent(
     decimal FillPrice,
     decimal Commission,
     DateTimeOffset FilledAt,
-    string? AccountId = null);
+    string? AccountId = null,
+    /// <summary>
+    /// Optional lot identifier for <see cref="LotSelectionMethod.SpecificId"/> matching.
+    /// When set on a sell/cover fill the engine will close the nominated lot first.
+    /// Ignored when the account uses a different <see cref="LotSelectionMethod"/>.
+    /// </summary>
+    Guid? TargetLotId = null);

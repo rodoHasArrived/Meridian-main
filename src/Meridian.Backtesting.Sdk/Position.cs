@@ -3,15 +3,17 @@ namespace Meridian.Backtesting.Sdk;
 /// <summary>Per-symbol position held in the simulated portfolio.</summary>
 /// <param name="Symbol">Ticker symbol.</param>
 /// <param name="Quantity">Shares held; negative means short.</param>
-/// <param name="AverageCostBasis">FIFO-weighted average entry price.</param>
+/// <param name="AverageCostBasis">Lot-weighted average entry price.</param>
 /// <param name="UnrealizedPnl">Mark-to-market unrealised P&amp;L.</param>
 /// <param name="RealizedPnl">Cumulative realised P&amp;L.</param>
+/// <param name="OpenLots">Individual open lots contributing to this position (empty when not tracked).</param>
 public sealed record Position(
     string Symbol,
     long Quantity,
     decimal AverageCostBasis,
     decimal UnrealizedPnl,
-    decimal RealizedPnl)
+    decimal RealizedPnl,
+    IReadOnlyList<OpenLot>? OpenLots = null)
 {
     /// <summary>True when this is a short position.</summary>
     public bool IsShort => Quantity < 0;
