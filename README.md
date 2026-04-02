@@ -1373,6 +1373,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── StrategyPluginLoader.cs
 │   │   └── Portfolio
 │   │       ├── ICommissionModel.cs
+│   │       ├── LinkedListExtensions.cs
 │   │       └── SimulatedPortfolio.cs
 │   ├── Meridian.Backtesting.Sdk
 │   │   ├── AssetEvent.cs
@@ -1381,6 +1382,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── BacktestRequest.cs
 │   │   ├── BacktestResult.cs
 │   │   ├── CashFlowEntry.cs
+│   │   ├── ClosedLot.cs
 │   │   ├── FillEvent.cs
 │   │   ├── FinancialAccount.cs
 │   │   ├── FinancialAccountSnapshot.cs
@@ -1394,7 +1396,9 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── LedgerAccountType.cs
 │   │   │   ├── LedgerAccounts.cs
 │   │   │   └── LedgerEntry.cs
+│   │   ├── LotSelectionMethod.cs
 │   │   ├── Meridian.Backtesting.Sdk.csproj
+│   │   ├── OpenLot.cs
 │   │   ├── Order.cs
 │   │   ├── PortfolioSnapshot.cs
 │   │   ├── Position.cs
@@ -1465,6 +1469,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── IMarketEventPayload.cs
 │   │   │   │   ├── MarketEvent.cs
 │   │   │   │   └── MarketEventPayload.cs
+│   │   │   ├── IPositionSnapshotStore.cs
 │   │   │   ├── MarketDataModels.cs
 │   │   │   ├── Models
 │   │   │   │   ├── AdjustedHistoricalBar.cs
@@ -1644,13 +1649,16 @@ Use these documents together when planning or implementing new work:
 │   │   ├── IRiskValidator.cs
 │   │   ├── ISecurityMasterGate.cs
 │   │   ├── Interfaces
+│   │   │   ├── IAccountPortfolio.cs
 │   │   │   ├── IExecutionContext.cs
 │   │   │   ├── ILiveFeedAdapter.cs
 │   │   │   └── IOrderGateway.cs
 │   │   ├── Meridian.Execution.csproj
 │   │   ├── Models
+│   │   │   ├── AccountKind.cs
 │   │   │   ├── ExecutionMode.cs
 │   │   │   ├── ExecutionPosition.cs
+│   │   │   ├── IMultiAccountPortfolioState.cs
 │   │   │   ├── IPortfolioState.cs
 │   │   │   ├── OrderAcknowledgement.cs
 │   │   │   ├── OrderGatewayCapabilities.cs
@@ -1668,10 +1676,14 @@ Use these documents together when planning or implementing new work:
 │   │       ├── OrderLifecycleManager.cs
 │   │       ├── PaperSessionOptions.cs
 │   │       ├── PaperSessionPersistenceService.cs
-│   │       └── PaperTradingPortfolio.cs
+│   │       ├── PaperTradingPortfolio.cs
+│   │       ├── PortfolioRegistry.cs
+│   │       ├── PositionReconciliationService.cs
+│   │       └── PositionSyncOptions.cs
 │   ├── Meridian.Execution.Sdk
 │   │   ├── BrokerageConfiguration.cs
 │   │   ├── IBrokerageGateway.cs
+│   │   ├── IBrokeragePositionSync.cs
 │   │   ├── IExecutionGateway.cs
 │   │   ├── IOrderManager.cs
 │   │   ├── IPositionTracker.cs
@@ -2145,6 +2157,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── EventBuffer.cs
 │   │   │   ├── FileMaintenanceService.cs
 │   │   │   ├── FilePermissionsService.cs
+│   │   │   ├── JsonlPositionSnapshotStore.cs
 │   │   │   ├── LifecyclePolicyEngine.cs
 │   │   │   ├── MaintenanceScheduler.cs
 │   │   │   ├── MetadataTagService.cs
@@ -2183,7 +2196,9 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Promotions
 │   │   │   └── BacktestToLivePromoter.cs
 │   │   ├── Services
+│   │   │   ├── AggregatePortfolioService.cs
 │   │   │   ├── CashFlowProjectionService.cs
+│   │   │   ├── IAggregatePortfolioService.cs
 │   │   │   ├── IReconciliationRunRepository.cs
 │   │   │   ├── IReconciliationRunService.cs
 │   │   │   ├── ISecurityReferenceLookup.cs
@@ -2460,7 +2475,9 @@ Use these documents together when planning or implementing new work:
 │       ├── Assets
 │       │   └── Icons
 │       │       ├── README.md
+│       │       ├── account-portfolio.svg
 │       │       ├── admin-maintenance.svg
+│       │       ├── aggregate-portfolio.svg
 │       │       ├── archive-health.svg
 │       │       ├── backfill.svg
 │       │       ├── backtest.svg
@@ -2603,11 +2620,13 @@ Use these documents together when planning or implementing new work:
 │       │   ├── ThemeTokens.xaml
 │       │   └── ThemeTypography.xaml
 │       ├── ViewModels
+│       │   ├── AccountPortfolioViewModel.cs
 │       │   ├── ActivityLogViewModel.cs
 │       │   ├── AddProviderWizardViewModel.cs
 │       │   ├── AdminMaintenanceViewModel.cs
 │       │   ├── AdvancedAnalyticsViewModel.cs
 │       │   ├── AgentViewModel.cs
+│       │   ├── AggregatePortfolioViewModel.cs
 │       │   ├── AnalysisExportViewModel.cs
 │       │   ├── AnalysisExportWizardViewModel.cs
 │       │   ├── BackfillViewModel.cs
@@ -2672,6 +2691,8 @@ Use these documents together when planning or implementing new work:
 │       │   ├── WatchlistViewModel.cs
 │       │   └── WelcomePageViewModel.cs
 │       └── Views
+│           ├── AccountPortfolioPage.xaml
+│           ├── AccountPortfolioPage.xaml.cs
 │           ├── ActivityLogPage.xaml
 │           ├── ActivityLogPage.xaml.cs
 │           ├── AddProviderWizardPage.xaml
@@ -2682,6 +2703,8 @@ Use these documents together when planning or implementing new work:
 │           ├── AdvancedAnalyticsPage.xaml.cs
 │           ├── AgentPage.xaml
 │           ├── AgentPage.xaml.cs
+│           ├── AggregatePortfolioPage.xaml
+│           ├── AggregatePortfolioPage.xaml.cs
 │           ├── AnalysisExportPage.xaml
 │           ├── AnalysisExportPage.xaml.cs
 │           ├── AnalysisExportWizardPage.xaml
@@ -2852,6 +2875,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── FillModelTests.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── LedgerQueryTests.cs
+│   │   ├── LotLevelTrackingTests.cs
 │   │   ├── MarketImpactFillModelTests.cs
 │   │   ├── Meridian.Backtesting.Tests.csproj
 │   │   ├── SimulatedPortfolioTests.cs
@@ -3053,6 +3077,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── StrongDomainTypeTests.cs
 │   │   ├── Execution
 │   │   │   ├── BrokerageGatewayAdapterTests.cs
+│   │   │   ├── MultiAccountPaperTradingPortfolioTests.cs
 │   │   │   ├── OrderManagementSystemTests.cs
 │   │   │   ├── PaperSessionPersistenceServiceTests.cs
 │   │   │   ├── PaperTradingGatewayTests.cs
@@ -3133,6 +3158,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── ConnectionRetryIntegrationTests.cs
 │   │   │   ├── EndpointStubDetectionTests.cs
 │   │   │   ├── EndpointTests
+│   │   │   │   ├── AccountPortfolioEndpointTests.cs
 │   │   │   │   ├── AuthEndpointTests.cs
 │   │   │   │   ├── BackfillEndpointTests.cs
 │   │   │   │   ├── CatalogEndpointTests.cs
@@ -3214,6 +3240,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── ParquetConversionServiceTests.cs
 │   │   │   ├── ParquetStorageSinkTests.cs
 │   │   │   ├── PortableDataPackagerTests.cs
+│   │   │   ├── PositionSnapshotStoreTests.cs
 │   │   │   ├── QuotaEnforcementServiceTests.cs
 │   │   │   ├── StorageCatalogServiceTests.cs
 │   │   │   ├── StorageChecksumServiceTests.cs
@@ -3224,6 +3251,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── WriteAheadLogFuzzTests.cs
 │   │   │   └── WriteAheadLogTests.cs
 │   │   ├── Strategies
+│   │   │   ├── AggregatePortfolioServiceTests.cs
 │   │   │   ├── CashFlowProjectionTests.cs
 │   │   │   ├── LedgerReadServiceTests.cs
 │   │   │   ├── PortfolioReadServiceTests.cs
@@ -3367,6 +3395,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-447 directories, 2792 files
+447 directories, 2820 files
 ```
 <!-- readme-tree end -->
