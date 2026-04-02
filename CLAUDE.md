@@ -3311,6 +3311,7 @@ The following provider-related classes are the current canonical inventory used 
 | `StockSharpMarketDataClient` | StockSharp streaming market data |
 | `SyntheticMarketDataClient` | Deterministic synthetic streaming and symbol-search market data for offline development |
 | `FailoverAwareMarketDataClient` | Streaming failover wrapper |
+| `RobinhoodMarketDataClient` | Robinhood polling-based BBO quotes (unofficial API, requires `ROBINHOOD_ACCESS_TOKEN`) |
 
 ### Historical implementations
 | Provider Class | Role |
@@ -3349,6 +3350,7 @@ The following provider-related classes are the current canonical inventory used 
 | `IBBrokerageGateway` | Interactive Brokers order routing (conditional on IBAPI) |
 | `StockSharpBrokerageGateway` | StockSharp connector-based order routing |
 | `TemplateBrokerageGateway` | Brokerage adapter scaffold |
+| `RobinhoodBrokerageGateway` | Robinhood order routing via unofficial API (requires `ROBINHOOD_ACCESS_TOKEN`) |
 
 ### Shared base and template provider classes
 | Provider Class | Role |
