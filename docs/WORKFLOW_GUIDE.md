@@ -67,7 +67,7 @@ The **Data Provider** section lets you select which market data source Meridian 
 
 > For Interactive Brokers, ensure TWS or IB Gateway is running on `127.0.0.1:7496` (live) or `127.0.0.1:7497` (paper). The port is configurable per data source.
 
-![Provider & Storage Configuration](https://github.com/user-attachments/assets/48bc62b6-4906-4483-af23-2632524c9f79)
+![Storage Configuration & Data Sources](https://github.com/user-attachments/assets/48bc62b6-4906-4483-af23-2632524c9f79)
 
 ---
 
@@ -236,7 +236,7 @@ The **Derivatives Tracking** panel enables continuous options data collection in
 
 Select which expiration cycles to include:
 
-- **Weekly** (0–7 DTE)
+- **Weekly** (0-7 DTE)
 - **Monthly** standard expirations
 - **Quarterly** (March / June / September / December)
 - **LEAPS** (12+ months)
