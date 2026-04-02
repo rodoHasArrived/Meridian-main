@@ -71,7 +71,6 @@
                                        Visibility="{Binding IsSymbolsValidationErrorVisible, Converter={StaticResource BoolToVisibilityConverter}}"
                                        Foreground="{StaticResource ErrorColorBrush}"
                                        FontSize="11"
-                                       Visibility="Collapsed"
                                        Margin="0,4,0,0" />
                         </StackPanel>
 
@@ -88,7 +87,6 @@
                                        Visibility="{Binding IsDateValidationErrorVisible, Converter={StaticResource BoolToVisibilityConverter}}"
                                        Foreground="{StaticResource ErrorColorBrush}"
                                        FontSize="11"
-                                       Visibility="Collapsed"
                                        Margin="0,4,0,0" />
                         </StackPanel>
 
@@ -187,7 +185,7 @@
 
                         <StackPanel Grid.Row="0" Grid.Column="0">
                             <TextBlock Text="Database Type" Style="{StaticResource FormLabelStyle}" />
-                            <ComboBox x:Name="DatabaseTypeCombo" SelectionChanged="DatabaseType_SelectionChanged"
+                            <ComboBox x:Name="DatabaseTypeCombo"
                                       Style="{StaticResource FormComboBoxStyle}"
                                       SelectionChanged="DatabaseType_SelectionChanged">
                                 <ComboBoxItem Content="PostgreSQL" Tag="postgresql" />
@@ -286,7 +284,6 @@
                                        Visibility="{Binding IsScheduleTimeErrorVisible, Converter={StaticResource BoolToVisibilityConverter}}"
                                        Foreground="{StaticResource ErrorColorBrush}"
                                        FontSize="11"
-                                       Visibility="Collapsed"
                                        Margin="0,4,0,0" />
                         </StackPanel>
 
@@ -461,8 +458,7 @@
                     Background="{StaticResource ConsoleBackgroundLightBrush}"
                     CornerRadius="8"
                     Padding="12"
-                    Margin="0,24,0,0"
-                    Visibility="Collapsed">
+                    Margin="0,24,0,0">
                 <TextBlock x:Name="ActionInfoText" Text="{Binding ActionInfoText}"
                            Foreground="{StaticResource ConsoleTextPrimaryBrush}"
                            TextWrapping="Wrap" />

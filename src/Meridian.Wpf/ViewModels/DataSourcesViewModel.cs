@@ -137,7 +137,7 @@ public sealed class DataSourcesViewModel : BindableBase
         set
         {
             if (SetProperty(ref _failoverEnabled, value) && !_isLoading)
-                _ = SaveFailoverSettingsAsync();
+                SaveFailoverSettingsFireAndForget();
         }
     }
 
@@ -147,7 +147,7 @@ public sealed class DataSourcesViewModel : BindableBase
         set
         {
             if (SetProperty(ref _failoverTimeoutText, value) && !_isLoading)
-                _ = SaveFailoverSettingsAsync();
+                SaveFailoverSettingsFireAndForget();
         }
     }
 
@@ -296,7 +296,7 @@ public sealed class DataSourcesViewModel : BindableBase
         set
         {
             if (SetProperty(ref _selectedDefaultRealTimeSource, value) && !_isLoading && value != null)
-                _ = SetDefaultSourceAsync(value.Id, isHistorical: false);
+                SetDefaultSourceFireAndForget(value.Id, isHistorical: false);
         }
     }
 
@@ -306,7 +306,7 @@ public sealed class DataSourcesViewModel : BindableBase
         set
         {
             if (SetProperty(ref _selectedDefaultHistoricalSource, value) && !_isLoading && value != null)
-                _ = SetDefaultSourceAsync(value.Id, isHistorical: true);
+                SetDefaultSourceFireAndForget(value.Id, isHistorical: true);
         }
     }
 
@@ -457,9 +457,22 @@ public sealed class DataSourcesViewModel : BindableBase
         _editingSourceId = null;
     }
 
-    private async Task SaveFailoverSettingsAsync(CancellationToken ct = default)
+    // ── Fire-and-forget wrappers (property setters cannot be async) ───────
+
+    private async void SaveFailoverSettingsFireAndForget()
     {
-        IsFailoverTimeoutErrorVisible = false;
+        try { await SaveFailoverSettingsAsync(); }
+        catch (Exception ex) { ShowStatus($"Failed to update failover settings: {ex.Message}", isError: true); }
+    }
+
+    private async void SetDefaultSourceFireAndForget(string id, bool isHistorical)
+    {
+        try { await SetDefaultSourceAsync(id, isHistorical); }
+        catch (Exception ex) { ShowStatus($"Failed to set default source: {ex.Message}", isError: true); }
+    }
+
+    private async Task SaveFailoverSettingsAsync(CancellationToken ct = default)
+    {        IsFailoverTimeoutErrorVisible = false;
         if (!int.TryParse(FailoverTimeoutText, out var timeout) || timeout is < 5 or > 300)
         {
             FailoverTimeoutError = "Timeout must be between 5 and 300 seconds.";
