@@ -1,6 +1,7 @@
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
+using Meridian.ProviderSdk;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
@@ -16,14 +17,14 @@ namespace Meridian.Infrastructure.Adapters.Alpaca;
 /// <remarks>
 /// Endpoints used:
 /// <list type="bullet">
-///   <item><c>GET /v2/corporate-actions/announcements?ca_types=dividend&symbol={ticker}</c></item>
-///   <item><c>GET /v2/corporate-actions/announcements?ca_types=split&symbol={ticker}</c></item>
+///   <item><c>GET /v2/corporate-actions/announcements?ca_types=dividend&amp;symbol={ticker}</c></item>
+///   <item><c>GET /v2/corporate-actions/announcements?ca_types=split&amp;symbol={ticker}</c></item>
 /// </list>
 /// The Alpaca announcements endpoint requires a Broker API key pair or a standard
 /// Alpaca data subscription.  Requests are authenticated via the <c>APCA-API-KEY-ID</c>
 /// and <c>APCA-API-SECRET-KEY</c> headers read from the environment / configuration.
 /// </remarks>
-[DataSource("alpaca-corp-actions", "Alpaca Corporate Actions")]
+[DataSource("alpaca-corp-actions", "Alpaca Corporate Actions", DataSourceType.Historical, DataSourceCategory.Broker)]
 [ImplementsAdr("ADR-001", "Corporate action data provider following ICorporateActionProvider contract")]
 [ImplementsAdr("ADR-010", "Uses IHttpClientFactory; never instantiates HttpClient directly")]
 public sealed class AlpacaCorporateActionProvider : ICorporateActionProvider

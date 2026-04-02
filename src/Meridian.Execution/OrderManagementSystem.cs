@@ -112,6 +112,13 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
             _logger.LogInformation("Order {OrderId} submitted for {Symbol} {Side} {Quantity} — status {Status}",
                 orderId, request.Symbol, request.Side, request.Quantity, updatedState.Status);
 
+            // Publish fills to the execution channel so portfolio trackers and other
+            // consumers can subscribe without coupling directly to the gateway.
+            if (report.OrderStatus is OrderStatus.Filled or OrderStatus.PartiallyFilled)
+            {
+                _executionChannel.Writer.TryWrite(report);
+            }
+
             return new OrderResult
             {
                 Success = report.OrderStatus is not OrderStatus.Rejected,
@@ -212,6 +219,14 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
     {
         _executionChannel.Writer.TryComplete();
     }
+
+    /// <summary>
+    /// Provides a read-only view of fill and partial-fill execution reports for consumption
+    /// by portfolio trackers and audit subscribers.  Reports are published as each order
+    /// transitions to <see cref="OrderStatus.Filled"/> or <see cref="OrderStatus.PartiallyFilled"/>.
+    /// Consumers must drain this reader promptly to avoid backpressure.
+    /// </summary>
+    public ChannelReader<ExecutionReport> ExecutionReports => _executionChannel.Reader;
 
     private string GenerateOrderId()
     {

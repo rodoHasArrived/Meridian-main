@@ -16,6 +16,8 @@ public sealed class SecurityMasterService : ISecurityMasterService
     private readonly ILogger<SecurityMasterService> _logger;
     private readonly ISecurityMasterConflictService? _conflictService;
     private readonly IPolygonCorporateActionFetcher? _corporateActionFetcher;
+    private readonly SecurityMasterProjectionCache? _projectionCache;
+    private readonly SecurityMasterCanonicalSymbolSeedService? _seedService;
 
     public SecurityMasterService(
         ISecurityMasterEventStore eventStore,
@@ -25,7 +27,9 @@ public sealed class SecurityMasterService : ISecurityMasterService
         SecurityMasterOptions options,
         ILogger<SecurityMasterService> logger,
         ISecurityMasterConflictService? conflictService = null,
-        IPolygonCorporateActionFetcher? corporateActionFetcher = null)
+        IPolygonCorporateActionFetcher? corporateActionFetcher = null,
+        SecurityMasterProjectionCache? projectionCache = null,
+        SecurityMasterCanonicalSymbolSeedService? seedService = null)
     {
         _eventStore = eventStore;
         _snapshotStore = snapshotStore;
@@ -35,6 +39,8 @@ public sealed class SecurityMasterService : ISecurityMasterService
         _logger = logger;
         _conflictService = conflictService;
         _corporateActionFetcher = corporateActionFetcher;
+        _projectionCache = projectionCache;
+        _seedService = seedService;
     }
 
     public Task<SecurityDetailDto> CreateAsync(CreateSecurityRequest request, CancellationToken ct = default)
@@ -63,6 +69,32 @@ public sealed class SecurityMasterService : ISecurityMasterService
         await _store.UpsertProjectionAsync(projection, ct).ConfigureAwait(false);
         await SaveSnapshotIfNeededAsync(economic, ct).ConfigureAwait(false);
         await TryRecordConflictsAsync(projection, request.SecurityId, ct).ConfigureAwait(false);
+
+        // Enqueue a best-effort corporate action re-fetch so that updated identifiers
+        // (e.g. ticker changes after a merger rename) are reflected in the backfill history.
+        if (_corporateActionFetcher is not null)
+        {
+            var ticker = projection.PrimaryIdentifierValue;
+            var securityId = projection.SecurityId;
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await _corporateActionFetcher.FetchAndPersistAsync(ticker, securityId, CancellationToken.None)
+                        .ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex,
+                        "Background corporate action sync failed after amendment for {Ticker} ({SecurityId})",
+                        ticker, securityId);
+                }
+            });
+        }
+
+        // Keep the in-memory projection cache and canonical registry consistent with the DB write.
+        _projectionCache?.Upsert(projection);
+        TryReseedRegistryInBackground();
 
         return SecurityMasterMapping.ToDetail(projection);
     }
@@ -162,7 +194,29 @@ public sealed class SecurityMasterService : ISecurityMasterService
             });
         }
 
+        // Keep the in-memory projection cache and canonical registry consistent with the DB write.
+        _projectionCache?.Upsert(projection);
+        TryReseedRegistryInBackground();
+
         return SecurityMasterMapping.ToDetail(projection);
+    }
+
+    private void TryReseedRegistryInBackground()
+    {
+        if (_seedService is null)
+            return;
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await _seedService.SeedAsync(CancellationToken.None).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Background canonical symbol registry re-seed failed.");
+            }
+        });
     }
 
     private async Task TryRecordConflictsAsync(SecurityProjectionRecord projection, Guid securityId, CancellationToken ct)
