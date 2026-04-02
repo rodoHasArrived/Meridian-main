@@ -65,7 +65,7 @@ Total items: **207**
 | `CLAUDE.md` | 421 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
 | `CLAUDE.md` | 891 | `TODO` | ❌ | │   │   └── TODO.md |
 | `README.md` | 482 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
-| `README.md` | 941 | `TODO` | ❌ | │   │   ├── TODO.md |
+| `README.md` | 946 | `TODO` | ❌ | │   │   ├── TODO.md |
 | `benchmarks/run-bottleneck-benchmarks.sh` | 111 | `NOTE` | ❌ | # Note: --filter is intentionally not added here; each phase below supplies its own |
 | `build/scripts/run/start-collector.ps1` | 109 | `NOTE` | ❌ | if ($depth -gt 0) { Write-Host "[NOTE] L2 depth requires provider depth entitlements for venues." } |
 | `build/scripts/run/start-collector.sh` | 114 | `NOTE` | ❌ | print("[NOTE] L2 depth requires provider depth subscription for venues.") |
