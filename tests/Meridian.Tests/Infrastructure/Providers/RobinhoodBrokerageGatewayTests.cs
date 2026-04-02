@@ -309,6 +309,6 @@ public sealed class RobinhoodBrokerageGatewayTests
         public StubHttpClientFactory(HttpMessageHandler handler) => _handler = handler;
 
         public HttpClient CreateClient(string name) =>
-            new HttpClient(_handler) { BaseAddress = new Uri("https://api.robinhood.com/") };
+            new HttpClient(_handler, disposeHandler: false) { BaseAddress = new Uri("https://api.robinhood.com/") };
     }
 }
