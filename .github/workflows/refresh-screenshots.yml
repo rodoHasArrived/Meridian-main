@@ -118,7 +118,7 @@ jobs:
 
       - name: Write screenshot helper script
         run: |
-          cat > /tmp/take-screenshots.mjs << 'SCRIPT'
+          cat > take-screenshots.mjs << 'SCRIPT'
           import { chromium } from 'playwright';
 
           const BASE = process.env.UI_BASE;
@@ -155,6 +155,7 @@ jobs:
           mkdir -p docs/screenshots
           cd /home/runner/work/Meridian-main/Meridian-main  # Ensure we're in the repo root
           node /tmp/take-screenshots.mjs
+          node take-screenshots.mjs
           echo "Screenshots captured:"
           ls -lh docs/screenshots/*.png
 
