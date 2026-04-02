@@ -192,15 +192,31 @@ public sealed class RobinhoodMarketDataClient : IMarketDataClient
             {
                 await Task.Delay(DefaultPollInterval, ct).ConfigureAwait(false);
 
-                var symbols = _subscriptions.Values.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
-                if (symbols.Count == 0)
-                    continue;
+                var seenSymbols = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                var batch = new List<string>(MaxSymbolsPerBatch);
 
-                // Batch into groups of MaxSymbolsPerBatch
-                for (var offset = 0; offset < symbols.Count; offset += MaxSymbolsPerBatch)
+                foreach (var symbol in _subscriptions.Values)
                 {
                     ct.ThrowIfCancellationRequested();
-                    var batch = symbols.GetRange(offset, Math.Min(MaxSymbolsPerBatch, symbols.Count - offset));
+
+                    if (!seenSymbols.Add(symbol))
+                    {
+                        continue;
+                    }
+
+                    batch.Add(symbol);
+                    if (batch.Count < MaxSymbolsPerBatch)
+                    {
+                        continue;
+                    }
+
+                    await PollBatchAsync(batch, ct).ConfigureAwait(false);
+                    batch.Clear();
+                }
+
+                if (batch.Count > 0)
+                {
+                    ct.ThrowIfCancellationRequested();
                     await PollBatchAsync(batch, ct).ConfigureAwait(false);
                 }
             }
