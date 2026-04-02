@@ -34,3 +34,11 @@ The React-based trading workstation is served at `/workstation/` and provides th
 Interactive REST API documentation is available at `/swagger/index.html` and covers all 300+ API routes (backfill, providers, storage, security master, execution, etc.).
 
 ![Swagger API Docs](03-swagger.png)
+
+---
+
+## 04 – Storage Configuration & Data Sources
+
+Mid-page view showing the **Storage Configuration** card (data root path, naming convention, date partitioning, preview path) and the top of the **Data Sources** panel with automatic failover toggle.
+
+![Storage Configuration & Data Sources](https://github.com/user-attachments/assets/48bc62b6-4906-4483-af23-2632524c9f79)
