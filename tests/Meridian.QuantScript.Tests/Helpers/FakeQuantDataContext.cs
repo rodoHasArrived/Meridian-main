@@ -1,3 +1,5 @@
+using Meridian.Contracts.SecurityMaster;
+
 namespace Meridian.QuantScript.Tests.Helpers;
 
 /// <summary>
@@ -32,4 +34,10 @@ public sealed class FakeQuantDataContext : IQuantDataContext
 
     public Task<ScriptOrderBook?> OrderBookAsync(string symbol, DateTimeOffset timestamp, CancellationToken ct = default)
         => Task.FromResult<ScriptOrderBook?>(null);
+
+    public Task<SecurityDetailDto?> SecMasterAsync(string symbol, CancellationToken ct = default)
+        => Task.FromResult<SecurityDetailDto?>(null);
+
+    public Task<IReadOnlyList<CorporateActionDto>> CorporateActionsAsync(string symbol, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<CorporateActionDto>>([]);
 }

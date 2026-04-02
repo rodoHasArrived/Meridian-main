@@ -192,7 +192,7 @@ public sealed class ManifestService
             var json = await File.ReadAllTextAsync(path);
             return JsonSerializer.Deserialize<DataManifest>(json, DesktopJsonOptions.Compact);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return null;
         }

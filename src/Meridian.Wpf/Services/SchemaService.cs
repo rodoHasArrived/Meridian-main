@@ -86,7 +86,7 @@ public sealed class SchemaService : Meridian.Ui.Services.SchemaServiceBase
                 var dictionary = JsonSerializer.Deserialize<DataDictionary>(json, DesktopJsonOptions.Compact);
                 if (dictionary != null) return dictionary;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
             }
         }

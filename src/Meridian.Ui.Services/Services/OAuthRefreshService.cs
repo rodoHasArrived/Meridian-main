@@ -179,7 +179,7 @@ public sealed class OAuthRefreshService : IDisposable
         {
             await CheckAndRefreshTokensAsync();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
         }
     }
@@ -190,7 +190,7 @@ public sealed class OAuthRefreshService : IDisposable
         {
             await CheckExpiringTokensAsync();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
         }
     }

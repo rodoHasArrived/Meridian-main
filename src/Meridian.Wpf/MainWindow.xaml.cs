@@ -433,7 +433,7 @@ public partial class MainWindow : Window
                 }
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
         }
     }
@@ -472,7 +472,7 @@ public partial class MainWindow : Window
             // Fire-and-forget since we're closing
             _ = _workspaceService.SaveSessionStateAsync(session);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
         }
     }
@@ -509,7 +509,7 @@ public partial class MainWindow : Window
 
             await File.WriteAllTextAsync(WindowStateFilePath, json).ConfigureAwait(false);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
         }
     }
@@ -554,7 +554,7 @@ public partial class MainWindow : Window
                 WindowState = WindowState.Maximized;
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
         }
     }
@@ -734,7 +734,7 @@ public partial class MainWindow : Window
 
             _navigationService.NavigateTo(pageKey, filePath);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
         }
     }

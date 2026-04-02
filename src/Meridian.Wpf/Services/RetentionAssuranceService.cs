@@ -97,7 +97,7 @@ public sealed class RetentionAssuranceService
                 _config.Guardrails = GetDefaultGuardrails();
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
         }
     }
@@ -121,7 +121,7 @@ public sealed class RetentionAssuranceService
             var json = JsonSerializer.Serialize(settingsData, DesktopJsonOptions.PrettyPrint);
             await File.WriteAllTextAsync(settingsPath, json);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
         }
     }
@@ -328,7 +328,7 @@ public sealed class RetentionAssuranceService
             result.GroupBySymbol();
             return result;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return null; // Fall back to local scanning
         }
@@ -353,7 +353,7 @@ public sealed class RetentionAssuranceService
 
             return response.Success ? response.Data : null;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return null;
         }
@@ -371,7 +371,7 @@ public sealed class RetentionAssuranceService
 
             return response.Success ? response.Data : null;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return null;
         }
@@ -688,7 +688,7 @@ public sealed class RetentionAssuranceService
             var json = JsonSerializer.Serialize(report, DesktopJsonOptions.PrettyPrint);
             await File.WriteAllTextAsync(filePath, json);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
         }
     }

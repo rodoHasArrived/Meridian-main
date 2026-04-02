@@ -147,7 +147,7 @@ public sealed class MessagingService
                     {
                         handler(payload);
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
                     }
                 }

@@ -100,18 +100,18 @@ public sealed class MarketEventBuilder
         switch (_kind)
         {
             case BuilderPayloadKind.Bar:
-            {
-                var bar = (_payload as HistoricalBar)
-                    ?? new HistoricalBarBuilder().ForSymbol(_symbol).Build();
-                return MarketEventDto.CreateHistoricalBar(ts, _symbol, bar, _sequence, _source);
-            }
+                {
+                    var bar = (_payload as HistoricalBar)
+                        ?? new HistoricalBarBuilder().ForSymbol(_symbol).Build();
+                    return MarketEventDto.CreateHistoricalBar(ts, _symbol, bar, _sequence, _source);
+                }
 
             default: // Trade
-            {
-                var trade = (_payload as Trade)
-                    ?? new TradeBuilder().ForSymbol(_symbol).Build();
-                return MarketEventDto.CreateTrade(ts, _symbol, trade, _sequence, _source);
-            }
+                {
+                    var trade = (_payload as Trade)
+                        ?? new TradeBuilder().ForSymbol(_symbol).Build();
+                    return MarketEventDto.CreateTrade(ts, _symbol, trade, _sequence, _source);
+                }
         }
     }
 

@@ -201,7 +201,7 @@ public sealed class BatchExportSchedulerService : IAsyncDisposable
             {
                 break;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 _workerSemaphore.Release();
             }

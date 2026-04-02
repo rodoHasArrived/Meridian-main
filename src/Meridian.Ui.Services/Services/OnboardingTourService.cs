@@ -239,7 +239,7 @@ public sealed class OnboardingTourService
                 _dismissedTours.Add(id);
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
         }
     }
@@ -264,7 +264,7 @@ public sealed class OnboardingTourService
             var json = JsonSerializer.Serialize(progress, DesktopJsonOptions.PrettyPrint);
             await File.WriteAllTextAsync(ProgressFilePath, json);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
         }
     }

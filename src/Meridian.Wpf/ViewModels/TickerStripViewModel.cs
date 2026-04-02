@@ -199,7 +199,7 @@ public sealed class TickerStripViewModel : BindableBase, IDisposable
             });
         }
         catch (OperationCanceledException) { }
-        catch (Exception ex)
+        catch (Exception)
         {
         }
     }
@@ -241,7 +241,7 @@ public sealed class TickerStripViewModel : BindableBase, IDisposable
         }
         catch (HttpRequestException) { }
         catch (JsonException) { }
-        catch (Exception ex)
+        catch (Exception)
         {
         }
     }

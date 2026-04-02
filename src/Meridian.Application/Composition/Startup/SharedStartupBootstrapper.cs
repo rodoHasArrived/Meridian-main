@@ -1,8 +1,8 @@
 using System.Text.Json;
 using Meridian.Application.Backfill;
 using Meridian.Application.Commands;
-using Meridian.Application.Config;
 using Meridian.Application.Composition.Startup.StartupModels;
+using Meridian.Application.Config;
 using Meridian.Application.Logging;
 using Meridian.Application.Monitoring;
 using Meridian.Application.ResultTypes;

@@ -84,7 +84,7 @@ public sealed class ThemeService : ThemeServiceBase
             // Update system colors for window chrome
             UpdateWindowChrome(theme);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // Fall back to programmatic theming if resource dictionaries aren't available
             ApplyProgrammaticTheme(theme);

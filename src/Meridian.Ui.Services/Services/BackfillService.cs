@@ -788,7 +788,7 @@ public sealed class BackfillService
 
             return backendStatus;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return null;
         }

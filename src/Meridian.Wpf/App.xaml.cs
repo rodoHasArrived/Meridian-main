@@ -521,7 +521,7 @@ public partial class App : System.Windows.Application
         {
             await WpfServices.OfflineTrackingPersistenceService.Instance.InitializeAsync();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // Continue - app should still work without persistence
         }
@@ -540,7 +540,7 @@ public partial class App : System.Windows.Application
             // Start background task scheduler
             await WpfServices.BackgroundTaskSchedulerService.Instance.StartAsync();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // Continue - app should still work without background services
         }
@@ -567,7 +567,7 @@ public partial class App : System.Windows.Application
                     : NotificationType.Error,
                 success ? 5000 : 0);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
         }
     }
@@ -589,7 +589,7 @@ public partial class App : System.Windows.Application
                 WpfServices.NavigationService.Instance.NavigateTo(session.ActivePageTag);
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
         }
     }
@@ -613,7 +613,7 @@ public partial class App : System.Windows.Application
 
             await workspaceService.SaveSessionStateAsync(session);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
         }
     }
@@ -673,7 +673,7 @@ public partial class App : System.Windows.Application
         catch (OperationCanceledException)
         {
         }
-        catch (Exception ex)
+        catch (Exception)
         {
         }
     }
@@ -690,7 +690,7 @@ public partial class App : System.Windows.Application
         catch (OperationCanceledException)
         {
         }
-        catch (Exception ex)
+        catch (Exception)
         {
         }
     }
@@ -710,7 +710,7 @@ public partial class App : System.Windows.Application
             catch (OperationCanceledException)
             {
             }
-            catch (Exception ex)
+            catch (Exception)
             {
             }
         }, ct);

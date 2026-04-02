@@ -131,7 +131,8 @@ public sealed class TradeBuilder
         for (var i = 0; i < count; i++)
         {
             var price = Math.Round(basePrice * (decimal)(1.0 + _faker.Random.Double(-0.005, 0.005)), 2);
-            if (price <= 0) price = basePrice;
+            if (price <= 0)
+                price = basePrice;
 
             trades.Add(new Trade(
                 Timestamp: ts.AddMilliseconds(i * 100),

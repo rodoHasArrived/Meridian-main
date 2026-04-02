@@ -653,7 +653,7 @@ public sealed class AnalysisExportWizardService
                 _ => await ExportToCsvAsync(symbol, sourceFiles, config, ct) // Default to CSV
             };
         }
-        catch (Exception ex)
+        catch (Exception)
         {
         }
 

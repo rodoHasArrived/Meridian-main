@@ -47,7 +47,7 @@ public sealed class CollectionSessionService
                 _sessionsConfig = JsonSerializer.Deserialize<CollectionSessionsConfig>(json, DesktopJsonOptions.Compact);
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
         }
 
@@ -68,7 +68,7 @@ public sealed class CollectionSessionService
             var json = JsonSerializer.Serialize(_sessionsConfig, DesktopJsonOptions.PrettyPrint);
             await File.WriteAllTextAsync(_sessionsFilePath, json);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
         }
     }
@@ -226,7 +226,7 @@ public sealed class CollectionSessionService
                 session.ManifestPath = manifest.Item2;
                 await SaveSessionsAsync();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
             }
         }

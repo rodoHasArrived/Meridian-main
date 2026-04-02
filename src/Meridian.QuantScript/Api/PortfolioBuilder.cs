@@ -199,12 +199,15 @@ internal static class MvOptimizer
         double maxWeight)
     {
         var n = mu.Length;
-        if (n == 0) return [];
-        if (n == 1) return [1.0];
+        if (n == 0)
+            return [];
+        if (n == 1)
+            return [1.0];
 
         // Step size: proportional to the inverse of the operator norm (estimated by trace / n).
         var sigmaTrace = 0.0;
-        for (var i = 0; i < n; i++) sigmaTrace += sigma[i, i];
+        for (var i = 0; i < n; i++)
+            sigmaTrace += sigma[i, i];
         // Step size: 1/(2·L) where L ≈ trace(Σ) is an upper bound on the Lipschitz
         // constant of ∇f = Σw.  The factor of 2 provides a safety margin for convergence.
         var step = sigmaTrace > 0 ? 1.0 / (2.0 * sigmaTrace) : 0.01;
@@ -256,7 +259,8 @@ internal static class MvOptimizer
     private static double[] ProjectBudgetBox(double[] v, double lb, double ub)
     {
         var n = v.Length;
-        if (n == 0) return v;
+        if (n == 0)
+            return v;
 
         var totalMin = lb * n;
         var totalMax = ub * n;
@@ -270,8 +274,10 @@ internal static class MvOptimizer
         var hi = double.MinValue;
         for (var i = 0; i < n; i++)
         {
-            if (v[i] - ub < lo) lo = v[i] - ub;
-            if (v[i] - lb > hi) hi = v[i] - lb;
+            if (v[i] - ub < lo)
+                lo = v[i] - ub;
+            if (v[i] - lb > hi)
+                hi = v[i] - lb;
         }
 
         for (var k = 0; k < 200; k++)
@@ -280,8 +286,10 @@ internal static class MvOptimizer
             var s = 0.0;
             for (var i = 0; i < n; i++)
                 s += Math.Clamp(v[i] - mid, lb, ub);
-            if (s > 1.0) lo = mid;
-            else hi = mid;
+            if (s > 1.0)
+                lo = mid;
+            else
+                hi = mid;
         }
 
         var theta = (lo + hi) * 0.5;
@@ -296,7 +304,8 @@ internal static class MvOptimizer
         // Equal weight, projected onto the feasible box+budget set.
         var w = new double[n];
         var eq = 1.0 / n;
-        for (var i = 0; i < n; i++) w[i] = Math.Clamp(eq, lb, ub);
+        for (var i = 0; i < n; i++)
+            w[i] = Math.Clamp(eq, lb, ub);
         return ProjectBudgetBox(w, lb, ub);
     }
 

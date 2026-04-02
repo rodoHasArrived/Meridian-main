@@ -223,7 +223,7 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
                 tourService.StartTour(tour.Id);
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
         }
     }
