@@ -37,27 +37,6 @@ public sealed class RobinhoodMarketDataClientTests
             NullLogger<RobinhoodMarketDataClient>.Instance);
     }
 
-    private static StringContent BuildQuoteResponse(string symbol,
-        string bid = "185.00", string ask = "185.50", long bidSize = 100, long askSize = 200)
-    {
-        var payload = new
-        {
-            results = new[]
-            {
-                new
-                {
-                    symbol,
-                    bid_price = bid,
-                    ask_price = ask,
-                    bid_size = bidSize,
-                    ask_size = askSize,
-                    updated_at = "2024-01-02T10:00:00Z"
-                }
-            }
-        };
-        return new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
-    }
-
     // ── Provider metadata ────────────────────────────────────────────────
 
     [Fact]
