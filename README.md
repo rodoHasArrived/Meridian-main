@@ -1642,7 +1642,21 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── BaseBrokerageGateway.cs
 │   │   │   ├── BrokerageGatewayAdapter.cs
 │   │   │   └── PaperTradingGateway.cs
+│   │   ├── Allocation
+│   │   │   ├── AllocationResult.cs
+│   │   │   ├── AllocationRule.cs
+│   │   │   ├── BlockTradeAllocator.cs
+│   │   │   ├── IAllocationEngine.cs
+│   │   │   └── ProportionalAllocationEngine.cs
 │   │   ├── BrokerageServiceRegistration.cs
+│   │   ├── Derivatives
+│   │   │   ├── FuturePosition.cs
+│   │   │   ├── IDerivativePosition.cs
+│   │   │   └── OptionPosition.cs
+│   │   ├── Events
+│   │   │   ├── ITradeEventPublisher.cs
+│   │   │   ├── LedgerPostingConsumer.cs
+│   │   │   └── TradeExecutedEvent.cs
 │   │   ├── Exceptions
 │   │   │   └── UnsupportedOrderRequestException.cs
 │   │   ├── GlobalUsings.cs
@@ -1653,6 +1667,11 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── IExecutionContext.cs
 │   │   │   ├── ILiveFeedAdapter.cs
 │   │   │   └── IOrderGateway.cs
+│   │   ├── Margin
+│   │   │   ├── IMarginModel.cs
+│   │   │   ├── MarginRequirement.cs
+│   │   │   ├── PortfolioMarginModel.cs
+│   │   │   └── RegTMarginModel.cs
 │   │   ├── Meridian.Execution.csproj
 │   │   ├── Models
 │   │   │   ├── AccountKind.cs
@@ -1664,31 +1683,45 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── OrderGatewayCapabilities.cs
 │   │   │   ├── OrderStatus.cs
 │   │   │   └── OrderStatusUpdate.cs
+│   │   ├── MultiCurrency
+│   │   │   ├── FxRate.cs
+│   │   │   ├── IFxRateProvider.cs
+│   │   │   └── MultiCurrencyCashBalance.cs
 │   │   ├── OrderManagementSystem.cs
 │   │   ├── PaperExecutionContext.cs
 │   │   ├── PaperTradingGateway.cs
 │   │   ├── SecurityMasterGate.cs
 │   │   ├── Serialization
 │   │   │   └── ExecutionJsonContext.cs
-│   │   └── Services
-│   │       ├── IPaperSessionStore.cs
-│   │       ├── JsonlFilePaperSessionStore.cs
-│   │       ├── OrderLifecycleManager.cs
-│   │       ├── PaperSessionOptions.cs
-│   │       ├── PaperSessionPersistenceService.cs
-│   │       ├── PaperTradingPortfolio.cs
-│   │       ├── PortfolioRegistry.cs
-│   │       ├── PositionReconciliationService.cs
-│   │       └── PositionSyncOptions.cs
+│   │   ├── Services
+│   │   │   ├── IPaperSessionStore.cs
+│   │   │   ├── JsonlFilePaperSessionStore.cs
+│   │   │   ├── OrderLifecycleManager.cs
+│   │   │   ├── PaperSessionOptions.cs
+│   │   │   ├── PaperSessionPersistenceService.cs
+│   │   │   ├── PaperTradingPortfolio.cs
+│   │   │   ├── PortfolioRegistry.cs
+│   │   │   ├── PositionReconciliationService.cs
+│   │   │   └── PositionSyncOptions.cs
+│   │   └── TaxLotAccounting
+│   │       ├── ITaxLotSelector.cs
+│   │       ├── TaxLotAccountingMethod.cs
+│   │       ├── TaxLotRelief.cs
+│   │       └── TaxLotSelectors.cs
 │   ├── Meridian.Execution.Sdk
 │   │   ├── BrokerageConfiguration.cs
+│   │   ├── Derivatives
+│   │   │   ├── FutureDetails.cs
+│   │   │   ├── OptionDetails.cs
+│   │   │   └── OptionGreeks.cs
 │   │   ├── IBrokerageGateway.cs
 │   │   ├── IBrokeragePositionSync.cs
 │   │   ├── IExecutionGateway.cs
 │   │   ├── IOrderManager.cs
 │   │   ├── IPositionTracker.cs
 │   │   ├── Meridian.Execution.Sdk.csproj
-│   │   └── Models.cs
+│   │   ├── Models.cs
+│   │   └── TaxLot.cs
 │   ├── Meridian.FSharp
 │   │   ├── Calculations
 │   │   │   ├── Aggregations.fs
@@ -1851,6 +1884,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── RobinhoodBrokerageGateway.cs
 │   │   │   │   ├── RobinhoodHistoricalDataProvider.cs
 │   │   │   │   ├── RobinhoodMarketDataClient.cs
+│   │   │   │   ├── RobinhoodSymbolSearchModels.cs
 │   │   │   │   └── RobinhoodSymbolSearchProvider.cs
 │   │   │   ├── StockSharp
 │   │   │   │   ├── Converters
@@ -3077,6 +3111,13 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── StrongDomainTypeTests.cs
 │   │   ├── Execution
 │   │   │   ├── BrokerageGatewayAdapterTests.cs
+│   │   │   ├── Enhancements
+│   │   │   │   ├── AllocationEngineTests.cs
+│   │   │   │   ├── DerivativePositionTests.cs
+│   │   │   │   ├── EventDrivenDecouplingTests.cs
+│   │   │   │   ├── MarginModelTests.cs
+│   │   │   │   ├── MultiCurrencyTests.cs
+│   │   │   │   └── TaxLotAccountingTests.cs
 │   │   │   ├── MultiAccountPaperTradingPortfolioTests.cs
 │   │   │   ├── OrderManagementSystemTests.cs
 │   │   │   ├── PaperSessionPersistenceServiceTests.cs
@@ -3395,6 +3436,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-447 directories, 2820 files
+455 directories, 2853 files
 ```
 <!-- readme-tree end -->
