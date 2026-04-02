@@ -237,27 +237,6 @@ public sealed class UiServer : IAsyncDisposable
 
     private void ConfigureRoutes()
     {
-        // ==================== BASIC HEALTH ENDPOINTS ====================
-        // Kept inline for simplicity - these are used by container orchestration
-
-        _app.MapGet("/health", () =>
-        {
-            var uptime = DateTimeOffset.UtcNow - _startTime;
-            return Results.Json(new
-            {
-                status = "healthy",
-                timestamp = DateTimeOffset.UtcNow,
-                uptime = uptime.ToString(),
-                version = "1.6.1"
-            });
-        });
-
-        _app.MapGet("/healthz", () => Results.Ok("healthy"));
-        _app.MapGet("/ready", () => Results.Ok("ready"));
-        _app.MapGet("/readyz", () => Results.Ok("ready"));
-        _app.MapGet("/live", () => Results.Ok("alive"));
-        _app.MapGet("/livez", () => Results.Ok("alive"));
-
         // ==================== UNIQUE ENDPOINT MODULES ====================
         // Endpoints not included in MapUiEndpoints and must be registered explicitly.
 
