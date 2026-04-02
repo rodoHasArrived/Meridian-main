@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Stack of coins / disks for Symbol Storage -->
+  <ellipse cx="12" cy="17" rx="8" ry="2.5"/>
+  <path d="M4 17v2.5c0 1.38 3.58 2.5 8 2.5s8-1.12 8-2.5V17"/>
+  <ellipse cx="12" cy="12" rx="8" ry="2.5"/>
+  <path d="M4 12v2.5c0 1.38 3.58 2.5 8 2.5s8-1.12 8-2.5V12"/>
+  <ellipse cx="12" cy="7" rx="8" ry="2.5"/>
+  <path d="M4 7v2.5c0 1.38 3.58 2.5 8 2.5s8-1.12 8-2.5V7"/>
+</svg>

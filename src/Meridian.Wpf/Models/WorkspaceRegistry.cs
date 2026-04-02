@@ -6,6 +6,11 @@ namespace Meridian.Wpf.Models;
 /// Static registry of workspace definitions for the 4-workspace navigation shell.
 /// Each workspace maps to a set of related pages from Pages.cs.
 /// Page names must match the tags registered in NavigationService.RegisterAllPages().
+///
+/// Icon values are single-character Segoe MDL2 Assets glyph strings.
+/// The corresponding Segoe MDL2 Unicode code points are declared as StaticResource
+/// keys in Styles/IconResources.xaml (e.g. IconResearch, IconTrading …).
+/// High-quality SVG source files for every icon live in Assets/Icons/*.svg.
 /// </summary>
 public static class WorkspaceRegistry
 {
@@ -18,76 +23,76 @@ public static class WorkspaceRegistry
         new WorkspaceDefinition(
             Id: "research",
             Label: "Research",
-            Icon: "🔬",
+            Icon: "\uEC35",   // TestBeaker  — SVG: Assets/Icons/research.svg
             Pages: new WorkspacePageEntry[]
             {
-                new("Dashboard", "Dashboard", "📊"),
-                new("LiveData", "Live Data", "📈"),
-                new("OrderBook", "Order Book", "📋"),
-                new("Charts", "Charting", "📉"),
-                new("DataBrowser", "Data Browser", "🔍"),
-                new("DataSampling", "Data Sampling", "🎲"),
-                new("SymbolStorage", "Symbol Storage", "💾"),
+                new("Dashboard",    "Dashboard",    "\uE71D"),  // Dashboard (tiles)
+                new("LiveData",     "Live Data",    "\uE9D2"),  // LineChart
+                new("OrderBook",    "Order Book",   "\uE8FD"),  // List
+                new("Charts",       "Charting",     "\uE9D9"),  // Chart
+                new("DataBrowser",  "Data Browser", "\uE721"),  // Search
+                new("DataSampling", "Data Sampling","\uF1AD"),  // DataUsage
+                new("SymbolStorage","Symbol Storage","\uEE94"), // Database
             }),
 
         // ── Trading Workspace ───────────────────────────────────────────────────
         new WorkspaceDefinition(
             Id: "trading",
             Label: "Trading",
-            Icon: "⚡",
+            Icon: "\uE945",   // Lightning   — SVG: Assets/Icons/trading.svg
             Pages: new WorkspacePageEntry[]
             {
-                new("Backtest", "Backtest", "🧪"),
-                new("StrategyRuns", "Strategy Runs", "🚀"),
-                new("RunDetail", "Run Detail", "📑"),
-                new("RunLedger", "Run Ledger", "📚"),
-                new("RunPortfolio", "Run Portfolio", "💼"),
-                new("RunMat", "RunMat", "🎯"),
-                new("TradingHours", "Trading Hours", "🕐"),
+                new("Backtest",       "Backtest",        "\uEC35"), // TestBeaker
+                new("StrategyRuns",   "Strategy Runs",   "\uE768"), // Play
+                new("RunDetail",      "Run Detail",      "\uE8A5"), // Document
+                new("RunLedger",      "Run Ledger",      "\uE82D"), // Library
+                new("RunPortfolio",   "Run Portfolio",   "\uE821"), // Briefcase
+                new("RunMat",         "RunMat",          "\uE8CF"), // Target
+                new("TradingHours",   "Trading Hours",   "\uE823"), // Clock
             }),
 
         // ── Data Ops Workspace ──────────────────────────────────────────────────
         new WorkspaceDefinition(
             Id: "data-operations",
             Label: "Data Operations",
-            Icon: "🗂",
+            Icon: "\uEE94",   // Database    — SVG: Assets/Icons/data-operations.svg
             Pages: new WorkspacePageEntry[]
             {
-                new("Symbols", "Symbols", "🔤"),
-                new("Backfill", "Backfill", "⏮"),
-                new("ProviderHealth", "Provider Health", "❤️"),
-                new("DataSources", "Data Sources", "📡"),
-                new("DataQuality", "Data Quality", "✓"),
-                new("DataCalendar", "Data Calendar", "📅"),
-                new("DataExport", "Data Export", "📤"),
-                new("StorageOptimization", "Storage Optimization", "⚙️"),
-                new("Storage", "Storage", "💿"),
-                new("ArchiveHealth", "Archive Health", "🏥"),
-                new("EventReplay", "Event Replay", "▶️"),
-                new("IndexSubscription", "Index Subscription", "📑"),
-                new("PortfolioImport", "Portfolio Import", "📥"),
-                new("Watchlist", "Watchlist", "👁"),
-                new("Schedules", "Schedule Manager", "⏰"),
-                new("CollectionSessions", "Collection Sessions", "🎬"),
+                new("Symbols",            "Symbols",              "\uE8AB"), // Sort/Exchange
+                new("Backfill",           "Backfill",             "\uE892"), // Rewind
+                new("ProviderHealth",     "Provider Health",      "\uEB51"), // Heart
+                new("DataSources",        "Data Sources",         "\uEC05"), // Wireless
+                new("DataQuality",        "Data Quality",         "\uE73E"), // Checkmark
+                new("DataCalendar",       "Data Calendar",        "\uE787"), // Calendar
+                new("DataExport",         "Data Export",          "\uEDE1"), // Export
+                new("StorageOptimization","Storage Optimization", "\uE713"), // Settings
+                new("Storage",            "Storage",              "\uEE94"), // Database
+                new("ArchiveHealth",      "Archive Health",       "\uE8E3"), // Accept
+                new("EventReplay",        "Event Replay",         "\uE768"), // Play
+                new("IndexSubscription",  "Index Subscription",   "\uE8FD"), // List
+                new("PortfolioImport",    "Portfolio Import",     "\uE8B5"), // Import
+                new("Watchlist",          "Watchlist",            "\uE7B3"), // View
+                new("Schedules",          "Schedule Manager",     "\uE916"), // Timer
+                new("CollectionSessions", "Collection Sessions",  "\uE8EF"), // VideoCapture
             }),
 
         // ── Governance Workspace ────────────────────────────────────────────────
         new WorkspaceDefinition(
             Id: "governance",
             Label: "Governance",
-            Icon: "🛡",
+            Icon: "\uE8D7",   // Permissions — SVG: Assets/Icons/governance.svg
             Pages: new WorkspacePageEntry[]
             {
-                new("SecurityMaster", "Security Master", "🔐"),
-                new("Settings", "Settings", "⚙️"),
-                new("Diagnostics", "Diagnostics", "🔧"),
-                new("ServiceManager", "Service Manager", "🔌"),
-                new("AdminMaintenance", "Admin Maintenance", "🧹"),
-                new("RetentionAssurance", "Retention Assurance", "📋"),
-                new("LeanIntegration", "Lean Integration", "🔗"),
-                new("SystemHealth", "System Health", "📊"),
-                new("Help", "Help", "❓"),
-                new("KeyboardShortcuts", "Keyboard Shortcuts", "⌨️"),
+                new("SecurityMaster",    "Security Master",    "\uE72E"), // Lock
+                new("Settings",          "Settings",           "\uE713"), // Settings
+                new("Diagnostics",       "Diagnostics",        "\uE90F"), // Repair
+                new("ServiceManager",    "Service Manager",    "\uECE7"), // Plug
+                new("AdminMaintenance",  "Admin Maintenance",  "\uE74D"), // BulkEdit
+                new("RetentionAssurance","Retention Assurance","\uE8A5"), // Document
+                new("LeanIntegration",   "Lean Integration",   "\uE71B"), // Link
+                new("SystemHealth",      "System Health",      "\uE9D9"), // BarChart
+                new("Help",              "Help",               "\uE897"), // Help
+                new("KeyboardShortcuts", "Keyboard Shortcuts", "\uE765"), // Keyboard
             }),
     };
 

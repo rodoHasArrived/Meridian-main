@@ -382,9 +382,9 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
 
         // Populate action bar.
         Actions.Clear();
-        Actions.Add(new ActionEntry("Refresh", RefreshStatusCommand, "↻", "Refresh all data", IsPrimary: true));
-        Actions.Add(new ActionEntry("View Logs", ViewLogsCommand, "📋", "View activity log"));
-        Actions.Add(new ActionEntry("Data Quality", ViewAllIntegrityEventsCommand, "✓", "View data quality metrics"));
+        Actions.Add(new ActionEntry("Refresh", RefreshStatusCommand, "\uE72C", "Refresh all data", IsPrimary: true));
+        Actions.Add(new ActionEntry("View Logs", ViewLogsCommand, "\uE8FD", "View activity log"));
+        Actions.Add(new ActionEntry("Data Quality", ViewAllIntegrityEventsCommand, "\uE73E", "View data quality metrics"));
 
         // Observe collection changes to keep empty-state flags up to date.
         ActivityItems.CollectionChanged += (_, _) => IsNoActivityVisible = ActivityItems.Count == 0;
