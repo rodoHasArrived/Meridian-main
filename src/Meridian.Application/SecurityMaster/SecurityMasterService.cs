@@ -1,5 +1,6 @@
 using Meridian.Contracts.SecurityMaster;
 using Meridian.FSharp.SecurityMasterInterop;
+using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Storage.SecurityMaster;
 using Microsoft.Extensions.Logging;
 
@@ -14,6 +15,7 @@ public sealed class SecurityMasterService : ISecurityMasterService
     private readonly SecurityMasterOptions _options;
     private readonly ILogger<SecurityMasterService> _logger;
     private readonly ISecurityMasterConflictService? _conflictService;
+    private readonly IPolygonCorporateActionFetcher? _corporateActionFetcher;
 
     public SecurityMasterService(
         ISecurityMasterEventStore eventStore,
@@ -22,7 +24,8 @@ public sealed class SecurityMasterService : ISecurityMasterService
         SecurityMasterAggregateRebuilder rebuilder,
         SecurityMasterOptions options,
         ILogger<SecurityMasterService> logger,
-        ISecurityMasterConflictService? conflictService = null)
+        ISecurityMasterConflictService? conflictService = null,
+        IPolygonCorporateActionFetcher? corporateActionFetcher = null)
     {
         _eventStore = eventStore;
         _snapshotStore = snapshotStore;
@@ -31,6 +34,7 @@ public sealed class SecurityMasterService : ISecurityMasterService
         _options = options;
         _logger = logger;
         _conflictService = conflictService;
+        _corporateActionFetcher = corporateActionFetcher;
     }
 
     public Task<SecurityDetailDto> CreateAsync(CreateSecurityRequest request, CancellationToken ct = default)
@@ -134,6 +138,28 @@ public sealed class SecurityMasterService : ISecurityMasterService
             {
                 _logger.LogWarning(ex, "Conflict detection failed for new security {SecurityId}", request.SecurityId);
             }
+        }
+
+        // Enqueue a best-effort corporate action backfill for the newly-created security so
+        // that historical corp action data is available immediately for backtesting.
+        if (_corporateActionFetcher is not null)
+        {
+            var ticker = projection.PrimaryIdentifierValue;
+            var securityId = projection.SecurityId;
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await _corporateActionFetcher.FetchAndPersistAsync(ticker, securityId, CancellationToken.None)
+                        .ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex,
+                        "Background corporate action sync failed for new security {Ticker} ({SecurityId})",
+                        ticker, securityId);
+                }
+            });
         }
 
         return SecurityMasterMapping.ToDetail(projection);

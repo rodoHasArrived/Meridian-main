@@ -18,6 +18,11 @@ namespace Meridian.Execution.Serialization;
 [JsonSerializable(typeof(ExecutionReport))]
 [JsonSerializable(typeof(OrderState))]
 [JsonSerializable(typeof(List<string>))]
+[JsonSerializable(typeof(PersistedJournalEntryDto))]
+[JsonSerializable(typeof(List<PersistedJournalEntryDto>))]
+[JsonSerializable(typeof(PersistedLedgerLineDto))]
+[JsonSerializable(typeof(List<PersistedLedgerLineDto>))]
+[JsonSerializable(typeof(PersistedLedgerAccountDto))]
 internal sealed partial class ExecutionJsonContext : JsonSerializerContext
 {
 }

@@ -14,15 +14,18 @@ public sealed class SecurityMasterProjectionWarmupService : IHostedService
     private readonly SecurityMasterProjectionService _projectionService;
     private readonly SecurityMasterOptions _options;
     private readonly ILogger<SecurityMasterProjectionWarmupService> _logger;
+    private readonly SecurityMasterCanonicalSymbolSeedService? _seedService;
 
     public SecurityMasterProjectionWarmupService(
         SecurityMasterProjectionService projectionService,
         SecurityMasterOptions options,
-        ILogger<SecurityMasterProjectionWarmupService> logger)
+        ILogger<SecurityMasterProjectionWarmupService> logger,
+        SecurityMasterCanonicalSymbolSeedService? seedService = null)
     {
         _projectionService = projectionService;
         _options = options;
         _logger = logger;
+        _seedService = seedService;
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -38,6 +41,12 @@ public sealed class SecurityMasterProjectionWarmupService : IHostedService
         try
         {
             await _projectionService.WarmAsync(cancellationToken).ConfigureAwait(false);
+
+            // Seed the canonical symbol registry from the freshly-populated projection cache.
+            if (_seedService is not null)
+            {
+                await _seedService.SeedAsync(cancellationToken).ConfigureAwait(false);
+            }
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {

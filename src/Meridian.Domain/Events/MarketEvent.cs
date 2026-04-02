@@ -22,6 +22,8 @@ public sealed record MarketEvent(
     string? CanonicalSymbol = null,
     byte CanonicalizationVersion = 0,
     string? CanonicalVenue = null,
+    // Security Master cross-reference (null until canonicalization; populated by EventCanonicalizer).
+    Guid? SecurityId = null,
     // End-to-end trace context captured at pipeline ingress.
     string? TraceId = null,
     string? ParentSpanId = null
