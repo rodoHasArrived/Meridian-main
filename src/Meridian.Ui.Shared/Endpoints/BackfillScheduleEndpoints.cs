@@ -195,21 +195,6 @@ public static class BackfillScheduleEndpoints
         .Produces(503)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
-        // Delete backfill schedule (alternative route with /delete suffix)
-        group.MapDelete(UiApiRoutes.BackfillSchedulesDelete, async (string id, [FromServices] BackfillScheduleManager? schedMgr) =>
-        {
-            if (schedMgr is null)
-                return Results.Json(new { error = "Schedule manager not available" }, jsonOptions, statusCode: 503);
-
-            var deleted = await schedMgr.DeleteScheduleAsync(id);
-            return deleted ? Results.Ok() : Results.NotFound();
-        })
-        .WithName("DeleteBackfillSchedule")
-        .WithDescription("Deletes a backfill schedule by ID.")
-        .Produces(200)
-        .Produces(404)
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
-
         // Enable backfill schedule
         group.MapPost(UiApiRoutes.BackfillSchedulesEnable, async (string id, [FromServices] BackfillScheduleManager? schedMgr) =>
         {
