@@ -273,6 +273,8 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
             {
                 OrderId = orderId,
                 ReportType = ExecutionReportType.Rejected,
+                Symbol = string.Empty,
+                Side = OrderSide.Buy,
                 OrderStatus = OrderStatus.Rejected,
                 RejectReason = $"Cannot modify order {orderId}: original order details not found",
                 Timestamp = DateTimeOffset.UtcNow,
@@ -386,7 +388,7 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
             Side = o.Side == "sell" ? OrderSide.Sell : OrderSide.Buy,
             Type = ParseOrderType(o.Type),
             Quantity = ParseDecimal(o.Quantity),
-            FilledQuantity = ParseDecimal(o.ExecutedNotional),
+            FilledQuantity = 0m, // Robinhood executed_notional is a currency value, not filled shares/contracts.
             LimitPrice = string.IsNullOrEmpty(o.Price) ? null : ParseDecimal(o.Price),
             StopPrice = string.IsNullOrEmpty(o.StopPrice) ? null : ParseDecimal(o.StopPrice),
             Status = MapRobinhoodStatus(o.State),
@@ -496,7 +498,7 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
             if (!resp.IsSuccessStatusCode)
                 return null;
             var instrument = await resp.Content.ReadFromJsonAsync(
-                RobinhoodBrokerageSerializerContext.Default.RobinhoodInstrument, ct).ConfigureAwait(false);
+                RobinhoodBrokerageSerializerContext.Default.RobinhoodInstrumentResponse, ct).ConfigureAwait(false);
             return instrument?.Symbol;
         }
         catch

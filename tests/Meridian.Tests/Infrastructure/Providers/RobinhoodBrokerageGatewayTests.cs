@@ -13,8 +13,20 @@ namespace Meridian.Tests.Infrastructure.Providers;
 /// Unit tests for <see cref="RobinhoodBrokerageGateway"/>.
 /// All tests use a stub HTTP handler — no real network calls are made.
 /// </summary>
-public sealed class RobinhoodBrokerageGatewayTests
+public sealed class RobinhoodBrokerageGatewayTests : IDisposable
 {
+    private readonly string? _originalAccessToken;
+
+    public RobinhoodBrokerageGatewayTests()
+    {
+        _originalAccessToken = Environment.GetEnvironmentVariable("ROBINHOOD_ACCESS_TOKEN");
+    }
+
+    public void Dispose()
+    {
+        Environment.SetEnvironmentVariable("ROBINHOOD_ACCESS_TOKEN", _originalAccessToken);
+    }
+
     // ── Helpers ──────────────────────────────────────────────────────────
 
     private static RobinhoodBrokerageGateway CreateSut(
@@ -108,7 +120,7 @@ public sealed class RobinhoodBrokerageGatewayTests
     public void BrokerageCapabilities_SupportsFractional()
     {
         var sut = CreateSut(new StubHttpHandler(HttpStatusCode.OK, new StringContent("{}")));
-        sut.BrokerageCapabilities.SupportsFractional.Should().BeTrue();
+        sut.BrokerageCapabilities.SupportsFractionalShares.Should().BeTrue();
     }
 
     [Fact]
@@ -272,18 +284,28 @@ public sealed class RobinhoodBrokerageGatewayTests
     private sealed class StubHttpHandler : HttpMessageHandler
     {
         private readonly HttpStatusCode _statusCode;
-        private readonly HttpContent _content;
+        private readonly Func<HttpContent> _contentFactory;
 
-        public StubHttpHandler(HttpStatusCode statusCode, HttpContent content)
+        public StubHttpHandler(HttpStatusCode statusCode, HttpContent singleContent)
+            : this(statusCode, () =>
+            {
+                // Re-serialize so each request gets a fresh, readable stream.
+                var raw = singleContent.ReadAsStringAsync().GetAwaiter().GetResult();
+                return new StringContent(raw, System.Text.Encoding.UTF8, "application/json");
+            })
+        {
+        }
+
+        public StubHttpHandler(HttpStatusCode statusCode, Func<HttpContent> contentFactory)
         {
             _statusCode = statusCode;
-            _content = content;
+            _contentFactory = contentFactory;
         }
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();
-            return Task.FromResult(new HttpResponseMessage(_statusCode) { Content = _content });
+            return Task.FromResult(new HttpResponseMessage(_statusCode) { Content = _contentFactory() });
         }
     }
 

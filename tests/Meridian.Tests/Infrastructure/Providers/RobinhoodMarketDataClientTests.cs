@@ -1,6 +1,4 @@
 using System.Net;
-using System.Text;
-using System.Text.Json;
 using FluentAssertions;
 using Meridian.Domain.Collectors;
 using Meridian.Domain.Events;
@@ -14,14 +12,26 @@ namespace Meridian.Tests.Infrastructure.Providers;
 /// Unit tests for <see cref="RobinhoodMarketDataClient"/>.
 /// All tests use a stub HTTP handler — no real network calls are made.
 /// </summary>
-public sealed class RobinhoodMarketDataClientTests
+public sealed class RobinhoodMarketDataClientTests : IDisposable
 {
+    private readonly string? _originalAccessToken;
+
+    public RobinhoodMarketDataClientTests()
+    {
+        _originalAccessToken = Environment.GetEnvironmentVariable("ROBINHOOD_ACCESS_TOKEN");
+    }
+
+    public void Dispose()
+    {
+        Environment.SetEnvironmentVariable("ROBINHOOD_ACCESS_TOKEN", _originalAccessToken);
+    }
+
     // ── Helpers ──────────────────────────────────────────────────────────
 
     private static RobinhoodMarketDataClient CreateSut(
         HttpMessageHandler handler,
-        string? accessToken = "test-token",
-        out CapturingPublisher publisher)
+        out CapturingPublisher publisher,
+        string? accessToken = "test-token")
     {
         publisher = new CapturingPublisher();
         var quoteCollector = new QuoteCollector(publisher);
@@ -50,7 +60,7 @@ public sealed class RobinhoodMarketDataClientTests
     public void IsEnabled_WithToken_ReturnsTrue()
     {
         var sut = CreateSut(new StubHttpHandler(HttpStatusCode.OK, new StringContent("{}")),
-            accessToken: "some-token", out _);
+            out _, accessToken: "some-token");
         sut.IsEnabled.Should().BeTrue();
     }
 
@@ -58,7 +68,7 @@ public sealed class RobinhoodMarketDataClientTests
     public void IsEnabled_WithoutToken_ReturnsFalse()
     {
         var sut = CreateSut(new StubHttpHandler(HttpStatusCode.OK, new StringContent("{}")),
-            accessToken: null, out _);
+            out _, accessToken: null);
         sut.IsEnabled.Should().BeFalse();
     }
 
@@ -68,7 +78,7 @@ public sealed class RobinhoodMarketDataClientTests
     public async Task ConnectAsync_NoToken_ThrowsConnectionException()
     {
         var sut = CreateSut(new StubHttpHandler(HttpStatusCode.OK, new StringContent("{}")),
-            accessToken: null, out _);
+            out _, accessToken: null);
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 
         var act = () => sut.ConnectAsync(cts.Token);
@@ -95,7 +105,7 @@ public sealed class RobinhoodMarketDataClientTests
     public void SubscribeTrades_ReturnsMinusOne()
     {
         var sut = CreateSut(new StubHttpHandler(HttpStatusCode.OK, new StringContent("{}")), out _);
-        var cfg = new Meridian.Contracts.Configuration.SymbolConfig { Symbol = "AAPL" };
+        var cfg = new Meridian.Contracts.Configuration.SymbolConfig("AAPL");
         sut.SubscribeTrades(cfg).Should().Be(-1);
     }
 
@@ -103,7 +113,7 @@ public sealed class RobinhoodMarketDataClientTests
     public void SubscribeMarketDepth_ReturnsMinusOne()
     {
         var sut = CreateSut(new StubHttpHandler(HttpStatusCode.OK, new StringContent("{}")), out _);
-        var cfg = new Meridian.Contracts.Configuration.SymbolConfig { Symbol = "AAPL" };
+        var cfg = new Meridian.Contracts.Configuration.SymbolConfig("AAPL");
         sut.SubscribeMarketDepth(cfg).Should().Be(-1);
     }
 
@@ -111,7 +121,7 @@ public sealed class RobinhoodMarketDataClientTests
     public void SubscribeQuotes_ReturnsPositiveId()
     {
         var sut = CreateSut(new StubHttpHandler(HttpStatusCode.OK, new StringContent("{}")), out _);
-        var cfg = new Meridian.Contracts.Configuration.SymbolConfig { Symbol = "AAPL" };
+        var cfg = new Meridian.Contracts.Configuration.SymbolConfig("AAPL");
         sut.SubscribeQuotes(cfg).Should().BeGreaterThan(0);
     }
 
@@ -119,8 +129,8 @@ public sealed class RobinhoodMarketDataClientTests
     public void SubscribeQuotes_MultipleSymbols_ReturnsUniqueIds()
     {
         var sut = CreateSut(new StubHttpHandler(HttpStatusCode.OK, new StringContent("{}")), out _);
-        var id1 = sut.SubscribeQuotes(new Meridian.Contracts.Configuration.SymbolConfig { Symbol = "AAPL" });
-        var id2 = sut.SubscribeQuotes(new Meridian.Contracts.Configuration.SymbolConfig { Symbol = "MSFT" });
+        var id1 = sut.SubscribeQuotes(new Meridian.Contracts.Configuration.SymbolConfig("AAPL"));
+        var id2 = sut.SubscribeQuotes(new Meridian.Contracts.Configuration.SymbolConfig("MSFT"));
         id1.Should().NotBe(id2);
     }
 

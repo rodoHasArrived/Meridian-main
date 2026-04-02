@@ -3,6 +3,7 @@
 // ✅ ADR-005: Attribute-based provider discovery via [DataSource]
 // ✅ ADR-010: HTTP client via IHttpClientFactory (HttpClientFactoryProvider)
 // ✅ Rate limiting via WaitForRateLimitSlotAsync (inherited from BaseHistoricalDataProvider)
+using System.Globalization;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -48,6 +49,7 @@ public sealed class RobinhoodHistoricalDataProvider : BaseHistoricalDataProvider
     private const string EnvAccessToken = "ROBINHOOD_ACCESS_TOKEN";
 
     private readonly string? _accessToken;
+    private readonly int _priority;
 
     #region Abstract property implementations
 
@@ -60,9 +62,9 @@ public sealed class RobinhoodHistoricalDataProvider : BaseHistoricalDataProvider
 
     #region Rate-limit overrides
 
-    public override int Priority => 35;
-    public override TimeSpan RateLimitDelay => TimeSpan.Zero; // Use the hourly window-based limit of 100 requests/hour.
-    public override int MaxRequestsPerWindow => 100;
+    public override int Priority => _priority;
+    public override TimeSpan RateLimitDelay => TimeSpan.Zero; // Use the hourly window-based limit.
+    public override int MaxRequestsPerWindow => 100; // 100 requests/hour for the undocumented endpoint.
     public override TimeSpan RateLimitWindow => TimeSpan.FromHours(1);
 
     #endregion
@@ -77,18 +79,17 @@ public sealed class RobinhoodHistoricalDataProvider : BaseHistoricalDataProvider
     /// Creates a new Robinhood historical data provider.
     /// </summary>
     /// <param name="accessToken">Bearer access token (falls back to ROBINHOOD_ACCESS_TOKEN env var).</param>
-    /// <param name="priority">Priority in fallback chain (lower = tried first).</param>
-    /// <param name="rateLimitPerHour">Maximum requests per hour (default: 100).</param>
+    /// <param name="priority">Priority in fallback chain (lower = tried first, default: 35).</param>
     /// <param name="httpClient">Optional HTTP client instance.</param>
     /// <param name="log">Optional logger instance.</param>
     public RobinhoodHistoricalDataProvider(
         string? accessToken = null,
         int priority = 35,
-        int rateLimitPerHour = 100,
         HttpClient? httpClient = null,
         ILogger? log = null)
         : base(httpClient, log)
     {
+        _priority = priority;
         _accessToken = accessToken ?? Environment.GetEnvironmentVariable(EnvAccessToken);
 
         if (!string.IsNullOrEmpty(_accessToken))
@@ -142,11 +143,9 @@ public sealed class RobinhoodHistoricalDataProvider : BaseHistoricalDataProvider
         var span = SelectSpan(from, to);
         var url = BuildUrl(normalizedSymbol, span);
 
-        // ✅ Rate limiting — must be before the HTTP call
-        await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
-
         Log.Information("Requesting Robinhood history for {Symbol} (span={Span})", symbol, span);
 
+        // ExecuteGetAndReadAsync internally calls WaitForRateLimitSlotAsync; do not call it separately.
         var json = await ExecuteGetAndReadAsync(url, symbol, "bars", ct).ConfigureAwait(false);
 
         if (string.IsNullOrEmpty(json))
@@ -155,7 +154,7 @@ public sealed class RobinhoodHistoricalDataProvider : BaseHistoricalDataProvider
             return [];
         }
 
-        var response = DeserializeResponse<RobinhoodHistoricalsResponse>(json, symbol);
+        var response = JsonSerializer.Deserialize(json, RobinhoodHistoricalSerializerContext.Default.RobinhoodHistoricalsResponse);
         if (response?.Results is null || response.Results.Count == 0)
         {
             Log.Warning("Empty results from Robinhood for {Symbol}", symbol);
@@ -188,10 +187,10 @@ public sealed class RobinhoodHistoricalDataProvider : BaseHistoricalDataProvider
             if (to.HasValue && sessionDate > to.Value)
                 continue;
 
-            if (!decimal.TryParse(item.OpenPrice, out var open) ||
-                !decimal.TryParse(item.ClosePrice, out var close) ||
-                !decimal.TryParse(item.HighPrice, out var high) ||
-                !decimal.TryParse(item.LowPrice, out var low))
+            if (!decimal.TryParse(item.OpenPrice, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var open) ||
+                !decimal.TryParse(item.ClosePrice, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var close) ||
+                !decimal.TryParse(item.HighPrice, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var high) ||
+                !decimal.TryParse(item.LowPrice, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var low))
                 continue;
 
             if (!ValidateOhlc(open, high, low, close, symbol, sessionDate))
@@ -244,15 +243,15 @@ public sealed class RobinhoodHistoricalDataProvider : BaseHistoricalDataProvider
         return symbol.ToUpperInvariant().Trim();
     }
 
-    #region Robinhood API response models (private — ADR-014 not required for private types)
+    #region Robinhood API response models (internal — referenced by ADR-014 source-generated context)
 
-    private sealed class RobinhoodHistoricalsResponse
+    internal sealed class RobinhoodHistoricalsResponse
     {
         [JsonPropertyName("results")]
         public List<RobinhoodSymbolResult>? Results { get; set; }
     }
 
-    private sealed class RobinhoodSymbolResult
+    internal sealed class RobinhoodSymbolResult
     {
         [JsonPropertyName("symbol")]
         public string? Symbol { get; set; }
@@ -270,7 +269,7 @@ public sealed class RobinhoodHistoricalDataProvider : BaseHistoricalDataProvider
         public string? Bounds { get; set; }
     }
 
-    private sealed class RobinhoodBar
+    internal sealed class RobinhoodBar
     {
         [JsonPropertyName("begins_at")]
         public string? BeginsAt { get; set; }
@@ -299,3 +298,13 @@ public sealed class RobinhoodHistoricalDataProvider : BaseHistoricalDataProvider
 
     #endregion
 }
+
+/// <summary>
+/// Source-generated JSON serializer context for Robinhood historical API DTOs (ADR-014).
+/// </summary>
+[JsonSerializable(typeof(RobinhoodHistoricalDataProvider.RobinhoodHistoricalsResponse))]
+[JsonSerializable(typeof(RobinhoodHistoricalDataProvider.RobinhoodSymbolResult))]
+[JsonSerializable(typeof(RobinhoodHistoricalDataProvider.RobinhoodBar))]
+[JsonSourceGenerationOptions(DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+    PropertyNameCaseInsensitive = true)]
+internal sealed partial class RobinhoodHistoricalSerializerContext : JsonSerializerContext;

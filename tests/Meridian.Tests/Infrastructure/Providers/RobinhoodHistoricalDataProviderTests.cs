@@ -236,12 +236,21 @@ public sealed class RobinhoodHistoricalDataProviderTests
     private sealed class StubHttpHandler : HttpMessageHandler
     {
         private readonly HttpStatusCode _statusCode;
-        private readonly HttpContent _content;
+        private readonly Func<HttpContent> _contentFactory;
 
-        public StubHttpHandler(HttpStatusCode statusCode, HttpContent content)
+        public StubHttpHandler(HttpStatusCode statusCode, HttpContent singleContent)
+            : this(statusCode, () =>
+            {
+                var raw = singleContent.ReadAsStringAsync().GetAwaiter().GetResult();
+                return new StringContent(raw, System.Text.Encoding.UTF8, "application/json");
+            })
+        {
+        }
+
+        public StubHttpHandler(HttpStatusCode statusCode, Func<HttpContent> contentFactory)
         {
             _statusCode = statusCode;
-            _content = content;
+            _contentFactory = contentFactory;
         }
 
         protected override Task<HttpResponseMessage> SendAsync(
@@ -249,7 +258,7 @@ public sealed class RobinhoodHistoricalDataProviderTests
             CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();
-            return Task.FromResult(new HttpResponseMessage(_statusCode) { Content = _content });
+            return Task.FromResult(new HttpResponseMessage(_statusCode) { Content = _contentFactory() });
         }
     }
 }
