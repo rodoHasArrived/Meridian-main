@@ -123,26 +123,95 @@ jobs:
 
           const BASE = process.env.UI_BASE;
           const browser = await chromium.launch();
-          const context = await browser.newContext({ viewport: { width: 1400, height: 900 } });
+          const context = await browser.newContext({
+            viewport: { width: 1400, height: 900 },
+            colorScheme: 'light',
+            locale: 'en-US'
+          });
 
-          async function shot(path, url, { fullPage = true, scrollToSelector = null } = {}) {
-            const page = await context.newPage();
-            await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 15000 });
-            await page.waitForSelector('body');
-            if (scrollToSelector) {
-              await page.locator(scrollToSelector).scrollIntoViewIfNeeded();
-              await page.waitForTimeout(300);
+          async function waitForStablePage(page, stableSelector) {
+            await page.waitForSelector(stableSelector, { timeout: 20000 });
+            await page.waitForLoadState('networkidle', { timeout: 20000 }).catch(() => {});
+            await page.evaluate(async () => {
+              if (document.fonts?.ready) {
+                await document.fonts.ready;
+              }
+            });
+            await page.addStyleTag({
+              content: `
+                *,
+                *::before,
+                *::after {
+                  animation: none !important;
+                  transition: none !important;
+                  caret-color: transparent !important;
+                }
+              `
+            });
+          }
+
+          async function withRetry(name, action, retries = 2) {
+            let lastError;
+            for (let attempt = 1; attempt <= retries + 1; attempt++) {
+              try {
+                return await action();
+              } catch (error) {
+                lastError = error;
+                console.warn(`Retry ${attempt}/${retries + 1} failed for ${name}: ${error.message}`);
+              }
             }
-            await page.screenshot({ path, fullPage });
+            throw lastError;
+          }
+
+          async function shot(path, url, {
+            fullPage = true,
+            stableSelector = 'body',
+            waitMs = 150,
+            clipSelector = null
+          } = {}) {
+            const page = await context.newPage();
+            await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 20000 });
+            await waitForStablePage(page, stableSelector);
+            if (waitMs > 0) {
+              await page.waitForTimeout(waitMs);
+            }
+            if (clipSelector) {
+              const locator = page.locator(clipSelector);
+              await locator.scrollIntoViewIfNeeded();
+              await locator.screenshot({ path });
+            } else {
+              await page.screenshot({ path, fullPage });
+            }
             await page.close();
             console.log(`✓ ${path}`);
           }
 
-          await shot('docs/screenshots/01-dashboard.png',      `${BASE}/`,                  { fullPage: true });
-          await shot('docs/screenshots/02-workstation.png',    `${BASE}/workstation/`,       { fullPage: true });
-          await shot('docs/screenshots/03-swagger.png',        `${BASE}/swagger/index.html`, { fullPage: true });
-          // Screenshot 04: viewport-height view of the Storage Configuration / Data Sources section
-          await shot('docs/screenshots/04-status-overview.png', `${BASE}/`,                 { fullPage: false, scrollToSelector: '#storage' });
+          await withRetry('dashboard', () =>
+            shot('docs/screenshots/01-dashboard.png', `${BASE}/`, {
+              fullPage: true,
+              stableSelector: '[data-testid="dashboard-root"], main, body'
+            })
+          );
+          await withRetry('workstation', () =>
+            shot('docs/screenshots/02-workstation.png', `${BASE}/workstation/`, {
+              fullPage: true,
+              stableSelector: '[data-testid="workspace-root"], main, body'
+            })
+          );
+          await withRetry('swagger', () =>
+            shot('docs/screenshots/03-swagger.png', `${BASE}/swagger/index.html`, {
+              fullPage: true,
+              stableSelector: '#swagger-ui, body'
+            })
+          );
+          // Screenshot 04: focused crop of Storage Configuration / Data Sources section for readability
+          await withRetry('status-overview', () =>
+            shot('docs/screenshots/04-status-overview.png', `${BASE}/`, {
+              fullPage: false,
+              stableSelector: '#storage, body',
+              clipSelector: '#storage'
+            })
+          );
 
           await browser.close();
           SCRIPT
