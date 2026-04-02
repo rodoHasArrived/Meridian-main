@@ -69,6 +69,10 @@ public sealed class WorkspaceService
         public List<WorkspaceTemplate> Workspaces { get; set; } = new();
         public string? ActiveWorkspaceId { get; set; }
         public SessionState? LastSession { get; set; }
+        /// <summary>
+        /// Per-workspace AvalonDock layout XML, keyed by workspace ID (e.g., "trading", "research").
+        /// </summary>
+        public Dictionary<string, string> DockLayouts { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     }
 
     public async Task LoadWorkspacesAsync(CancellationToken ct = default)
@@ -96,6 +100,12 @@ public sealed class WorkspaceService
                     }
 
                     _lastSession = data.LastSession;
+
+                    if (data.DockLayouts.Count > 0)
+                    {
+                        foreach (var kvp in data.DockLayouts)
+                            _dockLayouts[kvp.Key] = kvp.Value;
+                    }
                 }
             }
 
@@ -127,7 +137,8 @@ public sealed class WorkspaceService
             {
                 Workspaces = _workspaces.ToList(),
                 ActiveWorkspaceId = _activeWorkspace?.Id,
-                LastSession = _lastSession
+                LastSession = _lastSession,
+                DockLayouts = new Dictionary<string, string>(_dockLayouts, StringComparer.OrdinalIgnoreCase)
             };
 
             var json = JsonSerializer.Serialize(data, UiServices.DesktopJsonOptions.PrettyPrint);
@@ -762,4 +773,31 @@ public sealed class WorkspaceService
     public event EventHandler<WorkspaceEventArgs>? WorkspaceUpdated;
     public event EventHandler<WorkspaceEventArgs>? WorkspaceDeleted;
     public event EventHandler<WorkspaceEventArgs>? WorkspaceActivated;
+
+    // ── AvalonDock layout persistence ─────────────────────────────────────────
+
+    /// <summary>
+    /// Persists the AvalonDock layout XML string for a named workspace shell
+    /// (e.g., "trading" or "research") to the local application settings file.
+    /// </summary>
+    public async Task SaveDockLayoutAsync(string workspaceId, string layoutXml, CancellationToken ct = default)
+    {
+        await EnsureInitializedAsync();
+
+        _dockLayouts[workspaceId] = layoutXml;
+
+        await SaveWorkspacesAsync(ct);
+    }
+
+    /// <summary>
+    /// Retrieves the previously persisted AvalonDock layout XML for a workspace shell.
+    /// Returns <c>null</c> if no layout has been saved yet.
+    /// </summary>
+    public async Task<string?> GetDockLayoutAsync(string workspaceId, CancellationToken ct = default)
+    {
+        await EnsureInitializedAsync();
+        return _dockLayouts.TryGetValue(workspaceId, out var xml) ? xml : null;
+    }
+
+    private readonly Dictionary<string, string> _dockLayouts = new(StringComparer.OrdinalIgnoreCase);
 }

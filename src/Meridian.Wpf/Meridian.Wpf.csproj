@@ -64,6 +64,12 @@
     <!-- MVVM Framework -->
     <PackageReference Include="CommunityToolkit.Mvvm" />
 
+    <!-- IDE-style docking for workspace shells (Trading, Research) -->
+    <PackageReference Include="Dirkster.AvalonDock" />
+
+    <!-- Embedded web dashboard (React app served by Meridian.Ui.Shared) -->
+    <PackageReference Include="Microsoft.Web.WebView2" />
+
     <!-- QuantScript UI components -->
     <PackageReference Include="AvalonEdit" />
     <PackageReference Include="ScottPlot.WPF" />

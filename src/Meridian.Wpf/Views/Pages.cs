@@ -110,3 +110,9 @@ public partial class PluginManagementPage : Page { }
 // AI Agent page
 public partial class AgentPage : Page { }
 
+// Docking host control (used by workspace shell pages)
+public partial class MeridianDockingManager : UserControl { }
+
+// Embedded React dashboard via WebView2
+public partial class DashboardWebPage : Page { }
+

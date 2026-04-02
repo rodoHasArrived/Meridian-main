@@ -3,6 +3,7 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:views="clr-namespace:Meridian.Wpf.Views"
       mc:Ignorable="d"
       d:DesignHeight="900" d:DesignWidth="1400"
       Background="{DynamicResource ConsoleBackgroundDarkBrush}"
@@ -15,7 +16,14 @@
         <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
     </Page.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
+    <!-- Top-level Grid: summary scroll on top, docking workspace below -->
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" MinHeight="200" />
+        </Grid.RowDefinitions>
+
+    <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
         <StackPanel MaxWidth="1400">
 
             <!-- ── Header ────────────────────────────────────────────────── -->
@@ -267,4 +275,19 @@
 
         </StackPanel>
     </ScrollViewer>
+
+        <!-- ── AvalonDock workspace panel ──────────────────────────────── -->
+        <Border Grid.Row="1" Margin="12,0,12,12">
+            <StackPanel>
+                <TextBlock Text="Workspace Panels"
+                           Style="{StaticResource CardHeaderStyle}"
+                           Margin="4,0,0,6" />
+                <views:MeridianDockingManager x:Name="TradingDockManager"
+                                              Height="360"
+                                              PaneDropRequested="OnPaneDropRequested"
+                                              AutomationProperties.Name="Trading Dock Manager" />
+            </StackPanel>
+        </Border>
+
+    </Grid>
 </Page>

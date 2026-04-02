@@ -618,6 +618,14 @@
                                             <TextBlock Text="Diagnostics" Style="{StaticResource ShellNavLabelStyle}" />
                                         </StackPanel>
                                     </ListBoxItem>
+                                    <ListBoxItem Tag="DashboardWeb"
+                                                 AutomationProperties.AutomationId="NavDashboardWeb"
+                                                 AutomationProperties.Name="Web Dashboard Navigation">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{StaticResource IconGlobe}" Style="{StaticResource ShellNavIconStyle}" />
+                                            <TextBlock Text="Web Dashboard" Style="{StaticResource ShellNavLabelStyle}" />
+                                        </StackPanel>
+                                    </ListBoxItem>
                                     <ListBoxItem Tag="Settings">
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Text="{StaticResource IconSettings}" Style="{StaticResource ShellNavIconStyle}" />

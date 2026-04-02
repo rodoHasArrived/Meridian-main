@@ -16,4 +16,5 @@ public sealed record WorkspaceDefinition(
     string Id,                                        // unique identifier (e.g., "research")
     string Label,                                     // display name (e.g., "Research")
     string Icon,                                      // emoji or symbol (e.g., "🔬")
-    IReadOnlyList<WorkspacePageEntry> Pages);         // pages in this workspace
+    IReadOnlyList<WorkspacePageEntry> Pages,          // pages in this workspace
+    string? LayoutXml = null);                        // serialised AvalonDock layout (null → default)
