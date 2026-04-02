@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-04-02 14:05:09 UTC. Do not edit manually.
+> Auto-generated on 2026-04-02 14:19:52 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -202,6 +202,7 @@ Meridian-main
 │   │   ├── python-package-conda.yml
 │   │   ├── readme-tree.yml
 │   │   ├── README.md
+│   │   ├── refresh-screenshots.yml
 │   │   ├── release.yml
 │   │   ├── repo-health.yml
 │   │   ├── reusable-ai-analysis.yml
