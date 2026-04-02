@@ -2705,6 +2705,8 @@ Use these documents together when planning or implementing new work:
 │           ├── CredentialManagementPage.xaml.cs
 │           ├── DashboardPage.xaml
 │           ├── DashboardPage.xaml.cs
+│           ├── DashboardWebPage.xaml
+│           ├── DashboardWebPage.xaml.cs
 │           ├── DataBrowserPage.xaml
 │           ├── DataBrowserPage.xaml.cs
 │           ├── DataCalendarPage.xaml
@@ -2741,6 +2743,8 @@ Use these documents together when planning or implementing new work:
 │           ├── MainPage.SplitPane.cs
 │           ├── MainPage.xaml
 │           ├── MainPage.xaml.cs
+│           ├── MeridianDockingManager.xaml
+│           ├── MeridianDockingManager.xaml.cs
 │           ├── MessagingHubPage.xaml
 │           ├── MessagingHubPage.xaml.cs
 │           ├── NotificationCenterPage.xaml
@@ -3357,6 +3361,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-447 directories, 2782 files
+447 directories, 2786 files
 ```
 <!-- readme-tree end -->
