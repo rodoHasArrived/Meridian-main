@@ -2388,6 +2388,7 @@ Meridian-main
 │       ├── Models
 │       │   ├── ActionEntry.cs
 │       │   ├── ActivityLogModels.cs
+│       │   ├── AlignmentModels.cs
 │       │   ├── AppConfig.cs
 │       │   ├── BackfillModels.cs
 │       │   ├── BlotterModels.cs
@@ -2478,15 +2479,20 @@ Meridian-main
 │       │   ├── CashFlowViewModel.cs
 │       │   ├── ChartingPageViewModel.cs
 │       │   ├── ClusterStatusViewModel.cs
+│       │   ├── CollectionSessionViewModel.cs
 │       │   ├── CredentialManagementViewModel.cs
 │       │   ├── DashboardViewModel.cs
+│       │   ├── DataBrowserViewModel.cs
 │       │   ├── DataCalendarViewModel.cs
 │       │   ├── DataExportViewModel.cs
 │       │   ├── DataQualityViewModel.cs
+│       │   ├── DataSamplingViewModel.cs
 │       │   ├── DataSourcesViewModel.cs
 │       │   ├── DiagnosticsPageViewModel.cs
 │       │   ├── DirectLendingViewModel.cs
+│       │   ├── EventReplayViewModel.cs
 │       │   ├── ExportPresetsViewModel.cs
+│       │   ├── IndexSubscriptionViewModel.cs
 │       │   ├── IPageActionBarProvider.cs
 │       │   ├── LeanIntegrationViewModel.cs
 │       │   ├── LiveDataViewerViewModel.cs
@@ -2499,6 +2505,7 @@ Meridian-main
 │       │   ├── OrderBookViewModel.cs
 │       │   ├── PackageManagerViewModel.cs
 │       │   ├── PluginManagementViewModel.cs
+│       │   ├── PortfolioImportViewModel.cs
 │       │   ├── PositionBlotterViewModel.cs
 │       │   ├── ProviderHealthViewModel.cs
 │       │   ├── ProviderPageModels.cs
