@@ -118,6 +118,41 @@ public sealed class JsonlFilePaperSessionStore : IPaperSessionStore
             .ConfigureAwait(false);
     }
 
+    /// <inheritdoc />
+    public async Task SaveLedgerJournalAsync(
+        string sessionId,
+        IReadOnlyList<PersistedJournalEntryDto> entries,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(entries);
+
+        Directory.CreateDirectory(SessionDir(sessionId));
+
+        // Build the full JSONL content in-memory then write atomically so a crash
+        // during writing never leaves a partial ledger file.
+        var sb = new System.Text.StringBuilder(entries.Count * 256);
+        foreach (var entry in entries)
+        {
+            var line = JsonSerializer.Serialize(entry, ExecutionJsonContext.Default.PersistedJournalEntryDto);
+            sb.AppendLine(line);
+        }
+
+        await WriteAtomicAsync(LedgerPath(sessionId), sb.ToString(), ct).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<PersistedJournalEntryDto>> LoadLedgerJournalAsync(
+        string sessionId,
+        CancellationToken ct = default)
+    {
+        var path = LedgerPath(sessionId);
+        if (!File.Exists(path))
+            return [];
+
+        return await LoadJsonlAsync(path, ExecutionJsonContext.Default.PersistedJournalEntryDto, _logger, ct)
+            .ConfigureAwait(false);
+    }
+
     // ------------------------------------------------------------------
     // Path helpers
     // ------------------------------------------------------------------
@@ -133,6 +168,9 @@ public sealed class JsonlFilePaperSessionStore : IPaperSessionStore
 
     private string OrdersPath(string sessionId) =>
         Path.Combine(SessionDir(sessionId), "orders.jsonl");
+
+    private string LedgerPath(string sessionId) =>
+        Path.Combine(SessionDir(sessionId), "ledger.jsonl");
 
     // ------------------------------------------------------------------
     // IO helpers

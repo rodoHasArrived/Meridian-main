@@ -3,6 +3,7 @@ using Meridian.Application.Config;
 using Meridian.Application.Coordination;
 using Meridian.Application.Logging;
 using Meridian.Contracts.Domain.Enums;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Domain.Collectors;
 using Meridian.Infrastructure;
 using Serilog;
@@ -27,6 +28,7 @@ public sealed class SubscriptionOrchestrator
     private readonly IMarketDataClient _ib;
     private readonly string _providerId;
     private readonly ISubscriptionOwnershipService? _ownershipService;
+    private readonly ISecurityMasterQueryService? _securityMasterQuery;
     private readonly ILogger _log;
     private readonly SemaphoreSlim _applyGate = new(1, 1);
 
@@ -43,7 +45,8 @@ public sealed class SubscriptionOrchestrator
         string providerId,
         ISubscriptionOwnershipService? ownershipService = null,
         ILogger? log = null,
-        OptionDataCollector? optionCollector = null)
+        OptionDataCollector? optionCollector = null,
+        ISecurityMasterQueryService? securityMasterQuery = null)
     {
         _depthCollector = depthCollector ?? throw new ArgumentNullException(nameof(depthCollector));
         _tradeCollector = tradeCollector ?? throw new ArgumentNullException(nameof(tradeCollector));
@@ -52,6 +55,7 @@ public sealed class SubscriptionOrchestrator
         _ownershipService = ownershipService;
         _log = log ?? LoggingSetup.ForContext<SubscriptionOrchestrator>();
         _optionCollector = optionCollector;
+        _securityMasterQuery = securityMasterQuery;
 
         if (_optionCollector is not null)
             _log.Information("OptionDataCollector available; option data will be collected by the option collector, while subscriptions remain managed by SubscriptionOrchestrator");
@@ -131,6 +135,13 @@ public sealed class SubscriptionOrchestrator
                 var symbol = kvp.Key;
                 var sc = kvp.Value;
                 _lastConfig.TryGetValue(symbol, out var previous);
+
+                // Security Master validation for new subscriptions: surface mismatches early
+                // rather than silently subscribing to unknown or inactive symbols.
+                if (previous is null && _securityMasterQuery is not null)
+                {
+                    await ValidateSymbolInSecurityMasterAsync(symbol, ct).ConfigureAwait(false);
+                }
 
                 var isOption = IsOptionSymbol(sc);
 
@@ -311,5 +322,40 @@ public sealed class SubscriptionOrchestrator
                || previous.Strike != current.Strike
                || previous.Right != current.Right
                || previous.LastTradeDateOrContractMonth != current.LastTradeDateOrContractMonth;
+    }
+
+    /// <summary>
+    /// Checks whether <paramref name="symbol"/> is known and active in the Security Master.
+    /// Emits a structured warning when the symbol is absent or inactive so operators can
+    /// fix their subscription list before collecting bad data, without blocking the subscription.
+    /// </summary>
+    private async Task ValidateSymbolInSecurityMasterAsync(string symbol, CancellationToken ct)
+    {
+        try
+        {
+            var detail = await _securityMasterQuery!.GetByIdentifierAsync(
+                SecurityIdentifierKind.Ticker, symbol, provider: null, ct).ConfigureAwait(false);
+
+            if (detail is null)
+            {
+                _log.Warning(
+                    "Symbol {Symbol} is not registered in the Security Master. " +
+                    "Subscription will proceed but enrichment and validation will be unavailable. " +
+                    "Import the security via POST /api/security-master/import to resolve this.",
+                    symbol);
+            }
+            else if (detail.Status == SecurityStatusDto.Inactive)
+            {
+                _log.Warning(
+                    "Symbol {Symbol} (SecurityId={SecurityId}) is marked Inactive in the Security Master. " +
+                    "Subscription will proceed but the symbol may represent a delisted or renamed instrument.",
+                    symbol, detail.SecurityId);
+            }
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            // Best-effort only — never block a subscription on a Security Master outage.
+            _log.Debug(ex, "Security Master validation for {Symbol} failed; proceeding with subscription.", symbol);
+        }
     }
 }

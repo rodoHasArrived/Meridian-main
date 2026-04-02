@@ -90,7 +90,14 @@ public sealed record BacktestRequest(
     decimal MarketImpactCoefficient = 0.1m,
     bool AdjustForCorporateActions = true,
     double RiskFreeRate = 0.04,
-    decimal MaxParticipationRate = 0m)
+    decimal MaxParticipationRate = 0m,
+    /// <summary>
+    /// When <see langword="true"/>, the backtest engine aborts with an error if any symbol in the
+    /// discovered universe is absent from the Security Master (requires a Security Master connection).
+    /// When <see langword="false"/> (default), missing symbols produce a warning and the run continues.
+    /// Has no effect when no Security Master is configured.
+    /// </summary>
+    bool FailOnUnknownSymbols = false)
 {
     /// <summary>
     /// Returns the normalized account list, falling back to a single default brokerage account for

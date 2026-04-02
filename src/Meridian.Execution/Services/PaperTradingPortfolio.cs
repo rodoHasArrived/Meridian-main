@@ -89,6 +89,12 @@ public sealed class PaperTradingPortfolio : IPortfolioState
     }
 
     /// <summary>
+    /// Read-only view of the double-entry ledger for this session.
+    /// Returns <see langword="null"/> when no ledger was supplied at construction time.
+    /// </summary>
+    public IReadOnlyLedger? Ledger => _ledger;
+
+    /// <summary>
     /// Updates portfolio state from a fill or partial-fill execution report.
     /// No-ops for non-fill reports (accepted, cancelled, rejected).
     /// </summary>
