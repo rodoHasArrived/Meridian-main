@@ -118,7 +118,7 @@ jobs:
 
       - name: Write screenshot helper script
         run: |
-          cat > /tmp/take-screenshots.mjs << 'SCRIPT'
+          cat > take-screenshots.mjs << 'SCRIPT'
           import { chromium } from 'playwright';
 
           const BASE = process.env.UI_BASE;
@@ -153,7 +153,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p docs/screenshots
-          node /tmp/take-screenshots.mjs
+          node take-screenshots.mjs
           echo "Screenshots captured:"
           ls -lh docs/screenshots/*.png
 
