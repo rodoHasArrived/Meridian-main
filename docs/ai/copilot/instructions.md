@@ -2621,6 +2621,8 @@ Meridian-main
 │       │   ├── CredentialManagementPage.xaml.cs
 │       │   ├── DashboardPage.xaml
 │       │   ├── DashboardPage.xaml.cs
+│       │   ├── DashboardWebPage.xaml
+│       │   ├── DashboardWebPage.xaml.cs
 │       │   ├── DataBrowserPage.xaml
 │       │   ├── DataBrowserPage.xaml.cs
 │       │   ├── DataCalendarPage.xaml
@@ -2657,6 +2659,8 @@ Meridian-main
 │       │   ├── MainPage.SplitPane.cs
 │       │   ├── MainPage.xaml
 │       │   ├── MainPage.xaml.cs
+│       │   ├── MeridianDockingManager.xaml
+│       │   ├── MeridianDockingManager.xaml.cs
 │       │   ├── MessagingHubPage.xaml
 │       │   ├── MessagingHubPage.xaml.cs
 │       │   ├── NotificationCenterPage.xaml

@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-04-02 16:46:02 UTC. Do not edit manually.
+> Auto-generated on 2026-04-02 17:13:47 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -2510,6 +2510,8 @@ Meridian-main
 │       │   ├── CredentialManagementPage.xaml.cs
 │       │   ├── DashboardPage.xaml
 │       │   ├── DashboardPage.xaml.cs
+│       │   ├── DashboardWebPage.xaml
+│       │   ├── DashboardWebPage.xaml.cs
 │       │   ├── DataBrowserPage.xaml
 │       │   ├── DataBrowserPage.xaml.cs
 │       │   ├── DataCalendarPage.xaml
@@ -2546,6 +2548,8 @@ Meridian-main
 │       │   ├── MainPage.SplitPane.cs
 │       │   ├── MainPage.xaml
 │       │   ├── MainPage.xaml.cs
+│       │   ├── MeridianDockingManager.xaml
+│       │   ├── MeridianDockingManager.xaml.cs
 │       │   ├── MessagingHubPage.xaml
 │       │   ├── MessagingHubPage.xaml.cs
 │       │   ├── NotificationCenterPage.xaml
