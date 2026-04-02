@@ -219,6 +219,7 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
     [Fact]
     public async Task ProtectedEndpoint_WhenAuthModeRequiredAndCredentialsMissing_ReturnsServiceUnavailable()
     {
+        var originalAuthMode = Environment.GetEnvironmentVariable("MDC_AUTH_MODE");
         Environment.SetEnvironmentVariable("MDC_AUTH_MODE", "required");
         try
         {
@@ -230,13 +231,14 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_AUTH_MODE", null);
+            Environment.SetEnvironmentVariable("MDC_AUTH_MODE", originalAuthMode);
         }
     }
 
     [Fact]
     public async Task LoginJson_WhenAuthModeRequiredAndCredentialsMissing_ReturnsServiceUnavailable()
     {
+        var originalAuthMode = Environment.GetEnvironmentVariable("MDC_AUTH_MODE");
         Environment.SetEnvironmentVariable("MDC_AUTH_MODE", "required");
         try
         {
@@ -251,7 +253,7 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_AUTH_MODE", null);
+            Environment.SetEnvironmentVariable("MDC_AUTH_MODE", originalAuthMode);
         }
     }
 
