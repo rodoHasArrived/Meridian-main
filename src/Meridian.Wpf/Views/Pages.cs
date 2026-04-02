@@ -64,11 +64,16 @@ public partial class MessagingHubPage : Page { }
 // Backtesting pages
 public partial class BacktestPage : Page { }
 
-// Strategy Run workstation pages (browser, detail drill-ins, portfolio, ledger)
+// Strategy Run workstation pages (browser, detail drill-ins, portfolio, ledger, cash flow, risk)
 public partial class StrategyRunsPage : Page { }
 public partial class RunDetailPage : Page { }
 public partial class RunPortfolioPage : Page { }
 public partial class RunLedgerPage : Page { }
+public partial class RunCashFlowPage : Page { }
+public partial class RunRiskPage : Page { }
+
+// Position Blotter page
+public partial class PositionBlotterPage : Page { }
 
 // Security Master workstation page
 public partial class SecurityMasterPage : Page { }
@@ -104,4 +109,10 @@ public partial class PluginManagementPage : Page { }
 
 // AI Agent page
 public partial class AgentPage : Page { }
+
+// Docking host control (used by workspace shell pages)
+public partial class MeridianDockingManager : UserControl { }
+
+// Embedded React dashboard via WebView2
+public partial class DashboardWebPage : Page { }
 

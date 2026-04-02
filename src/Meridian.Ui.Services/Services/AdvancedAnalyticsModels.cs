@@ -7,7 +7,6 @@ namespace Meridian.Ui.Services;
 // Advanced Analytics DTOs — shared across desktop applications.
 // =====================================================================================
 
-#region Gap Analysis Models
 
 public sealed class GapAnalysisOptions
 {
@@ -96,9 +95,7 @@ public sealed class GapRepairDetail
     public string? Error { get; set; }
 }
 
-#endregion
 
-#region Cross-Provider Comparison Models
 
 public sealed class CrossProviderComparisonOptions
 {
@@ -150,9 +147,7 @@ public sealed class DataDiscrepancy
     public double Difference { get; set; }
 }
 
-#endregion
 
-#region Latency Analysis Models
 
 public sealed class LatencyHistogramOptions
 {
@@ -219,9 +214,7 @@ public sealed class ProviderLatencyStatistics
     public long SampleCount { get; set; }
 }
 
-#endregion
 
-#region Anomaly Detection Models
 
 public sealed class AnomalyDetectionOptions
 {
@@ -273,9 +266,7 @@ public sealed class AnomalySummary
     public int StaleQuotes { get; set; }
 }
 
-#endregion
 
-#region Quality Report Models
 
 public sealed class DataQualityReportOptions
 {
@@ -394,9 +385,7 @@ public sealed class SymbolCompleteness
     public List<DayEventCount> DayDetails { get; set; } = new();
 }
 
-#endregion
 
-#region Throughput Analysis Models
 
 public sealed class ThroughputAnalysisOptions
 {
@@ -432,9 +421,7 @@ public sealed class ThroughputDataPoint
     public long TotalEvents { get; set; }
 }
 
-#endregion
 
-#region Rate Limit Models
 
 public sealed class RateLimitStatusResult
 {
@@ -460,9 +447,7 @@ public sealed class ProviderRateLimitStatus
     public string Status { get; set; } = string.Empty;
 }
 
-#endregion
 
-#region Symbol Models
 
 public sealed class AnalyticsSymbolsResult
 {
@@ -482,4 +467,3 @@ public sealed class AnalyticsSymbolInfo
     public string? Name { get; set; }
 }
 
-#endregion

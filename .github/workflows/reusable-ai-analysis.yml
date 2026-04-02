@@ -1,0 +1,84 @@
+# Reusable AI Analysis Workflow
+# Provides a consistent AI inference call that can be invoked by any other workflow.
+# Eliminates the repeated actions/ai-inference@v2 boilerplate across 5+ workflows.
+#
+# Usage example:
+#   jobs:
+#     ai-review:
+#       uses: ./.github/workflows/reusable-ai-analysis.yml
+#       with:
+#         summary-header: "## AI Code Review"
+#         prompt: "Your prompt here ..."
+#         max-tokens: 1500
+#       permissions:
+#         models: read
+
+name: Reusable AI Analysis
+
+on:
+  workflow_call:
+    inputs:
+      prompt:
+        description: 'Full prompt text to send to the model'
+        required: true
+        type: string
+      model:
+        description: 'AI model identifier'
+        required: false
+        type: string
+        default: 'gpt-4o-mini'
+      max-tokens:
+        description: 'Maximum tokens for the AI response'
+        required: false
+        type: number
+        default: 1500
+      summary-header:
+        description: 'Markdown heading written to GITHUB_STEP_SUMMARY before the response'
+        required: false
+        type: string
+        default: '## AI Analysis'
+      unavailable-message:
+        description: 'Fallback message written to GITHUB_STEP_SUMMARY when AI is unavailable'
+        required: false
+        type: string
+        default: '_AI analysis was not available for this run._'
+    outputs:
+      response:
+        description: 'Raw text response from the AI model (empty string if unavailable)'
+        value: ${{ jobs.analyse.outputs.response }}
+      available:
+        description: 'Whether the AI model responded successfully (true/false)'
+        value: ${{ jobs.analyse.outputs.available }}
+
+permissions:
+  models: read
+
+jobs:
+  analyse:
+    name: AI Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      response: ${{ steps.ai-call.outputs.response || '' }}
+      available: ${{ steps.ai-call.outcome == 'success' && steps.ai-call.outputs.response != '' && 'true' || 'false' }}
+
+    steps:
+      - name: Run AI inference
+        id: ai-call
+        continue-on-error: true
+        uses: actions/ai-inference@v2
+        with:
+          model: ${{ inputs.model }}
+          max-tokens: ${{ inputs.max-tokens }}
+          prompt: ${{ inputs.prompt }}
+
+      - name: Write summary
+        if: always()
+        run: |
+          echo "${{ inputs.summary-header }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          if [ -n "${{ steps.ai-call.outputs.response }}" ]; then
+            echo "${{ steps.ai-call.outputs.response }}" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "${{ inputs.unavailable-message }}" >> "$GITHUB_STEP_SUMMARY"
+          fi

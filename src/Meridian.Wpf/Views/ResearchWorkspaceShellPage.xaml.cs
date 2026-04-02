@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.Views;
@@ -7,10 +8,12 @@ namespace Meridian.Wpf.Views;
 /// <summary>
 /// Research workspace shell — landing page for the Research workspace.
 /// Surfaces recent strategy runs, KPIs, quick actions, and the promotion pipeline.
-/// All data loading is intentionally lightweight; deep drill-ins navigate to dedicated pages.
+/// Embeds a <see cref="MeridianDockingManager"/> for IDE-style floating panes.
 /// </summary>
 public partial class ResearchWorkspaceShellPage : Page
 {
+    private const string WorkspaceId = "research";
+
     private readonly NavigationService _navigationService;
     private readonly StrategyRunWorkspaceService _runService;
 
@@ -26,11 +29,12 @@ public partial class ResearchWorkspaceShellPage : Page
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
     {
         await RefreshAsync();
+        await RestoreDockLayoutAsync();
     }
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e)
     {
-        // No subscriptions to clean up — shell page uses one-shot load.
+        _ = SaveDockLayoutAsync();
     }
 
     // ── Data ─────────────────────────────────────────────────────────────
@@ -72,6 +76,46 @@ public partial class ResearchWorkspaceShellPage : Page
         {
             LoggingService.Instance.LogError($"[ResearchWorkspaceShell] Refresh failed: {ex.Message}");
         }
+    }
+
+    // ── AvalonDock layout persistence ─────────────────────────────────────
+
+    private async System.Threading.Tasks.Task RestoreDockLayoutAsync()
+    {
+        try
+        {
+            var xml = await WorkspaceService.Instance.GetDockLayoutAsync(WorkspaceId);
+            if (!string.IsNullOrWhiteSpace(xml))
+                ResearchDockManager.LoadLayout(xml);
+        }
+        catch (Exception ex)
+        {
+            LoggingService.Instance.LogError($"[ResearchWorkspaceShell] Failed to restore dock layout: {ex.Message}");
+        }
+    }
+
+    private async System.Threading.Tasks.Task SaveDockLayoutAsync()
+    {
+        try
+        {
+            var xml = ResearchDockManager.SaveLayout();
+            if (!string.IsNullOrWhiteSpace(xml))
+                await WorkspaceService.Instance.SaveDockLayoutAsync(WorkspaceId, xml);
+        }
+        catch (Exception ex)
+        {
+            LoggingService.Instance.LogError($"[ResearchWorkspaceShell] Failed to save dock layout: {ex.Message}");
+        }
+    }
+
+    // ── Drop handler ──────────────────────────────────────────────────────
+
+    private void OnPaneDropRequested(object? sender, PaneDropEventArgs e)
+    {
+        // For now, dropped page tags navigate in the main navigation service.
+        // A future iteration will resolve pages via DI and embed them directly
+        // as LayoutDocument content in the dock manager.
+        _navigationService.NavigateTo(e.PageTag);
     }
 
     // ── Quick Action Handlers ─────────────────────────────────────────────

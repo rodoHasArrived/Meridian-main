@@ -41,12 +41,10 @@ public sealed class JumpListService
 
             JumpList.SetJumpList(System.Windows.Application.Current, jumpList);
 
-            System.Diagnostics.Debug.WriteLine("[JumpListService] Jump list registered successfully");
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // Jump list is cosmetic; log and continue rather than crashing startup.
-            System.Diagnostics.Debug.WriteLine($"[JumpListService] Failed to register: {ex.Message}");
         }
     }
 
@@ -61,9 +59,8 @@ public sealed class JumpListService
         {
             JumpList.AddToRecentCategory(label);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine($"[JumpListService] AddToRecent failed: {ex.Message}");
         }
     }
 

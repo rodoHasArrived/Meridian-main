@@ -147,10 +147,9 @@ public sealed class StatusBarViewModel : BindableBase, IDisposable
         {
             // Normal shutdown
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            // Log but don't crash the timer loop
-            System.Diagnostics.Debug.WriteLine($"Status bar update error: {ex.Message}");
+            // Status bar update error — non-fatal, timer loop continues on next tick
         }
     }
 
@@ -207,9 +206,9 @@ public sealed class StatusBarViewModel : BindableBase, IDisposable
                 StatusDotBrush = newDotBrush;
             });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine($"Refresh status error: {ex.Message}");
+            // Refresh error is non-fatal — status bar will retry on the next timer tick
         }
     }
 

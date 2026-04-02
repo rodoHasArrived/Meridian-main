@@ -22,7 +22,6 @@ public sealed class ProviderManagementService
         _apiClient = ApiClientService.Instance;
     }
 
-    #region Provider Status
 
     /// <summary>
     /// Gets status of all configured providers.
@@ -75,9 +74,7 @@ public sealed class ProviderManagementService
         };
     }
 
-    #endregion
 
-    #region Failover Management
 
     /// <summary>
     /// Gets the current failover configuration.
@@ -184,9 +181,7 @@ public sealed class ProviderManagementService
         };
     }
 
-    #endregion
 
-    #region Rate Limits
 
     /// <summary>
     /// Gets rate limit status for all providers.
@@ -241,9 +236,7 @@ public sealed class ProviderManagementService
         };
     }
 
-    #endregion
 
-    #region Capabilities
 
     /// <summary>
     /// Gets capabilities of all providers.
@@ -270,9 +263,7 @@ public sealed class ProviderManagementService
         };
     }
 
-    #endregion
 
-    #region Provider Switching
 
     /// <summary>
     /// Switches to a different provider.
@@ -335,10 +326,8 @@ public sealed class ProviderManagementService
         };
     }
 
-    #endregion
 }
 
-#region Result Classes
 
 public sealed class AllProvidersStatusResult
 {
@@ -562,4 +551,3 @@ public sealed class ProviderTestResponse
     public string? Error { get; set; }
 }
 
-#endregion

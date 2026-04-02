@@ -1,12 +1,12 @@
 namespace Meridian.Wpf.Services;
 
 /// <summary>
-/// Persists and restores the QuantScript page column layout.
+/// Persists and restores the QuantScript page layout (chart/editor row heights and active tab).
 /// </summary>
 public interface IQuantScriptLayoutService
 {
-    (double LeftWidth, double RightWidth) LoadColumnWidths();
-    void SaveColumnWidths(double leftWidth, double rightWidth);
+    (double ChartHeight, double EditorHeight) LoadRowHeights();
+    void SaveRowHeights(double chartHeight, double editorHeight);
     int LoadLastActiveTab();
     void SaveLastActiveTab(int tabIndex);
 }

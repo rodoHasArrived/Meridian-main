@@ -8,16 +8,13 @@ internal static class DirectLendingStartup
 {
     internal const string ConnectionStringVariable = "MERIDIAN_DIRECT_LENDING_CONNECTION_STRING";
     internal const string SchemaVariable = "MERIDIAN_DIRECT_LENDING_SCHEMA";
-    internal const string DefaultConnectionString = "Host=localhost;Port=5432;Database=postgres;Username=postgres;Password=secret";
     internal const string DefaultSchema = "direct_lending";
+
+    public static bool IsConfigured()
+        => !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(ConnectionStringVariable));
 
     public static void EnsureEnvironmentDefaults()
     {
-        if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(ConnectionStringVariable)))
-        {
-            Environment.SetEnvironmentVariable(ConnectionStringVariable, DefaultConnectionString);
-        }
-
         if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(SchemaVariable)))
         {
             Environment.SetEnvironmentVariable(SchemaVariable, DefaultSchema);
@@ -27,6 +24,13 @@ internal static class DirectLendingStartup
     public static void EnsureDatabaseReady(IServiceProvider serviceProvider, ILogger? logger = null)
     {
         EnsureEnvironmentDefaults();
+        if (!IsConfigured())
+        {
+            logger?.LogDebug(
+                "Skipping Direct Lending database readiness because {ConnectionStringVariable} is not configured.",
+                ConnectionStringVariable);
+            return;
+        }
 
         var migrationRunner = serviceProvider.GetService<DirectLendingMigrationRunner>();
         if (migrationRunner is null)

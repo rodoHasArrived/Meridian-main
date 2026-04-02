@@ -159,60 +159,11 @@ public sealed class PaperTradingGateway : IOrderGateway
             {
                 return new OrderValidationResult(
                     false,
-                    $"Order quantity {absQty} is not a valid multiple of the lot size {lotSize} for {request.Symbol}.");
+                    $"Order quantity {absQty} is not a valid multiple of the lot-size {lotSize} for {request.Symbol}.");
             }
         }
 
         return new OrderValidationResult(true);
-        // Lot-size validation via Security Master (when configured).
-        if (_securityMaster is not null)
-        {
-            var lotSizeError = await ValidateLotSizeAsync(request, ct).ConfigureAwait(false);
-            if (lotSizeError is not null)
-                return new OrderValidationResult(false, lotSizeError);
-        }
-
-        return new OrderValidationResult(true);
-    }
-
-    /// <summary>
-    /// Looks up the instrument's lot-size constraint from Security Master and returns an error
-    /// message if the order quantity is not a valid multiple.  Returns <c>null</c> when the
-    /// security is not found or when no lot-size is configured.
-    /// </summary>
-    private async Task<string?> ValidateLotSizeAsync(OrderRequest request, CancellationToken ct)
-    {
-        try
-        {
-            var detail = await _securityMaster!
-                .GetByIdentifierAsync(SecurityIdentifierKind.Ticker, request.Symbol, provider: null, ct)
-                .ConfigureAwait(false);
-
-            if (detail is null)
-                return null;
-
-            var tradingParams = await _securityMaster
-                .GetTradingParametersAsync(detail.SecurityId, DateTimeOffset.UtcNow, ct)
-                .ConfigureAwait(false);
-
-            if (tradingParams?.LotSize is { } lotSize && lotSize > 0m)
-            {
-                var absQty = Math.Abs(request.Quantity);
-                if (absQty % lotSize != 0m)
-                {
-                    return $"Order quantity {absQty} is not a valid lot-size multiple for {request.Symbol} (lot size = {lotSize}).";
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            // Treat Security Master unavailability as a non-blocking advisory — log and continue.
-            _logger.LogWarning(ex,
-                "Could not validate lot size for {Symbol} from Security Master; proceeding without constraint",
-                request.Symbol);
-        }
-
-        return null;
     }
 
     /// <inheritdoc/>

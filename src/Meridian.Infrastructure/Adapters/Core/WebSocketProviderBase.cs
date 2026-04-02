@@ -75,7 +75,6 @@ public abstract class WebSocketProviderBase : IMarketDataClient
         _connectionManager.ConnectionLost += OnConnectionLostAsync;
     }
 
-    #region IMarketDataClient
 
     /// <inheritdoc/>
     public abstract bool IsEnabled { get; }
@@ -121,9 +120,7 @@ public abstract class WebSocketProviderBase : IMarketDataClient
     /// <inheritdoc/>
     public abstract void UnsubscribeTrades(int subscriptionId);
 
-    #endregion
 
-    #region IProviderMetadata (defaults — override in derived classes)
 
     /// <inheritdoc/>
     public abstract string ProviderId { get; }
@@ -140,9 +137,7 @@ public abstract class WebSocketProviderBase : IMarketDataClient
     /// <inheritdoc/>
     public abstract ProviderCapabilities ProviderCapabilities { get; }
 
-    #endregion
 
-    #region Template Methods (implement in derived classes)
 
     /// <summary>
     /// Builds the WebSocket endpoint URI for this provider.
@@ -177,9 +172,7 @@ public abstract class WebSocketProviderBase : IMarketDataClient
     /// <param name="webSocket">The WebSocket to configure.</param>
     protected virtual void ConfigureWebSocket(ClientWebSocket webSocket) { }
 
-    #endregion
 
-    #region Helpers
 
     /// <summary>
     /// Sends a text message through the WebSocket connection.
@@ -202,11 +195,12 @@ public abstract class WebSocketProviderBase : IMarketDataClient
     protected void RecordActivity()
         => _connectionManager.RecordPongReceived();
 
-    #endregion
 
-    #region Reconnection
 
-    private async Task OnConnectionLostAsync()
+    private Task OnConnectionLostAsync()
+        => OnConnectionLostAsync(CancellationToken.None);
+
+    private async Task OnConnectionLostAsync(CancellationToken ct)
     {
         if (_wsUri == null)
             return;
@@ -218,13 +212,14 @@ public abstract class WebSocketProviderBase : IMarketDataClient
             configureSocket: ConfigureWebSocket,
             onReconnected: async () =>
             {
-                await AuthenticateAsync(CancellationToken.None).ConfigureAwait(false);
-                _connectionManager.StartReceiveLoop(HandleMessageAsync, CancellationToken.None);
-                await ResubscribeAsync(CancellationToken.None).ConfigureAwait(false);
+                await AuthenticateAsync(ct).ConfigureAwait(false);
+                _connectionManager.StartReceiveLoop(HandleMessageAsync, ct);
+                await ResubscribeAsync(ct).ConfigureAwait(false);
 
                 MigrationDiagnostics.IncResubscribeAttempt();
                 MigrationDiagnostics.IncResubscribeSuccess();
-            }).ConfigureAwait(false);
+            },
+            ct: ct).ConfigureAwait(false);
 
         if (success)
             MigrationDiagnostics.IncReconnectSuccess(ProviderId);
@@ -232,9 +227,7 @@ public abstract class WebSocketProviderBase : IMarketDataClient
             MigrationDiagnostics.IncReconnectFailure(ProviderId);
     }
 
-    #endregion
 
-    #region IAsyncDisposable
 
     /// <inheritdoc/>
     public async ValueTask DisposeAsync()
@@ -244,5 +237,4 @@ public abstract class WebSocketProviderBase : IMarketDataClient
         GC.SuppressFinalize(this);
     }
 
-    #endregion
 }

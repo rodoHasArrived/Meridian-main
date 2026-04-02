@@ -30,7 +30,7 @@ public abstract class SchemaServiceBase : ISchemaService
 
         return JsonSerializer.Serialize(
             new { schema = canonicalKey, @namespace = "Meridian.Domain.Events", definition = schema },
-            new JsonSerializerOptions { WriteIndented = true });
+            DesktopJsonOptions.PrettyPrint);
     }
 
     /// <summary>
@@ -133,7 +133,6 @@ public abstract class SchemaServiceBase : ISchemaService
         };
     }
 
-    #region Schema Creation Methods
 
     protected static EventSchema CreateTradeSchema()
     {
@@ -251,9 +250,7 @@ public abstract class SchemaServiceBase : ISchemaService
         };
     }
 
-    #endregion
 
-    #region Reference Data
 
     protected static Dictionary<string, string> GetExchangeCodes()
     {
@@ -300,17 +297,11 @@ public abstract class SchemaServiceBase : ISchemaService
         };
     }
 
-    #endregion
 
-    #region Export Methods
 
     protected static string ExportAsJson(DataDictionary dictionary)
     {
-        return JsonSerializer.Serialize(dictionary, new JsonSerializerOptions
-        {
-            WriteIndented = true,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        });
+        return JsonSerializer.Serialize(dictionary, DesktopJsonOptions.PrettyPrint);
     }
 
     protected static string ExportAsMarkdown(DataDictionary dictionary)
@@ -381,7 +372,6 @@ public abstract class SchemaServiceBase : ISchemaService
         return sb.ToString();
     }
 
-    #endregion
 }
 
 /// <summary>

@@ -17,10 +17,12 @@ using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
 using Meridian.Ui.Shared.Services;
 using Meridian.Wpf.Contracts;
+using Meridian.Wpf.ViewModels;
 using WpfServices = Meridian.Wpf.Services;
 using Meridian.Wpf.Views;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.DataQuality;
+using Meridian.Ui.Services.Services;
 
 namespace Meridian.Wpf;
 
@@ -212,6 +214,7 @@ public partial class App : System.Windows.Application
 
         // ── Fixture mode service (offline mock data) ────────────────────────
         services.AddSingleton(_ => Meridian.Ui.Services.Services.FixtureDataService.Instance);
+        services.AddSingleton(_ => Meridian.Ui.Services.Services.FixtureModeDetector.Instance);
 
         // ── Core services (by interface + concrete type) ────────────────────
         services.AddSingleton<IConnectionService>(_ => WpfServices.ConnectionService.Instance);
@@ -260,13 +263,17 @@ public partial class App : System.Windows.Application
         services.AddSingleton(_ => WpfServices.OfflineTrackingPersistenceService.Instance);
         services.AddSingleton(_ => WpfServices.PendingOperationsQueueService.Instance);
         services.AddSingleton(_ => WpfServices.ToastNotificationService.Instance);
-        services.AddSingleton<WpfServices.ISystemTrayService>(_ => new WpfServices.SystemTrayService());
-        services.AddSingleton(_ => new WpfServices.SystemTrayService());
+        // C1 fix: register a single SystemTrayService instance under the interface contract;
+        //         the concrete type is resolved via the same singleton.
+        services.AddSingleton<WpfServices.SystemTrayService>();
+        services.AddSingleton<WpfServices.ISystemTrayService>(sp => sp.GetRequiredService<WpfServices.SystemTrayService>());
 
         // ── MainWindow ──────────────────────────────────────────────────────
+        services.AddSingleton<Meridian.Wpf.ViewModels.MainWindowViewModel>();
         services.AddSingleton<MainWindow>();
 
         // ── Pages (transient — created per navigation) ──────────────────────
+        services.AddTransient<Meridian.Wpf.ViewModels.MainPageViewModel>();
         services.AddTransient<MainPage>();
         services.AddTransient<DashboardPage>();
         services.AddTransient<WatchlistPage>();
@@ -300,6 +307,7 @@ public partial class App : System.Windows.Application
         services.AddTransient<AdvancedAnalyticsPage>();
         services.AddTransient<ChartingPage>();
         services.AddTransient<OrderBookPage>();
+        services.AddTransient<Meridian.Ui.Services.DataCalendarService>();
         services.AddTransient<DataCalendarPage>();
         services.AddTransient<StorageOptimizationPage>();
         services.AddTransient<RetentionAssurancePage>();
@@ -326,24 +334,11 @@ public partial class App : System.Windows.Application
         services.AddTransient<Meridian.Wpf.ViewModels.SecurityMasterViewModel>();
         services.AddTransient<PluginManagementPage>();
         services.AddTransient<AgentPage>();
+        services.AddTransient<DashboardWebPage>();
 
-<<<<<<< copilot/add-corporate-action-adjustment-service-implementa
-        // ── Backtesting service — also registered in RegisterStrategyWorkspaceServices ──
-        // The registration below is deferred to RegisterStrategyWorkspaceServices (called at line 256)
-        // so the corporate action adjustment service can be wired in when a Security Master
-        // connection string is configured.
-=======
         // ── Backtesting service ──────────────────────────────────────────────
-        services.AddSingleton(sp =>
-        {
-            var svc = WpfServices.BacktestService.Instance;
-            svc.SecurityMasterQueryService =
-                sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>();
-            svc.CorporateActionAdjustmentService =
-                sp.GetService<Meridian.Backtesting.ICorporateActionAdjustmentService>();
-            return svc;
-        });
->>>>>>> main
+        // Registered in RegisterStrategyWorkspaceServices so optional Security Master
+        // collaborators can be attached when that feature is enabled.
 
         // ── Ui.Services singletons accessed via DI (no static .Instance in pages) ──
         services.AddSingleton(_ => BackfillProviderConfigService.Instance);
@@ -365,11 +360,15 @@ public partial class App : System.Windows.Application
         services.AddTransient<Meridian.Wpf.ViewModels.StrategyRunDetailViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.StrategyRunPortfolioViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.StrategyRunLedgerViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.RunRiskViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.PluginManagementViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.AgentViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.BacktestViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.ChartingPageViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.TickerStripViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.WatchlistViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.SettingsViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.CollectionSessionViewModel>();
 
         // ── Plugin loader service ────────────────────────────────────────────
         services.AddSingleton<Meridian.Infrastructure.DataSources.DataSourceRegistry>();
@@ -404,25 +403,21 @@ public partial class App : System.Windows.Application
             services.AddSingleton<SecurityMasterCsvParser>();
             services.AddSingleton<ISecurityMasterImportService, SecurityMasterImportService>();
 
-<<<<<<< copilot/add-corporate-action-adjustment-service-implementa
-            // Corporate action adjustment service (requires Security Master)
+            // Corporate action adjustment for backtesting and live paper trading.
             services.AddSingleton<ISecurityResolver, SecurityResolver>();
-            services.AddSingleton<ICorporateActionAdjustmentService, CorporateActionAdjustmentService>();
-=======
-            // Corporate action adjustment for backtesting
-            services.AddSingleton<Meridian.Backtesting.ICorporateActionAdjustmentService>(sp =>
-                new Meridian.Backtesting.CorporateActionAdjustmentService(
-                    sp.GetRequiredService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),
-                    sp.GetRequiredService<ISecurityResolver>(),
-                    sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Meridian.Backtesting.CorporateActionAdjustmentService>>()));
->>>>>>> main
+            services.AddSingleton<Meridian.Backtesting.CorporateActionAdjustmentService>();
+            services.AddSingleton<Meridian.Backtesting.ICorporateActionAdjustmentService>(
+                sp => sp.GetRequiredService<Meridian.Backtesting.CorporateActionAdjustmentService>());
+            services.AddSingleton<Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster>(
+                sp => sp.GetRequiredService<Meridian.Backtesting.CorporateActionAdjustmentService>());
         }
 
-        // Wire the corporate action adjustment service into the BacktestService singleton when available.
+        // Wire optional Security Master collaborators into the BacktestService singleton when available.
         services.AddSingleton(sp =>
         {
             var svc = WpfServices.BacktestService.Instance;
-            svc.CorporateActionAdjustmentService = sp.GetService<ICorporateActionAdjustmentService>();
+            svc.SecurityMasterQueryService = sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>();
+            svc.CorporateActionAdjustmentService = sp.GetService<Meridian.Backtesting.ICorporateActionAdjustmentService>();
             return svc;
         });
 
@@ -453,6 +448,9 @@ public partial class App : System.Windows.Application
     {
         try
         {
+            // Probe WebView2 Evergreen runtime availability (non-blocking, logs warning if absent).
+            CheckWebView2Runtime();
+
             // Run first-time setup before showing window
             await InitializeFirstRunAsync();
 
@@ -527,11 +525,9 @@ public partial class App : System.Windows.Application
         try
         {
             await WpfServices.OfflineTrackingPersistenceService.Instance.InitializeAsync();
-            System.Diagnostics.Debug.WriteLine("Offline tracking persistence initialized");
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine($"Failed to initialize offline tracking: {ex.Message}");
             // Continue - app should still work without persistence
         }
     }
@@ -545,15 +541,12 @@ public partial class App : System.Windows.Application
         {
             // Initialize pending operations queue
             await WpfServices.PendingOperationsQueueService.Instance.InitializeAsync();
-            System.Diagnostics.Debug.WriteLine("Pending operations queue initialized");
 
             // Start background task scheduler
             await WpfServices.BackgroundTaskSchedulerService.Instance.StartAsync();
-            System.Diagnostics.Debug.WriteLine("Background task scheduler started");
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine($"Failed to initialize background services: {ex.Message}");
             // Continue - app should still work without background services
         }
     }
@@ -579,9 +572,8 @@ public partial class App : System.Windows.Application
                     : NotificationType.Error,
                 success ? 5000 : 0);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine($"[App] StartCollectorFromLaunchArg failed: {ex.Message}");
         }
     }
 
@@ -600,12 +592,10 @@ public partial class App : System.Windows.Application
             {
                 // Navigate to the last active page
                 WpfServices.NavigationService.Instance.NavigateTo(session.ActivePageTag);
-                System.Diagnostics.Debug.WriteLine($"[App] Restored session to page: {session.ActivePageTag}");
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine($"[App] Failed to restore workspace session: {ex.Message}");
         }
     }
 
@@ -627,11 +617,9 @@ public partial class App : System.Windows.Application
             };
 
             await workspaceService.SaveSessionStateAsync(session);
-            System.Diagnostics.Debug.WriteLine("[App] Workspace session saved");
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine($"[App] Failed to save workspace session: {ex.Message}");
         }
     }
 
@@ -654,7 +642,6 @@ public partial class App : System.Windows.Application
 
         try
         {
-            System.Diagnostics.Debug.WriteLine("App exiting, shutting down services...");
 
             // Close any floating tear-off quote panels before service shutdown
             WpfServices.TearOffPanelService.Instance.CloseAll();
@@ -676,18 +663,23 @@ public partial class App : System.Windows.Application
             await Task.WhenAll(shutdownTasks);
 
             // Dispose the NotifyIcon so the system-tray icon is removed cleanly.
-            try { WpfServices.ToastNotificationService.Instance.Dispose(); }
-            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[App] Error disposing ToastNotificationService: {ex.Message}"); }
+            try
+            {
+                WpfServices.ToastNotificationService.Instance.Dispose();
+            }
+            catch (Exception ex)
+            {
+                WpfServices.LoggingService.Instance.LogWarning(
+                    "Failed to dispose toast notification service during shutdown",
+                    ("Error", ex.Message));
+            }
 
-            System.Diagnostics.Debug.WriteLine("Services shut down cleanly");
         }
         catch (OperationCanceledException)
         {
-            System.Diagnostics.Debug.WriteLine("App shutdown timed out - forcing exit");
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine($"[App] Error during app exit: {ex.Message}");
         }
     }
 
@@ -699,15 +691,12 @@ public partial class App : System.Windows.Application
         try
         {
             await shutdownAction().WaitAsync(ct);
-            System.Diagnostics.Debug.WriteLine($"{serviceName} shut down successfully");
         }
         catch (OperationCanceledException)
         {
-            System.Diagnostics.Debug.WriteLine($"{serviceName} shutdown timed out");
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine($"{serviceName} shutdown failed: {ex.Message}");
         }
     }
 
@@ -722,15 +711,12 @@ public partial class App : System.Windows.Application
             {
                 ct.ThrowIfCancellationRequested();
                 shutdownAction();
-                System.Diagnostics.Debug.WriteLine($"{serviceName} shut down successfully");
             }
             catch (OperationCanceledException)
             {
-                System.Diagnostics.Debug.WriteLine($"{serviceName} shutdown timed out");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                System.Diagnostics.Debug.WriteLine($"{serviceName} shutdown failed: {ex.Message}");
             }
         }, ct);
     }
@@ -797,25 +783,41 @@ public partial class App : System.Windows.Application
 
     /// <summary>
     /// Handles unhandled exceptions on the UI thread.
+    /// E3 fix: only suppress transient/recoverable exceptions; fatal ones are logged and re-raised
+    /// so the process can terminate cleanly instead of limping forward in a broken state.
     /// </summary>
     private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
     {
-        // Log the exception but don't crash
-        System.Diagnostics.Debug.WriteLine($"Dispatcher unhandled exception: {e.Exception}");
-        e.Handled = true;
+        var ex = e.Exception;
 
-        // Notify user of the error
-        try
+        // Determine whether the exception is likely recoverable (transient UI or I/O issues).
+        var isRecoverable =
+            ex is InvalidOperationException or
+                 System.Net.Http.HttpRequestException or
+                 TimeoutException or
+                 OperationCanceledException or
+                 System.IO.IOException;
+
+        // Always log with structured logging so the error is visible in the log file.
+        WpfServices.LoggingService.Instance.LogError("Dispatcher unhandled exception", ex);
+
+        if (isRecoverable)
         {
-            _ = WpfServices.NotificationService.Instance.NotifyErrorAsync(
-                "Application Error",
-                e.Exception.Message);
+            e.Handled = true;
+            try
+            {
+                _ = WpfServices.NotificationService.Instance.NotifyErrorAsync(
+                    "Application Error",
+                    ex.Message);
+            }
+            catch (Exception notifyEx)
+            {
+                WpfServices.LoggingService.Instance.LogWarning(
+                    "Notification failure during error handling",
+                    ("Error", notifyEx.Message));
+            }
         }
-        catch (Exception ex)
-        {
-            // Q2: Log notification failures instead of silently swallowing
-            System.Diagnostics.Debug.WriteLine($"[App] Notification failure during error handling: {ex.Message}");
-        }
+        // Non-recoverable exceptions are not marked Handled so WPF can tear down cleanly.
     }
 
     /// <summary>
@@ -892,5 +894,28 @@ public partial class App : System.Windows.Application
             _ => ConnectionStatus.Faulted
         };
         systemTrayService.UpdateHealthStatus(initialStatus);
+    }
+
+    // ── WebView2 runtime availability check ───────────────────────────────
+
+    /// <summary>
+    /// Probes whether the WebView2 Evergreen Runtime is installed on this machine
+    /// without requiring a WebView2 control to be instantiated.
+    /// Logs a warning if the runtime is absent (the embedded dashboard degrades gracefully).
+    /// </summary>
+    private static void CheckWebView2Runtime()
+    {
+        try
+        {
+            var version = Microsoft.Web.WebView2.Core.CoreWebView2Environment.GetAvailableBrowserVersionString();
+            WpfServices.LoggingService.Instance.LogInformation(
+                $"[WebView2] Runtime available — version {version}");
+        }
+        catch
+        {
+            WpfServices.LoggingService.Instance.LogWarning(
+                "[WebView2] Runtime not installed. The 'Web Dashboard' page will show an installation prompt. " +
+                "Download from https://developer.microsoft.com/en-us/microsoft-edge/webview2/");
+        }
     }
 }

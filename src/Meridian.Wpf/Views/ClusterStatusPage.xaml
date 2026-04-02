@@ -87,7 +87,8 @@
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                                            <TextBlock Text="✓" 
+                                            <TextBlock Text="&#xE73E;" 
+                                                      FontFamily="{StaticResource SymbolThemeFontFamily}"
                                                       Foreground="{Binding StatusColor}"
                                                       FontSize="14"
                                                       FontWeight="Bold"

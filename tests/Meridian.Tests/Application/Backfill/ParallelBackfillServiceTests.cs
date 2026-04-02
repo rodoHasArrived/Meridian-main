@@ -739,6 +739,178 @@ public sealed class ParallelBackfillServiceTests : IAsyncLifetime
         }
     }
 
+    // -------------------------------------------------------------------------
+    // Checkpoint validation signals
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public async Task RunAsync_SuccessfulRun_EmitsPassSignalForEachSymbol()
+    {
+        // Arrange
+        var provider = new ControllableProvider("test", (symbol, ct) =>
+            Task.FromResult<IReadOnlyList<HistoricalBar>>(new[] { MakeBar(symbol) }));
+
+        var svc = new HistoricalBackfillService([provider]);
+        var request = new AppBackfillRequest("test", new[] { "SPY", "AAPL" });
+
+        // Act
+        var result = await svc.RunAsync(request, _pipeline);
+
+        // Assert
+        result.SymbolValidationSignals.Should().HaveCount(2);
+        result.SymbolValidationSignals.Should().OnlyContain(s => s.Status == "Pass");
+        result.SymbolValidationSignals.Should().Contain(s => s.Symbol == "SPY" && s.BarsWritten == 1);
+        result.SymbolValidationSignals.Should().Contain(s => s.Symbol == "AAPL" && s.BarsWritten == 1);
+        result.SkippedSymbols.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task RunAsync_ZeroBarsReturned_EmitsWarnSignal()
+    {
+        // Arrange — provider returns empty list for TSLA
+        var provider = new ControllableProvider("test", (symbol, ct) =>
+            Task.FromResult<IReadOnlyList<HistoricalBar>>(
+                symbol == "TSLA" ? [] : new[] { MakeBar(symbol) }));
+
+        var svc = new HistoricalBackfillService([provider]);
+        var request = new AppBackfillRequest("test", new[] { "SPY", "TSLA" });
+
+        // Act
+        var result = await svc.RunAsync(request, _pipeline);
+
+        // Assert
+        result.SymbolValidationSignals.Should().Contain(s => s.Symbol == "TSLA" && s.Status == "Warn");
+        result.SymbolValidationSignals.Should().Contain(s => s.Symbol == "SPY" && s.Status == "Pass");
+    }
+
+    [Fact]
+    public async Task RunAsync_FailedSymbol_EmitsFailSignal()
+    {
+        // Arrange — TSLA always throws
+        var provider = new ControllableProvider("test", (symbol, ct) =>
+        {
+            if (symbol == "TSLA")
+                throw new InvalidOperationException("provider error");
+            return Task.FromResult<IReadOnlyList<HistoricalBar>>(new[] { MakeBar(symbol) });
+        });
+
+        var svc = new HistoricalBackfillService([provider]);
+        var request = new AppBackfillRequest("test", new[] { "SPY", "TSLA" });
+
+        // Act
+        var result = await svc.RunAsync(request, _pipeline);
+
+        // Assert
+        result.SymbolValidationSignals.Should().Contain(s => s.Symbol == "TSLA" && s.Status == "Fail");
+        result.SymbolValidationSignals.Should().Contain(s => s.Symbol == "SPY" && s.Status == "Pass");
+        result.Success.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task RunAsync_SkippedSymbol_AppearsInSkippedSymbolsAndEmitsPassSignal()
+    {
+        // Arrange — SPY is already fully covered, AAPL is not
+        var testRoot = Path.Combine(Path.GetTempPath(), $"mdc_sig_{Guid.NewGuid():N}");
+        try
+        {
+            var fetchedSymbols = new ConcurrentBag<string>();
+            var provider = new ControllableProvider("test", (symbol, ct) =>
+            {
+                fetchedSymbols.Add(symbol);
+                return Task.FromResult<IReadOnlyList<HistoricalBar>>(new[] { MakeBar(symbol) });
+            });
+
+            var checkpointStore = new BackfillStatusStore(testRoot);
+            var toDate = new DateOnly(2024, 1, 31);
+            // Write SPY checkpoint WITH bar count so the sidecar is populated
+            await checkpointStore.WriteSymbolCheckpointAsync("SPY", toDate, barsWritten: 10);
+
+            var svc = new HistoricalBackfillService([provider], checkpointStore: checkpointStore);
+            var request = new AppBackfillRequest("test", new[] { "SPY", "AAPL" },
+                From: new DateOnly(2024, 1, 1), To: toDate,
+                ResumeFromCheckpoint: true);
+
+            // Act
+            var result = await svc.RunAsync(request, _pipeline);
+
+            // Assert — SPY is skipped, AAPL is fetched
+            result.SkippedSymbols.Should().Contain("SPY");
+            result.SkippedSymbols.Should().NotContain("AAPL");
+
+            var spySignal = result.SymbolValidationSignals.Should().Contain(s => s.Symbol == "SPY").Which;
+            spySignal.Status.Should().Be("Pass");
+            spySignal.BarsWritten.Should().Be(0);                  // not fetched this run
+            spySignal.CheckpointBarsWritten.Should().Be(10);       // from sidecar
+
+            var aaplSignal = result.SymbolValidationSignals.Should().Contain(s => s.Symbol == "AAPL").Which;
+            aaplSignal.Status.Should().Be("Pass");
+            aaplSignal.BarsWritten.Should().Be(1);
+
+            // SPY was NOT re-fetched — no data duplication
+            fetchedSymbols.Should().NotContain("SPY");
+
+            // AAPL was fetched without a checkpoint-to-request gap: effectiveFrom == original From
+            aaplSignal.EffectiveFrom.Should().Be(new DateOnly(2024, 1, 1));
+        }
+        finally
+        {
+            if (Directory.Exists(testRoot))
+                Directory.Delete(testRoot, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task RunAsync_ResumedPartialSymbol_FetchStartsAfterCheckpointNoDuplication()
+    {
+        // Arrange — SPY has a partial checkpoint (covered Jan 1–15, needs Jan 16–31).
+        // The test verifies the provider is called with from=Jan16 (no overlap) and
+        // that only the new bars are counted toward BarsWritten in the result.
+        var testRoot = Path.Combine(Path.GetTempPath(), $"mdc_nodup_{Guid.NewGuid():N}");
+        try
+        {
+            DateOnly? capturedFrom = null;
+            var provider = new ControllableProvider("test", (symbol, from, to, ct) =>
+            {
+                capturedFrom = from;
+                // Return bars for Jan 16 and Jan 31 only (post-checkpoint range)
+                IReadOnlyList<HistoricalBar> bars =
+                [
+                    new(symbol, new DateOnly(2024, 1, 16), 100m, 110m, 90m, 105m, 500),
+                    new(symbol, new DateOnly(2024, 1, 31), 102m, 112m, 92m, 107m, 600),
+                ];
+                return Task.FromResult(bars);
+            });
+
+            var checkpointStore = new BackfillStatusStore(testRoot);
+            // Previous run ended Jan 15 with 10 bars
+            await checkpointStore.WriteSymbolCheckpointAsync("SPY", new DateOnly(2024, 1, 15), barsWritten: 10);
+
+            var svc = new HistoricalBackfillService([provider], checkpointStore: checkpointStore);
+            var request = new AppBackfillRequest("test", new[] { "SPY" },
+                From: new DateOnly(2024, 1, 1), To: new DateOnly(2024, 1, 31),
+                ResumeFromCheckpoint: true);
+
+            // Act
+            var result = await svc.RunAsync(request, _pipeline);
+
+            // Assert — provider was called starting from Jan 16 (checkpoint + 1 day), not Jan 1
+            capturedFrom.Should().Be(new DateOnly(2024, 1, 16), "resume must start the day after the checkpoint");
+
+            // Only the 2 new bars were written — the pre-checkpoint bars are NOT re-fetched
+            result.BarsWritten.Should().Be(2, "only post-checkpoint bars should be counted");
+
+            var signal = result.SymbolValidationSignals.Should().Contain(s => s.Symbol == "SPY").Which;
+            signal.Status.Should().Be("Pass");
+            signal.BarsWritten.Should().Be(2);
+            signal.EffectiveFrom.Should().Be(new DateOnly(2024, 1, 16));
+        }
+        finally
+        {
+            if (Directory.Exists(testRoot))
+                Directory.Delete(testRoot, recursive: true);
+        }
+    }
+
     // =========================================================================
     // Helpers
     // =========================================================================

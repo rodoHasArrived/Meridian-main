@@ -100,6 +100,11 @@ public sealed class BackfillCoordinator : IDisposable
     public IReadOnlyDictionary<string, DateOnly>? TryReadSymbolCheckpoints() => _core.TryReadSymbolCheckpoints();
 
     /// <summary>
+    /// Returns the per-symbol bar-count sidecar, or <c>null</c> when no bar-count data exists.
+    /// </summary>
+    public IReadOnlyDictionary<string, long>? TryReadSymbolBarCounts() => _core.TryReadSymbolBarCounts();
+
+    /// <summary>
     /// Runs a backfill operation for the specified request.
     /// </summary>
     public Task<BackfillResult> RunAsync(BackfillRequest request, CancellationToken ct = default)

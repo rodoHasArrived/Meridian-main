@@ -131,10 +131,8 @@ public sealed class ClipboardWatcherService : IDisposable
                 SourceText = text.Length > 200 ? text[..200] : text,
             });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine(
-                $"[ClipboardWatcherService] Error processing clipboard: {ex.Message}");
         }
     }
 
@@ -180,10 +178,8 @@ public sealed class ClipboardWatcherService : IDisposable
                 RemoveClipboardFormatListener(_hwndSource.Handle);
                 _hwndSource.RemoveHook(WndProc);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                System.Diagnostics.Debug.WriteLine(
-                    $"[ClipboardWatcherService] Dispose error: {ex.Message}");
             }
             _hwndSource = null;
         }

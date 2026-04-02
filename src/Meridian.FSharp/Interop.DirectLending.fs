@@ -12,6 +12,7 @@ type DirectLendingInterop private () =
         | 0 -> DirectLendingDayCountBasis.Act360
         | 1 -> DirectLendingDayCountBasis.Act365F
         | 2 -> DirectLendingDayCountBasis.Thirty360
+        | 3 -> DirectLendingDayCountBasis.ActualActualISDA
         | _ -> invalidArg (nameof dayCountBasisCode) "Unsupported day-count basis code."
 
     static member CalculateAvailableToDraw(currentCommitment: decimal, totalDrawn: decimal) =
@@ -55,3 +56,31 @@ type DirectLendingInterop private () =
         let floorOption = if effectiveRateFloor.HasValue then Some effectiveRateFloor.Value else None
         let capOption = if effectiveRateCap.HasValue then Some effectiveRateCap.Value else None
         DirectLending.applyRateBounds floorOption capOption rate
+
+    static member CalculateDailyAccrualAmountForDate(
+        principalBasis: decimal,
+        annualRate: decimal,
+        dayCountBasisCode: int,
+        date: DateOnly) =
+        DirectLending.calculateDailyAccrualAmountForDate
+            (DirectLendingInterop.FromBasisCode dayCountBasisCode)
+            principalBasis
+            annualRate
+            date
+
+    static member CalculatePikAccrual(
+        principalBasis: decimal,
+        annualRate: decimal,
+        dayCountBasisCode: int,
+        date: DateOnly) =
+        DirectLending.calculatePikAccrual
+            principalBasis
+            annualRate
+            (DirectLendingInterop.FromBasisCode dayCountBasisCode)
+            date
+
+    static member CalculateCollateralCoverage(totalCollateralValue: decimal, principalOutstanding: decimal) =
+        DirectLending.calculateCollateralCoverage totalCollateralValue principalOutstanding
+
+    static member CalculateStraightLineAmortization(originalAmount: decimal, remainingPeriods: int) =
+        DirectLending.calculateStraightLineAmortization originalAmount remainingPeriods

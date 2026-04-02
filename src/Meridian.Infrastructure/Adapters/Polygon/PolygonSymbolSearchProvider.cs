@@ -273,7 +273,6 @@ public sealed class PolygonSymbolSearchProvider : IFilterableSymbolSearchProvide
         _http.Dispose();
     }
 
-    #region Polygon API Models
 
     private sealed class PolygonTickersResponse
     {
@@ -438,5 +437,4 @@ public sealed class PolygonSymbolSearchProvider : IFilterableSymbolSearchProvide
         public decimal? Week52Low { get; set; }
     }
 
-    #endregion
 }

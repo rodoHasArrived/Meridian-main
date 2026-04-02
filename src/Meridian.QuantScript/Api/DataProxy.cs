@@ -1,3 +1,5 @@
+using Meridian.Contracts.SecurityMaster;
+
 namespace Meridian.QuantScript.Api;
 
 /// <summary>
@@ -35,4 +37,21 @@ public sealed class DataProxy(IQuantDataContext context, Func<CancellationToken>
 
     public ScriptOrderBook? OrderBook(string symbol, DateTimeOffset timestamp)
         => context.OrderBookAsync(symbol, timestamp, ctProvider()).GetAwaiter().GetResult();
+
+    // ── Security Master ───────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Returns the Security Master detail record for <paramref name="symbol"/> (ticker),
+    /// including asset class, economic terms, and all registered identifiers.
+    /// Returns <see langword="null"/> when the symbol is unknown or no Security Master is configured.
+    /// </summary>
+    public SecurityDetailDto? SecMaster(string symbol)
+        => context.SecMasterAsync(symbol, ctProvider()).GetAwaiter().GetResult();
+
+    /// <summary>
+    /// Returns the time-ordered list of corporate action events for <paramref name="symbol"/>.
+    /// Returns an empty list when no corporate actions are recorded or no Security Master is configured.
+    /// </summary>
+    public IReadOnlyList<CorporateActionDto> CorporateActions(string symbol)
+        => context.CorporateActionsAsync(symbol, ctProvider()).GetAwaiter().GetResult();
 }

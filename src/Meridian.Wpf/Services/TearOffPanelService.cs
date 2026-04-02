@@ -123,10 +123,8 @@ public sealed class TearOffPanelService
             foreach (var (key, value) in loaded)
                 _savedPositions[key] = value;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine(
-                $"[TearOffPanelService] Failed to load positions: {ex.Message}");
         }
     }
 
@@ -138,10 +136,8 @@ public sealed class TearOffPanelService
             var json = JsonSerializer.Serialize(_savedPositions);
             File.WriteAllText(PositionsFilePath, json);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine(
-                $"[TearOffPanelService] Failed to save positions: {ex.Message}");
         }
     }
 }

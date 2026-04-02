@@ -1,5 +1,7 @@
+using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Store;
 using Meridian.Domain.Events;
 using Meridian.Storage.Store;
@@ -12,7 +14,8 @@ namespace Meridian.QuantScript.Api;
 /// </summary>
 public sealed class QuantDataContext(
     JsonlMarketDataStore store,
-    ILogger<QuantDataContext> logger) : IQuantDataContext
+    ILogger<QuantDataContext> logger,
+    Meridian.Application.SecurityMaster.ISecurityMasterQueryService? securityMasterQuery = null) : IQuantDataContext
 {
     public async Task<PriceSeries> PricesAsync(
         string symbol, DateOnly from, DateOnly to, CancellationToken ct = default)
@@ -108,5 +111,52 @@ public sealed class QuantDataContext(
             return new ScriptOrderBook(closest.Timestamp, bids, asks);
         }
         return null;
+    }
+
+    /// <inheritdoc />
+    public async Task<SecurityDetailDto?> SecMasterAsync(string symbol, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(symbol);
+
+        if (securityMasterQuery is null)
+            return null;
+
+        try
+        {
+            return await securityMasterQuery.GetByIdentifierAsync(
+                SecurityIdentifierKind.Ticker, symbol, provider: null, ct).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            logger.LogWarning(ex, "Security Master lookup failed for symbol {Symbol}", symbol);
+            return null;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<CorporateActionDto>> CorporateActionsAsync(
+        string symbol, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(symbol);
+
+        if (securityMasterQuery is null)
+            return [];
+
+        try
+        {
+            var detail = await securityMasterQuery.GetByIdentifierAsync(
+                SecurityIdentifierKind.Ticker, symbol, provider: null, ct).ConfigureAwait(false);
+
+            if (detail is null)
+                return [];
+
+            return await securityMasterQuery.GetCorporateActionsAsync(detail.SecurityId, ct)
+                .ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            logger.LogWarning(ex, "Corporate actions lookup failed for symbol {Symbol}", symbol);
+            return [];
+        }
     }
 }

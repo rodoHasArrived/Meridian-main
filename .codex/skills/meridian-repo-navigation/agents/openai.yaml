@@ -1,0 +1,5 @@
+interface:
+  display_name: "Meridian Repo Navigation"
+  short_description: "Orient AI work inside Meridian"
+  default_prompt: "Use $meridian-repo-navigation to classify the task, route it to the right subsystem, and identify the first projects, docs, and entrypoints to inspect."
+

@@ -563,6 +563,28 @@ public sealed class PreflightCheckerTests : IDisposable
     }
 
     [Fact]
+    public void ValidateProviderCredentials_Synthetic_PassesWithoutCredentials()
+    {
+        // Synthetic provider is fully self-contained — no API credentials required.
+        var checker = new PreflightChecker();
+        var result = checker.ValidateProviderCredentials("Synthetic");
+        result.Status.Should().Be(PreflightCheckStatus.Passed);
+        result.Message.Should().Contain("Synthetic");
+        result.Message.Should().Contain("does not require API credentials");
+    }
+
+    [Fact]
+    public void ValidateProviderCredentials_StockSharp_PassesWithoutCredentials()
+    {
+        // StockSharp uses its own connector-level auth, not a Meridian API key.
+        var checker = new PreflightChecker();
+        var result = checker.ValidateProviderCredentials("StockSharp");
+        result.Status.Should().Be(PreflightCheckStatus.Passed);
+        result.Message.Should().Contain("StockSharp");
+        result.Message.Should().Contain("does not require API credentials");
+    }
+
+    [Fact]
     public void ValidateProviderCredentials_Alpaca_FailsWhenCredentialsMissing()
     {
         // Ensure env vars are not set

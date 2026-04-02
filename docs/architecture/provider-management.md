@@ -443,7 +443,9 @@ public sealed record ProviderCredentialField(
     string? DefaultValue = null);
 ```
 
-Providers override `IProviderMetadata.ProviderCredentialFields` to declare their credential requirements, enabling the UI to generate configuration forms without provider-specific code.
+Providers can either override `IProviderMetadata.ProviderCredentialFields` directly or declare `[RequiresCredential]` attributes. Runtime catalog generation falls back to the attribute metadata when explicit credential fields are not overridden, which keeps UI credential forms self-describing without a second provider-specific registry.
+
+At runtime, `ProviderFactory`, the built-in Alpaca streaming registration, `ConfigurationService`, and `ConfigurationPipeline` now resolve credentials through a generic `ICredentialContext` created from provider attributes plus config overrides. `IProviderCredentialResolver` itself now exposes only that generic context factory, so new providers no longer require either a new interface method or a new application-layer helper method to participate in runtime credential resolution.
 
 ---
 

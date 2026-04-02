@@ -70,8 +70,8 @@ public sealed class ReconciliationRunService : IReconciliationRunService
                 matches.Add(new ReconciliationMatchDto(
                     result.CheckId,
                     result.Label,
-                    MapSource(result.ExpectedSource),
-                    MapSource(result.ActualSource),
+                    result.ExpectedSource,
+                    result.ActualSource,
                     result.HasExpectedAmount ? result.ExpectedAmount : null,
                     result.HasActualAmount ? result.ActualAmount : null,
                     result.Variance,
@@ -85,7 +85,7 @@ public sealed class ReconciliationRunService : IReconciliationRunService
                 result.Label,
                 MapCategory(result.Category, result.MissingSource),
                 MapStatus(result.Status),
-                MapSource(result.MissingSource),
+                result.MissingSource,
                 result.HasExpectedAmount ? result.ExpectedAmount : null,
                 result.HasActualAmount ? result.ActualAmount : null,
                 result.Variance,
@@ -96,6 +96,11 @@ public sealed class ReconciliationRunService : IReconciliationRunService
 
         var securityCoverageIssues = BuildSecurityCoverageIssues(runDetail);
         var bankBreakCount = breaks.Count(b => bankCheckIds.Contains(b.CheckId));
+
+        // Build Security Master classification map from already-resolved security references
+        // in the portfolio and ledger read models (populated by PortfolioReadService /
+        // LedgerReadService when ISecurityReferenceLookup is wired into those services).
+        var securityClassifications = BuildSecurityClassifications(runDetail);
 
         var summary = new ReconciliationRunSummary(
             Guid.NewGuid().ToString("N"),
@@ -115,7 +120,8 @@ public sealed class ReconciliationRunService : IReconciliationRunService
             bankBreakCount);
 
         var detail = new ReconciliationRunDetail(summary, matches, breaks, securityCoverageIssues,
-            bankTransactions.Count > 0 ? bankTransactions : null);
+            bankTransactions.Count > 0 ? bankTransactions : null,
+            securityClassifications.Count > 0 ? securityClassifications : null);
         await _repository.SaveAsync(detail, ct).ConfigureAwait(false);
         return detail;
     }
@@ -147,14 +153,6 @@ public sealed class ReconciliationRunService : IReconciliationRunService
         "investigating" => ReconciliationBreakStatus.Investigating,
         "resolved" => ReconciliationBreakStatus.Resolved,
         _ => ReconciliationBreakStatus.Open
-    };
-
-    private static ReconciliationSourceKind MapSource(string source) => source switch
-    {
-        "portfolio" => ReconciliationSourceKind.Portfolio,
-        "ledger" => ReconciliationSourceKind.Ledger,
-        "bank" => ReconciliationSourceKind.Bank,
-        _ => ReconciliationSourceKind.Unknown
     };
 
     private static IReadOnlyList<ReconciliationSecurityCoverageIssueDto> BuildSecurityCoverageIssues(StrategyRunDetail detail)
@@ -192,5 +190,52 @@ public sealed class ReconciliationRunService : IReconciliationRunService
         return issues
             .DistinctBy(static issue => $"{issue.Source}|{issue.Symbol}|{issue.AccountName}", StringComparer.OrdinalIgnoreCase)
             .ToArray();
+    }
+
+    /// <summary>
+    /// Builds a symbol-keyed Security Master classification map from security references that
+    /// were already resolved by <see cref="PortfolioReadService"/> and <see cref="LedgerReadService"/>.
+    /// Only symbols with a non-null <c>Security</c> property are included.
+    /// </summary>
+    private static IReadOnlyDictionary<string, SecurityClassificationSummaryDto> BuildSecurityClassifications(
+        StrategyRunDetail detail)
+    {
+        var map = new Dictionary<string, SecurityClassificationSummaryDto>(StringComparer.OrdinalIgnoreCase);
+
+        if (detail.Portfolio is not null)
+        {
+            foreach (var position in detail.Portfolio.Positions)
+            {
+                if (position.Security is not null &&
+                    !string.IsNullOrWhiteSpace(position.Symbol) &&
+                    !map.ContainsKey(position.Symbol))
+                {
+                    map[position.Symbol] = new SecurityClassificationSummaryDto(
+                        AssetClass: position.Security.AssetClass,
+                        SubType: position.Security.SubType,
+                        PrimaryIdentifierKind: "Ticker",
+                        PrimaryIdentifierValue: position.Security.PrimaryIdentifier ?? position.Symbol);
+                }
+            }
+        }
+
+        if (detail.Ledger is not null)
+        {
+            foreach (var line in detail.Ledger.TrialBalance)
+            {
+                if (line.Security is not null &&
+                    !string.IsNullOrWhiteSpace(line.Symbol) &&
+                    !map.ContainsKey(line.Symbol))
+                {
+                    map[line.Symbol] = new SecurityClassificationSummaryDto(
+                        AssetClass: line.Security.AssetClass,
+                        SubType: line.Security.SubType,
+                        PrimaryIdentifierKind: "Ticker",
+                        PrimaryIdentifierValue: line.Security.PrimaryIdentifier ?? line.Symbol);
+                }
+            }
+        }
+
+        return map;
     }
 }

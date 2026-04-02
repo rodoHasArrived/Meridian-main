@@ -68,16 +68,18 @@ create table if not exists __SCHEMA__.projection_run (
     engine_version               text not null,
     status                       text not null,
     supersedes_projection_run_id uuid references __SCHEMA__.projection_run(projection_run_id),
-    generated_at                 timestamptz not null default now(),
-    unique (
+    generated_at                 timestamptz not null default now()
+);
+
+create unique index if not exists ux_projection_run_lineage
+    on __SCHEMA__.projection_run (
         loan_id,
         loan_terms_version,
         servicing_revision,
         engine_version,
         projection_as_of,
         coalesce(market_data_as_of, date '1900-01-01')
-    )
-);
+    );
 
 create index if not exists ix_projection_run_loan
     on __SCHEMA__.projection_run(loan_id, generated_at desc);

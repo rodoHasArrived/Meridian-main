@@ -30,6 +30,7 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
     private readonly WpfServices.NotificationService _notificationService;
     private readonly WpfServices.NavigationService _navigationService;
     private readonly WpfServices.LoggingService _loggingService;
+    private readonly WpfServices.ConfigService _configService;
     private readonly BackfillApiService _backfillApiService;
     private readonly UiBackfillService _backfillService;
     private readonly BackfillCheckpointService _checkpointService;
@@ -258,10 +259,110 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
     public string PageTitle => "Backfill";
     public ObservableCollection<ActionEntry> Actions { get; } = new();
 
+    // ── M1: Bindable properties for UI state previously manipulated directly in code-behind ──
+
+    /// <summary>Displays the number of symbols entered, e.g. "3 symbols".</summary>
+    private string _symbolCountText = "0 symbols";
+    public string SymbolCountText
+    {
+        get => _symbolCountText;
+        private set => SetProperty(ref _symbolCountText, value);
+    }
+
+    /// <summary>Hint text shown after the smart-range is applied.</summary>
+    private string _dateRangeHintText = "Smart range uses symbol count + granularity to keep request sizes practical.";
+    public string DateRangeHintText
+    {
+        get => _dateRangeHintText;
+        private set => SetProperty(ref _dateRangeHintText, value);
+    }
+
+    /// <summary>Opacity for the schedule settings panel (1.0 when enabled, 0.5 when disabled).</summary>
+    private double _schedulePanelOpacity = 0.5;
+    public double SchedulePanelOpacity
+    {
+        get => _schedulePanelOpacity;
+        private set => SetProperty(ref _schedulePanelOpacity, value);
+    }
+
+    // ── M1 update methods (called from code-behind after reading form controls) ──
+
+    /// <summary>Updates the symbol count label from the parsed symbols array.</summary>
+    public void UpdateSymbolCount(int count) =>
+        SymbolCountText = $"{count} symbol{(count == 1 ? "" : "s")}";
+
+    /// <summary>Updates the date-range hint text after a smart-range is applied.</summary>
+    public void UpdateDateRangeHint(int lookbackDays, int symbolCount, string granularityDisplay) =>
+        DateRangeHintText = $"Smart range applied: last {lookbackDays} days for {Math.Max(symbolCount, 1)} symbol(s) at {granularityDisplay} granularity.";
+
+    /// <summary>Reflects the scheduled-backfill toggle state on the settings panel opacity.</summary>
+    public void SetScheduleEnabled(bool enabled) =>
+        SchedulePanelOpacity = enabled ? 1.0 : 0.5;
+
+    // ── M2: Delegate collection mutation to the ViewModel ───────────────────────
+
+    /// <summary>
+    /// Updates an existing scheduled job in the collection.
+    /// Code-behind must not directly index into <see cref="ScheduledJobs"/>.
+    /// </summary>
+    public void UpdateScheduledJob(ScheduledJobInfo job, string name, string nextRun)
+    {
+        var index = ScheduledJobs.IndexOf(job);
+        if (index >= 0)
+            ScheduledJobs[index] = new ScheduledJobInfo { Name = name, NextRun = nextRun };
+
+        _notificationService.ShowNotification(
+            "Job Updated",
+            $"Scheduled job '{name}' has been updated.",
+            NotificationType.Success);
+    }
+
+    // ── M3: Stub-action methods — notifications belong in the ViewModel, not code-behind ──
+
+    public void HandleValidateData() =>
+        _notificationService.ShowNotification("Data Validation", "Starting data validation...", NotificationType.Info);
+
+    public void HandleRepairGaps() =>
+        _notificationService.ShowNotification("Gap Repair", "Checking for data gaps...", NotificationType.Info);
+
+    public void HandleFillAllGaps() =>
+        _notificationService.ShowNotification("Fill Gaps", "Analyzing all symbols for gaps...", NotificationType.Info);
+
+    public void HandleSaveSchedule() =>
+        _notificationService.ShowNotification("Schedule Saved", "Backfill schedule has been saved.", NotificationType.Success);
+
+    public void HandleRunScheduledJob(ScheduledJobInfo job) =>
+        _notificationService.ShowNotification("Running Job", $"Starting scheduled job: {job.Name}", NotificationType.Info);
+
+    public void HandleUpdateToLatest() =>
+        _notificationService.ShowNotification(
+            "Update to Latest",
+            "Configured to update all subscribed symbols to latest data.",
+            NotificationType.Info);
+
+    public void HandleRefreshStatusNotification() =>
+        _notificationService.ShowNotification("Status Refreshed", "Backfill status has been refreshed.", NotificationType.Info);
+
+    public void HandleNoGapsFound() =>
+        _notificationService.ShowNotification("No Gaps", "No gaps detected to fill.", NotificationType.Info);
+
+    public void HandleAutoFillGapsNotification(string[] symbolsWithGaps) =>
+        _notificationService.ShowNotification(
+            "Gap Fill",
+            $"Configured to fill gaps for {symbolsWithGaps.Length} symbols. Press Start Backfill to begin.",
+            NotificationType.Info);
+
+    public void HandleJobDeletedNotification(string jobName) =>
+        _notificationService.ShowNotification(
+            "Job Deleted",
+            $"Scheduled job '{jobName}' has been deleted.",
+            NotificationType.Success);
+
     public BackfillViewModel(
         WpfServices.NotificationService notificationService,
         WpfServices.NavigationService navigationService,
         WpfServices.LoggingService loggingService,
+        WpfServices.ConfigService configService,
         UiBackfillService backfillService,
         BackfillCheckpointService checkpointService,
         WpfServices.TaskbarProgressService taskbarProgressService,
@@ -271,6 +372,7 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
         _notificationService = notificationService;
         _navigationService = navigationService;
         _loggingService = loggingService;
+        _configService = configService;
 
         _backfillApiService = new BackfillApiService();
         _backfillService = backfillService;
@@ -291,8 +393,8 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
 
         // Populate action bar.
         Actions.Clear();
-        Actions.Add(new ActionEntry("Start Backfill", new RelayCommand(() => _navigationService.NavigateTo("Backfill")), "▶", "Start a new backfill", IsPrimary: true));
-        Actions.Add(new ActionEntry("View Status", new RelayCommand(() => _navigationService.NavigateTo("Backfill")), "📊", "View backfill status"));
+        Actions.Add(new ActionEntry("Start Backfill", new RelayCommand(() => _navigationService.NavigateTo("Backfill")), "\uE768", "Start a new backfill", IsPrimary: true));
+        Actions.Add(new ActionEntry("View Status", new RelayCommand(() => _navigationService.NavigateTo("Backfill")), "\uE9D9", "View backfill status"));
 
         await LoadScheduledJobsAsync();
         await LoadResumableJobsAsync();
@@ -658,10 +760,28 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
         });
     }
 
+    // E1: async void swallows exceptions — the handler delegates to a testable async Task method
+    //     that is wrapped in try/catch so poll failures are logged rather than silently lost.
     private async void OnProgressPollTimerTick(object? sender, EventArgs e)
     {
-        await _backfillService.PollBackendStatusAsync();
-        await RefreshStatusFromApiAsync();
+        await TickPollAsync();
+    }
+
+    /// <summary>
+    /// Testable poll body extracted from the async-void timer handler.
+    /// </summary>
+    internal async Task TickPollAsync()
+    {
+        try
+        {
+            await _backfillService.PollBackendStatusAsync();
+            await RefreshStatusFromApiAsync();
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception ex)
+        {
+            _loggingService.LogWarning("Progress poll tick failed", ("Error", ex.Message));
+        }
     }
 
     // ── Gap scanning ────────────────────────────────────────────────────────
@@ -795,6 +915,92 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
         _ => granularity.ToLowerInvariant()
     };
 
+    public bool TryCreateStartRequest(
+        string? symbolsText,
+        DateTime? fromDate,
+        DateTime? toDate,
+        string? provider,
+        string? granularity,
+        out BackfillStartRequest request,
+        out string? symbolValidationError,
+        out string? fromDateValidationError,
+        out string? toDateValidationError)
+    {
+        request = default;
+        symbolValidationError = null;
+        fromDateValidationError = null;
+        toDateValidationError = null;
+
+        if (string.IsNullOrWhiteSpace(symbolsText))
+        {
+            symbolValidationError = "Please enter at least one symbol";
+            return false;
+        }
+
+        var symbols = symbolsText
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(symbol => symbol.Trim().ToUpperInvariant())
+            .Where(symbol => !string.IsNullOrWhiteSpace(symbol))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        if (symbols.Length == 0)
+        {
+            symbolValidationError = "Please enter at least one symbol";
+            return false;
+        }
+
+        var resolvedFromDate = fromDate ?? DateTime.Today.AddDays(-30);
+        var resolvedToDate = toDate ?? DateTime.Today;
+
+        if (resolvedFromDate > resolvedToDate)
+        {
+            fromDateValidationError = "From date must be earlier than To date";
+            toDateValidationError = "To date must be on or after From date";
+            return false;
+        }
+
+        request = new BackfillStartRequest(
+            symbols,
+            provider ?? "composite",
+            resolvedFromDate,
+            resolvedToDate,
+            granularity ?? "Daily");
+
+        return true;
+    }
+
+    public async Task<string> GetSubscribedSymbolsTextAsync()
+    {
+        try
+        {
+            var configSymbols = await _configService.GetConfiguredSymbolsAsync();
+            if (configSymbols.Length > 0)
+                return string.Join(", ", configSymbols.Select(s => s.Symbol));
+        }
+        catch (Exception ex)
+        {
+            _loggingService.LogWarning("Failed to load configured symbols for backfill page", ("Error", ex.Message));
+        }
+
+        return "SPY, QQQ, AAPL, MSFT, GOOGL, AMZN, NVDA, META, TSLA";
+    }
+
+    public string AppendSymbols(string? existingSymbolsText, params string[] symbolsToAppend)
+    {
+        var mergedSymbols = (existingSymbolsText ?? string.Empty)
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Concat(symbolsToAppend)
+            .Select(symbol => symbol.Trim().ToUpperInvariant())
+            .Where(symbol => !string.IsNullOrWhiteSpace(symbol))
+            .Distinct(StringComparer.OrdinalIgnoreCase);
+
+        return string.Join(", ", mergedSymbols);
+    }
+
+    public (DateTime From, DateTime To, string SymbolsText) BuildLatestUpdatePreset(string? existingSymbolsText) =>
+        (DateTime.Today.AddDays(-5), DateTime.Today, AppendSymbols(existingSymbolsText));
+
     // ── API key management ──────────────────────────────────────────────────
     public void SetNasdaqApiKey(string apiKey)
     {
@@ -911,4 +1117,11 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
     }
 
     public void Dispose() => Stop();
+
+    public readonly record struct BackfillStartRequest(
+        string[] Symbols,
+        string Provider,
+        DateTime FromDate,
+        DateTime ToDate,
+        string Granularity);
 }

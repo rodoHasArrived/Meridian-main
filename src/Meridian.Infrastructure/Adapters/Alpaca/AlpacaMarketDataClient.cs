@@ -32,6 +32,14 @@ namespace Meridian.Infrastructure.Adapters.Alpaca;
 [ImplementsAdr("ADR-001", "Alpaca streaming data provider implementation")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
+[RequiresCredential("ALPACA_KEY_ID",
+    EnvironmentVariables = new[] { "ALPACA_KEY_ID", "ALPACA__KEYID" },
+    DisplayName = "API Key ID",
+    Description = "Alpaca API key ID from https://app.alpaca.markets/brokerage/papers")]
+[RequiresCredential("ALPACA_SECRET_KEY",
+    EnvironmentVariables = new[] { "ALPACA_SECRET_KEY", "ALPACA__SECRETKEY" },
+    DisplayName = "API Secret Key",
+    Description = "Alpaca API secret key from https://app.alpaca.markets/brokerage/papers")]
 public sealed class AlpacaMarketDataClient : WebSocketProviderBase
 {
     private readonly TradeDataCollector _tradeCollector;
@@ -66,7 +74,6 @@ public sealed class AlpacaMarketDataClient : WebSocketProviderBase
             throw new ArgumentException("Alpaca KeyId/SecretKey required.");
     }
 
-    #region IProviderMetadata
 
     /// <inheritdoc/>
     public override bool IsEnabled => true;
@@ -110,9 +117,7 @@ public sealed class AlpacaMarketDataClient : WebSocketProviderBase
         "IEX feed is free; SIP feed requires subscription."
     };
 
-    #endregion
 
-    #region WebSocketProviderBase template methods
 
     /// <inheritdoc/>
     protected override Uri BuildWebSocketUri()
@@ -202,9 +207,7 @@ public sealed class AlpacaMarketDataClient : WebSocketProviderBase
         }
     }
 
-    #endregion
 
-    #region IMarketDataClient – subscriptions
 
     /// <inheritdoc/>
     public override int SubscribeTrades(SymbolConfig cfg)
@@ -261,9 +264,7 @@ public sealed class AlpacaMarketDataClient : WebSocketProviderBase
         }
     }
 
-    #endregion
 
-    #region Private message processing
 
     private void HandleMessage(JsonElement el)
     {
@@ -368,5 +369,4 @@ public sealed class AlpacaMarketDataClient : WebSocketProviderBase
         }
     }
 
-    #endregion
 }

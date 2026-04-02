@@ -195,8 +195,8 @@ public sealed class DataQualityViewModel : BindableBase, IDisposable, IPageActio
     {
         // Populate action bar.
         Actions.Clear();
-        Actions.Add(new ActionEntry("Refresh", new RelayCommand(() => _ = RefreshAsync()), "↻", "Refresh data quality metrics", IsPrimary: true));
-        Actions.Add(new ActionEntry("Export Report", new RelayCommand(() => _notificationService.NotifyInfo("Export", "Report export started")), "📄", "Export quality report"));
+        Actions.Add(new ActionEntry("Refresh", new RelayCommand(() => _ = RefreshAsync()), "\uE72C", "Refresh data quality metrics", IsPrimary: true));
+        Actions.Add(new ActionEntry("Export Report", new RelayCommand(() => _notificationService.NotifyInfo("Export", "Report export started")), "\uE8A5", "Export quality report"));
 
         return _refreshCoordinator.StartAsync(TimeSpan.FromSeconds(30), ct);
     }

@@ -196,7 +196,6 @@ public sealed class BackgroundTaskSchedulerService
                 catch (Exception ex) when (ex is not OutOfMemoryException)
                 {
                     // Individual task failures don't stop the scheduler.
-                    System.Diagnostics.Debug.WriteLine($"Scheduled task failed: {ex.Message}");
                 }
             }
         }

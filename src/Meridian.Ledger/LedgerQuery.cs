@@ -19,4 +19,5 @@ public sealed record LedgerQuery(
     string? StrategyId = null,
     string? FinancialAccountId = null,
     string? CounterpartyAccountId = null,
-    string? Institution = null);
+    string? Institution = null,
+    LedgerAccountType? AccountType = null);

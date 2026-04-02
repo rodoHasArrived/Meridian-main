@@ -1,110 +1,40 @@
 # Meridian - Project Roadmap
 
-**Last Updated:** 2026-03-26
-**Status:** Refocused on core platform functionality and active native desktop redevelopment
-**Repository Snapshot (2026-03-24):** solution projects: 35 | `src/` projects: 27 | test projects: 7 | workflow files: 35 | source files: 1,118 (1,073 C# + 45 F#) | test files: 335 (326 C# + 9 F#) | tests: ~4,424
+**Last Updated:** 2026-03-31
+**Status:** Full roadmap refresh aligned to the current repository and active workstation direction
+**Repository Snapshot (2026-03-31):** solution projects: 39 | `src/` projects: 28 | test projects: 9 | workflow files: 38
 
-Meridian is a self-hosted trading platform. The active delivery focus is the four core platform pillars: **data collection**, **backtesting**, **real-time execution**, and **portfolio/strategy tracking**. The web dashboard remains the primary cross-platform operator surface. As of **March 26, 2026**, the WPF desktop app is back in **active development** as the Windows-first workstation track, beginning with shell modernization and workflow-page redesigns in `src/Meridian.Wpf/`.
+Meridian is no longer primarily blocked on missing platform primitives. The core platform baseline is now broad and structurally strong across ingestion, storage, backtesting, execution, ledger, workstation contracts, and governance foundations. The main delivery problem has shifted from "can Meridian do this at all?" to "which operator workflows are complete enough to trust and use end to end?"
+
+The active roadmap therefore centers on four outcomes:
+
+- finish the reliability evidence that makes the data and execution layers trustworthy
+- turn the existing execution and promotion APIs into a real paper-trading cockpit
+- make strategy runs, portfolio, ledger, and reconciliation feel like one connected product
+- complete the workstation and governance productization work without forking the architecture
 
 Use this document with:
 
-- [`FEATURE_INVENTORY.md`](FEATURE_INVENTORY.md) — current-vs-target capability status
-- [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md) — normalized backlog
+- [`FEATURE_INVENTORY.md`](FEATURE_INVENTORY.md) - current capability status
+- [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md) - normalized non-assembly backlog
+- [`IMPROVEMENTS.md`](IMPROVEMENTS.md) - completed improvement history
+- [`../plans/trading-workstation-migration-blueprint.md`](../plans/trading-workstation-migration-blueprint.md) - workstation target state
+- [`../plans/governance-fund-ops-blueprint.md`](../plans/governance-fund-ops-blueprint.md) - governance target state
 
 ---
 
-## Focus: The Four Core Pillars
+## Summary
 
-### 1. Data Collection
+Meridian's core platform pillars remain the same: data collection, backtesting, execution, and portfolio or strategy tracking. What has changed since earlier roadmap versions is the degree of completion underneath them. The repository now includes:
 
-Real-time streaming and historical backfill are the platform's data foundation. Everything downstream — backtesting, execution, strategy tracking — depends on data quality, reliability, and breadth.
+- a large provider and storage baseline with WAL, JSONL, Parquet, backfill scheduling, gap analysis, and data quality monitoring
+- unified workstation-oriented contracts and bootstrap endpoints in `src/Meridian.Contracts/Workstation/` and `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs`
+- a React workstation shell with Research, Trading, Data Operations, and Governance screens in `src/Meridian.Ui/dashboard/src/`
+- a broad WPF desktop surface including run browser, run detail, portfolio, ledger, Security Master, and QuantScript view models in `src/Meridian.Wpf/`
+- execution, promotion, and strategy lifecycle APIs already wired in `ExecutionEndpoints.cs`, `PromotionEndpoints.cs`, and `StrategyLifecycleEndpoints.cs`
+- Security Master, ledger, reconciliation, and direct-lending foundations already in code
 
-**Current state:**
-- 90+ real-time streaming sources via IMarketDataClient (Alpaca, IB, NYSE, Polygon, StockSharp, synthetic)
-- 10+ historical backfill providers via IHistoricalDataProvider (Stooq, Alpaca, Tiingo, Yahoo, Polygon, FRED, and others)
-- WAL + JSONL/Parquet composite sink, tiered hot/warm/cold storage
-- Symbol search across 5 providers
-- Data quality monitoring with SLA enforcement and sequence validation
-
-**Remaining work:**
-- Harden provider confidence: Polygon replay coverage, IB runtime validation, NYSE shared-lifecycle depth, StockSharp adapter breadth
-- Expand backfill fallback chains and checkpoint reliability across edge cases
-- Fix storage-path reliability gaps in the Parquet sink (flush lifecycle, ADR-014 serialization cleanup, shutdown safety)
-- Finish NYSE transport hardening: factory-managed HTTP clients plus cancellation propagation through resubscribe/send paths
-- Strengthen data quality monitoring SLA enforcement and gap reporting
-- Improve provider health observability (metrics, alerts, replay evidence)
-
----
-
-### 2. Backtesting
-
-Tick-level strategy replay with fill models and portfolio metrics is the primary research workflow.
-
-**Current state:**
-- Tick-by-tick replay engine with configurable fill models
-- Portfolio metrics: Sharpe ratio, max drawdown, XIRR, and full audit trail
-- Native backtest engine + QuantConnect Lean integration
-- Strategy SDK (`Meridian.Backtesting.Sdk`) for implementing custom strategies
-- Run history, comparison, and export
-
-**Remaining work:**
-- Unify native and Lean engine experiences into one Backtest Studio workflow
-- Broaden fill model coverage (partial fills, slippage, market impact)
-- Deepen strategy comparison and run-diff tooling
-- Improve backtest performance for large historical windows
-- Expand test coverage for replay correctness and fill model edge cases
-
----
-
-### 3. Real-Time Execution
-
-Paper trading is the primary execution surface. It validates strategies under realistic conditions before any live integration.
-
-**Current state:**
-- Paper trading gateway (`Meridian.Execution`) for zero-risk strategy validation
-- Order routing abstraction (`IOrderGateway`) designed for live broker integration
-- Pre-trade risk rules via `IRiskRule` (position limits, drawdown circuit breaker, order rate throttle)
-- Position and fill tracking
-- **Brokerage gateway framework** (`BaseBrokerageGateway`, `BrokerageGatewayAdapter`, `IBrokerageGateway`) with provider-specific implementations:
-  - `AlpacaBrokerageGateway` — Alpaca order routing with fractional quantity support
-  - `IBBrokerageGateway` — Interactive Brokers order routing (conditional on IBAPI build flag)
-  - `StockSharpBrokerageGateway` — StockSharp connector-based order routing
-  - `TemplateBrokerageGateway` — scaffold for new brokerage adapters
-- Brokerage DI registration via `BrokerageServiceRegistration` and `BrokerageConfiguration`
-
-**Completed (2026-03-25):**
-- Paper-trading cockpit REST endpoints wired: `/api/execution/account`, `/api/execution/positions`, `/api/execution/portfolio`, `/api/execution/orders`, `/api/execution/health`, `/api/execution/capabilities`
-- Paper-trading session management endpoints: `/api/execution/sessions` (create, list, detail, close)
-- `Backtest → Paper → Live` promotion workflow: `/api/promotion/evaluate/{runId}`, `/api/promotion/approve`, `/api/promotion/reject`, `/api/promotion/history`
-- Strategy lifecycle control endpoints: `/api/strategies/status`, `/api/strategies/{id}/status`, `/api/strategies/{id}/pause`, `/api/strategies/{id}/stop`
-- `PaperSessionPersistenceService`, `IPortfolioState`, `IOrderGateway`, `IOrderManager`, `StrategyLifecycleManager` fully wired in DI
-- Test coverage added for `PromotionService` and `PaperSessionPersistenceService`
-
-**Remaining work:**
-- Wire brokerage gateways into live order routing (currently paper-only)
-- Define the `Paper → Live` promotion gate with additional human-approval controls
-- Add paper-trading session replay from persisted order history
-- Improve paper-trading cockpit UI in the React dashboard
-
----
-
-### 4. Portfolio & Strategy Tracking
-
-Multi-run comparison, performance attribution, and strategy lifecycle management close the loop from research through operation.
-
-**Current state:**
-- `PortfolioTracker` with multi-run performance metrics
-- Strategy lifecycle: registration, activation, pause, stop
-- `StrategyRunReadService`, `PortfolioReadService`, `LedgerReadService` for shared read models
-- Run history browsable via the web dashboard and REST API
-- Ledger infrastructure (`Meridian.Ledger`) with double-entry accounting foundation
-
-**Remaining work:**
-- Extend run history beyond backtest-first into paper and live-adjacent results
-- Deepen portfolio drill-ins: attribution, drawdown breakdown, trade-level analysis
-- Build portfolio comparison across multiple strategy runs
-- Surface ledger reconciliation in the web dashboard
-- Strengthen strategy lifecycle test coverage
+That means the roadmap should now prioritize workflow completion, operator trust, and product integration over more platform-sprawl.
 
 ---
 
@@ -112,190 +42,326 @@ Multi-run comparison, performance attribution, and strategy lifecycle management
 
 ### Complete
 
-- Core event pipeline (channel-based, backpressure, WAL durability)
-- Storage layer (JSONL/Parquet, tiered archival, catalog, export)
-- 10+ backfill providers with fallback chain
-- 90+ streaming sources with data quality monitoring
-- Backtesting engine with tick replay and fill models
-- Paper trading gateway with risk rules
-- **Brokerage gateway framework** with Alpaca, IB, and StockSharp adapters
-- Strategy SDK, lifecycle management, and portfolio tracking
-- Ledger infrastructure and double-entry accounting foundation
-- Direct lending module (PostgreSQL-backed services, workflows, API endpoints)
-- Security Master foundations (contracts, services, storage, F# domain)
-- Symbol search across 5 providers
-- Web dashboard serving all core workflows via REST API (300 route constants, 0 stubs)
-- Provider registration, DI composition, route coverage, and observability baseline
-- Deployment assets (Docker, k8s, systemd)
-- CppTrader integration (host management, order gateway, replay, ITCH ingestion)
+These are conservative "in code and materially usable" claims as of 2026-03-31:
+
+- Core ingestion pipeline: bounded channels, backpressure handling, WAL durability, composite sinks, and graceful shutdown
+- Storage foundation: JSONL and Parquet sinks, tiered storage, packaging, export, lineage, catalog, quota enforcement, and lifecycle policies
+- Broad provider baseline: streaming providers, historical providers, symbol search, fallback chains, and provider registration through DI
+- Data quality foundation: completeness, gap analysis, sequence checks, anomaly detection, freshness SLA monitoring, degradation scoring, and quality reporting
+- Backtesting foundation: native replay engine, Lean integration, strategy SDK, run storage, and export
+- Execution foundation: paper trading gateway, risk rules, order abstractions, brokerage gateway framework, and REST endpoints for account, orders, sessions, health, and promotion
+- Workstation contracts and read models: shared strategy-run, portfolio, ledger, reconciliation, and Security Master DTO surfaces
+- React workstation shell: routed Research, Trading, Data Operations, and Governance screens with shared bootstrap loading
+- WPF workstation baseline: broad page inventory plus run browser, run detail, portfolio, ledger, Security Master, and QuantScript surfaces
+- Governance foundations: ledger kernel, Security Master services, reconciliation DTOs and endpoints, direct-lending vertical slice, and export/reporting primitives
+- Improvement portfolio A-G and J: the active improvement tracker marks the historical platform-improvement set as complete
 
 ### Partial
 
-- Provider confidence: Polygon replay breadth, IB runtime, NYSE shared-lifecycle, and StockSharp breadth need validation depth
-- Backfill checkpoint reliability across longer runs and provider-specific edge cases
-- Parquet persistence is feature-complete but still needs shutdown-path and serialization hardening in `ParquetStorageSink`
-- Paper trading cockpit surfaces in the web UI (gateway and brokerage adapters are implemented; dashboard exposure is incomplete)
-- `Backtest → Paper` promotion workflow (read services exist; explicit lifecycle flow is not yet wired)
-- Portfolio drill-ins and multi-run comparison depth
-- Ledger reconciliation exposed through the web dashboard
-- Security Master productization (code foundations exist; Wave 6 delivers operator-facing surfaces — see [`docs/plans/security-master-productization-roadmap.md`](../plans/security-master-productization-roadmap.md))
-- Brokerage gateway live-order integration (adapters exist; live-validated runtime paths pending)
-- WPF desktop redevelopment is active again: the shell refresh is in flight and operator pages such as `MainPage`, `LiveDataViewerPage`, and `ProviderPage` are being modernized, but many workflow pages still retain significant code-behind orchestration and direct UI state sync
+These areas exist in code but are not yet complete enough to treat as finished operator workflows:
+
+- Provider confidence remains uneven. Polygon replay depth, IB runtime validation, NYSE lifecycle hardening, and StockSharp validated adapter breadth still need stronger evidence.
+- Backfill reliability is broadly implemented but still needs longer-run checkpoint validation and clearer operator trust signals across providers and date ranges.
+- The React workstation shell is real, but several screens still behave like summary-oriented shells over prefetched data rather than fully closed operator workflows.
+- The paper-trading cockpit exists as APIs plus a React trading screen, but end-to-end operator depth, live vendor validation, and session replay still need work.
+- Shared run, portfolio, ledger, fills, attribution, and reconciliation read paths exist, but cross-mode run history and comparison depth are not yet a finished product.
+- Security Master has real services and workstation models, but full downstream integration into governance, portfolio, ledger, and reconciliation workflows is still incomplete.
+- WPF workstation redevelopment is active, but the blueprint migration from page-dense navigation to workflow-first orchestration is still in progress.
 
 ### Planned
 
-- Full paper-trading cockpit via the web dashboard (wiring brokerage gateways into cockpit panels)
-- `Backtest → Paper → Live` promotion workflow with audit trail
-- Unified Backtest Studio across native and Lean engines
-- Strategy comparison and run-diff tooling
-- Live broker integration validation (brokerage gateway framework is in place; live-validated runtime paths remain)
+These are active productization tracks rather than greenfield invention:
 
-### Optional / Later
+- complete the web paper-trading cockpit and promotion UX on top of the existing execution and promotion endpoints
+- deepen run browser, comparison, portfolio drill-in, attribution, and ledger views around the shared run model
+- unify native and Lean backtesting into one Backtest Studio workflow
+- validate one or more brokerage adapters against live vendor surfaces with audit trail and human approval controls
+- finish Security Master and governance productization around reconciliation, multi-ledger views, cash-flow analysis, and report packs
+- continue the workstation migration so Research, Trading, Data Operations, and Governance feel like coherent workspaces rather than grouped pages
 
-- QuantScript runtime and editor
+### Optional
+
+These remain valuable but are not on the critical path to Meridian's core operator-ready product:
+
+- QuantScript deeper workflow integration and a larger script/sample library
 - L3 inference and queue-aware execution simulation
-- Governance: multi-ledger, trial balance, cash-flow, report packs
-- Multi-instance collector coordination and horizontal scale-out
-- Phase 16 assembly-level performance optimizations
-- Deeper WPF workstation coverage should continue after the current shell/page modernization wave and further MVVM extraction in workflow pages such as `BackfillPage`
-- WPF desktop app (code in `src/Meridian.Wpf/` - included in solution build, now actively redeveloping as the Windows-first workstation surface)
+- multi-instance coordination as a supported scale-out topology
+- Phase 16 assembly-level performance optimization
+- broader advanced research tooling after the core workstation workflows are operator-ready
 
 ---
 
-## Delivery Waves
+## What Is Complete
 
-### Wave 1: Provider reliability and data confidence *(active)*
+### Platform baseline
 
-The platform's downstream value depends on trustworthy data. Operator confidence in backtesting and execution results depends on provider correctness.
+- Meridian's ingestion and storage stack is no longer a major roadmap blocker.
+- The repo has a credible archival and replay platform, broad provider coverage, and strong observability and operational-readiness foundations.
+- The historical improvement backlog is effectively closed for the current baseline, which is a meaningful shift from earlier roadmap snapshots.
+
+### Execution and workflow foundations
+
+- The execution side now has more than infrastructure: account, positions, portfolio, orders, sessions, promotion, and lifecycle endpoints are already present.
+- Brokerage gateway abstractions and provider-specific adapters are in place, even if live validation remains incomplete.
+- Shared strategy-run contracts now give the project a stable seam for unifying backtest, paper, live-adjacent, portfolio, and governance surfaces.
+
+### Workstation and governance foundations
+
+- The four-workspace model is present in both planning and implementation.
+- The React dashboard already boots those workspaces from explicit workstation endpoints.
+- WPF already contains a broad set of pages and view models that map to the workstation direction.
+- Governance is no longer hypothetical: Security Master, reconciliation DTOs, ledger read paths, and direct lending are real foundations in the repo.
+
+---
+
+## What Remains
+
+### Critical path
+
+- finish provider-confidence validation so data trust is evidence-based, not assumed
+- complete the paper-trading cockpit in the web workstation with positions, orders, fills, risk, promotion, and replay depth that operators can actually use
+- extend the shared run model into a complete run-history and comparison workflow spanning backtest, paper, and live-adjacent modes
+- deepen portfolio, attribution, fills, ledger, and reconciliation drill-ins so they support iteration and audit, not just status summaries
+- validate at least one brokerage path against a real vendor surface with audit trail and human-approval controls
+
+### Next major productization layer
+
+- finish Security Master as a shared operator capability rather than a backend-only layer
+- connect governance surfaces across reconciliation, cash-flow, multi-ledger, and report-pack workflows
+- keep the workstation migration centered on orchestration services and shared read models instead of multiplying page-local logic
+
+### Later but still meaningful
+
+- deepen QuantScript integration into research workflows
+- turn multi-instance coordination into an explicitly supported topology
+- bring L3 inference and queue-aware execution simulation online once core strategy workflows are stable
+
+---
+
+## Opportunities
+
+### 1. Workflow completion
+
+**Gap:** Meridian now has many of the right contracts, services, and endpoints, but several operator journeys still end at a summary page or a partial handoff.
+
+**Value:** Closing those journeys produces the biggest visible product gain because the platform already has substantial depth underneath.
+
+**Unlocks:** Credible workstation demos, cleaner handoff from research to trading, and a much clearer definition of "operator-ready."
+
+**Placement:** Critical path.
+
+### 2. Operator UX
+
+**Gap:** The workstation shells exist, especially in the React dashboard, but some areas still read as bootstrap summaries more than fully operational tools.
+
+**Value:** Better drill-ins, actions, and workflow continuity will make Meridian feel like one system instead of multiple strong subsystems.
+
+**Unlocks:** Faster adoption of the four-workspace model and reduced need to context-switch between pages and APIs.
+
+**Placement:** Critical path.
+
+### 3. Provider readiness
+
+**Gap:** Provider breadth is impressive, but trust is still uneven where replay evidence or real-vendor validation is thin.
+
+**Value:** This directly affects confidence in backtests, paper sessions, and eventual live-readiness claims.
+
+**Unlocks:** Safer execution productization and clearer release gates.
+
+**Placement:** Critical path.
+
+### 4. Reliability and observability
+
+**Gap:** Most of the reliability mechanisms exist, but checkpoint confidence, provider evidence, and execution audit trail still need stronger closure.
+
+**Value:** Operator trust depends on proving that the system behaves correctly at restart, reconnect, replay, and promotion boundaries.
+
+**Unlocks:** Production-readiness claims that are evidence-backed rather than architectural.
+
+**Placement:** Critical path.
+
+### 5. Governance productization
+
+**Gap:** Governance has strong ingredients in code, but the finished operator experience across Security Master, reconciliation, multi-ledger, cash-flow, and reporting is not yet complete.
+
+**Value:** This is a flagship differentiator because it extends Meridian beyond strategy tooling into fund-operations workflow.
+
+**Unlocks:** A true front-, middle-, and back-office narrative built on shared platform seams.
+
+**Placement:** Later wave, but strategically high value.
+
+### 6. Architecture simplification
+
+**Gap:** The workstation migration risks re-creating page-level orchestration if workflow services and shared read models are not kept as the integration seam.
+
+**Value:** A cleaner seam now will make future workstation and governance work cheaper and safer.
+
+**Unlocks:** Faster iteration across web and WPF without duplicated behavior.
+
+**Placement:** Continuous supporting track.
+
+---
+
+## Target End Product
+
+When this roadmap is finished, Meridian is a workflow-centric trading workstation and fund-operations platform for a self-hosted operator.
+
+The operator can:
+
+- acquire and validate market data from multiple providers with visible confidence and quality signals
+- research strategies in one Backtest Studio that spans native and Lean-backed runs
+- promote a run into paper trading through an explicit, auditable workflow
+- operate paper and later live-adjacent trading from a real cockpit with orders, fills, positions, risk controls, and session history
+- inspect run history, portfolio state, attribution, fills, and ledger outcomes through one shared strategy-run model
+- resolve Security Master issues, reconciliation breaks, cash-flow questions, and reporting outputs inside the Governance workspace instead of using disconnected tools
+
+The major product surfaces are:
+
+- **Research** for datasets, experiments, backtests, comparisons, and export
+- **Trading** for orders, fills, positions, promotion, and risk-managed operation
+- **Data Operations** for providers, symbols, backfills, storage, and operational export
+- **Governance** for portfolio, ledger, reconciliation, Security Master, cash-flow, and governed reporting
+
+First-class capabilities in the finished product are:
+
+- data trust and provider validation
+- backtest to paper workflow continuity
+- shared run, portfolio, and ledger visibility
+- governance and auditability built on the same platform model
+
+Optional capabilities remain optional:
+
+- L3 inference and queue-aware simulation
+- multi-instance scale-out
+- deeper QuantScript libraries and advanced research extensions
+- assembly-level optimization beyond what the core product requires
+
+---
+
+## Recommended Next Waves
+
+### Wave 1: Provider confidence and trust closure
+
+**Why now:** This is still the main dependency for every downstream claim Meridian wants to make.
 
 **Focus:**
-- Polygon replay coverage across feeds and edge cases
-- IB runtime/bootstrap validation against real vendor surfaces
-- NYSE shared-lifecycle coverage
-- StockSharp connector examples and validated adapters
-- Backfill checkpoint reliability and gap detection
-- Parquet sink flush-path hardening and ADR-014 cleanup for L2 snapshot persistence
-- NYSE adapter transport hardening: `HttpClientFactory` alignment and cancellation-safe websocket send/resubscribe flows
 
-**Exit signal:** Every major provider has documented replay/runtime evidence and passes its validation suite.
+- expand Polygon replay and live-feed evidence
+- keep IB runtime validation aligned with current vendor surfaces
+- harden NYSE lifecycle and cancellation behavior
+- expand validated StockSharp adapter coverage
+- validate backfill checkpoints and gap handling across longer date ranges
 
----
+**Exit signal:** Every major provider has documented replay or runtime evidence and backfill reliability is validated across representative ranges.
 
-### Wave 2: Paper trading cockpit and promotion workflow
+### Wave 2: Web paper-trading cockpit completion
 
-The paper trading gateway and brokerage adapter framework both exist. The gap is making them visible and usable through the web dashboard with a clear path from backtest to paper.
+**Why now:** Meridian already has the execution, session, and promotion APIs. Product value now depends on finishing the operator cockpit.
 
 **Focus:**
-- Web dashboard: live positions, open orders, fills, P&L, risk state panels — wired to brokerage gateways
-- `Backtest → Paper` promotion: explicit lifecycle step, audit trail, safety gate
-- Paper session persistence and replay
-- Brokerage gateway integration into cockpit panels (Alpaca, IB, StockSharp adapters are implemented)
 
-**Exit signal:** A strategy can be researched in backtest and promoted to paper trading through one connected workflow in the web dashboard.
+- deepen the React trading workspace from summary shell to real operator cockpit
+- complete positions, orders, fills, P&L, risk, and promotion actions
+- add paper-session replay from persisted history
+- verify brokerage adapter behavior through the cockpit flows
 
----
+**Exit signal:** A strategy can move from backtest into a visible, auditable paper-trading workflow in the web workstation.
 
-### Wave 3: Portfolio and strategy tracking depth
+### Wave 3: Shared run model productization
 
-Strengthen the portfolio read models and multi-run comparison so strategy research produces durable, comparable results.
+**Why now:** The contracts exist, but the product experience around them is not yet fully realized.
 
 **Focus:**
-- Portfolio drill-ins: attribution, drawdown breakdown, trade-level analysis
-- Multi-run strategy comparison
-- Run history covering paper and live-adjacent results, not only backtest
-- Ledger reconciliation in the web dashboard
 
-**Exit signal:** Portfolio and strategy tracking are useful for iterative strategy development, not just single-run review.
+- complete run browser and run-detail depth across backtest, paper, and live-adjacent modes
+- strengthen comparison, attribution, fills, and equity-curve workflows
+- make portfolio and ledger drill-ins part of the same run-centered experience
 
----
+**Exit signal:** Strategy runs are Meridian's primary product object across research, trading, and governance.
 
 ### Wave 4: Backtest Studio unification
 
-Consolidate the native and Lean backtest experiences into one coherent workflow.
+**Why now:** Research remains split until native and Lean-backed workflows feel like one product.
 
 **Focus:**
-- Unified Backtest Studio spanning both engines
-- Strategy comparison and run-diff tooling
-- Broader fill model coverage
-- Backtest performance improvements for large historical windows
 
-**Exit signal:** Backtesting feels like one product whether using the native engine or Lean, with consistent result models.
+- unify native and Lean results under one result model
+- improve comparison and run-diff tooling
+- broaden fill-model realism
+- improve performance for larger windows where it materially changes operator experience
 
----
+**Exit signal:** Backtesting feels like one coherent workflow regardless of engine.
 
 ### Wave 5: Live integration readiness
 
-The brokerage gateway framework (`IBrokerageGateway`, `BaseBrokerageGateway`) and provider-specific adapters (Alpaca, IB, StockSharp) are now implemented. The remaining work is validating these adapters against live vendor surfaces and adding execution audit trail.
+**Why now:** Live-adjacent credibility should follow, not precede, a finished paper workflow and validated provider trust.
 
 **Focus:**
-- Validate brokerage gateway adapters against real vendor APIs (Alpaca, IB, StockSharp)
-- Add execution audit trail sufficient for live operations
-- Define operator controls (circuit breakers, position limits, manual overrides)
-- Wire `Paper → Live` promotion gate using the existing brokerage gateway framework
 
-**Exit signal:** At least one brokerage adapter is validated against a live vendor surface with audit trail.
+- validate at least one brokerage path against a real vendor surface
+- add execution audit trail and human approval controls
+- define safe `Paper -> Live` promotion gates
+- formalize operator controls such as manual overrides, circuit breakers, and intervention flows
 
----
+**Exit signal:** Meridian can support a controlled live-readiness story without overclaiming broad live-trading completion.
 
-### Wave 6: Security Master productization
+### Wave 6: Governance and Security Master productization
 
-Security Master has contracts, Postgres storage, F# domain models, and REST endpoints. Wave 6 turns it into an operator-visible platform layer that serves as the authoritative instrument-definition source across research, portfolio, governance, and ledger workflows.
-
-**Focus:**
-- Bond term richness: coupon, maturity, day-count, seniority fields in `SecurityEconomicDefinition`
-- Trading parameters: lot size, tick size, contract multiplier, margin requirement per instrument
-- Corporate action events: dividend, split, spin-off, merger events with backtest adjustment integration
-- Exchange bulk ingest: CSV and provider (Polygon) bulk-ingest path with idempotent dedup
-- Golden record conflict resolution: detect, store, and resolve field-level conflicts from multiple providers
-- WPF Security Master browser: `SecurityMasterPage` + `SecurityMasterViewModel` in the desktop app
-
-Full design: [`docs/plans/security-master-productization-roadmap.md`](../plans/security-master-productization-roadmap.md)
-
-**Exit signal:** Security Master is searchable in the web dashboard and WPF app, corporate actions adjust backtest prices, and multi-provider conflicts surface with a resolution workflow.
-
----
-
-### Optional Wave: Advanced research and scale
-
-Depth multipliers that require a stable platform foundation to deliver value.
+**Why now:** This is Meridian's strongest strategic expansion once the core run and execution flows are credible.
 
 **Focus:**
-- QuantScript runtime and editor
-- L3 inference and queue-aware simulation
-- Multi-instance collector scale-out
-- Phase 16 assembly-level performance work
 
-**Exit signal:** These tracks deepen the platform; they are not prerequisites for core operator value.
+- finish Security Master workflow integration across workstation, portfolio, ledger, and reconciliation reads
+- deepen reconciliation queues and resolution workflows
+- add multi-ledger, trial-balance, and cash-flow views
+- generate governed report packs from shared export and audit seams
+
+**Exit signal:** Governance is a genuine operator workflow, not just a set of strong backend foundations.
+
+### Optional wave: Advanced research and scale
+
+**Focus:**
+
+- QuantScript deeper integration
+- L3 inference and queue-aware execution simulation
+- multi-instance coordination
+- Phase 16 performance work
+
+**Exit signal:** These deepen Meridian's ceiling after the core workstation product is complete.
 
 ---
 
-## Risks
+## Risks and Dependencies
 
-- **Provider trust is a gating dependency.** Meridian should not overclaim operator readiness where replay/runtime evidence is still thin.
-- **Paper trading cockpit must be wired before Paper → Live work starts.** The gateway without a cockpit is incomplete operator tooling.
-- **Backfill reliability directly affects backtest quality.** Data gaps silently corrupt results — checkpoint and gap-detection hardening is not optional.
-- **Storage-path shutdown safety is part of data trust.** A flush failure in `ParquetStorageSink` weakens the same operator confidence that provider validation is meant to build.
-- **NYSE cancellation gaps weaken graceful shutdown and reconnect behavior.** Transport paths that ignore caller cancellation should be treated as active Wave 1 reliability debt.
-- **Test coverage must grow with the platform.** Strategy correctness, fill model edge cases, and provider adapters need explicit regression coverage.
+- **Provider trust is still the first dependency.** Without replay and runtime evidence, downstream product polish risks overstating readiness.
+- **Cockpit completion should precede live-readiness claims.** Meridian now has the APIs and adapters to make this tempting, but operator workflow depth still matters more than breadth.
+- **The shared run model must remain the center of gravity.** If backtest, paper, portfolio, ledger, and governance flows drift apart again, the workstation migration loses its product logic.
+- **Security Master must integrate through shared read models.** It should enrich portfolio, ledger, and governance flows rather than becoming its own parallel subsystem.
+- **Workstation delivery should avoid page-level duplication.** The right move is more orchestration and shared DTOs, not more disconnected UI logic.
+- **Governance should follow credible core workflows.** Its strategic value is high, but it lands best once strategy run, portfolio, and paper-trading seams are trustworthy.
 
 ---
 
-## Non-Assembly Release Gates
+## Release Gates
 
-Meridian can claim core-platform readiness when:
+Meridian can reasonably claim core operator-readiness when all of the following are true:
 
-1. Every major provider has documented replay/runtime validation evidence
-2. Paper trading is exposed as a full cockpit in the web dashboard
-3. The `Backtest → Paper` promotion workflow is explicit and auditable
-4. Portfolio and run history cover backtest, paper, and live-adjacent results through one consistent model
-5. Backfill checkpoint reliability is validated across providers and date ranges
+1. Major providers have replay or runtime validation evidence with documented confidence gaps closed or explicitly bounded.
+2. The web workstation exposes a complete paper-trading cockpit on top of the existing execution and promotion APIs.
+3. `Backtest -> Paper` is explicit, auditable, and operator-visible.
+4. Run history, portfolio, fills, attribution, and ledger views are connected through one shared run model across backtest and paper flows.
+5. Backfill checkpoints and data-gap handling are validated across representative providers and date ranges.
+
+Until then, Meridian is best described as feature-rich, structurally strong, and actively being productized into its intended workstation end state.
 
 ---
 
 ## Reference Documents
 
 - [`FEATURE_INVENTORY.md`](FEATURE_INVENTORY.md)
-- [`IMPROVEMENTS.md`](IMPROVEMENTS.md)
 - [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md)
+- [`IMPROVEMENTS.md`](IMPROVEMENTS.md)
 - [`EVALUATIONS_AND_AUDITS.md`](EVALUATIONS_AND_AUDITS.md)
+- [`../plans/trading-workstation-migration-blueprint.md`](../plans/trading-workstation-migration-blueprint.md)
+- [`../plans/governance-fund-ops-blueprint.md`](../plans/governance-fund-ops-blueprint.md)
 - [`../plans/assembly-performance-roadmap.md`](../plans/assembly-performance-roadmap.md)

@@ -199,9 +199,8 @@ public sealed class TickerStripViewModel : BindableBase, IDisposable
             });
         }
         catch (OperationCanceledException) { }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine($"[TickerStripViewModel] LoadSymbols error: {ex.Message}");
         }
     }
 
@@ -242,9 +241,8 @@ public sealed class TickerStripViewModel : BindableBase, IDisposable
         }
         catch (HttpRequestException) { }
         catch (JsonException) { }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine($"[TickerStripViewModel] Poll error for {symbol}: {ex.Message}");
         }
     }
 

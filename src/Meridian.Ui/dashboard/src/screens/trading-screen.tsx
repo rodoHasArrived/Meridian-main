@@ -1,4 +1,4 @@
-import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, Layers, PauseCircle, PlayCircle, PlusCircle, RadioTower, ShieldCheck, StopCircle, Trash2, Wallet, XCircle } from "lucide-react";
+import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, FastForward, Layers, PauseCircle, PlayCircle, PlusCircle, RadioTower, RotateCcw, ShieldCheck, StopCircle, Trash2, Wallet, XCircle } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -11,9 +11,9 @@ import {
   DialogTitle
 } from "@/components/ui/dialog";
 import { MetricCard } from "@/components/meridian/metric-card";
-import { cancelAllOrders, cancelOrder, closePosition, closePaperSession, createPaperSession, getExecutionSessions, pauseStrategy, stopStrategy, submitOrder } from "@/lib/api";
+import { approvePromotion, cancelAllOrders, cancelOrder, closePosition, closePaperSession, createPaperSession, evaluatePromotion, getExecutionSessions, getPaperSessionDetail, getPromotionHistory, getReplayFiles, getReplayStatus, pauseReplay, pauseStrategy, resumeReplay, seekReplay, setReplaySpeed, startReplay, stopReplay, stopStrategy, submitOrder } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import type { OrderSubmitRequest, PaperSessionSummary, TradingActionResult, TradingWorkspaceResponse } from "@/types";
+import type { OrderSubmitRequest, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, ReplayFileRecord, ReplayStatus, TradingActionResult, TradingWorkspaceResponse } from "@/types";
 
 interface TradingScreenProps {
   data: TradingWorkspaceResponse | null;
@@ -155,11 +155,38 @@ export function TradingScreen({ data }: TradingScreenProps) {
 
   // --- Strategy lifecycle ---
   const [strategyId, setStrategyId] = useState("");
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
+  const [sessionDetail, setSessionDetail] = useState<string | null>(null);
+
+  const [replayFiles, setReplayFiles] = useState<ReplayFileRecord[]>([]);
+  const [selectedReplayFile, setSelectedReplayFile] = useState("");
+  const [replayStatus, setReplayStatus] = useState<ReplayStatus | null>(null);
+  const [replayError, setReplayError] = useState<string | null>(null);
+  const [replaySpeed, setReplaySpeed] = useState("1");
+  const [seekMs, setSeekMs] = useState("0");
+
+  const [promotionRunId, setPromotionRunId] = useState("");
+  const [promotionEval, setPromotionEval] = useState<PromotionEvaluationResult | null>(null);
+  const [promotionHistory, setPromotionHistory] = useState<PromotionRecord[]>([]);
+  const [promotionError, setPromotionError] = useState<string | null>(null);
+  const [promotionBusy, setPromotionBusy] = useState(false);
+  const [promotionResult, setPromotionResult] = useState<string | null>(null);
 
   useEffect(() => {
     getExecutionSessions()
       .then(setSessions)
       .catch(() => { /* sessions unavailable — silently skip */ });
+    getReplayFiles()
+      .then((result) => {
+        setReplayFiles(result.files);
+        if (result.files.length > 0) {
+          setSelectedReplayFile(result.files[0].path);
+        }
+      })
+      .catch(() => { /* replay unavailable */ });
+    getPromotionHistory()
+      .then(setPromotionHistory)
+      .catch(() => { /* history unavailable */ });
   }, []);
 
   async function handleSubmitOrder(e: React.FormEvent) {
@@ -209,6 +236,80 @@ export function TradingScreen({ data }: TradingScreenProps) {
       setSessions((prev) => prev.map((s) => s.sessionId === sessionId ? { ...s, status: "Closed" } : s));
     } catch (err) {
       setSessionError(err instanceof Error ? err.message : "Failed to close session.");
+    }
+  }
+
+  async function handleRestoreSession(sessionId: string) {
+    setSessionError(null);
+    try {
+      const detail = await getPaperSessionDetail(sessionId);
+      setSelectedSessionId(sessionId);
+      setSessionDetail(`Restored ${detail.sessionId} · ${detail.strategyId} · ${detail.status}`);
+    } catch (err) {
+      setSessionError(err instanceof Error ? err.message : "Failed to restore session.");
+    }
+  }
+
+  async function handleStartReplay() {
+    if (!selectedReplayFile) return;
+    setReplayError(null);
+    try {
+      const started = await startReplay(selectedReplayFile, Number(replaySpeed) || 1);
+      const status = await getReplayStatus(started.sessionId);
+      setReplayStatus(status);
+    } catch (err) {
+      setReplayError(err instanceof Error ? err.message : "Failed to start replay.");
+    }
+  }
+
+  async function handleReplayControl(action: "pause" | "resume" | "stop" | "seek" | "speed") {
+    if (!replayStatus) return;
+    setReplayError(null);
+    try {
+      if (action === "pause") await pauseReplay(replayStatus.sessionId);
+      if (action === "resume") await resumeReplay(replayStatus.sessionId);
+      if (action === "stop") await stopReplay(replayStatus.sessionId);
+      if (action === "seek") await seekReplay(replayStatus.sessionId, Number(seekMs) || 0);
+      if (action === "speed") await setReplaySpeed(replayStatus.sessionId, Number(replaySpeed) || 1);
+      if (action === "stop") {
+        setReplayStatus(null);
+      } else {
+        const status = await getReplayStatus(replayStatus.sessionId);
+        setReplayStatus(status);
+      }
+    } catch (err) {
+      setReplayError(err instanceof Error ? err.message : "Replay action failed.");
+    }
+  }
+
+  async function handleEvaluatePromotion() {
+    if (!promotionRunId.trim()) return;
+    setPromotionBusy(true);
+    setPromotionError(null);
+    setPromotionResult(null);
+    try {
+      const evaluation = await evaluatePromotion(promotionRunId.trim());
+      setPromotionEval(evaluation);
+    } catch (err) {
+      setPromotionError(err instanceof Error ? err.message : "Evaluation failed.");
+    } finally {
+      setPromotionBusy(false);
+    }
+  }
+
+  async function handlePromoteToPaper() {
+    if (!promotionEval?.isEligible || !promotionRunId.trim()) return;
+    setPromotionBusy(true);
+    setPromotionError(null);
+    try {
+      const result = await approvePromotion(promotionRunId.trim(), "Approved from trading workstation promotion gate.");
+      setPromotionResult(result.success ? `Promoted. Promotion ID: ${result.promotionId ?? "n/a"}` : result.reason);
+      const history = await getPromotionHistory();
+      setPromotionHistory(history);
+    } catch (err) {
+      setPromotionError(err instanceof Error ? err.message : "Promotion approval failed.");
+    } finally {
+      setPromotionBusy(false);
     }
   }
 
@@ -667,19 +768,29 @@ export function TradingScreen({ data }: TradingScreenProps) {
                         {session.strategyId} · ${session.initialCash.toLocaleString()} · {session.status}
                       </div>
                     </div>
-                    {session.status !== "Closed" && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="ml-4 shrink-0"
-                        onClick={() => handleCloseSession(session.sessionId)}
-                      >
-                        Close
+                    <div className="ml-4 flex shrink-0 gap-2">
+                      <Button size="sm" variant="outline" onClick={() => handleRestoreSession(session.sessionId)}>
+                        Restore
                       </Button>
-                    )}
+                      {session.status !== "Closed" && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleCloseSession(session.sessionId)}
+                        >
+                          Close
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
+            )}
+            {selectedSessionId && (
+              <p className="mt-3 text-xs text-muted-foreground">Active session: {selectedSessionId}</p>
+            )}
+            {sessionDetail && (
+              <p className="mt-1 text-xs text-success">{sessionDetail}</p>
             )}
           </CardContent>
         </Card>
@@ -727,6 +838,81 @@ export function TradingScreen({ data }: TradingScreenProps) {
                 <StopCircle className="mr-2 h-4 w-4" />
                 Stop
               </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className="grid gap-4 xl:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <RotateCcw className="h-4 w-4 text-primary" />
+              Session replay controls
+            </CardTitle>
+            <CardDescription>Start and control replay for reconnect/resume validation.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <select
+              aria-label="Replay file"
+              value={selectedReplayFile}
+              onChange={(e) => setSelectedReplayFile(e.target.value)}
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+            >
+              {replayFiles.map((file) => (
+                <option key={file.path} value={file.path}>{file.name}</option>
+              ))}
+            </select>
+            <div className="flex gap-2">
+              <input aria-label="Replay speed" value={replaySpeed} onChange={(e) => setReplaySpeed(e.target.value)} className="w-28 rounded-lg border border-border bg-background px-2 py-1 text-sm" />
+              <Button size="sm" onClick={handleStartReplay} disabled={!selectedReplayFile}>Start</Button>
+              <Button size="sm" variant="outline" onClick={() => handleReplayControl("pause")} disabled={!replayStatus}><PauseCircle className="mr-2 h-4 w-4" />Pause</Button>
+              <Button size="sm" variant="outline" onClick={() => handleReplayControl("resume")} disabled={!replayStatus}><PlayCircle className="mr-2 h-4 w-4" />Resume</Button>
+              <Button size="sm" variant="outline" onClick={() => handleReplayControl("stop")} disabled={!replayStatus}><StopCircle className="mr-2 h-4 w-4" />Stop</Button>
+            </div>
+            <div className="flex gap-2">
+              <input aria-label="Seek ms" value={seekMs} onChange={(e) => setSeekMs(e.target.value)} className="w-32 rounded-lg border border-border bg-background px-2 py-1 text-sm" />
+              <Button size="sm" variant="outline" onClick={() => handleReplayControl("seek")} disabled={!replayStatus}>Seek</Button>
+              <Button size="sm" variant="outline" onClick={() => handleReplayControl("speed")} disabled={!replayStatus}><FastForward className="mr-2 h-4 w-4" />Apply speed</Button>
+            </div>
+            {replayStatus && <p className="text-xs text-muted-foreground">Replay {replayStatus.status} · {replayStatus.eventsProcessed}/{replayStatus.totalEvents} ({replayStatus.progressPercent}%)</p>}
+            {replayError && <p className="text-xs text-destructive">{replayError}</p>}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Backtest → Paper promotion gate</CardTitle>
+            <CardDescription>Requires eligibility check before confirmation and audit refresh.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <input
+              aria-label="Run id"
+              placeholder="backtest run id"
+              value={promotionRunId}
+              onChange={(e) => setPromotionRunId(e.target.value)}
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm"
+            />
+            <div className="flex gap-2">
+              <Button size="sm" variant="outline" onClick={handleEvaluatePromotion} disabled={promotionBusy || !promotionRunId.trim()}>Evaluate gate checks</Button>
+              <Button size="sm" onClick={handlePromoteToPaper} disabled={promotionBusy || !promotionEval?.isEligible}>Confirm promote</Button>
+            </div>
+            {promotionEval && (
+              <div className="rounded-lg border border-border/60 p-3 text-xs">
+                <p>Eligible: {promotionEval.isEligible ? "Yes" : "No"}</p>
+                <p>Sharpe: {promotionEval.sharpeRatio} · Max DD: {promotionEval.maxDrawdownPercent}% · Return: {promotionEval.totalReturn}%</p>
+                <p>{promotionEval.reason}</p>
+              </div>
+            )}
+            {promotionResult && <p className="text-xs text-success">{promotionResult}</p>}
+            {promotionError && <p className="text-xs text-destructive">{promotionError}</p>}
+            <div className="rounded-lg border border-border/60 p-3">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Audit trail</p>
+              <ul className="space-y-1 text-xs">
+                {promotionHistory.slice(0, 4).map((record) => (
+                  <li key={record.promotionId} className="font-mono">{record.promotedAt} · {record.strategyId} · {record.sourceRunType}→{record.targetRunType}</li>
+                ))}
+              </ul>
             </div>
           </CardContent>
         </Card>

@@ -54,6 +54,10 @@ public sealed class BacktestEngine(
         logger.LogInformation("Universe contains {Count} symbols: {Symbols}",
             universe.Count, universe.Count == 0 ? "(asset-event-only run)" : string.Join(", ", universe.Take(10)) + (universe.Count > 10 ? "…" : string.Empty));
 
+        // 1b. Pre-flight Security Master validation — resolve all universe symbols before the
+        //     event loop begins so bad symbol lists surface immediately.
+        await PreResolveUniverseAsync(universe, request, ct).ConfigureAwait(false);
+
         // 2. Resolve per-symbol tick sizes from Security Master (best-effort; missing symbols are silently skipped).
         var tickSizes = await ResolveTickSizesAsync(universe, request.To.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), ct)
             .ConfigureAwait(false);
@@ -66,7 +70,7 @@ public sealed class BacktestEngine(
         var portfolio = new SimulatedPortfolio(accounts, request.DefaultBrokerageAccountId, commissionModel, ledger, startTimestamp);
         var ctx = new BacktestContext(portfolio, universe, ledger, request.DefaultBrokerageAccountId);
         var orderBookFillModel = new OrderBookFillModel(commissionModel, tickSizes);
-        var barFillModel = new BarMidpointFillModel(commissionModel, request.SlippageBasisPoints, spreadAware: true, tickSizes);
+        var barFillModel = new BarMidpointFillModel(commissionModel, request.SlippageBasisPoints, spreadAware: true, tickSizes: tickSizes, maxParticipationRate: request.MaxParticipationRate);
         var marketImpactFillModel = new MarketImpactFillModel(commissionModel, request.MarketImpactCoefficient, request.SlippageBasisPoints);
 
         var pendingOrders = new List<Order>();
@@ -597,6 +601,63 @@ public sealed class BacktestEngine(
             : $" related symbol {assetEvent.RelatedSymbol}.";
 
         return $"{assetEvent.EventType} on {assetEvent.Symbol}: {assetEvent.UnitsImpacted} units impacted at {assetEvent.CashPerShare:F4} cash/share.{related}";
+    }
+
+    /// <summary>
+    /// Pre-flight check: resolves every symbol in the universe against the Security Master
+    /// before the event loop starts.  When a symbol is absent and
+    /// <see cref="BacktestRequest.FailOnUnknownSymbols"/> is <see langword="true"/>, throws
+    /// so the caller gets a clear error before wasting time on a long replay.
+    /// When <see langword="false"/> (default), logs a warning and continues.
+    /// </summary>
+    private async Task PreResolveUniverseAsync(
+        IReadOnlySet<string> universe,
+        BacktestRequest request,
+        CancellationToken ct)
+    {
+        if (securityMasterQueryService is null || universe.Count == 0)
+            return;
+
+        var missing = new List<string>();
+
+        foreach (var symbol in universe)
+        {
+            ct.ThrowIfCancellationRequested();
+            try
+            {
+                var detail = await securityMasterQueryService.GetByIdentifierAsync(
+                    SecurityIdentifierKind.Ticker, symbol, provider: null, ct).ConfigureAwait(false);
+
+                if (detail is null)
+                {
+                    missing.Add(symbol);
+                    logger.LogWarning(
+                        "Backtest symbol {Symbol} is not registered in the Security Master. " +
+                        "Price adjustments and tick-size resolution will be unavailable for this symbol.",
+                        symbol);
+                }
+                else if (detail.Status == SecurityStatusDto.Inactive)
+                {
+                    logger.LogWarning(
+                        "Backtest symbol {Symbol} (SecurityId={SecurityId}) is marked Inactive in the Security Master. " +
+                        "It may represent a delisted or renamed instrument.",
+                        symbol, detail.SecurityId);
+                }
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                logger.LogWarning(ex,
+                    "Security Master lookup for symbol {Symbol} failed during pre-flight; continuing.", symbol);
+            }
+        }
+
+        if (missing.Count > 0 && request.FailOnUnknownSymbols)
+        {
+            throw new InvalidOperationException(
+                $"Backtest aborted: {missing.Count} symbol(s) not found in the Security Master " +
+                $"and FailOnUnknownSymbols=true. Missing: {string.Join(", ", missing)}. " +
+                "Import the securities via POST /api/security-master/import or set FailOnUnknownSymbols=false to warn and continue.");
+        }
     }
 
     /// <summary>

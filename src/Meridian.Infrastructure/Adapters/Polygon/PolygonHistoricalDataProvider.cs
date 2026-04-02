@@ -23,24 +23,28 @@ namespace Meridian.Infrastructure.Adapters.Polygon;
 /// - Rate limit tracking with IRateLimitAwareProvider
 /// - Centralized error handling
 /// </summary>
+[DataSource("polygon", "Polygon.io", DataSourceType.Historical, DataSourceCategory.Aggregator,
+    Priority = 12, Description = "High-quality OHLCV aggregates for US equities, options, forex, and crypto")]
 [ImplementsAdr("ADR-001", "Polygon.io historical data provider implementation")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
+[ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
+[RequiresCredential("POLYGON_API_KEY",
+    EnvironmentVariables = new[] { "POLYGON_API_KEY", "POLYGON__APIKEY" },
+    DisplayName = "API Key",
+    Description = "Polygon.io API key from https://polygon.io/dashboard/api-keys")]
 public sealed class PolygonHistoricalDataProvider : BaseHistoricalDataProvider
 {
     private const string BaseUrl = "https://api.polygon.io";
 
     private readonly string? _apiKey;
 
-    #region Abstract Property Implementations
 
     public override string Name => "polygon";
     public override string DisplayName => "Polygon.io (free tier)";
     public override string Description => "High-quality OHLCV aggregates for US equities with 2-year history on free tier.";
     protected override string HttpClientName => HttpClientNames.PolygonHistorical;
 
-    #endregion
 
-    #region Virtual Property Overrides
 
     public override int Priority => 12;
     public override TimeSpan RateLimitDelay => TimeSpan.FromSeconds(12); // 5 requests/minute = 12 seconds between requests
@@ -55,7 +59,6 @@ public sealed class PolygonHistoricalDataProvider : BaseHistoricalDataProvider
         Intraday = true
     };
 
-    #endregion
 
     public PolygonHistoricalDataProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null)
         : base(httpClient, log)
@@ -76,6 +79,8 @@ public sealed class PolygonHistoricalDataProvider : BaseHistoricalDataProvider
 
         try
         {
+            await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
+
             // Quick health check with ticker details endpoint
             var url = $"{BaseUrl}/v3/reference/tickers/AAPL?apiKey={_apiKey}";
             using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
@@ -361,7 +366,6 @@ public sealed class PolygonHistoricalDataProvider : BaseHistoricalDataProvider
         }
     }
 
-    #region Helper Methods
 
     protected override string NormalizeSymbol(string symbol)
     {
@@ -400,9 +404,7 @@ public sealed class PolygonHistoricalDataProvider : BaseHistoricalDataProvider
         };
     }
 
-    #endregion
 
-    #region Polygon API Models
 
     private sealed class PolygonAggregatesResponse
     {
@@ -524,5 +526,4 @@ public sealed class PolygonHistoricalDataProvider : BaseHistoricalDataProvider
         public string? Ticker { get; set; }
     }
 
-    #endregion
 }

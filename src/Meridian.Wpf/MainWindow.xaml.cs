@@ -30,23 +30,13 @@ namespace Meridian.Wpf;
 /// </summary>
 public partial class MainWindow : Window
 {
-    private readonly IConnectionService _connectionService;
+    private readonly MainWindowViewModel _viewModel;
     private readonly WpfServices.NavigationService _navigationService;
     private readonly WpfServices.KeyboardShortcutService _keyboardShortcutService;
     private readonly WpfServices.NotificationService _notificationService;
-    private readonly WpfServices.MessagingService _messagingService;
-    private readonly WpfServices.ThemeService _themeService;
     private readonly OnboardingTourService _tourService;
     private readonly AlertService _alertService;
     private readonly WpfServices.WorkspaceService _workspaceService;
-    private readonly FixtureModeDetector _fixtureModeDetector;
-
-    // Clipboard watcher state
-    private DispatcherTimer? _clipboardBannerTimer;
-    private IReadOnlyList<string> _pendingClipboardSymbols = [];
-
-    // Status bar view model (lifetime tied to window)
-    private StatusBarViewModel? _statusBarVM;
 
     private static readonly string WindowStateFilePath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -54,33 +44,21 @@ public partial class MainWindow : Window
         "window-state.json");
 
     public MainWindow(
+        MainWindowViewModel viewModel,
         WpfServices.NavigationService navigationService,
-        WpfServices.ConnectionService connectionService,
         WpfServices.KeyboardShortcutService keyboardShortcutService,
-        WpfServices.NotificationService notificationService,
-        WpfServices.MessagingService messagingService,
-        WpfServices.ThemeService themeService)
+        WpfServices.NotificationService notificationService)
     {
         InitializeComponent();
 
+        _viewModel = viewModel;
         _navigationService = navigationService;
-        _connectionService = connectionService;
         _keyboardShortcutService = keyboardShortcutService;
         _notificationService = notificationService;
-        _messagingService = messagingService;
-        _themeService = themeService;
         _tourService = OnboardingTourService.Instance;
         _alertService = AlertService.Instance;
         _workspaceService = WpfServices.WorkspaceService.Instance;
-        _fixtureModeDetector = FixtureModeDetector.Instance;
-
-        // Create status bar view model with injected services
-        var statusService = App.Services.GetRequiredService<IStatusService>();
-        _statusBarVM = new StatusBarViewModel(statusService, _notificationService);
-
-        // Subscribe to fixture/offline mode changes
-        _fixtureModeDetector.ModeChanged += OnFixtureModeChanged;
-        UpdateFixtureModeBanner();
+        DataContext = _viewModel;
 
         // Subscribe to keyboard shortcuts
         _keyboardShortcutService.ShortcutInvoked += OnShortcutInvoked;
@@ -122,11 +100,8 @@ public partial class MainWindow : Window
         // Initialize keyboard shortcuts
         _keyboardShortcutService.Initialize(this);
 
-        // Set up window DataContext to expose StatusBar property
-        DataContext = new MainWindowContext { StatusBar = _statusBarVM };
-
         // Start status bar update loop
-        _ = _statusBarVM?.StartAsync();
+        _ = _viewModel.StartAsync();
 
         // Register clipboard watcher using this window's HWND (must be called after Loaded)
         var hwnd = new WindowInteropHelper(this).Handle;
@@ -155,26 +130,23 @@ public partial class MainWindow : Window
         // Save workspace session state for next launch
         SaveWorkspaceSession();
 
-        // Dispose status bar view model
-        _statusBarVM?.Dispose();
-
         // Unsubscribe from all events to prevent memory leaks
         _keyboardShortcutService.ShortcutInvoked -= OnShortcutInvoked;
         _notificationService.NotificationReceived -= OnNotificationReceived;
         _tourService.StepChanged -= OnTourStepChanged;
         _tourService.TourCompleted -= OnTourCompleted;
         _alertService.AlertRaised -= OnAlertRaised;
-        _fixtureModeDetector.ModeChanged -= OnFixtureModeChanged;
         WpfServices.SingleInstanceService.Instance.LaunchArgsReceived -= OnLaunchArgsReceived;
 
         // Clipboard watcher cleanup
         ClipboardWatcherService.Instance.SymbolsDetected -= OnSymbolsDetected;
-        _clipboardBannerTimer?.Stop();
         ClipboardWatcherService.Instance.Dispose();
 
         // Shutdown global hotkeys to free Win32 registrations immediately.
         GlobalHotkeyService.Instance.GlobalHotkeyFired -= OnGlobalHotkeyFired;
         GlobalHotkeyService.Instance.Shutdown();
+
+        _viewModel.Dispose();
     }
 
     private void OnRootFrameNavigated(object sender, SysNavigation.NavigationEventArgs e)
@@ -218,11 +190,11 @@ public partial class MainWindow : Window
                 break;
 
             case "PauseResumeCollector":
-                _messagingService.Send("PauseResumeCollector");
+                _viewModel.HandleShortcut("PauseResumeCollector");
                 break;
 
             case "ToggleTickerStrip":
-                _messagingService.Send("ToggleTickerStrip");
+                _viewModel.HandleShortcut("ToggleTickerStrip");
                 break;
         }
     }
@@ -235,92 +207,13 @@ public partial class MainWindow : Window
 
     private void OnShortcutInvoked(object? sender, ShortcutInvokedEventArgs e)
     {
-        // Handle global shortcuts using NavigationService for consistent routing
-        switch (e.ActionId)
+        if (e.ActionId == "QuickCommand")
         {
-            // Navigation shortcuts
-            case "NavigateDashboard":
-                _navigationService.NavigateTo("Dashboard");
-                break;
-            case "NavigateSymbols":
-                _navigationService.NavigateTo("Symbols");
-                break;
-            case "NavigateBackfill":
-                _navigationService.NavigateTo("Backfill");
-                break;
-            case "NavigateSettings":
-                _navigationService.NavigateTo("Settings");
-                break;
-
-            // Collector control shortcuts
-            case "StartCollector":
-                _ = StartCollectorAsync();
-                break;
-            case "StopCollector":
-                _ = StopCollectorAsync();
-                break;
-
-            // Backfill shortcuts
-            case "RunBackfill":
-                _navigationService.NavigateTo("Backfill");
-                break;
-            case "PauseBackfill":
-                // Send message to BackfillPage when active
-                _messagingService.Send("PauseBackfill");
-                break;
-            case "CancelBackfill":
-                // Send message to BackfillPage when active
-                _messagingService.Send("CancelBackfill");
-                break;
-
-            // Symbol shortcuts
-            case "AddSymbol":
-                _navigationService.NavigateTo("Symbols");
-                _messagingService.Send("AddSymbol");
-                break;
-            case "SearchSymbols":
-                // Focus search box in current page
-                _messagingService.Send("FocusSearch");
-                break;
-            case "DeleteSelected":
-                // Send delete message to current page
-                _messagingService.Send("DeleteSelected");
-                break;
-            case "SelectAll":
-                // Send select all message to current page
-                _messagingService.Send("SelectAll");
-                break;
-
-            // View shortcuts
-            case "ToggleTheme":
-                _themeService.ToggleTheme();
-                break;
-            case "ViewLogs":
-                _navigationService.NavigateTo("ServiceManager");
-                break;
-            case "RefreshStatus":
-                // Send refresh message to current page
-                _messagingService.Send("RefreshStatus");
-                break;
-            case "ZoomIn":
-                _messagingService.Send("ZoomIn");
-                break;
-            case "ZoomOut":
-                _messagingService.Send("ZoomOut");
-                break;
-
-            // General shortcuts
-            case "Save":
-                // Send save message to current page
-                _messagingService.Send("Save");
-                break;
-            case "Help":
-                _navigationService.NavigateTo("Help");
-                break;
-            case "QuickCommand":
-                ShowCommandPalette();
-                break;
+            ShowCommandPalette();
+            return;
         }
+
+        _viewModel.HandleShortcut(e.ActionId);
     }
 
     /// <summary>
@@ -352,137 +245,16 @@ public partial class MainWindow : Window
         switch (e.Category)
         {
             case PaletteCommandCategory.Navigation:
-                _navigationService.NavigateTo(e.ActionId);
+                _viewModel.NavigateCommand.Execute(e.ActionId);
                 break;
 
             case PaletteCommandCategory.Action:
-                HandlePaletteAction(e.ActionId);
+                _viewModel.HandlePaletteAction(e.ActionId);
                 break;
         }
     }
 
-    private void HandlePaletteAction(string actionId)
-    {
-        switch (actionId)
-        {
-            case "StartCollector":
-                _ = StartCollectorAsync();
-                break;
-            case "StopCollector":
-                _ = StopCollectorAsync();
-                break;
-            case "RunBackfill":
-                _navigationService.NavigateTo("Backfill");
-                break;
-            case "RefreshStatus":
-                _messagingService.Send("RefreshStatus");
-                break;
-            case "AddSymbol":
-                _navigationService.NavigateTo("Symbols");
-                _messagingService.Send("AddSymbol");
-                break;
-            case "ToggleTheme":
-                _themeService.ToggleTheme();
-                break;
-            case "Save":
-                _messagingService.Send("Save");
-                break;
-            case "SearchSymbols":
-                _messagingService.Send("FocusSearch");
-                break;
-        }
-    }
-
-    /// <summary>
-    /// Starts the data collector service via keyboard shortcut.
-    /// </summary>
-    private async Task StartCollectorAsync(CancellationToken ct = default)
-    {
-        try
-        {
-            var provider = _connectionService.CurrentProvider;
-            if (string.IsNullOrEmpty(provider))
-            {
-                provider = "default";
-            }
-
-            var success = await _connectionService.ConnectAsync(provider);
-            if (success)
-            {
-                _notificationService.ShowNotification(
-                    "Collector Started",
-                    "Data collection has started successfully.",
-                    NotificationType.Success,
-                    5000);
-            }
-            else
-            {
-                _notificationService.ShowNotification(
-                    "Start Failed",
-                    "Failed to start the data collector. Check service connection.",
-                    NotificationType.Error,
-                    0);
-            }
-        }
-        catch (Exception ex)
-        {
-            _notificationService.ShowNotification(
-                "Start Error",
-                $"Error starting collector: {ex.Message}",
-                NotificationType.Error,
-                0);
-        }
-    }
-
-    /// <summary>
-    /// Stops the data collector service via keyboard shortcut.
-    /// </summary>
-    private async Task StopCollectorAsync(CancellationToken ct = default)
-    {
-        try
-        {
-            await _connectionService.DisconnectAsync();
-            _notificationService.ShowNotification(
-                "Collector Stopped",
-                "Data collection has been stopped.",
-                NotificationType.Warning,
-                5000);
-        }
-        catch (Exception ex)
-        {
-            _notificationService.ShowNotification(
-                "Stop Error",
-                $"Error stopping collector: {ex.Message}",
-                NotificationType.Error,
-                0);
-        }
-    }
-
-    private void OnLaunchArgsReceived(object? sender, string[] args) => HandleLaunchArgs(args);
-
-    /// <summary>
-    /// Handles launch arguments forwarded from a secondary instance via the single-instance
-    /// named pipe (e.g. when the user clicks a taskbar jump list item while the app is
-    /// already running). Always called on the UI thread.
-    /// </summary>
-    private void HandleLaunchArgs(string[] args)
-    {
-        if (args.Length == 0) return;
-
-        foreach (var arg in args)
-        {
-            if (arg.StartsWith("--page=", StringComparison.OrdinalIgnoreCase))
-            {
-                var pageTag = arg["--page=".Length..];
-                if (!string.IsNullOrWhiteSpace(pageTag))
-                    _ = _navigationService.NavigateTo(pageTag);
-            }
-            else if (arg.Equals("--start-collector", StringComparison.OrdinalIgnoreCase))
-            {
-                _ = StartCollectorAsync();
-            }
-        }
-    }
+    private void OnLaunchArgsReceived(object? sender, string[] args) => _viewModel.HandleLaunchArgs(args);
 
     private void OnNotificationReceived(object? sender, NotificationEventArgs e)
     {
@@ -490,7 +262,6 @@ public partial class MainWindow : Window
         // For now, notifications are handled by the NotificationService
     }
 
-    #region Clipboard Symbol Watcher
 
     private void OnSymbolsDetected(object? sender, SymbolsDetectedEventArgs e)
     {
@@ -498,143 +269,10 @@ public partial class MainWindow : Window
         // interrupting the user's work in other applications.
         if (!IsActive) return;
 
-        _pendingClipboardSymbols = e.Symbols;
-
-        var symbolList = string.Join(", ", e.Symbols);
-        var count = e.Symbols.Count;
-        ClipboardBannerText.Text = count == 1
-            ? $"Symbol detected in clipboard: {symbolList} — Add to Watchlist?"
-            : $"{count} symbols detected in clipboard: {symbolList} — Add to Watchlist?";
-
-        ClipboardSymbolBanner.Visibility = Visibility.Visible;
-
-        // Restart the auto-dismiss timer on every new detection
-        if (_clipboardBannerTimer is null)
-        {
-            _clipboardBannerTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(8) };
-            _clipboardBannerTimer.Tick += (_, _) => HideClipboardBanner();
-        }
-
-        _clipboardBannerTimer.Stop();
-        _clipboardBannerTimer.Start();
+        _viewModel.ShowClipboardSymbols(e.Symbols);
     }
 
-    private void ClipboardAdd_Click(object sender, RoutedEventArgs e)
-    {
-        var symbols = _pendingClipboardSymbols;
-        HideClipboardBanner();
 
-        if (symbols.Count == 0) return;
-        _ = AddSymbolsToWatchlistAsync(symbols);
-    }
-
-    private void ClipboardDismiss_Click(object sender, RoutedEventArgs e)
-    {
-        HideClipboardBanner();
-    }
-
-    private void HideClipboardBanner()
-    {
-        _clipboardBannerTimer?.Stop();
-        ClipboardSymbolBanner.Visibility = Visibility.Collapsed;
-        _pendingClipboardSymbols = [];
-    }
-
-    private async Task AddSymbolsToWatchlistAsync(IReadOnlyList<string> symbols)
-    {
-        try
-        {
-            var watchlistService = WpfServices.WatchlistService.Instance;
-            var watchlists = await watchlistService.GetAllWatchlistsAsync();
-
-            int added;
-            string targetName;
-
-            if (watchlists.Count > 0)
-            {
-                // Add to the first (highest-priority) watchlist
-                var target = watchlists[0];
-                added = await watchlistService.AddSymbolsAsync(target.Id, symbols);
-                targetName = target.Name;
-            }
-            else
-            {
-                // No watchlist yet — create a default one containing these symbols
-                var created = await watchlistService.CreateWatchlistAsync("My Watchlist", symbols);
-                added = symbols.Count;
-                targetName = created.Name;
-            }
-
-            var symbolList = string.Join(", ", symbols);
-            _notificationService.ShowNotification(
-                "Watchlist Updated",
-                added > 0
-                    ? $"Added {added} symbol(s) to \"{targetName}\": {symbolList}"
-                    : $"All symbols already in \"{targetName}\".",
-                added > 0 ? NotificationType.Success : NotificationType.Info,
-                5000);
-
-            // Navigate to the watchlist so the user sees the result
-            _navigationService.NavigateTo("Watchlist");
-        }
-        catch (Exception ex)
-        {
-            _notificationService.ShowNotification(
-                "Watchlist Error",
-                $"Could not add symbols: {ex.Message}",
-                NotificationType.Error,
-                0);
-        }
-    }
-
-    #endregion
-
-    #region Fixture/Offline Mode Banner
-
-    private void OnFixtureModeChanged(object? sender, EventArgs e)
-    {
-        if (!Dispatcher.CheckAccess())
-        {
-            // InvokeAsync is non-blocking — background thread is not stalled waiting for UI [P2]
-            _ = Dispatcher.InvokeAsync(() =>
-            {
-                try
-                {
-                    OnFixtureModeChanged(sender, e);
-                }
-                catch (Exception ex)
-                {
-                    _notificationService.ShowNotification("UI Error", $"Failed to update fixture mode UI: {ex.Message}", NotificationType.Error);
-                }
-            });
-            return;
-        }
-
-        UpdateFixtureModeBanner();
-    }
-
-    private void UpdateFixtureModeBanner()
-    {
-        if (_fixtureModeDetector.IsNonLiveMode)
-        {
-            FixtureModeBanner.Visibility = Visibility.Visible;
-            FixtureModeText.Text = _fixtureModeDetector.ModeLabel;
-
-            var color = _fixtureModeDetector.IsFixtureMode
-                ? System.Windows.Media.Color.FromRgb(0xFF, 0xB3, 0x00) // Amber for fixture
-                : System.Windows.Media.Color.FromRgb(0xF4, 0x43, 0x36); // Red for offline
-
-            FixtureModeBanner.Background = new System.Windows.Media.SolidColorBrush(color);
-        }
-        else
-        {
-            FixtureModeBanner.Visibility = Visibility.Collapsed;
-        }
-    }
-
-    #endregion
-
-    #region Onboarding Tour Overlay
 
     private void OnTourStepChanged(object? sender, TourStepEventArgs e)
     {
@@ -701,9 +339,7 @@ public partial class MainWindow : Window
         // Auto-advance via messaging: pages can listen for "TourNext" / "TourDismiss"
     }
 
-    #endregion
 
-    #region Alert Remediation
 
     private void OnAlertRaised(object? sender, AlertEventArgs e)
     {
@@ -755,7 +391,7 @@ public partial class MainWindow : Window
             // Auto-execute the first remediation step if it has a navigation target
             if (firstStep?.NavigationTarget != null)
             {
-                ExecuteRemediationStep(firstStep);
+                _viewModel.ExecuteRemediationStep(firstStep);
             }
         }
         else
@@ -769,90 +405,8 @@ public partial class MainWindow : Window
     }
 
     /// <summary>
-    /// Executes a remediation step by navigating to the target page and/or
-    /// dispatching an action command via the messaging service.
-    /// </summary>
-    private void ExecuteRemediationStep(RemediationStep step)
-    {
-        // Navigate to the relevant page if specified
-        if (!string.IsNullOrEmpty(step.NavigationTarget))
-        {
-            _navigationService.NavigateTo(step.NavigationTarget);
-        }
-
-        // Dispatch the action via messaging if specified
-        if (!string.IsNullOrEmpty(step.ActionId))
-        {
-            switch (step.ActionId)
-            {
-                case "TestConnectivity":
-                    _messagingService.Send("TestConnectivity");
-                    break;
-                case "TestConnection":
-                    _ = TestConnectionAsync();
-                    break;
-                case "RunBackfill":
-                    _messagingService.Send("RunBackfill");
-                    break;
-                case "RunMigration":
-                    _messagingService.Send("RunMigration");
-                    break;
-                case "ValidateData":
-                    _messagingService.Send("ValidateData");
-                    break;
-                default:
-                    // Forward unknown actions as messaging commands
-                    _messagingService.Send(step.ActionId);
-                    break;
-            }
-        }
-    }
-
-    /// <summary>
-    /// Tests the current provider connection as a remediation action.
-    /// </summary>
-    private async Task TestConnectionAsync(CancellationToken ct = default)
-    {
-        try
-        {
-            var provider = _connectionService.CurrentProvider ?? "default";
-            var success = await _connectionService.ConnectAsync(provider);
-
-            _notificationService.ShowNotification(
-                success ? "Connection Restored" : "Connection Failed",
-                success
-                    ? $"Successfully reconnected to {provider}."
-                    : $"Could not reconnect to {provider}. Check credentials in Settings.",
-                success ? NotificationType.Success : NotificationType.Error,
-                5000);
-
-            if (success)
-            {
-                // Resolve connection alerts when reconnection succeeds
-                foreach (var alert in _alertService.GetActiveAlerts()
-                    .Where(a => a.Category is "Connection" or "Provider"))
-                {
-                    _alertService.ResolveAlert(alert.Id);
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            _notificationService.ShowNotification(
-                "Connection Test Error",
-                $"Error testing connection: {ex.Message}",
-                NotificationType.Error,
-                0);
-        }
-    }
-
-    #endregion
-
-    #region Workspace Session Persistence
-
-    /// <summary>
-    /// Restores the last workspace session state (active workspace, last page, etc.)
-    /// </summary>
+     /// Restores the last workspace session state (active workspace, last page, etc.)
+     /// </summary>
     private async Task RestoreWorkspaceSessionAsync(CancellationToken ct = default)
     {
         try
@@ -879,9 +433,8 @@ public partial class MainWindow : Window
                 }
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine($"[MainWindow] Failed to restore workspace session: {ex.Message}");
         }
     }
 
@@ -919,15 +472,12 @@ public partial class MainWindow : Window
             // Fire-and-forget since we're closing
             _ = _workspaceService.SaveSessionStateAsync(session);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine($"[MainWindow] Failed to save workspace session: {ex.Message}");
         }
     }
 
-    #endregion
 
-    #region Window State Persistence
 
     /// <summary>
     /// Saves the current window position, size, and state to disk.
@@ -959,9 +509,8 @@ public partial class MainWindow : Window
 
             await File.WriteAllTextAsync(WindowStateFilePath, json).ConfigureAwait(false);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine($"[MainWindow] Failed to save window state: {ex.Message}");
         }
     }
 
@@ -1005,9 +554,8 @@ public partial class MainWindow : Window
                 WindowState = WindowState.Maximized;
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine($"[MainWindow] Failed to restore window state: {ex.Message}");
         }
     }
 
@@ -1112,9 +660,7 @@ public partial class MainWindow : Window
     [JsonSerializable(typeof(PersistedWindowState))]
     private sealed partial class WindowStateJsonContext : JsonSerializerContext;
 
-    #endregion
 
-    #region Drag-and-Drop file import
 
     private void OnRootFrameDragEnter(object sender, DragEventArgs e)
     {
@@ -1188,20 +734,10 @@ public partial class MainWindow : Window
 
             _navigationService.NavigateTo(pageKey, filePath);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine($"[MainWindow] Drop routing failed for '{filePath}': {ex.Message}");
         }
     }
 
-    #endregion
-}
-
-/// <summary>
-/// Data context for MainWindow, exposing the StatusBar view model.
-/// </summary>
-internal sealed class MainWindowContext
-{
-    public StatusBarViewModel? StatusBar { get; set; }
 }
 

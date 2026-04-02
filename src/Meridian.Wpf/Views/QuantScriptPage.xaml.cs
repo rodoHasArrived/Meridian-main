@@ -1,13 +1,12 @@
 using System.Windows;
 using System.Windows.Controls;
-using Meridian.QuantScript.Plotting;
 using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Views;
 
 /// <summary>
-/// Code-behind for QuantScriptPage. Intentionally thin: DI wiring, AvalonEdit synchronisation,
-/// and ScottPlot chart rendering (ScottPlot's imperative API cannot be data-bound in XAML).
+/// Code-behind for QuantScriptPage. Intentionally thin: DI wiring and AvalonEdit synchronisation.
+/// ScottPlot rendering is handled by <see cref="Behaviors.PlotRenderBehavior"/> via the attached property.
 /// </summary>
 public partial class QuantScriptPage : Page
 {
@@ -26,10 +25,10 @@ public partial class QuantScriptPage : Page
         _vm = DataContext as QuantScriptViewModel;
         if (_vm is null) return;
 
-        // Restore persisted column widths
-        var (leftWidth, rightWidth) = _vm.OnActivated();
-        if (leftWidth > 0)  LeftColumn.Width  = new GridLength(leftWidth,  GridUnitType.Star);
-        if (rightWidth > 0) RightColumn.Width = new GridLength(rightWidth, GridUnitType.Star);
+        // Restore persisted row heights
+        var (chartHeight, editorHeight) = _vm.OnActivated();
+        if (chartHeight > 0)  ChartRow.Height  = new GridLength(chartHeight,  GridUnitType.Star);
+        if (editorHeight > 0) EditorRow.Height = new GridLength(editorHeight, GridUnitType.Star);
 
         ScriptEditor.TextChanged += OnScriptEditorTextChanged;
         _vm.PropertyChanged += OnVmPropertyChanged;
@@ -40,7 +39,7 @@ public partial class QuantScriptPage : Page
         if (_vm is null) return;
         ScriptEditor.TextChanged -= OnScriptEditorTextChanged;
         _vm.PropertyChanged -= OnVmPropertyChanged;
-        _vm.SaveLayout(LeftColumn.Width.Value, RightColumn.Width.Value);
+        _vm.SaveLayout(ChartRow.Height.Value, EditorRow.Height.Value);
         _vm.Dispose();
     }
 
@@ -60,64 +59,5 @@ public partial class QuantScriptPage : Page
         _suppressSync = true;
         ScriptEditor.Text = _vm.ScriptSource;
         _suppressSync = false;
-    }
-
-    /// <summary>
-    /// Renders a ScottPlot chart imperatively into the Border declared for each chart entry.
-    /// ScottPlot's WpfPlot has no data-binding API.
-    /// </summary>
-    private void OnPlotBorderLoaded(object sender, RoutedEventArgs e)
-    {
-        if (sender is not Border border || border.Tag is not PlotRequest request) return;
-
-        var plot = new ScottPlot.WPF.WpfPlot();
-        RenderPlotRequest(plot, request);
-        border.Child = plot;
-    }
-
-    private static void RenderPlotRequest(ScottPlot.WPF.WpfPlot wpfPlot, PlotRequest request)
-    {
-        wpfPlot.Plot.Clear();
-
-        switch (request.Type)
-        {
-            case PlotType.Line:
-            case PlotType.CumulativeReturn:
-            case PlotType.Drawdown:
-                if (request.Series is { Count: > 0 } series)
-                {
-                    var dates  = series.Select(p => p.Date.ToDateTime(TimeOnly.MinValue).ToOADate()).ToArray();
-                    var values = series.Select(p => p.Value).ToArray();
-                    var scatter = wpfPlot.Plot.Add.Scatter(dates, values);
-                    scatter.LegendText = request.Title;
-                }
-                break;
-
-            case PlotType.MultiLine:
-                if (request.MultiSeries is { } multi)
-                {
-                    foreach (var (label, pts) in multi)
-                    {
-                        var dates  = pts.Select(p => p.Item1.ToDateTime(TimeOnly.MinValue).ToOADate()).ToArray();
-                        var values = pts.Select(p => p.Item2).ToArray();
-                        var scatter = wpfPlot.Plot.Add.Scatter(dates, values);
-                        scatter.LegendText = label;
-                    }
-                    wpfPlot.Plot.ShowLegend();
-                }
-                break;
-
-            case PlotType.Heatmap:
-                if (request.HeatmapData is { } hm && request.HeatmapLabels is { } labels)
-                {
-                    var positions = Enumerable.Range(0, labels.Length).Select(i => (double)i).ToArray();
-                    var values    = Enumerable.Range(0, labels.Length).Select(i => hm[i][i]).ToArray();
-                    wpfPlot.Plot.Add.Bars(positions, values);
-                }
-                break;
-        }
-
-        wpfPlot.Plot.Title(request.Title);
-        wpfPlot.Refresh();
     }
 }

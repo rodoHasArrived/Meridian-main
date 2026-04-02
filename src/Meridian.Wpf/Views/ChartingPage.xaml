@@ -1,6 +1,7 @@
 <Page x:Class="Meridian.Wpf.Views.ChartingPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
       Background="{DynamicResource ShellWindowBackgroundBrush}"
       Loaded="OnPageLoaded"
       AutomationProperties.Name="Charting">
@@ -117,30 +118,16 @@
                     </StackPanel>
                 </Border>
 
-                <!-- Candlestick Chart -->
+                <!-- Candlestick Chart (LiveCharts2 CandlesticksSeries) -->
                 <Border Grid.Row="1" Style="{StaticResource CardStyle}" Margin="0,0,0,8">
                     <Grid>
-                        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
-                            <ItemsControl ItemsSource="{Binding CandlestickItems}">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <StackPanel Orientation="Horizontal" />
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Grid Width="12" ToolTip="{Binding Tooltip}">
-                                            <Border Width="1" Background="{Binding WickBrush}"
-                                                    Height="{Binding WickHeight}" VerticalAlignment="Top"
-                                                    Margin="{Binding WickMargin}" />
-                                            <Border Width="8" Background="{Binding BodyBrush}"
-                                                    Height="{Binding BodyHeight}" VerticalAlignment="Top"
-                                                    Margin="{Binding BodyMargin}" CornerRadius="1" />
-                                        </Grid>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </ScrollViewer>
+                        <lvc:CartesianChart Series="{Binding CandleSeries}"
+                                            XAxes="{Binding CandleXAxes}"
+                                            YAxes="{Binding CandleYAxes}"
+                                            ZoomMode="X"
+                                            LegendPosition="Hidden"
+                                            TooltipPosition="Top"
+                                            Background="Transparent" />
 
                         <TextBlock Text="{Binding NoChartDataMessage}"
                                    Visibility="{Binding NoChartDataVisible}"

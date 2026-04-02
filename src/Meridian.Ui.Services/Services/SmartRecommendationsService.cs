@@ -273,9 +273,8 @@ public sealed class SmartRecommendationsService
                 }
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine($"[SmartRecommendations] Error getting quality issues: {ex.Message}");
         }
 
         return issues;
@@ -383,9 +382,8 @@ public sealed class SmartRecommendationsService
                 }
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine($"[SmartRecommendations] Error generating insights: {ex.Message}");
         }
 
         return Task.FromResult(insights);
@@ -421,9 +419,8 @@ public sealed class SmartRecommendationsService
 
             return completeness.Gaps.Count;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine($"[SmartRecommendations] Error getting gap count: {ex.Message}");
             return 0;
         }
     }
@@ -456,9 +453,8 @@ public sealed class SmartRecommendationsService
                 }
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine($"[SmartRecommendations] Error checking coverage: {ex.Message}");
         }
 
         return shortCoverageSymbols;
@@ -487,9 +483,8 @@ public sealed class SmartRecommendationsService
                 }
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine($"[SmartRecommendations] Error checking symbols without data: {ex.Message}");
         }
 
         return symbolsWithoutData;
@@ -523,9 +518,8 @@ public sealed class SmartRecommendationsService
                 }
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine($"[SmartRecommendations] Error checking stale symbols: {ex.Message}");
         }
 
         return staleSymbols;
@@ -551,9 +545,8 @@ public sealed class SmartRecommendationsService
                 }
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine($"[SmartRecommendations] Error checking missing symbols: {ex.Message}");
         }
 
         return missingSymbols;

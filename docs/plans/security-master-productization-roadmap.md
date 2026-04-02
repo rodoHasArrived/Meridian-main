@@ -1,8 +1,8 @@
 # Security Master Productization Roadmap
 
-**Last Updated:** 2026-03-30  
-**Status:** In Progress — Wave 6 delivery  
-**Owner:** Platform team  
+**Last Updated:** 2026-03-30
+**Status:** In Progress — Wave 6 delivery
+**Owner:** Platform team
 **Audience:** Architecture, API, UI, and data contributors
 
 ---

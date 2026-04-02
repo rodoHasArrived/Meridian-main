@@ -14,17 +14,22 @@
         <Setter Property="Background" Value="{StaticResource ConsoleBackgroundLightBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="CornerRadius" Value="10" />
         <Setter Property="Padding" Value="20" />
     </Style>
 
     <!-- Elevated Card Style (with subtle shadow effect) -->
     <Style x:Key="ElevatedCardStyle" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource ConsoleBackgroundLightBrush}" />
+        <Setter Property="Background" Value="{StaticResource ConsoleCardSurfaceBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
-        <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="10" />
         <Setter Property="Padding" Value="20" />
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect Color="#0F2040" BlurRadius="16" ShadowDepth="2" Direction="270" Opacity="0.09" />
+            </Setter.Value>
+        </Setter>
     </Style>
 
     <!-- Outlined Card Style (transparent background, visible border) -->
@@ -32,7 +37,7 @@
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="CornerRadius" Value="10" />
         <Setter Property="Padding" Value="20" />
     </Style>
 
@@ -85,7 +90,7 @@
         <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="Padding" Value="16,8" />
+        <Setter Property="Padding" Value="16,9" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="FocusVisualStyle" Value="{x:Null}" />
         <Setter Property="Template">
@@ -95,7 +100,7 @@
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="8"
+                            CornerRadius="6"
                             Padding="{TemplateBinding Padding}"
                             SnapsToDevicePixels="True">
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
@@ -123,8 +128,8 @@
         <Setter Property="Foreground" Value="{StaticResource ErrorColorBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource ErrorColorBrush}" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="Padding" Value="12,6" />
-        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Padding" Value="14,7" />
+        <Setter Property="FontSize" Value="13" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="FocusVisualStyle" Value="{x:Null}" />
         <Setter Property="Template">
@@ -160,8 +165,8 @@
         <Setter Property="Background" Value="{StaticResource ConsoleBackgroundLightBrush}" />
         <Setter Property="Foreground" Value="{StaticResource ConsoleTextSecondaryBrush}" />
         <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="Padding" Value="12,6" />
-        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Padding" Value="12,7" />
+        <Setter Property="FontSize" Value="13" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="FocusVisualStyle" Value="{x:Null}" />
         <Setter Property="Template">
@@ -220,8 +225,8 @@
 
     <!-- Count Badge -->
     <Style x:Key="CountBadgeStyle" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource ConsoleBackgroundLightBrush}" />
-        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="Background" Value="{StaticResource ConsoleBackgroundHoverBrush}" />
+        <Setter Property="CornerRadius" Value="20" />
         <Setter Property="Padding" Value="10,4" />
         <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
@@ -229,39 +234,45 @@
     <!-- Live Badge -->
     <Style x:Key="LiveBadgeStyle" TargetType="Border">
         <Setter Property="Background" Value="{StaticResource SuccessColorBrush}" />
-        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="CornerRadius" Value="12" />
         <Setter Property="Padding" Value="10,4" />
     </Style>
 
     <!-- Stream Badges -->
     <Style x:Key="StreamBadgeActiveStyle" TargetType="Border">
         <Setter Property="Background" Value="{StaticResource SuccessColorBrush}" />
-        <Setter Property="CornerRadius" Value="6" />
-        <Setter Property="Padding" Value="10,6" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="Padding" Value="10,5" />
     </Style>
 
     <Style x:Key="StreamBadgeInactiveStyle" TargetType="Border">
         <Setter Property="Background" Value="{StaticResource ConsoleTextMutedBrush}" />
-        <Setter Property="CornerRadius" Value="6" />
-        <Setter Property="Padding" Value="10,6" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="Padding" Value="10,5" />
     </Style>
 
     <!-- Status Badges -->
     <Style x:Key="WarningBadgeStyle" TargetType="Border">
         <Setter Property="Background" Value="{StaticResource ConsoleAccentOrangeAlpha10Brush}" />
-        <Setter Property="CornerRadius" Value="4" />
-        <Setter Property="Padding" Value="8,4" />
+        <Setter Property="BorderBrush" Value="{StaticResource WarningColorBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="20" />
+        <Setter Property="Padding" Value="10,4" />
     </Style>
 
     <Style x:Key="ErrorBadgeStyle" TargetType="Border">
         <Setter Property="Background" Value="{StaticResource ConsoleAccentRedAlpha10Brush}" />
-        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="BorderBrush" Value="{StaticResource ErrorColorBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="20" />
         <Setter Property="Padding" Value="8,4" />
     </Style>
 
     <Style x:Key="InfoBadgeStyle" TargetType="Border">
         <Setter Property="Background" Value="{StaticResource ConsoleAccentBlueAlpha10Brush}" />
-        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="BorderBrush" Value="{StaticResource InfoColorBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="20" />
         <Setter Property="Padding" Value="8,4" />
     </Style>
 
@@ -271,11 +282,11 @@
 
     <Style x:Key="FormTextBoxStyle" TargetType="TextBox">
         <Setter Property="HorizontalAlignment" Value="Stretch" />
-        <Setter Property="Background" Value="{StaticResource ConsoleBackgroundDarkBrush}" />
+        <Setter Property="Background" Value="{StaticResource ConsoleBackgroundLightBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
         <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
         <Setter Property="CaretBrush" Value="{StaticResource ConsoleTextPrimaryBrush}" />
-        <Setter Property="Padding" Value="12,10" />
+        <Setter Property="Padding" Value="10,9" />
         <Setter Property="FontFamily" Value="Consolas, Courier New" />
         <Setter Property="Template">
             <Setter.Value>
@@ -284,7 +295,7 @@
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="1"
-                            CornerRadius="8"
+                            CornerRadius="6"
                             Padding="{TemplateBinding Padding}">
                         <ScrollViewer x:Name="PART_ContentHost" />
                     </Border>
@@ -303,7 +314,7 @@
 
     <Style x:Key="FormComboBoxStyle" TargetType="ComboBox">
         <Setter Property="HorizontalAlignment" Value="Stretch" />
-        <Setter Property="Background" Value="{StaticResource ConsoleBackgroundDarkBrush}" />
+        <Setter Property="Background" Value="{StaticResource ConsoleBackgroundLightBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
         <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
     </Style>
@@ -385,8 +396,8 @@
     <!-- ========================================== -->
 
     <Style x:Key="TerminalHeaderStyle" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource ConsoleBackgroundLightBrush}" />
-        <Setter Property="Padding" Value="12,10" />
+        <Setter Property="Background" Value="{StaticResource ConsoleBackgroundHoverBrush}" />
+        <Setter Property="Padding" Value="14,11" />
         <Setter Property="CornerRadius" Value="8,8,0,0" />
     </Style>
 
@@ -442,9 +453,9 @@
     <!-- ========================================== -->
 
     <Style x:Key="InlineCodeStyle" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource ConsoleBackgroundLightBrush}" />
-        <Setter Property="CornerRadius" Value="4" />
-        <Setter Property="Padding" Value="6,2" />
+        <Setter Property="Background" Value="{StaticResource ConsoleBackgroundHoverBrush}" />
+        <Setter Property="CornerRadius" Value="5" />
+        <Setter Property="Padding" Value="6,3" />
     </Style>
 
     <Style x:Key="InlineCodeTextStyle" TargetType="TextBlock">
@@ -479,11 +490,31 @@
     <!-- ========================================== -->
 
     <Style x:Key="DarkTooltipStyle" TargetType="ToolTip">
-        <Setter Property="Background" Value="{StaticResource ConsoleBackgroundDarkBrush}" />
-        <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
+        <Setter Property="Background" Value="#0F1B28" />
+        <Setter Property="Foreground" Value="#DCE8F4" />
+        <Setter Property="BorderBrush" Value="#1A2F42" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="Padding" Value="8,6" />
+        <Setter Property="Padding" Value="10,7" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect Color="#000000" BlurRadius="14" ShadowDepth="3" Direction="270" Opacity="0.32" />
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToolTip">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="6"
+                            Padding="{TemplateBinding Padding}"
+                            Effect="{TemplateBinding Effect}">
+                        <ContentPresenter />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 
     <!-- ========================================== -->
@@ -506,13 +537,13 @@
     <!-- Skeleton Styles -->
     <Style x:Key="SkeletonTextStyle" TargetType="Border">
         <Setter Property="Background" Value="{StaticResource SkeletonBackgroundBrush}" />
-        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="CornerRadius" Value="6" />
         <Setter Property="Height" Value="16" />
     </Style>
 
     <Style x:Key="SkeletonCardStyle" TargetType="Border">
         <Setter Property="Background" Value="{StaticResource SkeletonBackgroundBrush}" />
-        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="CornerRadius" Value="8" />
     </Style>
 
     <!-- ========================================== -->
@@ -623,11 +654,12 @@
         <Setter Property="Background" Value="{StaticResource ConsoleBackgroundLightBrush}" />
         <Setter Property="Foreground" Value="{StaticResource ConsoleTextSecondaryBrush}" />
         <Setter Property="FontWeight" Value="SemiBold" />
-        <Setter Property="FontSize" Value="12" />
-        <Setter Property="Padding" Value="12,10" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="Padding" Value="12,9" />
         <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
         <Setter Property="BorderThickness" Value="0,0,1,1" />
         <Setter Property="SeparatorBrush" Value="{StaticResource ConsoleBorderBrush}" />
+        <Setter Property="Typography.Capitals" Value="AllSmallCaps" />
     </Style>
 
     <Style TargetType="DataGridCell">
@@ -688,7 +720,7 @@
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             Padding="{TemplateBinding Padding}"
-                            CornerRadius="4">
+                            CornerRadius="6">
                         <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                           VerticalAlignment="Center" />
                     </Border>
@@ -750,10 +782,11 @@
         <Setter Property="Background" Value="{StaticResource ConsoleBackgroundLightBrush}" />
         <Setter Property="Foreground" Value="{StaticResource ConsoleTextSecondaryBrush}" />
         <Setter Property="FontWeight" Value="SemiBold" />
-        <Setter Property="FontSize" Value="12" />
-        <Setter Property="Padding" Value="12,8" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="Padding" Value="12,7" />
         <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
         <Setter Property="BorderThickness" Value="0,0,1,1" />
+        <Setter Property="Typography.Capitals" Value="AllSmallCaps" />
     </Style>
 
 </ResourceDictionary>

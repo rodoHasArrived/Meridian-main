@@ -169,10 +169,9 @@ public sealed class StorageAnalyticsService
                 analytics.ProjectedDaysUntilFull = CalculateDaysUntilFull(basePath, analytics.DailyGrowthBytes);
             });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // Log error but return what we have
-            System.Diagnostics.Debug.WriteLine($"Storage analysis error: {ex.Message}");
         }
 
         return analytics;

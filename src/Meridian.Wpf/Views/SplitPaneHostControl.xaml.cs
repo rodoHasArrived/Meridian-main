@@ -10,6 +10,12 @@ namespace Meridian.Wpf.Views;
 public partial class SplitPaneHostControl : UserControl
 {
     private readonly List<Frame> _paneFrames = new();
+    public const string PageTagFormat = "Meridian.PageTag";
+
+    /// <summary>
+    /// Raised when a page-tag string is dropped onto this host.
+    /// </summary>
+    public event EventHandler<PaneDropEventArgs>? PaneDropRequested;
 
     public PaneLayout Layout
     {
@@ -78,5 +84,92 @@ public partial class SplitPaneHostControl : UserControl
                 ContentGrid.Children.Add(splitter);
             }
         }
+
+        // Re-span the overlay across all columns after rebuilding panes
+        Grid.SetColumnSpan(DropOverlay, Math.Max(1, ContentGrid.ColumnDefinitions.Count));
+    }
+
+    // ── Drag-and-drop ────────────────────────────────────────────────────────
+
+    private void OnDragOver(object sender, DragEventArgs e)
+    {
+        if (TryGetPageTag(e.Data, out _))
+        {
+            e.Effects = DragDropEffects.Move;
+            DropOverlay.Visibility = Visibility.Visible;
+        }
+        else
+        {
+            e.Effects = DragDropEffects.None;
+        }
+
+        e.Handled = true;
+    }
+
+    private void OnDragLeave(object sender, DragEventArgs e)
+    {
+        DropOverlay.Visibility = Visibility.Collapsed;
+        e.Handled = true;
+    }
+
+    private void OnDrop(object sender, DragEventArgs e)
+    {
+        DropOverlay.Visibility = Visibility.Collapsed;
+
+        if (!TryGetPageTag(e.Data, out var pageTag))
+        {
+            e.Handled = true;
+            return;
+        }
+
+        var dropPosition = e.GetPosition(this);
+        var targetIndex = HitTestPaneIndex(dropPosition);
+        PaneDropRequested?.Invoke(this, new PaneDropEventArgs(pageTag, targetIndex));
+        e.Handled = true;
+    }
+
+    /// <summary>
+    /// Returns the zero-based pane index that contains <paramref name="position"/>.
+    /// Falls back to <see cref="ActivePaneIndex"/> when no frame is hit.
+    /// </summary>
+    private int HitTestPaneIndex(Point position)
+    {
+        for (int i = 0; i < _paneFrames.Count; i++)
+        {
+            var frame = _paneFrames[i];
+            var bounds = new Rect(
+                frame.TranslatePoint(new Point(0, 0), this),
+                new Size(frame.ActualWidth, frame.ActualHeight));
+
+            if (bounds.Contains(position))
+                return i;
+        }
+        return ActivePaneIndex;
+    }
+
+    private static bool TryGetPageTag(IDataObject data, out string pageTag)
+    {
+        if (TryReadString(data, PageTagFormat, out pageTag) ||
+            TryReadString(data, DataFormats.StringFormat, out pageTag))
+        {
+            return true;
+        }
+
+        pageTag = string.Empty;
+        return false;
+    }
+
+    private static bool TryReadString(IDataObject data, string format, out string value)
+    {
+        if (data.GetDataPresent(format) &&
+            data.GetData(format) is string text &&
+            !string.IsNullOrWhiteSpace(text))
+        {
+            value = text;
+            return true;
+        }
+
+        value = string.Empty;
+        return false;
     }
 }

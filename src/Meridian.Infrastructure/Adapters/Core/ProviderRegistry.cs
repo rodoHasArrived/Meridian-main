@@ -48,11 +48,14 @@ public sealed class ProviderRegistry : IDisposable
     private readonly ConcurrentDictionary<string, RegisteredProvider> _allProviders = new();
 
     /// <summary>
-    /// Dictionary of streaming client factory functions keyed by <see cref="DataSourceKind"/>.
-    /// Populated during DI setup via <see cref="RegisterStreamingFactory"/> to replace
-    /// the switch-statement-based creation in the old MarketDataClientFactory.
+    /// Dictionary of streaming client factory functions keyed by provider ID string (e.g. "alpaca", "ib").
+    /// Keys are always stored lower-case. Populated during DI setup via
+    /// <see cref="RegisterStreamingFactory(string, Func{IMarketDataClient})"/>.
+    /// Using string keys instead of <see cref="DataSourceKind"/> lets dynamically-discovered providers
+    /// register themselves without extending the closed enum (Open/Closed Principle).
     /// </summary>
-    private readonly ConcurrentDictionary<DataSourceKind, Func<IMarketDataClient>> _streamingFactories = new();
+    private readonly ConcurrentDictionary<string, Func<IMarketDataClient>> _streamingFactories
+        = new(StringComparer.OrdinalIgnoreCase);
 
     private readonly ILogger _log;
     private readonly IAlertDispatcher? _alertDispatcher;
@@ -64,7 +67,6 @@ public sealed class ProviderRegistry : IDisposable
         _log = log ?? LoggingSetup.ForContext<ProviderRegistry>();
     }
 
-    #region Unified Provider Registration
 
     /// <summary>
     /// Registers any provider implementing <see cref="IProviderMetadata"/>.
@@ -95,64 +97,85 @@ public sealed class ProviderRegistry : IDisposable
     }
 
     /// <summary>
-    /// Registers a factory function for creating a streaming client for the specified data source kind.
-    /// This replaces the switch-statement approach previously used in MarketDataClientFactory.
+    /// Registers a factory function for creating a streaming client for the specified provider ID.
+    /// Provider IDs are case-insensitive strings (e.g. "alpaca", "ib", "polygon").
+    /// This is the primary registration path; it does not require extending <see cref="DataSourceKind"/>.
+    /// </summary>
+    /// <param name="providerId">The provider ID to register (case-insensitive).</param>
+    /// <param name="factory">Factory function that creates the streaming client.</param>
+    public void RegisterStreamingFactory(string providerId, Func<IMarketDataClient> factory)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(providerId);
+        ArgumentNullException.ThrowIfNull(factory);
+
+        var key = providerId.ToLowerInvariant();
+        if (_streamingFactories.TryAdd(key, factory))
+        {
+            MigrationDiagnostics.IncStreamingFactoryRegistered();
+            _log.Information("Registered streaming factory for {DataSource}", key);
+        }
+        else
+        {
+            _streamingFactories[key] = factory;
+            _log.Information("Replaced streaming factory for {DataSource}", key);
+        }
+    }
+
+    /// <summary>
+    /// Backward-compatible shim. Converts <paramref name="kind"/> to its lower-case name
+    /// (e.g. <see cref="DataSourceKind.Alpaca"/> → <c>"alpaca"</c>) and delegates to
+    /// <see cref="RegisterStreamingFactory(string, Func{IMarketDataClient})"/>.
     /// </summary>
     /// <param name="kind">The data source kind to register.</param>
     /// <param name="factory">Factory function that creates the streaming client.</param>
     public void RegisterStreamingFactory(DataSourceKind kind, Func<IMarketDataClient> factory)
-    {
-        ArgumentNullException.ThrowIfNull(factory);
-
-        if (_streamingFactories.TryAdd(kind, factory))
-        {
-            MigrationDiagnostics.IncStreamingFactoryRegistered();
-            _log.Information("Registered streaming factory for {DataSource}", kind);
-        }
-        else
-        {
-            _streamingFactories[kind] = factory;
-            _log.Information("Replaced streaming factory for {DataSource}", kind);
-        }
-    }
+        => RegisterStreamingFactory(kind.ToString().ToLowerInvariant(), factory);
 
     /// <summary>
-    /// Creates a streaming client for the specified data source kind using the registered factory.
-    /// Falls back to <see cref="DataSourceKind.IB"/> if the requested kind has no registered factory.
+    /// Creates a streaming client for the specified provider ID using the registered factory.
+    /// Falls back to the <c>"ib"</c> factory if the requested ID has no registered factory.
     /// </summary>
-    /// <param name="kind">The data source kind to create a client for.</param>
+    /// <param name="providerId">The provider ID to create a client for (case-insensitive).</param>
     /// <returns>A new streaming client instance.</returns>
-    /// <exception cref="InvalidOperationException">Thrown when no factory is registered for the kind and no fallback is available.</exception>
-    public IMarketDataClient CreateStreamingClient(DataSourceKind kind)
+    /// <exception cref="InvalidOperationException">Thrown when no factory is registered for the ID and no IB fallback is available.</exception>
+    public IMarketDataClient CreateStreamingClient(string providerId)
     {
-        if (_streamingFactories.TryGetValue(kind, out var factory))
+        var key = providerId.ToLowerInvariant();
+        if (_streamingFactories.TryGetValue(key, out var factory))
         {
-            MigrationDiagnostics.IncStreamingFactoryHit(kind.ToString());
-            _log.Information("Creating streaming client for {DataSource}", kind);
+            MigrationDiagnostics.IncStreamingFactoryHit(key);
+            _log.Information("Creating streaming client for {DataSource}", key);
             return factory();
         }
 
-        // Fallback to IB (default provider)
-        if (kind != DataSourceKind.IB && _streamingFactories.TryGetValue(DataSourceKind.IB, out var ibFactory))
+        // Fallback to "ib" (default provider)
+        if (key != "ib" && _streamingFactories.TryGetValue("ib", out var ibFactory))
         {
-            _log.Warning("No factory registered for {DataSource}, falling back to IB", kind);
+            _log.Warning("No factory registered for {DataSource}, falling back to IB", key);
             return ibFactory();
         }
 
         throw new InvalidOperationException(
-            $"No streaming factory registered for {kind} and no IB fallback available. " +
+            $"No streaming factory registered for '{key}' and no IB fallback available. " +
             "Register factories via RegisterStreamingFactory() during startup.");
     }
 
     /// <summary>
-    /// Gets all data source kinds that have a registered streaming factory.
+    /// Backward-compatible shim. Converts <paramref name="kind"/> to its lower-case name and
+    /// delegates to <see cref="CreateStreamingClient(string)"/>.
     /// </summary>
-    public IReadOnlyList<DataSourceKind> SupportedStreamingSources =>
-        _streamingFactories.Keys.OrderBy(k => k).ToList();
+    /// <param name="kind">The data source kind to create a client for.</param>
+    /// <returns>A new streaming client instance.</returns>
+    public IMarketDataClient CreateStreamingClient(DataSourceKind kind)
+        => CreateStreamingClient(kind.ToString().ToLowerInvariant());
 
-    #endregion
+    /// <summary>
+    /// Gets all provider IDs that have a registered streaming factory (lower-case, sorted).
+    /// </summary>
+    public IReadOnlyList<string> SupportedStreamingSources =>
+        _streamingFactories.Keys.OrderBy(k => k, StringComparer.Ordinal).ToList();
 
-    #region Provider Metadata Queries
+
 
     /// <summary>
     /// Gets all registered providers as unified metadata.
@@ -189,9 +212,7 @@ public sealed class ProviderRegistry : IDisposable
             .ToList();
     }
 
-    #endregion
 
-    #region Generic Provider Retrieval
 
     /// <summary>
     /// Gets all providers of a specific type, ordered by priority.
@@ -311,9 +332,7 @@ public sealed class ProviderRegistry : IDisposable
         return results;
     }
 
-    #endregion
 
-    #region Type-Specific Methods (Convenience wrappers - delegate to generic methods)
 
     /// <summary>
     /// Registers a streaming market data provider.
@@ -395,9 +414,7 @@ public sealed class ProviderRegistry : IDisposable
     public Task<ISymbolSearchProvider?> GetBestSymbolSearchProviderAsync(CancellationToken ct = default)
         => GetBestAvailableProviderAsync<ISymbolSearchProvider>(ct);
 
-    #endregion
 
-    #region Provider Management
 
     /// <summary>
     /// Enables a provider.
@@ -509,7 +526,6 @@ public sealed class ProviderRegistry : IDisposable
             TotalEnabled: providers.Count(p => p.IsEnabled));
     }
 
-    #endregion
 
     private static void ValidateName(string name)
     {

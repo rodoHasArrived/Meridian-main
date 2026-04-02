@@ -66,10 +66,28 @@ on:
         required: false
         type: number
         default: 30
+      run-fsharp-tests:
+        description: 'Also run F# unit tests after the C# test run'
+        required: false
+        type: boolean
+        default: false
+      test-filter:
+        description: 'dotnet test --filter expression (default: Category!=Integration)'
+        required: false
+        type: string
+        default: 'Category!=Integration'
+      test-results-prefix:
+        description: 'Prefix applied to test result artifact names for disambiguation'
+        required: false
+        type: string
+        default: ''
     outputs:
       build-result:
         description: 'Build result (success/failure)'
         value: ${{ jobs.build.outputs.result }}
+      test-result:
+        description: 'Test result (success/failure/skipped)'
+        value: ${{ jobs.build.outputs.test-result }}
 
 jobs:
   build:
@@ -78,6 +96,7 @@ jobs:
     timeout-minutes: ${{ inputs.timeout-minutes }}
     outputs:
       result: ${{ steps.build.outcome }}
+      test-result: ${{ steps.run-tests.outcome }}
 
     env:
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
@@ -108,10 +127,13 @@ jobs:
           dotnet build Meridian.sln -c ${{ inputs.configuration }} --no-restore -p:EnableWindowsTargeting=true --verbosity minimal
 
       - name: Run tests
+        id: run-tests
         if: inputs.run-tests
+        id: test
         shell: bash
         env:
           MSYS_NO_PATHCONV: 1
+          COVERAGE_FLAGS: ${{ inputs.collect-coverage && '--collect:"XPlat Code Coverage"' || '' }}
         run: |
           dotnet test Meridian.sln \
             -c ${{ inputs.configuration }} \
@@ -120,12 +142,29 @@ jobs:
             --verbosity minimal \
             --logger "trx;LogFileName=test-results.trx" \
             --results-directory ./artifacts/test-results \
-            --filter "Category!=Integration" \
+            --filter "${{ inputs.test-filter }}" \
             --blame-hang-timeout 60s \
             ${{ inputs.collect-coverage && '--collect:"XPlat Code Coverage"' || '' }}
 
+      - name: Run F# unit tests
+        id: run-fsharp-tests
+        if: inputs.run-tests && inputs.run-fsharp-tests
+        shell: bash
+        env:
+          MSYS_NO_PATHCONV: 1
+        run: |
+          dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj \
+            -c ${{ inputs.configuration }} \
+            --no-build \
+            -p:EnableWindowsTargeting=true \
+            --verbosity minimal \
+            --logger "trx;LogFileName=test-results-fsharp.trx" \
+            --results-directory ./artifacts/test-results \
+            --blame-hang-timeout 60s \
+            $COVERAGE_FLAGS
+
       - name: Upload coverage
-        if: inputs.collect-coverage && success()
+        if: inputs.collect-coverage
         uses: codecov/codecov-action@v6.0.0
         with:
           directory: ./artifacts/test-results
@@ -142,11 +181,34 @@ jobs:
             !src/**/bin/${{ inputs.configuration }}/**/ref/
           retention-days: 5
 
+      - name: Job summary
+        if: always()
+        shell: bash
+        run: |
+          outcome_label() {
+            case "$1" in
+              success)   echo "✅ Passed" ;;
+              skipped)   echo "⏭️ Skipped" ;;
+              cancelled) echo "🚫 Cancelled" ;;
+              *)         echo "❌ Failed" ;;
+            esac
+          }
+          {
+            echo "## Build & Test Summary"
+            echo ""
+            echo "| Step | Result |"
+            echo "|------|--------|"
+            echo "| Build | $(outcome_label '${{ steps.build.outcome }}') |"
+            if [[ "${{ inputs.run-tests }}" == "true" ]]; then
+              echo "| Tests | $(outcome_label '${{ steps.test.outcome }}') |"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Upload diagnostics on failure
-        if: failure()
+        if: failure() || cancelled()
         uses: actions/upload-artifact@v7
         with:
-          name: diagnostics-${{ inputs.cache-suffix || 'default' }}
+          name: diagnostics-${{ inputs.test-results-prefix && format('{0}-', inputs.test-results-prefix) || '' }}${{ inputs.cache-suffix || 'default' }}
           path: |
             ./artifacts/test-results/**/*.trx
             ./artifacts/test-results/**/coverage.cobertura.xml

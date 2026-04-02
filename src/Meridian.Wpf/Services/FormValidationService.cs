@@ -18,7 +18,6 @@ public sealed class FormValidationService
 
     private FormValidationService() { }
 
-    #region Validation Rules (Delegates to Shared Rules)
 
     public static ValidationResult ValidateRequired(string? value, string fieldName = "This field")
         => FormValidationRules.ValidateRequired(value, fieldName);
@@ -47,9 +46,7 @@ public sealed class FormValidationService
     public static ValidationResult ValidateNumericRange(double? value, double min, double max, string fieldName = "Value")
         => FormValidationRules.ValidateNumericRange(value, min, max, fieldName);
 
-    #endregion
 
-    #region UI Helpers
 
     /// <summary>
     /// Shows validation result in a TextBlock status area.
@@ -112,5 +109,4 @@ public sealed class FormValidationService
             errorTextBlock.Visibility = Visibility.Collapsed;
     }
 
-    #endregion
 }

@@ -17,6 +17,7 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
     private readonly ConcurrentDictionary<string, OrderState> _orders = new();
     private readonly IExecutionGateway _gateway;
     private readonly IRiskValidator? _riskValidator;
+    private readonly ISecurityMasterGate? _securityMasterGate;
     private readonly ILogger<OrderManagementSystem> _logger;
     private readonly Channel<ExecutionReport> _executionChannel;
     private int _orderSequence;
@@ -24,11 +25,13 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
     public OrderManagementSystem(
         IExecutionGateway gateway,
         ILogger<OrderManagementSystem> logger,
-        IRiskValidator? riskValidator = null)
+        IRiskValidator? riskValidator = null,
+        ISecurityMasterGate? securityMasterGate = null)
     {
         _gateway = gateway ?? throw new ArgumentNullException(nameof(gateway));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _riskValidator = riskValidator;
+        _securityMasterGate = securityMasterGate;
         // Use custom EventPipelinePolicy for execution reports: high capacity with backpressure
         var executionPolicy = new EventPipelinePolicy(
             Capacity: 1000,
@@ -45,6 +48,24 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         ArgumentNullException.ThrowIfNull(request);
 
         var orderId = request.ClientOrderId ?? GenerateOrderId();
+
+        // Security Master gate — reject orders for symbols not in the master (when gate is wired)
+        if (_securityMasterGate is not null)
+        {
+            var gateResult = await _securityMasterGate.CheckAsync(request.Symbol, ct).ConfigureAwait(false);
+            if (!gateResult.IsApproved)
+            {
+                _logger.LogWarning("Order {OrderId} for {Symbol} rejected by Security Master gate: {Reason}",
+                    orderId, request.Symbol, gateResult.Reason);
+
+                return new OrderResult
+                {
+                    Success = false,
+                    OrderId = orderId,
+                    ErrorMessage = gateResult.Reason
+                };
+            }
+        }
 
         // Pre-trade risk check
         if (_riskValidator is not null)
@@ -90,6 +111,13 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
 
             _logger.LogInformation("Order {OrderId} submitted for {Symbol} {Side} {Quantity} — status {Status}",
                 orderId, request.Symbol, request.Side, request.Quantity, updatedState.Status);
+
+            // Publish fills to the execution channel so portfolio trackers and other
+            // consumers can subscribe without coupling directly to the gateway.
+            if (report.OrderStatus is OrderStatus.Filled or OrderStatus.PartiallyFilled)
+            {
+                _executionChannel.Writer.TryWrite(report);
+            }
 
             return new OrderResult
             {
@@ -191,6 +219,14 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
     {
         _executionChannel.Writer.TryComplete();
     }
+
+    /// <summary>
+    /// Provides a read-only view of fill and partial-fill execution reports for consumption
+    /// by portfolio trackers and audit subscribers.  Reports are published as each order
+    /// transitions to <see cref="OrderStatus.Filled"/> or <see cref="OrderStatus.PartiallyFilled"/>.
+    /// Consumers must drain this reader promptly to avoid backpressure.
+    /// </summary>
+    public ChannelReader<ExecutionReport> ExecutionReports => _executionChannel.Reader;
 
     private string GenerateOrderId()
     {

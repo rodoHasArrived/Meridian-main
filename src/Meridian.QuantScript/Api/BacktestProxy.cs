@@ -8,7 +8,7 @@ namespace Meridian.QuantScript.Api;
 /// Fluent backtest builder for use inside scripts. Adapts lambda callbacks to
 /// <see cref="IBacktestStrategy"/> and delegates execution to the existing <see cref="BacktestEngine"/>.
 /// </summary>
-public sealed class BacktestProxy(BacktestEngine engine, QuantScriptOptions options)
+public sealed class BacktestProxy(BacktestEngine? engine, QuantScriptOptions options)
 {
     private string[] _symbols = [];
     private DateOnly _from;
@@ -42,6 +42,8 @@ public sealed class BacktestProxy(BacktestEngine engine, QuantScriptOptions opti
     /// <summary>Runs with a progress callback (forwards <see cref="BacktestProgressEvent"/> to console).</summary>
     public BacktestResult Run(Action<BacktestProgressEvent>? onProgress)
     {
+        ArgumentNullException.ThrowIfNull(engine);
+
         var request = new BacktestRequest(
             From: _from,
             To: _to,

@@ -1,0 +1,257 @@
+# Refresh UI Screenshots
+#
+# Builds the Meridian web dashboard, starts it in default (no-provider) mode,
+# takes Playwright screenshots of the main pages, and commits the updated PNGs
+# back to docs/screenshots/.
+#
+# Triggered:
+#   - Weekly on Monday at 06:00 UTC (keep screenshots current after UI changes)
+#   - On push to main when dashboard HTML/CSS/JS or wwwroot assets change
+#   - Manually via workflow_dispatch
+
+name: Refresh UI Screenshots
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/Meridian/wwwroot/**'
+      - 'src/Meridian.Ui/**'
+      - 'src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs'
+      - 'src/Meridian.Ui.Shared/HtmlTemplateGenerator*.cs'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-screenshots-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_GENERATE_ASPNET_CERTIFICATE: false
+  UI_PORT: 8200
+
+jobs:
+  refresh:
+    name: Take screenshots
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup .NET with Cache
+        uses: ./.github/actions/setup-dotnet-cache
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          cache-suffix: screenshots
+
+      - name: Restore dependencies
+        run: dotnet restore Meridian.sln -p:EnableWindowsTargeting=true --verbosity minimal
+
+      - name: Build Meridian (Release)
+        run: dotnet build src/Meridian/Meridian.csproj -c Release --no-restore -p:EnableWindowsTargeting=true --verbosity minimal
+
+      - name: Copy sample config
+        run: cp config/appsettings.sample.json config/appsettings.json
+
+      - name: Start web dashboard (background)
+        env:
+          MDC_AUTH_MODE: optional
+        run: |
+          dotnet run \
+            --project src/Meridian/Meridian.csproj \
+            --no-build \
+            -c Release \
+            -- --ui --http-port ${{ env.UI_PORT }} > /tmp/dashboard.log 2>&1 &
+          echo "MERIDIAN_PID=$!" >> "$GITHUB_ENV"
+          sleep 2
+          echo "Dashboard startup log:"
+          cat /tmp/dashboard.log || true
+
+      - name: Wait for dashboard to be ready
+        run: |
+          echo "Waiting for http://localhost:${{ env.UI_PORT }}/readyz ..."
+          for i in $(seq 1 30); do
+            if curl -sf "http://localhost:${{ env.UI_PORT }}/readyz" > /dev/null 2>&1; then
+              echo "Dashboard is up (attempt ${i})"
+              exit 0
+            fi
+            echo "Attempt ${i}/30 failed, retrying in 2 seconds..."
+            sleep 2
+          done
+          echo "::error::Dashboard did not become ready within 60 seconds"
+          echo "Checking process status:"
+          ps aux | grep -i meridian || true
+          echo "Checking port ${{ env.UI_PORT }}:"
+          netstat -tlnp 2>/dev/null | grep ${{ env.UI_PORT }} || echo "Port ${{ env.UI_PORT }} not listening"
+          echo "Dashboard log tail:"
+          tail -50 /tmp/dashboard.log || true
+          exit 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: playwright-chromium-${{ runner.os }}-
+
+      - name: Install Playwright and Chromium
+        run: |
+          npm install playwright
+          npx playwright install chromium ${{ steps.playwright-cache.outputs.cache-hit != 'true' && '--with-deps' || '' }}
+
+      - name: Write screenshot helper script
+        run: |
+          cat > take-screenshots.mjs << 'SCRIPT'
+          import { chromium } from 'playwright';
+
+          const BASE = process.env.UI_BASE;
+          const browser = await chromium.launch();
+          const context = await browser.newContext({
+            viewport: { width: 1400, height: 900 },
+            colorScheme: 'light',
+            locale: 'en-US'
+          });
+
+          async function waitForStablePage(page, stableSelector) {
+            await page.waitForSelector(stableSelector, { timeout: 20000 });
+            await page.waitForLoadState('networkidle', { timeout: 20000 }).catch(() => {});
+            await page.evaluate(async () => {
+              if (document.fonts?.ready) {
+                await document.fonts.ready;
+              }
+            });
+            await page.addStyleTag({
+              content: `
+                *,
+                *::before,
+                *::after {
+                  animation: none !important;
+                  transition: none !important;
+                  caret-color: transparent !important;
+                }
+              `
+            });
+          }
+
+          async function withRetry(name, action, retries = 2) {
+            let lastError;
+            for (let attempt = 1; attempt <= retries + 1; attempt++) {
+              try {
+                return await action();
+              } catch (error) {
+                lastError = error;
+                console.warn(`Retry ${attempt}/${retries + 1} failed for ${name}: ${error.message}`);
+              }
+            }
+            throw lastError;
+          }
+
+          async function shot(path, url, {
+            fullPage = true,
+            stableSelector = 'body',
+            waitMs = 150,
+            clipSelector = null
+          } = {}) {
+            const page = await context.newPage();
+            await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 20000 });
+            await waitForStablePage(page, stableSelector);
+            if (waitMs > 0) {
+              await page.waitForTimeout(waitMs);
+            }
+            if (clipSelector) {
+              const locator = page.locator(clipSelector);
+              await locator.scrollIntoViewIfNeeded();
+              await locator.screenshot({ path });
+            } else {
+              await page.screenshot({ path, fullPage });
+            }
+            await page.close();
+            console.log(`✓ ${path}`);
+          }
+
+          await withRetry('dashboard', () =>
+            shot('docs/screenshots/01-dashboard.png', `${BASE}/`, {
+              fullPage: true,
+              stableSelector: '[data-testid="dashboard-root"], main, body'
+            })
+          );
+          await withRetry('workstation', () =>
+            shot('docs/screenshots/02-workstation.png', `${BASE}/workstation/`, {
+              fullPage: true,
+              stableSelector: '[data-testid="workspace-root"], main, body'
+            })
+          );
+          await withRetry('swagger', () =>
+            shot('docs/screenshots/03-swagger.png', `${BASE}/swagger/index.html`, {
+              fullPage: true,
+              stableSelector: '#swagger-ui, body'
+            })
+          );
+          // Screenshot 04: focused crop of Storage Configuration / Data Sources section for readability
+          await withRetry('status-overview', () =>
+            shot('docs/screenshots/04-status-overview.png', `${BASE}/`, {
+              fullPage: false,
+              stableSelector: '#storage, body',
+              clipSelector: '#storage'
+            })
+          );
+
+          await browser.close();
+          SCRIPT
+
+      - name: Take screenshots
+        env:
+          UI_BASE: http://localhost:${{ env.UI_PORT }}
+        run: |
+          set -euo pipefail
+          mkdir -p docs/screenshots
+          node take-screenshots.mjs
+          echo "Screenshots captured:"
+          ls -lh docs/screenshots/*.png
+
+      - name: Stop dashboard
+        if: always()
+        run: |
+          if [ -n "${MERIDIAN_PID:-}" ]; then
+            kill "$MERIDIAN_PID" 2>/dev/null || true
+          fi
+
+      - name: Commit updated screenshots
+        uses: stefanzweifel/git-auto-commit-action@v7
+        with:
+          commit_message: 'docs(screenshots): refresh UI screenshots'
+          file_pattern: docs/screenshots/*.png
+          commit_user_name: github-actions[bot]
+          commit_user_email: 41898282+github-actions[bot]@users.noreply.github.com
+          push_options: '--force-with-lease'
+
+      - name: Write workflow summary
+        if: always()
+        run: |
+          {
+            echo "## UI Screenshot Refresh"
+            echo ""
+            echo "| Screenshot | File |"
+            echo "|-----------|------|"
+            echo "| Main Dashboard | \`docs/screenshots/01-dashboard.png\` |"
+            echo "| React Workstation Shell | \`docs/screenshots/02-workstation.png\` |"
+            echo "| Swagger API Docs | \`docs/screenshots/03-swagger.png\` |"
+            echo "| Storage / Status Overview | \`docs/screenshots/04-status-overview.png\` |"
+          } >> "$GITHUB_STEP_SUMMARY"

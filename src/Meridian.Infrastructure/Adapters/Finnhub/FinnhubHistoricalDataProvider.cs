@@ -28,22 +28,23 @@ namespace Meridian.Infrastructure.Adapters.Finnhub;
 [ImplementsAdr("ADR-001", "Finnhub historical data provider implementation")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
+[RequiresCredential("FINNHUB_API_KEY",
+    EnvironmentVariables = new[] { "FINNHUB_API_KEY", "FINNHUB__APIKEY" },
+    DisplayName = "API Key",
+    Description = "Finnhub API key from https://finnhub.io/dashboard")]
 public sealed class FinnhubHistoricalDataProvider : BaseHistoricalDataProvider
 {
     private const string BaseUrl = "https://finnhub.io/api/v1";
 
     private readonly string? _apiKey;
 
-    #region Abstract Property Implementations
 
     public override string Name => "finnhub";
     public override string DisplayName => "Finnhub (free tier)";
     public override string Description => "Global equities with generous 60 calls/min free tier. Includes fundamentals, earnings, and news.";
     protected override string HttpClientName => HttpClientNames.FinnhubHistorical;
 
-    #endregion
 
-    #region Virtual Property Overrides
 
     public override int Priority => 18;
     public override TimeSpan RateLimitDelay => TimeSpan.FromSeconds(1); // 60 requests/minute = 1 second between requests
@@ -62,7 +63,6 @@ public sealed class FinnhubHistoricalDataProvider : BaseHistoricalDataProvider
         SupportedMarkets = ["US", "UK", "DE", "CA", "AU", "HK", "JP", "CN"]
     };
 
-    #endregion
 
     /// <summary>
     /// Supported candle resolutions.
@@ -368,7 +368,6 @@ public sealed class FinnhubHistoricalDataProvider : BaseHistoricalDataProvider
         }
     }
 
-    #region Helper Methods
 
     protected override string NormalizeSymbol(string symbol)
     {
@@ -422,9 +421,7 @@ public sealed class FinnhubHistoricalDataProvider : BaseHistoricalDataProvider
         return (long)array[index];
     }
 
-    #endregion
 
-    #region Finnhub API Models
 
     private sealed class FinnhubCandleResponse
     {
@@ -450,10 +447,8 @@ public sealed class FinnhubHistoricalDataProvider : BaseHistoricalDataProvider
         public decimal[]? Volume { get; set; }
     }
 
-    #endregion
 }
 
-#region Finnhub Data Types
 
 /// <summary>
 /// Finnhub earnings data.
@@ -527,4 +522,3 @@ public sealed record FinnhubCompanyProfile
     public string? WebUrl { get; init; }
 }
 
-#endregion

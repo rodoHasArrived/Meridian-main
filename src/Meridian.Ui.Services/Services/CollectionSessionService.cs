@@ -44,15 +44,11 @@ public sealed class CollectionSessionService
             if (File.Exists(_sessionsFilePath))
             {
                 var json = await File.ReadAllTextAsync(_sessionsFilePath);
-                _sessionsConfig = JsonSerializer.Deserialize<CollectionSessionsConfig>(json, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+                _sessionsConfig = JsonSerializer.Deserialize<CollectionSessionsConfig>(json, DesktopJsonOptions.Compact);
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine($"Failed to load sessions: {ex.Message}");
         }
 
         _sessionsConfig ??= new CollectionSessionsConfig { Sessions = Array.Empty<CollectionSession>() };
@@ -69,16 +65,11 @@ public sealed class CollectionSessionService
 
         try
         {
-            var json = JsonSerializer.Serialize(_sessionsConfig, new JsonSerializerOptions
-            {
-                WriteIndented = true,
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            });
+            var json = JsonSerializer.Serialize(_sessionsConfig, DesktopJsonOptions.PrettyPrint);
             await File.WriteAllTextAsync(_sessionsFilePath, json);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine($"Failed to save sessions: {ex.Message}");
         }
     }
 
@@ -235,9 +226,8 @@ public sealed class CollectionSessionService
                 session.ManifestPath = manifest.Item2;
                 await SaveSessionsAsync();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                System.Diagnostics.Debug.WriteLine($"Failed to generate manifest: {ex.Message}");
             }
         }
 

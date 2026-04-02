@@ -1,8 +1,8 @@
 # Meridian
 
-Meridian is a comprehensive fund management platform in active delivery. The current platform includes market-data ingestion (90+ streaming sources, 10+ backfill providers), tiered storage (WAL + JSONL/Parquet), backtesting (tick-level replay with fill models), a brokerage gateway framework (Alpaca, IB, StockSharp adapters), paper-trading with risk rules, portfolio and ledger read models, Security Master foundations, direct-lending services, and a web dashboard with 300 API routes. The next delivery wave focuses on wiring brokerage gateways into a paper-trading cockpit, provider confidence hardening, Security Master productization, and governance/fund-operations product slices.
+Meridian is a .NET 9 fund-management and trading-platform codebase in active delivery. The current solution spans market-data ingestion and backfill, tiered storage, backtesting, execution and risk seams, portfolio and ledger workflows, QuantScript tooling, MCP surfaces, a web UI, and a Windows WPF workstation shell. The current delivery focus is turning that breadth into a more cohesive operator product across research, trading, data operations, governance, and fund-operations workflows.
 
-> **WPF Desktop App:** Code is present in `src/Meridian.Wpf/` and is included in the solution build. On Windows it builds as the full WPF desktop application; on Linux/macOS it compiles as a minimal stub for CI compatibility. The web dashboard (`make run-ui`) remains the cross-platform UI surface.
+> **Desktop + web surfaces:** `src/Meridian.Wpf/` is the Windows desktop shell. `src/Meridian.Ui/` is the web/API surface, and `src/Meridian.Ui/dashboard/` contains the dashboard frontend toolchain. On non-Windows platforms the WPF project remains in the solution as a CI-friendly stub build, while the web dashboard stays the primary cross-platform UI path.
 
 ## Start Here
 
@@ -27,6 +27,96 @@ Meridian's intended end state is a self-hosted fund management system where oper
 - generate governance, investor, and compliance reports
 - promote safely into paper and later live workflows
 
+## Solution Map
+
+The solution currently includes these major areas:
+
+- `src/Meridian`, `src/Meridian.Application`, `src/Meridian.Domain`, `src/Meridian.Core`, `src/Meridian.Contracts`, `src/Meridian.Infrastructure`, and `src/Meridian.Storage` for the main host plus core application/domain/infrastructure/storage layers
+- `src/Meridian.ProviderSdk`, `src/Meridian.Execution`, `src/Meridian.Execution.Sdk`, `src/Meridian.Risk`, and `src/Meridian.Strategies` for provider, execution, risk, and strategy seams
+- `src/Meridian.Backtesting` and `src/Meridian.Backtesting.Sdk` for replay and backtesting
+- `src/Meridian.Ledger`, `src/Meridian.FSharp.Ledger`, and `src/Meridian.FSharp.DirectLending.Aggregates` for accounting and direct-lending/domain-specialized work
+- `src/Meridian.QuantScript` for scripting and charting-oriented tooling
+- `src/Meridian.Mcp` and `src/Meridian.McpServer` for Model Context Protocol integration surfaces
+- `src/Meridian.Ui`, `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared`, and `src/Meridian.Wpf` for web and desktop UI layers
+- `tests/` and `benchmarks/` for automated validation and performance work
+
+## Verified Entry Points
+
+### Main CLI host — `src/Meridian`
+
+The primary runnable project. Supports multiple modes via `--mode <mode>` or legacy flags:
+
+| Mode / flag | What runs |
+|---|---|
+| `--mode web` or `--ui` | ASP.NET web dashboard + REST API on `http://localhost:8080` |
+| `--mode desktop` | Collector + embedded web server with config hot-reload |
+| `--mode headless` | Collector only, no HTTP server |
+| `--backfill` | Historical data backfill (combine with `--backfill-provider`, `--backfill-symbols`, `--backfill-from`, `--backfill-to`) |
+| `--selftest` | Wiring self-test; exits with pass/fail |
+| `--simulate-feed` | Synthetic feed simulation for offline development |
+| `--validate-config` / `--check-config` | Config validation without starting any services |
+| `--recommend-providers` | Print a provider recommendation report and exit |
+| `--symbols` / `--symbols-add` / `--symbols-remove` | Symbol management commands |
+| `--dry-run` | Validate configuration and connectivity without side effects |
+| `--quickstart` | Interactive first-run bootstrap wizard |
+
+```bash
+dotnet run --project src/Meridian/Meridian.csproj -- --help
+dotnet run --project src/Meridian/Meridian.csproj -- --mode web --http-port 8080
+dotnet run --project src/Meridian/Meridian.csproj -- --backfill --backfill-symbols AAPL,MSFT --backfill-from 2024-01-01 --backfill-to 2024-12-31
+```
+
+Config path resolution: `--config <path>` → `MDC_CONFIG_PATH` env var → `config/appsettings.json`.
+
+### Standalone web dashboard — `src/Meridian.Ui`
+
+A thin ASP.NET Core host that serves only the web dashboard and REST API. All endpoint logic and services come from `Meridian.Ui.Shared`. Use this instead of the main CLI host when you want a minimal web-only process.
+
+```bash
+dotnet run --project src/Meridian.Ui/Meridian.Ui.csproj
+```
+
+### MCP server (minimal) — `src/Meridian.Mcp`
+
+A lightweight [Model Context Protocol](https://modelcontextprotocol.io/) server. Loads tools, prompts, and resources from the assembly and communicates over stdio. Intended for repo-navigation and code-review AI tooling. All diagnostic output goes to stderr; stdout is reserved for the MCP protocol.
+
+```bash
+dotnet run --project src/Meridian.Mcp/Meridian.Mcp.csproj
+```
+
+### MCP server (market data) — `src/Meridian.McpServer`
+
+A full-featured MCP server that exposes market data capabilities (provider queries, backfill, storage catalog, symbol management) as MCP tools, resources, and prompts. Lets LLMs interact with live provider data over the stdio transport.
+
+```bash
+dotnet run --project src/Meridian.McpServer/Meridian.McpServer.csproj -- --config config/appsettings.json
+```
+
+Config path resolution: `--config <path>` → `MDC_CONFIG_PATH` env var → `config/appsettings.json`.
+
+### Windows WPF desktop app — `src/Meridian.Wpf`
+
+The full Windows workstation shell. Requires Windows and the full WPF build flag. On non-Windows the project builds as a stub for CI compatibility.
+
+```bash
+dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj /p:EnableFullWpfBuild=true
+```
+
+### Makefile shortcuts
+
+```bash
+make help           # List all task targets
+make run            # Collector with config hot-reload (--mode desktop)
+make run-ui         # Web dashboard (--mode web, port 8080)
+make run-backfill   # Historical backfill
+make run-selftest   # Wiring self-test
+make benchmark      # Full BenchmarkDotNet suite
+make bench-quick    # Quick bottleneck benchmarks (~10 min)
+make setup-dev      # One-shot local dev setup (hooks, config, restore, build)
+```
+
+See [docs/HELP.md](docs/HELP.md) for the full operator/developer quick reference including environment variables, configuration schema, and provider credential setup.
+
 ## Planning Source of Truth
 
 Use these documents together when planning or implementing new work:
@@ -42,7 +132,8 @@ Use these documents together when planning or implementing new work:
 │   ├── agents
 │   │   ├── meridian-blueprint.md
 │   │   ├── meridian-cleanup.md
-│   │   └── meridian-docs.md
+│   │   ├── meridian-docs.md
+│   │   └── meridian-navigation.md
 │   ├── settings.json
 │   ├── settings.local.json
 │   └── skills
@@ -118,12 +209,12 @@ Use these documents together when planning or implementing new work:
 │       │   ├── SKILL.md
 │       │   └── references
 │       │       └── competitive-landscape.md
+│       ├── meridian-cleanup
+│       │   └── SKILL.md
 │       ├── meridian-code-review
 │       │   └── SKILL.md
 │       ├── meridian-implementation-assurance
 │       │   ├── SKILL.md
-│       │   ├── agents
-│       │   │   └── openai.yaml
 │       │   ├── evals
 │       │   │   ├── artifacts
 │       │   │   │   ├── eval-1.jsonl
@@ -146,10 +237,12 @@ Use these documents together when planning or implementing new work:
 │       │   ├── SKILL.md
 │       │   └── references
 │       │       └── provider-patterns.md
+│       ├── meridian-repo-navigation
+│       │   ├── SKILL.md
+│       │   └── agents
+│       │       └── openai.yaml
 │       ├── meridian-roadmap-strategist
 │       │   ├── SKILL.md
-│       │   ├── agents
-│       │   │   └── openai.yaml
 │       │   └── references
 │       │       └── roadmap-source-map.md
 │       └── meridian-test-writer
@@ -157,7 +250,9 @@ Use these documents together when planning or implementing new work:
 │           └── references
 │               └── test-patterns.md
 ├── .devcontainer
-│   └── devcontainer.json
+│   ├── Dockerfile
+│   ├── devcontainer.json
+│   └── docker-compose.yml
 ├── .editorconfig
 ├── .flake8
 ├── .gitattributes
@@ -179,12 +274,12 @@ Use these documents together when planning or implementing new work:
 │   │   ├── brainstorm-agent.md
 │   │   ├── bug-fix-agent.md
 │   │   ├── cleanup-agent.md
-│   │   ├── cleanup-specialist.agent.md
 │   │   ├── code-review-agent.md
 │   │   ├── documentation-agent.md
 │   │   ├── implementation-assurance-agent.md
 │   │   ├── performance-agent.md
 │   │   ├── provider-builder-agent.md
+│   │   ├── repo-navigation-agent.md
 │   │   └── test-writer-agent.md
 │   ├── copilot-instructions.md
 │   ├── dependabot.yml
@@ -225,6 +320,7 @@ Use these documents together when planning or implementing new work:
 │       ├── canonicalization-fixture-maintenance.yml
 │       ├── close-duplicate-issues.yml
 │       ├── code-quality.yml
+│       ├── codeql.yml
 │       ├── copilot-pull-request-reviewer.yml
 │       ├── copilot-setup-steps.yml
 │       ├── copilot-swe-agent-copilot.yml
@@ -242,8 +338,10 @@ Use these documents together when planning or implementing new work:
 │       ├── prompt-generation.yml
 │       ├── python-package-conda.yml
 │       ├── readme-tree.yml
+│       ├── refresh-screenshots.yml
 │       ├── release.yml
 │       ├── repo-health.yml
+│       ├── reusable-ai-analysis.yml
 │       ├── reusable-dotnet-build.yml
 │       ├── scheduled-maintenance.yml
 │       ├── security.yml
@@ -259,167 +357,16 @@ Use these documents together when planning or implementing new work:
 ├── .globalconfig
 ├── .markdownlint.json
 ├── .vsconfig
-├── AGENT_IMPLEMENTATION_SUMMARY.md
-├── AGENT_QUICK_REFERENCE.md
 ├── CLAUDE.md
-├── CONTEXTUAL_COMMANDS_IMPLEMENTATION_SUMMARY.md
-├── CORPACTIONS_IMPLEMENTATION.md
 ├── Directory.Build.props
 ├── Directory.Packages.props
-├── IMPLEMENTATION_CHECKLIST.md
-├── IMPLEMENTATION_SUMMARY.md
 ├── LICENSE
 ├── Makefile
 ├── Meridian.sln
+├── PROJECTS
+│   └── Phase_1.5_Preferred_and_Convertible_Equity_Support.md
 ├── README.md
-├── SYSTEM_TRAY_IMPLEMENTATION.md
 ├── archive
-│   ├── README.md
-│   ├── code
-│   │   ├── README.md
-│   │   └── obj-codex
-│   │       ├── src
-│   │       │   ├── Meridian
-│   │       │   │   └── obj-codex
-│   │       │   │       ├── Meridian.csproj.nuget.dgspec.json
-│   │       │   │       ├── Meridian.csproj.nuget.g.props
-│   │       │   │       ├── Meridian.csproj.nuget.g.targets
-│   │       │   │       ├── project.assets.json
-│   │       │   │       └── project.nuget.cache
-│   │       │   ├── Meridian.Application
-│   │       │   │   └── obj-codex
-│   │       │   │       ├── Meridian.Application.csproj.nuget.dgspec.json
-│   │       │   │       ├── Meridian.Application.csproj.nuget.g.props
-│   │       │   │       ├── Meridian.Application.csproj.nuget.g.targets
-│   │       │   │       ├── project.assets.json
-│   │       │   │       └── project.nuget.cache
-│   │       │   ├── Meridian.Backtesting.Sdk
-│   │       │   │   └── obj-codex
-│   │       │   │       ├── Meridian.Backtesting.Sdk.csproj.nuget.dgspec.json
-│   │       │   │       ├── Meridian.Backtesting.Sdk.csproj.nuget.g.props
-│   │       │   │       ├── Meridian.Backtesting.Sdk.csproj.nuget.g.targets
-│   │       │   │       ├── project.assets.json
-│   │       │   │       └── project.nuget.cache
-│   │       │   ├── Meridian.Contracts
-│   │       │   │   └── obj-codex
-│   │       │   │       ├── Meridian.Contracts.csproj.nuget.dgspec.json
-│   │       │   │       ├── Meridian.Contracts.csproj.nuget.g.props
-│   │       │   │       ├── Meridian.Contracts.csproj.nuget.g.targets
-│   │       │   │       ├── project.assets.json
-│   │       │   │       └── project.nuget.cache
-│   │       │   ├── Meridian.Core
-│   │       │   │   └── obj-codex
-│   │       │   │       ├── Meridian.Core.csproj.nuget.dgspec.json
-│   │       │   │       ├── Meridian.Core.csproj.nuget.g.props
-│   │       │   │       ├── Meridian.Core.csproj.nuget.g.targets
-│   │       │   │       ├── project.assets.json
-│   │       │   │       └── project.nuget.cache
-│   │       │   ├── Meridian.Domain
-│   │       │   │   └── obj-codex
-│   │       │   │       ├── Meridian.Domain.csproj.nuget.dgspec.json
-│   │       │   │       ├── Meridian.Domain.csproj.nuget.g.props
-│   │       │   │       ├── Meridian.Domain.csproj.nuget.g.targets
-│   │       │   │       ├── project.assets.json
-│   │       │   │       └── project.nuget.cache
-│   │       │   ├── Meridian.Execution
-│   │       │   │   └── obj-codex
-│   │       │   │       ├── Meridian.Execution.csproj.nuget.dgspec.json
-│   │       │   │       ├── Meridian.Execution.csproj.nuget.g.props
-│   │       │   │       ├── Meridian.Execution.csproj.nuget.g.targets
-│   │       │   │       ├── project.assets.json
-│   │       │   │       └── project.nuget.cache
-│   │       │   ├── Meridian.Execution.Sdk
-│   │       │   │   └── obj-codex
-│   │       │   │       ├── Meridian.Execution.Sdk.csproj.nuget.dgspec.json
-│   │       │   │       ├── Meridian.Execution.Sdk.csproj.nuget.g.props
-│   │       │   │       ├── Meridian.Execution.Sdk.csproj.nuget.g.targets
-│   │       │   │       ├── project.assets.json
-│   │       │   │       └── project.nuget.cache
-│   │       │   ├── Meridian.FSharp
-│   │       │   │   └── obj-codex
-│   │       │   │       ├── Meridian.FSharp.fsproj.nuget.dgspec.json
-│   │       │   │       ├── Meridian.FSharp.fsproj.nuget.g.props
-│   │       │   │       ├── Meridian.FSharp.fsproj.nuget.g.targets
-│   │       │   │       ├── project.assets.json
-│   │       │   │       └── project.nuget.cache
-│   │       │   ├── Meridian.FSharp.Ledger
-│   │       │   │   └── obj-codex
-│   │       │   │       ├── Meridian.FSharp.Ledger.fsproj.nuget.dgspec.json
-│   │       │   │       ├── Meridian.FSharp.Ledger.fsproj.nuget.g.props
-│   │       │   │       ├── Meridian.FSharp.Ledger.fsproj.nuget.g.targets
-│   │       │   │       ├── project.assets.json
-│   │       │   │       └── project.nuget.cache
-│   │       │   ├── Meridian.FSharp.Trading
-│   │       │   │   └── obj-codex
-│   │       │   │       ├── Meridian.FSharp.Trading.fsproj.nuget.dgspec.json
-│   │       │   │       ├── Meridian.FSharp.Trading.fsproj.nuget.g.props
-│   │       │   │       ├── Meridian.FSharp.Trading.fsproj.nuget.g.targets
-│   │       │   │       ├── project.assets.json
-│   │       │   │       └── project.nuget.cache
-│   │       │   ├── Meridian.Infrastructure
-│   │       │   │   └── obj-codex
-│   │       │   │       ├── Meridian.Infrastructure.csproj.nuget.dgspec.json
-│   │       │   │       ├── Meridian.Infrastructure.csproj.nuget.g.props
-│   │       │   │       ├── Meridian.Infrastructure.csproj.nuget.g.targets
-│   │       │   │       ├── project.assets.json
-│   │       │   │       └── project.nuget.cache
-│   │       │   ├── Meridian.Infrastructure.CppTrader
-│   │       │   │   └── obj-codex
-│   │       │   │       ├── Meridian.Infrastructure.CppTrader.csproj.nuget.dgspec.json
-│   │       │   │       ├── Meridian.Infrastructure.CppTrader.csproj.nuget.g.props
-│   │       │   │       ├── Meridian.Infrastructure.CppTrader.csproj.nuget.g.targets
-│   │       │   │       ├── project.assets.json
-│   │       │   │       └── project.nuget.cache
-│   │       │   ├── Meridian.Ledger
-│   │       │   │   └── obj-codex
-│   │       │   │       ├── Meridian.Ledger.csproj.nuget.dgspec.json
-│   │       │   │       ├── Meridian.Ledger.csproj.nuget.g.props
-│   │       │   │       ├── Meridian.Ledger.csproj.nuget.g.targets
-│   │       │   │       ├── project.assets.json
-│   │       │   │       └── project.nuget.cache
-│   │       │   ├── Meridian.ProviderSdk
-│   │       │   │   └── obj-codex
-│   │       │   │       ├── Meridian.ProviderSdk.csproj.nuget.dgspec.json
-│   │       │   │       ├── Meridian.ProviderSdk.csproj.nuget.g.props
-│   │       │   │       ├── Meridian.ProviderSdk.csproj.nuget.g.targets
-│   │       │   │       ├── project.assets.json
-│   │       │   │       └── project.nuget.cache
-│   │       │   ├── Meridian.Risk
-│   │       │   │   └── obj-codex
-│   │       │   │       ├── Meridian.Risk.csproj.nuget.dgspec.json
-│   │       │   │       ├── Meridian.Risk.csproj.nuget.g.props
-│   │       │   │       ├── Meridian.Risk.csproj.nuget.g.targets
-│   │       │   │       ├── project.assets.json
-│   │       │   │       └── project.nuget.cache
-│   │       │   ├── Meridian.Storage
-│   │       │   │   └── obj-codex
-│   │       │   │       ├── Meridian.Storage.csproj.nuget.dgspec.json
-│   │       │   │       ├── Meridian.Storage.csproj.nuget.g.props
-│   │       │   │       ├── Meridian.Storage.csproj.nuget.g.targets
-│   │       │   │       ├── project.assets.json
-│   │       │   │       └── project.nuget.cache
-│   │       │   ├── Meridian.Strategies
-│   │       │   │   └── obj-codex
-│   │       │   │       ├── Meridian.Strategies.csproj.nuget.dgspec.json
-│   │       │   │       ├── Meridian.Strategies.csproj.nuget.g.props
-│   │       │   │       ├── Meridian.Strategies.csproj.nuget.g.targets
-│   │       │   │       ├── project.assets.json
-│   │       │   │       └── project.nuget.cache
-│   │       │   └── Meridian.Ui.Shared
-│   │       │       └── obj-codex
-│   │       │           ├── Meridian.Ui.Shared.csproj.nuget.dgspec.json
-│   │       │           ├── Meridian.Ui.Shared.csproj.nuget.g.props
-│   │       │           ├── Meridian.Ui.Shared.csproj.nuget.g.targets
-│   │       │           ├── project.assets.json
-│   │       │           └── project.nuget.cache
-│   │       └── tests
-│   │           └── Meridian.Tests
-│   │               └── obj-codex
-│   │                   ├── Meridian.Tests.csproj.nuget.dgspec.json
-│   │                   ├── Meridian.Tests.csproj.nuget.g.props
-│   │                   ├── Meridian.Tests.csproj.nuget.g.targets
-│   │                   ├── project.assets.json
-│   │                   └── project.nuget.cache
 │   └── docs
 │       ├── INDEX.md
 │       ├── README.md
@@ -534,6 +481,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── add-todos.py
 │       │   ├── ai-docs-maintenance.py
 │       │   ├── create-todo-issues.py
+│       │   ├── generate-ai-navigation.py
 │       │   ├── generate-changelog.py
 │       │   ├── generate-coverage.py
 │       │   ├── generate-dependency-graph.py
@@ -571,6 +519,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── stop-collector.ps1
 │       │   └── stop-collector.sh
 │       ├── tests
+│       │   ├── test_generate_ai_navigation.py
 │       │   └── test_validate_budget.py
 │       ├── validate-tooling-metadata.py
 │       └── validate_budget.py
@@ -613,6 +562,7 @@ Use these documents together when planning or implementing new work:
 │   ├── DEPENDENCIES.md
 │   ├── HELP.md
 │   ├── README.md
+│   ├── WORKFLOW_GUIDE.md
 │   ├── adr
 │   │   ├── 001-provider-abstraction.md
 │   │   ├── 002-tiered-storage-architecture.md
@@ -651,7 +601,12 @@ Use these documents together when planning or implementing new work:
 │   │   ├── copilot
 │   │   │   ├── ai-sync-workflow.md
 │   │   │   └── instructions.md
+│   │   ├── generated
+│   │   │   ├── repo-navigation.json
+│   │   │   └── repo-navigation.md
 │   │   ├── instructions
+│   │   │   └── README.md
+│   │   ├── navigation
 │   │   │   └── README.md
 │   │   ├── prompts
 │   │   │   └── README.md
@@ -669,7 +624,8 @@ Use these documents together when planning or implementing new work:
 │   │   ├── provider-management.md
 │   │   ├── storage-design.md
 │   │   ├── ui-redesign.md
-│   │   └── why-this-architecture.md
+│   │   ├── why-this-architecture.md
+│   │   └── wpf-shell-mvvm.md
 │   ├── audits
 │   │   ├── AUDIT_REPORT.md
 │   │   ├── BACKTEST_ENGINE_CODE_REVIEW_2026_03_25.md
@@ -892,7 +848,8 @@ Use these documents together when planning or implementing new work:
 │   │   ├── repository-structure.md
 │   │   └── workflows-overview.md
 │   ├── getting-started
-│   │   └── README.md
+│   │   ├── README.md
+│   │   └── pilot-operator-quickstart.md
 │   ├── integrations
 │   │   ├── README.md
 │   │   ├── fsharp-integration.md
@@ -901,11 +858,13 @@ Use these documents together when planning or implementing new work:
 │   ├── operations
 │   │   ├── README.md
 │   │   ├── deployment.md
+│   │   ├── governance-operator-workflow.md
 │   │   ├── high-availability.md
 │   │   ├── msix-packaging.md
 │   │   ├── operator-runbook.md
 │   │   ├── performance-tuning.md
 │   │   ├── portable-data-packager.md
+│   │   ├── preflight-checklist.md
 │   │   └── service-level-objectives.md
 │   ├── plans
 │   │   ├── README.md
@@ -929,7 +888,10 @@ Use these documents together when planning or implementing new work:
 │   │   ├── ufl-bond-target-state-v2.md
 │   │   ├── ufl-cash-sweep-target-state-v2.md
 │   │   ├── ufl-certificate-of-deposit-target-state-v2.md
+│   │   ├── ufl-cfd-target-state-v2.md
 │   │   ├── ufl-commercial-paper-target-state-v2.md
+│   │   ├── ufl-commodity-target-state-v2.md
+│   │   ├── ufl-crypto-target-state-v2.md
 │   │   ├── ufl-deposit-target-state-v2.md
 │   │   ├── ufl-direct-lending-implementation-roadmap.md
 │   │   ├── ufl-direct-lending-target-state-v2.md
@@ -943,6 +905,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── ufl-supported-assets-index.md
 │   │   ├── ufl-swap-target-state-v2.md
 │   │   ├── ufl-treasury-bill-target-state-v2.md
+│   │   ├── ufl-warrant-target-state-v2.md
 │   │   ├── workstation-release-readiness-blueprint.md
 │   │   └── workstation-sprint-1-implementation-backlog.md
 │   ├── providers
@@ -953,6 +916,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── interactive-brokers-free-equity-reference.md
 │   │   ├── interactive-brokers-setup.md
 │   │   ├── provider-comparison.md
+│   │   ├── provider-confidence-baseline.md
 │   │   ├── security-master-guide.md
 │   │   └── stocksharp-connectors.md
 │   ├── reference
@@ -963,6 +927,12 @@ Use these documents together when planning or implementing new work:
 │   │   ├── design-review-memo.md
 │   │   ├── environment-variables.md
 │   │   └── open-source-references.md
+│   ├── screenshots
+│   │   ├── 01-dashboard.png
+│   │   ├── 02-workstation.png
+│   │   ├── 03-swagger.png
+│   │   ├── 04-status-overview.png
+│   │   └── README.md
 │   ├── security
 │   │   ├── README.md
 │   │   └── known-vulnerabilities.md
@@ -987,10 +957,14 @@ Use these documents together when planning or implementing new work:
 │   │   ├── link-repair-report.md
 │   │   ├── metrics-dashboard.md
 │   │   ├── production-status.md
+│   │   ├── provider-validation-matrix.md
 │   │   └── rules-report.md
 │   └── toc.yml
 ├── environment.yml
 ├── global.json
+├── issues
+│   ├── phase-1-5-add-equityclassification-discriminator-and-preferredterms-domain-model.md
+│   └── phase_1_5_1_add_equityclassification_discriminator_and_preferredterms_domain_model.md
 ├── make
 │   ├── ai.mk
 │   ├── build.mk
@@ -1059,7 +1033,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── BackfillResult.cs
 │   │   │   ├── BackfillStatusStore.cs
 │   │   │   ├── GapBackfillService.cs
-│   │   │   └── HistoricalBackfillService.cs
+│   │   │   ├── HistoricalBackfillService.cs
+│   │   │   └── SymbolValidationSignal.cs
 │   │   ├── Banking
 │   │   │   ├── BankingException.cs
 │   │   │   ├── IBankingService.cs
@@ -1115,7 +1090,20 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── SecurityMasterStartup.cs
 │   │   │   ├── ServiceCompositionRoot.cs
 │   │   │   └── Startup
-│   │   │       └── SharedStartupBootstrapper.cs
+│   │   │       ├── ModeRunners
+│   │   │       │   ├── BackfillModeRunner.cs
+│   │   │       │   ├── CollectorModeRunner.cs
+│   │   │       │   ├── CommandModeRunner.cs
+│   │   │       │   ├── DesktopModeRunner.cs
+│   │   │       │   └── WebModeRunner.cs
+│   │   │       ├── SharedStartupBootstrapper.cs
+│   │   │       ├── StartupModels
+│   │   │       │   ├── HostMode.cs
+│   │   │       │   ├── StartupContext.cs
+│   │   │       │   ├── StartupPlan.cs
+│   │   │       │   ├── StartupRequest.cs
+│   │   │       │   └── StartupValidationResult.cs
+│   │   │       └── StartupOrchestrator.cs
 │   │   ├── Config
 │   │   │   ├── AppConfigJsonOptions.cs
 │   │   │   ├── ConfigDtoMapper.cs
@@ -1130,6 +1118,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── OAuthToken.cs
 │   │   │   │   ├── OAuthTokenRefreshService.cs
 │   │   │   │   └── ProviderCredentialResolver.cs
+│   │   │   ├── DefaultConfigPathResolver.cs
 │   │   │   ├── DeploymentContext.cs
 │   │   │   ├── IConfigValidator.cs
 │   │   │   ├── SensitiveValueMasker.cs
@@ -1253,14 +1242,18 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── OperationalScheduler.cs
 │   │   │   └── ScheduledBackfillService.cs
 │   │   ├── SecurityMaster
+│   │   │   ├── ILivePositionCorporateActionAdjuster.cs
 │   │   │   ├── ISecurityMasterQueryService.cs
 │   │   │   ├── ISecurityMasterService.cs
 │   │   │   ├── ISecurityResolver.cs
+│   │   │   ├── NullSecurityMasterServices.cs
 │   │   │   ├── SecurityEconomicDefinitionAdapter.cs
 │   │   │   ├── SecurityMasterAggregateRebuilder.cs
+│   │   │   ├── SecurityMasterCanonicalSymbolSeedService.cs
 │   │   │   ├── SecurityMasterConflictService.cs
 │   │   │   ├── SecurityMasterCsvParser.cs
 │   │   │   ├── SecurityMasterImportService.cs
+│   │   │   ├── SecurityMasterLedgerBridge.cs
 │   │   │   ├── SecurityMasterMapping.cs
 │   │   │   ├── SecurityMasterOptionsValidator.cs
 │   │   │   ├── SecurityMasterProjectionService.cs
@@ -1323,6 +1316,10 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── EventTraceContext.cs
 │   │   │   ├── OpenTelemetrySetup.cs
 │   │   │   └── TracedEventMetrics.cs
+│   │   ├── Treasury
+│   │   │   ├── IMmfLiquidityService.cs
+│   │   │   ├── IMoneyMarketFundService.cs
+│   │   │   └── InMemoryMoneyMarketFundService.cs
 │   │   └── Wizard
 │   │       ├── Core
 │   │       │   ├── IWizardStep.cs
@@ -1535,6 +1532,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── CollectionSession.cs
 │   │   ├── Store
 │   │   │   └── MarketDataQuery.cs
+│   │   ├── Treasury
+│   │   │   └── MoneyMarketFundDtos.cs
 │   │   └── Workstation
 │   │       ├── ReconciliationDtos.cs
 │   │       ├── SecurityMasterWorkstationDtos.cs
@@ -1641,6 +1640,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── UnsupportedOrderRequestException.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── IRiskValidator.cs
+│   │   ├── ISecurityMasterGate.cs
 │   │   ├── Interfaces
 │   │   │   ├── IExecutionContext.cs
 │   │   │   ├── ILiveFeedAdapter.cs
@@ -1657,6 +1657,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── OrderManagementSystem.cs
 │   │   ├── PaperExecutionContext.cs
 │   │   ├── PaperTradingGateway.cs
+│   │   ├── SecurityMasterGate.cs
 │   │   ├── Serialization
 │   │   │   └── ExecutionJsonContext.cs
 │   │   └── Services
@@ -1750,8 +1751,10 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── Alpaca
 │   │   │   │   ├── AlpacaBrokerageGateway.cs
 │   │   │   │   ├── AlpacaConstants.cs
+│   │   │   │   ├── AlpacaCorporateActionProvider.cs
 │   │   │   │   ├── AlpacaHistoricalDataProvider.cs
 │   │   │   │   ├── AlpacaMarketDataClient.cs
+│   │   │   │   ├── AlpacaProviderModule.cs
 │   │   │   │   └── AlpacaSymbolSearchProviderRefactored.cs
 │   │   │   ├── AlphaVantage
 │   │   │   │   └── AlphaVantageHistoricalDataProvider.cs
@@ -1770,8 +1773,10 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   ├── DataGapAnalyzer.cs
 │   │   │   │   │   ├── DataGapRepair.cs
 │   │   │   │   │   └── DataQualityMonitor.cs
+│   │   │   │   ├── ICorporateActionProvider.cs
 │   │   │   │   ├── IHistoricalDataProvider.cs
 │   │   │   │   ├── ISymbolSearchProvider.cs
+│   │   │   │   ├── ProviderBehaviorBuilder.cs
 │   │   │   │   ├── ProviderFactory.cs
 │   │   │   │   ├── ProviderRegistry.cs
 │   │   │   │   ├── ProviderServiceExtensions.cs
@@ -1828,6 +1833,9 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── PolygonSecurityMasterIngestProvider.cs
 │   │   │   │   ├── PolygonSymbolSearchProvider.cs
 │   │   │   │   └── TradingParametersBackfillService.cs
+│   │   │   ├── Robinhood
+│   │   │   │   ├── RobinhoodHistoricalDataProvider.cs
+│   │   │   │   └── RobinhoodSymbolSearchProvider.cs
 │   │   │   ├── StockSharp
 │   │   │   │   ├── Converters
 │   │   │   │   │   ├── MessageConverter.cs
@@ -1967,21 +1975,28 @@ Use these documents together when planning or implementing new work:
 │   ├── Meridian.McpServer
 │   │   ├── GlobalUsings.cs
 │   │   ├── Meridian.McpServer.csproj
+│   │   ├── Navigation
+│   │   │   └── RepoNavigationCatalog.cs
 │   │   ├── Program.cs
 │   │   ├── Prompts
 │   │   │   └── MarketDataPrompts.cs
 │   │   ├── Resources
-│   │   │   └── MarketDataResources.cs
+│   │   │   ├── MarketDataResources.cs
+│   │   │   └── RepoNavigationResources.cs
 │   │   └── Tools
 │   │       ├── BackfillTools.cs
 │   │       ├── ProviderTools.cs
+│   │       ├── RepoNavigationTools.cs
 │   │       ├── StorageTools.cs
 │   │       └── SymbolTools.cs
 │   ├── Meridian.ProviderSdk
+│   │   ├── AttributeCredentialResolver.cs
+│   │   ├── CredentialSchemaRegistry.cs
 │   │   ├── CredentialValidator.cs
 │   │   ├── DataSourceAttribute.cs
 │   │   ├── DataSourceRegistry.cs
 │   │   ├── HistoricalDataCapabilities.cs
+│   │   ├── ICredentialContext.cs
 │   │   ├── IDataSource.cs
 │   │   ├── IHistoricalBarWriter.cs
 │   │   ├── IHistoricalDataSource.cs
@@ -1992,7 +2007,9 @@ Use these documents together when planning or implementing new work:
 │   │   ├── IRealtimeDataSource.cs
 │   │   ├── ImplementsAdrAttribute.cs
 │   │   ├── Meridian.ProviderSdk.csproj
-│   │   └── ProviderHttpUtilities.cs
+│   │   ├── ProviderHttpUtilities.cs
+│   │   ├── ProviderModuleLoader.cs
+│   │   └── RequiresCredentialAttribute.cs
 │   ├── Meridian.QuantScript
 │   │   ├── Api
 │   │   │   ├── BacktestProxy.cs
@@ -2207,6 +2224,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── hooks
 │   │   │   │   │   └── use-workstation-data.ts
 │   │   │   │   ├── lib
+│   │   │   │   │   ├── api.trading.test.ts
 │   │   │   │   │   ├── api.ts
 │   │   │   │   │   ├── utils.ts
 │   │   │   │   │   └── workspace.ts
@@ -2396,6 +2414,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── LoginSessionMiddleware.cs
 │   │   │   ├── MaintenanceScheduleEndpoints.cs
 │   │   │   ├── MessagingEndpoints.cs
+│   │   │   ├── MoneyMarketFundEndpoints.cs
 │   │   │   ├── OptionsEndpoints.cs
 │   │   │   ├── PathValidation.cs
 │   │   │   ├── PromotionEndpoints.cs
@@ -2434,6 +2453,53 @@ Use these documents together when planning or implementing new work:
 │       ├── App.xaml
 │       ├── App.xaml.cs
 │       ├── AssemblyInfo.cs
+│       ├── Assets
+│       │   └── Icons
+│       │       ├── README.md
+│       │       ├── admin-maintenance.svg
+│       │       ├── archive-health.svg
+│       │       ├── backfill.svg
+│       │       ├── backtest.svg
+│       │       ├── charting.svg
+│       │       ├── collection-sessions.svg
+│       │       ├── dashboard.svg
+│       │       ├── data-browser.svg
+│       │       ├── data-calendar.svg
+│       │       ├── data-export.svg
+│       │       ├── data-operations.svg
+│       │       ├── data-quality.svg
+│       │       ├── data-sampling.svg
+│       │       ├── data-sources.svg
+│       │       ├── diagnostics.svg
+│       │       ├── event-replay.svg
+│       │       ├── governance.svg
+│       │       ├── help.svg
+│       │       ├── index-subscription.svg
+│       │       ├── keyboard-shortcuts.svg
+│       │       ├── lean-integration.svg
+│       │       ├── live-data.svg
+│       │       ├── order-book.svg
+│       │       ├── portfolio-import.svg
+│       │       ├── provider-health.svg
+│       │       ├── research.svg
+│       │       ├── retention-assurance.svg
+│       │       ├── run-detail.svg
+│       │       ├── run-ledger.svg
+│       │       ├── run-mat.svg
+│       │       ├── run-portfolio.svg
+│       │       ├── schedule-manager.svg
+│       │       ├── security-master.svg
+│       │       ├── service-manager.svg
+│       │       ├── settings.svg
+│       │       ├── storage-optimization.svg
+│       │       ├── storage.svg
+│       │       ├── strategy-runs.svg
+│       │       ├── symbol-storage.svg
+│       │       ├── symbols.svg
+│       │       ├── system-health.svg
+│       │       ├── trading-hours.svg
+│       │       ├── trading.svg
+│       │       └── watchlist.svg
 │       ├── Behaviors
 │       │   ├── ParameterTemplateSelector.cs
 │       │   └── PlotRenderBehavior.cs
@@ -2455,20 +2521,24 @@ Use these documents together when planning or implementing new work:
 │       ├── Models
 │       │   ├── ActionEntry.cs
 │       │   ├── ActivityLogModels.cs
+│       │   ├── AlignmentModels.cs
 │       │   ├── AppConfig.cs
 │       │   ├── BackfillModels.cs
+│       │   ├── BlotterModels.cs
 │       │   ├── DashboardModels.cs
 │       │   ├── DataQualityModels.cs
 │       │   ├── LeanModels.cs
 │       │   ├── LiveDataModels.cs
 │       │   ├── NotificationModels.cs
 │       │   ├── OrderBookModels.cs
+│       │   ├── PaneDropEventArgs.cs
 │       │   ├── PaneLayout.cs
 │       │   ├── ProviderHealthModels.cs
 │       │   ├── QuantScriptModels.cs
 │       │   ├── SettingsModels.cs
 │       │   ├── StorageDisplayModels.cs
 │       │   ├── SymbolsModels.cs
+│       │   ├── WatchlistModels.cs
 │       │   ├── WorkspaceDefinition.cs
 │       │   ├── WorkspaceRegistry.cs
 │       │   └── WorkspaceShellModels.cs
@@ -2530,27 +2600,47 @@ Use these documents together when planning or implementing new work:
 │       │   └── ThemeTypography.xaml
 │       ├── ViewModels
 │       │   ├── ActivityLogViewModel.cs
+│       │   ├── AddProviderWizardViewModel.cs
+│       │   ├── AdminMaintenanceViewModel.cs
+│       │   ├── AdvancedAnalyticsViewModel.cs
 │       │   ├── AgentViewModel.cs
+│       │   ├── AnalysisExportViewModel.cs
+│       │   ├── AnalysisExportWizardViewModel.cs
 │       │   ├── BackfillViewModel.cs
 │       │   ├── BacktestViewModel.cs
 │       │   ├── BatchBacktestViewModel.cs
 │       │   ├── BindableBase.cs
+│       │   ├── CashFlowViewModel.cs
 │       │   ├── ChartingPageViewModel.cs
 │       │   ├── ClusterStatusViewModel.cs
+│       │   ├── CollectionSessionViewModel.cs
 │       │   ├── CredentialManagementViewModel.cs
 │       │   ├── DashboardViewModel.cs
+│       │   ├── DataBrowserViewModel.cs
+│       │   ├── DataCalendarViewModel.cs
+│       │   ├── DataExportViewModel.cs
 │       │   ├── DataQualityViewModel.cs
+│       │   ├── DataSamplingViewModel.cs
+│       │   ├── DataSourcesViewModel.cs
 │       │   ├── DiagnosticsPageViewModel.cs
 │       │   ├── DirectLendingViewModel.cs
+│       │   ├── EventReplayViewModel.cs
 │       │   ├── ExportPresetsViewModel.cs
 │       │   ├── IPageActionBarProvider.cs
+│       │   ├── IndexSubscriptionViewModel.cs
 │       │   ├── LeanIntegrationViewModel.cs
 │       │   ├── LiveDataViewerViewModel.cs
 │       │   ├── MainPageViewModel.cs
+│       │   ├── MainWindowViewModel.cs
+│       │   ├── MessagingHubViewModel.cs
 │       │   ├── NotificationCenterViewModel.cs
+│       │   ├── OptionsViewModel.cs
 │       │   ├── OrderBookHeatmapViewModel.cs
 │       │   ├── OrderBookViewModel.cs
+│       │   ├── PackageManagerViewModel.cs
 │       │   ├── PluginManagementViewModel.cs
+│       │   ├── PortfolioImportViewModel.cs
+│       │   ├── PositionBlotterViewModel.cs
 │       │   ├── ProviderHealthViewModel.cs
 │       │   ├── ProviderPageModels.cs
 │       │   ├── ProviderViewModel.cs
@@ -2558,18 +2648,25 @@ Use these documents together when planning or implementing new work:
 │       │   ├── QuantScriptViewModel.cs
 │       │   ├── QuoteFloatViewModel.cs
 │       │   ├── RunMatViewModel.cs
+│       │   ├── RunRiskViewModel.cs
 │       │   ├── SecurityMasterDeactivateViewModel.cs
 │       │   ├── SecurityMasterEditViewModel.cs
 │       │   ├── SecurityMasterViewModel.cs
 │       │   ├── ServiceManagerViewModel.cs
+│       │   ├── SettingsViewModel.cs
 │       │   ├── SplitPaneViewModel.cs
 │       │   ├── StatusBarViewModel.cs
+│       │   ├── StorageViewModel.cs
 │       │   ├── StrategyRunBrowserViewModel.cs
 │       │   ├── StrategyRunDetailViewModel.cs
 │       │   ├── StrategyRunLedgerViewModel.cs
 │       │   ├── StrategyRunPortfolioViewModel.cs
 │       │   ├── SymbolsPageViewModel.cs
-│       │   └── TickerStripViewModel.cs
+│       │   ├── SystemHealthViewModel.cs
+│       │   ├── TickerStripViewModel.cs
+│       │   ├── TradingHoursViewModel.cs
+│       │   ├── WatchlistViewModel.cs
+│       │   └── WelcomePageViewModel.cs
 │       └── Views
 │           ├── ActivityLogPage.xaml
 │           ├── ActivityLogPage.xaml.cs
@@ -2603,10 +2700,13 @@ Use these documents together when planning or implementing new work:
 │           ├── CollectionSessionPage.xaml.cs
 │           ├── CommandPaletteWindow.xaml
 │           ├── CommandPaletteWindow.xaml.cs
+│           ├── CreateWatchlistDialog.cs
 │           ├── CredentialManagementPage.xaml
 │           ├── CredentialManagementPage.xaml.cs
 │           ├── DashboardPage.xaml
 │           ├── DashboardPage.xaml.cs
+│           ├── DashboardWebPage.xaml
+│           ├── DashboardWebPage.xaml.cs
 │           ├── DataBrowserPage.xaml
 │           ├── DataBrowserPage.xaml.cs
 │           ├── DataCalendarPage.xaml
@@ -2625,6 +2725,7 @@ Use these documents together when planning or implementing new work:
 │           ├── DirectLendingPage.xaml.cs
 │           ├── EditScheduledJobDialog.xaml
 │           ├── EditScheduledJobDialog.xaml.cs
+│           ├── EditWatchlistDialog.cs
 │           ├── EventReplayPage.xaml
 │           ├── EventReplayPage.xaml.cs
 │           ├── ExportPresetsPage.xaml
@@ -2642,6 +2743,8 @@ Use these documents together when planning or implementing new work:
 │           ├── MainPage.SplitPane.cs
 │           ├── MainPage.xaml
 │           ├── MainPage.xaml.cs
+│           ├── MeridianDockingManager.xaml
+│           ├── MeridianDockingManager.xaml.cs
 │           ├── MessagingHubPage.xaml
 │           ├── MessagingHubPage.xaml.cs
 │           ├── NotificationCenterPage.xaml
@@ -2661,6 +2764,8 @@ Use these documents together when planning or implementing new work:
 │           ├── PluginManagementPage.xaml.cs
 │           ├── PortfolioImportPage.xaml
 │           ├── PortfolioImportPage.xaml.cs
+│           ├── PositionBlotterPage.xaml
+│           ├── PositionBlotterPage.xaml.cs
 │           ├── ProviderHealthPage.xaml
 │           ├── ProviderHealthPage.xaml.cs
 │           ├── ProviderPage.xaml
@@ -2675,6 +2780,8 @@ Use these documents together when planning or implementing new work:
 │           ├── ResearchWorkspaceShellPage.xaml.cs
 │           ├── RetentionAssurancePage.xaml
 │           ├── RetentionAssurancePage.xaml.cs
+│           ├── RunCashFlowPage.xaml
+│           ├── RunCashFlowPage.xaml.cs
 │           ├── RunDetailPage.xaml
 │           ├── RunDetailPage.xaml.cs
 │           ├── RunLedgerPage.xaml
@@ -2683,6 +2790,8 @@ Use these documents together when planning or implementing new work:
 │           ├── RunMatPage.xaml.cs
 │           ├── RunPortfolioPage.xaml
 │           ├── RunPortfolioPage.xaml.cs
+│           ├── RunRiskPage.xaml
+│           ├── RunRiskPage.xaml.cs
 │           ├── SaveWatchlistDialog.xaml
 │           ├── SaveWatchlistDialog.xaml.cs
 │           ├── ScheduleManagerPage.xaml
@@ -2771,6 +2880,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Meridian.McpServer.Tests.csproj
 │   │   └── Tools
 │   │       ├── BackfillToolsTests.cs
+│   │       ├── RepoNavigationToolsTests.cs
 │   │       └── StorageToolsTests.cs
 │   ├── Meridian.QuantScript.Tests
 │   │   ├── GlobalUsings.cs
@@ -2780,6 +2890,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── TestPriceSeriesBuilder.cs
 │   │   ├── Meridian.QuantScript.Tests.csproj
 │   │   ├── PlotQueueTests.cs
+│   │   ├── PortfolioBuilderTests.cs
 │   │   ├── PriceSeriesTests.cs
 │   │   ├── RoslynScriptCompilerTests.cs
 │   │   ├── ScriptRunnerTests.cs
@@ -2821,9 +2932,11 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── SymbolCommandsTests.cs
 │   │   │   │   └── ValidateConfigCommandTests.cs
 │   │   │   ├── Composition
+│   │   │   │   ├── DirectLendingStartupTests.cs
 │   │   │   │   ├── SecurityMasterStartupTests.cs
-│   │   │   │   └── Startup
-│   │   │   │       └── SharedStartupBootstrapperTests.cs
+│   │   │   │   ├── Startup
+│   │   │   │   │   └── SharedStartupBootstrapperTests.cs
+│   │   │   │   └── StorageFeatureRegistrationTests.cs
 │   │   │   ├── Config
 │   │   │   │   ├── ConfigJsonSchemaGeneratorTests.cs
 │   │   │   │   ├── ConfigSchemaIntegrationTests.cs
@@ -2839,6 +2952,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── CredentialStatusTests.cs
 │   │   │   │   ├── CredentialTestingServiceTests.cs
 │   │   │   │   └── OAuthTokenTests.cs
+│   │   │   ├── DirectLending
+│   │   │   │   └── DirectLendingOutboxDispatcherTests.cs
 │   │   │   ├── DirectLendingServiceTests.cs
 │   │   │   ├── Etl
 │   │   │   │   ├── EtlJobDefinitionStoreTests.cs
@@ -2847,8 +2962,10 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── Indicators
 │   │   │   │   └── TechnicalIndicatorServiceTests.cs
 │   │   │   ├── Monitoring
+│   │   │   │   ├── AlertDispatcherTests.cs
 │   │   │   │   ├── BackpressureAlertServiceTests.cs
 │   │   │   │   ├── BadTickFilterTests.cs
+│   │   │   │   ├── ClockSkewEstimatorTests.cs
 │   │   │   │   ├── DataQuality
 │   │   │   │   │   ├── DataFreshnessSlaMonitorTests.cs
 │   │   │   │   │   ├── DataQualityTests.cs
@@ -2882,26 +2999,28 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── SpscRingBufferTests.cs
 │   │   │   │   └── WalEventPipelineTests.cs
 │   │   │   ├── ReconciliationRunServiceTests.cs
-│   │   │   └── Services
-│   │   │       ├── CanonicalizingPublisherTests.cs
-│   │   │       ├── CliModeResolverTests.cs
-│   │   │       ├── ConditionCodeMapperTests.cs
-│   │   │       ├── ConfigurationPresetsTests.cs
-│   │   │       ├── ConfigurationServiceTests.cs
-│   │   │       ├── CronExpressionParserTests.cs
-│   │   │       ├── DataQuality
-│   │   │       │   ├── AnomalyDetectorTests.cs
-│   │   │       │   ├── CompletenessScoreCalculatorTests.cs
-│   │   │       │   ├── GapAnalyzerTests.cs
-│   │   │       │   └── SequenceErrorTrackerTests.cs
-│   │   │       ├── ErrorCodeMappingTests.cs
-│   │   │       ├── EventCanonicalizerTests.cs
-│   │   │       ├── GracefulShutdownTests.cs
-│   │   │       ├── OperationalSchedulerTests.cs
-│   │   │       ├── OptionsChainServiceTests.cs
-│   │   │       ├── PreflightCheckerTests.cs
-│   │   │       ├── TradingCalendarTests.cs
-│   │   │       └── VenueMicMapperTests.cs
+│   │   │   ├── Services
+│   │   │   │   ├── CanonicalizingPublisherTests.cs
+│   │   │   │   ├── CliModeResolverTests.cs
+│   │   │   │   ├── ConditionCodeMapperTests.cs
+│   │   │   │   ├── ConfigurationPresetsTests.cs
+│   │   │   │   ├── ConfigurationServiceTests.cs
+│   │   │   │   ├── CronExpressionParserTests.cs
+│   │   │   │   ├── DataQuality
+│   │   │   │   │   ├── AnomalyDetectorTests.cs
+│   │   │   │   │   ├── CompletenessScoreCalculatorTests.cs
+│   │   │   │   │   ├── GapAnalyzerTests.cs
+│   │   │   │   │   └── SequenceErrorTrackerTests.cs
+│   │   │   │   ├── ErrorCodeMappingTests.cs
+│   │   │   │   ├── EventCanonicalizerTests.cs
+│   │   │   │   ├── GracefulShutdownTests.cs
+│   │   │   │   ├── OperationalSchedulerTests.cs
+│   │   │   │   ├── OptionsChainServiceTests.cs
+│   │   │   │   ├── PreflightCheckerTests.cs
+│   │   │   │   ├── TradingCalendarTests.cs
+│   │   │   │   └── VenueMicMapperTests.cs
+│   │   │   └── Ui
+│   │   │       └── ConfigStoreTests.cs
 │   │   ├── Architecture
 │   │   │   └── LayerBoundaryTests.cs
 │   │   ├── Domain
@@ -2961,10 +3080,12 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   │   └── ib_order_trailing_stop_sell_gtc.json
 │   │   │   │   │   └── Polygon
 │   │   │   │   │       ├── polygon-recorded-session-aapl.json
+│   │   │   │   │       ├── polygon-recorded-session-auth-failure-rate-limit.json
 │   │   │   │   │       ├── polygon-recorded-session-gld-cboe-sell.json
 │   │   │   │   │       ├── polygon-recorded-session-msft-edge.json
 │   │   │   │   │       ├── polygon-recorded-session-nvda-multi-batch.json
-│   │   │   │   │       └── polygon-recorded-session-spy-etf.json
+│   │   │   │   │       ├── polygon-recorded-session-spy-etf.json
+│   │   │   │   │       └── polygon-recorded-session-tsla-opening-cross.json
 │   │   │   │   ├── FreeHistoricalProviderParsingTests.cs
 │   │   │   │   ├── FreeProviderContractTests.cs
 │   │   │   │   ├── HistoricalDataProviderContractTests.cs
@@ -2983,7 +3104,12 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── PolygonMessageParsingTests.cs
 │   │   │   │   ├── PolygonRecordedSessionReplayTests.cs
 │   │   │   │   ├── PolygonSubscriptionTests.cs
+│   │   │   │   ├── ProviderBehaviorBuilderTests.cs
+│   │   │   │   ├── ProviderFactoryCredentialContextTests.cs
 │   │   │   │   ├── ProviderResilienceTests.cs
+│   │   │   │   ├── ProviderTemplateFactoryCredentialTests.cs
+│   │   │   │   ├── RobinhoodHistoricalDataProviderTests.cs
+│   │   │   │   ├── RobinhoodSymbolSearchProviderTests.cs
 │   │   │   │   ├── StockSharpConnectorFactoryTests.cs
 │   │   │   │   ├── StockSharpMessageConversionTests.cs
 │   │   │   │   ├── StockSharpSubscriptionTests.cs
@@ -3036,12 +3162,17 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Performance
 │   │   │   └── AllocationBudgetIntegrationTests.cs
 │   │   ├── ProviderSdk
+│   │   │   ├── AttributeCredentialResolverTests.cs
 │   │   │   ├── CredentialValidatorTests.cs
 │   │   │   ├── DataSourceAttributeTests.cs
 │   │   │   ├── DataSourceRegistryTests.cs
-│   │   │   └── ExceptionTypeTests.cs
+│   │   │   ├── ExceptionTypeTests.cs
+│   │   │   └── ProviderModuleLoaderTests.cs
 │   │   ├── Risk
-│   │   │   └── CompositeRiskValidatorTests.cs
+│   │   │   ├── CompositeRiskValidatorTests.cs
+│   │   │   ├── DrawdownCircuitBreakerTests.cs
+│   │   │   ├── OrderRateThrottleTests.cs
+│   │   │   └── PositionLimitRuleTests.cs
 │   │   ├── SecurityMaster
 │   │   │   ├── SecurityEnrichmentTests.cs
 │   │   │   ├── SecurityMasterAggregateRebuilderTests.cs
@@ -3049,6 +3180,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── SecurityMasterConflictServiceTests.cs
 │   │   │   ├── SecurityMasterDatabaseFactAttribute.cs
 │   │   │   ├── SecurityMasterDatabaseFixture.cs
+│   │   │   ├── SecurityMasterLedgerBridgeTests.cs
 │   │   │   ├── SecurityMasterMigrationRunnerTests.cs
 │   │   │   ├── SecurityMasterPostgresRoundTripTests.cs
 │   │   │   ├── SecurityMasterProjectionServiceSnapshotTests.cs
@@ -3087,7 +3219,10 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── WriteAheadLogTests.cs
 │   │   ├── Strategies
 │   │   │   ├── CashFlowProjectionTests.cs
+│   │   │   ├── LedgerReadServiceTests.cs
+│   │   │   ├── PortfolioReadServiceTests.cs
 │   │   │   ├── PromotionServiceTests.cs
+│   │   │   ├── ReconciliationProjectionServiceTests.cs
 │   │   │   ├── StrategyLifecycleManagerTests.cs
 │   │   │   ├── StrategyRunDrillInTests.cs
 │   │   │   └── StrategyRunReadServiceTests.cs
@@ -3099,9 +3234,20 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── Golden
 │   │   │       └── alpaca-quote-pipeline.json
 │   │   ├── TestHelpers
+│   │   │   ├── Builders
+│   │   │   │   ├── BacktestRequestBuilder.cs
+│   │   │   │   ├── HistoricalBarBuilder.cs
+│   │   │   │   ├── MarketEventBuilder.cs
+│   │   │   │   ├── SecurityBuilder.cs
+│   │   │   │   └── TradeBuilder.cs
 │   │   │   ├── PolygonStubClient.cs
 │   │   │   ├── StubHttpMessageHandler.cs
 │   │   │   └── TestMarketEventPublisher.cs
+│   │   ├── Treasury
+│   │   │   ├── MmfFamilyNormalizationTests.cs
+│   │   │   ├── MmfLiquidityServiceTests.cs
+│   │   │   ├── MmfRebuildTests.cs
+│   │   │   └── MoneyMarketFundServiceTests.cs
 │   │   └── Ui
 │   │       ├── DirectLendingEndpointsTests.cs
 │   │       ├── ExecutionWriteEndpointsTests.cs
@@ -3155,6 +3301,7 @@ Use these documents together when planning or implementing new work:
 │   │       ├── ScheduledMaintenanceServiceTests.cs
 │   │       ├── SchemaServiceTests.cs
 │   │       ├── SearchServiceTests.cs
+│   │       ├── SettingsConfigurationServiceTests.cs
 │   │       ├── SmartRecommendationsServiceTests.cs
 │   │       ├── StatusServiceBaseTests.cs
 │   │       ├── StorageAnalyticsServiceTests.cs
@@ -3191,16 +3338,22 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── WatchlistServiceTests.cs
 │   │   │   └── WorkspaceServiceTests.cs
 │   │   ├── Support
+│   │   │   ├── FakeQuantScriptCompiler.cs
+│   │   │   ├── FakeScriptRunner.cs
 │   │   │   ├── RunMatUiAutomationFacade.cs
 │   │   │   └── WpfTestThread.cs
 │   │   ├── ViewModels
+│   │   │   ├── CashFlowViewModelTests.cs
 │   │   │   ├── DataQualityViewModelCharacterizationTests.cs
+│   │   │   ├── MainShellViewModelTests.cs
 │   │   │   ├── QuantScriptViewModelTests.cs
 │   │   │   ├── RunMatViewModelTests.cs
 │   │   │   └── StrategyRunBrowserViewModelTests.cs
 │   │   └── Views
+│   │       ├── QuantScriptPageTests.cs
 │   │       ├── RunMatUiSmokeTests.cs
-│   │       └── RunMatWorkflowSmokeTests.cs
+│   │       ├── RunMatWorkflowSmokeTests.cs
+│   │       └── SplitPaneHostControlTests.cs
 │   ├── coverlet.runsettings
 │   ├── scripts
 │   │   └── setup-verification.sh
@@ -3208,6 +3361,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-473 directories, 2697 files
+447 directories, 2786 files
 ```
 <!-- readme-tree end -->

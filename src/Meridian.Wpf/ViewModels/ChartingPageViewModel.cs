@@ -5,7 +5,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
+using LiveChartsCore;
+using LiveChartsCore.Defaults;
+using LiveChartsCore.Kernel.Sketches;
+using LiveChartsCore.Measure;
+using LiveChartsCore.SkiaSharpView;
+using LiveChartsCore.SkiaSharpView.Painting;
 using Meridian.Ui.Services;
+using SkiaSharp;
 
 namespace Meridian.Wpf.ViewModels;
 
@@ -13,13 +20,13 @@ public sealed class ChartingPageViewModel : BindableBase
 {
     private readonly ChartingService _chartingService = new();
     private readonly SymbolManagementService _symbolService;
+    private CandlestickData? _chartData;
     private string? _selectedSymbol;
     private ChartTimeframe _selectedTimeframe = ChartTimeframe.Daily;
     private DateOnly? _fromDate;
     private DateOnly? _toDate;
     private readonly List<string> _activeIndicators = new();
 
-    private const double ChartHeight = 400;
     private const double VolumeChartHeight = 100;
 
     // Bindable properties replacing direct UI control references
@@ -52,11 +59,28 @@ public sealed class ChartingPageViewModel : BindableBase
     private static readonly SolidColorBrush PocBrush = new(Color.FromRgb(210, 153, 34));
     private static readonly SolidColorBrush NormalVolumeBrush = new(Color.FromArgb(128, 88, 166, 255));
 
+    // LiveCharts2 SkiaSharp paints — reused across renders to avoid per-frame allocation.
+    private static readonly SolidColorPaint SkBullishFill = new(new SKColor(63, 185, 80));
+    private static readonly SolidColorPaint SkBullishStroke = new(new SKColor(63, 185, 80)) { StrokeThickness = 1 };
+    private static readonly SolidColorPaint SkBearishFill = new(new SKColor(248, 81, 73));
+    private static readonly SolidColorPaint SkBearishStroke = new(new SKColor(248, 81, 73)) { StrokeThickness = 1 };
+    private static readonly SolidColorPaint SkAxisLabelPaint = new(new SKColor(150, 150, 170));
+    private static readonly SolidColorPaint SkSeparatorPaint = new(new SKColor(45, 45, 65));
+
     public ObservableCollection<object> SymbolItems { get; } = new();
-    public ObservableCollection<WpfCandlestickVm> CandlestickItems { get; } = new();
     public ObservableCollection<WpfVolumeBarVm> VolumeItems { get; } = new();
     public ObservableCollection<WpfVolumeProfileBarVm> VolumeProfileItems { get; } = new();
     public ObservableCollection<WpfIndicatorValueVm> IndicatorValues { get; } = new();
+
+    // LiveCharts2 candlestick chart bindings
+    private ISeries[] _candleSeries = [];
+    public ISeries[] CandleSeries { get => _candleSeries; private set => SetProperty(ref _candleSeries, value); }
+
+    private ICartesianAxis[] _candleXAxes = [new Axis { IsVisible = false }];
+    public ICartesianAxis[] CandleXAxes { get => _candleXAxes; private set => SetProperty(ref _candleXAxes, value); }
+
+    private ICartesianAxis[] _candleYAxes = [new Axis { IsVisible = false }];
+    public ICartesianAxis[] CandleYAxes { get => _candleYAxes; private set => SetProperty(ref _candleYAxes, value); }
 
     public string CurrentPrice { get => _currentPrice; private set => SetProperty(ref _currentPrice, value); }
     public string PriceChange { get => _priceChange; private set => SetProperty(ref _priceChange, value); }
@@ -103,10 +127,9 @@ public sealed class ChartingPageViewModel : BindableBase
             foreach (var symbol in result.Symbols)
                 SymbolItems.Add(new SymbolItem(symbol.Symbol));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // Symbols not available
-            System.Diagnostics.Debug.WriteLine($"An exception occurred while loading symbols: {ex}");
         }
     }
 
@@ -177,29 +200,52 @@ public sealed class ChartingPageViewModel : BindableBase
     private void RenderCandlestickChart()
     {
         if (_chartData == null || _chartData.Candles.Count == 0) return;
-        var range = _chartData.HighestPrice - _chartData.LowestPrice;
-        if (range == 0) range = 1;
 
-        CandlestickItems.Clear();
-        foreach (var c in _chartData.Candles)
-        {
-            var highY = (double)((_chartData.HighestPrice - c.High) / range) * ChartHeight;
-            var lowY = (double)((_chartData.HighestPrice - c.Low) / range) * ChartHeight;
-            var openY = (double)((_chartData.HighestPrice - c.Open) / range) * ChartHeight;
-            var closeY = (double)((_chartData.HighestPrice - c.Close) / range) * ChartHeight;
-            var bodyTop = Math.Min(openY, closeY);
-            var bull = c.Close >= c.Open;
-            var brush = bull ? BullishBrush : BearishBrush;
-            CandlestickItems.Add(new WpfCandlestickVm
+        var financialPoints = _chartData.Candles
+            .Select(c => new FinancialPoint(c.Timestamp, (double)c.High, (double)c.Open, (double)c.Close, (double)c.Low));
+
+        CandleSeries =
+        [
+            new CandlesticksSeries<FinancialPoint>
             {
-                BodyBrush = brush, WickBrush = brush,
-                BodyHeight = Math.Max(1, Math.Abs(openY - closeY)),
-                WickHeight = lowY - highY,
-                BodyMargin = new Thickness(2, bodyTop, 2, 0),
-                WickMargin = new Thickness(5.5, highY, 5.5, 0),
-                Tooltip = $"{c.Timestamp:yyyy-MM-dd}\nO: {c.Open:F2}  H: {c.High:F2}\nL: {c.Low:F2}  C: {c.Close:F2}\nVol: {c.Volume:N0}"
-            });
-        }
+                Values = financialPoints,
+                UpFill = SkBullishFill,
+                UpStroke = SkBullishStroke,
+                DownFill = SkBearishFill,
+                DownStroke = SkBearishStroke,
+                Name = _selectedSymbol,
+                MaxBarWidth = 14,
+            }
+        ];
+
+        var labelFormat = _selectedTimeframe is ChartTimeframe.Hour1 or ChartTimeframe.Hour4
+            or ChartTimeframe.Minute1 or ChartTimeframe.Minute5
+            or ChartTimeframe.Minute15 or ChartTimeframe.Minute30
+            ? "MM/dd HH:mm"
+            : "MM/dd/yy";
+
+        CandleXAxes =
+        [
+            new Axis
+            {
+                Labeler = value => new DateTime((long)value).ToString(labelFormat),
+                LabelsPaint = SkAxisLabelPaint,
+                SeparatorsPaint = SkSeparatorPaint,
+                TextSize = 11,
+            }
+        ];
+
+        CandleYAxes =
+        [
+            new Axis
+            {
+                Labeler = value => $"{value:F2}",
+                LabelsPaint = SkAxisLabelPaint,
+                SeparatorsPaint = SkSeparatorPaint,
+                TextSize = 11,
+                Position = AxisPosition.End,
+            }
+        ];
     }
 
     private void RenderVolumeChart()
@@ -342,17 +388,6 @@ public sealed class SymbolItem
     public SymbolItem(string symbol) => Symbol = symbol;
     public string Symbol { get; }
     public override string ToString() => Symbol;
-}
-
-public sealed class WpfCandlestickVm
-{
-    public Brush BodyBrush { get; set; } = Brushes.White;
-    public Brush WickBrush { get; set; } = Brushes.White;
-    public double BodyHeight { get; set; }
-    public double WickHeight { get; set; }
-    public Thickness BodyMargin { get; set; }
-    public Thickness WickMargin { get; set; }
-    public string Tooltip { get; set; } = string.Empty;
 }
 
 public sealed class WpfVolumeBarVm

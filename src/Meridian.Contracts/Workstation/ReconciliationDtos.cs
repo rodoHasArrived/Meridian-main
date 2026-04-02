@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Meridian.Contracts.Banking;
 
 namespace Meridian.Contracts.Workstation;
@@ -5,6 +6,7 @@ namespace Meridian.Contracts.Workstation;
 /// <summary>
 /// Source type participating in a reconciliation comparison.
 /// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter<ReconciliationSourceKind>))]
 public enum ReconciliationSourceKind : byte
 {
     Unknown = 0,
@@ -16,6 +18,7 @@ public enum ReconciliationSourceKind : byte
 /// <summary>
 /// Current workflow state for a reconciliation break.
 /// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter<ReconciliationBreakStatus>))]
 public enum ReconciliationBreakStatus : byte
 {
     Open = 0,
@@ -27,6 +30,7 @@ public enum ReconciliationBreakStatus : byte
 /// <summary>
 /// Canonical classification for reconciliation outcomes.
 /// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter<ReconciliationBreakCategory>))]
 public enum ReconciliationBreakCategory : byte
 {
     AmountMismatch = 0,
@@ -77,8 +81,8 @@ public sealed record ReconciliationRunSummary(
 public sealed record ReconciliationMatchDto(
     string CheckId,
     string Label,
-    ReconciliationSourceKind ExpectedSource,
-    ReconciliationSourceKind ActualSource,
+    string ExpectedSource,
+    string ActualSource,
     decimal? ExpectedAmount,
     decimal? ActualAmount,
     decimal Variance,
@@ -93,7 +97,7 @@ public sealed record ReconciliationBreakDto(
     string Label,
     ReconciliationBreakCategory Category,
     ReconciliationBreakStatus Status,
-    ReconciliationSourceKind MissingSource,
+    string MissingSource,
     decimal? ExpectedAmount,
     decimal? ActualAmount,
     decimal Variance,
@@ -118,4 +122,58 @@ public sealed record ReconciliationRunDetail(
     IReadOnlyList<ReconciliationMatchDto> Matches,
     IReadOnlyList<ReconciliationBreakDto> Breaks,
     IReadOnlyList<ReconciliationSecurityCoverageIssueDto>? SecurityCoverageIssues = null,
-    IReadOnlyList<BankTransactionDto>? BankTransactions = null);
+    IReadOnlyList<BankTransactionDto>? BankTransactions = null,
+    /// <summary>
+    /// Security Master classification keyed by ticker symbol, populated for every symbol whose
+    /// Security Master entry was resolved at reconciliation time. Suitable for audit reporting.
+    /// </summary>
+    IReadOnlyDictionary<string, SecurityClassificationSummaryDto>? SecurityClassifications = null);
+
+/// <summary>
+/// Operator queue state for a reconciliation break.
+/// </summary>
+public enum ReconciliationBreakQueueStatus : byte
+{
+    Open = 0,
+    InReview = 1,
+    Resolved = 2,
+    Dismissed = 3
+}
+
+/// <summary>
+/// Work item shown in the reconciliation break queue.
+/// </summary>
+public sealed record ReconciliationBreakQueueItem(
+    string BreakId,
+    string RunId,
+    string StrategyName,
+    ReconciliationBreakCategory Category,
+    ReconciliationBreakQueueStatus Status,
+    decimal Variance,
+    string Reason,
+    string? AssignedTo,
+    DateTimeOffset DetectedAt,
+    DateTimeOffset LastUpdatedAt,
+    string? ReviewedBy = null,
+    DateTimeOffset? ReviewedAt = null,
+    string? ResolvedBy = null,
+    DateTimeOffset? ResolvedAt = null,
+    string? ResolutionNote = null);
+
+/// <summary>
+/// Request to move a break into active review and assign an operator.
+/// </summary>
+public sealed record ReviewReconciliationBreakRequest(
+    string BreakId,
+    string AssignedTo,
+    string ReviewedBy,
+    string? ReviewNote = null);
+
+/// <summary>
+/// Request to resolve or dismiss a break with audit metadata.
+/// </summary>
+public sealed record ResolveReconciliationBreakRequest(
+    string BreakId,
+    ReconciliationBreakQueueStatus Status,
+    string ResolvedBy,
+    string ResolutionNote);

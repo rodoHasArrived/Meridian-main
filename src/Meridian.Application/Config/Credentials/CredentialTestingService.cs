@@ -265,7 +265,6 @@ public sealed class CredentialTestingService : IAsyncDisposable
         return _statusCache.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
     }
 
-    #region Provider-Specific Tests
 
     private async Task<(CredentialAuthStatus status, string message, DateTimeOffset? expiresAt)>
         TestAlpacaCredentialsAsync(string keyId, string? secretKey, CancellationToken ct)
@@ -406,9 +405,7 @@ public sealed class CredentialTestingService : IAsyncDisposable
         };
     }
 
-    #endregion
 
-    #region Helper Methods
 
     private CredentialAuthStatus CheckExpirationStatus(DateTimeOffset expiresAt)
     {
@@ -505,7 +502,6 @@ public sealed class CredentialTestingService : IAsyncDisposable
         }
     }
 
-    #endregion
 
     public async ValueTask DisposeAsync()
     {

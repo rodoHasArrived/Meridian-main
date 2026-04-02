@@ -196,7 +196,7 @@ protected override void OnStartup(StartupEventArgs e)
     base.OnStartup(e);
 
     // Check for fixture mode
-    var useFixture = e.Args.Contains("--fixture") || 
+    var useFixture = e.Args.Contains("--fixture") ||
                      Environment.GetEnvironmentVariable("MDC_FIXTURE_MODE") == "1";
 
     if (useFixture)
@@ -214,10 +214,10 @@ private void EnableFixtureMode()
     StatusService.Instance.UseFixtureMode = true;
     BackfillService.Instance.UseFixtureMode = true;
     LiveDataService.Instance.UseFixtureMode = true;
-    
+
     // Show notification
     NotificationService.Instance.ShowInfo(
-        "Fixture Mode", 
+        "Fixture Mode",
         "Running with mock data (offline mode)"
     );
 }
@@ -275,7 +275,7 @@ public async Task<StatusResponse> GetStatusAsync()
         await FixtureDataService.Instance.SimulateNetworkDelayAsync();
         return FixtureDataService.Instance.GetMockStatusResponse();
     }
-    
+
     return await RealApiCall();
 }
 ```
@@ -287,9 +287,9 @@ It's recommended to show a visual indicator when fixture mode is active:
 **Status Bar:**
 ```xml
 <StatusBar>
-    <StatusBarItem x:Name="FixtureModeIndicator" 
+    <StatusBarItem x:Name="FixtureModeIndicator"
                    Visibility="{Binding IsFixtureMode, Converter={StaticResource BoolToVisibility}}">
-        <TextBlock Text="⚠ FIXTURE MODE - Offline Data" 
+        <TextBlock Text="⚠ FIXTURE MODE - Offline Data"
                    Foreground="Orange"
                    FontWeight="Bold"/>
     </StatusBarItem>
@@ -301,7 +301,7 @@ It's recommended to show a visual indicator when fixture mode is active:
 if (UseFixtureMode)
 {
     NotificationService.Instance.ShowWarning(
-        "Fixture Mode Active", 
+        "Fixture Mode Active",
         "Application is using mock data for offline development"
     );
 }
@@ -311,29 +311,29 @@ if (UseFixtureMode)
 
 ### For Developers
 
-✅ **Work offline** - No internet required  
-✅ **Faster startup** - No backend initialization wait  
-✅ **Deterministic** - Same data every time  
-✅ **No rate limits** - Mock data has no API quotas  
-✅ **Test edge cases** - Easy to simulate errors/disconnections  
+✅ **Work offline** - No internet required
+✅ **Faster startup** - No backend initialization wait
+✅ **Deterministic** - Same data every time
+✅ **No rate limits** - Mock data has no API quotas
+✅ **Test edge cases** - Easy to simulate errors/disconnections
 
 ### For Demos
 
-✅ **Reliable** - No network issues during presentations  
-✅ **Controllable** - Show exact scenarios you want  
-✅ **Portable** - Works anywhere, anytime  
+✅ **Reliable** - No network issues during presentations
+✅ **Controllable** - Show exact scenarios you want
+✅ **Portable** - Works anywhere, anytime
 
 ### For Testing
 
-✅ **Reproducible** - Tests get consistent data  
-✅ **Fast** - No network latency  
-✅ **Isolated** - No backend dependencies  
+✅ **Reproducible** - Tests get consistent data
+✅ **Fast** - No network latency
+✅ **Isolated** - No backend dependencies
 
 ## Limitations
 
-⚠️ **Not a replacement for integration tests** - Real backend testing still needed  
-⚠️ **Mock data may differ** - Contracts can change; keep fixtures updated  
-⚠️ **Limited scenarios** - Only common cases are mocked  
+⚠️ **Not a replacement for integration tests** - Real backend testing still needed
+⚠️ **Mock data may differ** - Contracts can change; keep fixtures updated
+⚠️ **Limited scenarios** - Only common cases are mocked
 
 ## Extending Fixture Data
 
@@ -420,8 +420,8 @@ After implementing basic fixture mode:
 
 ---
 
-**Status**: ✅ Implemented  
-**Version**: 1.0  
+**Status**: ✅ Implemented
+**Version**: 1.0
 **Last Updated**: 2026-02-13
 
 ---

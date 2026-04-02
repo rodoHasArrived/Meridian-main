@@ -1,0 +1,50 @@
+<UserControl x:Class="Meridian.Wpf.Views.MeridianDockingManager"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:avalondock="https://github.com/Dirkster99/AvalonDock"
+             mc:Ignorable="d"
+             d:DesignHeight="600" d:DesignWidth="900"
+             AllowDrop="True"
+             DragLeave="OnDragLeave"
+             DragOver="OnDragOver"
+             Drop="OnDrop">
+
+    <Grid>
+        <!-- ── AvalonDock DockingManager ─────────────────────────────────── -->
+        <avalondock:DockingManager x:Name="DockManager"
+                                   AllowMixedOrientation="True"
+                                   BorderBrush="{DynamicResource CommandBarBorderBrush}"
+                                   BorderThickness="1"
+                                   Background="{DynamicResource ConsoleBackgroundDarkBrush}">
+
+            <!-- Default theme — overridden by Meridian's own token-driven styles below -->
+            <avalondock:DockingManager.Theme>
+                <avalondock:MetroTheme />
+            </avalondock:DockingManager.Theme>
+
+            <avalondock:LayoutRoot>
+                <avalondock:LayoutPanel Orientation="Horizontal">
+                    <!-- Primary document well — LoadPage() adds LayoutDocuments here -->
+                    <avalondock:LayoutDocumentPane x:Name="PrimaryDocumentPane" />
+                </avalondock:LayoutPanel>
+            </avalondock:LayoutRoot>
+
+        </avalondock:DockingManager>
+
+        <!-- ── Drag-and-drop drop-target overlay (preserves existing page-tag protocol) ── -->
+        <Border x:Name="DropOverlay"
+                Background="#22007ACC"
+                BorderBrush="#66007ACC"
+                BorderThickness="2"
+                Visibility="Collapsed">
+            <TextBlock HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       FontSize="20"
+                       FontWeight="SemiBold"
+                       Foreground="White"
+                       Text="Drop Page Here" />
+        </Border>
+    </Grid>
+</UserControl>

@@ -7,7 +7,7 @@ namespace Meridian.Wpf.ViewModels;
 /// <summary>
 /// View model for provider settings rows in the backfill provider settings panel.
 /// </summary>
-internal sealed class ProviderSettingsViewModel : INotifyPropertyChanged
+public sealed class ProviderSettingsViewModel : INotifyPropertyChanged
 {
     private static readonly SolidColorBrush ConfigUserBrush = new(Color.FromArgb(40, 0, 120, 212));
     private static readonly SolidColorBrush ConfigEnvBrush = new(Color.FromArgb(40, 0, 180, 0));
@@ -74,7 +74,7 @@ internal sealed class ProviderSettingsViewModel : INotifyPropertyChanged
 /// <summary>
 /// View model for fallback chain preview items.
 /// </summary>
-internal sealed class FallbackChainViewModel
+public sealed class FallbackChainViewModel
 {
     private static readonly SolidColorBrush HealthyBrush = new(Color.FromRgb(0, 180, 0));
     private static readonly SolidColorBrush DegradedBrush = new(Color.FromRgb(255, 180, 0));
@@ -110,7 +110,7 @@ internal sealed class FallbackChainViewModel
 /// <summary>
 /// View model for dry-run backfill plan result items.
 /// </summary>
-internal sealed class DryRunResultViewModel
+public sealed class DryRunResultViewModel
 {
     public string Symbol { get; set; } = string.Empty;
     public string SelectedProvider { get; set; } = string.Empty;
@@ -120,7 +120,7 @@ internal sealed class DryRunResultViewModel
 /// <summary>
 /// View model for audit trail log items.
 /// </summary>
-internal sealed class AuditLogViewModel
+public sealed class AuditLogViewModel
 {
     public string Timestamp { get; set; } = string.Empty;
     public string ProviderId { get; set; } = string.Empty;

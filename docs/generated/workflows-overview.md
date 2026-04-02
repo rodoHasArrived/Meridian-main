@@ -1,6 +1,6 @@
 # Workflows Overview
 
-> Auto-generated on 2026-03-30 17:55:47 UTC. Do not edit manually.
+> Auto-generated on 2026-04-02 21:11:56 UTC. Do not edit manually.
 
 | Workflow File | Name |
 |---|---|
@@ -10,6 +10,7 @@
 | `.github/workflows/canonicalization-fixture-maintenance.yml` | Canonicalization Fixture Maintenance |
 | `.github/workflows/close-duplicate-issues.yml` | Close Duplicate and Stale Auto-Generated Issues |
 | `.github/workflows/code-quality.yml` | Code Quality |
+| `.github/workflows/codeql.yml` | "CodeQL Advanced" |
 | `.github/workflows/copilot-pull-request-reviewer.yml` | Copilot Pull Request Reviewer |
 | `.github/workflows/copilot-setup-steps.yml` | Copilot Environment Setup |
 | `.github/workflows/copilot-swe-agent-copilot.yml` | Copilot SWE Agent / Copilot |
@@ -27,8 +28,10 @@
 | `.github/workflows/prompt-generation.yml` | Prompt Generation |
 | `.github/workflows/python-package-conda.yml` | Python Package using Conda |
 | `.github/workflows/readme-tree.yml` | README Tree Sync |
+| `.github/workflows/refresh-screenshots.yml` | Refresh UI Screenshots |
 | `.github/workflows/release.yml` | Release Management |
 | `.github/workflows/repo-health.yml` | Repo Health |
+| `.github/workflows/reusable-ai-analysis.yml` | Reusable AI Analysis |
 | `.github/workflows/reusable-dotnet-build.yml` | Reusable .NET Build |
 | `.github/workflows/scheduled-maintenance.yml` | Scheduled Maintenance |
 | `.github/workflows/security.yml` | Security |

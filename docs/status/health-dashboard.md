@@ -1,12 +1,12 @@
 # Documentation Health Dashboard
 
 > Auto-generated documentation health report. Do not edit manually.
-> Last updated: 2026-03-30T17:55:51.357710+00:00
+> Last updated: 2026-04-02T21:12:00.467849+00:00
 
 ## Overall Health Score
 
 ```
-  [##########################----] 87/100
+  [###########################---] 89/100
   Rating: Good
 ```
 
@@ -14,14 +14,14 @@
 
 | Metric | Value |
 |--------|-------|
-| Total documentation files | 294 |
-| Total lines | 115,909 |
-| Average file size (lines) | 394.2 |
-| Orphaned files | 85 |
+| Total documentation files | 306 |
+| Total lines | 115,044 |
+| Average file size (lines) | 376.0 |
+| Orphaned files | 72 |
 | Files without headings | 0 |
 | Stale files (>90 days) | 0 |
 | TODO/FIXME markers | 316 |
-| **Health score** | **87/100** |
+| **Health score** | **89/100** |
 
 ### Score Breakdown
 
@@ -54,12 +54,12 @@ These files are not linked from any other Markdown file in the repository:
 - `.claude/skills/meridian-implementation-assurance/references/evaluation-harness.md`
 - `.claude/skills/meridian-provider-builder/SKILL.md`
 - `.claude/skills/meridian-test-writer/SKILL.md`
-- `.codex/skills/_shared/project-context.md`
-- `.codex/skills/meridian-blueprint/SKILL.md`
 - `.codex/skills/meridian-blueprint/references/blueprint-patterns.md`
-- `.codex/skills/meridian-brainstorm/SKILL.md`
 - `.codex/skills/meridian-brainstorm/references/competitive-landscape.md`
-- ... and 65 more
+- `.codex/skills/meridian-implementation-assurance/references/documentation-routing.md`
+- `.codex/skills/meridian-implementation-assurance/references/evaluation-harness.md`
+- `.codex/skills/meridian-provider-builder/references/provider-patterns.md`
+- ... and 52 more
 
 ## Trend
 
@@ -67,7 +67,7 @@ These files are not linked from any other Markdown file in the repository:
 
 | Date | Score | Files | Orphans | Stale |
 |------|-------|-------|---------|-------|
-| 2026-03-30 | 87 | 294 | 85 | 0 |
+| 2026-04-02 | 89 | 306 | 72 | 0 |
 
 ---
 

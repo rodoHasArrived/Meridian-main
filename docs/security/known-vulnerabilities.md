@@ -14,28 +14,28 @@ This document is the central registry for dependency vulnerabilities that have b
 
 ### KV-2026-001 — DotNetZip 1.16.0 - Path Traversal (GHSA-xhg6-9j5j-w4vf)
 
-**CVE:** CVE-2024-48510  
-**Severity:** High  
+**CVE:** CVE-2024-48510
+**Severity:** High
 **Advisory:** https://github.com/advisories/GHSA-xhg6-9j5j-w4vf
-**Ecosystem:** NuGet (transitive)  
+**Ecosystem:** NuGet (transitive)
 **Affected Package:** DotNetZip 1.16.0
 
-**Description:**  
+**Description:**
 DotNetZip 1.16.0 contains a path traversal vulnerability that allows a remote attacker to potentially execute arbitrary code by crafting malicious paths in zip archives.
 
-**Source:**  
+**Source:**
 Transitive dependency from QuantConnect.Lean packages (required for backtesting integration):
 - QuantConnect.Lean 2.5.17414
 - QuantConnect.Lean.Engine 2.5.17414
 - QuantConnect.Common 2.5.17414
 - QuantConnect.Indicators 2.5.17414
 
-**Status:**  
+**Status:**
 - **No fix available** - DotNetZip is deprecated and no longer maintained
 - **Cannot be upgraded** - Baked into QuantConnect.Lean binary dependencies
 - **Alternative:** ProDotNetZip 1.19.0+ has a fix, but cannot be used as a drop-in replacement for transitive dependencies
 
-**Risk Assessment:**  
+**Risk Assessment:**
 **LOW** - Vulnerability requires extracting user-provided zip files, which is not a use case in this application.
 
 **Mitigations:**
@@ -49,9 +49,9 @@ Transitive dependency from QuantConnect.Lean packages (required for backtesting 
 - Consider submitting PR to QuantConnect to update their dependency
 - Re-evaluate if application requirements change to include zip extraction from external sources
 
-**Tracking Reference:** Filtered in `.github/workflows/security.yml` during the NuGet vulnerability scan.  
-**Review Date:** 2026-02-10  
-**Next Review:** 2026-05-10 (quarterly)  
+**Tracking Reference:** Filtered in `.github/workflows/security.yml` during the NuGet vulnerability scan.
+**Review Date:** 2026-02-10
+**Next Review:** 2026-05-10 (quarterly)
 **Approved By:** Security maintainers / repository owners
 
 ---

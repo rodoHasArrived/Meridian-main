@@ -119,6 +119,7 @@ public sealed class BacktestViewModel : BindableBase, IDisposable
                 OpenRunDetailCommand.NotifyCanExecuteChanged();
                 OpenRunPortfolioCommand.NotifyCanExecuteChanged();
                 OpenRunLedgerCommand.NotifyCanExecuteChanged();
+                OpenRunRiskCommand.NotifyCanExecuteChanged();
             }
         }
     }
@@ -139,6 +140,7 @@ public sealed class BacktestViewModel : BindableBase, IDisposable
     public IRelayCommand OpenRunDetailCommand { get; }
     public IRelayCommand OpenRunPortfolioCommand { get; }
     public IRelayCommand OpenRunLedgerCommand { get; }
+    public IRelayCommand OpenRunRiskCommand { get; }
 
     public BacktestViewModel(
         BacktestService backtestService,
@@ -154,6 +156,7 @@ public sealed class BacktestViewModel : BindableBase, IDisposable
         OpenRunDetailCommand = new RelayCommand(() => OpenRunSurface("RunDetail"), () => HasLatestRecordedRun);
         OpenRunPortfolioCommand = new RelayCommand(() => OpenRunSurface("RunPortfolio"), () => HasLatestRecordedRun);
         OpenRunLedgerCommand = new RelayCommand(() => OpenRunSurface("RunLedger"), () => HasLatestRecordedRun);
+        OpenRunRiskCommand = new RelayCommand(() => OpenRunSurface("RunRisk"), () => HasLatestRecordedRun);
 
         _backtestService.BacktestCompleted += OnBacktestCompleted;
         _backtestService.BacktestCancelled += OnBacktestCancelled;

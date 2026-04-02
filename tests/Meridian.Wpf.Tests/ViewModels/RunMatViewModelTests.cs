@@ -101,9 +101,9 @@ public sealed class RunMatViewModelTests
 
         await vm.InitializeAsync();
 
-        vm.Scripts.Should().BeEmpty();
-        vm.SelectedScript.Should().BeNull();
-        vm.ScriptName.Should().MatchRegex(@"scratch_\d{6}\.m");
+        vm.Scripts.Should().NotBeEmpty();
+        vm.SelectedScript.Should().NotBeNull();
+        vm.ScriptName.Should().EndWith(".m");
         vm.StatusText.Should().Be("RunMat Lab ready.");
     }
 

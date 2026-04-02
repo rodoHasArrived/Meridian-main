@@ -97,7 +97,7 @@ public sealed class SearchService
         }
 
         // Watchlist suggestions
-        var watchlist = await _watchlistService.LoadWatchlistAsync();
+        var watchlist = await _watchlistService.LoadWatchlistAsync(ct);
         foreach (var item in watchlist.Symbols.Where(s => s.Symbol.Contains(normalizedQuery)))
         {
             if (!suggestions.Any(s => s.Text == item.Symbol))
@@ -171,7 +171,7 @@ public sealed class SearchService
         }
 
         // Search watchlist
-        var watchlist = await _watchlistService.LoadWatchlistAsync();
+        var watchlist = await _watchlistService.LoadWatchlistAsync(ct);
         foreach (var item in watchlist.Symbols)
         {
             if (MatchesQuery(item.Symbol, query) || MatchesQuery(item.Notes, query))

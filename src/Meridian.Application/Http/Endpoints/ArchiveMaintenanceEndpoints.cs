@@ -21,95 +21,17 @@ public static class ArchiveMaintenanceEndpoints
 
     /// <summary>
     /// Configure all archive maintenance routes.
+    /// The schedule CRUD routes (list, get by ID, create, enable, disable) are handled by
+    /// MapMaintenanceScheduleEndpoints to avoid duplicate route registrations.
+    /// This method registers the remaining maintenance routes: update, delete, trigger,
+    /// execution management, statistics, validation, and presets.
     /// </summary>
     public static void MapArchiveMaintenanceEndpoints(this WebApplication app)
     {
         // ==================== SCHEDULE MANAGEMENT ====================
-
-        app.MapGet("/api/maintenance/schedules", (ArchiveMaintenanceScheduleManager scheduleManager) =>
-        {
-            try
-            {
-                var schedules = scheduleManager.GetAllSchedules();
-                return Results.Json(schedules, JsonOptions);
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem($"Failed to get schedules: {ex.Message}");
-            }
-        });
-
-        app.MapGet("/api/maintenance/schedules/{scheduleId}", (
-            ArchiveMaintenanceScheduleManager scheduleManager,
-            string scheduleId) =>
-        {
-            try
-            {
-                var schedule = scheduleManager.GetSchedule(scheduleId);
-                return schedule is null
-                    ? Results.NotFound($"Schedule '{scheduleId}' not found")
-                    : Results.Json(schedule, JsonOptions);
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem($"Failed to get schedule: {ex.Message}");
-            }
-        });
-
-        app.MapPost("/api/maintenance/schedules", async (
-            ArchiveMaintenanceScheduleManager scheduleManager,
-            CreateMaintenanceScheduleRequest req) =>
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(req.Name))
-                    return Results.BadRequest("Schedule name is required");
-
-                if (string.IsNullOrWhiteSpace(req.CronExpression) && string.IsNullOrWhiteSpace(req.Preset))
-                    return Results.BadRequest("Either cronExpression or preset is required");
-
-                ArchiveMaintenanceSchedule schedule;
-
-                if (!string.IsNullOrWhiteSpace(req.Preset))
-                {
-                    schedule = await scheduleManager.CreateFromPresetAsync(req.Preset, req.Name);
-                }
-                else
-                {
-                    schedule = new ArchiveMaintenanceSchedule
-                    {
-                        Name = req.Name,
-                        Description = req.Description ?? string.Empty,
-                        CronExpression = req.CronExpression!,
-                        TimeZoneId = req.TimeZoneId ?? "UTC",
-                        TaskType = Enum.TryParse<MaintenanceTaskType>(req.TaskType, true, out var tt)
-                            ? tt : MaintenanceTaskType.HealthCheck,
-                        Priority = Enum.TryParse<MaintenancePriority>(req.Priority, true, out var p)
-                            ? p : MaintenancePriority.Normal,
-                        Enabled = req.Enabled ?? true,
-                        MaxDuration = req.MaxDurationMinutes.HasValue
-                            ? TimeSpan.FromMinutes(req.MaxDurationMinutes.Value)
-                            : TimeSpan.FromHours(2),
-                        MaxRetries = req.MaxRetries ?? 2,
-                        TargetPaths = req.TargetPaths?.ToList() ?? new List<string>(),
-                        Tags = req.Tags?.ToList() ?? new List<string>(),
-                        Options = MapOptions(req.Options)
-                    };
-
-                    schedule = await scheduleManager.CreateScheduleAsync(schedule);
-                }
-
-                return Results.Json(schedule, JsonOptions);
-            }
-            catch (ArgumentException ex)
-            {
-                return Results.BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem($"Failed to create schedule: {ex.Message}");
-            }
-        });
+        // NOTE: GET /schedules, GET /schedules/{id}, POST /schedules, POST /schedules/{id}/enable,
+        // and POST /schedules/{id}/disable are registered by MapMaintenanceScheduleEndpoints.
+        // Only update and delete are registered here to avoid conflicting route definitions.
 
         app.MapPut("/api/maintenance/schedules/{scheduleId}", async (
             ArchiveMaintenanceScheduleManager scheduleManager,
@@ -184,40 +106,8 @@ public static class ArchiveMaintenanceEndpoints
         });
 
         // ==================== SCHEDULE CONTROL ====================
-
-        app.MapPost("/api/maintenance/schedules/{scheduleId}/enable", async (
-            ArchiveMaintenanceScheduleManager scheduleManager,
-            string scheduleId) =>
-        {
-            try
-            {
-                var success = await scheduleManager.SetScheduleEnabledAsync(scheduleId, true);
-                return success
-                    ? Results.Ok(new { message = $"Schedule '{scheduleId}' enabled" })
-                    : Results.NotFound($"Schedule '{scheduleId}' not found");
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem($"Failed to enable schedule: {ex.Message}");
-            }
-        });
-
-        app.MapPost("/api/maintenance/schedules/{scheduleId}/disable", async (
-            ArchiveMaintenanceScheduleManager scheduleManager,
-            string scheduleId) =>
-        {
-            try
-            {
-                var success = await scheduleManager.SetScheduleEnabledAsync(scheduleId, false);
-                return success
-                    ? Results.Ok(new { message = $"Schedule '{scheduleId}' disabled" })
-                    : Results.NotFound($"Schedule '{scheduleId}' not found");
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem($"Failed to disable schedule: {ex.Message}");
-            }
-        });
+        // NOTE: POST /schedules/{id}/enable and POST /schedules/{id}/disable are registered
+        // by MapMaintenanceScheduleEndpoints. Only /trigger is registered here.
 
         app.MapPost("/api/maintenance/schedules/{scheduleId}/trigger", async (
             ScheduledArchiveMaintenanceService maintenanceService,

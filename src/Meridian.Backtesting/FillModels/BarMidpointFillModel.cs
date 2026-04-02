@@ -10,15 +10,24 @@ namespace Meridian.Backtesting.FillModels;
 /// Supports market, limit, stop-market, and stop-limit semantics with a
 /// configurable midpoint slippage assumption. When <paramref name="spreadAware"/>
 /// is enabled, slippage is scaled by the bar's intrabar volatility (range / midpoint),
-/// simulating wider spreads in volatile conditions.
+/// simulating wider spreads in volatile conditions. The scaling formula is
+/// <c>slippageBasisPoints × (1 + volatilityFactor × <paramref name="volatilityMultiplier"/>)</c>;
+/// the default multiplier of 50 is an empirical calibration that maps a typical 1–2% intraday
+/// bar range to a 50–100% slippage increase — adjust when calibrating against real microstructure data.
 /// When <paramref name="tickSizes"/> is provided, fill prices are rounded to the
 /// instrument's tick grid before being returned.
+/// When <paramref name="maxParticipationRate"/> is greater than zero, the fill is
+/// capped at that fraction of the bar's traded volume. Orders that exceed the cap
+/// and have <see cref="Order.AllowPartialFills"/> set to <c>true</c> receive a
+/// partial fill; orders with partial fills disabled are left unfilled for the bar.
 /// </summary>
 internal sealed class BarMidpointFillModel(
     ICommissionModel commissionModel,
     decimal slippageBasisPoints = 5m,
     bool spreadAware = false,
-    IReadOnlyDictionary<string, decimal>? tickSizes = null) : IFillModel
+    decimal volatilityMultiplier = 50m,
+    IReadOnlyDictionary<string, decimal>? tickSizes = null,
+    decimal maxParticipationRate = 0m) : IFillModel
 {
     public OrderFillResult TryFill(Order order, MarketEvent evt)
     {
@@ -53,30 +62,71 @@ internal sealed class BarMidpointFillModel(
 
         fillPrice = SnapToTick(fillPrice, order.Symbol);
 
-        var remainingQuantity = order.RemainingSignedQuantity;
-        var commission = commissionModel.Calculate(order.Symbol, remainingQuantity, fillPrice);
+        // Volume-constrained participation: cap fill at (bar.Volume * maxParticipationRate).
+        // When the cap is active and partial fills are disabled, leave the order working.
+        var remainingAbsolute = order.RemainingQuantity;
+        var fillableAbsolute = ComputeFillableQuantity(remainingAbsolute, bar.Volume);
+
+        if (fillableAbsolute == 0)
+        {
+            // Volume cap prevents any fill this bar — leave the order working.
+            return new OrderFillResult(
+                order with { IsTriggered = triggered },
+                [],
+                RemoveOrder: false,
+                WasTriggered: triggered && !order.IsTriggered);
+        }
+
+        if (fillableAbsolute < remainingAbsolute && !order.AllowPartialFills)
+        {
+            // Volume cap would produce a partial fill but the order disallows it.
+            return new OrderFillResult(
+                order with { IsTriggered = triggered },
+                [],
+                RemoveOrder: false,
+                WasTriggered: triggered && !order.IsTriggered);
+        }
+
+        var fillQuantitySigned = isBuy ? fillableAbsolute : -fillableAbsolute;
+        var commission = commissionModel.Calculate(order.Symbol, fillQuantitySigned, fillPrice);
         var fill = new FillEvent(
             Guid.NewGuid(),
             order.OrderId,
             order.Symbol,
-            remainingQuantity,
+            fillQuantitySigned,
             fillPrice,
             commission,
             evt.Timestamp,
             order.AccountId);
 
+        var newFilledQuantity = order.FilledQuantity + fillQuantitySigned;
+        var isFullyFilled = Math.Abs(newFilledQuantity) >= Math.Abs(order.Quantity);
         var updated = order with
         {
-            FilledQuantity = order.FilledQuantity + remainingQuantity,
-            Status = OrderStatus.Filled,
+            FilledQuantity = newFilledQuantity,
+            Status = isFullyFilled ? OrderStatus.Filled : OrderStatus.PartiallyFilled,
             IsTriggered = triggered
         };
 
         return new OrderFillResult(
             updated,
             [fill],
-            RemoveOrder: true,
+            RemoveOrder: isFullyFilled,
             WasTriggered: triggered && !order.IsTriggered);
+    }
+
+    /// <summary>
+    /// Computes how many shares can be filled this bar.
+    /// When <paramref name="maxParticipationRate"/> is zero the full remaining
+    /// quantity is returned (unconstrained mode, backward-compatible).
+    /// </summary>
+    private long ComputeFillableQuantity(long remainingAbsolute, long barVolume)
+    {
+        if (maxParticipationRate <= 0m)
+            return remainingAbsolute;
+
+        var barVolumeCap = (long)(barVolume * maxParticipationRate);
+        return Math.Min(remainingAbsolute, barVolumeCap);
     }
 
     private decimal SnapToTick(decimal price, string symbol)
@@ -105,12 +155,8 @@ internal sealed class BarMidpointFillModel(
                 {
                     var range = bar.High - bar.Low;
                     var volatilityFactor = range / mid; // e.g., 0.02 for a 2% bar range
-                    // Scale: base slippage * (1 + volatility multiplier × 50).
-                    // The 50× factor is an empirical calibration: it maps a typical equity
-                    // intraday range of 1–2 % to a slippage increase of 50–100 %, approximating
-                    // the widening of quoted spreads in high-volatility conditions. Adjust this
-                    // constant when calibrating the model against actual market microstructure data.
-                    effectiveSlippage = slippageBasisPoints * (1m + volatilityFactor * 50m);
+                    // volatilityMultiplier is a calibration factor (default 50×); see constructor doc.
+                    effectiveSlippage = slippageBasisPoints * (1m + volatilityFactor * volatilityMultiplier);
                 }
 
                 var slip = mid * (effectiveSlippage / 10_000m);

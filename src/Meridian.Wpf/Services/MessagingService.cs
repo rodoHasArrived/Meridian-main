@@ -38,7 +38,6 @@ public sealed class MessagingService
         if (string.IsNullOrEmpty(message)) return;
 
         MessageReceived?.Invoke(this, message);
-        System.Diagnostics.Debug.WriteLine($"[MessagingService] Message sent: {message}");
     }
 
     /// <summary>
@@ -148,10 +147,8 @@ public sealed class MessagingService
                     {
                         handler(payload);
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
-                        System.Diagnostics.Debug.WriteLine(
-                            $"[MessagingService] Handler error for {messageType}: {ex.Message}");
                     }
                 }
                 else
@@ -167,7 +164,6 @@ public sealed class MessagingService
             }
         }
 
-        System.Diagnostics.Debug.WriteLine($"[MessagingService] Typed message sent: {messageType}");
     }
 
     /// <summary>

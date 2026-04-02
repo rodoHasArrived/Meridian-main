@@ -88,6 +88,9 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         RegisterPage("RunDetail", typeof(RunDetailPage));
         RegisterPage("RunPortfolio", typeof(RunPortfolioPage));
         RegisterPage("RunLedger", typeof(RunLedgerPage));
+        RegisterPage("RunCashFlow", typeof(RunCashFlowPage));
+        RegisterPage("PositionBlotter", typeof(PositionBlotterPage));
+        RegisterPage("RunRisk", typeof(RunRiskPage));
 
         // Monitoring (6 pages)
         RegisterPage("DataQuality", typeof(DataQualityPage));
@@ -139,6 +142,9 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         RegisterPage("KeyboardShortcuts", typeof(KeyboardShortcutsPage));
         RegisterPage("SetupWizard", typeof(SetupWizardPage));
         RegisterPage("AddProviderWizard", typeof(AddProviderWizardPage));
+
+        // Embedded React dashboard (requires WebView2 Evergreen Runtime)
+        RegisterPage("DashboardWeb", typeof(DashboardWebPage));
 
         // Activity Log (1 page)
         RegisterPage("ActivityLog", typeof(ActivityLogPage));
@@ -220,9 +226,8 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
                 tourService.StartTour(tour.Id);
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine($"[NavigationService] Tour check failed: {ex.Message}");
         }
     }
 

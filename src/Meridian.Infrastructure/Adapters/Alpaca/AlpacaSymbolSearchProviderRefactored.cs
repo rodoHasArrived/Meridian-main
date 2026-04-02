@@ -189,7 +189,6 @@ public sealed class AlpacaSymbolSearchProviderRefactored : BaseSymbolSearchProvi
         };
     }
 
-    #region Alpaca API Models
 
     private sealed class AlpacaAsset
     {
@@ -239,5 +238,4 @@ public sealed class AlpacaSymbolSearchProviderRefactored : BaseSymbolSearchProvi
         public decimal? PriceIncrement { get; set; }
     }
 
-    #endregion
 }

@@ -1,4 +1,12 @@
 using Meridian.Application.Logging;
+using Meridian.Infrastructure.Adapters.Alpaca;
+using Meridian.Infrastructure.Adapters.AlphaVantage;
+using Meridian.Infrastructure.Adapters.Finnhub;
+using Meridian.Infrastructure.Adapters.Fred;
+using Meridian.Infrastructure.Adapters.NasdaqDataLink;
+using Meridian.Infrastructure.Adapters.Polygon;
+using Meridian.Infrastructure.Adapters.Tiingo;
+using Meridian.Infrastructure.Contracts;
 using Serilog;
 
 namespace Meridian.Application.Config.Credentials;
@@ -39,61 +47,24 @@ public sealed class ProviderCredentialResolver
     }
 
     /// <summary>
-    /// Resolves Alpaca credentials from environment or config.
+    /// Creates a credential context for a provider type using declared credential attributes
+    /// plus any config values supplied for fallback.
     /// </summary>
-    public (string? KeyId, string? SecretKey) ResolveAlpaca(string? configKeyId = null, string? configSecretKey = null)
+    public ICredentialContext CreateContext(
+        Type providerType,
+        IReadOnlyDictionary<string, string?>? configuredValues = null)
     {
-        var keyId = ResolveCredential("ALPACA_KEY_ID", configKeyId, "Alpaca KeyId");
-        var secretKey = ResolveCredential("ALPACA_SECRET_KEY", configSecretKey, "Alpaca SecretKey");
-        return (keyId, secretKey);
-    }
+        ArgumentNullException.ThrowIfNull(providerType);
 
-    /// <summary>
-    /// Resolves Polygon.io API key from environment or config.
-    /// </summary>
-    public string? ResolvePolygon(string? configApiKey = null)
-    {
-        return ResolveCredential("POLYGON_API_KEY", configApiKey, "Polygon ApiKey");
-    }
-
-    /// <summary>
-    /// Resolves Tiingo API token from environment or config.
-    /// </summary>
-    public string? ResolveTiingo(string? configApiToken = null)
-    {
-        return ResolveCredential("TIINGO_API_TOKEN", configApiToken, "Tiingo ApiToken");
-    }
-
-    /// <summary>
-    /// Resolves Finnhub API key from environment or config.
-    /// </summary>
-    public string? ResolveFinnhub(string? configApiKey = null)
-    {
-        return ResolveCredential("FINNHUB_API_KEY", configApiKey, "Finnhub ApiKey");
-    }
-
-    /// <summary>
-    /// Resolves Alpha Vantage API key from environment or config.
-    /// </summary>
-    public string? ResolveAlphaVantage(string? configApiKey = null)
-    {
-        return ResolveCredential("ALPHA_VANTAGE_API_KEY", configApiKey, "Alpha Vantage ApiKey");
-    }
-
-    /// <summary>
-    /// Resolves FRED API key from environment or config.
-    /// </summary>
-    public string? ResolveFred(string? configApiKey = null)
-    {
-        return ResolveCredential("FRED_API_KEY", configApiKey, "FRED ApiKey");
-    }
-
-    /// <summary>
-    /// Resolves Nasdaq Data Link API key from environment or config.
-    /// </summary>
-    public string? ResolveNasdaq(string? configApiKey = null)
-    {
-        return ResolveCredential("NASDAQ_API_KEY", configApiKey, "Nasdaq ApiKey");
+        return AttributeCredentialResolver.ForType(providerType, credentialName =>
+        {
+            string? configuredValue = null;
+            configuredValues?.TryGetValue(credentialName, out configuredValue);
+            return ResolveCredential(
+                GetPrimaryEnvironmentVariable(providerType, credentialName),
+                configuredValue,
+                FormatCredentialName(providerType, credentialName));
+        });
     }
 
     /// <summary>
@@ -144,6 +115,28 @@ public sealed class ProviderCredentialResolver
     public string? ResolveAzureServiceBus(string? configConnectionString = null)
     {
         return ResolveCredential("AZURE_SERVICEBUS_CONNECTION_STRING", configConnectionString, "Azure Service Bus ConnectionString");
+    }
+
+    private static string GetPrimaryEnvironmentVariable(Type providerType, string credentialName)
+    {
+        return providerType switch
+        {
+            var type when type == typeof(AlpacaHistoricalDataProvider) && credentialName == "ALPACA_KEY_ID" => "ALPACA_KEY_ID",
+            var type when type == typeof(AlpacaHistoricalDataProvider) && credentialName == "ALPACA_SECRET_KEY" => "ALPACA_SECRET_KEY",
+            var type when type == typeof(PolygonHistoricalDataProvider) && credentialName == "POLYGON_API_KEY" => "POLYGON_API_KEY",
+            var type when type == typeof(TiingoHistoricalDataProvider) && credentialName == "TIINGO_API_TOKEN" => "TIINGO_API_TOKEN",
+            var type when type == typeof(FinnhubHistoricalDataProvider) && credentialName == "FINNHUB_API_KEY" => "FINNHUB_API_KEY",
+            var type when type == typeof(AlphaVantageHistoricalDataProvider) && credentialName == "ALPHA_VANTAGE_API_KEY" => "ALPHA_VANTAGE_API_KEY",
+            var type when type == typeof(FredHistoricalDataProvider) && credentialName == "FRED_API_KEY" => "FRED_API_KEY",
+            var type when type == typeof(NasdaqDataLinkHistoricalDataProvider) && credentialName == "NASDAQ_DATA_LINK_API_KEY" => "NASDAQ_DATA_LINK_API_KEY",
+            _ => credentialName
+        };
+    }
+
+    private static string FormatCredentialName(Type providerType, string credentialName)
+    {
+        var providerName = providerType.Name.Replace("HistoricalDataProvider", string.Empty, StringComparison.Ordinal);
+        return $"{providerName} {credentialName}";
     }
 
     /// <summary>

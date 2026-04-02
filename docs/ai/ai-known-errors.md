@@ -1,6 +1,6 @@
 # AI Known Errors and Prevention Checklist
 
-**Last Updated:** 2026-03-21
+**Last Updated:** 2026-03-31
 
 This file tracks repeated AI-agent mistakes so future agents can avoid introducing the same failures.
 
@@ -216,22 +216,22 @@ If headings are missing, the workflow still creates an entry with safe defaults 
           value = default!;  // Use default! to satisfy analyzer
           return false;
       }
-      
+
       value = _buffer[index];
       return true;
   }
-  
+
   // Call site - clean and simple, works everywhere
   if (!buffer.TryGetFromNewest(fromOffset, out var fromValue))
       return null;
-  
+
   // fromValue is T (e.g., double), no nullable inference involved
   ```
 - **Verification commands**:
   - `dotnet build src/Meridian.Ui.Services/Meridian.Ui.Services.csproj -c Release`
   - `dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release -p:TargetFramework=net9.0-windows`
   - `grep -n 'out T? value' src/Meridian.Ui.Services/Collections/CircularBuffer.cs` (should return no matches after fix)
-- **Source issues**: 
+- **Source issues**:
   - https://github.com/rodoHasArrived/Meridian/actions/runs/21988186038/job/63527798918#step:5:1 (original)
   - https://github.com/rodoHasArrived/Meridian/actions/runs/21996212289/job/63556782046 (variant)
   - https://github.com/rodoHasArrived/Meridian/actions/runs/21998525615/job/63564824033#step:5:1 (regression)

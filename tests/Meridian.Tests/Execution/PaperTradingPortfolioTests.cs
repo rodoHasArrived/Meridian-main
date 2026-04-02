@@ -258,3 +258,89 @@ public sealed class PaperTradingPortfolioTests
             Timestamp = DateTimeOffset.UtcNow,
         };
 }
+
+// ---------------------------------------------------------------------------
+// Corporate action adjustment tests
+// ---------------------------------------------------------------------------
+
+public sealed class PaperTradingPortfolioCorporateActionTests
+{
+    [Fact]
+    public async Task ApplyCorporateActionsAsync_NoAdjuster_IsNoOp()
+    {
+        // Arrange — no adjuster supplied
+        var portfolio = new PaperTradingPortfolio(100_000m);
+        portfolio.ApplyFill(BuildFill("AAPL", OrderSide.Buy, 10, 200m));
+
+        // Act
+        await portfolio.ApplyCorporateActionsAsync("AAPL", DateTimeOffset.UtcNow.AddDays(-1));
+
+        // Assert — position unchanged
+        portfolio.Positions["AAPL"].Quantity.Should().Be(10L);
+        portfolio.Positions["AAPL"].AverageCostBasis.Should().Be(200m);
+    }
+
+    [Fact]
+    public async Task ApplyCorporateActionsAsync_WithSplitAdjuster_UpdatesPositionQuantityAndCostBasis()
+    {
+        // Arrange — adjuster applies a 2-for-1 split
+        var adjuster = new StubCorporateActionAdjuster(splitRatio: 2m);
+        var portfolio = new PaperTradingPortfolio(100_000m, ledger: null, corporateActionAdjuster: adjuster);
+        portfolio.ApplyFill(BuildFill("TSLA", OrderSide.Buy, 10, 300m));
+
+        // Act — simulate the ex-date being after the position was opened
+        await portfolio.ApplyCorporateActionsAsync("TSLA", DateTimeOffset.UtcNow.AddDays(-30));
+
+        // Assert — after a 2-for-1 split: quantity doubled, cost basis halved
+        portfolio.Positions["TSLA"].Quantity.Should().Be(20L);
+        portfolio.Positions["TSLA"].AverageCostBasis.Should().Be(150m);
+    }
+
+    [Fact]
+    public async Task ApplyCorporateActionsAsync_SymbolNotHeld_IsNoOp()
+    {
+        var adjuster = new StubCorporateActionAdjuster(splitRatio: 2m);
+        var portfolio = new PaperTradingPortfolio(100_000m, ledger: null, corporateActionAdjuster: adjuster);
+
+        // Act — symbol not in portfolio
+        await portfolio.ApplyCorporateActionsAsync("MSFT", DateTimeOffset.UtcNow.AddDays(-1));
+
+        // Assert — adjuster was NOT called (position doesn't exist)
+        adjuster.CallCount.Should().Be(0);
+    }
+
+    // ---- Helpers ----
+
+    private static ExecutionReport BuildFill(string symbol, OrderSide side, decimal qty, decimal price) =>
+        new()
+        {
+            OrderId = Guid.NewGuid().ToString("N"),
+            ReportType = ExecutionReportType.Fill,
+            Symbol = symbol,
+            Side = side,
+            OrderStatus = OrderStatus.Filled,
+            OrderQuantity = qty,
+            FilledQuantity = qty,
+            FillPrice = price,
+            Commission = 0m,
+            Timestamp = DateTimeOffset.UtcNow,
+        };
+
+    private sealed class StubCorporateActionAdjuster : Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster
+    {
+        private readonly decimal _splitRatio;
+        public int CallCount { get; private set; }
+
+        public StubCorporateActionAdjuster(decimal splitRatio) => _splitRatio = splitRatio;
+
+        public Task<Meridian.Application.SecurityMaster.PositionCorporateActionAdjustment> AdjustPositionAsync(
+            string ticker, decimal quantity, decimal costBasis, DateTimeOffset positionOpenedAt, CancellationToken ct = default)
+        {
+            CallCount++;
+            var adjustedQty = quantity * _splitRatio;
+            var adjustedCb = _splitRatio != 0 ? costBasis / _splitRatio : costBasis;
+            return Task.FromResult(new Meridian.Application.SecurityMaster.PositionCorporateActionAdjustment(
+                ticker, quantity, adjustedQty, costBasis, adjustedCb, ActionCount: 1));
+        }
+    }
+}

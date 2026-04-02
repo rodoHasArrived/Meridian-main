@@ -32,7 +32,6 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
     protected readonly ILogger Log;
     protected bool Disposed;
 
-    #region Abstract Properties (Must be implemented by derived classes)
 
     /// <summary>
     /// Unique identifier for the provider (e.g., "alpaca", "finnhub").
@@ -64,9 +63,7 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
     /// </summary>
     protected virtual IReadOnlyList<string> AlternateApiKeyEnvVars => Array.Empty<string>();
 
-    #endregion
 
-    #region Virtual Properties (Can be overridden)
 
     /// <summary>
     /// Priority for this provider (lower = higher priority).
@@ -99,7 +96,6 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
     /// </summary>
     public virtual IReadOnlyList<string> SupportedExchanges => Array.Empty<string>();
 
-    #endregion
 
     /// <summary>
     /// API key loaded from environment variables.
@@ -215,10 +211,10 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
         if (!HasValidCredentials())
             return Array.Empty<SymbolSearchResult>();
 
-        await RateLimiter.WaitForSlotAsync(ct).ConfigureAwait(false);
-
         try
         {
+            await RateLimiter.WaitForSlotAsync(ct).ConfigureAwait(false);
+
             var url = BuildSearchUrl(query, assetType, exchange);
             using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
 
@@ -286,7 +282,6 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
         }
     }
 
-    #region Abstract Methods (Must be implemented by derived classes)
 
     /// <summary>
     /// Build the URL for a search request.
@@ -321,9 +316,7 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
     /// <returns>Symbol details or null if not found.</returns>
     protected abstract Task<SymbolDetails?> DeserializeDetailsAsync(string json, string symbol, CancellationToken ct);
 
-    #endregion
 
-    #region Virtual Methods (Can be overridden)
 
     /// <summary>
     /// Apply filters to results. Override if provider supports filtering natively.
@@ -348,9 +341,7 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
         return results;
     }
 
-    #endregion
 
-    #region Helper Methods
 
     /// <summary>
     /// Calculate match score using the shared utility.
@@ -382,9 +373,7 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
         ObjectDisposedException.ThrowIf(Disposed, this);
     }
 
-    #endregion
 
-    #region IDisposable
 
     public void Dispose()
     {
@@ -405,5 +394,4 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
         }
     }
 
-    #endregion
 }

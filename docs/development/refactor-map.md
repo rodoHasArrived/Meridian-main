@@ -44,7 +44,7 @@
 - **Status:** Complete.
 - **What was done:**
   - `ProviderRegistry` in `Infrastructure/Adapters/Core/` serves as the single source of truth for all provider types.
-  - Streaming factories registered as `Dictionary<DataSourceKind, Func<IMarketDataClient>>`.
+  - Streaming factories registered as `ConcurrentDictionary<string, Func<IMarketDataClient>>`, keyed by lower-case provider IDs.
   - Universal queries: `GetAllProviderMetadata()`, `GetProvider<T>()`, `GetProviders<T>()`, `GetBestAvailableProviderAsync<T>()`.
   - `IProviderMetadata` unified identity and capabilities contract.
 - **Key files:**
@@ -56,7 +56,7 @@
   - Added `ProviderRegistryConfig` record with `UseAttributeDiscovery` flag to `AppConfig`.
   - `ServiceCompositionRoot.AddProviderServices()` checks `config.ProviderRegistry?.UseAttributeDiscovery` flag.
   - When true, `RegisterStreamingFactoriesFromAttributes()` iterates `DataSourceRegistry.Sources` to auto-register `IMarketDataClient` implementations via `[DataSource]` attribute discovery.
-  - `TryMapToDataSourceKind()` maps attribute IDs to `DataSourceKind` enum values.
+  - Attribute-discovered providers register by `source.Id` directly; `DataSourceKind` remains only a compatibility type at the config boundary.
   - Default: false (manual lambda registration preserved as fallback).
 - **Key files:**
   - `src/Meridian.Core/Config/AppConfig.cs` (added `ProviderRegistryConfig`)

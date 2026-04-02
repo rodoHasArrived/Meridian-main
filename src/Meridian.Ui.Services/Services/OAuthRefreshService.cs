@@ -179,9 +179,8 @@ public sealed class OAuthRefreshService : IDisposable
         {
             await CheckAndRefreshTokensAsync();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine($"[OAuthRefreshService] Error in refresh timer: {ex.Message}");
         }
     }
 
@@ -191,9 +190,8 @@ public sealed class OAuthRefreshService : IDisposable
         {
             await CheckExpiringTokensAsync();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine($"[OAuthRefreshService] Error in expiration check timer: {ex.Message}");
         }
     }
 

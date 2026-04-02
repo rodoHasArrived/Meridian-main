@@ -271,6 +271,24 @@ internal static class SecurityMasterMapping
                 GetRequiredString(json, "borrower"),
                 ToOption(GetOptionalDateOnly(json, "maturity")),
                 ToFSharpList(GetRequiredArray(json, "covenants").EnumerateArray().Select(ToCovenant)))),
+            "Commodity" => SecurityKind.NewCommodity(new CommodityTerms(
+                GetRequiredString(json, "commodityType"),
+                ToOption(GetOptionalString(json, "denomination")),
+                ToOption(GetOptionalDecimal(json, "contractSize")))),
+            "CryptoCurrency" => SecurityKind.NewCryptoCurrency(new CryptoTerms(
+                GetRequiredString(json, "baseCurrency"),
+                GetRequiredString(json, "quoteCurrency"),
+                ToOption(GetOptionalString(json, "network")))),
+            "Cfd" => SecurityKind.NewCfd(new CfdTerms(
+                GetRequiredString(json, "underlyingAssetClass"),
+                ToOption(GetOptionalString(json, "underlyingDescription")),
+                ToOption(GetOptionalDecimal(json, "leverage")))),
+            "Warrant" => SecurityKind.NewWarrant(new WarrantTerms(
+                SecurityId.NewSecurityId(GetRequiredGuid(json, "underlyingId")),
+                GetRequiredString(json, "warrantType"),
+                ToOption(GetOptionalDecimal(json, "strike")),
+                ToOption(GetOptionalDateOnly(json, "expiry")),
+                ToOption(GetOptionalDecimal(json, "multiplier")))),
             _ => throw new InvalidOperationException($"Unsupported asset class '{assetClass}'.")
         };
     }

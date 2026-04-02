@@ -1,8 +1,8 @@
 # Trading Workstation Migration Blueprint
 
-**Owner:** Core Team  
-**Audience:** Product, Architecture, Desktop, API, and Platform contributors  
-**Last Updated:** 2026-03-21  
+**Owner:** Core Team
+**Audience:** Product, Architecture, Desktop, API, and Platform contributors
+**Last Updated:** 2026-03-21
 **Status:** Active blueprint — documentation-aligned, implementation pending
 
 ---

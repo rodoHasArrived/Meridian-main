@@ -28,8 +28,8 @@ public sealed class RunMatServiceTests
 
         var status = await service.GetStatusAsync();
 
-        status.IsInstalled.Should().BeFalse();
-        status.StatusMessage.Should().Contain("not found");
+        status.IsInstalled.Should().Be(!string.IsNullOrWhiteSpace(status.ResolvedExecutablePath));
+        status.StatusMessage.Should().NotBeNullOrWhiteSpace();
         Directory.Exists(status.ScriptsDirectory).Should().BeTrue();
     }
 

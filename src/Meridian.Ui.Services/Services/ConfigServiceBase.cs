@@ -353,7 +353,6 @@ public abstract class ConfigServiceBase
         await SaveConfigCoreAsync(config, ct);
     }
 
-    #region Provider Helpers
 
     protected internal static IEnumerable<(string ProviderId, BackfillProviderOptionsDto? Options)> EnumerateProviders(BackfillProvidersConfigDto providers)
     {
@@ -445,5 +444,4 @@ public abstract class ConfigServiceBase
         }
     }
 
-    #endregion
 }

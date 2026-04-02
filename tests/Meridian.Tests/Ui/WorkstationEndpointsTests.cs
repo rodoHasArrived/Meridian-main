@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.UI;
@@ -24,6 +25,13 @@ namespace Meridian.Tests.Ui;
 
 public sealed class WorkstationEndpointsTests
 {
+    // Must match the JsonSerializerOptions used in CreateAppAsync so that enum fields
+    // serialized as strings by the server (via JsonStringEnumConverter) can be round-tripped.
+    private static readonly JsonSerializerOptions ServerJsonOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        Converters = { new JsonStringEnumConverter() }
+    };
     [Fact]
     public async Task MapWorkstationEndpoints_WithStrategyReadService_ShouldReturnServiceBackedBootstrapPayloads()
     {
@@ -77,6 +85,14 @@ public sealed class WorkstationEndpointsTests
         latestRun.GetProperty("status").GetString().Should().Be("Completed");
         latestRun.GetProperty("dataset").GetString().Should().Be("dataset/fx/spot");
         latestRun.GetProperty("notes").GetString().Should().Contain("review");
+        latestRun.GetProperty("drillIn").GetProperty("fills").GetString().Should().Be("/api/workstation/runs/run-latest/fills");
+
+        var comparisons = research.RootElement.GetProperty("comparisons");
+        comparisons.GetArrayLength().Should().BeGreaterThan(0);
+        comparisons[0].GetProperty("modes").EnumerateArray()
+            .Should()
+            .Contain(mode => mode.GetProperty("drillIn").GetProperty("attribution").GetString() != null);
+        research.RootElement.GetProperty("timeline").GetArrayLength().Should().Be(2);
 
         research.RootElement.GetProperty("metrics").EnumerateArray()
             .Should()
@@ -278,7 +294,7 @@ public sealed class WorkstationEndpointsTests
         var response = await client.PostAsJsonAsync("/api/workstation/reconciliation/runs", new ReconciliationRunRequest("run-recon"));
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var created = await response.Content.ReadFromJsonAsync<ReconciliationRunDetail>();
+        var created = await response.Content.ReadFromJsonAsync<ReconciliationRunDetail>(ServerJsonOptions);
         created.Should().NotBeNull();
         created!.Summary.RunId.Should().Be("run-recon");
         created.Summary.BreakCount.Should().Be(0);
@@ -286,13 +302,13 @@ public sealed class WorkstationEndpointsTests
 
         var latestResponse = await client.GetAsync("/api/workstation/runs/run-recon/reconciliation");
         latestResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var latest = await latestResponse.Content.ReadFromJsonAsync<ReconciliationRunDetail>();
+        var latest = await latestResponse.Content.ReadFromJsonAsync<ReconciliationRunDetail>(ServerJsonOptions);
         latest.Should().NotBeNull();
         latest!.Summary.ReconciliationRunId.Should().Be(created.Summary.ReconciliationRunId);
 
         var byIdResponse = await client.GetAsync($"/api/workstation/reconciliation/runs/{created.Summary.ReconciliationRunId}");
         byIdResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var byId = await byIdResponse.Content.ReadFromJsonAsync<ReconciliationRunDetail>();
+        var byId = await byIdResponse.Content.ReadFromJsonAsync<ReconciliationRunDetail>(ServerJsonOptions);
         byId.Should().NotBeNull();
         byId!.Summary.MatchCount.Should().BeGreaterThan(0);
     }
@@ -410,7 +426,7 @@ public sealed class WorkstationEndpointsTests
         var response = await client.PostAsJsonAsync("/api/workstation/reconciliation/runs", new ReconciliationRunRequest("run-breaks"));
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var created = await response.Content.ReadFromJsonAsync<ReconciliationRunDetail>();
+        var created = await response.Content.ReadFromJsonAsync<ReconciliationRunDetail>(ServerJsonOptions);
         created.Should().NotBeNull();
         created!.Summary.BreakCount.Should().BeGreaterThan(0);
         created.Breaks.Should().NotBeEmpty();
@@ -596,6 +612,83 @@ public sealed class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_CompareRuns_ShouldFilterByModeWhenRequested()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+        });
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildRun(
+            runId: "cmp-filter-paper",
+            strategyId: "s1",
+            strategyName: "Alpha Strategy",
+            runType: RunType.Paper,
+            startedAt: new DateTimeOffset(2026, 3, 21, 10, 0, 0, TimeSpan.Zero)));
+        await store.RecordRunAsync(BuildRun(
+            runId: "cmp-filter-backtest",
+            strategyId: "s1",
+            strategyName: "Alpha Strategy",
+            runType: RunType.Backtest,
+            startedAt: new DateTimeOffset(2026, 3, 21, 9, 0, 0, TimeSpan.Zero)));
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsJsonAsync("/api/workstation/runs/compare", new
+        {
+            runIds = new[] { "cmp-filter-paper", "cmp-filter-backtest" },
+            modes = new[] { "paper" }
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var doc = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
+        var rows = doc.RootElement.EnumerateArray().ToArray();
+        rows.Should().HaveCount(1);
+        rows[0].GetProperty("runId").GetString().Should().Be("cmp-filter-paper");
+        rows[0].GetProperty("mode").GetString().Should().Be("Paper");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_RunHistoryAndTimeline_ShouldRespectCrossModeFilteringAndSorting()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+        });
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildRun(
+            runId: "hist-backtest",
+            strategyId: "s-history",
+            strategyName: "History Strategy",
+            runType: RunType.Backtest,
+            startedAt: new DateTimeOffset(2026, 3, 20, 10, 0, 0, TimeSpan.Zero)));
+        await store.RecordRunAsync(BuildRun(
+            runId: "hist-paper",
+            strategyId: "s-history",
+            strategyName: "History Strategy",
+            runType: RunType.Paper,
+            startedAt: new DateTimeOffset(2026, 3, 21, 10, 0, 0, TimeSpan.Zero)));
+        await store.RecordRunAsync(BuildRun(
+            runId: "hist-live",
+            strategyId: "s-history",
+            strategyName: "History Strategy",
+            runType: RunType.Live,
+            startedAt: new DateTimeOffset(2026, 3, 22, 10, 0, 0, TimeSpan.Zero)));
+
+        var client = app.GetTestClient();
+        using var history = await ReadJsonAsync(client, "/api/workstation/runs/history?mode=paper,live&limit=10");
+        history.RootElement.GetArrayLength().Should().Be(2);
+        history.RootElement[0].GetProperty("runId").GetString().Should().Be("hist-live");
+        history.RootElement[1].GetProperty("runId").GetString().Should().Be("hist-paper");
+
+        using var timeline = await ReadJsonAsync(client, "/api/workstation/runs/timeline?mode=paper,live&limit=10");
+        timeline.RootElement.GetArrayLength().Should().Be(2);
+        timeline.RootElement[0].GetProperty("mode").GetString().Should().Be("Live");
+        timeline.RootElement[1].GetProperty("mode").GetString().Should().Be("Paper");
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_DiffRuns_ShouldReturnPositionAndMetricDeltas()
     {
         await using var app = await CreateAppAsync(services =>
@@ -657,7 +750,8 @@ public sealed class WorkstationEndpointsTests
         var app = builder.Build();
         app.MapWorkstationEndpoints(new JsonSerializerOptions
         {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            Converters = { new JsonStringEnumConverter() }
         });
 
         await app.StartAsync();
@@ -990,8 +1084,8 @@ public sealed class WorkstationEndpointsTests
             .Select(index => new ReconciliationMatchDto(
                 CheckId: $"match-{index + 1}",
                 Label: $"Match {index + 1}",
-                ExpectedSource: ReconciliationSourceKind.Portfolio,
-                ActualSource: ReconciliationSourceKind.Ledger,
+                ExpectedSource: "portfolio",
+                ActualSource: "ledger",
                 ExpectedAmount: 100m + index,
                 ActualAmount: 100m + index,
                 Variance: 0m,
@@ -1005,7 +1099,7 @@ public sealed class WorkstationEndpointsTests
                 Label: $"Break {index + 1}",
                 Category: ReconciliationBreakCategory.AmountMismatch,
                 Status: ReconciliationBreakStatus.Open,
-                MissingSource: ReconciliationSourceKind.Ledger,
+                MissingSource: "ledger",
                 ExpectedAmount: 100m + index,
                 ActualAmount: 95m + index,
                 Variance: 5m,
@@ -1132,6 +1226,7 @@ public sealed class WorkstationEndpointsTests
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         using var doc = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
         doc.RootElement.GetProperty("runId").GetString().Should().Be("drillfills-1");
+        doc.RootElement.GetProperty("mode").GetString().Should().Be("Backtest");
         doc.RootElement.GetProperty("totalFills").GetInt32().Should().Be(3);
         doc.RootElement.GetProperty("fills").GetArrayLength().Should().Be(3);
     }
@@ -1168,6 +1263,7 @@ public sealed class WorkstationEndpointsTests
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         using var doc = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
         doc.RootElement.GetProperty("runId").GetString().Should().Be("drillattr-1");
+        doc.RootElement.GetProperty("mode").GetString().Should().Be("Backtest");
         doc.RootElement.GetProperty("bySymbol").GetArrayLength().Should().BeGreaterThan(0);
     }
 

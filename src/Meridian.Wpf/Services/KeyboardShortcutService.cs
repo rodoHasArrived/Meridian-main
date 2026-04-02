@@ -272,7 +272,6 @@ public sealed class KeyboardShortcutService
             Action = action
         });
 
-        System.Diagnostics.Debug.WriteLine($"[KeyboardShortcutService] Shortcut invoked: {actionId}");
     }
 
     /// <summary>

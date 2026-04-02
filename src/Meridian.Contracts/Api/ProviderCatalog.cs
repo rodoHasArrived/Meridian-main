@@ -694,13 +694,22 @@ public sealed class ProviderCatalogEntry
 /// <param name="DisplayName">The display label for the credential field.</param>
 /// <param name="Required">Whether the credential field is required.</param>
 /// <param name="DefaultValue">The default value to use when none is provided.</param>
+/// <param name="EnvironmentVariableAliases">Additional environment variable aliases that should also be treated as valid for this credential.</param>
 public sealed record CredentialFieldInfo(
     [property: JsonPropertyName("name")] string Name,
     [property: JsonPropertyName("envVar")] string? EnvironmentVariable,
     [property: JsonPropertyName("displayName")] string DisplayName,
     [property: JsonPropertyName("required")] bool Required,
-    [property: JsonPropertyName("defaultValue")] string? DefaultValue = null
-);
+    [property: JsonPropertyName("defaultValue")] string? DefaultValue = null,
+    [property: JsonPropertyName("envVarAliases")] string[]? EnvironmentVariableAliases = null)
+{
+    public string[] AllEnvironmentVariables =>
+        (new[] { EnvironmentVariable }
+            .Concat(EnvironmentVariableAliases ?? Array.Empty<string>()))
+        .Where(envVar => !string.IsNullOrWhiteSpace(envVar))
+        .Distinct(StringComparer.OrdinalIgnoreCase)
+        .ToArray()!;
+}
 
 /// <summary>
 /// Rate limit information for UI display and validation.

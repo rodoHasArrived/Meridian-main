@@ -58,7 +58,6 @@ public sealed record DeploymentContext
     /// </summary>
     public string? Command { get; init; }
 
-    #region Computed Properties
 
     /// <summary>
     /// Whether the deployment requires an HTTP server.
@@ -91,9 +90,7 @@ public sealed record DeploymentContext
         _ => "Unknown mode"
     };
 
-    #endregion
 
-    #region Factory Methods
 
     /// <summary>
     /// Creates a deployment context from command line arguments.
@@ -165,9 +162,7 @@ public sealed record DeploymentContext
         };
     }
 
-    #endregion
 
-    #region Private Helpers
 
     private static DeploymentMode MapRunMode(CliModeResolver.RunMode mode) => mode switch
     {
@@ -274,7 +269,6 @@ public sealed record DeploymentContext
         return null;
     }
 
-    #endregion
 }
 
 /// <summary>

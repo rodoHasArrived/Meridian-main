@@ -3,7 +3,7 @@ using System.Windows;
 namespace Meridian.Wpf.Views;
 
 // Partial extension of MainPage wiring the split-pane host to NavigationService.
-// Fields _navigationService, _viewModel, and _currentPageTag are declared in MainPage.xaml.cs.
+// Fields _navigationService and _viewModel are declared in MainPage.xaml.cs.
 public partial class MainPage
 {
     private void OnSplitPaneHostLoaded(object sender, RoutedEventArgs e)
@@ -17,7 +17,7 @@ public partial class MainPage
         _navigationService.Initialize(firstFrame);
 
         // Re-navigate to the page that was loaded before we took over
-        _navigationService.NavigateTo(_currentPageTag);
+        _navigationService.NavigateTo(_viewModel.CurrentPageTag);
 
         if (_viewModel is not null)
         {

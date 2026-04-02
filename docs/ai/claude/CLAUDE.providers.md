@@ -41,7 +41,7 @@ The system uses a unified abstraction layer supporting both **real-time streamin
 
 ---
 
-## Current Provider Inventory (2026-03-20)
+## Current Provider Inventory (2026-03-31)
 
 The repository currently includes **30 concrete provider implementations** plus shared base and registry components.
 
@@ -255,7 +255,7 @@ export MERIDIAN_SECURITY_MASTER_SCHEMA="security_master"
 | `FSharp/Domain/SecurityMaster.fs` | Domain types and asset class definitions |
 | `Ui.Shared/Endpoints/SecurityMasterEndpoints.cs` | REST API endpoints |
 
-**Related:** [Security Master Guide](../providers/security-master-guide.md) — Complete setup and usage guide
+**Related:** [Security Master Guide](../../providers/security-master-guide.md) — Complete setup and usage guide
 
 ---
 
@@ -865,11 +865,11 @@ See the [provider field audit](../../architecture/deterministic-canonicalization
 
 ## Related Resources
 
-- **Master AI index:** [`docs/ai/README.md`](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/README.md)
+- **Master AI index:** [`docs/ai/README.md`](https://github.com/rodoHasArrived/Meridian/blob/main/docs/ai/README.md)
 - **Root context:** [`CLAUDE.md`](https://github.com/rodoHasArrived/Meridian/blob/main/CLAUDE.md) § Data Providers
 - **Code review (Lens 5 - Provider Compliance):** [`.github/agents/code-review-agent.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/agents/code-review-agent.md)
 - **Development guide:** [`docs/development/provider-implementation.md`](../../development/provider-implementation.md)
 
 ---
 
-*Last Updated: 2026-03-16*
+*Last Updated: 2026-03-31*

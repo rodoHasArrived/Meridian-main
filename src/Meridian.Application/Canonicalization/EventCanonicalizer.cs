@@ -1,4 +1,5 @@
 using Meridian.Application.Logging;
+using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Catalog;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
@@ -21,17 +22,20 @@ public sealed class EventCanonicalizer : IEventCanonicalizer
     private readonly ConditionCodeMapper _conditions;
     private readonly VenueMicMapper _venues;
     private readonly byte _version;
+    private readonly SecurityMasterCanonicalSymbolSeedService? _seedService;
 
     public EventCanonicalizer(
         ICanonicalSymbolRegistry symbols,
         ConditionCodeMapper conditions,
         VenueMicMapper venues,
-        byte version = 1)
+        byte version = 1,
+        SecurityMasterCanonicalSymbolSeedService? seedService = null)
     {
         _symbols = symbols ?? throw new ArgumentNullException(nameof(symbols));
         _conditions = conditions ?? throw new ArgumentNullException(nameof(conditions));
         _venues = venues ?? throw new ArgumentNullException(nameof(venues));
         _version = version;
+        _seedService = seedService;
     }
 
     /// <inheritdoc />
@@ -46,6 +50,12 @@ public sealed class EventCanonicalizer : IEventCanonicalizer
         // Symbol resolution: use provider-aware resolution first, fall back to generic
         var canonicalSymbol = _symbols.ResolveToCanonical(raw.Symbol);
 
+        // Security Master cross-reference: tag with security_id from the seed lookup
+        // (cache hit only — no DB round-trip on the hot path).
+        var securityId = canonicalSymbol is not null
+            ? _seedService?.TryGetSecurityId(canonicalSymbol)
+            : null;
+
         // Venue normalization
         var rawVenue = ExtractVenue(raw.Payload);
         var canonicalVenue = _venues.TryMapVenue(rawVenue, raw.Source);
@@ -53,6 +63,7 @@ public sealed class EventCanonicalizer : IEventCanonicalizer
         var result = raw with
         {
             CanonicalSymbol = canonicalSymbol,
+            SecurityId = securityId,
             CanonicalVenue = canonicalVenue,
             CanonicalizationVersion = _version,
             Tier = raw.Tier < MarketEventTier.Enriched ? MarketEventTier.Enriched : raw.Tier

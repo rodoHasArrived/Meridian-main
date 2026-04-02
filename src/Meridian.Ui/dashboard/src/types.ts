@@ -88,6 +88,31 @@ export interface PaperSessionSummary {
   createdAt: string;
 }
 
+export interface PaperSessionDetail extends PaperSessionSummary {
+  closedAt: string | null;
+}
+
+export interface ReplayFileRecord {
+  path: string;
+  name: string;
+  symbol: string | null;
+  eventType: string | null;
+  sizeBytes: number;
+  isCompressed: boolean;
+  lastModified: string;
+}
+
+export interface ReplayStatus {
+  sessionId: string;
+  filePath: string;
+  status: string;
+  speedMultiplier: number;
+  eventsProcessed: number;
+  totalEvents: number;
+  progressPercent: number;
+  startedAt: string;
+}
+
 export interface OrderSubmitRequest {
   symbol: string;
   side: "Buy" | "Sell";
@@ -247,8 +272,43 @@ export interface GovernanceReportingSummary {
 export interface GovernanceWorkspaceResponse {
   metrics: MetricSnapshot[];
   reconciliationQueue: GovernanceReconciliationRecord[];
+  breakQueue: ReconciliationBreakQueueItem[];
   cashFlow: GovernanceCashFlowSummary;
   reporting: GovernanceReportingSummary;
+}
+
+export type ReconciliationBreakQueueStatus = "Open" | "InReview" | "Resolved" | "Dismissed";
+
+export interface ReconciliationBreakQueueItem {
+  breakId: string;
+  runId: string;
+  strategyName: string;
+  category: string;
+  status: ReconciliationBreakQueueStatus;
+  variance: number;
+  reason: string;
+  assignedTo: string | null;
+  detectedAt: string;
+  lastUpdatedAt: string;
+  reviewedBy: string | null;
+  reviewedAt: string | null;
+  resolvedBy: string | null;
+  resolvedAt: string | null;
+  resolutionNote: string | null;
+}
+
+export interface ReviewReconciliationBreakRequest {
+  breakId: string;
+  assignedTo: string;
+  reviewedBy: string;
+  reviewNote?: string;
+}
+
+export interface ResolveReconciliationBreakRequest {
+  breakId: string;
+  status: "Resolved" | "Dismissed";
+  resolvedBy: string;
+  resolutionNote: string;
 }
 
 // --- Trading action result ---
@@ -555,4 +615,38 @@ export interface ResolveConflictRequest {
   resolution: "AcceptA" | "AcceptB" | "Dismiss";
   resolvedBy: string;
   reason?: string;
+}
+
+// --- Backfill mutation types ---
+
+export interface BackfillTriggerRequest {
+  provider: string | null;
+  symbols: string[];
+  from: string | null;
+  to: string | null;
+}
+
+export interface BackfillTriggerResult {
+  success: boolean;
+  provider: string;
+  symbols: string[];
+  from: string | null;
+  to: string | null;
+  barsWritten: number;
+  startedUtc: string;
+  completedUtc: string;
+  error: string | null;
+}
+
+export interface BackfillProgressEntry {
+  symbol: string;
+  barsWritten: number;
+  completed: boolean;
+}
+
+export interface BackfillProgressResponse {
+  active: boolean;
+  provider: string | null;
+  symbols: BackfillProgressEntry[];
+  message: string | null;
 }

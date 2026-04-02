@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Threading;
 using Meridian.Application.Logging;
+using Meridian.Application.Services;
 using Meridian.Domain.Events;
 using Meridian.Storage.Interfaces;
 using Serilog;
@@ -12,7 +13,10 @@ namespace Meridian.Storage.Archival;
 /// Archival-first storage service with Write-Ahead Logging for crash-safe persistence.
 /// Implements the storage pipeline pattern: WAL -> Buffer -> Primary Storage -> Archive.
 /// </summary>
-public sealed class ArchivalStorageService : IStorageSink
+[StorageSink("archival", "Archival storage with WAL durability",
+    EnabledByDefault = false,
+    Description = "WAL-backed archival sink; buffer events in memory and flush to a primary IStorageSink with crash-safe Write-Ahead Logging.")]
+public sealed class ArchivalStorageService : IStorageSink, IFlushable
 {
     private readonly ILogger _log = LoggingSetup.ForContext<ArchivalStorageService>();
     private readonly WriteAheadLog _wal;

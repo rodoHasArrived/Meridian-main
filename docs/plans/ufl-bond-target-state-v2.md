@@ -1,9 +1,9 @@
 # UFL Bond Target-State Package V2
 
-**Owner:** Core Team  
-**Audience:** Product, architecture, domain, storage, and application contributors  
-**Last Updated:** 2026-03-26  
-**Status:** active  
+**Owner:** Core Team
+**Audience:** Product, architecture, domain, storage, and application contributors
+**Last Updated:** 2026-03-26
+**Status:** active
 **Reviewed:** 2026-03-26
 
 > **Naming standard:** All new F# types and DTOs in this package must follow the
@@ -99,13 +99,13 @@ flowchart TD
 
 The design is intentionally split into four abstraction layers to reduce coupling:
 
-1. **Canonical Bond Core**  
+1. **Canonical Bond Core**
    Owns immutable identity and base terms (`SecurityId`, maturity, coupon, day count).
-2. **Subclass Capability Layer**  
+2. **Subclass Capability Layer**
    Owns additive features by subtype (convertible, floating-rate, inflation-linked, etc.).
-3. **Projection + Query Layer**  
+3. **Projection + Query Layer**
    Owns denormalized read models and stable query contracts for downstream consumers.
-4. **Orchestration Layer**  
+4. **Orchestration Layer**
    Owns replay, checkpointing, sweep scheduling, and transactional outbox dispatch.
 
 Consumer systems (ledger/reporting/governance) may depend on layers 3-4 only, never provider payloads directly.
@@ -494,15 +494,15 @@ Suggested commands:
 
 ## Risks and Mitigations
 
-- **Risk:** lifecycle drift between event-driven updates and scheduled sweeps.  
+- **Risk:** lifecycle drift between event-driven updates and scheduled sweeps.
   **Mitigation:** single lifecycle projector with deterministic transition function.
-- **Risk:** issuer normalization inconsistency across providers.  
+- **Risk:** issuer normalization inconsistency across providers.
   **Mitigation:** canonical issuer key + alias table with provenance.
-- **Risk:** rebuild regressions after schema evolution.  
+- **Risk:** rebuild regressions after schema evolution.
   **Mitigation:** schema-versioned events + golden replay fixtures.
-- **Risk:** subclass explosion causing contract sprawl and inconsistent consumer logic.  
+- **Risk:** subclass explosion causing contract sprawl and inconsistent consumer logic.
   **Mitigation:** strict subclass registry + additive schema versioning + bounded extension ownership.
-- **Risk:** policy implementation drift between teams.  
+- **Risk:** policy implementation drift between teams.
   **Mitigation:** shared `IBondSubclassPolicy` conformance suite + versioned policy registry.
 
 ## Proposed Repo Structure

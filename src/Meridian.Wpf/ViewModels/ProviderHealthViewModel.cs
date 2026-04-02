@@ -88,8 +88,8 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageAc
 
         // Populate action bar.
         Actions.Clear();
-        Actions.Add(new ActionEntry("Refresh", new RelayCommand(() => _ = RefreshAsync()), "↻", "Refresh provider data", IsPrimary: true));
-        Actions.Add(new ActionEntry("Reconnect All", new RelayCommand(() => _notificationService.NotifyInfo("Reconnecting", "Initiating provider reconnection...")), "🔗", "Reconnect all providers"));
+        Actions.Add(new ActionEntry("Refresh", new RelayCommand(() => _ = RefreshAsync()), "\uE72C", "Refresh provider data", IsPrimary: true));
+        Actions.Add(new ActionEntry("Reconnect All", new RelayCommand(() => _notificationService.NotifyInfo("Reconnecting", "Initiating provider reconnection...")), "\uE71B", "Reconnect all providers"));
 
         await RefreshDataAsync();
 

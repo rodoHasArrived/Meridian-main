@@ -29,21 +29,16 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
-            <RowDefinition Height="32" />
+            <RowDefinition Height="28" />
         </Grid.RowDefinitions>
 
         <!-- Fixture/Offline Mode Banner (P0: Hard visual distinction for non-live modes) -->
         <Border x:Name="FixtureModeBanner"
                 Grid.Row="0"
-                Visibility="Collapsed"
+                Visibility="{Binding FixtureModeBannerVisibility}"
                 Padding="8,6"
-                CornerRadius="0">
-            <Border.Background>
-                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                    <GradientStop Color="{StaticResource ModeFixtureColor}" Offset="0" />
-                    <GradientStop Color="#C98A2B" Offset="1" />
-                </LinearGradientBrush>
-            </Border.Background>
+                CornerRadius="0"
+                Background="{Binding FixtureModeBannerBackground}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
@@ -59,7 +54,7 @@
                            Margin="0,0,8,0" />
                 <TextBlock x:Name="FixtureModeText"
                            Grid.Column="1"
-                           Text="FIXTURE MODE — Showing sample data, not connected to live backend"
+                           Text="{Binding FixtureModeText}"
                            Foreground="White"
                            FontWeight="SemiBold"
                            FontSize="12"
@@ -112,15 +107,15 @@
             </Border>
         </Grid>
 
-        <!-- Clipboard symbol detection banner: floats at top of content area when symbols found -->
+        <!-- Clipboard symbol detection banner: light theme, Marquee-style -->
         <Border x:Name="ClipboardSymbolBanner"
                 Grid.Row="1"
                 VerticalAlignment="Top"
-                Visibility="Collapsed"
-                Padding="12,8"
+                Visibility="{Binding ClipboardBannerVisibility}"
+                Padding="16,8"
                 Panel.ZIndex="50"
-                Background="#1A2A4A"
-                BorderBrush="#4488CC" BorderThickness="0,0,0,1">
+                Background="{StaticResource ConsoleBackgroundLightBrush}"
+                BorderBrush="{StaticResource InfoColorBrush}" BorderThickness="0,0,0,2">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -131,22 +126,23 @@
                 <TextBlock Grid.Column="0"
                            Text="&#xE72D;"
                            FontFamily="{StaticResource SymbolThemeFontFamily}"
-                           Foreground="#66AAFF" FontSize="16"
+                           Foreground="{StaticResource InfoColorBrush}" FontSize="14"
                            VerticalAlignment="Center" Margin="0,0,8,0"/>
                 <TextBlock x:Name="ClipboardBannerText"
                            Grid.Column="1"
-                           Foreground="White" VerticalAlignment="Center" FontSize="13"
-                           TextTrimming="CharacterEllipsis"/>
+                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" VerticalAlignment="Center" FontSize="13"
+                           TextTrimming="CharacterEllipsis"
+                           Text="{Binding ClipboardBannerText}"/>
                 <Button x:Name="ClipboardAddButton"
                         Grid.Column="2"
                         Content="Add to Watchlist"
                         Margin="12,0,8,0" Padding="10,4"
-                        Click="ClipboardAdd_Click"/>
+                        Command="{Binding AddClipboardSymbolsCommand}"/>
                 <Button x:Name="ClipboardDismissButton"
                         Grid.Column="3"
                         Content="Dismiss"
                         Padding="10,4"
-                        Click="ClipboardDismiss_Click"/>
+                        Command="{Binding DismissClipboardBannerCommand}"/>
             </Grid>
         </Border>
 

@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 
 namespace Meridian.Ui.Services.Services;
 
-#region Models
 
 public sealed class BackendServiceStatus
 {
@@ -41,7 +40,6 @@ public sealed class BackendRuntimeInfo
     public DateTime StartedAtUtc { get; init; }
 }
 
-#endregion
 
 /// <summary>
 /// Abstract base class for backend service lifecycle management shared between platforms.

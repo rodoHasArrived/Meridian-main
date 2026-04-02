@@ -8,34 +8,41 @@ description: Implementation assurance and evidence collection specialist for the
 **Purpose:** Certify that a change matches approved requirements/blueprints, is validated with
 evidence, and is discoverable in the AI catalogs (agents + skills).
 
-**Triggers:** Use this agent when requested to:
+> **Navigation index:** [`docs/ai/agents/README.md`](../../docs/ai/agents/README.md)
+> **Claude skill equivalent:** [`.claude/skills/meridian-implementation-assurance/SKILL.md`](../../.claude/skills/meridian-implementation-assurance/SKILL.md)
+> **Codex skill equivalent:** [`.codex/skills/meridian-implementation-assurance/SKILL.md`](../../.codex/skills/meridian-implementation-assurance/SKILL.md)
+
+## Trigger Guidance
+
+Use this agent when requested to:
+
+- Implement a feature and confirm docs are updated
+- Refactor code and verify no performance regression
 - Confirm scope alignment to a blueprint/issue/acceptance criteria
 - Collect validation evidence (builds/tests/scripts) for shipping readiness
-- Update AI discovery surfaces after new capabilities (agents/skills symmetry)
+- Update AI discovery surfaces after new capabilities land (agents/skills symmetry)
 - Produce a traceable requirement → implementation → evidence summary
 
-**Requirement Type Detection**
+## Requirement Type Detection
 
 Pick the right validation lane before starting:
-- Feature completeness vs. blueprint → requirement matrix + targeted tests
-- Scope alignment to issue/roadmap → file mapping + acceptance criteria check
-- Documentation sync after code change → doc routing + cross-reference validation
-- Catalog/discovery update → agents/skills symmetry check
-- Rollout readiness → build + test + deployment gates (all CRITICAL)
 
-**Required Workflow**
-1. **Gather inputs:** Identify source of truth (blueprint/issue), acceptance criteria, and expected evidence.
-2. **Plan mapping:** Map each requirement to implementing files and intended validation artifacts.
-3. **Execute & validate:** Apply minimal changes, run required commands (build/tests/scripts), and capture outputs.
-4. **Report & route:** Summarize traceability, list validation commands + outcomes, and update AI catalogs.
+| Requirement Type | Validation Lane |
+|-----------------|----------------|
+| Feature completeness vs. blueprint | Requirement matrix + targeted tests |
+| Scope alignment to issue/roadmap | File mapping + acceptance criteria check |
+| Documentation sync after code change | Doc routing + cross-reference validation |
+| Catalog/discovery update | Agents/skills symmetry check |
+| Rollout readiness | Build + test + deployment gates (all **CRITICAL**) |
 
-**Required Evidence**
+## Required Workflow
 
-- **CRITICAL (always):** build passes, tests pass for touched areas, requirement ↔ file matrix documented
-- **WARNING (breaking/scope changes):** cross-file impact assessed, catalog updates listed
-- **INFO (recommended):** performance annotation for hot-path changes, coverage delta noted
+1. **Gather inputs:** Identify source of truth (blueprint/issue), acceptance criteria, and expected evidence. Confirm whether Scenario A (existing docs), B (new docs needed), or C (performance-sensitive) applies.
+2. **Plan mapping:** Map each requirement to implementing files and intended validation artifacts (tests, CLI runs). Use `doc_route.py --kind ai` to decide which catalogs need updating.
+3. **Execute & validate:** Apply minimal changes, run required commands (build/tests/scripts), and capture outputs. For performance-sensitive paths (Scenario C), explicitly address allocation and async blocking risks.
+4. **Report & route:** Summarize traceability, list validation commands + outcomes, update AI catalogs, and run `score_eval.py` to produce the rubric report.
 
-**Quality Gates**
+## Quality Gates
 
 ```bash
 # Gate 1: Build (always)
@@ -51,7 +58,6 @@ python3 .claude/skills/meridian-implementation-assurance/scripts/doc_route.py \
 # Gate 4: Skill packaging integrity (when agents/skills change)
 python3 build/scripts/docs/validate-skill-packages.py
 ```
----
 
 ## Definition of Done
 
@@ -65,24 +71,13 @@ A task is complete when **all** of the following are true:
 - **Performance-sensitive paths are noted:** any hot-path touched by the change includes an explicit note on allocation, async, or buffering risk.
 - **Summary is traceable:** the closing summary links requirement → files changed → validation artifact → doc update.
 
----
-
-## Required Workflow
-
-1. **Gather inputs:** Identify source of truth (blueprint/issue), acceptance criteria, and expected evidence. Confirm whether Scenario A (existing docs), B (new docs needed), or C (performance-sensitive) applies.
-2. **Plan mapping:** Map each requirement to implementing files and intended validation artifacts (tests, CLI runs). Use `doc_route.py --kind ai` to decide which catalogs need updating.
-3. **Execute & validate:** Apply minimal changes, run required commands (build/tests/scripts), and capture outputs. For performance-sensitive paths (Scenario C), explicitly address allocation and async blocking risks.
-4. **Report & route:** Summarize traceability, list validation commands + outcomes, update AI catalogs, and run `score_eval.py` to produce the rubric report.
-
-### Scenario Decision Tree
+## Scenario Decision Tree
 
 | Scenario | Applies When | Key Extra Requirement |
 |----------|-------------|----------------------|
 | **A** | Code change + existing docs | Update docs in-place; no new doc unless the existing one is clearly insufficient |
 | **B** | Code change + no docs for this area | Create new doc in correct subtree; add cross-link from nearest README/index |
 | **C** | Performance-sensitive hot-path change | Explicit allocation/async risk analysis; benchmark or counter evidence required |
-
----
 
 ## Required Evidence
 
@@ -92,27 +87,34 @@ A task is complete when **all** of the following are true:
 - Docs updated if behavior or workflows changed
 - `score_eval.py` rubric report included in response
 
----
-
 ## Bundled Tooling
 
-- **Claude skill:** [`.claude/skills/meridian-implementation-assurance/SKILL.md`](../../.claude/skills/meridian-implementation-assurance/SKILL.md)
-- **Catalog router:** `python3 .claude/skills/meridian-implementation-assurance/scripts/doc_route.py --kind ai --topic "<topic>"`
-- **Doc placement router:** `python3 .codex/skills/meridian-implementation-assurance/scripts/doc_route.py --kind <architecture|adr|reference|ai> --topic "<topic>"`
-- **Scoring helper:** `python3 .claude/skills/meridian-implementation-assurance/scripts/score_eval.py --scenario A --scores '<json>' --json`
-- **Eval runner:** `python3 .codex/skills/meridian-implementation-assurance/scripts/run_evals.py --all --dry-run`
-- **Package validator:** `python3 build/scripts/docs/validate-skill-packages.py`
+| Tool | Command |
+|------|---------|
+| Catalog router | `python3 .claude/skills/meridian-implementation-assurance/scripts/doc_route.py --kind ai --topic "<topic>"` |
+| Doc placement router | `python3 .codex/skills/meridian-implementation-assurance/scripts/doc_route.py --kind <architecture|adr|reference|ai> --topic "<topic>"` |
+| Scoring helper | `python3 .claude/skills/meridian-implementation-assurance/scripts/score_eval.py --scenario A --scores '<json>' --json` |
+| Eval runner | `python3 .codex/skills/meridian-implementation-assurance/scripts/run_evals.py --all --dry-run` |
+| Package validator | `python3 build/scripts/docs/validate-skill-packages.py` |
 
----
+See the [Claude skill](../../.claude/skills/meridian-implementation-assurance/SKILL.md) for full output templates and worked examples.
 
 ## Output Checklist
 
-**Output Checklist**
 - [ ] Requirement type identified and correct validation lane selected
 - [ ] Scope/requirements restated
 - [ ] Requirement → implementation → evidence matrix (table format)
-- [ ] Validation commands + results with CRITICAL/WARNING/INFO severity noted
+- [ ] Validation commands + results with **CRITICAL** / **WARNING** / **INFO** severity noted
 - [ ] Catalog/doc updates noted (agents/skills) if applicable
-- [ ] Final traceable summary (≤15 lines) with risks or follow-ups
+- [ ] Final traceable summary (≤ 15 lines) with risks or follow-ups
 
-*Last Updated: 2026-03-30*
+---
+
+*Last Updated: 2026-03-31*
+
+## Changelog
+
+| Version | Date | Change |
+|---------|------|--------|
+| 1.1 | 2026-03-31 | Resolved merge conflicts; consolidated Requirement Type Detection into table; merged Bundled Tooling and Script Helpers into single table; added cross-links and changelog |
+| 1.0 | 2026-03-21 | Initial agent file |

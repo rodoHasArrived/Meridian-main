@@ -1,3 +1,4 @@
+using Meridian.Application.SecurityMaster;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Meridian.Ledger;
@@ -11,6 +12,7 @@ namespace Meridian.Execution.Services;
 public sealed class PaperTradingPortfolio : IPortfolioState
 {
     private readonly Meridian.Ledger.Ledger? _ledger;
+    private readonly ILivePositionCorporateActionAdjuster? _corporateActionAdjuster;
     private readonly Lock _lock = new();
     private decimal _cash;
     private decimal _realisedPnl;
@@ -21,7 +23,10 @@ public sealed class PaperTradingPortfolio : IPortfolioState
     /// Initialises the portfolio with <paramref name="initialCash"/> and an optional ledger.
     /// If a ledger is provided, an opening capital entry is posted immediately.
     /// </summary>
-    public PaperTradingPortfolio(decimal initialCash, Meridian.Ledger.Ledger? ledger = null)
+    public PaperTradingPortfolio(
+        decimal initialCash,
+        Meridian.Ledger.Ledger? ledger = null,
+        ILivePositionCorporateActionAdjuster? corporateActionAdjuster = null)
     {
         if (initialCash < 0)
         {
@@ -30,6 +35,7 @@ public sealed class PaperTradingPortfolio : IPortfolioState
 
         _cash = initialCash;
         _ledger = ledger;
+        _corporateActionAdjuster = corporateActionAdjuster;
 
         if (ledger is not null && initialCash > 0)
         {
@@ -81,6 +87,12 @@ public sealed class PaperTradingPortfolio : IPortfolioState
             }
         }
     }
+
+    /// <summary>
+    /// Read-only view of the double-entry ledger for this session.
+    /// Returns <see langword="null"/> when no ledger was supplied at construction time.
+    /// </summary>
+    public IReadOnlyLedger? Ledger => _ledger;
 
     /// <summary>
     /// Updates portfolio state from a fill or partial-fill execution report.
@@ -380,6 +392,68 @@ public sealed class PaperTradingPortfolio : IPortfolioState
         if (pos.Quantity == 0m)
         {
             _positions.Remove(symbol);
+        }
+    }
+
+    /// <summary>
+    /// Applies any corporate-action adjustments (splits, dividends) that occurred between
+    /// <paramref name="positionOpenedAt"/> and the current time to an existing open position
+    /// identified by <paramref name="symbol"/>.
+    /// <para>
+    /// This method is a no-op when no <see cref="ILivePositionCorporateActionAdjuster"/> was
+    /// supplied to the constructor, or when the symbol is not currently held.
+    /// </para>
+    /// </summary>
+    /// <param name="symbol">Ticker symbol of the position to adjust.</param>
+    /// <param name="positionOpenedAt">When the position was first opened (UTC).</param>
+    /// <param name="ct">Cancellation token.</param>
+    public async Task ApplyCorporateActionsAsync(
+        string symbol,
+        DateTimeOffset positionOpenedAt,
+        CancellationToken ct = default)
+    {
+        if (_corporateActionAdjuster is null || string.IsNullOrWhiteSpace(symbol))
+        {
+            return;
+        }
+
+        PaperPosition? pos;
+        decimal originalQuantity;
+        decimal originalCostBasis;
+
+        lock (_lock)
+        {
+            if (!_positions.TryGetValue(symbol, out pos))
+            {
+                return;
+            }
+
+            originalQuantity = pos.Quantity;
+            originalCostBasis = pos.CostBasis;
+        }
+
+        var adjustment = await _corporateActionAdjuster
+            .AdjustPositionAsync(symbol, originalQuantity, originalCostBasis, positionOpenedAt, ct)
+            .ConfigureAwait(false);
+
+        if (adjustment.ActionCount == 0)
+        {
+            return;
+        }
+
+        lock (_lock)
+        {
+            if (!_positions.TryGetValue(symbol, out pos))
+            {
+                return; // Position closed between the async call and the lock
+            }
+
+            // Only update when the position hasn't changed under our feet
+            if (pos.Quantity == originalQuantity && pos.CostBasis == originalCostBasis)
+            {
+                pos.Quantity = adjustment.AdjustedQuantity;
+                pos.CostBasis = adjustment.AdjustedCostBasis;
+            }
         }
     }
 }

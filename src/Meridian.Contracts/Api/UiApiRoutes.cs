@@ -51,6 +51,7 @@ public static class UiApiRoutes
     // Backfill checkpoint/resume endpoints (P0: expose checkpoint semantics to users)
     public const string BackfillCheckpoints = "/api/backfill/checkpoints";
     public const string BackfillCheckpointsResumable = "/api/backfill/checkpoints/resumable";
+    public const string BackfillCheckpointsValidation = "/api/backfill/checkpoints/validation";
     public const string BackfillCheckpointById = "/api/backfill/checkpoints/{jobId}";
     public const string BackfillCheckpointResume = "/api/backfill/checkpoints/{jobId}/resume";
     public const string BackfillCheckpointPending = "/api/backfill/checkpoints/{jobId}/pending";
@@ -306,6 +307,7 @@ public static class UiApiRoutes
     public const string SecurityMasterConflicts = "/api/security-master/conflicts";
     public const string SecurityMasterConflictResolve = "/api/security-master/conflicts/{conflictId:guid}/resolve";
     public const string SecurityMasterImport = "/api/security-master/import";
+    public const string SecurityMasterIngestStatus = "/api/security-master/ingest/status";
 
     // Messaging endpoints
     public const string MessagingConfig = "/api/messaging/config";
@@ -436,7 +438,16 @@ public static class UiApiRoutes
     public const string RunsCompare = "/api/workstation/runs/compare";
     public const string RunsDiff = "/api/workstation/runs/diff";
     public const string RunsReconciliation = "/api/workstation/runs/{runId}/reconciliation";
+    public const string RunsReconciliationHistory = "/api/workstation/runs/{runId}/reconciliation/history";
     public const string RunsLedger = "/api/workstation/runs/{runId}/ledger";
+    public const string RunsLedgerTrialBalance = "/api/workstation/runs/{runId}/ledger/trial-balance";
+    public const string RunsLedgerJournal = "/api/workstation/runs/{runId}/ledger/journal";
+    public const string WorkstationSecurityMasterSearch = "/api/workstation/security-master/securities";
+    public const string WorkstationSecurityMasterById = "/api/workstation/security-master/securities/{securityId:guid}";
+    public const string WorkstationSecurityMasterIdentity = "/api/workstation/security-master/securities/{securityId:guid}/identity";
+    public const string ReconciliationBreakQueue = "/api/workstation/reconciliation/break-queue";
+    public const string ReconciliationBreakReview = "/api/workstation/reconciliation/break-queue/{breakId}/review";
+    public const string ReconciliationBreakResolve = "/api/workstation/reconciliation/break-queue/{breakId}/resolve";
 
     // Portfolio cash-flow projection endpoints
     public const string PortfolioCashFlows = "/api/portfolio/{runId}/cash-flows";

@@ -209,13 +209,16 @@ public abstract class BaseBrokerageGateway : IBrokerageGateway
     /// Attempts reconnection with exponential backoff. Subclasses can call this
     /// when a connection drop is detected.
     /// </summary>
-    protected async Task AttemptReconnectAsync()
+    protected async Task AttemptReconnectAsync(CancellationToken ct = default)
     {
-        var ct = _reconnectCts?.Token ?? CancellationToken.None;
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
+            ct,
+            _reconnectCts?.Token ?? CancellationToken.None);
+        var reconnectToken = linkedCts.Token;
 
         for (int attempt = 1; attempt <= MaxReconnectAttempts; attempt++)
         {
-            if (ct.IsCancellationRequested)
+            if (reconnectToken.IsCancellationRequested)
                 return;
 
             var delay = TimeSpan.FromSeconds(ReconnectBaseDelay.TotalSeconds * Math.Pow(2, attempt - 1));
@@ -225,13 +228,13 @@ public abstract class BaseBrokerageGateway : IBrokerageGateway
 
             try
             {
-                await Task.Delay(delay, ct).ConfigureAwait(false);
-                await ConnectCoreAsync(ct).ConfigureAwait(false);
+                await Task.Delay(delay, reconnectToken).ConfigureAwait(false);
+                await ConnectCoreAsync(reconnectToken).ConfigureAwait(false);
                 _connected = true;
                 Logger.LogInformation("{Gateway} reconnected on attempt {Attempt}", GatewayId, attempt);
                 return;
             }
-            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            catch (OperationCanceledException) when (reconnectToken.IsCancellationRequested)
             {
                 return;
             }

@@ -1,16 +1,24 @@
 import type {
+  BackfillProgressResponse,
+  BackfillTriggerRequest,
   DataOperationsWorkspaceResponse,
   EquityCurveSummary,
   GovernanceWorkspaceResponse,
+  LedgerSummary,
+  LedgerTrialBalanceLine,
   OrderResult,
   OrderSubmitRequest,
   PaperSessionSummary,
+  PaperSessionDetail,
   PromotionDecisionResult,
   PromotionEvaluationResult,
   PromotionRecord,
   ResearchRunRecord,
   ResearchWorkspaceResponse,
+  ReconciliationBreakQueueItem,
+  ResolveReconciliationBreakRequest,
   ResolveConflictRequest,
+  ReviewReconciliationBreakRequest,
   RunAttributionSummary,
   RunComparisonRow,
   RunDiff,
@@ -19,6 +27,8 @@ import type {
   SecurityMasterConflict,
   SecurityMasterEntry,
   SessionInfo,
+  ReplayFileRecord,
+  ReplayStatus,
   TradingActionResult,
   TradingWorkspaceResponse
 } from "@/types";
@@ -137,6 +147,10 @@ export function closePaperSession(sessionId: string) {
   return postJson<void>(`/api/execution/sessions/${encodeURIComponent(sessionId)}/close`);
 }
 
+export function getPaperSessionDetail(sessionId: string) {
+  return getJson<PaperSessionDetail>(`/api/execution/sessions/${encodeURIComponent(sessionId)}`);
+}
+
 // --- Strategy lifecycle ---
 
 export function pauseStrategy(strategyId: string) {
@@ -149,6 +163,44 @@ export function stopStrategy(strategyId: string) {
   return postJson<{ strategyId: string; action: string; success: boolean; reason: string | null }>(
     `/api/strategies/${encodeURIComponent(strategyId)}/stop`
   );
+}
+
+// --- Replay controls ---
+
+export function getReplayFiles(symbol?: string) {
+  const params = symbol ? `?symbol=${encodeURIComponent(symbol)}` : "";
+  return getJson<{ files: ReplayFileRecord[]; total: number; timestamp: string }>(`/api/replay/files${params}`);
+}
+
+export function startReplay(filePath: string, speedMultiplier = 1) {
+  return postJson<{ sessionId: string; filePath: string; status: string; speedMultiplier: number }>(
+    "/api/replay/start",
+    { filePath, speedMultiplier }
+  );
+}
+
+export function pauseReplay(sessionId: string) {
+  return postJson<{ sessionId: string; status: string; eventsProcessed: number }>(`/api/replay/${encodeURIComponent(sessionId)}/pause`);
+}
+
+export function resumeReplay(sessionId: string) {
+  return postJson<{ sessionId: string; status: string; eventsProcessed: number }>(`/api/replay/${encodeURIComponent(sessionId)}/resume`);
+}
+
+export function stopReplay(sessionId: string) {
+  return postJson<{ sessionId: string; status: string; eventsProcessed: number }>(`/api/replay/${encodeURIComponent(sessionId)}/stop`);
+}
+
+export function seekReplay(sessionId: string, positionMs: number) {
+  return postJson<{ sessionId: string; positionMs: number; status: string }>(`/api/replay/${encodeURIComponent(sessionId)}/seek`, { positionMs });
+}
+
+export function setReplaySpeed(sessionId: string, speedMultiplier: number) {
+  return postJson<{ sessionId: string; speedMultiplier: number; status: string }>(`/api/replay/${encodeURIComponent(sessionId)}/speed`, { speedMultiplier });
+}
+
+export function getReplayStatus(sessionId: string) {
+  return getJson<ReplayStatus>(`/api/replay/${encodeURIComponent(sessionId)}/status`);
 }
 
 // --- Strategy runs ---
@@ -183,6 +235,15 @@ export function getRunEquityCurve(runId: string) {
   return getJson<EquityCurveSummary>(`/api/workstation/runs/${encodeURIComponent(runId)}/equity-curve`);
 }
 
+export function getRunLedger(runId: string) {
+  return getJson<LedgerSummary>(`/api/workstation/runs/${encodeURIComponent(runId)}/ledger`);
+}
+
+export function getRunTrialBalance(runId: string, accountType?: string) {
+  const params = accountType ? `?accountType=${encodeURIComponent(accountType)}` : "";
+  return getJson<LedgerTrialBalanceLine[]>(`/api/workstation/runs/${encodeURIComponent(runId)}/ledger/trial-balance${params}`);
+}
+
 // --- Security Master search ---
 
 export function searchSecurities(query: string, take = 25, activeOnly = true) {
@@ -202,6 +263,18 @@ export function getSecurityIdentity(securityId: string) {
   return getJson<SecurityIdentityDrillIn>(`/api/workstation/security-master/securities/${encodeURIComponent(securityId)}/identity`);
 }
 
+export function createSecurityMasterEntry(request: Record<string, unknown>) {
+  return postJson<SecurityMasterEntry>("/api/security-master", request);
+}
+
+export function amendSecurityMasterEntry(request: Record<string, unknown>) {
+  return postJson<SecurityMasterEntry>("/api/security-master/amend", request);
+}
+
+export function upsertSecurityAlias(request: Record<string, unknown>) {
+  return postJson<Record<string, unknown>>("/api/security-master/aliases/upsert", request);
+}
+
 // --- Security Master conflicts ---
 
 export function getSecurityConflicts() {
@@ -213,4 +286,37 @@ export function resolveSecurityConflict(request: ResolveConflictRequest) {
     `/api/security-master/conflicts/${encodeURIComponent(request.conflictId)}/resolve`,
     request
   );
+}
+
+export function getReconciliationBreakQueue(status?: string) {
+  const params = status ? `?status=${encodeURIComponent(status)}` : "";
+  return getJson<ReconciliationBreakQueueItem[]>(`/api/workstation/reconciliation/break-queue${params}`);
+}
+
+export function reviewReconciliationBreak(request: ReviewReconciliationBreakRequest) {
+  return postJson<ReconciliationBreakQueueItem>(
+    `/api/workstation/reconciliation/break-queue/${encodeURIComponent(request.breakId)}/review`,
+    request
+  );
+}
+
+export function resolveReconciliationBreak(request: ResolveReconciliationBreakRequest) {
+  return postJson<ReconciliationBreakQueueItem>(
+    `/api/workstation/reconciliation/break-queue/${encodeURIComponent(request.breakId)}/resolve`,
+    request
+  );
+}
+
+// --- Backfill mutations ---
+
+export function getBackfillProgress() {
+  return getJson<BackfillProgressResponse>("/api/backfill/progress");
+}
+
+export function triggerBackfill(request: BackfillTriggerRequest) {
+  return postJson<BackfillTriggerResult>("/api/backfill/run", request);
+}
+
+export function previewBackfill(request: BackfillTriggerRequest) {
+  return postJson<BackfillTriggerResult>("/api/backfill/run/preview", request);
 }

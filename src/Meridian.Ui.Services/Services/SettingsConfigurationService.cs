@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Meridian.Contracts.Api;
 
 namespace Meridian.Ui.Services.Services;
 
@@ -72,42 +73,9 @@ public sealed class SettingsConfigurationService
     /// </summary>
     public IReadOnlyList<ProviderCatalogEntry> GetProviderCatalog()
     {
-        return new List<ProviderCatalogEntry>
-        {
-            new("alpaca", "Alpaca Markets", ProviderTier.FreeWithAccount, true, true, true,
-                "WebSocket streaming, IEX (free) / SIP (paid)", 200,
-                new[] { "ALPACA__KEYID", "ALPACA__SECRETKEY" }),
-            new("polygon", "Polygon.io", ProviderTier.LimitedFree, true, true, true,
-                "Circuit breaker + retry, L2 depth", 5,
-                new[] { "POLYGON__APIKEY" }),
-            new("ib", "Interactive Brokers", ProviderTier.FreeWithAccount, true, true, true,
-                "TWS/Gateway required, tick-by-tick + L2", 0,
-                Array.Empty<string>()),
-            new("stocksharp", "StockSharp", ProviderTier.FreeWithAccount, true, true, true,
-                "90+ data sources via connector framework", 0,
-                Array.Empty<string>()),
-            new("nyse", "NYSE", ProviderTier.Premium, true, true, false,
-                "Exchange-direct feed, hybrid streaming + historical", 0,
-                new[] { "NYSE__APIKEY" }),
-            new("tiingo", "Tiingo", ProviderTier.Free, false, true, false,
-                "Daily bars, free tier available", 500,
-                new[] { "TIINGO__TOKEN" }),
-            new("yahoo", "Yahoo Finance", ProviderTier.Free, false, true, false,
-                "Daily bars, unofficial API, no account needed", 0,
-                Array.Empty<string>()),
-            new("stooq", "Stooq", ProviderTier.Free, false, true, false,
-                "Daily bars, free, no account needed", 0,
-                Array.Empty<string>()),
-            new("finnhub", "Finnhub", ProviderTier.Free, false, true, false,
-                "Daily bars, international markets", 60,
-                new[] { "FINNHUB__TOKEN" }),
-            new("alphavantage", "Alpha Vantage", ProviderTier.Free, false, true, false,
-                "Daily bars, 5 calls/min on free tier", 5,
-                new[] { "ALPHAVANTAGE__APIKEY" }),
-            new("nasdaq", "Nasdaq Data Link", ProviderTier.LimitedFree, false, true, false,
-                "Various datasets, formerly Quandl", 0,
-                new[] { "NASDAQDATALINK__APIKEY" }),
-        };
+        return ProviderCatalog.GetAll()
+            .Select(MapProviderCatalogEntry)
+            .ToList();
     }
 
     /// <summary>
@@ -120,15 +88,22 @@ public sealed class SettingsConfigurationService
 
         foreach (var provider in catalog)
         {
-            if (provider.RequiredEnvVars.Length == 0)
+            var requiredFields = provider.CredentialFields
+                .Where(field => field.Required)
+                .ToArray();
+
+            if (requiredFields.Length == 0)
             {
                 result.Add(new ProviderCredentialStatus(provider.Id, provider.DisplayName,
                     CredentialState.NotRequired, "No credentials required", Array.Empty<string>()));
                 continue;
             }
 
-            var missing = provider.RequiredEnvVars
-                .Where(env => string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(env)))
+            var missing = requiredFields
+                .Where(field => !HasConfiguredEnvironmentVariable(field))
+                .Select(field => field.EnvironmentVariable)
+                .Where(env => !string.IsNullOrWhiteSpace(env))
+                .Select(env => env!)
                 .ToArray();
 
             if (missing.Length == 0)
@@ -136,7 +111,7 @@ public sealed class SettingsConfigurationService
                 result.Add(new ProviderCredentialStatus(provider.Id, provider.DisplayName,
                     CredentialState.Configured, "Configured via environment", Array.Empty<string>()));
             }
-            else if (missing.Length < provider.RequiredEnvVars.Length)
+            else if (missing.Length < requiredFields.Length)
             {
                 result.Add(new ProviderCredentialStatus(provider.Id, provider.DisplayName,
                     CredentialState.Partial, "Some credentials missing", missing));
@@ -149,6 +124,54 @@ public sealed class SettingsConfigurationService
         }
 
         return result;
+    }
+
+    private static ProviderCatalogEntry MapProviderCatalogEntry(Meridian.Contracts.Api.ProviderCatalogEntry entry)
+    {
+        var envCredentialFields = entry.CredentialFields
+            .Where(field => field.AllEnvironmentVariables.Length > 0)
+            .ToArray();
+
+        var supportsStreaming = entry.ProviderType is ProviderTypeKind.Streaming or ProviderTypeKind.Hybrid;
+        var supportsHistorical = entry.ProviderType is ProviderTypeKind.Backfill or ProviderTypeKind.Hybrid;
+        var supportsSymbolSearch = entry.ProviderType is ProviderTypeKind.SymbolSearch;
+
+        return new ProviderCatalogEntry(
+            entry.Id,
+            entry.DisplayName,
+            MapTier(entry.Id),
+            supportsStreaming,
+            supportsHistorical,
+            supportsSymbolSearch,
+            entry.Description,
+            GetRequestsPerMinute(entry.RateLimit),
+            envCredentialFields);
+    }
+
+    private static ProviderTier MapTier(string providerId) =>
+        providerId.ToLowerInvariant() switch
+        {
+            "alpaca" or "ib" or "ibkr" or "stocksharp" => ProviderTier.FreeWithAccount,
+            "polygon" or "nasdaq" or "nasdaqdatalink" => ProviderTier.LimitedFree,
+            "nyse" => ProviderTier.Premium,
+            _ => ProviderTier.Free,
+        };
+
+    private static bool HasConfiguredEnvironmentVariable(CredentialFieldInfo field)
+    {
+        return field.AllEnvironmentVariables
+            .Any(envVar => !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(envVar)));
+    }
+
+    private static int GetRequestsPerMinute(RateLimitInfo? rateLimit)
+    {
+        if (rateLimit is null || rateLimit.MaxRequestsPerWindow <= 0 || rateLimit.WindowSeconds <= 0)
+        {
+            return 0;
+        }
+
+        var requestsPerMinute = rateLimit.MaxRequestsPerWindow * (60d / rateLimit.WindowSeconds);
+        return (int)Math.Round(requestsPerMinute, MidpointRounding.AwayFromZero);
     }
 
     /// <summary>Gets all configuration profiles (built-in + custom).</summary>
@@ -274,7 +297,14 @@ public sealed record ProviderCatalogEntry(
     bool SupportsSymbolSearch,
     string Description,
     int RateLimitPerMinute,
-    string[] RequiredEnvVars);
+    CredentialFieldInfo[] CredentialFields)
+{
+    public string[] RequiredEnvVars => CredentialFields
+        .Where(field => field.Required)
+        .SelectMany(field => field.AllEnvironmentVariables)
+        .Distinct(StringComparer.OrdinalIgnoreCase)
+        .ToArray();
+}
 
 /// <summary>Provider tier classification.</summary>
 public enum ProviderTier : byte

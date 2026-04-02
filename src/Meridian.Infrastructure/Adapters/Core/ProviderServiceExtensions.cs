@@ -29,7 +29,7 @@ public static class ProviderServiceExtensions
     public static IServiceCollection AddProviderServices(
         this IServiceCollection services,
         AppConfig config,
-        ICredentialResolver credentialResolver,
+        IProviderCredentialResolver credentialResolver,
         ILogger? log = null)
     {
         // Register credential resolver
@@ -56,7 +56,7 @@ public static class ProviderServiceExtensions
         // Register provider factory
         services.AddSingleton(sp => new ProviderFactory(
             config,
-            sp.GetRequiredService<ICredentialResolver>(),
+            sp.GetRequiredService<IProviderCredentialResolver>(),
             log));
 
         return services;
@@ -90,7 +90,7 @@ public static class ProviderServiceExtensions
     public static IReadOnlyList<IHistoricalDataProvider> RegisterBackfillProviders(
         this ProviderRegistry registry,
         AppConfig config,
-        ICredentialResolver credentialResolver,
+        IProviderCredentialResolver credentialResolver,
         ILogger? log = null)
     {
         var factory = new ProviderFactory(config, credentialResolver, log);
@@ -115,7 +115,7 @@ public static class ProviderServiceExtensions
     public static IReadOnlyList<ISymbolSearchProvider> RegisterSymbolSearchProviders(
         this ProviderRegistry registry,
         AppConfig config,
-        ICredentialResolver credentialResolver,
+        IProviderCredentialResolver credentialResolver,
         ILogger? log = null)
     {
         var factory = new ProviderFactory(config, credentialResolver, log);
@@ -141,7 +141,7 @@ public static class ProviderServiceExtensions
     public static CompositeHistoricalDataProvider GetOrCreateCompositeBackfillProvider(
         this ProviderRegistry registry,
         AppConfig config,
-        ICredentialResolver credentialResolver,
+        IProviderCredentialResolver credentialResolver,
         ILogger? log = null)
     {
         // Check if already registered

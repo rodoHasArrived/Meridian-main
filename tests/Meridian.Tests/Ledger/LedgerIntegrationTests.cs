@@ -255,6 +255,75 @@ public sealed class LedgerIntegrationTests
     }
 
     [Fact]
+    public void GetJournalEntries_WithAccountTypeFilter_ReturnsOnlyEntriesTouchingThatType()
+    {
+        var ledger = new Meridian.Ledger.Ledger();
+        var timestamp = DateTimeOffset.UtcNow;
+        var cash = new LedgerAccount("Cash", LedgerAccountType.Asset);
+        var revenue = new LedgerAccount("Revenue", LedgerAccountType.Revenue);
+        var expense = new LedgerAccount("Commission", LedgerAccountType.Expense);
+
+        // Entry 1: Asset + Revenue
+        ledger.PostLines(timestamp, "sale", new[]
+        {
+            (cash, 100m, 0m),
+            (revenue, 0m, 100m),
+        });
+
+        // Entry 2: Expense + Asset
+        ledger.PostLines(timestamp, "commission", new[]
+        {
+            (expense, 5m, 0m),
+            (cash, 0m, 5m),
+        });
+
+        // Filter to Revenue-touching entries only
+        var revenueEntries = ledger.GetJournalEntries(new LedgerQuery(AccountType: LedgerAccountType.Revenue));
+        revenueEntries.Should().HaveCount(1);
+        revenueEntries[0].Description.Should().Be("sale");
+
+        // Filter to Expense-touching entries only
+        var expenseEntries = ledger.GetJournalEntries(new LedgerQuery(AccountType: LedgerAccountType.Expense));
+        expenseEntries.Should().HaveCount(1);
+        expenseEntries[0].Description.Should().Be("commission");
+
+        // No filter — both returned
+        var all = ledger.GetJournalEntries(new LedgerQuery());
+        all.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public void LedgerAccounts_DividendReceivable_IsNormalizedAndScopedPerSymbol()
+    {
+        var aapl = LedgerAccounts.DividendReceivable("aapl");
+        var msft = LedgerAccounts.DividendReceivable("MSFT");
+        var aaplScoped = LedgerAccounts.DividendReceivable("aapl", "broker-1");
+
+        aapl.Symbol.Should().Be("AAPL");
+        aapl.AccountType.Should().Be(LedgerAccountType.Asset);
+        msft.Symbol.Should().Be("MSFT");
+        aapl.Should().NotBe(msft);
+        aaplScoped.FinancialAccountId.Should().Be("broker-1");
+        aapl.Should().NotBe(aaplScoped);
+    }
+
+    [Fact]
+    public void LedgerAccounts_AccruedInterestReceivable_IsAssetAccount()
+    {
+        var account = LedgerAccounts.AccruedInterestReceivable("USTBILL");
+        account.AccountType.Should().Be(LedgerAccountType.Asset);
+        account.Symbol.Should().Be("USTBILL");
+    }
+
+    [Fact]
+    public void LedgerAccounts_CorpActionDistribution_IsRevenueAccount()
+    {
+        var account = LedgerAccounts.CorpActionDistribution("AAPL");
+        account.AccountType.Should().Be(LedgerAccountType.Revenue);
+        account.Symbol.Should().Be("AAPL");
+    }
+
+    [Fact]
     public void GetJournalEntries_CanFilterByProjectSecurityAndLedgerViewMetadata()
     {
         var ledger = new Meridian.Ledger.Ledger();
@@ -306,5 +375,252 @@ public sealed class LedgerIntegrationTests
         filtered.Should().HaveCount(1);
         filtered[0].Metadata.LedgerView.Should().Be(LedgerViewKind.SecurityMaster);
         filtered[0].Metadata.SecurityId.Should().Be(securityId);
+    }
+
+    [Fact]
+    public void LedgerAccounts_UnrealizedGain_IsRevenueAccount()
+    {
+        LedgerAccounts.UnrealizedGain.AccountType.Should().Be(LedgerAccountType.Revenue);
+        LedgerAccounts.UnrealizedGain.Name.Should().Be("Unrealized Gain");
+    }
+
+    [Fact]
+    public void LedgerAccounts_UnrealizedLoss_IsExpenseAccount()
+    {
+        LedgerAccounts.UnrealizedLoss.AccountType.Should().Be(LedgerAccountType.Expense);
+        LedgerAccounts.UnrealizedLoss.Name.Should().Be("Unrealized Loss");
+    }
+
+    [Fact]
+    public void LedgerAccounts_RetainedEarnings_IsEquityAccount()
+    {
+        LedgerAccounts.RetainedEarnings.AccountType.Should().Be(LedgerAccountType.Equity);
+        LedgerAccounts.RetainedEarnings.Name.Should().Be("Retained Earnings");
+    }
+
+    [Fact]
+    public void LedgerAccounts_ScopedVariants_IncludeFinancialAccountId()
+    {
+        var unrealizedGain = LedgerAccounts.UnrealizedGainFor("broker-1");
+        var unrealizedLoss = LedgerAccounts.UnrealizedLossFor("broker-1");
+        var retained = LedgerAccounts.RetainedEarningsFor("broker-1");
+
+        unrealizedGain.FinancialAccountId.Should().Be("broker-1");
+        unrealizedLoss.FinancialAccountId.Should().Be("broker-1");
+        retained.FinancialAccountId.Should().Be("broker-1");
+
+        unrealizedGain.Should().NotBe(LedgerAccounts.UnrealizedGain);
+        retained.Should().NotBe(LedgerAccounts.RetainedEarnings);
+    }
+
+    [Fact]
+    public void Ledger_JournalEntryCount_ReflectsPostedEntries()
+    {
+        var ledger = new Meridian.Ledger.Ledger();
+        var cash = new LedgerAccount("Cash", LedgerAccountType.Asset);
+        var revenue = new LedgerAccount("Revenue", LedgerAccountType.Revenue);
+        var ts = DateTimeOffset.UtcNow;
+
+        ledger.JournalEntryCount.Should().Be(0);
+        ledger.TotalLedgerEntryCount.Should().Be(0);
+
+        ledger.PostLines(ts, "sale-1", new[] { (cash, 100m, 0m), (revenue, 0m, 100m) });
+
+        ledger.JournalEntryCount.Should().Be(1);
+        ledger.TotalLedgerEntryCount.Should().Be(2);
+
+        ledger.PostLines(ts, "sale-2", new[] { (cash, 50m, 0m), (revenue, 0m, 50m) });
+
+        ledger.JournalEntryCount.Should().Be(2);
+        ledger.TotalLedgerEntryCount.Should().Be(4);
+    }
+
+    [Fact]
+    public void Ledger_GetRunningBalance_ReturnsChronologicalCheckpoints()
+    {
+        var ledger = new Meridian.Ledger.Ledger();
+        var cash = new LedgerAccount("Cash", LedgerAccountType.Asset);
+        var revenue = new LedgerAccount("Revenue", LedgerAccountType.Revenue);
+        var t1 = new DateTimeOffset(2025, 1, 1, 1, 0, 0, TimeSpan.Zero);
+        var t2 = new DateTimeOffset(2025, 1, 1, 2, 0, 0, TimeSpan.Zero);
+
+        ledger.PostLines(t1, "sale", new[] { (cash, 100m, 0m), (revenue, 0m, 100m) });
+        ledger.PostLines(t2, "commission", new[] { (revenue, 10m, 0m), (cash, 0m, 10m) });
+
+        var running = ledger.GetRunningBalance(cash);
+
+        running.Should().HaveCount(2);
+        running[0].Balance.Should().Be(100m);
+        running[0].Debit.Should().Be(100m);
+        running[0].Credit.Should().Be(0m);
+        running[1].Balance.Should().Be(90m);
+        running[1].Debit.Should().Be(0m);
+        running[1].Credit.Should().Be(10m);
+    }
+
+    [Fact]
+    public void Ledger_GetRunningBalance_WithTimeRange_StartsFromOpeningBalance()
+    {
+        var ledger = new Meridian.Ledger.Ledger();
+        var cash = new LedgerAccount("Cash", LedgerAccountType.Asset);
+        var revenue = new LedgerAccount("Revenue", LedgerAccountType.Revenue);
+        var t1 = new DateTimeOffset(2025, 1, 1, 1, 0, 0, TimeSpan.Zero);
+        var t2 = new DateTimeOffset(2025, 1, 1, 2, 0, 0, TimeSpan.Zero);
+
+        ledger.PostLines(t1, "first-sale", new[] { (cash, 100m, 0m), (revenue, 0m, 100m) });
+        ledger.PostLines(t2, "second-sale", new[] { (cash, 50m, 0m), (revenue, 0m, 50m) });
+
+        // Range starts at t2; opening balance from t1 must be carried forward
+        var running = ledger.GetRunningBalance(cash, from: t2, to: t2);
+
+        running.Should().HaveCount(1);
+        running[0].Balance.Should().Be(150m);  // 100 carried + 50
+    }
+
+    [Fact]
+    public void Ledger_SnapshotAsOf_ReturnsPointInTimeState()
+    {
+        var ledger = new Meridian.Ledger.Ledger();
+        var cash = new LedgerAccount("Cash", LedgerAccountType.Asset);
+        var revenue = new LedgerAccount("Revenue", LedgerAccountType.Revenue);
+        var t1 = new DateTimeOffset(2025, 1, 1, 10, 0, 0, TimeSpan.Zero);
+        var t2 = t1.AddHours(1);
+
+        ledger.PostLines(t1, "sale", new[] { (cash, 200m, 0m), (revenue, 0m, 200m) });
+        ledger.PostLines(t2, "refund", new[] { (cash, 0m, 50m), (revenue, 50m, 0m) });
+
+        var snapAtT1 = ledger.SnapshotAsOf(t1);
+        var snapAtT2 = ledger.SnapshotAsOf(t2);
+
+        snapAtT1.Balances[cash].Should().Be(200m);
+        snapAtT1.JournalEntryCount.Should().Be(1);
+        snapAtT1.LedgerEntryCount.Should().Be(2);
+
+        snapAtT2.Balances[cash].Should().Be(150m);
+        snapAtT2.JournalEntryCount.Should().Be(2);
+        snapAtT2.LedgerEntryCount.Should().Be(4);
+    }
+
+    [Fact]
+    public void LedgerEntry_BothZero_ThrowsWithDistinctMessage()
+    {
+        var journalId = Guid.NewGuid();
+        var ts = DateTimeOffset.UtcNow;
+        var account = new LedgerAccount("Cash", LedgerAccountType.Asset);
+
+        var act = () => new LedgerEntry(Guid.NewGuid(), journalId, ts, account, 0m, 0m, "test");
+
+        act.Should()
+            .Throw<LedgerValidationException>()
+            .WithMessage("*both Debit and Credit are zero*");
+    }
+
+    [Fact]
+    public void LedgerEntry_BothNonZero_ThrowsWithDistinctMessage()
+    {
+        var journalId = Guid.NewGuid();
+        var ts = DateTimeOffset.UtcNow;
+        var account = new LedgerAccount("Cash", LedgerAccountType.Asset);
+
+        var act = () => new LedgerEntry(Guid.NewGuid(), journalId, ts, account, 10m, 5m, "test");
+
+        act.Should()
+            .Throw<LedgerValidationException>()
+            .WithMessage("*Exactly one*");
+    }
+
+    [Fact]
+    public void JournalEntry_IsBalanced_TrueForBalancedEntry()
+    {
+        var journalId = Guid.NewGuid();
+        var ts = DateTimeOffset.UtcNow;
+        var cash = new LedgerAccount("Cash", LedgerAccountType.Asset);
+        var revenue = new LedgerAccount("Revenue", LedgerAccountType.Revenue);
+
+        var entry = new JournalEntry(
+            journalId,
+            ts,
+            "sale",
+            new[]
+            {
+                new LedgerEntry(Guid.NewGuid(), journalId, ts, cash, 100m, 0m, "sale"),
+                new LedgerEntry(Guid.NewGuid(), journalId, ts, revenue, 0m, 100m, "sale"),
+            });
+
+        entry.IsBalanced.Should().BeTrue();
+    }
+
+    [Fact]
+    public void FundLedgerBook_EntitySleeveVehicle_GetIndependentLedgers()
+    {
+        var fund = new FundLedgerBook("fund-xyz");
+        var ts = DateTimeOffset.UtcNow;
+        var cash = new LedgerAccount("Cash", LedgerAccountType.Asset);
+        var revenue = new LedgerAccount("Revenue", LedgerAccountType.Revenue);
+
+        fund.EntityLedger("entity-1").PostLines(ts, "entity-1-sale", new[] { (cash, 100m, 0m), (revenue, 0m, 100m) });
+        fund.SleeveLedger("sleeve-a").PostLines(ts, "sleeve-a-sale", new[] { (cash, 40m, 0m), (revenue, 0m, 40m) });
+        fund.VehicleLedger("vehicle-x").PostLines(ts, "vehicle-x-sale", new[] { (cash, 20m, 0m), (revenue, 0m, 20m) });
+
+        fund.EntityLedger("entity-1").GetBalance(cash).Should().Be(100m);
+        fund.SleeveLedger("sleeve-a").GetBalance(cash).Should().Be(40m);
+        fund.VehicleLedger("vehicle-x").GetBalance(cash).Should().Be(20m);
+    }
+
+    [Fact]
+    public void FundLedgerBook_ConsolidatedTrialBalance_AggregatesAllSubLedgers()
+    {
+        var fund = new FundLedgerBook("fund-xyz");
+        var ts = DateTimeOffset.UtcNow;
+        var cash = new LedgerAccount("Cash", LedgerAccountType.Asset);
+        var revenue = new LedgerAccount("Revenue", LedgerAccountType.Revenue);
+
+        fund.FundLedger.PostLines(ts, "fund-level", new[] { (cash, 50m, 0m), (revenue, 0m, 50m) });
+        fund.EntityLedger("e1").PostLines(ts, "entity-1", new[] { (cash, 30m, 0m), (revenue, 0m, 30m) });
+
+        var consolidated = fund.ConsolidatedTrialBalance();
+
+        consolidated[cash].Should().Be(80m);
+        consolidated[revenue].Should().Be(80m);
+    }
+
+    [Fact]
+    public void FundLedgerBook_EntitySnapshotsAsOf_KeyedByEntityId()
+    {
+        var fund = new FundLedgerBook("fund-abc");
+        var ts = new DateTimeOffset(2025, 6, 1, 0, 0, 0, TimeSpan.Zero);
+        var cash = new LedgerAccount("Cash", LedgerAccountType.Asset);
+        var revenue = new LedgerAccount("Revenue", LedgerAccountType.Revenue);
+
+        fund.EntityLedger("alpha").PostLines(ts, "sale", new[] { (cash, 75m, 0m), (revenue, 0m, 75m) });
+        fund.EntityLedger("beta").PostLines(ts, "sale", new[] { (cash, 25m, 0m), (revenue, 0m, 25m) });
+
+        var snapshots = fund.EntitySnapshotsAsOf(ts);
+
+        snapshots.Should().ContainKey("alpha");
+        snapshots.Should().ContainKey("beta");
+        snapshots["alpha"].Balances[cash].Should().Be(75m);
+        snapshots["beta"].Balances[cash].Should().Be(25m);
+    }
+
+    [Fact]
+    public void FundLedgerBook_ReconciliationSnapshot_ContainsConsolidatedAndDimensionBreakdowns()
+    {
+        var fund = new FundLedgerBook("fund-recon");
+        var ts = new DateTimeOffset(2025, 9, 1, 12, 0, 0, TimeSpan.Zero);
+        var cash = new LedgerAccount("Cash", LedgerAccountType.Asset);
+        var revenue = new LedgerAccount("Revenue", LedgerAccountType.Revenue);
+
+        fund.EntityLedger("e1").PostLines(ts, "sale", new[] { (cash, 60m, 0m), (revenue, 0m, 60m) });
+        fund.SleeveLedger("s1").PostLines(ts, "sale", new[] { (cash, 40m, 0m), (revenue, 0m, 40m) });
+
+        var snap = fund.ReconciliationSnapshot(ts);
+
+        snap.FundId.Should().Be("fund-recon");
+        snap.AsOf.Should().Be(ts);
+        snap.Consolidated.Balances[cash].Should().Be(100m);
+        snap.Entities.Should().ContainKey("e1");
+        snap.Sleeves.Should().ContainKey("s1");
+        snap.Vehicles.Should().BeEmpty();
     }
 }

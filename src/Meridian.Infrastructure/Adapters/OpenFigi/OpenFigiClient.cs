@@ -363,7 +363,6 @@ public sealed class OpenFigiClient : IDisposable
         _http.Dispose();
     }
 
-    #region OpenFIGI API Models
 
     private sealed class OpenFigiMappingRequest
     {
@@ -448,5 +447,4 @@ public sealed class OpenFigiClient : IDisposable
         public string? SecurityDescription { get; set; }
     }
 
-    #endregion
 }

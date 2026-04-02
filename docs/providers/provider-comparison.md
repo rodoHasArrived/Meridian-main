@@ -1,9 +1,11 @@
 # Data Provider Comparison Guide
 
-**Last Updated:** 2026-03-21
+**Last Updated:** 2026-03-31
 **Version:** 1.7.0
 
 This guide compares the providers currently implemented in Meridian so you can choose the right mix for development, research, and production workflows.
+
+For what the repo validates today versus what still requires manual runtime checks, see [Provider Confidence Baseline](provider-confidence-baseline.md).
 
 ---
 
@@ -89,6 +91,7 @@ This guide compares the providers currently implemented in Meridian so you can c
 - Meridian's non-`IBAPI` path keeps the provider visible through `IBSimulationClient` and targeted runtime guidance, but it does not provide real broker connectivity.
 - `EnableIbApiSmoke=true` is intended only for compile verification of the gated code path.
 - Use [Interactive Brokers Setup](interactive-brokers-setup.md) for the supported vendor-DLL/project path and smoke-build path.
+- Treat live TWS/Gateway connectivity as a manual validation step, not something proven by the default CI path.
 
 **Implementation**
 - `src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs`
@@ -106,6 +109,10 @@ This guide compares the providers currently implemented in Meridian so you can c
 **Tradeoffs**
 - Free tier is very limited
 - Better experience typically requires a paid plan
+
+**Operator Notes**
+- Meridian validates Polygon primarily through committed replay fixtures and parser/subscription tests.
+- Live websocket behavior still depends on credentials, feed selection, and Polygon plan entitlements.
 
 **Implementation**
 - `src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs`
@@ -128,6 +135,28 @@ This guide compares the providers currently implemented in Meridian so you can c
 **Operator Notes**
 - StockSharp is a connector-runtime integration, so runtime behavior and historical availability vary by adapter, package availability, and venue entitlements.
 - Unsupported connector or missing-package paths should be treated as setup/configuration issues and resolved through [StockSharp Connector Guide](stocksharp-connectors.md).
+- The default repo baseline validates connector metadata and guidance without claiming that every named connector is available in the current build.
+
+### NYSE Streaming
+
+**Best For:** NYSE-focused streaming workflows where direct exchange semantics matter.
+
+**Strengths**
+- Unified trade, quote, and depth lifecycle through `NyseMarketDataClient`
+- Dedicated parser and lifecycle tests for companion subscriptions and mixed feed behavior
+- Exchange-oriented path separate from aggregated feeds
+
+**Tradeoffs**
+- Requires NYSE credentials and feed entitlements
+- Level 2 depth expectations depend on feed tier
+
+**Operator Notes**
+- Meridian validates NYSE behavior offline through lifecycle and parser tests around `NYSEDataSource`.
+- Credentialed websocket and REST behavior still need manual runtime verification in operator environments.
+
+**Implementation**
+- `src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs`
+- `src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs`
 
 **Implementation**
 - `src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpMarketDataClient.cs`
@@ -243,6 +272,7 @@ This guide compares the providers currently implemented in Meridian so you can c
 - Streaming: `Synthetic` or `Alpaca`
 - Historical: `Yahoo Finance` + `Stooq`
 - Symbol search: `Synthetic`, `Alpaca`, or `Polygon`
+- If you need to exercise provider-specific confidence without live credentials, prefer the replay/runtime-guidance baseline in [Provider Confidence Baseline](provider-confidence-baseline.md).
 
 ### Research And Backtesting
 
@@ -256,6 +286,7 @@ This guide compares the providers currently implemented in Meridian so you can c
 - Streaming: `Interactive Brokers`, `Polygon`, or `NYSE Streaming`
 - Historical continuity: `Alpaca`, `Polygon`, or `Interactive Brokers` after the official `IBApi` path is enabled
 - Reference search: `OpenFIGI` plus a broker or vendor symbol-search provider
+- Validate vendor entitlements and local runtime dependencies separately before treating any compile-gated provider path as production-ready.
 
 ---
 

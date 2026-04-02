@@ -4,49 +4,19 @@ using System.Windows;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Ui.Services.Collections;
+using Meridian.QuantScript;
 using Meridian.QuantScript.Compilation;
 using Meridian.QuantScript.Plotting;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Meridian.QuantScript;
 
 namespace Meridian.Wpf.ViewModels;
 
 /// <summary>
 /// ViewModel for the QuantScript interactive C# scripting environment.
 /// Drives a three-column layout: script browser / editor / results tabs.
-using CommunityToolkit.Mvvm.Input;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
-using Meridian.Backtesting.Sdk;
-using Meridian.QuantScript;
-using Meridian.QuantScript.Compilation;
-using Meridian.QuantScript.Plotting;
-
-namespace Meridian.Wpf.ViewModels;
-
-// ── Supporting model types ───────────────────────────────────────────────────
-
-public sealed record ScriptFileEntry(string Name, string FullPath);
-
-public enum ConsoleEntryKind { Output, Warning, Error }
-public sealed record ConsoleEntry(DateTimeOffset Timestamp, string Text, ConsoleEntryKind Kind);
-public sealed record MetricEntry(string Label, string Value);
-public sealed class ParameterViewModel : BindableBase
-{
-    private string _raw = string.Empty;
-    public required ParameterDescriptor Descriptor { get; init; }
-    public string RawValue { get => _raw; set => SetProperty(ref _raw, value); }
-}
-public sealed record PlotViewModel(string Title, PlotRequest Request);
-
-// ── ViewModel ────────────────────────────────────────────────────────────────
-
-/// <summary>
-/// ViewModel for QuantScriptPage. Drives the three-panel script execution UI:
-/// script browser, editor, and results tabs (Console / Charts / Metrics / Trades).
 /// </summary>
 public sealed class QuantScriptViewModel : BindableBase, IDisposable
 {
@@ -62,25 +32,67 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
     private FileSystemWatcher? _fileWatcher;
     private bool _disposed;
 
-    // ── Script source ─────────────────────────────────────────────────────────
-    private readonly QuantScriptOptions _options;
-    private readonly ILogger<QuantScriptViewModel> _logger;
-    private CancellationTokenSource? _runCts;
+    // ── Asset / date context ─────────────────────────────────────────────────
 
-    // ── Script editor ───────────────────────────────────────────────────────
+    private string _assetSymbol = string.Empty;
+    public string AssetSymbol { get => _assetSymbol; set => SetProperty(ref _assetSymbol, value); }
+
+    private DateTime _fromDate = DateTime.Today.AddYears(-1);
+    public DateTime FromDate { get => _fromDate; set => SetProperty(ref _fromDate, value); }
+
+    private DateTime _toDate = DateTime.Today;
+    public DateTime ToDate { get => _toDate; set => SetProperty(ref _toDate, value); }
+
+    private string _selectedInterval = "Daily (Custom)";
+    public string SelectedInterval { get => _selectedInterval; set => SetProperty(ref _selectedInterval, value); }
+
+    public static IReadOnlyList<string> Intervals { get; } =
+        ["Daily", "Daily (Custom)", "Weekly", "Monthly"];
+
+    // ── Primary chart (shown in top chart area) ──────────────────────────────
+
+    /// <summary>The <see cref="PlotRequest"/> of the first chart result, or <c>null</c> when no charts exist.</summary>
+    public PlotRequest? PrimaryChartRequest => Charts.Count > 0 ? Charts[0].Request : null;
+
+    /// <summary>Title of the first chart result, or empty when no charts exist.</summary>
+    public string PrimaryChartTitle => Charts.Count > 0 ? Charts[0].Title : string.Empty;
+
+    /// <summary>True once the script has produced at least one chart.</summary>
+    public bool HasChart => Charts.Count > 0;
+
+    /// <summary>True when no chart result exists — drives empty-state placeholder visibility.</summary>
+    public bool HasNoChart => Charts.Count == 0;
+
+    /// <summary>True when the primary chart has at least one named legend entry.</summary>
+    public bool HasLegend => LegendEntries.Count > 0;
+
+    // Series palette matching PlotRenderBehavior so legend colors stay in sync.
+    private static readonly System.Windows.Media.Color[] _legendPalette =
+    [
+        System.Windows.Media.Color.FromRgb(66,  153, 225),  // ChartPrimary   blue
+        System.Windows.Media.Color.FromRgb(159, 122, 234),  // ChartSecondary purple
+        System.Windows.Media.Color.FromRgb(56,  178, 172),  // ChartTertiary  teal
+        System.Windows.Media.Color.FromRgb(72,  187, 120),  // ChartPositive  green
+        System.Windows.Media.Color.FromRgb(245, 101, 101),  // ChartNegative  red
+    ];
+
+    /// <summary>Legend entries extracted from the first chart result.</summary>
+    public ObservableCollection<ChartLegendEntry> LegendEntries { get; } = [];
+
+
 
     private string _scriptSource = string.Empty;
     public string ScriptSource
     {
         get => _scriptSource;
-        set => SetProperty(ref _scriptSource, value);
+        set
+        {
+            if (SetProperty(ref _scriptSource, value))
+                UpdateParameters(value);
+        }
     }
 
-    public ObservableCollection<ScriptFileEntry> ScriptFiles { get; } = new();
-        set { if (SetProperty(ref _scriptSource, value)) UpdateParameters(value); }
-    }
-
-    // ── Script browser ──────────────────────────────────────────────────────
+    // ── Script browser ───────────────────────────────────────────────────────
 
     public ObservableCollection<ScriptFileEntry> ScriptFiles { get; } = [];
 
@@ -95,21 +107,21 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         }
     }
 
-    // ── Parameters ────────────────────────────────────────────────────────────
+    // ── Parameters ───────────────────────────────────────────────────────────
 
-    public ObservableCollection<ParameterViewModel> Parameters { get; } = new();
+    public ObservableCollection<ParameterViewModel> Parameters { get; } = [];
 
-    // ── Results ───────────────────────────────────────────────────────────────
+    // ── Results ──────────────────────────────────────────────────────────────
 
     public BoundedObservableCollection<ConsoleEntry> ConsoleOutput { get; } =
         new BoundedObservableCollection<ConsoleEntry>(10_000);
 
-    public ObservableCollection<PlotViewModel> Charts { get; } = new();
-    public ObservableCollection<MetricEntry> Metrics { get; } = new();
-    public ObservableCollection<TradeEntry> Trades { get; } = new();
-    public ObservableCollection<DiagnosticEntry> Diagnostics { get; } = new();
+    public ObservableCollection<PlotViewModel> Charts { get; } = [];
+    public ObservableCollection<MetricEntry> Metrics { get; } = [];
+    public ObservableCollection<TradeEntry> Trades { get; } = [];
+    public ObservableCollection<DiagnosticEntry> Diagnostics { get; } = [];
 
-    // ── Tab headers ───────────────────────────────────────────────────────────
+    // ── Tab headers ──────────────────────────────────────────────────────────
 
     public string ConsoleTabHeader
         => ConsoleOutput.Count > 0 ? $"Console ({ConsoleOutput.Count})" : "Console";
@@ -126,21 +138,6 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
     public string DiagnosticsTabHeader
         => Diagnostics.Count > 0 ? $"Diagnostics ({Diagnostics.Count})" : "Diagnostics";
 
-    // ── Status ────────────────────────────────────────────────────────────────
-        set { if (SetProperty(ref _selectedScript, value)) LoadScript(value); }
-    }
-
-    // ── Parameters ──────────────────────────────────────────────────────────
-
-    public ObservableCollection<ParameterViewModel> Parameters { get; } = [];
-
-    // ── Results ─────────────────────────────────────────────────────────────
-
-    public ObservableCollection<ConsoleEntry> ConsoleOutput { get; } = [];
-    public ObservableCollection<PlotViewModel> Charts { get; } = [];
-    public ObservableCollection<MetricEntry> Metrics { get; } = [];
-    public ObservableCollection<FillEvent> Trades { get; } = [];
-
     // ── Status ───────────────────────────────────────────────────────────────
 
     private bool _isRunning;
@@ -152,7 +149,7 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
             if (SetProperty(ref _isRunning, value))
             {
                 RaisePropertyChanged(nameof(CanRun));
-                RunCommand.NotifyCanExecuteChanged();
+                RunScriptCommand.NotifyCanExecuteChanged();
                 StopCommand.NotifyCanExecuteChanged();
             }
         }
@@ -175,15 +172,9 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
     private int _activeResultsTab;
     public int ActiveResultsTab { get => _activeResultsTab; set => SetProperty(ref _activeResultsTab, value); }
 
-    // ── Commands ──────────────────────────────────────────────────────────────
-
-    public IAsyncRelayCommand RunScriptCommand { get; }
-    private string _statusText = "Ready";
-    public string StatusText { get => _statusText; private set => SetProperty(ref _statusText, value); }
-
     // ── Commands ─────────────────────────────────────────────────────────────
 
-    public IAsyncRelayCommand RunCommand { get; }
+    public IAsyncRelayCommand RunScriptCommand { get; }
     public IRelayCommand StopCommand { get; }
     public IRelayCommand NewScriptCommand { get; }
     public IAsyncRelayCommand SaveScriptCommand { get; }
@@ -212,27 +203,28 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         RefreshScriptsCommand = new RelayCommand(RefreshScripts);
         ClearConsoleCommand = new RelayCommand(ClearConsole);
 
-        // Wire all tab headers to their collections' CollectionChanged events
         ConsoleOutput.CollectionChanged += (_, _) => RaisePropertyChanged(nameof(ConsoleTabHeader));
-        Charts.CollectionChanged += (_, _) => RaisePropertyChanged(nameof(ChartsTabHeader));
+        Charts.CollectionChanged += (_, _) =>
+        {
+            RaisePropertyChanged(nameof(ChartsTabHeader));
+            UpdatePrimaryChart();
+        };
         Metrics.CollectionChanged += (_, _) => RaisePropertyChanged(nameof(MetricsTabHeader));
         Trades.CollectionChanged += (_, _) => RaisePropertyChanged(nameof(TradesTabHeader));
         Diagnostics.CollectionChanged += (_, _) => RaisePropertyChanged(nameof(DiagnosticsTabHeader));
     }
 
-    // ── Lifecycle ─────────────────────────────────────────────────────────────
+    // ── Lifecycle ────────────────────────────────────────────────────────────
 
-    /// <summary>Called from code-behind on page load (UI thread).</summary>
     /// <summary>
-    /// Called from code-behind on every page load. Returns the persisted column widths so
+    /// Called from code-behind on every page load. Returns the persisted row heights so
     /// the view can apply them to its Grid — the ViewModel must not touch UI elements directly.
     /// </summary>
-    internal (double LeftWidth, double RightWidth) OnActivated()
+    internal (double ChartHeight, double EditorHeight) OnActivated()
     {
-        var (leftWidth, rightWidth) = _layoutService.LoadColumnWidths();
+        var (chartHeight, editorHeight) = _layoutService.LoadRowHeights();
         ActiveResultsTab = _layoutService.LoadLastActiveTab();
 
-        // Timers must be created on the UI thread; Tick handlers are added only once.
         if (_elapsedTimer is null)
         {
             _elapsedTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(200) };
@@ -245,12 +237,12 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
 
         SetupFileWatcher();
         RefreshScripts();
-        return (leftWidth, rightWidth);
+        return (chartHeight, editorHeight);
     }
 
-    public void SaveLayout(double leftWidth, double rightWidth)
+    public void SaveLayout(double chartHeight, double editorHeight)
     {
-        _layoutService.SaveColumnWidths(leftWidth, rightWidth);
+        _layoutService.SaveRowHeights(chartHeight, editorHeight);
         _layoutService.SaveLastActiveTab(ActiveResultsTab);
     }
 
@@ -266,13 +258,13 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         if (IsRunning) RunScriptCommand.Cancel();
     }
 
-    // ── Script execution ──────────────────────────────────────────────────────
+    // ── Script execution ─────────────────────────────────────────────────────
 
     private async Task RunAsync(CancellationToken ct)
     {
         ClearResults();
         IsRunning = true;
-        StatusText = "Compiling…";
+        StatusText = "Compiling\u2026";
         ProgressFraction = 0.0;
         _runStopwatch = System.Diagnostics.Stopwatch.StartNew();
         _elapsedTimer?.Start();
@@ -284,20 +276,18 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
                 p => p.ParsedValue,
                 StringComparer.OrdinalIgnoreCase);
 
-            StatusText = "Running…";
+            StatusText = "Running\u2026";
 
             var result = await Task.Run(
                 () => _runner.RunAsync(_scriptSource, paramDict, ct), ct)
                 .ConfigureAwait(false);
 
-            await Application.Current.Dispatcher.InvokeAsync(() =>
-            {
-                ApplyResult(result);
-            }, DispatcherPriority.Normal);
+            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+                ApplyResult(result), DispatcherPriority.Normal);
         }
         catch (OperationCanceledException)
         {
-            await Application.Current.Dispatcher.InvokeAsync(() =>
+            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 StatusText = "Cancelled";
                 AppendConsole("Script was cancelled.", ConsoleEntryKind.Warning);
@@ -306,7 +296,7 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unhandled error in QuantScript runner");
-            await Application.Current.Dispatcher.InvokeAsync(() =>
+            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 StatusText = "Error";
                 AppendConsole($"Error: {ex.Message}", ConsoleEntryKind.Error);
@@ -314,7 +304,7 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         }
         finally
         {
-            await Application.Current.Dispatcher.InvokeAsync(() =>
+            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 _runStopwatch?.Stop();
                 _elapsedTimer?.Stop();
@@ -326,7 +316,6 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
 
     private void ApplyResult(ScriptRunResult result)
     {
-        // Console output
         if (!string.IsNullOrEmpty(result.ConsoleOutput))
         {
             foreach (var line in result.ConsoleOutput.Split(Environment.NewLine))
@@ -339,24 +328,17 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         foreach (var diag in result.CompilationErrors)
             AppendConsole($"[{diag.Line}:{diag.Column}] {diag.Message}", ConsoleEntryKind.Error);
 
-        // Metrics
         foreach (var kv in result.Metrics)
             Metrics.Add(new MetricEntry(kv.Key, kv.Value));
 
-        // Plots
         foreach (var plot in result.Plots)
-        {
             Charts.Add(new PlotViewModel(plot.Title, plot));
-        }
 
-        // Auto-switch tab if we have charts and none were showing
-        if (result.Plots.Count > 0 && Charts.Count == result.Plots.Count)
-            ActiveResultsTab = 1;
+        if (result.Metrics.Count > 0 && result.Plots.Count == 0)
+            ActiveResultsTab = 1; // Data Sheet
+        else if (result.Trades.Count > 0 && result.Plots.Count == 0)
+            ActiveResultsTab = 4; // Backtest Output
 
-        if (result.Metrics.Count > 0 && Metrics.Count == result.Metrics.Count && result.Plots.Count == 0)
-            ActiveResultsTab = 2;
-
-        // Diagnostics
         Diagnostics.Add(new DiagnosticEntry("Wall clock", $"{result.Elapsed.TotalSeconds:F2}s"));
         Diagnostics.Add(new DiagnosticEntry("Compile time", $"{result.CompileTime.TotalMilliseconds:F0}ms"));
         Diagnostics.Add(new DiagnosticEntry("Peak memory", $"{result.PeakMemoryBytes / 1024.0:F0} KB"));
@@ -371,142 +353,13 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         MemoryText = $"{result.PeakMemoryBytes / 1024.0:F0} KB";
     }
 
-    // ── Other commands ────────────────────────────────────────────────────────
+    // ── Commands implementation ───────────────────────────────────────────────
 
     private void NewScript()
     {
         _selectedScript = null;
-        ScriptSource = "// New QuantScript\n";
         RaisePropertyChanged(nameof(SelectedScript));
-        IOptions<QuantScriptOptions> options,
-        ILogger<QuantScriptViewModel>? logger = null)
-    {
-        _runner = runner;
-        _compiler = compiler;
-        _options = options.Value;
-        _logger = logger ?? NullLogger<QuantScriptViewModel>.Instance;
-
-        RunCommand = new AsyncRelayCommand(RunScriptAsync, () => !IsRunning);
-        StopCommand = new RelayCommand(StopScript, () => IsRunning);
-        NewScriptCommand = new RelayCommand(NewScript);
-        SaveScriptCommand = new AsyncRelayCommand(SaveScriptAsync);
-        RefreshScriptsCommand = new RelayCommand(LoadScriptFiles);
-
-        LoadScriptFiles();
-    }
-
-    private void LoadScriptFiles()
-    {
-        ScriptFiles.Clear();
-        var dir = _options.ScriptsDirectory;
-        if (!Directory.Exists(dir)) return;
-        foreach (var f in Directory.GetFiles(dir, "*.csx", SearchOption.TopDirectoryOnly)
-                                   .OrderBy(f => f))
-        {
-            ScriptFiles.Add(new ScriptFileEntry(Path.GetFileName(f), f));
-        }
-    }
-
-    private void LoadScript(ScriptFileEntry? entry)
-    {
-        if (entry is null) return;
-        try
-        {
-            var source = File.ReadAllText(entry.FullPath);
-            _scriptSource = source;   // Set backing field to avoid re-triggering UpdateParameters
-            RaisePropertyChanged(nameof(ScriptSource));
-            UpdateParameters(source);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Failed to load script {File}", entry.FullPath);
-            AddConsole($"Failed to load script: {ex.Message}", ConsoleEntryKind.Error);
-        }
-    }
-
-    private void UpdateParameters(string source)
-    {
-        Parameters.Clear();
-        var descriptors = _compiler.ExtractParameters(source);
-        foreach (var d in descriptors)
-        {
-            Parameters.Add(new ParameterViewModel
-            {
-                Descriptor = d,
-                RawValue = d.DefaultValue?.ToString() ?? string.Empty
-            });
-        }
-    }
-
-    private async Task RunScriptAsync()
-    {
-        if (IsRunning) return;
-        IsRunning = true;
-        StatusText = "Compiling…";
-        ConsoleOutput.Clear();
-        Charts.Clear();
-        Metrics.Clear();
-        Trades.Clear();
-
-        _runCts = new CancellationTokenSource();
-        var ct = _runCts.Token;
-
-        var parameters = Parameters.ToDictionary<ParameterViewModel, string, object?>(
-            p => p.Descriptor.Name,
-            p => p.Descriptor.DefaultValue);
-
-        try
-        {
-            StatusText = "Running…";
-            var result = await Task.Run(() => _runner.RunAsync(_scriptSource, parameters, ct), ct);
-
-            var elapsed = $"{result.Elapsed.TotalSeconds:F1}s";
-            if (result.Success)
-            {
-                StatusText = $"Completed in {elapsed}";
-                AddConsole($"Script completed in {elapsed}", ConsoleEntryKind.Output);
-            }
-            else if (result.CompilationErrors.Count > 0)
-            {
-                StatusText = $"Compilation failed ({result.CompilationErrors.Count} error(s))";
-                foreach (var err in result.CompilationErrors)
-                    AddConsole($"[{err.Severity}] Line {err.Line}: {err.Message}", ConsoleEntryKind.Error);
-            }
-            else
-            {
-                StatusText = $"Failed: {result.RuntimeError}";
-                AddConsole(result.RuntimeError ?? "Unknown error", ConsoleEntryKind.Error);
-            }
-        }
-        catch (OperationCanceledException)
-        {
-            StatusText = "Cancelled";
-            AddConsole("Script cancelled.", ConsoleEntryKind.Warning);
-        }
-        catch (Exception ex)
-        {
-            StatusText = "Error";
-            AddConsole($"Unexpected error: {ex.Message}", ConsoleEntryKind.Error);
-            _logger.LogError(ex, "Unexpected error running script");
-        }
-        finally
-        {
-            IsRunning = false;
-            _runCts?.Dispose();
-            _runCts = null;
-        }
-    }
-
-    private void StopScript()
-    {
-        _runCts?.Cancel();
-        StatusText = "Cancelling…";
-    }
-
-    private void NewScript()
-    {
-        SelectedScript = null;
-        ScriptSource = "// New script\nvar spy = Data.Prices(\"SPY\", new DateOnly(2023,1,1), new DateOnly(2024,1,1));\nvar ret = spy.DailyReturns();\nPrintMetric(\"Sharpe\", SharpeRatio(ret));\nret.PlotCumulative(\"SPY 2023\");\n";
+        ScriptSource = "// New QuantScript\n";
         StatusText = "New script";
     }
 
@@ -516,14 +369,15 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         {
             await File.WriteAllTextAsync(SelectedScript.FullPath, _scriptSource).ConfigureAwait(false);
             _logger.LogInformation("Saved script to {Path}", SelectedScript.FullPath);
+            StatusText = $"Saved {SelectedScript.Name}";
         }
         else
         {
-            // Prompt handled by future dialog — for now save with a timestamp name
             var dir = _options.ScriptsDirectory;
             if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
             var path = Path.Combine(dir, $"script-{DateTime.Now:yyyyMMddHHmmss}.csx");
             await File.WriteAllTextAsync(path, _scriptSource).ConfigureAwait(false);
+            _logger.LogInformation("Saved new script to {Path}", path);
             RefreshScripts();
         }
     }
@@ -534,21 +388,48 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         var dir = _options.ScriptsDirectory;
         if (!Directory.Exists(dir)) return;
 
-        foreach (var file in Directory.GetFiles(dir, "*.csx").OrderBy(f => f))
-        {
-            var name = Path.GetFileName(file);
-            ScriptFiles.Add(new ScriptFileEntry(name, file));
-        }
+        foreach (var file in Directory.GetFiles(dir, "*.csx", SearchOption.TopDirectoryOnly).OrderBy(f => f))
+            ScriptFiles.Add(new ScriptFileEntry(Path.GetFileName(file), file));
     }
 
     private void ClearConsole() => ConsoleOutput.Clear();
 
-    // ── Helpers ───────────────────────────────────────────────────────────────
+    // ── Helpers ──────────────────────────────────────────────────────────────
+
+    private void UpdatePrimaryChart()
+    {
+        LegendEntries.Clear();
+
+        if (Charts.Count > 0)
+        {
+            var req = Charts[0].Request;
+
+            if (req.MultiSeries is { Count: > 0 } multi)
+            {
+                var idx = 0;
+                foreach (var (label, _) in multi)
+                {
+                    LegendEntries.Add(new ChartLegendEntry(label, _legendPalette[idx % _legendPalette.Length]));
+                    idx++;
+                }
+            }
+            else if (req.Series is { Count: > 0 })
+            {
+                LegendEntries.Add(new ChartLegendEntry(Charts[0].Title, _legendPalette[0]));
+            }
+        }
+
+        RaisePropertyChanged(nameof(PrimaryChartRequest));
+        RaisePropertyChanged(nameof(PrimaryChartTitle));
+        RaisePropertyChanged(nameof(HasChart));
+        RaisePropertyChanged(nameof(HasNoChart));
+        RaisePropertyChanged(nameof(HasLegend));
+    }
 
     private void ClearResults()
     {
         ConsoleOutput.Clear();
-        Charts.Clear();
+        Charts.Clear(); // triggers UpdatePrimaryChart via CollectionChanged
         Metrics.Clear();
         Trades.Clear();
         Diagnostics.Clear();
@@ -567,12 +448,27 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
     {
         try
         {
-            ScriptSource = File.ReadAllText(path);
+            // Set backing field directly to avoid double-triggering UpdateParameters,
+            // then notify and parse parameters once.
+            _scriptSource = File.ReadAllText(path);
+            RaisePropertyChanged(nameof(ScriptSource));
+            UpdateParameters(_scriptSource);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to load script from {Path}", path);
             AppendConsole($"Failed to load: {ex.Message}", ConsoleEntryKind.Error);
+        }
+    }
+
+    private void UpdateParameters(string source)
+    {
+        Parameters.Clear();
+        var descriptors = _compiler.ExtractParameters(source);
+        foreach (var d in descriptors)
+        {
+            var type = Type.GetType(d.TypeName) ?? typeof(string);
+            Parameters.Add(new ParameterViewModel(d.Name, d.DefaultValue, type));
         }
     }
 
@@ -588,37 +484,8 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
             EnableRaisingEvents = true
         };
 
-        _fileWatcher.Created += (_, _) => Application.Current?.Dispatcher.InvokeAsync(RefreshScripts, DispatcherPriority.Background);
-        _fileWatcher.Deleted += (_, _) => Application.Current?.Dispatcher.InvokeAsync(RefreshScripts, DispatcherPriority.Background);
-        _fileWatcher.Renamed += (_, _) => Application.Current?.Dispatcher.InvokeAsync(RefreshScripts, DispatcherPriority.Background);
-        if (SelectedScript is null)
-        {
-            AddConsole("No file selected — use Save As (not yet implemented).", ConsoleEntryKind.Warning);
-            return;
-        }
-        try
-        {
-            await File.WriteAllTextAsync(SelectedScript.FullPath, ScriptSource);
-            StatusText = $"Saved {SelectedScript.Name}";
-        }
-        catch (Exception ex)
-        {
-            AddConsole($"Save failed: {ex.Message}", ConsoleEntryKind.Error);
-        }
-    }
-
-    private void AddConsole(string text, ConsoleEntryKind kind)
-    {
-        if (Application.Current.Dispatcher.CheckAccess())
-            ConsoleOutput.Add(new ConsoleEntry(DateTimeOffset.UtcNow, text, kind));
-        else
-            Application.Current.Dispatcher.InvokeAsync(() =>
-                ConsoleOutput.Add(new ConsoleEntry(DateTimeOffset.UtcNow, text, kind)));
-    }
-
-    public void Dispose()
-    {
-        _runCts?.Cancel();
-        _runCts?.Dispose();
+        _fileWatcher.Created += (_, _) => System.Windows.Application.Current?.Dispatcher.InvokeAsync(RefreshScripts, DispatcherPriority.Background);
+        _fileWatcher.Deleted += (_, _) => System.Windows.Application.Current?.Dispatcher.InvokeAsync(RefreshScripts, DispatcherPriority.Background);
+        _fileWatcher.Renamed += (_, _) => System.Windows.Application.Current?.Dispatcher.InvokeAsync(RefreshScripts, DispatcherPriority.Background);
     }
 }

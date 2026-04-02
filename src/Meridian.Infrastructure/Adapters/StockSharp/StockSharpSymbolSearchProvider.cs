@@ -59,7 +59,6 @@ public sealed class StockSharpSymbolSearchProvider : ISymbolSearchProvider, IDis
         _config = config ?? throw new ArgumentNullException(nameof(config));
     }
 
-    #region ISymbolSearchProvider Implementation
 
     /// <inheritdoc/>
     public string Name => "stocksharp";
@@ -70,9 +69,7 @@ public sealed class StockSharpSymbolSearchProvider : ISymbolSearchProvider, IDis
     /// <inheritdoc/>
     public int Priority => 20; // High priority when connector is available
 
-    #endregion
 
-    #region IProviderMetadata Implementation
 
     /// <inheritdoc/>
     public string ProviderId => "stocksharp";
@@ -91,7 +88,6 @@ public sealed class StockSharpSymbolSearchProvider : ISymbolSearchProvider, IDis
     /// <inheritdoc/>
     public ProviderCapabilities ProviderCapabilities => ProviderCapabilities.SymbolSearch;
 
-    #endregion
 
     /// <summary>
     /// Check if the provider is available (StockSharp configured).

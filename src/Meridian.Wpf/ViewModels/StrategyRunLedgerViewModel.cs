@@ -107,6 +107,7 @@ public sealed class StrategyRunLedgerViewModel : BindableBase
     public IRelayCommand OpenBrowserCommand { get; }
     public IRelayCommand OpenRunDetailCommand { get; }
     public IRelayCommand OpenPortfolioCommand { get; }
+    public IRelayCommand OpenCashFlowCommand { get; }
 
     internal StrategyRunLedgerViewModel(
         StrategyRunWorkspaceService runService,
@@ -117,6 +118,7 @@ public sealed class StrategyRunLedgerViewModel : BindableBase
         OpenBrowserCommand = new RelayCommand(() => _navigationService.NavigateTo("StrategyRuns"));
         OpenRunDetailCommand = new RelayCommand(OpenRunDetail, () => !string.IsNullOrWhiteSpace(_runId));
         OpenPortfolioCommand = new RelayCommand(OpenPortfolio, () => !string.IsNullOrWhiteSpace(_runId));
+        OpenCashFlowCommand = new RelayCommand(OpenCashFlow, () => !string.IsNullOrWhiteSpace(_runId));
     }
 
     private async Task LoadFromParameterAsync(object? parameter, CancellationToken ct = default)
@@ -164,6 +166,7 @@ public sealed class StrategyRunLedgerViewModel : BindableBase
 
         OpenRunDetailCommand.NotifyCanExecuteChanged();
         OpenPortfolioCommand.NotifyCanExecuteChanged();
+        OpenCashFlowCommand.NotifyCanExecuteChanged();
     }
 
     private void OpenRunDetail()
@@ -179,6 +182,14 @@ public sealed class StrategyRunLedgerViewModel : BindableBase
         if (!string.IsNullOrWhiteSpace(_runId))
         {
             _navigationService.NavigateTo("RunPortfolio", _runId);
+        }
+    }
+
+    private void OpenCashFlow()
+    {
+        if (!string.IsNullOrWhiteSpace(_runId))
+        {
+            _navigationService.NavigateTo("RunCashFlow", _runId);
         }
     }
 }

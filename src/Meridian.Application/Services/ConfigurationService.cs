@@ -2,6 +2,14 @@ using Meridian.Application.Config;
 using Meridian.Application.Config.Credentials;
 using Meridian.Application.Logging;
 using Meridian.Application.UI;
+using Meridian.Infrastructure.Adapters.Alpaca;
+using Meridian.Infrastructure.Adapters.AlphaVantage;
+using Meridian.Infrastructure.Adapters.Finnhub;
+using Meridian.Infrastructure.Adapters.Fred;
+using Meridian.Infrastructure.Adapters.NasdaqDataLink;
+using Meridian.Infrastructure.Adapters.Polygon;
+using Meridian.Infrastructure.Adapters.Tiingo;
+using Meridian.Infrastructure.Contracts;
 using Serilog;
 using static Meridian.Application.Services.AutoConfigurationService;
 
@@ -52,7 +60,6 @@ public sealed class ConfigurationService : IAsyncDisposable
     /// </summary>
     public ConfigurationPipeline Pipeline => _pipeline;
 
-    #region Wizard and Auto-Configuration
 
     /// <summary>
     /// Runs the interactive configuration wizard.
@@ -82,9 +89,7 @@ public sealed class ConfigurationService : IAsyncDisposable
     public AppConfig GenerateFirstTimeConfig(FirstTimeConfigOptions options)
         => _autoConfig.GenerateFirstTimeConfig(options);
 
-    #endregion
 
-    #region Provider Detection (Consolidated)
 
     /// <summary>
     /// Detects all available providers based on environment variables and configuration.
@@ -171,51 +176,15 @@ public sealed class ConfigurationService : IAsyncDisposable
         Console.WriteLine();
     }
 
-    #endregion
 
-    #region Credential Resolution (Consolidated)
 
     /// <summary>
-    /// Resolves Alpaca credentials from environment or config.
+    /// Creates a provider-scoped credential context from attribute metadata and config fallbacks.
     /// </summary>
-    public (string? KeyId, string? SecretKey) ResolveAlpacaCredentials(string? configKeyId = null, string? configSecretKey = null)
-        => _credentialResolver.ResolveAlpaca(configKeyId, configSecretKey);
-
-    /// <summary>
-    /// Resolves Polygon API key from environment or config.
-    /// </summary>
-    public string? ResolvePolygonCredentials(string? configApiKey = null)
-        => _credentialResolver.ResolvePolygon(configApiKey);
-
-    /// <summary>
-    /// Resolves Tiingo API token from environment or config.
-    /// </summary>
-    public string? ResolveTiingoCredentials(string? configApiToken = null)
-        => _credentialResolver.ResolveTiingo(configApiToken);
-
-    /// <summary>
-    /// Resolves Finnhub API key from environment or config.
-    /// </summary>
-    public string? ResolveFinnhubCredentials(string? configApiKey = null)
-        => _credentialResolver.ResolveFinnhub(configApiKey);
-
-    /// <summary>
-    /// Resolves Alpha Vantage API key from environment or config.
-    /// </summary>
-    public string? ResolveAlphaVantageCredentials(string? configApiKey = null)
-        => _credentialResolver.ResolveAlphaVantage(configApiKey);
-
-    /// <summary>
-    /// Resolves FRED API key from environment or config.
-    /// </summary>
-    public string? ResolveFredCredentials(string? configApiKey = null)
-        => _credentialResolver.ResolveFred(configApiKey);
-
-    /// <summary>
-    /// Resolves Nasdaq Data Link API key from environment or config.
-    /// </summary>
-    public string? ResolveNasdaqCredentials(string? configApiKey = null)
-        => _credentialResolver.ResolveNasdaq(configApiKey);
+    public ICredentialContext CreateCredentialContext(
+        Type providerType,
+        IReadOnlyDictionary<string, string?>? configuredValues = null)
+        => _credentialResolver.CreateContext(providerType, configuredValues);
 
     /// <summary>
     /// Resolves all credentials for a given configuration and returns a config with resolved values.
@@ -225,7 +194,15 @@ public sealed class ConfigurationService : IAsyncDisposable
         // Resolve Alpaca credentials
         if (config.DataSource == DataSourceKind.Alpaca || config.Alpaca != null)
         {
-            var (keyId, secretKey) = ResolveAlpacaCredentials(config.Alpaca?.KeyId, config.Alpaca?.SecretKey);
+            var credentials = CreateCredentialContext(
+                typeof(AlpacaHistoricalDataProvider),
+                new Dictionary<string, string?>(StringComparer.Ordinal)
+                {
+                    ["ALPACA_KEY_ID"] = config.Alpaca?.KeyId,
+                    ["ALPACA_SECRET_KEY"] = config.Alpaca?.SecretKey
+                });
+            var keyId = credentials.Get("ALPACA_KEY_ID");
+            var secretKey = credentials.Get("ALPACA_SECRET_KEY");
             if (!string.IsNullOrEmpty(keyId) && !string.IsNullOrEmpty(secretKey))
             {
                 config = config with
@@ -242,7 +219,12 @@ public sealed class ConfigurationService : IAsyncDisposable
         // Resolve Polygon credentials
         if (config.DataSource == DataSourceKind.Polygon || config.Polygon != null)
         {
-            var apiKey = ResolvePolygonCredentials(config.Polygon?.ApiKey);
+            var apiKey = CreateCredentialContext(
+                typeof(PolygonHistoricalDataProvider),
+                new Dictionary<string, string?>(StringComparer.Ordinal)
+                {
+                    ["POLYGON_API_KEY"] = config.Polygon?.ApiKey
+                }).Get("POLYGON_API_KEY");
             if (!string.IsNullOrEmpty(apiKey) && config.Polygon != null)
             {
                 config = config with
@@ -260,7 +242,12 @@ public sealed class ConfigurationService : IAsyncDisposable
 
             if (providers.Tiingo != null)
             {
-                var token = ResolveTiingoCredentials(providers.Tiingo.ApiToken);
+                var token = CreateCredentialContext(
+                    typeof(TiingoHistoricalDataProvider),
+                    new Dictionary<string, string?>(StringComparer.Ordinal)
+                    {
+                        ["TIINGO_API_TOKEN"] = providers.Tiingo.ApiToken
+                    }).Get("TIINGO_API_TOKEN");
                 if (!string.IsNullOrEmpty(token))
                 {
                     providers = providers with { Tiingo = providers.Tiingo with { ApiToken = token } };
@@ -270,7 +257,12 @@ public sealed class ConfigurationService : IAsyncDisposable
 
             if (providers.Finnhub != null)
             {
-                var key = ResolveFinnhubCredentials(providers.Finnhub.ApiKey);
+                var key = CreateCredentialContext(
+                    typeof(FinnhubHistoricalDataProvider),
+                    new Dictionary<string, string?>(StringComparer.Ordinal)
+                    {
+                        ["FINNHUB_API_KEY"] = providers.Finnhub.ApiKey
+                    }).Get("FINNHUB_API_KEY");
                 if (!string.IsNullOrEmpty(key))
                 {
                     providers = providers with { Finnhub = providers.Finnhub with { ApiKey = key } };
@@ -280,7 +272,12 @@ public sealed class ConfigurationService : IAsyncDisposable
 
             if (providers.Polygon != null)
             {
-                var key = ResolvePolygonCredentials(providers.Polygon.ApiKey);
+                var key = CreateCredentialContext(
+                    typeof(PolygonHistoricalDataProvider),
+                    new Dictionary<string, string?>(StringComparer.Ordinal)
+                    {
+                        ["POLYGON_API_KEY"] = providers.Polygon.ApiKey
+                    }).Get("POLYGON_API_KEY");
                 if (!string.IsNullOrEmpty(key))
                 {
                     providers = providers with { Polygon = providers.Polygon with { ApiKey = key } };
@@ -290,7 +287,12 @@ public sealed class ConfigurationService : IAsyncDisposable
 
             if (providers.AlphaVantage != null)
             {
-                var key = ResolveAlphaVantageCredentials(providers.AlphaVantage.ApiKey);
+                var key = CreateCredentialContext(
+                    typeof(AlphaVantageHistoricalDataProvider),
+                    new Dictionary<string, string?>(StringComparer.Ordinal)
+                    {
+                        ["ALPHA_VANTAGE_API_KEY"] = providers.AlphaVantage.ApiKey
+                    }).Get("ALPHA_VANTAGE_API_KEY");
                 if (!string.IsNullOrEmpty(key))
                 {
                     providers = providers with { AlphaVantage = providers.AlphaVantage with { ApiKey = key } };
@@ -300,7 +302,12 @@ public sealed class ConfigurationService : IAsyncDisposable
 
             if (providers.Nasdaq != null)
             {
-                var key = ResolveNasdaqCredentials(providers.Nasdaq.ApiKey);
+                var key = CreateCredentialContext(
+                    typeof(NasdaqDataLinkHistoricalDataProvider),
+                    new Dictionary<string, string?>(StringComparer.Ordinal)
+                    {
+                        ["NASDAQ_DATA_LINK_API_KEY"] = providers.Nasdaq.ApiKey
+                    }).Get("NASDAQ_DATA_LINK_API_KEY");
                 if (!string.IsNullOrEmpty(key))
                 {
                     providers = providers with { Nasdaq = providers.Nasdaq with { ApiKey = key } };
@@ -310,7 +317,12 @@ public sealed class ConfigurationService : IAsyncDisposable
 
             if (providers.Fred != null)
             {
-                var key = ResolveFredCredentials(providers.Fred.ApiKey);
+                var key = CreateCredentialContext(
+                    typeof(FredHistoricalDataProvider),
+                    new Dictionary<string, string?>(StringComparer.Ordinal)
+                    {
+                        ["FRED_API_KEY"] = providers.Fred.ApiKey
+                    }).Get("FRED_API_KEY");
                 if (!string.IsNullOrEmpty(key))
                 {
                     providers = providers with { Fred = providers.Fred with { ApiKey = key } };
@@ -327,9 +339,7 @@ public sealed class ConfigurationService : IAsyncDisposable
         return config;
     }
 
-    #endregion
 
-    #region Validation (Consolidated)
 
     /// <summary>
     /// Validates a configuration file and returns an exit code (0 = valid, 1 = invalid).
@@ -416,9 +426,7 @@ public sealed class ConfigurationService : IAsyncDisposable
         return await validator.ValidateAllAsync(config, ct);
     }
 
-    #endregion
 
-    #region Self-Healing Fixes (Consolidated)
 
     /// <summary>
     /// Applies self-healing fixes to a configuration and returns the fixed config
@@ -460,7 +468,9 @@ public sealed class ConfigurationService : IAsyncDisposable
         {
             if (config.Alpaca == null || string.IsNullOrEmpty(config.Alpaca.KeyId))
             {
-                var (keyId, secretKey) = ResolveAlpacaCredentials();
+                var credentials = CreateCredentialContext(typeof(AlpacaHistoricalDataProvider));
+                var keyId = credentials.Get("ALPACA_KEY_ID");
+                var secretKey = credentials.Get("ALPACA_SECRET_KEY");
                 if (!string.IsNullOrEmpty(keyId) && !string.IsNullOrEmpty(secretKey))
                 {
                     TryFix(
@@ -615,9 +625,7 @@ public sealed class ConfigurationService : IAsyncDisposable
         return false;
     }
 
-    #endregion
 
-    #region Configuration Loading and Environment
 
     /// <summary>
     /// Applies environment variable overrides to configuration.
@@ -775,9 +783,7 @@ public sealed class ConfigurationService : IAsyncDisposable
         };
     }
 
-    #endregion
 
-    #region Hot Reload
 
     /// <summary>
     /// Starts hot reload monitoring for configuration file changes.
@@ -826,9 +832,7 @@ public sealed class ConfigurationService : IAsyncDisposable
         _watcher = null;
     }
 
-    #endregion
 
-    #region Configuration Display
 
     /// <summary>
     /// Displays configuration summary to console.
@@ -867,7 +871,6 @@ public sealed class ConfigurationService : IAsyncDisposable
         _log.Information("Configuration saved to {Path}", store.ConfigPath);
     }
 
-    #endregion
 
     public async ValueTask DisposeAsync()
     {

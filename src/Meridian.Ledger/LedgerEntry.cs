@@ -52,7 +52,11 @@ public sealed record LedgerEntry
         if (credit < 0m)
             throw new LedgerValidationException($"Credit amount cannot be negative (was {credit}).");
 
-        if ((debit == 0m) == (credit == 0m))
+        if (debit == 0m && credit == 0m)
+            throw new LedgerValidationException(
+                "A ledger entry must have a non-zero amount; both Debit and Credit are zero.");
+
+        if (debit != 0m && credit != 0m)
             throw new LedgerValidationException(
                 "Exactly one of Debit or Credit must be non-zero per ledger entry " +
                 $"(debit={debit}, credit={credit}).");

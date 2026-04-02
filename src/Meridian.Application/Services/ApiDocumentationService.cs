@@ -491,7 +491,6 @@ public sealed class ApiDocumentationService
     }
 }
 
-#region OpenAPI Models
 
 public sealed class OpenApiSpec
 {
@@ -599,4 +598,3 @@ public sealed class OpenApiSchema
     public string[]? Required { get; set; }
 }
 
-#endregion

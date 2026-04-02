@@ -1,4 +1,5 @@
 using Meridian.Application.Composition;
+using Meridian.McpServer.Navigation;
 using Meridian.McpServer.Prompts;
 using Meridian.McpServer.Resources;
 using Meridian.McpServer.Tools;
@@ -50,6 +51,7 @@ try
     {
         ConfigPath = configPath
     });
+    builder.Services.AddSingleton<RepoNavigationCatalog>();
 
     // Register the MCP server with stdio transport and all tool/resource/prompt types.
     builder.Services.AddMcpServer()
@@ -58,7 +60,9 @@ try
         .WithTools<BackfillTools>()
         .WithTools<StorageTools>()
         .WithTools<SymbolTools>()
+        .WithTools<RepoNavigationTools>()
         .WithResources<MarketDataResources>()
+        .WithResources<RepoNavigationResources>()
         .WithPrompts<MarketDataPrompts>();
 
     await builder.Build().RunAsync();

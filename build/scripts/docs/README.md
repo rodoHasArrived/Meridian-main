@@ -74,6 +74,17 @@ Generates repository structure documentation.
 python3 generate-structure-docs.py --output docs/generated/repository-structure.md
 ```
 
+### generate-ai-navigation.py
+
+Generates the AI repo-navigation dataset used by docs, MCP tools/resources, and navigation agents.
+
+```bash
+python3 generate-ai-navigation.py \
+  --json-output docs/ai/generated/repo-navigation.json \
+  --markdown-output docs/ai/generated/repo-navigation.md \
+  --summary
+```
+
 ### update-claude-md.py
 
 Syncs Repository Structure section across AI instruction files.

@@ -2,6 +2,7 @@ using System.Text.Json;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Core.Serialization;
 using Npgsql;
+using NpgsqlTypes;
 
 namespace Meridian.Storage.SecurityMaster;
 
@@ -571,7 +572,7 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
             command.CommandText = sql;
             command.Parameters.AddWithValue("identifier_kind", identifierKind);
             command.Parameters.AddWithValue("identifier_value", value);
-            command.Parameters.AddWithValue("provider", (object?)provider ?? DBNull.Value);
+            command.Parameters.Add(new NpgsqlParameter("provider", NpgsqlTypes.NpgsqlDbType.Text) { Value = (object?)provider ?? DBNull.Value });
             command.Parameters.AddWithValue("as_of", asOfUtc.UtcDateTime);
             command.Parameters.AddWithValue("include_inactive", includeInactive);
 

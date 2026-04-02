@@ -1,0 +1,85 @@
+{
+  "description": "Recorded-style Polygon stock feed session for TSLA covering opening-cross trade conditions, ignored malformed quote frames, and second-plus-minute aggregate replay.",
+  "subscriptions": {
+    "trades": [
+      "TSLA"
+    ],
+    "quotes": [
+      "TSLA"
+    ],
+    "aggregates": [
+      "TSLA"
+    ]
+  },
+  "expected": {
+    "trade": {
+      "symbol": "TSLA",
+      "price": 198.42,
+      "size": 500,
+      "timestampMs": 1743503400123,
+      "streamId": "tsla-open-001",
+      "venue": "CHX",
+      "aggressor": "Unknown",
+      "rawConditions": [
+        "2",
+        "37"
+      ]
+    },
+    "quote": {
+      "symbol": "TSLA",
+      "bidPrice": 198.4,
+      "bidSize": 140,
+      "askPrice": 198.45,
+      "askSize": 160,
+      "timestampMs": 1743503400188,
+      "venue": "CHX"
+    },
+    "aggregates": [
+      {
+        "timeframe": "Second",
+        "symbol": "TSLA",
+        "open": 198.35,
+        "high": 198.48,
+        "low": 198.31,
+        "close": 198.42,
+        "volume": 5200,
+        "vwap": 198.4,
+        "tradeCount": 46,
+        "startTimeMs": 1743503400000,
+        "endTimeMs": 1743503401000
+      },
+      {
+        "timeframe": "Minute",
+        "symbol": "TSLA",
+        "open": 197.9,
+        "high": 198.55,
+        "low": 197.88,
+        "close": 198.42,
+        "volume": 138400,
+        "vwap": 198.17,
+        "tradeCount": 1940,
+        "startTimeMs": 1743503340000,
+        "endTimeMs": 1743503400000
+      }
+    ],
+    "expectedIntegrityEvents": 0,
+    "statusMarkers": [
+      "connected",
+      "auth_success",
+      "success"
+    ]
+  },
+  "messages": [
+    "[{\"ev\":\"status\",\"status\":\"connected\",\"message\":\"Connected Successfully\"}]",
+    "[{\"ev\":\"status\",\"status\":\"auth_success\",\"message\":\"authenticated\"}]",
+    "[{\"ev\":\"status\",\"status\":\"success\",\"message\":\"subscribed to: T.TSLA,Q.TSLA,A.TSLA,AM.TSLA\"}]",
+    "[{\"ev\":\"T\",\"sym\":\"TSLA\",\"p\":198.42,\"s\":500,\"t\":1743503400123,\"i\":\"tsla-open-001\",\"x\":12,\"c\":[2,37]}]",
+    "[{\"ev\":\"Q\",\"sym\":\"TSLA\",\"bp\":198.40,\"bs\":140,\"ap\":198.45,\"as\":160,\"t\":1743503400188,\"x\":12}]",
+    "[{\"ev\":\"A\",\"sym\":\"TSLA\",\"o\":198.35,\"h\":198.48,\"l\":198.31,\"c\":198.42,\"v\":5200,\"vw\":198.40,\"s\":1743503400000,\"e\":1743503401000,\"n\":46}]",
+    "[{\"ev\":\"AM\",\"sym\":\"TSLA\",\"o\":197.90,\"h\":198.55,\"l\":197.88,\"c\":198.42,\"v\":138400,\"vw\":198.17,\"s\":1743503340000,\"e\":1743503400000,\"n\":1940}]",
+    "[{\"ev\":\"Q\",\"sym\":\"TSLA\",\"bp\":198.50,\"bs\":10,\"ap\":198.49,\"as\":10,\"t\":1743503400200,\"x\":12}]",
+    "[{\"ev\":\"T\",\"sym\":\"QQQ\",\"p\":487.11,\"s\":100,\"t\":1743503400300,\"i\":\"ignored-qqq\",\"x\":4,\"c\":[12]}]",
+    "[{\"ev\":\"A\",\"sym\":\"TSLA\",\"o\":0,\"h\":198.60,\"l\":197.80,\"c\":198.10,\"v\":10,\"vw\":198.00,\"s\":1743503401000,\"e\":1743503402000,\"n\":1}]",
+    "[{\"sym\":\"TSLA\",\"bp\":198.40,\"ap\":198.45}]"
+  ]
+}

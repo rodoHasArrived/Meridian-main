@@ -83,6 +83,27 @@ public static class LedgerAccounts
     public static LedgerAccount CorporateActionExpenseFor(string financialAccountId) =>
         CreateScoped("Corporate Action Expense", LedgerAccountType.Expense, financialAccountId);
 
+    /// <summary>Unrealized gain on open long positions marked to current market value.</summary>
+    public static readonly LedgerAccount UnrealizedGain =
+        new("Unrealized Gain", LedgerAccountType.Revenue);
+
+    /// <summary>Unrealized loss on open long positions marked to current market value.</summary>
+    public static readonly LedgerAccount UnrealizedLoss =
+        new("Unrealized Loss", LedgerAccountType.Expense);
+
+    /// <summary>Retained earnings carried forward from prior reporting periods.</summary>
+    public static readonly LedgerAccount RetainedEarnings =
+        new("Retained Earnings", LedgerAccountType.Equity);
+
+    public static LedgerAccount UnrealizedGainFor(string financialAccountId) =>
+        CreateScoped("Unrealized Gain", LedgerAccountType.Revenue, financialAccountId);
+
+    public static LedgerAccount UnrealizedLossFor(string financialAccountId) =>
+        CreateScoped("Unrealized Loss", LedgerAccountType.Expense, financialAccountId);
+
+    public static LedgerAccount RetainedEarningsFor(string financialAccountId) =>
+        CreateScoped("Retained Earnings", LedgerAccountType.Equity, financialAccountId);
+
     /// <summary>Dividend expense owed on short positions or other negative dividend adjustments.</summary>
     public static readonly LedgerAccount DividendExpense =
         new("Dividend Expense", LedgerAccountType.Expense);
@@ -112,6 +133,41 @@ public static class LedgerAccounts
     {
         var normalizedSymbol = NormalizeSymbol(symbol);
         return new("Securities", LedgerAccountType.Asset, normalizedSymbol, NormalizeOptionalAccountId(financialAccountId));
+    }
+
+    /// <summary>
+    /// Returns the asset account representing dividends declared but not yet received for
+    /// <paramref name="symbol"/> (ex-date passed; pay-date still pending).
+    /// Post: Dr DividendReceivable / Cr DividendIncome on declaration.
+    ///        Dr Cash / Cr DividendReceivable when payment arrives.
+    /// The symbol is normalized to upper-case.
+    /// </summary>
+    public static LedgerAccount DividendReceivable(string symbol, string? financialAccountId = null)
+    {
+        var normalizedSymbol = NormalizeSymbol(symbol);
+        return new("Dividend Receivable", LedgerAccountType.Asset, normalizedSymbol, NormalizeOptionalAccountId(financialAccountId));
+    }
+
+    /// <summary>
+    /// Returns the asset account representing bond or fund coupon interest accrued but not yet
+    /// received for <paramref name="symbol"/>.
+    /// The symbol is normalized to upper-case.
+    /// </summary>
+    public static LedgerAccount AccruedInterestReceivable(string symbol, string? financialAccountId = null)
+    {
+        var normalizedSymbol = NormalizeSymbol(symbol);
+        return new("Accrued Interest Receivable", LedgerAccountType.Asset, normalizedSymbol, NormalizeOptionalAccountId(financialAccountId));
+    }
+
+    /// <summary>
+    /// Returns the revenue account for non-dividend corporate action distributions
+    /// (spin-off proceeds, rights issue income, merger cash, etc.) for <paramref name="symbol"/>.
+    /// The symbol is normalized to upper-case.
+    /// </summary>
+    public static LedgerAccount CorpActionDistribution(string symbol, string? financialAccountId = null)
+    {
+        var normalizedSymbol = NormalizeSymbol(symbol);
+        return new("Corporate Action Distribution", LedgerAccountType.Revenue, normalizedSymbol, NormalizeOptionalAccountId(financialAccountId));
     }
 
     /// <summary>

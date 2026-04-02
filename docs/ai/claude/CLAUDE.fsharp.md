@@ -903,7 +903,7 @@ let validate trade =
 
 ## Related Resources
 
-- **Master AI index:** [`docs/ai/README.md`](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/README.md)
+- **Master AI index:** [`docs/ai/README.md`](https://github.com/rodoHasArrived/Meridian/blob/main/docs/ai/README.md)
 - **Root context:** [`CLAUDE.md`](https://github.com/rodoHasArrived/Meridian/blob/main/CLAUDE.md)
 - **Code review (Lens 6 - F# interop):** [`.github/agents/code-review-agent.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/agents/code-review-agent.md)
 - **Integration docs:** [`docs/integrations/fsharp-integration.md`](../../integrations/fsharp-integration.md)

@@ -4,7 +4,6 @@ using System.Linq;
 
 namespace Meridian.Ui.Services;
 
-#region Models
 
 /// <summary>
 /// Retention configuration.
@@ -229,9 +228,7 @@ public sealed class LegalHoldEventArgs : EventArgs
     public LegalHold? LegalHold { get; set; }
 }
 
-#endregion
 
-#region API Response Models
 
 /// <summary>
 /// Response from /api/storage/search/files endpoint.
@@ -316,4 +313,3 @@ public sealed class OrphanedFileInfo
     public DateTime LastModified { get; set; }
 }
 
-#endregion

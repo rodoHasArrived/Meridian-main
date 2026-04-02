@@ -26,7 +26,14 @@ public partial class LiveDataViewerPage : Page
         InitializeComponent();
         _navigationService = Meridian.Wpf.Services.NavigationService.Instance;
 
-        _vm = new LiveDataViewerViewModel(statusService, connectionService, loggingService, notificationService);
+        _vm = new LiveDataViewerViewModel(
+            statusService,
+            connectionService,
+            loggingService,
+            notificationService,
+            SymbolManagementService.Instance,
+            WpfServices.TearOffPanelService.Instance,
+            WpfServices.ConfigService.Instance);
         DataContext = _vm;
 
         LiveFeedList.ItemsSource = _vm.LiveEvents;

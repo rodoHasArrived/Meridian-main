@@ -114,6 +114,8 @@ public sealed class StrategyRunDetailViewModel : BindableBase
     public IRelayCommand OpenBrowserCommand { get; }
     public IRelayCommand OpenPortfolioCommand { get; }
     public IRelayCommand OpenLedgerCommand { get; }
+    public IRelayCommand OpenCashFlowCommand { get; }
+    public IRelayCommand OpenRiskCommand { get; }
 
     internal StrategyRunDetailViewModel(
         StrategyRunWorkspaceService runService,
@@ -124,6 +126,8 @@ public sealed class StrategyRunDetailViewModel : BindableBase
         OpenBrowserCommand = new RelayCommand(() => _navigationService.NavigateTo("StrategyRuns"));
         OpenPortfolioCommand = new RelayCommand(OpenPortfolio, () => !string.IsNullOrWhiteSpace(_runId));
         OpenLedgerCommand = new RelayCommand(OpenLedger, () => !string.IsNullOrWhiteSpace(_runId));
+        OpenCashFlowCommand = new RelayCommand(OpenCashFlow, () => !string.IsNullOrWhiteSpace(_runId));
+        OpenRiskCommand = new RelayCommand(OpenRisk, () => !string.IsNullOrWhiteSpace(_runId));
     }
 
     private async Task LoadFromParameterAsync(object? parameter, CancellationToken ct = default)
@@ -169,6 +173,8 @@ public sealed class StrategyRunDetailViewModel : BindableBase
 
         OpenPortfolioCommand.NotifyCanExecuteChanged();
         OpenLedgerCommand.NotifyCanExecuteChanged();
+        OpenCashFlowCommand.NotifyCanExecuteChanged();
+        OpenRiskCommand.NotifyCanExecuteChanged();
     }
 
     private void OpenPortfolio()
@@ -184,6 +190,22 @@ public sealed class StrategyRunDetailViewModel : BindableBase
         if (!string.IsNullOrWhiteSpace(_runId))
         {
             _navigationService.NavigateTo("RunLedger", _runId);
+        }
+    }
+
+    private void OpenCashFlow()
+    {
+        if (!string.IsNullOrWhiteSpace(_runId))
+        {
+            _navigationService.NavigateTo("RunCashFlow", _runId);
+        }
+    }
+
+    private void OpenRisk()
+    {
+        if (!string.IsNullOrWhiteSpace(_runId))
+        {
+            _navigationService.NavigateTo("RunRisk", _runId);
         }
     }
 

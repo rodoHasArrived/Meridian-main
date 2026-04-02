@@ -518,4 +518,137 @@ public sealed class FillModelExpansionTests
         result.Fills.Should().HaveCount(1);
         result.Fills[0].FillPrice.Should().BeGreaterThan(0m);
     }
+
+    // =========================================================================
+    // BarMidpointFillModel — volume-constrained partial fills
+    // =========================================================================
+
+    [Fact]
+    public void BarMidpointFillModel_VolumeConstrained_ProducesPartialFill_WhenOrderExceedsBarVolume()
+    {
+        // 10 % participation on a 1,000-share bar = max 100 shares per bar.
+        // Order is for 500 shares → should produce a single 100-share fill and
+        // leave the order as PartiallyFilled (not removed).
+        var model = new BarMidpointFillModel(
+            new FixedCommissionModel(0m),
+            slippageBasisPoints: 0m,
+            maxParticipationRate: 0.10m);
+
+        var order = new Order(Guid.NewGuid(), "SPY", OrderType.Market, 500L, null, null, DateTimeOffset.UtcNow,
+            AllowPartialFills: true);
+        // Bar with Volume=1000 → 10 % cap = 100 shares
+        var evt = MarketEvent.HistoricalBar(DateTimeOffset.UtcNow, "SPY", new HistoricalBar(
+            "SPY", DateOnly.FromDateTime(DateTime.Today), 400m, 410m, 395m, 405m, 1_000L, "test"));
+
+        var result = model.TryFill(order, evt);
+
+        result.Fills.Should().HaveCount(1);
+        result.Fills[0].FilledQuantity.Should().Be(100L);
+        result.UpdatedOrder.Status.Should().Be(OrderStatus.PartiallyFilled);
+        result.UpdatedOrder.RemainingQuantity.Should().Be(400L);
+        result.RemoveOrder.Should().BeFalse();
+    }
+
+    [Fact]
+    public void BarMidpointFillModel_VolumeConstrained_FullFill_WhenOrderFitsWithinCap()
+    {
+        // 10 % participation on 1,000-share bar = cap 100.
+        // Order for 50 shares → fits entirely → full fill.
+        var model = new BarMidpointFillModel(
+            new FixedCommissionModel(0m),
+            slippageBasisPoints: 0m,
+            maxParticipationRate: 0.10m);
+
+        var order = new Order(Guid.NewGuid(), "SPY", OrderType.Market, 50L, null, null, DateTimeOffset.UtcNow);
+        var evt = MarketEvent.HistoricalBar(DateTimeOffset.UtcNow, "SPY", new HistoricalBar(
+            "SPY", DateOnly.FromDateTime(DateTime.Today), 400m, 410m, 395m, 405m, 1_000L, "test"));
+
+        var result = model.TryFill(order, evt);
+
+        result.Fills.Should().HaveCount(1);
+        result.Fills[0].FilledQuantity.Should().Be(50L);
+        result.UpdatedOrder.Status.Should().Be(OrderStatus.Filled);
+        result.RemoveOrder.Should().BeTrue();
+    }
+
+    [Fact]
+    public void BarMidpointFillModel_VolumeConstrained_NoFill_WhenAllowPartialFillsFalse()
+    {
+        // Order exceeds cap and partial fills are disabled → no fill this bar.
+        var model = new BarMidpointFillModel(
+            new FixedCommissionModel(0m),
+            slippageBasisPoints: 0m,
+            maxParticipationRate: 0.10m);
+
+        var order = new Order(Guid.NewGuid(), "SPY", OrderType.Market, 500L, null, null, DateTimeOffset.UtcNow,
+            AllowPartialFills: false);
+        var evt = MarketEvent.HistoricalBar(DateTimeOffset.UtcNow, "SPY", new HistoricalBar(
+            "SPY", DateOnly.FromDateTime(DateTime.Today), 400m, 410m, 395m, 405m, 1_000L, "test"));
+
+        var result = model.TryFill(order, evt);
+
+        result.Fills.Should().BeEmpty();
+        result.RemoveOrder.Should().BeFalse("order stays working; it needs more bar volume to fill");
+        result.UpdatedOrder.Status.Should().Be(OrderStatus.Pending);
+    }
+
+    [Fact]
+    public void BarMidpointFillModel_VolumeConstrained_SellOrder_PartialFill()
+    {
+        // Short-sell 500 shares; cap at 10 % of 1000-share bar = 100 shares.
+        var model = new BarMidpointFillModel(
+            new FixedCommissionModel(0m),
+            slippageBasisPoints: 0m,
+            maxParticipationRate: 0.10m);
+
+        var order = new Order(Guid.NewGuid(), "SPY", OrderType.Market, -500L, null, null, DateTimeOffset.UtcNow,
+            AllowPartialFills: true);
+        var evt = MarketEvent.HistoricalBar(DateTimeOffset.UtcNow, "SPY", new HistoricalBar(
+            "SPY", DateOnly.FromDateTime(DateTime.Today), 400m, 410m, 395m, 405m, 1_000L, "test"));
+
+        var result = model.TryFill(order, evt);
+
+        result.Fills.Should().HaveCount(1);
+        result.Fills[0].FilledQuantity.Should().Be(-100L, "signed sell quantity");
+        result.UpdatedOrder.Status.Should().Be(OrderStatus.PartiallyFilled);
+        result.RemoveOrder.Should().BeFalse();
+    }
+
+    [Fact]
+    public void BarMidpointFillModel_ZeroParticipation_FilledEntirely_BackwardCompatible()
+    {
+        // maxParticipationRate = 0 (default) → unconstrained; always fills entire remaining quantity.
+        var model = new BarMidpointFillModel(new FixedCommissionModel(0m), slippageBasisPoints: 0m);
+
+        var order = new Order(Guid.NewGuid(), "SPY", OrderType.Market, 500L, null, null, DateTimeOffset.UtcNow);
+        var evt = MarketEvent.HistoricalBar(DateTimeOffset.UtcNow, "SPY", new HistoricalBar(
+            "SPY", DateOnly.FromDateTime(DateTime.Today), 400m, 410m, 395m, 405m, 1_000L, "test"));
+
+        var result = model.TryFill(order, evt);
+
+        result.Fills.Should().HaveCount(1);
+        result.Fills[0].FilledQuantity.Should().Be(500L);
+        result.UpdatedOrder.Status.Should().Be(OrderStatus.Filled);
+        result.RemoveOrder.Should().BeTrue();
+    }
+
+    [Fact]
+    public void BarMidpointFillModel_VolumeConstrained_ZeroBarVolume_NoFill()
+    {
+        // Bar with zero volume → cap calculation produces 0 fillable shares → no fill.
+        var model = new BarMidpointFillModel(
+            new FixedCommissionModel(0m),
+            slippageBasisPoints: 0m,
+            maxParticipationRate: 0.10m);
+
+        var order = new Order(Guid.NewGuid(), "SPY", OrderType.Market, 100L, null, null, DateTimeOffset.UtcNow,
+            AllowPartialFills: true);
+        var evt = MarketEvent.HistoricalBar(DateTimeOffset.UtcNow, "SPY", new HistoricalBar(
+            "SPY", DateOnly.FromDateTime(DateTime.Today), 400m, 410m, 395m, 405m, 0L, "test"));
+
+        var result = model.TryFill(order, evt);
+
+        result.Fills.Should().BeEmpty("zero-volume bar should produce no fill even with partial fills allowed");
+        result.RemoveOrder.Should().BeFalse();
+    }
 }

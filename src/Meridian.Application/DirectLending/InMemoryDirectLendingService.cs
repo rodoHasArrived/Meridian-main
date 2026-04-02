@@ -525,6 +525,221 @@ public sealed partial class InMemoryDirectLendingService : IDirectLendingService
         };
     }
 
+    public Task<LoanPortfolioSummaryDto> GetPortfolioSummaryAsync(CancellationToken ct = default)
+    {
+        lock (_gate)
+        {
+            var summaries = _loans.Values.Select(stored =>
+            {
+                var s = stored.Servicing;
+                var terms = stored.TermsVersions.OrderByDescending(v => v.VersionNumber).First().Terms;
+                return new LoanSummaryDto(
+                    stored.LoanId,
+                    stored.FacilityName,
+                    stored.Borrower.BorrowerId,
+                    stored.Borrower.BorrowerName,
+                    stored.Status,
+                    terms.BaseCurrency,
+                    terms.CommitmentAmount,
+                    s.Balances.PrincipalOutstanding,
+                    s.Balances.InterestAccruedUnpaid,
+                    s.Balances.PenaltyAccruedUnpaid,
+                    s.AvailableToDraw,
+                    terms.OriginationDate,
+                    terms.MaturityDate,
+                    s.LastAccrualDate,
+                    s.LastPaymentDate);
+            }).ToList();
+
+            var totalCollateral = _loans.Values.Sum(s =>
+                s.Servicing.Collateral?.Sum(c => c.EstimatedValue) ?? 0m);
+
+            var result = new LoanPortfolioSummaryDto(
+                summaries.Count,
+                summaries.Count(s => s.Status == LoanStatus.Active),
+                summaries.Count(s => s.Status == LoanStatus.Defaulted),
+                summaries.Count(s => s.Status == LoanStatus.NonPerforming),
+                summaries.Count(s => s.Status == LoanStatus.Workout),
+                summaries.Sum(s => s.CommitmentAmount),
+                summaries.Sum(s => s.PrincipalOutstanding),
+                summaries.Sum(s => s.InterestAccruedUnpaid),
+                summaries.Sum(s => s.PenaltyAccruedUnpaid),
+                summaries.Sum(s => s.AvailableToDraw),
+                totalCollateral,
+                summaries);
+
+            return Task.FromResult(result);
+        }
+    }
+
+    public Task<LoanServicingStateDto?> AddCollateralAsync(Guid loanId, AddCollateralRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
+    {
+        lock (_gate)
+        {
+            if (!_loans.TryGetValue(loanId, out var stored))
+                return Task.FromResult<LoanServicingStateDto?>(null);
+
+            var collateral = new CollateralDto(
+                Guid.NewGuid(),
+                request.CollateralType,
+                request.Description,
+                request.EstimatedValue,
+                request.Currency,
+                request.AppraisalDate);
+
+            var existing = stored.Servicing.Collateral ?? new List<CollateralDto>();
+            var updated = new List<CollateralDto>(existing) { collateral };
+            stored.Servicing = stored.Servicing with { Collateral = updated };
+            AppendEvent(stored, "CollateralAdded", request.AppraisalDate, collateral, metadata);
+            AppendRevision(stored, "CollateralAdded", request.AppraisalDate, $"Added collateral {collateral.CollateralId}");
+            return Task.FromResult<LoanServicingStateDto?>(ToServicingState(stored));
+        }
+    }
+
+    public Task<LoanServicingStateDto?> RemoveCollateralAsync(Guid loanId, RemoveCollateralRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
+    {
+        lock (_gate)
+        {
+            if (!_loans.TryGetValue(loanId, out var stored))
+                return Task.FromResult<LoanServicingStateDto?>(null);
+
+            var existing = stored.Servicing.Collateral;
+            if (existing is null)
+                return Task.FromResult<LoanServicingStateDto?>(ToServicingState(stored));
+
+            var updated = existing.Where(c => c.CollateralId != request.CollateralId).ToList();
+            stored.Servicing = stored.Servicing with { Collateral = updated };
+            AppendEvent(stored, "CollateralRemoved", DateOnly.FromDateTime(DateTime.UtcNow), request, metadata);
+            AppendRevision(stored, "CollateralRemoved", DateOnly.FromDateTime(DateTime.UtcNow), request.Reason);
+            return Task.FromResult<LoanServicingStateDto?>(ToServicingState(stored));
+        }
+    }
+
+    public Task<LoanServicingStateDto?> UpdateCollateralValueAsync(Guid loanId, UpdateCollateralValueRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
+    {
+        lock (_gate)
+        {
+            if (!_loans.TryGetValue(loanId, out var stored))
+                return Task.FromResult<LoanServicingStateDto?>(null);
+
+            var existing = stored.Servicing.Collateral;
+            if (existing is null)
+                return Task.FromResult<LoanServicingStateDto?>(ToServicingState(stored));
+
+            var updated = existing.Select(c =>
+                c.CollateralId == request.CollateralId
+                    ? c with { EstimatedValue = request.NewEstimatedValue, AppraisalDate = request.NewAppraisalDate }
+                    : c).ToList();
+
+            stored.Servicing = stored.Servicing with { Collateral = updated };
+            AppendEvent(stored, "CollateralValueUpdated", request.NewAppraisalDate, request, metadata);
+            AppendRevision(stored, "CollateralValueUpdated", request.NewAppraisalDate, $"Revalued collateral {request.CollateralId}");
+            return Task.FromResult<LoanServicingStateDto?>(ToServicingState(stored));
+        }
+    }
+
+    public Task<IReadOnlyList<CollateralDto>> GetCollateralAsync(Guid loanId, CancellationToken ct = default)
+    {
+        lock (_gate)
+        {
+            if (!_loans.TryGetValue(loanId, out var stored))
+                return Task.FromResult<IReadOnlyList<CollateralDto>>(Array.Empty<CollateralDto>());
+
+            return Task.FromResult<IReadOnlyList<CollateralDto>>(
+                stored.Servicing.Collateral?.ToArray() ?? Array.Empty<CollateralDto>());
+        }
+    }
+
+    public Task<LoanServicingStateDto?> TransitionLoanStatusAsync(Guid loanId, TransitionLoanStatusRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
+    {
+        lock (_gate)
+        {
+            if (!_loans.TryGetValue(loanId, out var stored))
+                return Task.FromResult<LoanServicingStateDto?>(null);
+
+            stored.Status = request.NewStatus;
+            stored.Servicing = stored.Servicing with { Status = request.NewStatus };
+            AppendEvent(stored, "LoanStatusTransitioned", request.EffectiveDate, request, metadata);
+            AppendRevision(stored, "StatusTransition", request.EffectiveDate, request.Reason);
+            return Task.FromResult<LoanServicingStateDto?>(ToServicingState(stored));
+        }
+    }
+
+    public Task<LoanServicingStateDto?> TogglePikAsync(Guid loanId, TogglePikRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
+    {
+        lock (_gate)
+        {
+            if (!_loans.TryGetValue(loanId, out var stored))
+                return Task.FromResult<LoanServicingStateDto?>(null);
+
+            stored.Servicing = stored.Servicing with { IsPikToggled = request.EnablePik };
+            AppendEvent(stored, "PikToggled", request.EffectiveDate, request, metadata);
+            AppendRevision(stored, "PikToggle", request.EffectiveDate, request.Reason ?? (request.EnablePik ? "PIK enabled" : "PIK disabled"));
+            return Task.FromResult<LoanServicingStateDto?>(ToServicingState(stored));
+        }
+    }
+
+    public Task<LoanContractDetailDto?> RestructureLoanAsync(Guid loanId, RestructureLoanRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
+    {
+        lock (_gate)
+        {
+            if (!_loans.TryGetValue(loanId, out var stored))
+                return Task.FromResult<LoanContractDetailDto?>(null);
+
+            if (request.NewTerms is not null)
+            {
+                var next = stored.TermsVersions.Max(v => v.VersionNumber) + 1;
+                var hash = Guid.NewGuid().ToString("N")[..8];
+                stored.TermsVersions.Add(new LoanTermsVersionDto(next, hash, request.NewTerms, "Restructuring", request.Reason, DateTimeOffset.UtcNow));
+            }
+
+            if (request.HaircutAmount.HasValue)
+            {
+                var balances = stored.Servicing.Balances;
+                var newPrincipal = Math.Max(0m, balances.PrincipalOutstanding - request.HaircutAmount.Value);
+                stored.Servicing = stored.Servicing with
+                {
+                    Balances = balances with { PrincipalOutstanding = newPrincipal }
+                };
+            }
+
+            stored.Status = LoanStatus.Workout;
+            stored.Servicing = stored.Servicing with { Status = LoanStatus.Workout };
+            AppendEvent(stored, "LoanRestructured", request.EffectiveDate, request, metadata);
+            AppendRevision(stored, "Restructuring", request.EffectiveDate, request.Reason);
+            return Task.FromResult<LoanContractDetailDto?>(ToContractDetail(stored));
+        }
+    }
+
+    public Task<LoanServicingStateDto?> AmortizeDiscountPremiumAsync(Guid loanId, AmortizeDiscountPremiumRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
+    {
+        lock (_gate)
+        {
+            if (!_loans.TryGetValue(loanId, out var stored))
+                return Task.FromResult<LoanServicingStateDto?>(null);
+
+            var terms = stored.TermsVersions.OrderByDescending(v => v.VersionNumber).First().Terms;
+            var remaining = (terms.MaturityDate.DayNumber - request.AccrualDate.DayNumber);
+            if (remaining <= 0)
+                return Task.FromResult<LoanServicingStateDto?>(ToServicingState(stored));
+
+            var discountAmort = Meridian.FSharp.DirectLendingInterop.DirectLendingInterop.CalculateStraightLineAmortization(
+                stored.Servicing.UnamortizedDiscount, remaining);
+            var premiumAmort = Meridian.FSharp.DirectLendingInterop.DirectLendingInterop.CalculateStraightLineAmortization(
+                stored.Servicing.UnamortizedPremium, remaining);
+
+            stored.Servicing = stored.Servicing with
+            {
+                UnamortizedDiscount = Math.Max(0m, stored.Servicing.UnamortizedDiscount - discountAmort),
+                UnamortizedPremium = Math.Max(0m, stored.Servicing.UnamortizedPremium - premiumAmort)
+            };
+
+            AppendEvent(stored, "DiscountPremiumAmortized", request.AccrualDate, new { discountAmort, premiumAmort }, metadata);
+            AppendRevision(stored, "DiscountPremiumAmortization", request.AccrualDate, $"Amortized discount={discountAmort:F4} premium={premiumAmort:F4}");
+            return Task.FromResult<LoanServicingStateDto?>(ToServicingState(stored));
+        }
+    }
+
     private static void EnsureActive(StoredLoan stored)
     {
         if (stored.Status != LoanStatus.Active)
@@ -622,7 +837,11 @@ public sealed partial class InMemoryDirectLendingService : IDirectLendingService
             servicing.LastPaymentDate,
             servicing.ServicingRevision,
             servicing.RevisionHistory.OrderByDescending(static item => item.RevisionNumber).ToArray(),
-            servicing.AccrualEntries.OrderByDescending(static item => item.AccrualDate).ToArray());
+            servicing.AccrualEntries.OrderByDescending(static item => item.AccrualDate).ToArray(),
+            servicing.Collateral?.AsReadOnly(),
+            servicing.UnamortizedDiscount,
+            servicing.UnamortizedPremium,
+            servicing.IsPikToggled);
     }
 
     private static System.Nullable<decimal> ToNullable(decimal? value) =>
@@ -691,5 +910,9 @@ public sealed partial class InMemoryDirectLendingService : IDirectLendingService
         DateOnly? LastPaymentDate,
         long ServicingRevision,
         List<ServicingRevisionDto> RevisionHistory,
-        List<DailyAccrualEntryDto> AccrualEntries);
+        List<DailyAccrualEntryDto> AccrualEntries,
+        List<CollateralDto>? Collateral = null,
+        decimal UnamortizedDiscount = 0m,
+        decimal UnamortizedPremium = 0m,
+        bool IsPikToggled = false);
 }

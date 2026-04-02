@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using Meridian.Contracts.Api;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Models;
@@ -20,6 +21,8 @@ namespace Meridian.Ui.Shared.Endpoints;
 public static class WorkstationEndpoints
 {
     private const int SecurityCoveragePreviewLimit = 5;
+    private static readonly object BreakQueueSync = new();
+    private static readonly Dictionary<string, ReconciliationBreakQueueItem> BreakQueue = new(StringComparer.OrdinalIgnoreCase);
 
     public static void MapWorkstationEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
@@ -131,6 +134,49 @@ public static class WorkstationEndpoints
         })
         .WithName("GetRunReconciliationHistory")
         .Produces<IReadOnlyList<ReconciliationRunSummary>>(200)
+        .Produces(404);
+
+        group.MapGet("/reconciliation/break-queue", (string? status) =>
+        {
+            var items = GetBreakQueueItems(status);
+            return Results.Json(items, jsonOptions);
+        })
+        .WithName("GetReconciliationBreakQueue")
+        .Produces<IReadOnlyList<ReconciliationBreakQueueItem>>(200);
+
+        group.MapPost("/reconciliation/break-queue/{breakId}/review", (string breakId, ReviewReconciliationBreakRequest request) =>
+        {
+            if (!string.Equals(request.BreakId, breakId, StringComparison.OrdinalIgnoreCase))
+            {
+                return Results.BadRequest(new { error = "BreakId in body must match route parameter." });
+            }
+
+            var updated = ReviewBreak(request);
+            return updated is null ? Results.NotFound() : Results.Json(updated, jsonOptions);
+        })
+        .WithName("ReviewReconciliationBreak")
+        .Produces<ReconciliationBreakQueueItem>(200)
+        .Produces(400)
+        .Produces(404);
+
+        group.MapPost("/reconciliation/break-queue/{breakId}/resolve", (string breakId, ResolveReconciliationBreakRequest request) =>
+        {
+            if (!string.Equals(request.BreakId, breakId, StringComparison.OrdinalIgnoreCase))
+            {
+                return Results.BadRequest(new { error = "BreakId in body must match route parameter." });
+            }
+
+            if (request.Status is not ReconciliationBreakQueueStatus.Resolved and not ReconciliationBreakQueueStatus.Dismissed)
+            {
+                return Results.BadRequest(new { error = "Status must be Resolved or Dismissed for resolve action." });
+            }
+
+            var updated = ResolveBreak(request);
+            return updated is null ? Results.NotFound() : Results.Json(updated, jsonOptions);
+        })
+        .WithName("ResolveReconciliationBreak")
+        .Produces<ReconciliationBreakQueueItem>(200)
+        .Produces(400)
         .Produces(404);
 
         group.MapGet("/runs/{runId}/ledger", async (string runId, HttpContext context) =>
@@ -406,6 +452,16 @@ public static class WorkstationEndpoints
             }
 
             var comparison = await readService.CompareRunsAsync(request.RunIds, context.RequestAborted).ConfigureAwait(false);
+            if (request.Modes is { Count: > 0 })
+            {
+                var parsedModes = ParseModes(request.Modes);
+                if (parsedModes is { Count: > 0 })
+                {
+                    var modeFilter = new HashSet<StrategyRunMode>(parsedModes);
+                    comparison = comparison.Where(row => modeFilter.Contains(row.Mode)).ToArray();
+                }
+            }
+
             return Results.Json(comparison, jsonOptions);
         })
         .WithName("CompareRuns")
@@ -459,7 +515,96 @@ public static class WorkstationEndpoints
         .WithTags("Strategies")
         .Produces<IReadOnlyList<StrategyRunSummary>>(200);
 
+        group.MapGet("/runs/history", async (
+            string? mode,
+            StrategyRunStatus? status,
+            string? strategyId,
+            int? limit,
+            HttpContext context) =>
+        {
+            var readService = context.RequestServices.GetService<StrategyRunReadService>();
+            if (readService is null)
+            {
+                return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var modes = ParseModes(mode);
+            var runs = await readService.GetRunsAsync(
+                    new StrategyRunHistoryQuery(
+                        Modes: modes,
+                        Status: status,
+                        StrategyId: strategyId,
+                        Limit: Math.Clamp(limit ?? 50, 1, 500)),
+                    context.RequestAborted)
+                .ConfigureAwait(false);
+            return Results.Json(runs, jsonOptions);
+        })
+        .WithName("GetWorkstationRunHistory")
+        .Produces<IReadOnlyList<StrategyRunSummary>>(200)
+        .Produces(501);
+
+        group.MapGet("/runs/timeline", async (
+            string? mode,
+            StrategyRunStatus? status,
+            string? strategyId,
+            int? limit,
+            HttpContext context) =>
+        {
+            var readService = context.RequestServices.GetService<StrategyRunReadService>();
+            if (readService is null)
+            {
+                return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var modes = ParseModes(mode);
+            var timeline = await readService.GetMergedTimelineAsync(
+                    new StrategyRunHistoryQuery(
+                        Modes: modes,
+                        Status: status,
+                        StrategyId: strategyId,
+                        Limit: Math.Clamp(limit ?? 100, 1, 500)),
+                    context.RequestAborted)
+                .ConfigureAwait(false);
+            return Results.Json(timeline, jsonOptions);
+        })
+        .WithName("GetWorkstationMergedRunTimeline")
+        .Produces<IReadOnlyList<StrategyRunTimelineEntry>>(200)
+        .Produces(501);
+
+        app.MapGet("/api/strategies/runs/compare", async (string? ids, HttpContext context) =>
+        {
+            var readService = context.RequestServices.GetService<StrategyRunReadService>();
+            if (readService is null)
+            {
+                return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            if (string.IsNullOrWhiteSpace(ids))
+            {
+                return Results.BadRequest(new { error = "At least two run IDs are required. Use ?ids=a,b" });
+            }
+
+            var runIds = ids
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .ToArray();
+
+            if (runIds.Length < 2)
+            {
+                return Results.BadRequest(new { error = "At least two run IDs are required for comparison." });
+            }
+
+            var comparison = await readService.GetRunComparisonDtosAsync(runIds, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(comparison, jsonOptions);
+        })
+        .WithName("CompareStrategyRuns")
+        .WithTags("Strategies")
+        .Produces<IReadOnlyList<RunComparisonDto>>(200)
+        .Produces(400)
+        .Produces(501);
+
         // --- Portfolio cash-flow projections ---
+
+
         var portfolioGroup = app.MapGroup("/api/portfolio").WithTags("Portfolio");
 
         portfolioGroup.MapGet("/{runId}/cash-flows", async (
@@ -494,10 +639,32 @@ public static class WorkstationEndpoints
             .ExcludeFromDescription();
 
         app.MapGet("/workstation/{*path}", (string? path, IWebHostEnvironment environment) =>
-            string.IsNullOrWhiteSpace(path) || !Path.HasExtension(path)
-                ? ServeWorkstationIndex(environment)
-                : Results.NotFound())
-            .ExcludeFromDescription();
+        {
+            if (string.IsNullOrWhiteSpace(path) || !Path.HasExtension(path))
+                return ServeWorkstationIndex(environment);
+
+            // Serve static assets (JS, CSS, etc.) directly from wwwroot/workstation/.
+            // UseStaticFiles() middleware runs after routing in WebApplication, so the
+            // catch-all route must serve these files explicitly.
+            var root = environment.WebRootPath ?? Path.Combine(environment.ContentRootPath, "wwwroot");
+            var filePath = Path.Combine(root, "workstation", path.Replace('/', Path.DirectorySeparatorChar));
+            if (!File.Exists(filePath))
+                return Results.NotFound();
+
+            var ext = Path.GetExtension(filePath).ToLowerInvariant();
+            var contentType = ext switch
+            {
+                ".js"   => "application/javascript",
+                ".css"  => "text/css",
+                ".png"  => "image/png",
+                ".svg"  => "image/svg+xml",
+                ".ico"  => "image/x-icon",
+                ".woff" => "font/woff",
+                ".woff2" => "font/woff2",
+                _       => "application/octet-stream"
+            };
+            return Results.File(filePath, contentType);
+        }).ExcludeFromDescription();
     }
 
     private static StrategyRunDiff BuildRunDiff(StrategyRunDetail baseRun, StrategyRunDetail targetRun)
@@ -672,6 +839,8 @@ public static class WorkstationEndpoints
             runs = runs
                 .Zip(runDetails, static (run, detail) => BuildResearchRunCard(run, detail))
                 .ToArray(),
+            comparisons = BuildModeComparisons(runs),
+            timeline = runs.Select(BuildTimelineCard).ToArray(),
             workspace = new
             {
                 totalRuns = runs.Length,
@@ -898,7 +1067,9 @@ public static class WorkstationEndpoints
                 notes = portfolio is not null
                     ? "Live execution state from PaperTradingPortfolio and OrderManagementSystem."
                     : "Paper gateway not active. Start a paper session to see live position and order data."
-            }
+            },
+            comparisons = run is null ? Array.Empty<object>() : BuildModeComparisons([run]),
+            drillIn = run is null ? null : BuildRunDrillInLinks(run)
         };
     }
 
@@ -1090,6 +1261,7 @@ public static class WorkstationEndpoints
                     new { id = "audit-ready", label = "Audit Ready", value = "0", tone = "default" }
                 },
                 reconciliationQueue = Array.Empty<object>(),
+                breakQueue = Array.Empty<ReconciliationBreakQueueItem>(),
                 workspace = new
                 {
                     totalRuns = 0,
@@ -1111,6 +1283,7 @@ public static class WorkstationEndpoints
 
         var details = await Task.WhenAll(detailTasks).ConfigureAwait(false);
         var reconciliations = await Task.WhenAll(reconciliationTasks).ConfigureAwait(false);
+        SeedBreakQueue(runs, reconciliations);
 
         var openBreaks = reconciliations.Sum(static detail => detail?.Summary.OpenBreakCount ?? 0);
         var timingDriftRuns = reconciliations.Count(static detail => detail?.Summary.HasTimingDrift == true);
@@ -1133,6 +1306,7 @@ public static class WorkstationEndpoints
                 .Zip(details, static (run, detail) => (run, detail))
                 .Zip(reconciliations, static (pair, reconciliation) => BuildGovernanceRunCard(pair.run, pair.detail, reconciliation))
                 .ToArray(),
+            breakQueue = GetBreakQueueItems(status: null),
             workspace = new
             {
                 totalRuns = allRuns.Length,
@@ -1230,6 +1404,34 @@ public static class WorkstationEndpoints
                     }
                 }
             },
+            breakQueue = new[]
+            {
+                new ReconciliationBreakQueueItem(
+                    BreakId: "BRK-gov-run-001-1",
+                    RunId: "gov-run-001",
+                    StrategyName: "Global Macro Overlay",
+                    Category: ReconciliationBreakCategory.AmountMismatch,
+                    Status: ReconciliationBreakQueueStatus.Open,
+                    Variance: 2500m,
+                    Reason: "Cash variance exceeds configured tolerance.",
+                    AssignedTo: null,
+                    DetectedAt: DateTimeOffset.UtcNow.AddMinutes(-18),
+                    LastUpdatedAt: DateTimeOffset.UtcNow.AddMinutes(-18)),
+                new ReconciliationBreakQueueItem(
+                    BreakId: "BRK-gov-run-001-2",
+                    RunId: "gov-run-001",
+                    StrategyName: "Global Macro Overlay",
+                    Category: ReconciliationBreakCategory.ClassificationGap,
+                    Status: ReconciliationBreakQueueStatus.InReview,
+                    Variance: 0m,
+                    Reason: "Security Master coverage is missing for XYZ.",
+                    AssignedTo: "ops.gov",
+                    DetectedAt: DateTimeOffset.UtcNow.AddMinutes(-16),
+                    LastUpdatedAt: DateTimeOffset.UtcNow.AddMinutes(-8),
+                    ReviewedBy: "ops.gov",
+                    ReviewedAt: DateTimeOffset.UtcNow.AddMinutes(-8),
+                    ResolutionNote: "Investigating ticker reclassification.")
+            },
             workspace = new
             {
                 totalRuns = 12,
@@ -1289,8 +1491,94 @@ public static class WorkstationEndpoints
             netPnl = run.NetPnl,
             totalReturn = run.TotalReturn,
             finalEquity = run.FinalEquity,
-            securityCoverage = BuildSecurityCoverage(detail)
+            securityCoverage = BuildSecurityCoverage(detail),
+            drillIn = BuildRunDrillInLinks(run)
         };
+    }
+
+    private static object BuildTimelineCard(StrategyRunSummary run) => new
+    {
+        runId = run.RunId,
+        strategyName = run.StrategyName,
+        mode = run.Mode.ToString().ToLowerInvariant(),
+        status = run.Status.ToString(),
+        startedAt = run.StartedAt,
+        completedAt = run.CompletedAt,
+        lastUpdatedAt = run.LastUpdatedAt,
+        totalReturn = run.TotalReturn
+    };
+
+    private static object[] BuildModeComparisons(IReadOnlyList<StrategyRunSummary> runs)
+    {
+        return runs
+            .GroupBy(static run => run.StrategyName, StringComparer.OrdinalIgnoreCase)
+            .Select(group => new
+            {
+                strategyName = group.Key,
+                modes = group
+                    .OrderBy(static run => run.Mode)
+                    .Select(static run => new
+                    {
+                        runId = run.RunId,
+                        mode = run.Mode.ToString().ToLowerInvariant(),
+                        status = run.Status.ToString(),
+                        netPnl = run.NetPnl,
+                        totalReturn = run.TotalReturn,
+                        drillIn = BuildRunDrillInLinks(run)
+                    })
+                    .ToArray()
+            })
+            .Where(static comparison => comparison.modes.Length > 0)
+            .ToArray<object>();
+    }
+
+    private static object BuildRunDrillInLinks(StrategyRunSummary run) => new
+    {
+        equityCurve = $"/api/workstation/runs/{run.RunId}/equity-curve",
+        fills = $"/api/workstation/runs/{run.RunId}/fills",
+        attribution = $"/api/workstation/runs/{run.RunId}/attribution",
+        ledger = string.IsNullOrWhiteSpace(run.LedgerReference) ? null : $"/api/workstation/runs/{run.RunId}/ledger",
+        cashFlows = $"/api/portfolio/{run.RunId}/cash-flows",
+        comparison = "/api/workstation/runs/compare"
+    };
+
+    private static IReadOnlyList<StrategyRunMode>? ParseModes(string? mode)
+    {
+        if (string.IsNullOrWhiteSpace(mode))
+        {
+            return null;
+        }
+
+        var parsed = mode
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(static token => Enum.TryParse<StrategyRunMode>(token, true, out var modeValue)
+                ? (StrategyRunMode?)modeValue
+                : null)
+            .Where(static item => item.HasValue)
+            .Select(static item => item!.Value)
+            .Distinct()
+            .ToArray();
+
+        return parsed.Length == 0 ? null : parsed;
+    }
+
+    private static IReadOnlyList<StrategyRunMode>? ParseModes(IReadOnlyList<string>? modes)
+    {
+        if (modes is not { Count: > 0 })
+        {
+            return null;
+        }
+
+        var parsed = modes
+            .Select(static token => Enum.TryParse<StrategyRunMode>(token, true, out var modeValue)
+                ? (StrategyRunMode?)modeValue
+                : null)
+            .Where(static item => item.HasValue)
+            .Select(static item => item!.Value)
+            .Distinct()
+            .ToArray();
+
+        return parsed.Length == 0 ? null : parsed;
     }
 
     private static object BuildGovernanceRunCard(
@@ -1828,6 +2116,110 @@ public static class WorkstationEndpoints
         _ => null
     };
 
+    private static void SeedBreakQueue(
+        IReadOnlyList<StrategyRunSummary> runs,
+        IReadOnlyList<ReconciliationRunDetail?> reconciliations)
+    {
+        lock (BreakQueueSync)
+        {
+            for (var i = 0; i < runs.Count; i++)
+            {
+                var run = runs[i];
+                var reconciliation = i < reconciliations.Count ? reconciliations[i] : null;
+                if (reconciliation is null)
+                {
+                    continue;
+                }
+
+                foreach (var reconciliationBreak in reconciliation.Breaks)
+                {
+                    var breakId = $"{run.RunId}:{reconciliationBreak.CheckId}";
+                    if (BreakQueue.ContainsKey(breakId))
+                    {
+                        continue;
+                    }
+
+                    BreakQueue[breakId] = new ReconciliationBreakQueueItem(
+                        BreakId: breakId,
+                        RunId: run.RunId,
+                        StrategyName: run.StrategyName,
+                        Category: reconciliationBreak.Category,
+                        Status: ReconciliationBreakQueueStatus.Open,
+                        Variance: Math.Abs(reconciliationBreak.Variance),
+                        Reason: reconciliationBreak.Reason,
+                        AssignedTo: null,
+                        DetectedAt: DateTimeOffset.UtcNow,
+                        LastUpdatedAt: DateTimeOffset.UtcNow);
+                }
+            }
+        }
+    }
+
+    private static IReadOnlyList<ReconciliationBreakQueueItem> GetBreakQueueItems(string? status)
+    {
+        lock (BreakQueueSync)
+        {
+            IEnumerable<ReconciliationBreakQueueItem> items = BreakQueue.Values;
+            if (Enum.TryParse<ReconciliationBreakQueueStatus>(status, ignoreCase: true, out var parsed))
+            {
+                items = items.Where(item => item.Status == parsed);
+            }
+
+            return items
+                .OrderByDescending(item => item.LastUpdatedAt)
+                .ToArray();
+        }
+    }
+
+    private static ReconciliationBreakQueueItem? ReviewBreak(ReviewReconciliationBreakRequest request)
+    {
+        lock (BreakQueueSync)
+        {
+            if (!BreakQueue.TryGetValue(request.BreakId, out var item))
+            {
+                return null;
+            }
+
+            var now = DateTimeOffset.UtcNow;
+            var updated = item with
+            {
+                Status = ReconciliationBreakQueueStatus.InReview,
+                AssignedTo = request.AssignedTo,
+                ReviewedBy = request.ReviewedBy,
+                ReviewedAt = now,
+                ResolutionNote = request.ReviewNote,
+                LastUpdatedAt = now
+            };
+
+            BreakQueue[request.BreakId] = updated;
+            return updated;
+        }
+    }
+
+    private static ReconciliationBreakQueueItem? ResolveBreak(ResolveReconciliationBreakRequest request)
+    {
+        lock (BreakQueueSync)
+        {
+            if (!BreakQueue.TryGetValue(request.BreakId, out var item))
+            {
+                return null;
+            }
+
+            var now = DateTimeOffset.UtcNow;
+            var updated = item with
+            {
+                Status = request.Status,
+                ResolvedBy = request.ResolvedBy,
+                ResolvedAt = now,
+                LastUpdatedAt = now,
+                ResolutionNote = request.ResolutionNote
+            };
+
+            BreakQueue[request.BreakId] = updated;
+            return updated;
+        }
+    }
+
     private static IResult ServeWorkstationIndex(IWebHostEnvironment environment)
     {
         var root = environment.WebRootPath ?? Path.Combine(environment.ContentRootPath, "wwwroot");
@@ -1870,7 +2262,9 @@ public static class WorkstationEndpoints
 }
 
 /// <summary>Request to compare multiple strategy runs side by side.</summary>
-public sealed record RunComparisonRequest(IReadOnlyList<string> RunIds);
+public sealed record RunComparisonRequest(
+    IReadOnlyList<string> RunIds,
+    IReadOnlyList<string>? Modes = null);
 
 /// <summary>Request to diff two strategy runs.</summary>
 public sealed record RunDiffRequest(string BaseRunId, string TargetRunId);

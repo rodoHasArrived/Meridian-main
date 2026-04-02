@@ -59,7 +59,7 @@
 
                         <WrapPanel>
                             <Button Style="{StaticResource GhostButtonStyle}"
-                                    Click="AddProvider_Click"
+                                    Command="{Binding AddProviderCommand}"
                                     Margin="0,0,8,8"
                                     Padding="16,10">
                                 <StackPanel Orientation="Horizontal">
@@ -70,7 +70,7 @@
                                 </StackPanel>
                             </Button>
                             <Button Style="{StaticResource GhostButtonStyle}"
-                                    Click="ConfigureStorage_Click"
+                                    Command="{Binding ConfigureStorageCommand}"
                                     Margin="0,0,8,8"
                                     Padding="16,10">
                                 <StackPanel Orientation="Horizontal">
@@ -81,7 +81,7 @@
                                 </StackPanel>
                             </Button>
                             <Button Style="{StaticResource GhostButtonStyle}"
-                                    Click="ManageCredentials_Click"
+                                    Command="{Binding ManageCredentialsCommand}"
                                     Margin="0,0,8,8"
                                     Padding="16,10">
                                 <StackPanel Orientation="Horizontal">
@@ -92,7 +92,7 @@
                                 </StackPanel>
                             </Button>
                             <Button Style="{StaticResource GhostButtonStyle}"
-                                    Click="RunSetupWizard_Click"
+                                    Command="{Binding RunSetupWizardCommand}"
                                     Margin="0,0,8,8"
                                     Padding="16,10">
                                 <StackPanel Orientation="Horizontal">
@@ -126,6 +126,7 @@
                                    Margin="0,0,0,12" />
 
                         <ListView x:Name="CredentialVaultList"
+                                  ItemsSource="{Binding CredentialVaultItems}"
                                   Background="Transparent"
                                   BorderThickness="0"
                                   MaxHeight="350">
@@ -158,8 +159,8 @@
                                             <Button Grid.Column="2"
                                                     Content="Configure"
                                                     Style="{StaticResource GhostButtonStyle}"
+                                                    Command="{Binding DataContext.ConfigureProviderCredentialCommand, RelativeSource={RelativeSource AncestorType=Page}}"
                                                     Tag="{Binding ProviderId}"
-                                                    Click="ConfigureProviderCredential_Click"
                                                     Visibility="{Binding ConfigureVisibility}" />
                                         </Grid>
                                     </Border>
@@ -223,12 +224,12 @@
                                        FontFamily="Cascadia Code, Consolas, monospace"
                                        FontSize="12"
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                       Text="data/&#10;  ├── SPY/&#10;  │   ├── trades/&#10;  │   │   └── 2026-03-03.jsonl.gz&#10;  │   └── quotes/&#10;  │       └── 2026-03-03.jsonl.gz&#10;  └── AAPL/&#10;      ├── trades/&#10;      │   └── 2026-03-03.jsonl.gz&#10;      └── quotes/&#10;          └── 2026-03-03.jsonl.gz"
+                                       Text="{Binding StoragePreviewText}"
                                        TextWrapping="NoWrap" />
                         </Border>
 
                         <TextBlock x:Name="StorageSizeEstimateText"
-                                   Text="Estimated daily size: ~14 MB for 2 symbols"
+                                   Text="{Binding StorageSizeEstimateText}"
                                    Foreground="{StaticResource ConsoleTextMutedBrush}"
                                    FontSize="12" Margin="0,8,0,0" />
                     </StackPanel>
@@ -253,7 +254,7 @@
                                    TextWrapping="Wrap"
                                    Margin="0,0,0,12" />
 
-                        <ItemsControl x:Name="ProfilesList">
+                        <ItemsControl x:Name="ProfilesList" ItemsSource="{Binding Profiles}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <UniformGrid Columns="3" />
@@ -262,7 +263,8 @@
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <Button Margin="0,0,8,8"
-                                            Click="ProfileCard_Click"
+                                            Command="{Binding DataContext.SelectProfileCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                            CommandParameter="{Binding Id}"
                                             Tag="{Binding Id}"
                                             HorizontalContentAlignment="Stretch">
                                         <Button.Style>
@@ -294,6 +296,7 @@
                             <TextBlock Text="App Theme" Style="{StaticResource FormLabelStyle}" Margin="0,0,0,4" />
                             <ComboBox x:Name="ThemeCombo"
                                       Style="{StaticResource FormComboBoxStyle}"
+                                      SelectedIndex="{Binding ThemeIndex, Mode=TwoWay}"
                                       SelectionChanged="ThemeCombo_SelectionChanged">
                                 <ComboBoxItem Content="Use system setting" Tag="Default" IsSelected="True" />
                                 <ComboBoxItem Content="Light" Tag="Light" />
@@ -303,7 +306,9 @@
 
                         <StackPanel Margin="0,0,0,12">
                             <TextBlock Text="Accent Color" Style="{StaticResource FormLabelStyle}" Margin="0,0,0,4" />
-                            <ComboBox x:Name="AccentColorCombo" Style="{StaticResource FormComboBoxStyle}">
+                            <ComboBox x:Name="AccentColorCombo"
+                                      Style="{StaticResource FormComboBoxStyle}"
+                                      SelectedIndex="{Binding AccentColorIndex, Mode=TwoWay}">
                                 <ComboBoxItem Content="System default" Tag="System" IsSelected="True" />
                                 <ComboBoxItem Content="Blue" Tag="Blue" />
                                 <ComboBoxItem Content="Green" Tag="Green" />
@@ -314,6 +319,7 @@
 
                         <CheckBox x:Name="CompactModeToggle"
                                   Content="Compact Mode (Reduced padding)"
+                                  IsChecked="{Binding IsCompactMode, Mode=TwoWay}"
                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
                     </StackPanel>
                 </Border>
@@ -334,13 +340,12 @@
 
                         <CheckBox x:Name="NotificationsEnabledToggle"
                                   Content="Enable Windows Notifications"
-                                  IsChecked="True"
+                                  IsChecked="{Binding IsNotificationsEnabled, Mode=TwoWay}"
                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                  Checked="NotificationsEnabled_Changed"
-                                  Unchecked="NotificationsEnabled_Changed"
                                   Margin="0,0,0,16" />
 
-                        <StackPanel x:Name="NotificationSettingsPanel">
+                        <StackPanel x:Name="NotificationSettingsPanel"
+                                    Opacity="{Binding NotificationsPanelOpacity}">
                             <TextBlock Text="Notify me about:"
                                        FontWeight="SemiBold"
                                        Foreground="{StaticResource ConsoleTextPrimaryBrush}"
@@ -369,7 +374,7 @@
 
                         <Button Content="Send Test Notification"
                                 Style="{StaticResource SecondaryButtonStyle}"
-                                Click="SendTestNotification_Click" />
+                                Command="{Binding SendTestNotificationCommand}" />
                     </StackPanel>
                 </Border>
 
@@ -382,14 +387,14 @@
                             <TextBlock Text="Collector API Base URL" Style="{StaticResource FormLabelStyle}" Margin="0,0,0,4" />
                             <TextBox x:Name="ApiBaseUrlBox"
                                      Style="{StaticResource FormTextBoxStyle}"
-                                     Text="http://localhost:8080" />
+                                     Text="{Binding ApiBaseUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                         </StackPanel>
 
                         <StackPanel Margin="0,0,0,12">
                             <TextBlock Text="Status Refresh Interval (seconds)" Style="{StaticResource FormLabelStyle}" Margin="0,0,0,4" />
                             <TextBox x:Name="StatusRefreshIntervalBox"
                                      Style="{StaticResource FormTextBoxStyle}"
-                                     Text="2"
+                                     Text="{Binding StatusRefreshInterval, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      Width="100"
                                      HorizontalAlignment="Left" />
                         </StackPanel>
@@ -397,8 +402,10 @@
                         <StackPanel Orientation="Horizontal">
                             <Button Content="Test Connection"
                                     Style="{StaticResource SecondaryButtonStyle}"
-                                    Click="TestConnection_Click" />
+                                    Command="{Binding TestConnectionCommand}" />
                             <TextBlock x:Name="ConnectionTestResult"
+                                       Text="{Binding ConnectionTestResult}"
+                                       Foreground="{Binding ConnectionTestBrush}"
                                        VerticalAlignment="Center"
                                        Margin="12,0,0,0" />
                         </StackPanel>
@@ -440,6 +447,7 @@
                                    Margin="0,0,0,8" />
 
                         <ListView x:Name="StoredCredentialsList"
+                                  ItemsSource="{Binding StoredCredentials}"
                                   Background="Transparent"
                                   BorderThickness="0"
                                   MaxHeight="300">
@@ -472,12 +480,12 @@
                                             <StackPanel Grid.Column="2" Orientation="Horizontal">
                                                 <Button Content="Test"
                                                         Style="{StaticResource SecondaryButtonStyle}"
-                                                        Tag="{Binding Resource}"
-                                                        Click="TestCredential_Click"
+                                                        Command="{Binding DataContext.TestCredentialCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                                        CommandParameter="{Binding Resource}"
                                                         Margin="0,0,8,0" />
                                                 <Button Style="{StaticResource GhostButtonStyle}"
-                                                        Tag="{Binding Name}"
-                                                        Click="RemoveCredential_Click">
+                                                        Command="{Binding DataContext.RemoveCredentialCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                                        CommandParameter="{Binding Name}">
                                                     <TextBlock Text="{StaticResource IconDelete}"
                                                                FontFamily="{StaticResource SymbolThemeFontFamily}"
                                                                FontSize="14" />
@@ -491,18 +499,18 @@
 
                         <TextBlock x:Name="NoCredentialsText"
                                    Text="No credentials stored."
-                                   Visibility="Collapsed"
+                                   Visibility="{Binding NoCredentialsVisibility}"
                                    Foreground="{StaticResource ConsoleTextMutedBrush}"
                                    Margin="0,8,0,0" />
 
                         <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
                             <Button Content="Test All Credentials"
                                     Style="{StaticResource SecondaryButtonStyle}"
-                                    Click="TestAllCredentials_Click"
+                                    Command="{Binding TestAllCredentialsCommand}"
                                     Margin="0,0,8,0" />
                             <Button Content="Clear All Credentials"
                                     Style="{StaticResource GhostButtonStyle}"
-                                    Click="ClearAllCredentials_Click" />
+                                    Command="{Binding ClearAllCredentialsCommand}" />
                         </StackPanel>
                     </StackPanel>
                 </Border>
@@ -515,6 +523,7 @@
                         <StackPanel Margin="0,0,0,12">
                             <TextBlock Text="Configuration File Path" Style="{StaticResource FormLabelStyle}" Margin="0,0,0,4" />
                             <TextBlock x:Name="ConfigPathText"
+                                       Text="{Binding ConfigPath}"
                                        FontFamily="Cascadia Code, Consolas, monospace"
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                                        TextWrapping="Wrap" />
@@ -523,15 +532,15 @@
                         <StackPanel Orientation="Horizontal">
                             <Button Content="Open in Explorer"
                                     Style="{StaticResource SecondaryButtonStyle}"
-                                    Click="OpenConfigFolder_Click"
+                                    Command="{Binding OpenConfigFolderCommand}"
                                     Margin="0,0,8,0" />
                             <Button Content="Reload Configuration"
                                     Style="{StaticResource SecondaryButtonStyle}"
-                                    Click="ReloadConfig_Click"
+                                    Command="{Binding ReloadConfigCommand}"
                                     Margin="0,0,8,0" />
                             <Button Content="Reset to Defaults"
                                     Style="{StaticResource GhostButtonStyle}"
-                                    Click="ResetToDefaults_Click" />
+                                    Command="{Binding ResetToDefaultsCommand}" />
                         </StackPanel>
                     </StackPanel>
                 </Border>
@@ -551,25 +560,26 @@
                                 <TextBlock Text="Max Concurrent Downloads" Style="{StaticResource FormLabelStyle}" Margin="0,0,0,4" />
                                 <TextBox x:Name="MaxConcurrentDownloadsBox"
                                          Style="{StaticResource FormTextBoxStyle}"
-                                         Text="4" />
+                                         Text="{Binding MaxConcurrentDownloads, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                             </StackPanel>
 
                             <StackPanel Grid.Column="1">
                                 <TextBlock Text="Write Buffer Size (KB)" Style="{StaticResource FormLabelStyle}" Margin="0,0,0,4" />
                                 <TextBox x:Name="WriteBufferSizeBox"
                                          Style="{StaticResource FormTextBoxStyle}"
-                                         Text="64" />
+                                         Text="{Binding WriteBufferSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                             </StackPanel>
                         </Grid>
 
                         <CheckBox x:Name="EnableMetricsToggle"
                                   Content="Enable Performance Metrics"
-                                  IsChecked="True"
+                                  IsChecked="{Binding IsMetricsEnabled, Mode=TwoWay}"
                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
                                   Margin="0,0,0,8" />
 
                         <CheckBox x:Name="EnableDebugLoggingToggle"
                                   Content="Enable Debug Logging (Verbose)"
+                                  IsChecked="{Binding IsDebugLoggingEnabled, Mode=TwoWay}"
                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
                     </StackPanel>
                 </Border>
@@ -594,17 +604,17 @@
                         <StackPanel>
                             <Button Content="Documentation"
                                     Style="{StaticResource GhostButtonStyle}"
-                                    Click="OpenDocumentation_Click"
+                                    Command="{Binding OpenDocumentationCommand}"
                                     HorizontalAlignment="Left"
                                     Margin="0,0,0,4" />
                             <Button Content="Report an Issue"
                                     Style="{StaticResource GhostButtonStyle}"
-                                    Click="OpenIssues_Click"
+                                    Command="{Binding OpenIssuesCommand}"
                                     HorizontalAlignment="Left"
                                     Margin="0,0,0,4" />
                             <Button Content="Check for Updates"
                                     Style="{StaticResource GhostButtonStyle}"
-                                    Click="CheckForUpdates_Click"
+                                    Command="{Binding CheckForUpdatesCommand}"
                                     HorizontalAlignment="Left" />
                         </StackPanel>
                     </StackPanel>
@@ -717,8 +727,8 @@
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="0,4" />
                             <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Margin="0,4">
                                 <Ellipse x:Name="ConfigStatusDot" Width="8" Height="8"
-                                         Fill="{StaticResource SuccessColorBrush}" Margin="0,0,4,0" />
-                                <TextBlock x:Name="ConfigStatusText" Text="Valid"
+                                         Fill="{Binding ConfigStatusDot}" Margin="0,0,4,0" />
+                                <TextBlock x:Name="ConfigStatusText" Text="{Binding ConfigStatusText}"
                                            FontWeight="SemiBold"
                                            Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
                             </StackPanel>
@@ -727,8 +737,8 @@
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="0,4" />
                             <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Margin="0,4">
                                 <Ellipse x:Name="CredentialsStatusDot" Width="8" Height="8"
-                                         Fill="{StaticResource SuccessColorBrush}" Margin="0,0,4,0" />
-                                <TextBlock x:Name="CredentialsStatusText" Text="3 stored"
+                                         Fill="{Binding CredentialsStatusDot}" Margin="0,0,4,0" />
+                                <TextBlock x:Name="CredentialsStatusText" Text="{Binding CredentialsStatusText}"
                                            FontWeight="SemiBold"
                                            Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
                             </StackPanel>
@@ -738,7 +748,7 @@
                             <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" Margin="0,4">
                                 <Ellipse x:Name="LastAuthStatusDot" Width="8" Height="8"
                                          Fill="{StaticResource SuccessColorBrush}" Margin="0,0,4,0" />
-                                <TextBlock x:Name="LastAuthText" Text="Never"
+                                <TextBlock x:Name="LastAuthText" Text="{Binding LastAuthText}"
                                            FontWeight="SemiBold"
                                            Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
                             </StackPanel>
@@ -747,15 +757,15 @@
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="0,4" />
                             <StackPanel Grid.Row="3" Grid.Column="1" Orientation="Horizontal" Margin="0,4">
                                 <Ellipse x:Name="CollectorStatusDot" Width="8" Height="8"
-                                         Fill="{StaticResource SuccessColorBrush}" Margin="0,0,4,0" />
-                                <TextBlock x:Name="CollectorStatusText" Text="Running"
+                                         Fill="{Binding CollectorStatusDot}" Margin="0,0,4,0" />
+                                <TextBlock x:Name="CollectorStatusText" Text="{Binding CollectorStatusText}"
                                            FontWeight="SemiBold"
                                            Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
                             </StackPanel>
 
                             <TextBlock Grid.Row="4" Grid.Column="0" Text="Last Sync"
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="0,4" />
-                            <TextBlock x:Name="LastSyncText" Grid.Row="4" Grid.Column="1" Text="2 min ago"
+                            <TextBlock x:Name="LastSyncText" Grid.Row="4" Grid.Column="1" Text="{Binding LastSyncText}"
                                        FontWeight="SemiBold"
                                        Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,4" />
                         </Grid>
@@ -771,6 +781,7 @@
                                    Margin="0,0,0,12" />
 
                         <ListView x:Name="RecentActivityList"
+                                  ItemsSource="{Binding RecentActivity}"
                                   Background="Transparent"
                                   BorderThickness="0"
                                   MaxHeight="200">

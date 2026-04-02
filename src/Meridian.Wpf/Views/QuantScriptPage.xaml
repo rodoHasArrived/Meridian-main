@@ -5,329 +5,597 @@
       xmlns:scottplot="clr-namespace:ScottPlot.WPF;assembly=ScottPlot.WPF"
       xmlns:models="clr-namespace:Meridian.Wpf.Models"
       xmlns:behaviors="clr-namespace:Meridian.Wpf.Behaviors"
-      xmlns:conv="clr-namespace:Meridian.Wpf.Converters"
       Loaded="OnPageLoaded"
       Unloaded="OnPageUnloaded">
 
   <Page.Resources>
-    <conv:ConsoleEntryKindToBrushConverter x:Key="ConsoleColor"/>
-    <BooleanToVisibilityConverter x:Key="BoolVis"/>
-    <conv:CountToVisibilityConverter x:Key="CountVis"/>
-    <conv:StringToBoolConverter x:Key="StringToBool"/>
+    <BooleanToVisibilityConverter x:Key="BoolVis" />
 
-    <!-- Parameter templates for the sidebar -->
-    <DataTemplate x:Key="NumericParamTemplate" DataType="{x:Type models:ParameterViewModel}">
-      <DockPanel Margin="0,2">
-        <TextBlock DockPanel.Dock="Left" Text="{Binding Name}" Width="90"
-                   VerticalAlignment="Center" Foreground="{StaticResource ForegroundSecondaryBrush}"/>
-        <TextBox Text="{Binding RawValue, UpdateSourceTrigger=PropertyChanged}"
-                 HorizontalAlignment="Stretch"/>
-      </DockPanel>
-    </DataTemplate>
-
-    <DataTemplate x:Key="TextParamTemplate" DataType="{x:Type models:ParameterViewModel}">
-      <DockPanel Margin="0,2">
-        <TextBlock DockPanel.Dock="Left" Text="{Binding Name}" Width="90"
-                   VerticalAlignment="Center" Foreground="{StaticResource ForegroundSecondaryBrush}"/>
-        <TextBox Text="{Binding RawValue, UpdateSourceTrigger=PropertyChanged}"
-                 HorizontalAlignment="Stretch"/>
-      </DockPanel>
-    </DataTemplate>
-
-    <DataTemplate x:Key="BoolParamTemplate" DataType="{x:Type models:ParameterViewModel}">
-      <DockPanel Margin="0,2">
-        <TextBlock DockPanel.Dock="Left" Text="{Binding Name}" Width="90"
-                   VerticalAlignment="Center" Foreground="{StaticResource ForegroundSecondaryBrush}"/>
-        <CheckBox IsChecked="{Binding RawValue, Converter={StaticResource StringToBool}}"
-                  VerticalAlignment="Center"/>
-      </DockPanel>
-    </DataTemplate>
-
-    <behaviors:ParameterTemplateSelector x:Key="ParamSelector"
-        NumericTemplate="{StaticResource NumericParamTemplate}"
-        TextTemplate="{StaticResource TextParamTemplate}"
-        BoolTemplate="{StaticResource BoolParamTemplate}"/>
+    <behaviors:ParameterTemplateSelector x:Key="ParamSelector">
+      <behaviors:ParameterTemplateSelector.NumericTemplate>
+        <DataTemplate DataType="{x:Type models:ParameterViewModel}">
+          <DockPanel Margin="0,3">
+            <TextBlock DockPanel.Dock="Left"
+                       Width="100"
+                       VerticalAlignment="Center"
+                       FontSize="11"
+                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                       Text="{Binding Name}" />
+            <TextBox FontSize="11"
+                     Padding="6,4"
+                     Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                     BorderBrush="{StaticResource ConsoleBorderBrush}"
+                     Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                     Text="{Binding RawValue, UpdateSourceTrigger=PropertyChanged}" />
+          </DockPanel>
+        </DataTemplate>
+      </behaviors:ParameterTemplateSelector.NumericTemplate>
+      <behaviors:ParameterTemplateSelector.TextTemplate>
+        <DataTemplate DataType="{x:Type models:ParameterViewModel}">
+          <DockPanel Margin="0,3">
+            <TextBlock DockPanel.Dock="Left"
+                       Width="100"
+                       VerticalAlignment="Center"
+                       FontSize="11"
+                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                       Text="{Binding Name}" />
+            <TextBox FontSize="11"
+                     Padding="6,4"
+                     Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                     BorderBrush="{StaticResource ConsoleBorderBrush}"
+                     Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                     Text="{Binding RawValue, UpdateSourceTrigger=PropertyChanged}" />
+          </DockPanel>
+        </DataTemplate>
+      </behaviors:ParameterTemplateSelector.TextTemplate>
+      <behaviors:ParameterTemplateSelector.BoolTemplate>
+        <DataTemplate DataType="{x:Type models:ParameterViewModel}">
+          <DockPanel Margin="0,3">
+            <TextBlock DockPanel.Dock="Left"
+                       Width="100"
+                       VerticalAlignment="Center"
+                       FontSize="11"
+                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                       Text="{Binding Name}" />
+            <CheckBox VerticalAlignment="Center"
+                      IsChecked="{Binding RawValue}" />
+          </DockPanel>
+        </DataTemplate>
+      </behaviors:ParameterTemplateSelector.BoolTemplate>
+    </behaviors:ParameterTemplateSelector>
   </Page.Resources>
 
-  <Grid>
-    <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="220" MinWidth="140" x:Name="LeftColumn"/>
-      <ColumnDefinition Width="4"/>
-      <ColumnDefinition Width="*" MinWidth="300"/>
-      <ColumnDefinition Width="4"/>
-      <ColumnDefinition Width="380" MinWidth="240" x:Name="RightColumn"/>
-    </Grid.ColumnDefinitions>
+  <!-- ══════════════════════════════════════════════════════════════════════════
+       Root: two rows — top toolbar strip + vertical-split content area
+       ══════════════════════════════════════════════════════════════════════════ -->
+  <Grid Background="{StaticResource ConsoleBackgroundDarkBrush}">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />   <!-- top toolbar -->
+      <RowDefinition Height="*" />      <!-- chart + editor content -->
+    </Grid.RowDefinitions>
 
-    <!-- ═══════════════════════════════════════════════════════════ LEFT COLUMN -->
-    <DockPanel Grid.Column="0" Margin="4,4,0,4">
+    <!-- ════════════════════════════════════════════════════════════════════════
+         Row 0 — Toolbar: script selector / interval / date range / run controls
+         ════════════════════════════════════════════════════════════════════════ -->
+    <Border Grid.Row="0"
+            Background="{StaticResource ConsoleBackgroundMediumBrush}"
+            BorderBrush="{StaticResource ConsoleBorderBrush}"
+            BorderThickness="0,0,0,1"
+            Padding="10,7">
+      <DockPanel LastChildFill="False">
 
-      <TextBlock DockPanel.Dock="Top" Text="Scripts" FontWeight="SemiBold"
-                 Margin="0,0,0,4" Foreground="{StaticResource ForegroundSecondaryBrush}"/>
+        <!-- Script selector -->
+        <ComboBox DockPanel.Dock="Left"
+                  Width="180"
+                  Margin="0,0,8,0"
+                  VerticalContentAlignment="Center"
+                  Background="{StaticResource ConsoleBackgroundLightBrush}"
+                  BorderBrush="{StaticResource ConsoleBorderBrush}"
+                  Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                  ItemsSource="{Binding ScriptFiles}"
+                  SelectedItem="{Binding SelectedScript}">
+          <ComboBox.ItemTemplate>
+            <DataTemplate DataType="{x:Type models:ScriptFileEntry}">
+              <TextBlock FontSize="11" Text="{Binding Name}" />
+            </DataTemplate>
+          </ComboBox.ItemTemplate>
+        </ComboBox>
 
-      <ListBox DockPanel.Dock="Top" Height="180"
-               ItemsSource="{Binding ScriptFiles}"
-               SelectedItem="{Binding SelectedScript}">
-        <ListBox.ItemTemplate>
-          <DataTemplate DataType="{x:Type models:ScriptFileEntry}">
-            <TextBlock Text="{Binding Name}" ToolTip="{Binding FullPath}"/>
-          </DataTemplate>
-        </ListBox.ItemTemplate>
-      </ListBox>
+        <!-- Interval -->
+        <ComboBox DockPanel.Dock="Left"
+                  Width="130"
+                  Margin="0,0,8,0"
+                  VerticalContentAlignment="Center"
+                  Background="{StaticResource ConsoleBackgroundLightBrush}"
+                  BorderBrush="{StaticResource ConsoleBorderBrush}"
+                  FontSize="11"
+                  Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                  ItemsSource="{Binding Intervals}"
+                  SelectedItem="{Binding SelectedInterval}" />
 
-      <Separator DockPanel.Dock="Top" Margin="0,4"/>
+        <!-- From date -->
+        <Border DockPanel.Dock="Left"
+                Margin="0,0,8,0"
+                Padding="8,4"
+                Background="{StaticResource ConsoleBackgroundLightBrush}"
+                BorderBrush="{StaticResource ConsoleBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="4">
+          <StackPanel Orientation="Horizontal">
+            <TextBlock Margin="0,0,4,0"
+                       VerticalAlignment="Center"
+                       FontSize="11"
+                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                       Text="&#128197;" />
+            <DatePicker Width="110"
+                        FontSize="11"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                        SelectedDate="{Binding FromDate}" />
+          </StackPanel>
+        </Border>
 
-      <TextBlock DockPanel.Dock="Top" Text="Parameters" FontWeight="SemiBold"
-                 Margin="0,0,0,4" Foreground="{StaticResource ForegroundSecondaryBrush}"
-                 Visibility="{Binding Parameters.Count, Converter={StaticResource CountVis}}"/>
+        <!-- To date -->
+        <Border DockPanel.Dock="Left"
+                Margin="0,0,12,0"
+                Padding="8,4"
+                Background="{StaticResource ConsoleBackgroundLightBrush}"
+                BorderBrush="{StaticResource ConsoleBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="4">
+          <StackPanel Orientation="Horizontal">
+            <TextBlock Margin="0,0,4,0"
+                       VerticalAlignment="Center"
+                       FontSize="11"
+                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                       Text="&#128197;" />
+            <DatePicker Width="110"
+                        FontSize="11"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                        SelectedDate="{Binding ToDate}" />
+          </StackPanel>
+        </Border>
 
-      <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <ItemsControl ItemsSource="{Binding Parameters}"
-                      ItemTemplateSelector="{StaticResource ParamSelector}"/>
-      </ScrollViewer>
+        <!-- Run -->
+        <Button DockPanel.Dock="Left"
+                Margin="0,0,6,0"
+                Padding="16,6"
+                Command="{Binding RunScriptCommand}"
+                IsEnabled="{Binding CanRun}"
+                Style="{StaticResource PrimaryButtonStyle}">
+          <StackPanel Orientation="Horizontal">
+            <TextBlock Margin="0,0,4,0"
+                       FontSize="11"
+                       Text="&#9654;" />
+            <TextBlock FontSize="11" Text="Run" />
+          </StackPanel>
+        </Button>
 
-    </DockPanel>
+        <!-- Stop -->
+        <Button DockPanel.Dock="Left"
+                Margin="0,0,6,0"
+                Padding="12,6"
+                Command="{Binding StopCommand}"
+                IsEnabled="{Binding IsRunning}"
+                Style="{StaticResource GhostButtonStyle}">
+          <TextBlock FontSize="11" Text="Stop" />
+        </Button>
 
-    <!-- ═══════════════════════════════════════════════════════ LEFT SPLITTER -->
-    <GridSplitter Grid.Column="1" Width="4" HorizontalAlignment="Stretch"
-                  Background="{StaticResource BorderSubtleBrush}"/>
+        <Separator DockPanel.Dock="Left" Margin="4,0" />
 
-    <!-- ═══════════════════════════════════════════════════════ CENTRE COLUMN -->
-    <DockPanel Grid.Column="2">
+        <Button DockPanel.Dock="Left"
+                Margin="0,0,4,0"
+                Padding="10,6"
+                Command="{Binding NewScriptCommand}"
+                Style="{StaticResource GhostButtonStyle}">
+          <TextBlock FontSize="11" Text="New" />
+        </Button>
 
-      <!-- Toolbar at bottom -->
-      <ToolBar DockPanel.Dock="Bottom">
-        <Button Content="▶ Run" Command="{Binding RunScriptCommand}"
-                IsEnabled="{Binding CanRun}"/>
-        <Button Content="■ Stop" Command="{Binding StopCommand}"
-                IsEnabled="{Binding IsRunning}"/>
-        <Separator/>
-        <Button Content="New"  Command="{Binding NewScriptCommand}"/>
-        <Button Content="Save" Command="{Binding SaveScriptCommand}"/>
-        <Button Content="⟳"   Command="{Binding RefreshScriptsCommand}"
-                ToolTip="Refresh script list"/>
-        <Separator/>
-        <ProgressBar x:Name="RunProgressBar"
-                     Value="{Binding ProgressFraction}"
-                     Minimum="0" Maximum="1" Width="120" Height="8"
-                     Visibility="{Binding IsRunning, Converter={StaticResource BoolVis}}"
-                     IsIndeterminate="{Binding IsRunning}"/>
-        <TextBlock Text="{Binding StatusText}" VerticalAlignment="Center" Margin="6,0"
-                   Foreground="{StaticResource ForegroundSecondaryBrush}"/>
-        <TextBlock Text="{Binding ElapsedText}" VerticalAlignment="Center" Margin="4,0"/>
-      </ToolBar>
+        <Button DockPanel.Dock="Left"
+                Margin="0,0,4,0"
+                Padding="10,6"
+                Command="{Binding SaveScriptCommand}"
+                Style="{StaticResource GhostButtonStyle}">
+          <TextBlock FontSize="11" Text="Save" />
+        </Button>
 
-      <!-- AvalonEdit code editor -->
-      <avalonEdit:TextEditor x:Name="ScriptEditor"
-                             SyntaxHighlighting="C#"
-                             ShowLineNumbers="True"
-                             WordWrap="False"
-                             FontFamily="Cascadia Code, Consolas, Courier New"
-                             FontSize="13"
-                             Background="{StaticResource BackgroundDarkBrush}"
-                             Foreground="{StaticResource ForegroundPrimaryBrush}"/>
+        <Button DockPanel.Dock="Left"
+                Padding="10,6"
+                Command="{Binding RefreshScriptsCommand}"
+                Style="{StaticResource GhostButtonStyle}">
+          <TextBlock FontSize="11" Text="Refresh" />
+        </Button>
 
-    </DockPanel>
+        <!-- Right-anchored status strip -->
+        <ProgressBar DockPanel.Dock="Right"
+                     Width="100"
+                     Height="6"
+                     Margin="8,0,0,0"
+                     VerticalAlignment="Center"
+                     IsIndeterminate="{Binding IsRunning}"
+                     Maximum="1"
+                     Minimum="0"
+                     Value="{Binding ProgressFraction, Mode=OneWay}"
+                     Visibility="{Binding IsRunning, Converter={StaticResource BoolVis}}" />
+        <TextBlock DockPanel.Dock="Right"
+                   Margin="8,0,0,0"
+                   VerticalAlignment="Center"
+                   FontSize="11"
+                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                   Text="{Binding MemoryText}" />
+        <TextBlock DockPanel.Dock="Right"
+                   Margin="8,0,0,0"
+                   VerticalAlignment="Center"
+                   FontSize="11"
+                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                   Text="{Binding ElapsedText}" />
+        <TextBlock DockPanel.Dock="Right"
+                   Margin="8,0,0,0"
+                   VerticalAlignment="Center"
+                   FontSize="11"
+                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                   Text="{Binding StatusText}" />
 
-    <!-- ═══════════════════════════════════════════════════════ RIGHT SPLITTER -->
-    <GridSplitter Grid.Column="3" Width="4" HorizontalAlignment="Stretch"
-                  Background="{StaticResource BorderSubtleBrush}"/>
+      </DockPanel>
+    </Border>
 
-    <!-- ═══════════════════════════════════════════════════════ RIGHT COLUMN -->
-    <TabControl Grid.Column="4"
-                SelectedIndex="{Binding ActiveResultsTab}">
+    <!-- ════════════════════════════════════════════════════════════════════════
+         Row 1 — Main content: vertical split (chart on top, editor tabs on bottom)
+         ════════════════════════════════════════════════════════════════════════ -->
+    <Grid Grid.Row="1">
+      <Grid.RowDefinitions>
+        <RowDefinition x:Name="ChartRow" Height="300*" MinHeight="80" />
+        <RowDefinition Height="5" />
+        <RowDefinition x:Name="EditorRow" Height="280*" MinHeight="100" />
+      </Grid.RowDefinitions>
 
-      <!-- Console tab -->
-      <TabItem Header="{Binding ConsoleTabHeader}">
-        <ScrollViewer x:Name="ConsoleScroll" VerticalScrollBarVisibility="Auto">
-          <ItemsControl ItemsSource="{Binding ConsoleOutput}">
-            <ItemsControl.ItemTemplate>
-              <DataTemplate DataType="{x:Type models:ConsoleEntry}">
-                <TextBlock Text="{Binding Text}"
-                           Foreground="{Binding Kind, Converter={StaticResource ConsoleColor}}"
-                           FontFamily="Cascadia Code, Consolas" FontSize="11"
-      xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
-      xmlns:local="clr-namespace:Meridian.Wpf.Views"
-      Title="QuantScript"
-      Background="{DynamicResource ShellWindowBackgroundBrush}"
-      AutomationProperties.Name="QuantScript">
+      <!-- ──────────────────────────────────────────────────────────────────────
+           Chart area: asset input → chart title → ScottPlot → legend strip
+           ──────────────────────────────────────────────────────────────────── -->
+      <Grid Grid.Row="0">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto" />   <!-- asset input -->
+          <RowDefinition Height="*" />      <!-- chart + empty state -->
+          <RowDefinition Height="Auto" />   <!-- legend strip -->
+        </Grid.RowDefinitions>
 
-  <Page.Resources>
-    <local:ConsoleKindToBrushConverter x:Key="ConsoleColorConverter"/>
-    <BooleanToVisibilityConverter x:Key="BoolToVis"/>
-  </Page.Resources>
-
-  <!-- Three-column grid: script browser | editor | results -->
-  <Grid>
-    <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="180" MinWidth="120"/>
-      <ColumnDefinition Width="4"/>
-      <ColumnDefinition Width="*" MinWidth="200"/>
-      <ColumnDefinition Width="4"/>
-      <ColumnDefinition Width="300" MinWidth="200"/>
-    </Grid.ColumnDefinitions>
-
-    <!-- Col 0: Script browser -->
-    <DockPanel Grid.Column="0">
-      <ToolBar DockPanel.Dock="Top">
-        <Button Command="{Binding NewScriptCommand}" ToolTip="New script">New</Button>
-        <Button Command="{Binding SaveScriptCommand}" ToolTip="Save script">Save</Button>
-        <Button Command="{Binding RefreshScriptsCommand}" ToolTip="Refresh list">↻</Button>
-      </ToolBar>
-      <ListBox ItemsSource="{Binding ScriptFiles}"
-               SelectedItem="{Binding SelectedScript}"
-               DisplayMemberPath="Name"/>
-    </DockPanel>
-
-    <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch"/>
-
-    <!-- Col 2: Editor + parameters + run controls -->
-    <DockPanel Grid.Column="2">
-
-      <!-- Top toolbar: Run / Stop + status -->
-      <ToolBar DockPanel.Dock="Top">
-        <Button Command="{Binding RunCommand}"
-                FontWeight="SemiBold" Padding="12,4">▶ Run</Button>
-        <Button Command="{Binding StopCommand}"
-                Margin="4,0,0,0">■ Stop</Button>
-        <Separator/>
-        <TextBlock Text="{Binding StatusText}"
-                   VerticalAlignment="Center" Margin="4,0"/>
-      </ToolBar>
-
-      <!-- Parameters strip (shown only when parameters exist) -->
-      <ItemsControl DockPanel.Dock="Bottom"
-                    ItemsSource="{Binding Parameters}">
-        <ItemsControl.ItemsPanel>
-          <ItemsPanelTemplate>
-            <WrapPanel/>
-          </ItemsPanelTemplate>
-        </ItemsControl.ItemsPanel>
-        <ItemsControl.ItemTemplate>
-          <DataTemplate>
-            <StackPanel Orientation="Horizontal" Margin="8,4">
-              <TextBlock Text="{Binding Descriptor.Label}"
-                         VerticalAlignment="Center" Margin="0,0,4,0"
-                         FontSize="11"/>
-              <TextBox Text="{Binding RawValue, UpdateSourceTrigger=PropertyChanged}"
-                       Width="80" Padding="4,2"/>
+        <!-- Asset input row -->
+        <Border Grid.Row="0"
+                Padding="12,8"
+                BorderBrush="{StaticResource ConsoleBorderBrush}"
+                BorderThickness="0,0,0,1">
+          <StackPanel Orientation="Horizontal">
+            <StackPanel Margin="0,0,24,0">
+              <TextBlock Margin="0,0,0,3"
+                         FontSize="10"
+                         Foreground="{StaticResource ConsoleTextMutedBrush}"
+                         Text="Asset" />
+              <Border Padding="8,4"
+                      Background="{StaticResource ConsoleBackgroundLightBrush}"
+                      BorderBrush="{StaticResource ConsoleBorderBrush}"
+                      BorderThickness="1"
+                      CornerRadius="4">
+                <TextBox MinWidth="80"
+                         FontSize="12"
+                         Background="Transparent"
+                         BorderThickness="0"
+                         Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                         Text="{Binding AssetSymbol, UpdateSourceTrigger=PropertyChanged}" />
+              </Border>
             </StackPanel>
-          </DataTemplate>
-        </ItemsControl.ItemTemplate>
-      </ItemsControl>
+          </StackPanel>
+        </Border>
 
-      <!-- AvalonEdit -->
-      <avalonedit:TextEditor x:Name="ScriptEditor"
-                             SyntaxHighlighting="C#"
-                             ShowLineNumbers="True"
-                             FontFamily="Cascadia Code, Consolas, Monospace"
-                             FontSize="13"/>
-    </DockPanel>
+        <!-- Chart / empty-state area -->
+        <Grid Grid.Row="1">
 
-    <GridSplitter Grid.Column="3" HorizontalAlignment="Stretch"/>
+          <!-- Empty state placeholder when no chart result exists -->
+          <StackPanel HorizontalAlignment="Center"
+                      VerticalAlignment="Center"
+                      Visibility="{Binding HasNoChart, Converter={StaticResource BoolVis}}">
+            <TextBlock HorizontalAlignment="Center"
+                       FontSize="28"
+                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                       Text="&#128202;" />
+            <TextBlock Margin="0,8,0,0"
+                       HorizontalAlignment="Center"
+                       FontSize="13"
+                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                       Text="Run a script to see results" />
+            <TextBlock Margin="0,4,0,0"
+                       HorizontalAlignment="Center"
+                       FontSize="11"
+                       Foreground="{StaticResource ConsoleTextDisabledBrush}"
+                       Text="Charts, metrics and trade output will appear here" />
+          </StackPanel>
 
-    <!-- Col 4: Results TabControl -->
-    <TabControl Grid.Column="4">
+          <!-- Chart title (top-left overlay) -->
+          <StackPanel Margin="12,8,0,0"
+                      HorizontalAlignment="Left"
+                      VerticalAlignment="Top"
+                      Visibility="{Binding HasChart, Converter={StaticResource BoolVis}}">
+            <TextBlock FontSize="14"
+                       FontWeight="SemiBold"
+                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                       Text="{Binding PrimaryChartTitle}" />
+            <TextBlock Margin="0,2,0,0"
+                       FontSize="10"
+                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                       Text="{Binding FromDate, StringFormat={}{0:d MMM yy}}" />
+          </StackPanel>
 
-      <TabItem Header="Console">
-        <ScrollViewer VerticalScrollBarVisibility="Auto">
-          <ItemsControl ItemsSource="{Binding ConsoleOutput}">
+          <!-- ScottPlot chart -->
+          <scottplot:WpfPlot behaviors:PlotRenderBehavior.Request="{Binding PrimaryChartRequest}"
+                             Visibility="{Binding HasChart, Converter={StaticResource BoolVis}}" />
+        </Grid>
+
+        <!-- Legend strip -->
+        <Border Grid.Row="2"
+                Padding="12,6"
+                Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                BorderBrush="{StaticResource ConsoleBorderBrush}"
+                BorderThickness="0,1,0,0"
+                Visibility="{Binding HasLegend, Converter={StaticResource BoolVis}}">
+          <ItemsControl ItemsSource="{Binding LegendEntries}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <StackPanel Orientation="Horizontal" />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
-              <DataTemplate>
-                <TextBlock Text="{Binding Text}"
-                           Foreground="{Binding Kind, Converter={StaticResource ConsoleColorConverter}}"
-                           FontFamily="Cascadia Code, Consolas"
-                           FontSize="11"
-                           TextWrapping="Wrap"/>
-              </DataTemplate>
-            </ItemsControl.ItemTemplate>
-          </ItemsControl>
-        </ScrollViewer>
-      </TabItem>
-
-      <!-- Charts tab -->
-      <TabItem Header="{Binding ChartsTabHeader}">
-        <ScrollViewer VerticalScrollBarVisibility="Auto">
-          <ItemsControl x:Name="Charts" ItemsSource="{Binding Charts}">
-            <ItemsControl.ItemTemplate>
-              <DataTemplate DataType="{x:Type models:PlotViewModel}">
-                <StackPanel Margin="0,4,0,8">
-                  <TextBlock Text="{Binding Title}" FontWeight="SemiBold" Margin="4,0,0,2"/>
-                  <scottplot:WpfPlot Height="220"
-                    behaviors:PlotRenderBehavior.Request="{Binding Request}"/>
-      <TabItem Header="Charts">
-        <ScrollViewer VerticalScrollBarVisibility="Auto">
-          <ItemsControl x:Name="ChartsPanel" ItemsSource="{Binding Charts}">
-            <ItemsControl.ItemTemplate>
-              <DataTemplate>
-                <StackPanel Margin="4">
-                  <TextBlock Text="{Binding Title}" FontWeight="SemiBold" Margin="0,4,0,2"/>
-                  <!-- ScottPlot WpfPlot rendered in code-behind via item-loaded event -->
-                  <Border x:Name="PlotBorder" Height="220" Tag="{Binding Request}" Loaded="OnPlotBorderLoaded"/>
+              <DataTemplate DataType="{x:Type models:ChartLegendEntry}">
+                <StackPanel Margin="0,0,16,0" Orientation="Horizontal">
+                  <Rectangle Width="12"
+                             Height="12"
+                             Margin="0,0,5,0"
+                             VerticalAlignment="Center"
+                             Fill="{Binding SeriesColorBrush}" />
+                  <TextBlock VerticalAlignment="Center"
+                             FontSize="11"
+                             Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                             Text="{Binding Label}" />
                 </StackPanel>
               </DataTemplate>
             </ItemsControl.ItemTemplate>
           </ItemsControl>
-        </ScrollViewer>
-      </TabItem>
+        </Border>
+      </Grid>
 
-      <!-- Metrics tab -->
-      <TabItem Header="{Binding MetricsTabHeader}">
-        <DataGrid ItemsSource="{Binding Metrics}" AutoGenerateColumns="False"
-                  IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="None">
-          <DataGrid.Columns>
-            <DataGridTextColumn Header="Metric"   Binding="{Binding Label}"    Width="160"/>
-            <DataGridTextColumn Header="Value"    Binding="{Binding Value}"    Width="*"/>
-            <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="80"/>
-      <TabItem Header="Metrics">
-        <DataGrid ItemsSource="{Binding Metrics}"
-                  AutoGenerateColumns="False"
-                  IsReadOnly="True"
-                  HeadersVisibility="Column">
-          <DataGrid.Columns>
-            <DataGridTextColumn Header="Metric" Binding="{Binding Label}" Width="160"/>
-            <DataGridTextColumn Header="Value"  Binding="{Binding Value}" Width="*"/>
-          </DataGrid.Columns>
-        </DataGrid>
-      </TabItem>
+      <!-- GridSplitter -->
+      <GridSplitter Grid.Row="1"
+                    Height="5"
+                    HorizontalAlignment="Stretch"
+                    Background="{StaticResource ConsoleBorderBrush}"
+                    ResizeDirection="Rows" />
 
-      <!-- Trades tab -->
-      <TabItem Header="{Binding TradesTabHeader}">
-        <DataGrid ItemsSource="{Binding Trades}" AutoGenerateColumns="False"
-                  IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="None">
-          <DataGrid.Columns>
-            <DataGridTextColumn Header="Time"   Binding="{Binding FilledAt, StringFormat='HH:mm:ss'}" Width="70"/>
-            <DataGridTextColumn Header="Symbol" Binding="{Binding Symbol}"                            Width="65"/>
-            <DataGridTextColumn Header="Side"   Binding="{Binding Side}"                              Width="40"/>
-            <DataGridTextColumn Header="Qty"    Binding="{Binding FilledQuantity}"                    Width="55"/>
-            <DataGridTextColumn Header="Price"  Binding="{Binding FillPrice, StringFormat='N2'}"      Width="70"/>
-            <DataGridTextColumn Header="Comm."  Binding="{Binding Commission, StringFormat='N2'}"     Width="60"/>
-          </DataGrid.Columns>
-        </DataGrid>
-      </TabItem>
+      <!-- ──────────────────────────────────────────────────────────────────────
+           Editor tab area — Expression Editor is tab 0 (matches Marquee UX)
+           ──────────────────────────────────────────────────────────────────── -->
+      <TabControl Grid.Row="2"
+                  Background="{StaticResource ConsoleBackgroundDarkBrush}"
+                  BorderBrush="{StaticResource ConsoleBorderBrush}"
+                  Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                  SelectedIndex="{Binding ActiveResultsTab}">
 
-      <!-- Diagnostics tab -->
-      <TabItem Header="{Binding DiagnosticsTabHeader}">
-        <DataGrid ItemsSource="{Binding Diagnostics}" AutoGenerateColumns="False"
-                  IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="None">
-          <DataGrid.Columns>
-            <DataGridTextColumn Header="Key"   Binding="{Binding Key}"   Width="160"/>
-            <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*"/>
-      <TabItem Header="Trades">
-        <DataGrid ItemsSource="{Binding Trades}"
-                  AutoGenerateColumns="False"
-                  IsReadOnly="True"
-                  HeadersVisibility="Column">
-          <DataGrid.Columns>
-            <DataGridTextColumn Header="Time"   Binding="{Binding FilledAt, StringFormat='HH:mm:ss'}" Width="80"/>
-            <DataGridTextColumn Header="Symbol" Binding="{Binding Symbol}"    Width="70"/>
-            <DataGridTextColumn Header="Qty"    Binding="{Binding FilledQuantity}" Width="60"/>
-            <DataGridTextColumn Header="Price"  Binding="{Binding FillPrice, StringFormat='N2'}" Width="80"/>
-            <DataGridTextColumn Header="Comm."  Binding="{Binding Commission, StringFormat='N2'}" Width="70"/>
-          </DataGrid.Columns>
-        </DataGrid>
-      </TabItem>
+        <!-- Tab 0: Expression Editor -->
+        <TabItem>
+          <TabItem.Header>
+            <TextBlock FontSize="12"
+                       FontWeight="SemiBold"
+                       Foreground="{StaticResource InfoColorBrush}"
+                       Text="Expression Editor" />
+          </TabItem.Header>
+          <Grid>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="*" />
+              <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
 
-    </TabControl>
+            <avalonEdit:TextEditor x:Name="ScriptEditor"
+                                   Grid.Row="0"
+                                   Background="#0D1117"
+                                   FontFamily="Cascadia Code, Consolas, Courier New"
+                                   FontSize="13"
+                                   Foreground="#E6EDF3"
+                                   ShowLineNumbers="True"
+                                   SyntaxHighlighting="C#"
+                                   WordWrap="False" />
 
+            <!-- Status strip for editor -->
+            <Border Grid.Row="1"
+                    Padding="10,4"
+                    Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                    BorderBrush="{StaticResource ConsoleBorderBrush}"
+                    BorderThickness="0,1,0,0">
+              <DockPanel LastChildFill="False">
+                <Button DockPanel.Dock="Right"
+                        Margin="6,0,0,0"
+                        Padding="8,3"
+                        Command="{Binding ClearConsoleCommand}"
+                        Style="{StaticResource GhostButtonStyle}">
+                  <TextBlock FontSize="10" Text="Clear" />
+                </Button>
+                <TextBlock VerticalAlignment="Center"
+                           FontSize="10"
+                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                           Text="{Binding StatusText}" />
+              </DockPanel>
+            </Border>
+          </Grid>
+        </TabItem>
+
+        <!-- Tab 1: Data Sheet (Metrics) -->
+        <TabItem>
+          <TabItem.Header>
+            <TextBlock FontSize="12" Text="{Binding MetricsTabHeader}" />
+          </TabItem.Header>
+          <DataGrid AutoGenerateColumns="False"
+                    Background="{StaticResource ConsoleBackgroundDarkBrush}"
+                    BorderThickness="0"
+                    FontSize="12"
+                    Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                    GridLinesVisibility="None"
+                    HeadersVisibility="Column"
+                    IsReadOnly="True"
+                    ItemsSource="{Binding Metrics}"
+                    RowBackground="{StaticResource ConsoleBackgroundDarkBrush}">
+            <DataGrid.Columns>
+              <DataGridTextColumn Width="180" Binding="{Binding Label}" Header="Metric" />
+              <DataGridTextColumn Width="*" Binding="{Binding Value}" Header="Value" />
+              <DataGridTextColumn Width="120" Binding="{Binding Category}" Header="Category" />
+            </DataGrid.Columns>
+          </DataGrid>
+        </TabItem>
+
+        <!-- Tab 2: Statistics (Diagnostics) -->
+        <TabItem>
+          <TabItem.Header>
+            <TextBlock FontSize="12" Text="{Binding DiagnosticsTabHeader}" />
+          </TabItem.Header>
+          <DataGrid AutoGenerateColumns="False"
+                    Background="{StaticResource ConsoleBackgroundDarkBrush}"
+                    BorderThickness="0"
+                    FontSize="12"
+                    Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                    GridLinesVisibility="None"
+                    HeadersVisibility="Column"
+                    IsReadOnly="True"
+                    ItemsSource="{Binding Diagnostics}"
+                    RowBackground="{StaticResource ConsoleBackgroundDarkBrush}">
+            <DataGrid.Columns>
+              <DataGridTextColumn Width="180" Binding="{Binding Key}" Header="Key" />
+              <DataGridTextColumn Width="*" Binding="{Binding Value}" Header="Value" />
+            </DataGrid.Columns>
+          </DataGrid>
+        </TabItem>
+
+        <!-- Tab 3: Local Data (Scripts browser + Parameters) -->
+        <TabItem>
+          <TabItem.Header>
+            <TextBlock FontSize="12" Text="Local Data" />
+          </TabItem.Header>
+          <Grid Margin="8">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="220" />
+              <ColumnDefinition Width="8" />
+              <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <DockPanel Grid.Column="0">
+              <TextBlock DockPanel.Dock="Top"
+                         Margin="0,0,0,6"
+                         FontSize="11"
+                         FontWeight="SemiBold"
+                         Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                         Text="SCRIPTS" />
+              <ListBox Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                       BorderBrush="{StaticResource ConsoleBorderBrush}"
+                       FontSize="11"
+                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                       ItemsSource="{Binding ScriptFiles}"
+                       SelectedItem="{Binding SelectedScript}">
+                <ListBox.ItemTemplate>
+                  <DataTemplate DataType="{x:Type models:ScriptFileEntry}">
+                    <TextBlock Padding="4,3"
+                               Text="{Binding Name}"
+                               ToolTip="{Binding FullPath}" />
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+              </ListBox>
+            </DockPanel>
+
+            <DockPanel Grid.Column="2">
+              <TextBlock DockPanel.Dock="Top"
+                         Margin="0,0,0,6"
+                         FontSize="11"
+                         FontWeight="SemiBold"
+                         Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                         Text="PARAMETERS" />
+              <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding Parameters}"
+                              ItemTemplateSelector="{StaticResource ParamSelector}" />
+              </ScrollViewer>
+            </DockPanel>
+          </Grid>
+        </TabItem>
+
+        <!-- Tab 4: Backtest Output (Trades + Console) -->
+        <TabItem>
+          <TabItem.Header>
+            <TextBlock FontSize="12" Text="{Binding TradesTabHeader}" />
+          </TabItem.Header>
+          <Grid>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="*" />
+              <RowDefinition Height="5" />
+              <RowDefinition Height="120" MinHeight="60" />
+            </Grid.RowDefinitions>
+
+            <DataGrid Grid.Row="0"
+                      AutoGenerateColumns="False"
+                      Background="{StaticResource ConsoleBackgroundDarkBrush}"
+                      BorderThickness="0"
+                      FontSize="12"
+                      Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                      GridLinesVisibility="None"
+                      HeadersVisibility="Column"
+                      IsReadOnly="True"
+                      ItemsSource="{Binding Trades}"
+                      RowBackground="{StaticResource ConsoleBackgroundDarkBrush}">
+              <DataGrid.Columns>
+                <DataGridTextColumn Width="140" Binding="{Binding FilledAt}" Header="Filled At" />
+                <DataGridTextColumn Width="90" Binding="{Binding Symbol}" Header="Symbol" />
+                <DataGridTextColumn Width="90" Binding="{Binding FilledQuantity}" Header="Qty" />
+                <DataGridTextColumn Width="100" Binding="{Binding FillPrice}" Header="Price" />
+                <DataGridTextColumn Width="100" Binding="{Binding Commission}" Header="Commission" />
+                <DataGridTextColumn Width="80" Binding="{Binding Side}" Header="Side" />
+              </DataGrid.Columns>
+            </DataGrid>
+
+            <GridSplitter Grid.Row="1"
+                          Height="5"
+                          HorizontalAlignment="Stretch"
+                          Background="{StaticResource ConsoleBorderBrush}"
+                          ResizeDirection="Rows" />
+
+            <!-- Console log strip at bottom of Backtest Output tab -->
+            <ScrollViewer x:Name="ConsoleScroll"
+                          Grid.Row="2"
+                          Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                          VerticalScrollBarVisibility="Auto">
+              <ItemsControl ItemsSource="{Binding ConsoleOutput}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate DataType="{x:Type models:ConsoleEntry}">
+                    <TextBlock Padding="8,1"
+                               FontFamily="Cascadia Code, Consolas"
+                               FontSize="11"
+                               Text="{Binding Text}"
+                               TextWrapping="Wrap">
+                      <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                          <Setter Property="Foreground" Value="{StaticResource ConsoleTextSecondaryBrush}" />
+                          <Style.Triggers>
+                            <DataTrigger Binding="{Binding Kind}" Value="Error">
+                              <Setter Property="Foreground" Value="{StaticResource ErrorColorBrush}" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Kind}" Value="Warning">
+                              <Setter Property="Foreground" Value="{StaticResource WarningColorBrush}" />
+                            </DataTrigger>
+                          </Style.Triggers>
+                        </Style>
+                      </TextBlock.Style>
+                    </TextBlock>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </ScrollViewer>
+          </Grid>
+        </TabItem>
+
+      </TabControl>
+    </Grid>
   </Grid>
 </Page>

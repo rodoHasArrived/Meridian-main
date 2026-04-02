@@ -75,6 +75,21 @@ public sealed class StrategyRunWorkspaceService
         return detail?.Ledger;
     }
 
+    public Task<IReadOnlyList<RunComparisonDto>> CompareRunsAsync(
+        IEnumerable<string> runIds,
+        CancellationToken ct = default) =>
+        _readService.GetRunComparisonDtosAsync(runIds, ct);
+
+    public Task<RunCashFlowSummary?> GetCashFlowAsync(
+        string runId,
+        string? currency = null,
+        int? bucketDays = null,
+        CancellationToken ct = default)
+    {
+        var projectionService = new CashFlowProjectionService(_store);
+        return projectionService.GetAsync(runId, asOf: null, currency, bucketDays, ct);
+    }
+
     public async Task<StrategyRunSummary?> GetLatestRunAsync(CancellationToken ct = default)
     {
         var runs = await _readService.GetRunsAsync(null, ct: ct).ConfigureAwait(false);

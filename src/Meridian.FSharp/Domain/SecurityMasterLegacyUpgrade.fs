@@ -145,6 +145,42 @@ module SecurityMasterLegacyUpgrade =
                 IssuerType = None
                 RiskCountry = None
             }
+        | SecurityKind.Commodity _ ->
+            {
+                AssetClass = AssetClass.Other
+                Family = Some (AssetFamily.OtherFamily "Commodity")
+                SubType = SecuritySubType.OtherSubType "Commodity"
+                TypeName = "Commodity"
+                IssuerType = None
+                RiskCountry = None
+            }
+        | SecurityKind.CryptoCurrency _ ->
+            {
+                AssetClass = AssetClass.Other
+                Family = Some (AssetFamily.OtherFamily "Crypto")
+                SubType = SecuritySubType.OtherSubType "CryptoCurrency"
+                TypeName = "CryptoCurrency"
+                IssuerType = None
+                RiskCountry = None
+            }
+        | SecurityKind.Cfd _ ->
+            {
+                AssetClass = AssetClass.Derivative
+                Family = Some AssetFamily.ListedDerivative
+                SubType = SecuritySubType.OtherSubType "Cfd"
+                TypeName = "Cfd"
+                IssuerType = None
+                RiskCountry = None
+            }
+        | SecurityKind.Warrant _ ->
+            {
+                AssetClass = AssetClass.Derivative
+                Family = Some AssetFamily.ListedDerivative
+                SubType = SecuritySubType.OtherSubType "Warrant"
+                TypeName = "Warrant"
+                IssuerType = None
+                RiskCountry = None
+            }
 
     let private termsFromKind (kind: SecurityKind) =
         match kind with
@@ -405,6 +441,53 @@ module SecurityMasterLegacyUpgrade =
                             IssuerName = Some terms.Borrower
                             InstitutionName = None
                             IssuerProgram = None
+                        }
+            }
+        | SecurityKind.Commodity terms ->
+            {
+                SecurityTermModules.empty with
+                    TradingParameters =
+                        Some {
+                            LotSize = None
+                            TickSize = None
+                            ContractMultiplier = terms.ContractSize
+                            MarginRequirementPct = None
+                            TradingHoursUtc = None
+                            CircuitBreakerThresholdPct = None
+                        }
+            }
+        | SecurityKind.CryptoCurrency _ ->
+            SecurityTermModules.empty
+        | SecurityKind.Cfd terms ->
+            {
+                SecurityTermModules.empty with
+                    TradingParameters =
+                        Some {
+                            LotSize = None
+                            TickSize = None
+                            ContractMultiplier = None
+                            MarginRequirementPct = terms.Leverage |> Option.map (fun l -> 1m / l * 100m)
+                            TradingHoursUtc = None
+                            CircuitBreakerThresholdPct = None
+                        }
+            }
+        | SecurityKind.Warrant terms ->
+            {
+                SecurityTermModules.empty with
+                    Maturity =
+                        Some {
+                            EffectiveDate = None
+                            IssueDate = None
+                            MaturityDate = terms.Expiry
+                        }
+                    TradingParameters =
+                        Some {
+                            LotSize = None
+                            TickSize = None
+                            ContractMultiplier = terms.Multiplier
+                            MarginRequirementPct = None
+                            TradingHoursUtc = None
+                            CircuitBreakerThresholdPct = None
                         }
             }
 

@@ -415,7 +415,6 @@ public sealed class TimeSeriesAlignmentService
     }
 }
 
-#region Event Args
 
 public sealed class AlignmentProgressEventArgs : EventArgs
 {
@@ -424,9 +423,7 @@ public sealed class AlignmentProgressEventArgs : EventArgs
     public long RecordsProcessed { get; set; }
 }
 
-#endregion
 
-#region Enums
 
 public enum TimeSeriesInterval : byte
 {
@@ -465,9 +462,7 @@ public enum GapStrategy : byte
     Skip
 }
 
-#endregion
 
-#region Options and Results
 
 public sealed class AlignmentOptions
 {
@@ -562,9 +557,7 @@ public sealed class AlignmentValidationResult
     public List<string> Warnings { get; set; } = new();
 }
 
-#endregion
 
-#region API Response Classes
 
 public sealed class AlignmentResponse
 {
@@ -587,4 +580,3 @@ public sealed class AlignmentPreviewResponse
     public int IntervalCount { get; set; }
 }
 
-#endregion

@@ -300,6 +300,13 @@ public sealed class CommandPaletteService
         RegisterNavigationCommand("nav-analysis-export-wizard", "Open Analysis Export Wizard", "AnalysisExportWizard", "analysis export wizard pandas python arrow parquet", "\uE9D9", "");
         RegisterNavigationCommand("nav-research-shell", "Open Research Workspace", "ResearchShell", "research workspace shell home strategy runs backtest overview", "\uE9D9", "");
         RegisterNavigationCommand("nav-trading-shell", "Open Trading Workspace", "TradingShell", "trading workspace shell live positions portfolio risk rail overview", "\uE9F5", "");
+        RegisterNavigationCommand("nav-quantscript", "Open Research: QuantScript", "QuantScript", "research quant script prototype calculation ide code", "\uE943", "");
+        RegisterNavigationCommand("nav-batch-backtest", "Open Research: Batch Backtest", "BatchBacktest", "research batch backtest bulk run multi strategy sweep", "\uE8EF", "");
+        RegisterNavigationCommand("nav-run-cashflow", "Open Research: Run Cash Flow", "RunCashFlow", "research run cash flow funding impact projection", "\uE8C8", "");
+        RegisterNavigationCommand("nav-security-master", "Open Governance: Security Master", "SecurityMaster", "governance security master reference data listings identifiers", "\uE8F1", "");
+        RegisterNavigationCommand("nav-direct-lending", "Open Governance: Direct Lending", "DirectLending", "governance direct lending portfolio workflow contracts accrual", "\uE8C8", "");
+        RegisterNavigationCommand("nav-credential-management", "Open Governance: Credential Management", "CredentialManagement", "governance credential management provider access secure api key", "\uE8D7", "");
+        RegisterNavigationCommand("nav-add-provider-wizard", "Open Data Operations: Add Provider Wizard", "AddProviderWizard", "data operations add provider wizard configure setup onboard", "\uE710", "");
 
         // Action commands
         RegisterActionCommand("action-start-collector", "Start Data Collector", "StartCollector", "start collect begin run", "\uE768", "Ctrl+Shift+S");
@@ -332,14 +339,14 @@ public sealed class CommandPaletteService
         return pageTag switch
         {
             // Research workspace: analysis, strategy runs, charting, quant tooling
-            "Dashboard" or "Backtest" or "LeanIntegration" or "RunMat" or "Charts"
-                or "Watchlist" or "OrderBook" or "StrategyRuns" or "RunDetail" or "AdvancedAnalytics"
-                or "ResearchShell"
+            "Dashboard" or "Backtest" or "BatchBacktest" or "LeanIntegration" or "RunMat"
+                or "Charts" or "QuantScript" or "Watchlist" or "OrderBook"
+                or "StrategyRuns" or "RunDetail" or "RunCashFlow"
+                or "AdvancedAnalytics" or "ResearchShell"
                 => $"Research workspace — {pageTag}",
 
-            // Trading workspace: live execution, portfolio management, positions, hours
-            "LiveData" or "PortfolioImport" or "TradingHours" or "RunPortfolio"
-                or "TradingShell"
+            // Trading workspace: live execution, positions, hours
+            "LiveData" or "TradingHours" or "TradingShell" or "RunPortfolio"
                 => $"Trading workspace — {pageTag}",
 
             // Data Operations workspace: ingest, symbols, storage, tools
@@ -348,14 +355,16 @@ public sealed class CommandPaletteService
                 or "DataCalendar" or "EventReplay" or "DataSampling" or "TimeSeriesAlignment"
                 or "AnalysisExport" or "AnalysisExportWizard" or "ExportPresets"
                 or "IndexSubscription" or "SymbolMapping" or "SymbolStorage" or "Options"
+                or "PortfolioImport" or "AddProviderWizard"
                 => $"Data Operations workspace — {pageTag}",
 
-            // Governance workspace: quality, audit, ledger, health, admin
+            // Governance workspace: quality, audit, ledger, health, admin, setup
             "DataQuality" or "ProviderHealth" or "SystemHealth" or "Diagnostics"
                 or "Settings" or "AdminMaintenance" or "RetentionAssurance"
                 or "NotificationCenter" or "Help" or "RunLedger" or "ArchiveHealth"
                 or "ServiceManager" or "CollectionSessions" or "StorageOptimization"
-                or "ActivityLog" or "MessagingHub"
+                or "ActivityLog" or "MessagingHub" or "SecurityMaster" or "DirectLending"
+                or "CredentialManagement" or "SetupWizard" or "KeyboardShortcuts"
                 => $"Governance workspace — {pageTag}",
 
             _ => $"Navigate to {pageTag}"

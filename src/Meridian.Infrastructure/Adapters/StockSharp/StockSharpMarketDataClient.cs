@@ -123,7 +123,6 @@ public sealed class StockSharpMarketDataClient : IMarketDataClient
     /// </summary>
     public bool IsEnabled => _config.Enabled;
 
-    #region IProviderMetadata
 
     /// <inheritdoc/>
     public string ProviderId => "stocksharp";
@@ -166,7 +165,6 @@ public sealed class StockSharpMarketDataClient : IMarketDataClient
         "Requires StockSharp connector-specific credentials."
     };
 
-    #endregion
 
 #if STOCKSHARP
     /// <summary>
@@ -923,7 +921,6 @@ public sealed class StockSharpMarketDataClient : IMarketDataClient
         SetConnectionState(ConnectionState.Disconnected);
     }
 
-    #region Event Handlers
 
     private void OnConnected(object? sender, EventArgs e)
     {
@@ -1186,9 +1183,7 @@ public sealed class StockSharpMarketDataClient : IMarketDataClient
         }
     }
 
-    #endregion
 
-    #region Helpers
 
     /// <summary>
     /// Attach all event handlers to a connector instance.
@@ -1239,7 +1234,6 @@ public sealed class StockSharpMarketDataClient : IMarketDataClient
         }
     }
 
-    #endregion
 
 #else
     // Stub implementations when StockSharp packages are not installed

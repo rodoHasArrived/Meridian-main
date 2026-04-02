@@ -261,7 +261,6 @@ public sealed class EventPipeline : IMarketEventPublisher, IBackpressureSignal, 
         return requestedConsumerCount;
     }
 
-    #region Public Properties - Pipeline Statistics
 
     /// <summary>Gets the total number of events successfully published to the pipeline.</summary>
     public long PublishedCount => Interlocked.Read(ref _publishedCount);
@@ -333,7 +332,6 @@ public sealed class EventPipeline : IMarketEventPublisher, IBackpressureSignal, 
     // backwards compatibility with callers that already use it for display purposes.
     double IBackpressureSignal.QueueUtilization => QueueUtilization / 100.0;
 
-    #endregion
 
     /// <summary>
     /// Recovers uncommitted events from the WAL and replays them to the storage sink.
@@ -445,10 +443,12 @@ public sealed class EventPipeline : IMarketEventPublisher, IBackpressureSignal, 
     /// Returns false if the queue is full (event will be dropped based on FullMode).
     /// </summary>
     /// <remarks>
-    /// When WAL is enabled, the WAL write occurs in the consumer task (not at publish time)
-    /// to preserve the non-blocking contract of this method. When WAL is enabled,
-    /// the method performs a synchronous WAL append before queue handoff so an
-    /// accepted event cannot be lost between ingress and the consumer loop.
+    /// WAL writes are deferred to the consumer task to preserve the non-blocking contract of
+    /// this method. Events enqueued via this path carry <c>WalSequence == 0</c>; the consumer
+    /// detects this and appends the event to the WAL before forwarding it to the storage sink,
+    /// maintaining the same durability guarantee as <see cref="PublishAsync"/> at the cost of a
+    /// slightly larger crash-recovery window. Callers that require the event to be WAL-persisted
+    /// before this call returns should use <see cref="PublishAsync"/> instead.
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool TryPublish(in MarketEvent evt)
@@ -466,43 +466,11 @@ public sealed class EventPipeline : IMarketEventPublisher, IBackpressureSignal, 
             return false;
         }
 
-        TracedMarketEvent tracedEvent;
-        try
-        {
-            tracedEvent = PrepareTracedEventForPublishAsync(evt, CancellationToken.None)
-                .AsTask()
-                .GetAwaiter()
-                .GetResult();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex,
-                "Failed to persist event {EventType}/{Symbol} to the WAL before queue handoff",
-                evt.Type,
-                evt.EffectiveSymbol);
-            return false;
-        }
+        // Capture trace context synchronously — WAL write is deferred to the consumer.
+        // The consumer checks WalSequence == 0 and appends to the WAL before sink persistence.
+        var tracedEvent = CaptureTraceContext(evt);
 
         var written = _channel.Writer.TryWrite(tracedEvent);
-
-        if (!written && _wal != null && _fullMode == BoundedChannelFullMode.Wait)
-        {
-            try
-            {
-                _channel.Writer.WriteAsync(tracedEvent, CancellationToken.None)
-                    .AsTask()
-                    .GetAwaiter()
-                    .GetResult();
-                written = true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex,
-                    "Failed to enqueue WAL-persisted event {EventType}/{Symbol}",
-                    evt.Type,
-                    evt.EffectiveSymbol);
-            }
-        }
 
         if (written)
         {

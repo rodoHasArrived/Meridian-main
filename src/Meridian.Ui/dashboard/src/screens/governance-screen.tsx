@@ -4,9 +4,23 @@ import { useLocation } from "react-router-dom";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getSecurityConflicts, resolveSecurityConflict, searchSecurities } from "@/lib/api";
+import {
+  getReconciliationBreakQueue,
+  getRunTrialBalance,
+  getSecurityConflicts,
+  resolveReconciliationBreak,
+  resolveSecurityConflict,
+  reviewReconciliationBreak,
+  searchSecurities
+} from "@/lib/api";
 import { cn } from "@/lib/utils";
-import type { GovernanceWorkspaceResponse, ResolveConflictRequest, SecurityMasterConflict, SecurityMasterEntry } from "@/types";
+import type {
+  GovernanceWorkspaceResponse,
+  ReconciliationBreakQueueItem,
+  ResolveConflictRequest,
+  SecurityMasterConflict,
+  SecurityMasterEntry
+} from "@/types";
 
 interface GovernanceScreenProps {
   data: GovernanceWorkspaceResponse | null;
@@ -69,6 +83,9 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
   const [conflicts, setConflicts] = useState<SecurityMasterConflict[] | null>(null);
   const [conflictsLoading, setConflictsLoading] = useState(false);
   const [conflictResolvingId, setConflictResolvingId] = useState<string | null>(null);
+  const [breakQueue, setBreakQueue] = useState<ReconciliationBreakQueueItem[]>([]);
+  const [breakActionId, setBreakActionId] = useState<string | null>(null);
+  const [trialBalance, setTrialBalance] = useState<Array<{ accountName: string; accountType: string; balance: number; entryCount: number }>>([]);
 
   useEffect(() => {
     if (workstream !== "security-master") return;
@@ -78,6 +95,18 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
       .catch(() => setConflicts([]))
       .finally(() => setConflictsLoading(false));
   }, [workstream]);
+
+  useEffect(() => {
+    if (workstream !== "reconciliation") return;
+    getReconciliationBreakQueue().then(setBreakQueue).catch(() => setBreakQueue(data?.breakQueue ?? []));
+  }, [workstream, data?.breakQueue]);
+
+  useEffect(() => {
+    if (!selectedReconciliation || workstream !== "ledger") return;
+    getRunTrialBalance(selectedReconciliation.runId)
+      .then((rows) => setTrialBalance(rows))
+      .catch(() => setTrialBalance([]));
+  }, [selectedReconciliation, workstream]);
 
   function handleSecurityQueryChange(q: string) {
     setSecurityQuery(q);
@@ -99,6 +128,26 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
       setConflicts((prev) => prev?.map((c) => c.conflictId === conflictId ? updated : c) ?? prev);
     } finally {
       setConflictResolvingId(null);
+    }
+  }
+
+  async function handleAssignBreak(breakId: string) {
+    setBreakActionId(breakId);
+    try {
+      const updated = await reviewReconciliationBreak({ breakId, assignedTo: "ops.gov", reviewedBy: "ops.gov" });
+      setBreakQueue((prev) => prev.map((item) => (item.breakId === breakId ? updated : item)));
+    } finally {
+      setBreakActionId(null);
+    }
+  }
+
+  async function handleResolveBreak(breakId: string, status: "Resolved" | "Dismissed") {
+    setBreakActionId(breakId);
+    try {
+      const updated = await resolveReconciliationBreak({ breakId, status, resolvedBy: "ops.gov", resolutionNote: "Reviewed in governance panel." });
+      setBreakQueue((prev) => prev.map((item) => (item.breakId === breakId ? updated : item)));
+    } finally {
+      setBreakActionId(null);
     }
   }
 
@@ -231,6 +280,47 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                   Review audit packet
                 </Button>
               </div>
+            </CardContent>
+          </Card>
+        </section>
+      ) : null}
+
+      {workstream === "ledger" && selectedReconciliation ? (
+        <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
+          <Card>
+            <CardHeader>
+              <CardTitle>Multi-ledger trial balance</CardTitle>
+              <CardDescription>Baseline ledger balances for {selectedReconciliation.runId} grouped by account type.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto rounded-xl border border-border/70">
+                <table className="min-w-full divide-y divide-border/60 text-left text-xs sm:text-sm">
+                  <thead className="bg-secondary/30">
+                    <tr>{["Account", "Type", "Balance", "Entries"].map((c) => <th key={c} className="px-3 py-2">{c}</th>)}</tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/50">
+                    {trialBalance.map((line) => (
+                      <tr key={`${line.accountName}-${line.accountType}`}>
+                        <td className="px-3 py-2">{line.accountName}</td>
+                        <td className="px-3 py-2 font-mono">{line.accountType}</td>
+                        <td className="px-3 py-2 font-mono">{formatCurrency(line.balance)}</td>
+                        <td className="px-3 py-2 font-mono">{line.entryCount}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Governance exports</CardTitle>
+              <CardDescription>Entry points for report/export handoff using existing export infrastructure.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Button asChild><a href="/api/export/preview" target="_blank" rel="noreferrer">Preview report payload</a></Button>
+              <Button asChild variant="outline"><a href="/api/export/analysis" target="_blank" rel="noreferrer">Run governance export</a></Button>
+              <Button asChild variant="outline"><a href="/api/export/formats" target="_blank" rel="noreferrer">List export formats</a></Button>
             </CardContent>
           </Card>
         </section>
@@ -435,6 +525,35 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                   ))}
                 </div>
               )}
+            </CardContent>
+          </Card>
+        </section>
+      )}
+
+      {workstream === "reconciliation" && (
+        <section>
+          <Card>
+            <CardHeader>
+              <CardTitle>Reconciliation break queue</CardTitle>
+              <CardDescription>Review/resolve workflow with assignment and audit metadata.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {breakQueue.map((item) => (
+                <div key={item.breakId} className="rounded-lg border border-border/70 p-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <div className="font-semibold">{item.strategyName} · {item.category}</div>
+                      <div className="text-xs text-muted-foreground">{item.reason}</div>
+                    </div>
+                    <div className="font-mono text-xs">{item.status}</div>
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <Button size="sm" variant="outline" disabled={breakActionId === item.breakId || item.status !== "Open"} onClick={() => void handleAssignBreak(item.breakId)}>Assign</Button>
+                    <Button size="sm" variant="outline" disabled={breakActionId === item.breakId || item.status === "Resolved"} onClick={() => void handleResolveBreak(item.breakId, "Resolved")}>Resolve</Button>
+                    <Button size="sm" variant="ghost" disabled={breakActionId === item.breakId || item.status === "Dismissed"} onClick={() => void handleResolveBreak(item.breakId, "Dismissed")}>Dismiss</Button>
+                  </div>
+                </div>
+              ))}
             </CardContent>
           </Card>
         </section>

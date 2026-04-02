@@ -6,7 +6,7 @@ description: >
   routing, and a traceable summary. Triggers on requests to certify completeness, confirm scope
   alignment, gather rollout evidence, or update AI/agent catalogs after new capabilities land.
 license: See repository LICENSE
-last_updated: 2026-03-30
+last_updated: 2026-03-31
 compatibility: >
   Portable Agent Skill package for Agent Skills-compatible hosts. Reads repository files plus the
   bundled scripts for doc routing and lightweight evaluation scoring. No external network access
@@ -113,34 +113,6 @@ When the change touches any execution or data-pipeline path:
 
 ---
 
-## Correctness Guardrails
-
-- Preserve existing contracts, nullability expectations, and cancellation flow.
-- Keep layer boundaries explicit (UI/service/storage/provider/execution).
-- Add or extend tests for happy path, failure path, and cancellation/disposal where relevant.
-- Prefer deterministic behavior over timing-sensitive heuristics.
-
----
-
-## Performance Guardrails
-
-- Inspect hot paths for avoidable allocations, synchronous blocking, and unbounded buffering.
-- Avoid `.Result`/`.Wait()` on async flows.
-- Keep logging and serialization costs proportional to execution frequency.
-- When introducing loops or streams, define cancellation and backpressure behavior.
-
----
-
-## Documentation Synchronization Rules
-
-- Update docs in the same PR as code changes when behavior, interfaces, architecture, or operations change.
-- Prefer editing an existing doc when one already covers the topic.
-- Create new docs only when no suitable home exists.
-- For new docs, choose placement using `references/documentation-routing.md` and add cross-links from the nearest index/README.
-- Keep documentation concrete: what changed, why, and how to use/operate it.
-
----
-
 ## On-Demand References
 
 Load these only when the task requires the deeper context they provide:
@@ -183,25 +155,11 @@ Produces totals, averages, and a verdict string. Use the `--json` flag for machi
 
 ---
 
-## Output Format
+## Evidence Template
 
-### Evidence Severity Levels
-## Evaluation Requirement
-
-Treat `references/evaluation-harness.md` as mandatory for this skill. Always return:
-
-- Which scenario was evaluated (A/B/C).
-- Rubric scores by category.
-- Failing checks and corrective follow-ups.
-- Exact command evidence for tests/build checks.
-
----
-
-## Evidence Template (recommended)
-
-- **CRITICAL (always required):** build passes, tests pass, requirement ↔ file mapping documented
-- **WARNING (required for breaking/scope changes):** cross-file impact assessed, catalog updates listed
-- **INFO (recommended):** performance annotation for hot-path changes, coverage delta noted
+> **CRITICAL (always required):** build passes, tests pass, requirement ↔ file mapping documented
+> **WARNING (required for breaking/scope changes):** cross-file impact assessed, catalog updates listed
+> **INFO (recommended):** performance annotation for hot-path changes, coverage delta noted
 
 ### Standard Output Template
 
@@ -276,5 +234,4 @@ Before finishing, confirm:
 - [ ] Performance-sensitive changes reviewed with explicit notes
 - [ ] Docs updated or newly added in the correct location
 - [ ] Evaluation harness completed with a rubric score summary (≥ 8/10, no category at 0)
-- [ ] Final traceable summary (≤15 lines) with validation commands and any residual risk
-
+- [ ] Final traceable summary (≤ 15 lines) with validation commands and any residual risk

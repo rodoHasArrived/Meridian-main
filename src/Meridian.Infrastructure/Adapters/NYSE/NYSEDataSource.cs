@@ -48,7 +48,6 @@ namespace Meridian.Infrastructure.Adapters.NYSE;
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHistoricalDataSource
 {
-    #region Fields
 
     private readonly NYSEOptions _options;
     private readonly IHttpClientFactory _httpClientFactory;
@@ -81,24 +80,18 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
 
     private static readonly string[] BarIntervalsArray = { "1Min", "5Min", "15Min", "30Min", "1Hour", "1Day" };
 
-    #endregion
 
-    #region Identity
 
     public override string Id => "nyse";
     public override string DisplayName => "NYSE Direct";
     public override string Description => "Direct connection to NYSE for real-time and historical US equity data";
 
-    #endregion
 
-    #region Classification
 
     public override DataSourceType Type => DataSourceType.Hybrid;
     public override DataSourceCategory Category => DataSourceCategory.Exchange;
 
-    #endregion
 
-    #region Capabilities
 
     public override DataSourceCapabilities Capabilities =>
         DataSourceCapabilities.RealtimeTrades |
@@ -138,9 +131,7 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
     public override IReadOnlySet<string> SupportedMarkets => SupportedMarketsSet;
     public override IReadOnlySet<AssetClass> SupportedAssetClasses => SupportedAssetClassesSet;
 
-    #endregion
 
-    #region Constructor
 
     public NYSEDataSource(
         NYSEOptions options,
@@ -160,9 +151,7 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
         _wsManager.ConnectionLost += OnWsConnectionLostAsync;
     }
 
-    #endregion
 
-    #region Lifecycle
 
     public override async Task<bool> ValidateCredentialsAsync(CancellationToken ct = default)
     {
@@ -227,9 +216,7 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
         _reconnectCts.Dispose();
     }
 
-    #endregion
 
-    #region Connection (Real-time)
 
     public bool IsConnected => _wsManager.IsConnected;
 
@@ -293,9 +280,7 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
         }
     }
 
-    #endregion
 
-    #region Trade Subscriptions
 
     public IObservable<RealtimeTrade> Trades => _trades.AsObservable();
 
@@ -326,9 +311,7 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
         }
     }
 
-    #endregion
 
-    #region Quote Subscriptions
 
     public IObservable<RealtimeQuote> Quotes => _quotes.AsObservable();
 
@@ -359,9 +342,7 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
         }
     }
 
-    #endregion
 
-    #region Depth Subscriptions
 
     public IObservable<RealtimeDepthUpdate> DepthUpdates => _depthUpdates.AsObservable();
 
@@ -397,9 +378,7 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
         }
     }
 
-    #endregion
 
-    #region Active Subscriptions
 
     public IReadOnlySet<int> ActiveSubscriptions =>
         new HashSet<int>(_subscriptions.Keys);
@@ -425,9 +404,7 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
         }
     }
 
-    #endregion
 
-    #region Historical Data
 
     public bool SupportsIntraday => true;
     public IReadOnlyList<string> SupportedBarIntervals => BarIntervalsArray;
@@ -651,9 +628,7 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
         }, "GetSplits", ct).ConfigureAwait(false);
     }
 
-    #endregion
 
-    #region Authentication
 
     private async Task EnsureAuthenticatedAsync(CancellationToken ct)
     {
@@ -733,9 +708,7 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
         return client;
     }
 
-    #endregion
 
-    #region WebSocket Message Handling
 
     private async Task OnWsConnectionLostAsync()
     {
@@ -943,9 +916,7 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
         }
     }
 
-    #endregion
 
-    #region Subscription Helpers
 
     private int GetOrCreateSubscription(SymbolConfig config, SubscriptionType type)
     {
@@ -988,18 +959,14 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
         _ => DividendType.Regular
     };
 
-    #endregion
 
-    #region Internal Types
 
     private enum SubscriptionType { Trades, Quotes, Depth }
 
     private sealed record SubscriptionInfo(string Symbol, SubscriptionType Type, DateTimeOffset CreatedAt);
 
-    #endregion
 }
 
-#region NYSE API Response Models
 
 internal sealed class NYSETokenResponse
 {
@@ -1142,4 +1109,3 @@ internal sealed class NYSESplit
     public decimal SplitTo { get; set; }
 }
 
-#endregion

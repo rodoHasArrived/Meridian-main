@@ -1,8 +1,8 @@
 # Provider Documentation
 
-**Last Updated:** 2026-03-21  
-**Owner:** Core Team  
-**Scope:** Engineering / Product - Provider-Facing  
+**Last Updated:** 2026-03-21
+**Owner:** Core Team
+**Scope:** Engineering / Product - Provider-Facing
 **Review Cadence:** When providers change APIs, tiers, or rate limits
 
 ---
@@ -30,6 +30,7 @@ This directory contains setup guides, comparison tables, and usage instructions 
 |----------|-------------|
 | [Provider Comparison](provider-comparison.md) | Side-by-side selection guidance for streaming, historical, and symbol-search providers |
 | [Data Sources Reference](data-sources.md) | Current provider inventory and implementation locations |
+| [Provider Confidence Baseline](provider-confidence-baseline.md) | Repo-grounded validation matrix for Polygon, NYSE, IB, and StockSharp |
 | [Backfill Guide](backfill-guide.md) | Historical data backfill procedures |
 
 ---

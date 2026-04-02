@@ -260,15 +260,16 @@
                                    Margin="0,0,0,12" />
 
                         <TextBlock x:Name="SelectedProviderName"
-                                   Text="None selected"
+                                   Text="{Binding SelectedProviderName}"
                                    FontSize="18" FontWeight="Bold"
                                    Foreground="{StaticResource InfoColorBrush}" />
                         <TextBlock x:Name="SelectedProviderDescription"
+                                   Text="{Binding SelectedProviderDescription}"
                                    TextWrapping="Wrap"
                                    Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                                    Margin="0,4,0,12" />
 
-                        <Grid x:Name="ProviderDetailsGrid" Visibility="Collapsed">
+                        <Grid x:Name="ProviderDetailsGrid" Visibility="{Binding DetailsVisibility}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
@@ -284,26 +285,31 @@
                             <TextBlock Grid.Row="0" Grid.Column="0" Text="Streaming"
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="0,4" />
                             <TextBlock x:Name="DetailStreamingText" Grid.Row="0" Grid.Column="1"
+                                       Text="{Binding DetailStreamingText}"
                                        Foreground="{StaticResource ConsoleTextPrimaryBrush}" FontWeight="SemiBold" Margin="0,4" />
 
                             <TextBlock Grid.Row="1" Grid.Column="0" Text="Historical"
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="0,4" />
                             <TextBlock x:Name="DetailHistoricalText" Grid.Row="1" Grid.Column="1"
+                                       Text="{Binding DetailHistoricalText}"
                                        Foreground="{StaticResource ConsoleTextPrimaryBrush}" FontWeight="SemiBold" Margin="0,4" />
 
                             <TextBlock Grid.Row="2" Grid.Column="0" Text="Symbol Search"
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="0,4" />
                             <TextBlock x:Name="DetailSearchText" Grid.Row="2" Grid.Column="1"
+                                       Text="{Binding DetailSearchText}"
                                        Foreground="{StaticResource ConsoleTextPrimaryBrush}" FontWeight="SemiBold" Margin="0,4" />
 
                             <TextBlock Grid.Row="3" Grid.Column="0" Text="Rate Limit"
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="0,4" />
                             <TextBlock x:Name="DetailRateLimitText" Grid.Row="3" Grid.Column="1"
+                                       Text="{Binding DetailRateLimitText}"
                                        Foreground="{StaticResource ConsoleTextPrimaryBrush}" FontWeight="SemiBold" Margin="0,4" />
 
                             <TextBlock Grid.Row="4" Grid.Column="0" Text="Credentials"
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="0,4" />
                             <TextBlock x:Name="DetailCredentialsText" Grid.Row="4" Grid.Column="1"
+                                       Text="{Binding DetailCredentialsText}"
                                        Foreground="{StaticResource ConsoleTextPrimaryBrush}" FontWeight="SemiBold" Margin="0,4" />
                         </Grid>
                     </StackPanel>

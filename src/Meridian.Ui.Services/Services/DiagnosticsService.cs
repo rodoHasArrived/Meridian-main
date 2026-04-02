@@ -443,7 +443,6 @@ public sealed class DiagnosticsService
     }
 }
 
-#region Result Classes
 
 public sealed class DryRunResult
 {
@@ -538,9 +537,7 @@ public sealed class DiagnosticProviderTestResult
     public Dictionary<string, string>? Capabilities { get; set; }
 }
 
-#endregion
 
-#region API Response Classes
 
 public sealed class DryRunResponse
 {
@@ -770,4 +767,3 @@ public sealed class ConfigIssue
     public string? Suggestion { get; set; }
 }
 
-#endregion

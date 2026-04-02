@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
+using Meridian.Ledger;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Execution.Services;
@@ -59,6 +60,11 @@ public sealed class PaperSessionPersistenceService
             foreach (var fill in fills)
                 portfolio.ApplyFill(fill);
 
+            // Reconstruct the ledger from its persisted journal entries so past runs
+            // remain queryable by LedgerReadService without a live portfolio.
+            var ledgerEntries = await _store.LoadLedgerJournalAsync(record.SessionId, ct).ConfigureAwait(false);
+            var reconstructedLedger = ReconstructLedger(ledgerEntries);
+
             // Load persisted order history.
             var orders = await _store.LoadOrderHistoryAsync(record.SessionId, ct).ConfigureAwait(false);
 
@@ -73,6 +79,7 @@ public sealed class PaperSessionPersistenceService
                 IsActive = record.IsActive,
                 Symbols = record.Symbols.ToList(),
                 Portfolio = portfolio,
+                ReconstructedLedger = reconstructedLedger,
             };
             foreach (var order in orders)
                 session.OrderHistory.Add(order);
@@ -94,6 +101,9 @@ public sealed class PaperSessionPersistenceService
         ArgumentNullException.ThrowIfNull(request);
 
         var sessionId = $"PAPER-{DateTimeOffset.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..8]}";
+
+        // Create a ledger for double-entry accounting of fills and commissions.
+        var ledger = new Meridian.Ledger.Ledger();
         var session = new PaperSession
         {
             SessionId = sessionId,
@@ -102,7 +112,7 @@ public sealed class PaperSessionPersistenceService
             InitialCash = request.InitialCash,
             CreatedAt = DateTimeOffset.UtcNow,
             Symbols = request.Symbols?.ToList() ?? [],
-            Portfolio = new PaperTradingPortfolio(request.InitialCash),
+            Portfolio = new PaperTradingPortfolio(request.InitialCash, ledger),
         };
 
         _sessions[sessionId] = session;
@@ -133,6 +143,25 @@ public sealed class PaperSessionPersistenceService
         if (_store is not null)
         {
             await _store.SaveSessionMetadataAsync(ToPersistedRecord(session), ct).ConfigureAwait(false);
+
+            // Persist the double-entry ledger journal so it can be queried from the workstation
+            // UI's LedgerReadService even after the process restarts.
+            var ledger = session.Portfolio?.Ledger;
+            if (ledger is not null && ledger.JournalEntryCount > 0)
+            {
+                var dtos = SerializeLedgerJournal(ledger, sessionId);
+                try
+                {
+                    await _store.SaveLedgerJournalAsync(sessionId, dtos, ct).ConfigureAwait(false);
+                    _logger.LogInformation(
+                        "Persisted {Count} ledger entries for paper session {SessionId}",
+                        ledger.JournalEntryCount, sessionId);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to persist ledger journal for session {SessionId}", sessionId);
+                }
+            }
         }
 
         _logger.LogInformation(
@@ -184,6 +213,20 @@ public sealed class PaperSessionPersistenceService
         return _sessions.TryGetValue(sessionId, out var session) && session.IsActive
             ? session.Portfolio
             : null;
+    }
+
+    /// <summary>
+    /// Returns the double-entry ledger for a session — either the live ledger (active sessions)
+    /// or the ledger reconstructed from the persisted journal (closed sessions).
+    /// Returns <see langword="null"/> when no ledger data is available for the session.
+    /// </summary>
+    public IReadOnlyLedger? GetLedger(string sessionId)
+    {
+        if (!_sessions.TryGetValue(sessionId, out var session))
+            return null;
+
+        // For active sessions return the live ledger; for closed sessions the reconstructed one.
+        return session.Portfolio?.Ledger ?? session.ReconstructedLedger;
     }
 
     /// <summary>Records an order status update for a session.</summary>
@@ -268,6 +311,89 @@ public sealed class PaperSessionPersistenceService
             AsOf: DateTimeOffset.UtcNow);
     }
 
+    // ------------------------------------------------------------------
+    // Ledger serialisation helpers
+    // ------------------------------------------------------------------
+
+    private static IReadOnlyList<PersistedJournalEntryDto> SerializeLedgerJournal(
+        IReadOnlyLedger ledger,
+        string strategyId)
+    {
+        var dtos = new List<PersistedJournalEntryDto>(ledger.JournalEntryCount);
+        foreach (var entry in ledger.Journal)
+        {
+            var lines = entry.Lines.Select(line => new PersistedLedgerLineDto(
+                EntryId: line.EntryId,
+                JournalEntryId: line.JournalEntryId,
+                Timestamp: line.Timestamp,
+                Account: new PersistedLedgerAccountDto(
+                    Name: line.Account.Name,
+                    AccountType: line.Account.AccountType.ToString(),
+                    Symbol: line.Account.Symbol,
+                    FinancialAccountId: line.Account.FinancialAccountId),
+                Debit: line.Debit,
+                Credit: line.Credit,
+                Description: line.Description)).ToArray();
+
+            dtos.Add(new PersistedJournalEntryDto(
+                JournalEntryId: entry.JournalEntryId,
+                Timestamp: entry.Timestamp,
+                Description: entry.Description,
+                Lines: lines,
+                ActivityType: entry.Metadata.ActivityType?.ToString(),
+                Symbol: entry.Metadata.Symbol,
+                SecurityId: entry.Metadata.SecurityId,
+                OrderId: entry.Metadata.OrderId,
+                LedgerView: entry.Metadata.LedgerView?.ToString(),
+                StrategyId: strategyId));
+        }
+
+        return dtos;
+    }
+
+    private static Meridian.Ledger.Ledger? ReconstructLedger(IReadOnlyList<PersistedJournalEntryDto> dtos)
+    {
+        if (dtos.Count == 0)
+            return null;
+
+        var ledger = new Meridian.Ledger.Ledger();
+        foreach (var dto in dtos)
+        {
+            try
+            {
+                var lines = dto.Lines.Select(line =>
+                {
+                    var accountType = Enum.TryParse<LedgerAccountType>(line.Account.AccountType, out var at)
+                        ? at : LedgerAccountType.Asset;
+                    var account = new LedgerAccount(
+                        line.Account.Name, accountType,
+                        line.Account.Symbol, line.Account.FinancialAccountId);
+                    return new LedgerEntry(
+                        line.EntryId, line.JournalEntryId, line.Timestamp,
+                        account, line.Debit, line.Credit, line.Description);
+                }).ToArray();
+
+                var entry = new JournalEntry(
+                    dto.JournalEntryId,
+                    dto.Timestamp,
+                    dto.Description,
+                    lines);
+
+                ledger.Post(entry);
+            }
+            catch (Exception)
+            {
+                // Skip corrupt entries — best-effort reconstruction.
+            }
+        }
+
+        return ledger;
+    }
+
+    // ------------------------------------------------------------------
+    // Private helpers
+    // ------------------------------------------------------------------
+
     private static PaperSessionSummaryDto ToSummary(PaperSession session) => new(
         SessionId: session.SessionId,
         StrategyId: session.StrategyId,
@@ -299,8 +425,15 @@ public sealed class PaperSessionPersistenceService
         public List<string> Symbols { get; init; } = [];
         public PaperTradingPortfolio? Portfolio { get; init; }
         public List<OrderState> OrderHistory { get; } = [];
+
+        /// <summary>
+        /// Ledger reconstructed from persisted JSONL entries on load (closed sessions only).
+        /// For active sessions use <c>Portfolio.Ledger</c> instead.
+        /// </summary>
+        public IReadOnlyLedger? ReconstructedLedger { get; init; }
     }
 }
+
 
 // --- DTOs used by the service (decoupled from endpoint DTOs) ---
 

@@ -7,6 +7,8 @@ using System.Windows;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Ui.Services.Services;
+using CredentialFieldInfo = Meridian.Contracts.Api.CredentialFieldInfo;
+using ProviderCatalogEntry = Meridian.Ui.Services.Services.ProviderCatalogEntry;
 using WpfServices = Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.ViewModels;
@@ -183,9 +185,9 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
             {
                 ProviderId = provider.Id,
                 DisplayName = provider.DisplayName,
-                CredentialType = provider.RequiredEnvVars.Length > 1 ? "Key + Secret" : "API Key",
+                CredentialType = GetCredentialType(provider),
                 HasCredentials = state is CredentialState.Configured or CredentialState.Partial,
-                RequiresCredentials = provider.RequiredEnvVars.Length > 0,
+                RequiresCredentials = provider.CredentialFields.Length > 0,
                 StatusText = state switch
                 {
                     CredentialState.Configured => "Configured",
@@ -224,7 +226,7 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
             ? $"Edit credentials — {SelectedCredential.DisplayName}"
             : $"Add credentials — {SelectedCredential.DisplayName}";
 
-        if (provider.RequiredEnvVars.Length == 0)
+        if (provider.CredentialFields.Length == 0)
         {
             EditFields.Add(new CredentialFieldViewModel
             {
@@ -236,15 +238,18 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
         }
         else
         {
-            foreach (var envVar in provider.RequiredEnvVars)
+            foreach (var field in provider.CredentialFields)
             {
-                var existing = Environment.GetEnvironmentVariable(envVar) ?? string.Empty;
-                var isSecret = envVar.Contains("SECRET", StringComparison.OrdinalIgnoreCase)
-                    || envVar.Contains("KEY", StringComparison.OrdinalIgnoreCase);
+                var envVar = field.EnvironmentVariable ?? string.Empty;
+                var existing = GetConfiguredEnvironmentValue(field) ?? string.Empty;
+                var isSecret = field.DisplayName.Contains("secret", StringComparison.OrdinalIgnoreCase)
+                    || field.Name.Contains("secret", StringComparison.OrdinalIgnoreCase)
+                    || field.Name.Contains("token", StringComparison.OrdinalIgnoreCase)
+                    || field.Name.Contains("key", StringComparison.OrdinalIgnoreCase);
 
                 EditFields.Add(new CredentialFieldViewModel
                 {
-                    Label = FormatEnvVarLabel(envVar),
+                    Label = field.DisplayName,
                     EnvVarName = envVar,
                     IsSecret = isSecret,
                     Value = existing
@@ -262,7 +267,7 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
         var catalog = SettingsConfigurationService.Instance.GetProviderCatalog();
         var provider = catalog.FirstOrDefault(p => p.Id == SelectedCredential.ProviderId);
 
-        if (provider is null || provider.RequiredEnvVars.Length == 0)
+        if (provider is null || provider.CredentialFields.Length == 0)
         {
             IsEditPanelVisible = false;
             return;
@@ -319,6 +324,7 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
                 break;
             }
             case "nasdaq":
+            case "nasdaqdatalink":
             {
                 var key = EditFields.FirstOrDefault()?.Value;
                 if (!string.IsNullOrWhiteSpace(key))
@@ -352,8 +358,13 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
             var provider = catalog.FirstOrDefault(p => p.Id == SelectedCredential.ProviderId);
             if (provider is not null)
             {
-                foreach (var envVar in provider.RequiredEnvVars)
-                    Environment.SetEnvironmentVariable(envVar, null, EnvironmentVariableTarget.User);
+                foreach (var field in provider.CredentialFields)
+                {
+                    foreach (var envVar in field.AllEnvironmentVariables)
+                    {
+                        Environment.SetEnvironmentVariable(envVar, null, EnvironmentVariableTarget.User);
+                    }
+                }
             }
 
             RemoveFromVault(SelectedCredential.ProviderId);
@@ -411,9 +422,10 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
         var catalog = SettingsConfigurationService.Instance.GetProviderCatalog();
         var provider = catalog.FirstOrDefault(p => p.Id == SelectedCredential.ProviderId);
 
-        bool success = provider is null || provider.RequiredEnvVars.Length == 0
-            || provider.RequiredEnvVars.All(env =>
-                !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(env)));
+        bool success = provider is null || provider.CredentialFields.Length == 0
+            || provider.CredentialFields
+                .Where(field => field.Required)
+                .All(HasConfiguredEnvironmentValue);
 
         await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
         {
@@ -457,10 +469,36 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
         });
     }
 
-    private static string FormatEnvVarLabel(string envVar) =>
-        System.Text.RegularExpressions.Regex
-            .Replace(envVar.Replace("__", " ").Replace("_", " "), @"\s+", " ")
-            .Trim();
+    private static string GetCredentialType(ProviderCatalogEntry provider)
+    {
+        var count = provider.CredentialFields.Length;
+        return count switch
+        {
+            0 => "None",
+            1 => "API Key",
+            _ => "Key + Secret",
+        };
+    }
+
+    private static bool HasConfiguredEnvironmentValue(CredentialFieldInfo field)
+    {
+        return field.AllEnvironmentVariables
+            .Any(envVar => !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(envVar)));
+    }
+
+    private static string? GetConfiguredEnvironmentValue(CredentialFieldInfo field)
+    {
+        foreach (var envVar in field.AllEnvironmentVariables)
+        {
+            var value = Environment.GetEnvironmentVariable(envVar);
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                return value;
+            }
+        }
+
+        return null;
+    }
 
     public void Dispose() { }
 }

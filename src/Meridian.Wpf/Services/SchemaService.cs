@@ -3,6 +3,7 @@ using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Meridian.Contracts.Schema;
+using Meridian.Ui.Services;
 
 namespace Meridian.Wpf.Services;
 
@@ -82,15 +83,11 @@ public sealed class SchemaService : Meridian.Ui.Services.SchemaServiceBase
             try
             {
                 var json = await File.ReadAllTextAsync(dictionaryPath);
-                var dictionary = JsonSerializer.Deserialize<DataDictionary>(json, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+                var dictionary = JsonSerializer.Deserialize<DataDictionary>(json, DesktopJsonOptions.Compact);
                 if (dictionary != null) return dictionary;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                System.Diagnostics.Debug.WriteLine($"Failed to load data dictionary: {ex.Message}");
             }
         }
 
@@ -102,11 +99,7 @@ public sealed class SchemaService : Meridian.Ui.Services.SchemaServiceBase
         EnsureSchemasPathExists();
         var dictionaryPath = Path.Combine(_schemasPath, "data_dictionary.json");
 
-        var json = JsonSerializer.Serialize(dictionary, new JsonSerializerOptions
-        {
-            WriteIndented = true,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        });
+        var json = JsonSerializer.Serialize(dictionary, DesktopJsonOptions.PrettyPrint);
 
         await File.WriteAllTextAsync(dictionaryPath, json);
 

@@ -2,6 +2,14 @@
 
 This document provides instructions for setting up the Interactive Brokers API (IBApi) with the Meridian project.
 
+Use this guide together with [Provider Confidence Baseline](provider-confidence-baseline.md). Meridian currently validates three distinct IB modes, and operators should treat them differently:
+
+| Mode | What the repo validates | What it does **not** prove |
+|---|---|---|
+| Non-`IBAPI` simulation/runtime-guidance | `IBRuntimeGuidanceTests` confirm the provider metadata and exceptions point back to this guide and to the smoke-build path | Real TWS/Gateway connectivity, entitlements, or vendor DLL compatibility |
+| `EnableIbApiSmoke=true` compile-only smoke | `scripts/dev/build-ibapi-smoke.ps1` keeps the gated infrastructure code path buildable in automation | Real market-data flow or runtime compatibility with the official vendor surface |
+| Official `IBAPI` vendor path | Build-time path documented here for local/manual use | CI coverage in the default repo build; this still requires local TWS/Gateway and entitlements |
+
 ## Overview
 
 The Interactive Brokers API is **not available as a standard NuGet package** and must be installed manually. The Meridian uses conditional compilation (`#if IBAPI`) to allow the project to build with or without IB API support.
@@ -123,9 +131,21 @@ If you don't need Interactive Brokers support, the project will build successful
 # Build without IBAPI defined
 dotnet build
 
-# The IBMarketDataClient will use IBSimulationClient internally
-# This keeps the IB provider surface buildable and testable without a live IB installation
+# The IBMarketDataClient will use IBSimulationClient internally.
+# This keeps the IB provider surface visible and testable without a live IB installation,
+# but it is guidance/simulation mode rather than real broker connectivity.
 ```
+
+## Repo-Validated Offline Checks
+
+Use these commands when you want repo-grounded confidence before attempting a local vendor setup:
+
+```powershell
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~IBRuntimeGuidanceTests|FullyQualifiedName~IBOrderSampleTests"
+./scripts/dev/build-ibapi-smoke.ps1
+```
+
+These checks validate Meridian's simulation/runtime-guidance messages, committed sample order fixtures, and the compile-only smoke path. They do not replace a local TWS/Gateway connectivity check.
 
 ## Enabling IB API Support
 
@@ -252,6 +272,32 @@ after confirming compatibility.
 Minimum IB API DLL version (IBApi client): 178  (TWS API installer 10.19+)
 Minimum IB server version at runtime:       70   (TWS/Gateway 966+)
 Maximum tested IB server version:          178   (TWS 10.19)
+```
+
+## Build and Runtime Prerequisites (Exact Checklist)
+
+Use this checklist before marking IB as runtime-validated.
+
+| Requirement | Required Value | Verification |
+|---|---|---|
+| Compile constant | `DefineConstants=IBAPI` | Build output includes `IBAPI` conditional path compilation. |
+| Smoke path (optional but recommended) | `EnableIbApiSmoke=true` | `scripts/dev/build-ibapi-smoke.ps1` completes successfully. |
+| Vendor API/DLL baseline | `IBApi`/`CSharpAPI` version `178+` | Inspect local installed vendor assembly metadata. |
+| Runtime server baseline | API server version `>= 70` | Startup logs from `IBApiVersionValidator.ValidateServerVersion`. |
+| Runtime tested ceiling | server version `<= 178`, or warning explicitly accepted | Startup warning captured if above tested max. |
+| Startup check execution | `EnhancedIBConnectionManager.ConnectInternalAsync` calls version validator | Confirm log path runs during real startup. |
+| Broker endpoint | TWS/Gateway reachable (`127.0.0.1:7497` paper or `:7496` live) | Connection handshake succeeds. |
+
+### Required Validation Commands
+
+```powershell
+dotnet build src/Meridian.Infrastructure/Meridian.Infrastructure.csproj `
+  -c Release `
+  -p:EnableWindowsTargeting=true `
+  -p:DefineConstants=IBAPI
+
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj `
+  --filter "FullyQualifiedName~IBRuntimeGuidanceTests|FullyQualifiedName~IBSimulationClientContractTests|FullyQualifiedName~IBOrderSampleTests"
 ```
 
 

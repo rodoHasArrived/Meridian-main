@@ -193,6 +193,40 @@ public sealed class NyseSharedLifecycleTests : IAsyncDisposable
         secondSnapshot.Symbol.Should().Be("AAPL");
     }
 
+    [Fact]
+    public void TradeAndDepthSubscriptions_SameSymbol_CoexistAndTradeUnsubscribeLeavesDepth()
+    {
+        var tradeSubId = _client.SubscribeTrades(new SymbolConfig("AAPL"));
+        var depthSubId = _client.SubscribeMarketDepth(new SymbolConfig("AAPL"));
+
+        var source = GetSource();
+        source.ActiveSubscriptions.Should().HaveCount(3,
+            because: "trade subscribe should create trade + quote legs and depth should remain independent");
+
+        _client.UnsubscribeTrades(tradeSubId);
+
+        source.ActiveSubscriptions.Should().ContainSingle()
+            .Which.Should().Be(depthSubId);
+        source.SubscribedSymbols.Should().ContainSingle()
+            .Which.Should().Be("AAPL",
+                because: "depth should remain subscribed after the linked trade+quote pair is removed");
+    }
+
+    [Fact]
+    public void TradeAndDepthMessages_SameSymbol_BothPublishExpectedEvents()
+    {
+        _client.SubscribeTrades(new SymbolConfig("AAPL"));
+        _client.SubscribeMarketDepth(new SymbolConfig("AAPL"));
+        _publisher.Clear();
+
+        InvokeSourceMessage("""{"type":"trade","symbol":"AAPL","price":185.55,"size":150,"timestamp":"2025-01-15T14:30:00.200Z","exchange":"NYSE","conditions":"@","sequence":60001,"side":"buy"}""");
+        InvokeSourceMessage("""{"type":"depth","symbol":"AAPL","operation":"add","side":"bid","level":0,"price":185.50,"size":900,"timestamp":"2025-01-15T14:30:00.300Z","marketMaker":"NYSE","sequence":60002}""");
+
+        _publisher.PublishedEvents.Count(e => e.Type == MarketEventType.Trade).Should().Be(1);
+        _publisher.PublishedEvents.Count(e => e.Type == MarketEventType.OrderFlow).Should().Be(1);
+        _publisher.PublishedEvents.Count(e => e.Type == MarketEventType.L2Snapshot).Should().Be(1);
+    }
+
     // -------------------------------------------------------------------------
     // Test 9: MultipleTradesForSameSymbol_BothPublished
     // -------------------------------------------------------------------------
@@ -267,6 +301,20 @@ public sealed class NyseSharedLifecycleTests : IAsyncDisposable
             because: "subscribing the same symbol and type again must return the existing subscription ID");
         source.ActiveSubscriptions.Should().HaveCount(countAfterFirst,
             because: "a duplicate subscribe must not add new subscription entries");
+    }
+
+    [Fact]
+    public void DuplicateSubscribe_DepthSameSymbol_ReturnsSameId()
+    {
+        var firstId = _client.SubscribeMarketDepth(new SymbolConfig("AAPL"));
+        var source = GetSource();
+        var countAfterFirst = source.ActiveSubscriptions.Count;
+
+        var secondId = _client.SubscribeMarketDepth(new SymbolConfig("AAPL"));
+
+        secondId.Should().Be(firstId,
+            because: "duplicate depth subscribe should reuse the existing NYSEDataSource subscription");
+        source.ActiveSubscriptions.Should().HaveCount(countAfterFirst);
     }
 
     // -------------------------------------------------------------------------
