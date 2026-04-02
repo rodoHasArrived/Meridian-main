@@ -1,4 +1,5 @@
-using Meridian.ProviderSdk;
+using Meridian.Infrastructure.Contracts;
+using Meridian.Infrastructure.DataSources;
 
 namespace Meridian.Infrastructure.Adapters.Core;
 

@@ -1,5 +1,6 @@
 using Meridian.Infrastructure.Adapters.Core;
-using Meridian.ProviderSdk;
+using Meridian.Infrastructure.Contracts;
+using Meridian.Infrastructure.DataSources;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
