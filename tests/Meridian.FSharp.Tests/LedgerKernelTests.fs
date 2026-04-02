@@ -404,3 +404,169 @@ let ``Ledger reconciliation reports missing actual when no event exists for flow
 
     result.Status |> should equal MissingActual
     result.Variance |> should equal -75m
+
+// ---------------------------------------------------------------------------
+// ReconciliationRules — matching rule engine
+// ---------------------------------------------------------------------------
+
+let private candidate
+        secId
+        expectedAmount actualAmount
+        expectedCurrency actualCurrency
+        (expectedDate: DateTimeOffset) (actualDate: DateTimeOffset) =
+    {
+        CandidateId      = Guid.NewGuid()
+        SecurityId       = secId
+        ExpectedAmount   = expectedAmount
+        ActualAmount     = actualAmount
+        ExpectedCurrency = expectedCurrency
+        ActualCurrency   = actualCurrency
+        ExpectedDate     = expectedDate
+        ActualDate       = actualDate
+        Notes            = ""
+    }
+
+[<Fact>]
+let ``ReconciliationRules apply returns FullMatch for exact candidate with default rule`` () =
+    let c = candidate
+                (Guid.NewGuid())
+                500m 500m
+                "USD" "USD"
+                (DateTimeOffset.Parse("2026-01-01T00:00:00Z"))
+                (DateTimeOffset.Parse("2026-01-01T00:00:00Z"))
+
+    match ReconciliationRules.apply MatchingRule.``default`` c with
+    | FullMatch conf -> conf |> should (be greaterThanOrEqualTo) 0.9m
+    | other -> failwithf "Expected FullMatch but got %A" other
+
+[<Fact>]
+let ``ReconciliationRules apply returns NoMatch CurrencyBreak when currencies differ`` () =
+    let c = candidate
+                (Guid.NewGuid())
+                500m 500m
+                "USD" "EUR"
+                (DateTimeOffset.Parse("2026-01-01T00:00:00Z"))
+                (DateTimeOffset.Parse("2026-01-01T00:00:00Z"))
+
+    match ReconciliationRules.apply MatchingRule.strict c with
+    | NoMatch (CurrencyBreak(exp, act)) ->
+        exp |> should equal "USD"
+        act |> should equal "EUR"
+    | other -> failwithf "Expected NoMatch CurrencyBreak but got %A" other
+
+[<Fact>]
+let ``ReconciliationRules apply returns NoMatch TimingBreak when date exceeds tolerance`` () =
+    let c = candidate
+                (Guid.NewGuid())
+                1000m 1000m
+                "USD" "USD"
+                (DateTimeOffset.Parse("2026-01-01T00:00:00Z"))
+                (DateTimeOffset.Parse("2026-01-10T00:00:00Z")) // 9 days late
+
+    match ReconciliationRules.apply MatchingRule.strict c with
+    | NoMatch (TimingBreak days) -> days |> should equal 9
+    | other -> failwithf "Expected NoMatch TimingBreak but got %A" other
+
+[<Fact>]
+let ``ReconciliationRules apply returns NoMatch AmountBreak when amount exceeds tolerance`` () =
+    let c = candidate
+                (Guid.NewGuid())
+                1000m 900m  // 10% variance — above strict zero-tolerance
+                "USD" "USD"
+                (DateTimeOffset.Parse("2026-06-01T00:00:00Z"))
+                (DateTimeOffset.Parse("2026-06-01T00:00:00Z"))
+
+    match ReconciliationRules.apply MatchingRule.strict c with
+    | NoMatch (AmountBreak(exp, act)) ->
+        exp |> should equal 1000m
+        act |> should equal 900m
+    | other -> failwithf "Expected NoMatch AmountBreak but got %A" other
+
+[<Fact>]
+let ``ReconciliationRules applyBest selects first matching rule from priority list`` () =
+    let secId = Guid.NewGuid()
+    let c = candidate
+                secId
+                1000m 999m   // 0.1% variance — within default 1%, outside strict 0%
+                "USD" "USD"
+                (DateTimeOffset.Parse("2026-03-15T00:00:00Z"))
+                (DateTimeOffset.Parse("2026-03-15T00:00:00Z"))
+
+    // strict first, then default: should fall through to default and match
+    let outcome = ReconciliationRules.applyBest [ MatchingRule.strict; MatchingRule.``default`` ] c
+
+    match outcome with
+    | FullMatch _ -> ()
+    | other -> failwithf "Expected FullMatch from default rule but got %A" other
+
+[<Fact>]
+let ``ReconciliationRules applyBest returns NoMatch MissingEntry when no rule matches`` () =
+    let c = candidate
+                (Guid.NewGuid())
+                1000m 500m   // 50% variance — above even default tolerance
+                "USD" "USD"
+                (DateTimeOffset.Parse("2026-03-15T00:00:00Z"))
+                (DateTimeOffset.Parse("2026-03-25T00:00:00Z")) // also 10 days late
+
+    let outcome = ReconciliationRules.applyBest [ MatchingRule.strict; MatchingRule.``default`` ] c
+
+    match outcome with
+    | NoMatch MissingEntry -> ()
+    | other -> failwithf "Expected NoMatch MissingEntry but got %A" other
+
+[<Fact>]
+let ``ReconciliationRules classifyBreaks emits BreakRecord for non-matching candidates`` () =
+    let runId = Guid.NewGuid()
+    let secId = Guid.NewGuid()
+
+    let c = candidate
+                secId
+                200m 100m   // 50% variance — fails strict rule
+                "USD" "USD"
+                (DateTimeOffset.Parse("2026-05-01T00:00:00Z"))
+                (DateTimeOffset.Parse("2026-05-01T00:00:00Z"))
+
+    let breaks = ReconciliationRules.classifyBreaks runId MatchingRule.strict [ c ]
+
+    breaks.Length |> should equal 1
+    breaks[0].RunId |> should equal runId
+    breaks[0].ExpectedAmount |> should equal 200m
+    breaks[0].ActualAmount |> should equal 100m
+    breaks[0].IsResolved |> should equal false
+
+[<Fact>]
+let ``ReconciliationRules classifyBreaks returns empty list when all candidates match`` () =
+    let runId = Guid.NewGuid()
+    let c = candidate
+                (Guid.NewGuid())
+                750m 750m
+                "USD" "USD"
+                (DateTimeOffset.Parse("2026-08-01T00:00:00Z"))
+                (DateTimeOffset.Parse("2026-08-01T00:00:00Z"))
+
+    let breaks = ReconciliationRules.classifyBreaks runId MatchingRule.strict [ c ]
+
+    breaks |> should be Empty
+
+[<Fact>]
+let ``LedgerBreakClassification severity marks currency break as Critical`` () =
+    LedgerBreakClassification.severity 1000m (CurrencyBreak("USD", "EUR"))
+    |> should equal Critical
+
+[<Fact>]
+let ``LedgerBreakClassification severity marks large amount break as Critical`` () =
+    // > 5% variance on a non-zero expected amount
+    LedgerBreakClassification.severity 1000m (AmountBreak(1000m, 1060m))
+    |> should equal Critical
+
+[<Fact>]
+let ``LedgerBreakClassification severity marks small amount break as Medium`` () =
+    // Within 1% variance
+    LedgerBreakClassification.severity 1000m (AmountBreak(1000m, 1005m))
+    |> should equal Medium
+
+[<Fact>]
+let ``BreakSeverity round-trips through string conversion`` () =
+    let severities = [ Critical; High; Medium; Low; Info ]
+    for sev in severities do
+        BreakSeverity.fromString (BreakSeverity.asString sev) |> should equal sev
