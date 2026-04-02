@@ -1246,6 +1246,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── NullSecurityMasterServices.cs
 │   │   │   ├── SecurityEconomicDefinitionAdapter.cs
 │   │   │   ├── SecurityMasterAggregateRebuilder.cs
+│   │   │   ├── SecurityMasterCanonicalSymbolSeedService.cs
 │   │   │   ├── SecurityMasterConflictService.cs
 │   │   │   ├── SecurityMasterCsvParser.cs
 │   │   │   ├── SecurityMasterImportService.cs
@@ -1747,6 +1748,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── Alpaca
 │   │   │   │   ├── AlpacaBrokerageGateway.cs
 │   │   │   │   ├── AlpacaConstants.cs
+│   │   │   │   ├── AlpacaCorporateActionProvider.cs
 │   │   │   │   ├── AlpacaHistoricalDataProvider.cs
 │   │   │   │   ├── AlpacaMarketDataClient.cs
 │   │   │   │   ├── AlpacaProviderModule.cs
@@ -1768,6 +1770,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   ├── DataGapAnalyzer.cs
 │   │   │   │   │   ├── DataGapRepair.cs
 │   │   │   │   │   └── DataQualityMonitor.cs
+│   │   │   │   ├── ICorporateActionProvider.cs
 │   │   │   │   ├── IHistoricalDataProvider.cs
 │   │   │   │   ├── ISymbolSearchProvider.cs
 │   │   │   │   ├── ProviderBehaviorBuilder.cs
@@ -3297,6 +3300,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-445 directories, 2724 files
+445 directories, 2727 files
 ```
 <!-- readme-tree end -->
