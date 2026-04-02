@@ -9,7 +9,7 @@ namespace Meridian.Application.Config;
 /// <param name="Compress">Whether JSONL sinks should gzip. Null means use base configuration/default.</param>
 /// <param name="DataSource">
 /// Market data provider selector:
-/// - <see cref="DataSourceKind.IB"/> (default) uses Interactive Brokers via IMarketDataClient/IBMarketDataClient.
+/// - <see cref="DataSourceKind.IB"/> uses Interactive Brokers via IMarketDataClient/IBMarketDataClient.
 /// - <see cref="DataSourceKind.Alpaca"/> uses Alpaca market data via WebSocket (trades; quotes optional in future).
 /// - <see cref="DataSourceKind.StockSharp"/> uses StockSharp connectors (Rithmic, IQFeed, CQG, IB, etc.).
 /// - <see cref="DataSourceKind.NYSE"/> uses the NYSE market data feed.
@@ -36,7 +36,7 @@ namespace Meridian.Application.Config;
 public sealed record AppConfig(
     string DataRoot = "data",
     bool? Compress = null,
-    [property: JsonConverter(typeof(DataSourceKindConverter))] DataSourceKind DataSource = DataSourceKind.IB,
+    [property: JsonConverter(typeof(DataSourceKindConverter))] DataSourceKind DataSource = DataSourceKind.Synthetic,
     AlpacaOptions? Alpaca = null,
     IBOptions? IB = null,
     PolygonOptions? Polygon = null,

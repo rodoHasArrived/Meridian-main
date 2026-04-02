@@ -578,7 +578,11 @@ public sealed class PreflightChecker
             ["AlphaVantage"] = new("Alpha Vantage", new[]
             {
                 new CredentialRequirement("ALPHAVANTAGE__APIKEY", new[] { "ALPHA_VANTAGE_API_KEY", "ALPHAVANTAGE_API_KEY", "MDC_ALPHA_VANTAGE_API_KEY" })
-            }, null)
+            }, null),
+            // Free / credential-free providers — no API key required
+            ["Synthetic"] = new("Synthetic Market Data", Array.Empty<CredentialRequirement>(), null),
+            ["StockSharp"] = new("StockSharp", Array.Empty<CredentialRequirement>(),
+                "docs/providers/stocksharp-connectors.md")
         };
 
         if (!providerCredentialMap.TryGetValue(activeDataSource, out var requirement))

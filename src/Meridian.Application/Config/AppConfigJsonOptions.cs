@@ -28,7 +28,11 @@ public static class AppConfigJsonOptions
         {
             TypeInfoResolver = MarketDataJsonContext.Default,
             PropertyNameCaseInsensitive = true,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            // Allow C-style // comments so the sample config can be used directly
+            ReadCommentHandling = JsonCommentHandling.Skip,
+            // Allow trailing commas as a defensive measure for hand-edited config files
+            AllowTrailingCommas = true
         };
 
         // Add custom converter for DataSourceKind enum parsing
