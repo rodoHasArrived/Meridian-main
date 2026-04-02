@@ -561,6 +561,7 @@ Use these documents together when planning or implementing new work:
 │   ├── DEPENDENCIES.md
 │   ├── HELP.md
 │   ├── README.md
+│   ├── WORKFLOW_GUIDE.md
 │   ├── adr
 │   │   ├── 001-provider-abstraction.md
 │   │   ├── 002-tiered-storage-architecture.md
@@ -929,6 +930,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── 01-dashboard.png
 │   │   ├── 02-workstation.png
 │   │   ├── 03-swagger.png
+│   │   ├── 04-status-overview.png
 │   │   └── README.md
 │   ├── security
 │   │   ├── README.md
@@ -3307,6 +3309,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-445 directories, 2734 files
+445 directories, 2736 files
 ```
 <!-- readme-tree end -->
