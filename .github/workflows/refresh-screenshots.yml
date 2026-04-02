@@ -240,6 +240,7 @@ jobs:
           file_pattern: docs/screenshots/*.png
           commit_user_name: github-actions[bot]
           commit_user_email: 41898282+github-actions[bot]@users.noreply.github.com
+          push_options: '--force-with-lease'
 
       - name: Write workflow summary
         if: always()
