@@ -1,11 +1,13 @@
 // ✅ ADR-001: IHistoricalDataProvider contract via BaseHistoricalDataProvider
 // ✅ ADR-004: CancellationToken on all async methods
-// ✅ ADR-005: Attribute-based provider discovery
-// ✅ Rate limiting via WaitForRateLimitSlotAsync
-
+// ✅ ADR-005: Attribute-based provider discovery via [DataSource]
+// ✅ ADR-010: HTTP client via IHttpClientFactory (HttpClientFactoryProvider)
+// ✅ Rate limiting via WaitForRateLimitSlotAsync (inherited from BaseHistoricalDataProvider)
 using System.Globalization;
+using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Application.Exceptions;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Models;
 using Meridian.Infrastructure.Adapters.Core;
@@ -17,42 +19,108 @@ using Serilog;
 namespace Meridian.Infrastructure.Adapters.Robinhood;
 
 /// <summary>
-/// Pulls free end-of-day historical bars from Robinhood's public historicals API.
-/// No authentication required for the public endpoints.
+/// Historical data provider using the Robinhood unofficial API.
+/// Provides daily OHLCV bars for US equities via Bearer-token authentication.
+///
+/// <para>
+/// <b>Important:</b> Robinhood does not publish an official public API.
+/// This provider targets the same endpoints used by the Robinhood mobile application.
+/// Users must supply a personal access token via the <c>ROBINHOOD_ACCESS_TOKEN</c>
+/// environment variable. Tokens can be obtained through the Robinhood OAuth2 login
+/// flow or from a valid browser/app session.
+/// </para>
+///
+/// <para>
+/// Rate limit: the endpoint is undocumented; the provider defaults to 100 req/hour
+/// to avoid triggering abuse-detection heuristics. Adjust <c>RateLimitPerHour</c>
+/// in config if needed.
+/// </para>
+///
+/// Coverage: US equities and ETFs traded on Robinhood's platform.
 /// </summary>
-/// <remarks>
-/// Robinhood historicals endpoint:
-/// GET https://api.robinhood.com/quotes/historicals/{symbol}/?interval=day&amp;span=year
-/// Returns up to 1 year of daily OHLCV data per request.
-/// For multi-year history, multiple span requests are issued (year, 5year).
-/// </remarks>
-[DataSource("robinhood", "Robinhood (free EOD)", DataSourceType.Historical, DataSourceCategory.Free,
-    Priority = 25, Description = "Free end-of-day OHLCV data from Robinhood's public API")]
+[DataSource("robinhood", "Robinhood (unofficial)", DataSourceType.Historical, DataSourceCategory.Free,
+    Priority = 35, Description = "Daily OHLCV bars via Robinhood unofficial API (requires personal access token)")]
 [ImplementsAdr("ADR-001", "Robinhood historical data provider implementation")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
 public sealed class RobinhoodHistoricalDataProvider : BaseHistoricalDataProvider
 {
-    private const string BaseUrl = "https://api.robinhood.com";
+    private const string BaseUrl = "https://api.robinhood.com/marketdata/historicals/";
+    private const string EnvAccessToken = "ROBINHOOD_ACCESS_TOKEN";
+
+    private readonly string? _accessToken;
+    private readonly int _priority;
+
+    #region Abstract property implementations
 
     public override string Name => "robinhood";
-    public override string DisplayName => "Robinhood (free EOD)";
-    public override string Description => "Free daily OHLCV from Robinhood's public API (US equities).";
+    public override string DisplayName => "Robinhood (unofficial)";
+    public override string Description => "Daily OHLCV bars for US equities via the Robinhood unofficial API.";
     protected override string HttpClientName => HttpClientNames.RobinhoodHistorical;
 
-    public override int Priority => 25;
+    #endregion
 
-    // Robinhood public API: conservative defaults — 10 requests/minute
-    public override int MaxRequestsPerWindow => 10;
-    public override TimeSpan RateLimitWindow => TimeSpan.FromMinutes(1);
+    #region Rate-limit overrides
 
-    public RobinhoodHistoricalDataProvider(HttpClient? httpClient = null, ILogger? log = null)
+    public override int Priority => _priority;
+    public override TimeSpan RateLimitDelay => TimeSpan.Zero; // Use the hourly window-based limit.
+    public override int MaxRequestsPerWindow => 100; // 100 requests/hour for the undocumented endpoint.
+    public override TimeSpan RateLimitWindow => TimeSpan.FromHours(1);
+
+    #endregion
+
+    /// <summary>
+    /// Capabilities: daily bars only, US equities.
+    /// </summary>
+    public override HistoricalDataCapabilities Capabilities { get; } =
+        HistoricalDataCapabilities.BarsOnly.WithMarkets("US");
+
+    /// <summary>
+    /// Creates a new Robinhood historical data provider.
+    /// </summary>
+    /// <param name="accessToken">Bearer access token (falls back to ROBINHOOD_ACCESS_TOKEN env var).</param>
+    /// <param name="priority">Priority in fallback chain (lower = tried first, default: 35).</param>
+    /// <param name="httpClient">Optional HTTP client instance.</param>
+    /// <param name="log">Optional logger instance.</param>
+    public RobinhoodHistoricalDataProvider(
+        string? accessToken = null,
+        int priority = 35,
+        HttpClient? httpClient = null,
+        ILogger? log = null)
         : base(httpClient, log)
     {
+        _priority = priority;
+        _accessToken = accessToken ?? Environment.GetEnvironmentVariable(EnvAccessToken);
+
+        if (!string.IsNullOrEmpty(_accessToken))
+        {
+            Http.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", _accessToken);
+        }
+
+        Http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
     }
 
-    protected override string NormalizeSymbol(string symbol) =>
-        symbol.ToUpperInvariant();
+    public override async Task<bool> IsAvailableAsync(CancellationToken ct = default)
+    {
+        if (string.IsNullOrEmpty(_accessToken))
+        {
+            Log.Warning("Robinhood access token not configured (set {Env})", EnvAccessToken);
+            return false;
+        }
+
+        try
+        {
+            var url = $"{BaseUrl}?symbols=AAPL&interval=day&span=week&bounds=regular";
+            using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            Log.Debug(ex, "Robinhood availability check failed");
+            return false;
+        }
+    }
 
     public override async Task<IReadOnlyList<HistoricalBar>> GetDailyBarsAsync(
         string symbol,
@@ -63,220 +131,180 @@ public sealed class RobinhoodHistoricalDataProvider : BaseHistoricalDataProvider
         ThrowIfDisposed();
         ValidateSymbol(symbol);
 
-        var normalized = NormalizeSymbol(symbol);
-        var allBars = new List<HistoricalBar>();
+        if (string.IsNullOrEmpty(_accessToken))
+            throw new ConnectionException(
+                "Robinhood access token is required. Set the ROBINHOOD_ACCESS_TOKEN environment variable.",
+                provider: Name);
 
-        // Robinhood only returns up to 1 year per span. We fetch "5year" to cover more history.
-        // Then filter to the requested date range.
-        var spans = new[] { "5year", "year" };
+        var normalizedSymbol = NormalizeSymbol(symbol);
 
-        foreach (var span in spans)
+        // Robinhood uses span-based queries rather than explicit date ranges.
+        // We request the maximum span (5year) and filter client-side.
+        var span = SelectSpan(from, to);
+        var url = BuildUrl(normalizedSymbol, span);
+
+        Log.Information("Requesting Robinhood history for {Symbol} (span={Span})", symbol, span);
+
+        // ExecuteGetAndReadAsync internally calls WaitForRateLimitSlotAsync; do not call it separately.
+        var json = await ExecuteGetAndReadAsync(url, symbol, "bars", ct).ConfigureAwait(false);
+
+        if (string.IsNullOrEmpty(json))
         {
-            await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
-
-            var url = $"{BaseUrl}/quotes/historicals/{normalized}/?interval=day&span={span}";
-            Log.Information("Requesting Robinhood history for {Symbol} span={Span}", symbol, span);
-
-            using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
-                Log.Warning("Robinhood HTTP {StatusCode} for {Symbol}: {Body}", (int)response.StatusCode, symbol, body);
-
-                if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
-                    break;
-
-                // For 5year first, fall through to year span on errors
-                continue;
-            }
-
-            var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
-            var parsed = ParseResponse(json, symbol, from, to);
-            allBars.AddRange(parsed);
-
-            // If 5year returned data, no need to fetch year span too
-            if (allBars.Count > 0)
-                break;
+            Log.Warning("No data returned from Robinhood for {Symbol}", symbol);
+            return [];
         }
 
-        // Deduplicate and sort
-        var result = allBars
-            .GroupBy(b => b.SessionDate)
-            .Select(g => g.First())
-            .OrderBy(b => b.SessionDate)
-            .ToArray();
+        var response = JsonSerializer.Deserialize(json, RobinhoodHistoricalSerializerContext.Default.RobinhoodHistoricalsResponse);
+        if (response?.Results is null || response.Results.Count == 0)
+        {
+            Log.Warning("Empty results from Robinhood for {Symbol}", symbol);
+            return [];
+        }
 
-        Log.Information("Fetched {Count} bars for {Symbol} from Robinhood", result.Length, symbol);
-        return result;
-    }
+        var symbolResult = response.Results.FirstOrDefault(r =>
+            string.Equals(r.Symbol, normalizedSymbol, StringComparison.OrdinalIgnoreCase));
 
-    private List<HistoricalBar> ParseResponse(string json, string symbol, DateOnly? from, DateOnly? to)
-    {
+        if (symbolResult?.Historicals is null || symbolResult.Historicals.Count == 0)
+        {
+            Log.Warning("No historicals for {Symbol} in Robinhood response", symbol);
+            return [];
+        }
+
         var bars = new List<HistoricalBar>();
 
-        RobinhoodHistoricalsResponse? data;
-        try
+        foreach (var item in symbolResult.Historicals)
         {
-            data = JsonSerializer.Deserialize(json, RobinhoodJsonContext.Default.RobinhoodHistoricalsResponse);
-        }
-        catch (JsonException ex)
-        {
-            Log.Warning("Failed to parse Robinhood response for {Symbol}: {Error}", symbol, ex.Message);
-            return bars;
-        }
-
-        if (data?.Results is null || data.Results.Length == 0)
-            return bars;
-
-        foreach (var item in data.Results)
-        {
-            if (string.IsNullOrEmpty(item.BeginsAt))
+            if (item.BeginsAt is null)
                 continue;
 
-            if (!DateTimeOffset.TryParse(item.BeginsAt, null, System.Globalization.DateTimeStyles.RoundtripKind, out var ts))
+            if (!DateTimeOffset.TryParse(item.BeginsAt, out var timestamp))
                 continue;
 
-            var date = DateOnly.FromDateTime(ts.UtcDateTime);
+            var sessionDate = DateOnly.FromDateTime(timestamp.UtcDateTime);
 
-            if (from is not null && date < from.Value)
+            if (from.HasValue && sessionDate < from.Value)
                 continue;
-            if (to is not null && date > to.Value)
-                continue;
-
-            if (!decimal.TryParse(item.OpenPrice, NumberStyles.Any, CultureInfo.InvariantCulture, out var open))
-                continue;
-            if (!decimal.TryParse(item.ClosePrice, NumberStyles.Any, CultureInfo.InvariantCulture, out var close))
-                continue;
-            if (!decimal.TryParse(item.HighPrice, NumberStyles.Any, CultureInfo.InvariantCulture, out var high))
-                continue;
-            if (!decimal.TryParse(item.LowPrice, NumberStyles.Any, CultureInfo.InvariantCulture, out var low))
-                continue;
-            if (!long.TryParse(item.Volume, NumberStyles.Any, CultureInfo.InvariantCulture, out var volume))
+            if (to.HasValue && sessionDate > to.Value)
                 continue;
 
-            if (!IsValidOhlc(open, high, low, close))
+            if (!decimal.TryParse(item.OpenPrice, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var open) ||
+                !decimal.TryParse(item.ClosePrice, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var close) ||
+                !decimal.TryParse(item.HighPrice, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var high) ||
+                !decimal.TryParse(item.LowPrice, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var low))
+                continue;
+
+            if (!ValidateOhlc(open, high, low, close, symbol, sessionDate))
                 continue;
 
             bars.Add(new HistoricalBar(
                 Symbol: symbol.ToUpperInvariant(),
-                SessionDate: date,
+                SessionDate: sessionDate,
                 Open: open,
                 High: high,
                 Low: low,
                 Close: close,
-                Volume: volume,
+                Volume: item.Volume,
                 Source: Name,
-                SequenceNumber: date.DayNumber));
+                SequenceNumber: sessionDate.DayNumber
+            ));
         }
 
-        return bars;
+        var result = bars.OrderBy(b => b.SessionDate).ToList();
+        Log.Information("Fetched {Count} bars for {Symbol} from Robinhood", result.Count, symbol);
+        return result;
     }
+
+    private static string SelectSpan(DateOnly? from, DateOnly? to)
+    {
+        if (from is null)
+            return "5year";
+
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var reference = to ?? today;
+        var daysBack = (reference.DayNumber - from.Value.DayNumber);
+
+        return daysBack switch
+        {
+            <= 7 => "week",
+            <= 31 => "month",
+            <= 91 => "3month",
+            <= 365 => "year",
+            _ => "5year"
+        };
+    }
+
+    private static string BuildUrl(string symbol, string span)
+    {
+        return $"{BaseUrl}?symbols={Uri.EscapeDataString(symbol)}&interval=day&span={span}&bounds=regular";
+    }
+
+    protected override string NormalizeSymbol(string symbol)
+    {
+        return symbol.ToUpperInvariant().Trim();
+    }
+
+    #region Robinhood API response models (internal — referenced by ADR-014 source-generated context)
+
+    internal sealed class RobinhoodHistoricalsResponse
+    {
+        [JsonPropertyName("results")]
+        public List<RobinhoodSymbolResult>? Results { get; set; }
+    }
+
+    internal sealed class RobinhoodSymbolResult
+    {
+        [JsonPropertyName("symbol")]
+        public string? Symbol { get; set; }
+
+        [JsonPropertyName("historicals")]
+        public List<RobinhoodBar>? Historicals { get; set; }
+
+        [JsonPropertyName("span")]
+        public string? Span { get; set; }
+
+        [JsonPropertyName("interval")]
+        public string? Interval { get; set; }
+
+        [JsonPropertyName("bounds")]
+        public string? Bounds { get; set; }
+    }
+
+    internal sealed class RobinhoodBar
+    {
+        [JsonPropertyName("begins_at")]
+        public string? BeginsAt { get; set; }
+
+        [JsonPropertyName("open_price")]
+        public string? OpenPrice { get; set; }
+
+        [JsonPropertyName("close_price")]
+        public string? ClosePrice { get; set; }
+
+        [JsonPropertyName("high_price")]
+        public string? HighPrice { get; set; }
+
+        [JsonPropertyName("low_price")]
+        public string? LowPrice { get; set; }
+
+        [JsonPropertyName("volume")]
+        public long Volume { get; set; }
+
+        [JsonPropertyName("session")]
+        public string? Session { get; set; }
+
+        [JsonPropertyName("interpolated")]
+        public bool Interpolated { get; set; }
+    }
+
+    #endregion
 }
 
 /// <summary>
-/// Robinhood historicals API response DTO.
+/// Source-generated JSON serializer context for Robinhood historical API DTOs (ADR-014).
 /// </summary>
-public sealed class RobinhoodHistoricalsResponse
-{
-    [JsonPropertyName("results")]
-    public RobinhoodHistoricalItem[]? Results { get; set; }
-
-    [JsonPropertyName("symbol")]
-    public string? Symbol { get; set; }
-
-    [JsonPropertyName("interval")]
-    public string? Interval { get; set; }
-
-    [JsonPropertyName("span")]
-    public string? Span { get; set; }
-}
-
-/// <summary>
-/// Single daily bar entry in the Robinhood historicals response.
-/// </summary>
-public sealed class RobinhoodHistoricalItem
-{
-    [JsonPropertyName("begins_at")]
-    public string? BeginsAt { get; set; }
-
-    [JsonPropertyName("open_price")]
-    public string? OpenPrice { get; set; }
-
-    [JsonPropertyName("close_price")]
-    public string? ClosePrice { get; set; }
-
-    [JsonPropertyName("high_price")]
-    public string? HighPrice { get; set; }
-
-    [JsonPropertyName("low_price")]
-    public string? LowPrice { get; set; }
-
-    [JsonPropertyName("volume")]
-    public string? Volume { get; set; }
-
-    [JsonPropertyName("session")]
-    public string? Session { get; set; }
-
-    [JsonPropertyName("interpolated")]
-    public bool Interpolated { get; set; }
-}
-
-/// <summary>
-/// Robinhood instruments search API response DTO.
-/// </summary>
-public sealed class RobinhoodInstrumentsResponse
-{
-    [JsonPropertyName("results")]
-    public RobinhoodInstrument[]? Results { get; set; }
-
-    [JsonPropertyName("next")]
-    public string? Next { get; set; }
-}
-
-/// <summary>
-/// Single instrument entry in the Robinhood instruments response.
-/// </summary>
-public sealed class RobinhoodInstrument
-{
-    [JsonPropertyName("symbol")]
-    public string? Symbol { get; set; }
-
-    [JsonPropertyName("name")]
-    public string? Name { get; set; }
-
-    [JsonPropertyName("type")]
-    public string? Type { get; set; }
-
-    [JsonPropertyName("market")]
-    public string? Market { get; set; }
-
-    [JsonPropertyName("id")]
-    public string? Id { get; set; }
-
-    [JsonPropertyName("url")]
-    public string? Url { get; set; }
-
-    [JsonPropertyName("tradeable")]
-    public bool Tradeable { get; set; }
-
-    [JsonPropertyName("country")]
-    public string? Country { get; set; }
-}
-
-/// <summary>
-/// ADR-014 compliant JSON source-generation context for Robinhood DTOs.
-/// </summary>
-[JsonSourceGenerationOptions(
-    WriteIndented = false,
-    PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
-    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-    PropertyNameCaseInsensitive = true,
-    GenerationMode = JsonSourceGenerationMode.Default)]
-[JsonSerializable(typeof(RobinhoodHistoricalsResponse))]
-[JsonSerializable(typeof(RobinhoodHistoricalItem))]
-[JsonSerializable(typeof(RobinhoodInstrumentsResponse))]
-[JsonSerializable(typeof(RobinhoodInstrument))]
-public partial class RobinhoodJsonContext : JsonSerializerContext
-{
-}
+[JsonSerializable(typeof(RobinhoodHistoricalDataProvider.RobinhoodHistoricalsResponse))]
+[JsonSerializable(typeof(RobinhoodHistoricalDataProvider.RobinhoodSymbolResult))]
+[JsonSerializable(typeof(RobinhoodHistoricalDataProvider.RobinhoodBar))]
+[JsonSourceGenerationOptions(DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+    PropertyNameCaseInsensitive = true)]
+internal sealed partial class RobinhoodHistoricalSerializerContext : JsonSerializerContext;

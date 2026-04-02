@@ -3437,6 +3437,7 @@ export TIINGO_API_TOKEN=your-token
 export FINNHUB_API_KEY=your-api-key
 export ALPHA_VANTAGE_API_KEY=your-api-key
 export NASDAQ_API_KEY=your-api-key
+export ROBINHOOD_ACCESS_TOKEN=your-access-token
 ```
 
 ### appsettings.json
@@ -3519,6 +3520,7 @@ The following provider-related classes are the current canonical inventory used 
 | `StockSharpMarketDataClient` | StockSharp streaming market data |
 | `SyntheticMarketDataClient` | Deterministic synthetic streaming and symbol-search market data for offline development |
 | `FailoverAwareMarketDataClient` | Streaming failover wrapper |
+| `RobinhoodMarketDataClient` | Robinhood polling-based BBO quotes (unofficial API, requires `ROBINHOOD_ACCESS_TOKEN`) |
 
 ### Historical implementations
 | Provider Class | Role |
@@ -3539,6 +3541,7 @@ The following provider-related classes are the current canonical inventory used 
 | `TiingoHistoricalDataProvider` | Tiingo historical bars |
 | `TwelveDataHistoricalDataProvider` | Twelve Data historical bars |
 | `YahooFinanceHistoricalDataProvider` | Yahoo Finance historical bars |
+| `RobinhoodHistoricalDataProvider` | Robinhood historical bars (unofficial API, requires `ROBINHOOD_ACCESS_TOKEN`) |
 
 ### Symbol search implementations
 | Provider Class | Role |
@@ -3559,6 +3562,7 @@ The following provider-related classes are the current canonical inventory used 
 | `IBBrokerageGateway` | Interactive Brokers order routing (conditional on IBAPI) |
 | `StockSharpBrokerageGateway` | StockSharp connector-based order routing |
 | `TemplateBrokerageGateway` | Brokerage adapter scaffold |
+| `RobinhoodBrokerageGateway` | Robinhood order routing via unofficial API (requires `ROBINHOOD_ACCESS_TOKEN`) |
 
 ### Shared base and template provider classes
 | Provider Class | Role |
