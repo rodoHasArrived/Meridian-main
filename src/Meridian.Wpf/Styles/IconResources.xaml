@@ -17,6 +17,66 @@
     <sys:String x:Key="IconBack">&#xE72B;</sys:String>
     <sys:String x:Key="IconForward">&#xE72A;</sys:String>
 
+    <!-- ========================================== -->
+    <!-- WORKSPACE NAVIGATION ICONS -->
+    <!-- Segoe MDL2 Assets glyphs that replace the  -->
+    <!-- emoji strings formerly used in             -->
+    <!-- WorkspaceRegistry.cs.                      -->
+    <!-- SVG source files live in:                  -->
+    <!--   Assets/Icons/*.svg                       -->
+    <!-- ========================================== -->
+
+    <!-- Workspace-level icons -->
+    <sys:String x:Key="IconResearch">&#xEC35;</sys:String>       <!-- TestBeaker  (🔬) -->
+    <sys:String x:Key="IconTrading">&#xE945;</sys:String>        <!-- Lightning   (⚡) -->
+    <sys:String x:Key="IconDataOps">&#xEE94;</sys:String>        <!-- Database    (🗂) -->
+    <sys:String x:Key="IconGovernance">&#xE8D7;</sys:String>     <!-- Permissions (🛡) -->
+
+    <!-- Research workspace page icons -->
+    <sys:String x:Key="IconLiveData">&#xE9D2;</sys:String>       <!-- LineChart   (📈) -->
+    <sys:String x:Key="IconOrderBook">&#xE8FD;</sys:String>      <!-- List        (📋) -->
+    <sys:String x:Key="IconCharting">&#xE9D9;</sys:String>       <!-- BarChart    (📉) -->
+    <sys:String x:Key="IconDataBrowser">&#xE721;</sys:String>    <!-- Search      (🔍) -->
+    <sys:String x:Key="IconDataSampling">&#xF1AD;</sys:String>   <!-- DataUsage   (🎲) -->
+    <sys:String x:Key="IconSymbolStorage">&#xEE94;</sys:String>  <!-- Database    (💾) -->
+
+    <!-- Trading workspace page icons -->
+    <sys:String x:Key="IconBacktest">&#xEC35;</sys:String>       <!-- TestBeaker  (🧪) -->
+    <sys:String x:Key="IconStrategyRuns">&#xE768;</sys:String>   <!-- Play        (🚀) -->
+    <sys:String x:Key="IconRunDetail">&#xE8A5;</sys:String>      <!-- Document    (📑) -->
+    <sys:String x:Key="IconRunLedger">&#xE82D;</sys:String>      <!-- Library     (📚) -->
+    <sys:String x:Key="IconRunPortfolio">&#xE821;</sys:String>   <!-- Briefcase   (💼) -->
+    <sys:String x:Key="IconRunMat">&#xE8CF;</sys:String>         <!-- Target      (🎯) -->
+    <sys:String x:Key="IconTradingHours">&#xE823;</sys:String>   <!-- Clock       (🕐) -->
+
+    <!-- Data Operations workspace page icons -->
+    <sys:String x:Key="IconSymbols">&#xE8AB;</sys:String>        <!-- Sort        (🔤) -->
+    <sys:String x:Key="IconBackfill">&#xE892;</sys:String>       <!-- Rewind      (⏮) -->
+    <sys:String x:Key="IconProviderHealth">&#xEB51;</sys:String> <!-- Heart       (❤️) -->
+    <sys:String x:Key="IconDataSources">&#xEC05;</sys:String>    <!-- Wireless    (📡) -->
+    <sys:String x:Key="IconDataQuality">&#xE73E;</sys:String>    <!-- Checkmark   (✓) -->
+    <sys:String x:Key="IconDataCalendar">&#xE787;</sys:String>   <!-- Calendar    (📅) -->
+    <sys:String x:Key="IconDataExport">&#xEDE1;</sys:String>     <!-- Export      (📤) -->
+    <sys:String x:Key="IconStorageOpt">&#xE713;</sys:String>     <!-- Settings    (⚙️) -->
+    <sys:String x:Key="IconStorage">&#xEE94;</sys:String>        <!-- Database    (💿) -->
+    <sys:String x:Key="IconArchiveHealth">&#xE8E3;</sys:String>  <!-- Accept      (🏥) -->
+    <sys:String x:Key="IconEventReplay">&#xE768;</sys:String>    <!-- Play        (▶️) -->
+    <sys:String x:Key="IconIndexSub">&#xE8FD;</sys:String>       <!-- List        (📑) -->
+    <sys:String x:Key="IconPortfolioImport">&#xE8B5;</sys:String><!-- Import      (📥) -->
+    <sys:String x:Key="IconWatchlist">&#xE7B3;</sys:String>      <!-- View        (👁) -->
+    <sys:String x:Key="IconSchedules">&#xE916;</sys:String>      <!-- Timer       (⏰) -->
+    <sys:String x:Key="IconCollectionSessions">&#xE8EF;</sys:String> <!-- Video   (🎬) -->
+
+    <!-- Governance workspace page icons -->
+    <sys:String x:Key="IconSecurityMaster">&#xE72E;</sys:String> <!-- Lock        (🔐) -->
+    <sys:String x:Key="IconDiagnostics">&#xE90F;</sys:String>    <!-- Repair      (🔧) -->
+    <sys:String x:Key="IconServiceManager">&#xECE7;</sys:String> <!-- Plug        (🔌) -->
+    <sys:String x:Key="IconAdminMaintenance">&#xE74D;</sys:String> <!-- BulkEdit  (🧹) -->
+    <sys:String x:Key="IconRetentionAssurance">&#xE8A5;</sys:String> <!-- Document (📋) -->
+    <sys:String x:Key="IconLeanIntegration">&#xE71B;</sys:String><!-- Link        (🔗) -->
+    <sys:String x:Key="IconSystemHealth">&#xE9D9;</sys:String>   <!-- Chart      (📊) -->
+    <sys:String x:Key="IconKeyboardShortcuts">&#xE765;</sys:String> <!-- Keyboard (⌨️) -->
+
     <!-- Action Icons -->
     <sys:String x:Key="IconPlay">&#xE768;</sys:String>
     <sys:String x:Key="IconPause">&#xE769;</sys:String>

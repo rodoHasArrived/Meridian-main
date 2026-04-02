@@ -198,9 +198,9 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
 
         // Populate action bar.
         Actions.Clear();
-        Actions.Add(new ActionEntry("Add Symbol", AddToSecurityMasterCommand, "➕", "Add a new symbol", IsPrimary: true));
-        Actions.Add(new ActionEntry("Import", new RelayCommand(() => _notificationService.NotifyInfo("Import", "Symbol import started")), "📥", "Import symbols"));
-        Actions.Add(new ActionEntry("Export", ExportSymbolDataCommand, "📤", "Export symbols"));
+        Actions.Add(new ActionEntry("Add Symbol", AddToSecurityMasterCommand, "\uE710", "Add a new symbol", IsPrimary: true));
+        Actions.Add(new ActionEntry("Import", new RelayCommand(() => _notificationService.NotifyInfo("Import", "Symbol import started")), "\uE8B5", "Import symbols"));
+        Actions.Add(new ActionEntry("Export", ExportSymbolDataCommand, "\uEDE1", "Export symbols"));
 
         await LoadSymbolsFromConfigAsync();
         await LoadWatchlistsAsync();
