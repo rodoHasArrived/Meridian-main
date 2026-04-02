@@ -22,6 +22,7 @@ on:
       - 'src/Meridian.Ui/**'
       - 'src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs'
       - 'src/Meridian.Ui.Shared/HtmlTemplateGenerator*.cs'
+      - 'src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs'
   workflow_dispatch:
 
 permissions:
@@ -253,6 +254,40 @@ jobs:
             })
           );
 
+          // QuantScript / Workstation sub-pages
+          // Screenshot 10: Research workspace (backtests, run comparisons, QuantScript runs)
+          await withRetry('workstation-research', () =>
+            shot('docs/screenshots/10-workstation-research.png', `${BASE}/workstation/`, {
+              fullPage: true,
+              stableSelector: 'main, body',
+              waitMs: 500
+            })
+          );
+          // Screenshot 11: Trading workspace (paper cockpit, positions, blotter)
+          await withRetry('workstation-trading', () =>
+            shot('docs/screenshots/11-workstation-trading.png', `${BASE}/workstation/trading`, {
+              fullPage: true,
+              stableSelector: 'main, body',
+              waitMs: 500
+            })
+          );
+          // Screenshot 12: Data Operations workspace (providers, backfills, storage, exports)
+          await withRetry('workstation-data-operations', () =>
+            shot('docs/screenshots/12-workstation-data-operations.png', `${BASE}/workstation/data-operations`, {
+              fullPage: true,
+              stableSelector: 'main, body',
+              waitMs: 500
+            })
+          );
+          // Screenshot 13: Governance workspace (ledger, risk, diagnostics, audit history)
+          await withRetry('workstation-governance', () =>
+            shot('docs/screenshots/13-workstation-governance.png', `${BASE}/workstation/governance`, {
+              fullPage: true,
+              stableSelector: 'main, body',
+              waitMs: 500
+            })
+          );
+
           await browser.close();
           SCRIPT
 
@@ -299,4 +334,8 @@ jobs:
             echo "| Historical Backfill | \`docs/screenshots/07-backfill.png\` |"
             echo "| Derivatives Tracking | \`docs/screenshots/08-derivatives.png\` |"
             echo "| Subscribed Symbols | \`docs/screenshots/09-symbols.png\` |"
+            echo "| Workstation – Research | \`docs/screenshots/10-workstation-research.png\` |"
+            echo "| Workstation – Trading | \`docs/screenshots/11-workstation-trading.png\` |"
+            echo "| Workstation – Data Operations | \`docs/screenshots/12-workstation-data-operations.png\` |"
+            echo "| Workstation – Governance | \`docs/screenshots/13-workstation-governance.png\` |"
           } >> "$GITHUB_STEP_SUMMARY"

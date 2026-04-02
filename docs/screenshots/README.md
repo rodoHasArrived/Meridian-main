@@ -82,3 +82,35 @@ The **Derivatives** panel for configuring options / futures data collection, inc
 The **Subscribed Symbols** table showing the active symbol list with data-type columns and the add/remove controls.
 
 ![Subscribed Symbols](09-symbols.png)
+
+---
+
+## 10 – Workstation: Research
+
+The **Research** workspace of the React workstation shell, covering backtests, strategy run comparisons, QuantScript execution results, and experiment tracking.
+
+![Workstation – Research](10-workstation-research.png)
+
+---
+
+## 11 – Workstation: Trading
+
+The **Trading** workspace of the React workstation shell, showing the paper-trading cockpit, live positions blotter, open orders, fills history, and risk guardrails.
+
+![Workstation – Trading](11-workstation-trading.png)
+
+---
+
+## 12 – Workstation: Data Operations
+
+The **Data Operations** workspace of the React workstation shell, covering provider health, active backfills, storage tiers, exports, and symbol-management workflows.
+
+![Workstation – Data Operations](12-workstation-data-operations.png)
+
+---
+
+## 13 – Workstation: Governance
+
+The **Governance** workspace of the React workstation shell, showing the fund ledger overview, risk audit history, reconciliation breaks, diagnostics, and operational settings.
+
+![Workstation – Governance](13-workstation-governance.png)
