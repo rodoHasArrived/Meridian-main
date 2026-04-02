@@ -318,16 +318,16 @@ public sealed class PaperTradingPortfolio : IPortfolioState
                 ClosedAt: ts,
                 CloseFillId: closeFillId));
 
-            if (lot.Quantity <= remaining)
+            pos.Lots.RemoveFirst();
+            if (lot.Quantity > remaining)
             {
-                remaining -= lot.Quantity;
-                pos.Lots.RemoveFirst();
+                // Partial close: add back the reduced lot.
+                pos.Lots.AddFirst(lot with { Quantity = lot.Quantity - remaining });
+                remaining = 0;
             }
             else
             {
-                pos.Lots.RemoveFirst();
-                pos.Lots.AddFirst(lot with { Quantity = lot.Quantity - remaining });
-                remaining = 0;
+                remaining -= lot.Quantity;
             }
         }
 
