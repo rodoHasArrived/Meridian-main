@@ -66,9 +66,31 @@ public sealed class UiServer : IAsyncDisposable
         builder.Logging.SetMinimumLevel(LogLevel.Warning);
         builder.WebHost.UseUrls($"http://localhost:{port}");
 
+        // Allow reflection-based JSON binding for endpoint request types not covered by source-generated contexts.
+        // This is required for minimal-API parameter binding (e.g. PackageRequest, ImportRequest).
+        // Existing source-generated contexts still take precedence; reflection acts as a fallback only.
+        builder.Services.ConfigureHttpJsonOptions(o =>
+            o.SerializerOptions.TypeInfoResolverChain.Add(new System.Text.Json.Serialization.Metadata.DefaultJsonTypeInfoResolver()));
+
         // Use centralized service composition root
         var compositionOptions = CompositionOptions.WebDashboard with { ConfigPath = configPath };
         builder.Services.AddMarketDataServices(compositionOptions);
+
+        // Register the Ui.Shared ConfigStore wrapper so endpoint lambdas can resolve it from DI.
+        // The wrapper delegates to the core ConfigStore already registered by AddMarketDataServices.
+        builder.Services.AddSingleton<Meridian.Ui.Shared.Services.ConfigStore>(sp =>
+        {
+            var core = sp.GetRequiredService<Meridian.Application.UI.ConfigStore>();
+            return new Meridian.Ui.Shared.Services.ConfigStore(core.ConfigPath);
+        });
+
+        // Register the Ui.Shared BackfillCoordinator so endpoint lambdas can resolve it from DI.
+        builder.Services.AddSingleton<Meridian.Ui.Shared.Services.BackfillCoordinator>(sp =>
+        {
+            var configStore = sp.GetRequiredService<Meridian.Ui.Shared.Services.ConfigStore>();
+            return new Meridian.Ui.Shared.Services.BackfillCoordinator(configStore);
+        });
+
         builder.Services.AddSingleton<StatusEndpointHandlers>(sp =>
         {
             var pipeline = sp.GetRequiredService<EventPipeline>();
@@ -82,6 +104,7 @@ public sealed class UiServer : IAsyncDisposable
         });
 
         // Register session-based authentication service
+        builder.Services.AddSingleton<Meridian.Ui.Shared.UserProfileRegistry>();
         builder.Services.AddSingleton<LoginSessionService>();
         builder.Services.AddSingleton<IStrategyRepository, StrategyRunStore>();
         builder.Services.AddSingleton<ISecurityReferenceLookup, SecurityMasterSecurityReferenceLookup>();
@@ -235,110 +258,28 @@ public sealed class UiServer : IAsyncDisposable
         _app.MapGet("/live", () => Results.Ok("alive"));
         _app.MapGet("/livez", () => Results.Ok("alive"));
 
-        // ==================== EXTRACTED ENDPOINT MODULES ====================
-        // All API endpoints are organized in dedicated endpoint classes
-        // in Meridian.Ui.Shared/Endpoints/ for maintainability
-        // This reduces UiServer from 3,030 lines to ~250 lines
+        // ==================== UNIQUE ENDPOINT MODULES ====================
+        // Endpoints not included in MapUiEndpoints and must be registered explicitly.
 
-        // Index page
-        _app.MapIndexEndpoints(s_jsonOptions);
-
-        // Configuration API
-        _app.MapConfigEndpoints(s_jsonOptions);
-
-        // Symbol Management API
-        _app.MapSymbolEndpoints(s_jsonOptions);
-
-        // Status and Health API
+        // Status API (requires StatusEndpointHandlers, not included in MapUiEndpoints)
         var statusHandlers = _app.Services.GetRequiredService<StatusEndpointHandlers>();
         _app.MapStatusEndpoints(statusHandlers, s_jsonOptions);
-        _app.MapHealthEndpoints(s_jsonOptions);
 
-        // Backfill API
-        _app.MapBackfillEndpoints(s_jsonOptions, s_jsonOptionsCompact);
-        _app.MapBackfillScheduleEndpoints(s_jsonOptions);
-        _app.MapCheckpointEndpoints(s_jsonOptions);
-
-        // Storage API
-        _app.MapStorageEndpoints(s_jsonOptions);
-        _app.MapStorageQualityEndpoints(s_jsonOptions);
-
-        // Provider API
-        _app.MapProviderEndpoints(s_jsonOptions);
-        _app.MapProviderExtendedEndpoints(s_jsonOptions);
-        _app.MapCppTraderEndpoints();
-
-        // Data Quality API
-        var auditTrail = _app.Services.GetService<DroppedEventAuditTrail>();
-        _app.MapQualityDropsEndpoints(auditTrail, s_jsonOptions);
-
-        // Subscription API
-        _app.MapSubscriptionEndpoints(s_jsonOptions);
-
-        // Watchlist API
-
-        // Diagnostics API
-        _app.MapDiagnosticsEndpoints(s_jsonOptions);
-
-        // Historical Data API
-        _app.MapHistoricalEndpoints(s_jsonOptions);
-
-        // Data Packaging API
+        // Data Packaging API (requires dataRoot, not included in MapUiEndpoints)
         var config = _app.Services.GetRequiredService<Meridian.Application.UI.ConfigStore>().Load();
         _app.MapPackagingEndpoints(config.DataRoot);
 
-        // Archive Maintenance API
+        // Archive Maintenance API (not included in MapUiEndpoints)
         _app.MapArchiveMaintenanceEndpoints();
 
-        // Maintenance Schedule API
-        _app.MapMaintenanceScheduleEndpoints(s_jsonOptions);
-
-        // Failover API
-        _app.MapFailoverEndpoints(s_jsonOptions);
-
-        // Lean Integration API
-        _app.MapLeanEndpoints(s_jsonOptions);
-
-        // IB-specific API
-        _app.MapIBEndpoints(s_jsonOptions);
-
-        // Live Data API
-        _app.MapLiveDataEndpoints(s_jsonOptions);
-
-        // Options / Derivatives API
-        _app.MapOptionsEndpoints(s_jsonOptions);
-
-        // Messaging Hub API
-        _app.MapMessagingEndpoints(s_jsonOptions);
-
-        // Replay API
-        _app.MapReplayEndpoints(s_jsonOptions);
-
-        // Sampling API
-        _app.MapSamplingEndpoints(s_jsonOptions);
-
-        // Symbol Mapping API
-        _app.MapSymbolMappingEndpoints(s_jsonOptions);
-
-        // Time Series Alignment API
-        _app.MapAlignmentEndpoints(s_jsonOptions);
-
-        // Analytics API
-        _app.MapAnalyticsEndpoints(s_jsonOptions);
-
-        // Admin API
-        _app.MapAdminEndpoints(s_jsonOptions);
-
-        // Cron API
-        _app.MapCronEndpoints(s_jsonOptions);
-
-        // Export API
-        _app.MapExportEndpoints(s_jsonOptions);
-
-        // Canonicalization parity dashboard (Phase 2)
+        // Canonicalization parity dashboard (not included in MapUiEndpoints)
         _app.MapCanonicalizationEndpoints(s_jsonOptions);
 
-        // UI API (includes resilience, quality, SLA, and all other endpoint groups)
+        // Dashboard root page (maps GET / → HTML, not included in MapUiEndpoints)
+        _app.MapDashboard();
+
+        // ==================== AGGREGATED ENDPOINT MODULES ====================
+        // All remaining API endpoints (config, backfill, storage, providers, etc.)
         _app.MapUiEndpoints(s_jsonOptions);
     }
 
