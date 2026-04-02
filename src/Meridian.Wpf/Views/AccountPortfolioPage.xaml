@@ -1,0 +1,108 @@
+<Page x:Class="Meridian.Wpf.Views.AccountPortfolioPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:vm="clr-namespace:Meridian.Wpf.ViewModels"
+      Background="{DynamicResource ShellWindowBackgroundBrush}"
+      Loaded="OnPageLoaded"
+      Unloaded="OnPageUnloaded"
+      AutomationProperties.Name="Account Portfolio">
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />  <!-- header summary bar -->
+            <RowDefinition Height="Auto" />  <!-- column headers -->
+            <RowDefinition Height="*"    />  <!-- positions grid -->
+            <RowDefinition Height="Auto" />  <!-- status bar -->
+        </Grid.RowDefinitions>
+
+        <!-- ─── Summary header ─────────────────────────────────────────────── -->
+        <Border Grid.Row="0" Margin="0,0,0,12"
+                Background="{DynamicResource CardBackgroundBrush}"
+                CornerRadius="6" Padding="16,10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Account name + kind -->
+                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding DisplayName}"
+                               Style="{DynamicResource SubtitleTextBlockStyle}"
+                               Foreground="{DynamicResource PrimaryTextBrush}" />
+                    <TextBlock Text="{Binding Kind}"
+                               FontSize="11"
+                               Foreground="{DynamicResource SecondaryTextBrush}" />
+                </StackPanel>
+
+                <!-- Cash -->
+                <StackPanel Grid.Column="1" Margin="24,0,0,0" VerticalAlignment="Center">
+                    <TextBlock Text="Cash" FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}" />
+                    <TextBlock Text="{Binding Cash, StringFormat=C2}"
+                               Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="SemiBold" />
+                </StackPanel>
+
+                <!-- Gross exposure -->
+                <StackPanel Grid.Column="2" Margin="24,0,0,0" VerticalAlignment="Center">
+                    <TextBlock Text="Gross Exposure" FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}" />
+                    <TextBlock Text="{Binding GrossExposure, StringFormat=C2}"
+                               Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="SemiBold" />
+                </StackPanel>
+
+                <!-- Net exposure -->
+                <StackPanel Grid.Column="3" Margin="24,0,0,0" VerticalAlignment="Center">
+                    <TextBlock Text="Net Exposure" FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}" />
+                    <TextBlock Text="{Binding NetExposure, StringFormat=C2}"
+                               Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="SemiBold" />
+                </StackPanel>
+
+                <!-- Unrealised P&L -->
+                <StackPanel Grid.Column="4" Margin="24,0,0,0" VerticalAlignment="Center">
+                    <TextBlock Text="Unrealised P&amp;L" FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}" />
+                    <TextBlock Text="{Binding UnrealisedPnl, StringFormat=C2}"
+                               Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="SemiBold" />
+                </StackPanel>
+
+                <!-- Realised P&L -->
+                <StackPanel Grid.Column="5" Margin="24,0,0,0" VerticalAlignment="Center">
+                    <TextBlock Text="Realised P&amp;L" FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}" />
+                    <TextBlock Text="{Binding RealisedPnl, StringFormat=C2}"
+                               Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="SemiBold" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ─── Positions grid ─────────────────────────────────────────────── -->
+        <DataGrid Grid.Row="2"
+                  ItemsSource="{Binding Positions}"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  CanUserSortColumns="True"
+                  GridLinesVisibility="Horizontal"
+                  HeadersVisibility="Column"
+                  Background="Transparent"
+                  RowBackground="Transparent"
+                  AlternatingRowBackground="{DynamicResource AlternateRowBrush}"
+                  BorderThickness="0">
+
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Symbol"   Binding="{Binding Symbol}"                             Width="90" />
+                <DataGridTextColumn Header="Side"     Binding="{Binding Side}"                               Width="55" />
+                <DataGridTextColumn Header="Quantity" Binding="{Binding Quantity, StringFormat=N0}"           Width="80" />
+                <DataGridTextColumn Header="Avg Cost" Binding="{Binding AvgCost, StringFormat=C4}"           Width="90" />
+                <DataGridTextColumn Header="Unreal. P&amp;L" Binding="{Binding UnrealisedPnl, StringFormat=C2}" Width="100" />
+                <DataGridTextColumn Header="Real. P&amp;L"   Binding="{Binding RealisedPnl,   StringFormat=C2}" Width="100" />
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <!-- ─── Status bar ─────────────────────────────────────────────────── -->
+        <TextBlock Grid.Row="3" Margin="0,8,0,0"
+                   Text="{Binding StatusText}"
+                   FontSize="11"
+                   Foreground="{DynamicResource SecondaryTextBrush}" />
+    </Grid>
+</Page>

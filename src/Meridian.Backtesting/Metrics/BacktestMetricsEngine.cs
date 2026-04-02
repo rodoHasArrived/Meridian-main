@@ -268,8 +268,8 @@ internal static class BacktestMetricsEngine
     /// Computes realized P&amp;L for a single symbol's fills using FIFO lot matching.
     /// <para>
     /// NOTE: This is an independent computation over fill events for metric attribution purposes.
-    /// It must produce results consistent with <c>SimulatedPortfolio.RealiseFifo</c>, which drives
-    /// the live portfolio accounting. If one is changed, the other must be updated in parallel.
+    /// It must produce results consistent with <c>SimulatedPortfolio.RealiseLots</c> (FIFO path),
+    /// which drives the live portfolio accounting. If one is changed, the other must be updated in parallel.
     /// </para>
     /// </summary>
     private static decimal ComputeRealisedPnl(IReadOnlyList<FillEvent> fills)

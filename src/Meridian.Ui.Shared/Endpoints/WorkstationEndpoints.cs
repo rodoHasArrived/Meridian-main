@@ -635,6 +635,47 @@ public static class WorkstationEndpoints
         .Produces(404)
         .Produces(501);
 
+        // --- Cross-strategy aggregate portfolio ---
+
+        portfolioGroup.MapGet("/aggregate", (HttpContext context) =>
+        {
+            var aggregator = context.RequestServices.GetService<IAggregatePortfolioService>();
+            if (aggregator is null)
+                return Results.Problem("Aggregate portfolio service is not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
+
+            var positions = aggregator.GetAggregatedPositions();
+            return Results.Json(positions, jsonOptions);
+        })
+        .WithName("GetPortfolioAggregate")
+        .Produces<IReadOnlyList<AggregatedPosition>>(200)
+        .Produces(503);
+
+        portfolioGroup.MapGet("/exposure", (HttpContext context) =>
+        {
+            var aggregator = context.RequestServices.GetService<IAggregatePortfolioService>();
+            if (aggregator is null)
+                return Results.Problem("Aggregate portfolio service is not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
+
+            var report = aggregator.GetCrossStrategyExposure();
+            return Results.Json(report, jsonOptions);
+        })
+        .WithName("GetPortfolioExposure")
+        .Produces<CrossStrategyExposureReport>(200)
+        .Produces(503);
+
+        portfolioGroup.MapGet("/symbols/{symbol}/exposure", (string symbol, HttpContext context) =>
+        {
+            var aggregator = context.RequestServices.GetService<IAggregatePortfolioService>();
+            if (aggregator is null)
+                return Results.Problem("Aggregate portfolio service is not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
+
+            var net = aggregator.GetNetPositionForSymbol(symbol);
+            return Results.Json(net, jsonOptions);
+        })
+        .WithName("GetPortfolioSymbolExposure")
+        .Produces<NetSymbolPosition>(200)
+        .Produces(503);
+
         app.MapGet("/workstation", (IWebHostEnvironment environment) => ServeWorkstationIndex(environment))
             .ExcludeFromDescription();
 

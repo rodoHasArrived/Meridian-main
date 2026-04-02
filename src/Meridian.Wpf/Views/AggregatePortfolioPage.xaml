@@ -1,0 +1,99 @@
+<Page x:Class="Meridian.Wpf.Views.AggregatePortfolioPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:vm="clr-namespace:Meridian.Wpf.ViewModels"
+      Background="{DynamicResource ShellWindowBackgroundBrush}"
+      Loaded="OnPageLoaded"
+      Unloaded="OnPageUnloaded"
+      AutomationProperties.Name="Aggregate Portfolio">
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />  <!-- exposure summary bar -->
+            <RowDefinition Height="Auto" />  <!-- top concentrations strip -->
+            <RowDefinition Height="*"    />  <!-- netted positions grid -->
+            <RowDefinition Height="Auto" />  <!-- status bar -->
+        </Grid.RowDefinitions>
+
+        <!-- ─── Exposure summary ──────────────────────────────────────────── -->
+        <Border Grid.Row="0" Margin="0,0,0,8"
+                Background="{DynamicResource CardBackgroundBrush}"
+                CornerRadius="6" Padding="16,10">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Cross-Strategy Portfolio"
+                           Style="{DynamicResource SubtitleTextBlockStyle}"
+                           Foreground="{DynamicResource PrimaryTextBrush}"
+                           VerticalAlignment="Center" />
+
+                <StackPanel Margin="32,0,0,0" VerticalAlignment="Center">
+                    <TextBlock Text="Gross Exposure" FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}" />
+                    <TextBlock Text="{Binding GrossExposure, StringFormat=C2}"
+                               Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="SemiBold" />
+                </StackPanel>
+
+                <StackPanel Margin="24,0,0,0" VerticalAlignment="Center">
+                    <TextBlock Text="Net Exposure" FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}" />
+                    <TextBlock Text="{Binding NetExposure, StringFormat=C2}"
+                               Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="SemiBold" />
+                </StackPanel>
+
+                <StackPanel Margin="24,0,0,0" VerticalAlignment="Center">
+                    <TextBlock Text="As Of" FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}" />
+                    <TextBlock Text="{Binding AsOf, StringFormat='HH:mm:ss'}"
+                               Foreground="{DynamicResource SecondaryTextBrush}" FontSize="11" />
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- ─── Top concentrations ────────────────────────────────────────── -->
+        <ItemsControl Grid.Row="1" Margin="0,0,0,8"
+                      ItemsSource="{Binding Top5Concentrations}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Border Margin="0,0,6,0" Padding="8,3"
+                            Background="{DynamicResource ConsoleAccentBlueAlpha20Brush}"
+                            CornerRadius="4" BorderThickness="1"
+                            BorderBrush="{DynamicResource InfoColorBrush}">
+                        <TextBlock Text="{Binding}" FontSize="11"
+                                   Foreground="{DynamicResource PrimaryTextBrush}" />
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <!-- ─── Netted positions grid ─────────────────────────────────────── -->
+        <DataGrid Grid.Row="2"
+                  ItemsSource="{Binding Positions}"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  CanUserSortColumns="True"
+                  GridLinesVisibility="Horizontal"
+                  HeadersVisibility="Column"
+                  Background="Transparent"
+                  RowBackground="Transparent"
+                  AlternatingRowBackground="{DynamicResource AlternateRowBrush}"
+                  BorderThickness="0">
+
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Symbol"         Binding="{Binding Symbol}"                               Width="90" />
+                <DataGridTextColumn Header="Net Qty"        Binding="{Binding TotalQuantity, StringFormat=N2}"        Width="80" />
+                <DataGridTextColumn Header="Long"           Binding="{Binding LongQuantity,  StringFormat=N2}"        Width="75" />
+                <DataGridTextColumn Header="Short"          Binding="{Binding ShortQuantity, StringFormat=N2}"        Width="75" />
+                <DataGridTextColumn Header="WAC"            Binding="{Binding WeightedAverageCost, StringFormat=C4}"  Width="90" />
+                <DataGridTextColumn Header="Unreal. P&amp;L" Binding="{Binding TotalUnrealisedPnl, StringFormat=C2}"  Width="100" />
+                <DataGridTextColumn Header="Runs"           Binding="{Binding ContributingRuns}"                      Width="50" />
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <!-- ─── Status bar ────────────────────────────────────────────────── -->
+        <TextBlock Grid.Row="3" Margin="0,8,0,0"
+                   Text="{Binding StatusText}"
+                   FontSize="11"
+                   Foreground="{DynamicResource SecondaryTextBrush}" />
+    </Grid>
+</Page>

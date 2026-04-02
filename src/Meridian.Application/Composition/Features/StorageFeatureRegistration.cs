@@ -3,6 +3,7 @@ using Meridian.Application.DirectLending;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.UI;
 using Meridian.Contracts.DirectLending;
+using Meridian.Contracts.Domain;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Store;
 using Meridian.Infrastructure.Adapters.Core;
@@ -70,6 +71,10 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
 
             return registry;
         });
+
+        // Position snapshot store — files land under {StorageRoot}/portfolios/ so the
+        // LifecyclePolicyEngine governs retention automatically (ADR-002 / ADR-007).
+        services.AddSingleton<IPositionSnapshotStore, JsonlPositionSnapshotStore>();
 
         // Analysis export service for data export operations
         services.AddSingleton<AnalysisExportService>(sp =>
