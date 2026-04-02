@@ -1,3 +1,4 @@
+using System.Reflection;
 using FluentAssertions;
 using Meridian.Application.DirectLending;
 using Meridian.Contracts.DirectLending;
@@ -5,7 +6,6 @@ using Meridian.Storage.DirectLending;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
-using System.Reflection;
 
 namespace Meridian.Tests.Application.DirectLending;
 

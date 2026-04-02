@@ -74,7 +74,8 @@ public sealed class YahooFinancePcgPreferredIntegrationTests : IDisposable
     [Fact]
     public async Task YahooFinance_IsAvailable_ReturnsTrue()
     {
-        if (!await IsYahooOnlineAsync()) return;
+        if (!await IsYahooOnlineAsync())
+            return;
 
         // Verify Yahoo Finance API is reachable before running data tests
         var available = await _provider.IsAvailableAsync();
@@ -92,7 +93,8 @@ public sealed class YahooFinancePcgPreferredIntegrationTests : IDisposable
     public async Task YahooFinance_GetAllHistoricalBars_ForPcgPreferredSeries(
         string symbol, string seriesDescription)
     {
-        if (!await IsYahooOnlineAsync()) return;
+        if (!await IsYahooOnlineAsync())
+            return;
 
         // Act - Pull all available historical data (no date range limit)
         var bars = await _provider.GetDailyBarsAsync(symbol, from: null, to: null);
@@ -145,7 +147,8 @@ public sealed class YahooFinancePcgPreferredIntegrationTests : IDisposable
     public async Task YahooFinance_GetAdjustedBars_IncludesDividendData_ForPcgPreferredSeries(
         string symbol, string seriesDescription)
     {
-        if (!await IsYahooOnlineAsync()) return;
+        if (!await IsYahooOnlineAsync())
+            return;
 
         // Act - Pull adjusted bars which include dividend and split factor data
         var bars = await _provider.GetAdjustedDailyBarsAsync(symbol, from: null, to: null);
@@ -200,7 +203,8 @@ public sealed class YahooFinancePcgPreferredIntegrationTests : IDisposable
     [Fact]
     public async Task YahooFinance_GetAllPcgPreferredSeries_SummaryReport()
     {
-        if (!await IsYahooOnlineAsync()) return;
+        if (!await IsYahooOnlineAsync())
+            return;
 
         // Pull data for all preferred series and produce a summary comparison
         _output.WriteLine("=== PG&E Preferred Shares - Full Summary ===");

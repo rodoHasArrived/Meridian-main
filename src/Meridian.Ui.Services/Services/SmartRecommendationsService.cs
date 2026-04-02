@@ -273,7 +273,7 @@ public sealed class SmartRecommendationsService
                 }
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
         }
 
@@ -382,7 +382,7 @@ public sealed class SmartRecommendationsService
                 }
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
         }
 
@@ -419,7 +419,7 @@ public sealed class SmartRecommendationsService
 
             return completeness.Gaps.Count;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return 0;
         }
@@ -453,7 +453,7 @@ public sealed class SmartRecommendationsService
                 }
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
         }
 
@@ -483,7 +483,7 @@ public sealed class SmartRecommendationsService
                 }
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
         }
 
@@ -518,7 +518,7 @@ public sealed class SmartRecommendationsService
                 }
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
         }
 
@@ -545,7 +545,7 @@ public sealed class SmartRecommendationsService
                 }
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
         }
 

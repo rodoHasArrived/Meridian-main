@@ -155,10 +155,12 @@ public sealed class HistoricalBarBuilder
         decimal prevClose, Faker faker)
     {
         var close = Math.Round(prevClose * (decimal)(1.0 + faker.Random.Double(-0.02, 0.02)), 2);
-        if (close <= 0) close = Math.Round(prevClose * 0.98m, 2);
+        if (close <= 0)
+            close = Math.Round(prevClose * 0.98m, 2);
 
         var open = Math.Round(prevClose * (decimal)(1.0 + faker.Random.Double(-0.005, 0.005)), 2);
-        if (open <= 0) open = prevClose;
+        if (open <= 0)
+            open = prevClose;
 
         var rawHigh = Math.Max(open, close) * (decimal)(1.0 + faker.Random.Double(0.001, 0.005));
         var rawLow = Math.Min(open, close) * (decimal)(1.0 - faker.Random.Double(0.001, 0.005));

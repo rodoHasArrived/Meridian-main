@@ -67,7 +67,7 @@ public sealed class ProviderHealthService : IDisposable
         {
             await RefreshHealthDataAsync();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // Log error but don't crash - timer callbacks must handle their own exceptions
         }

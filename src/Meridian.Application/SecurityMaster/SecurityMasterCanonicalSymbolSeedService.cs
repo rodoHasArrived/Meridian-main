@@ -98,19 +98,23 @@ public sealed class SecurityMasterCanonicalSymbolSeedService
                 {
                     case SecurityIdentifierKind.Isin:
                         isin = id.Value;
-                        if (!string.IsNullOrWhiteSpace(id.Value)) aliases.Add(id.Value);
+                        if (!string.IsNullOrWhiteSpace(id.Value))
+                            aliases.Add(id.Value);
                         break;
                     case SecurityIdentifierKind.Cusip:
                         cusip = id.Value;
-                        if (!string.IsNullOrWhiteSpace(id.Value)) aliases.Add(id.Value);
+                        if (!string.IsNullOrWhiteSpace(id.Value))
+                            aliases.Add(id.Value);
                         break;
                     case SecurityIdentifierKind.Figi:
                         figi = id.Value;
-                        if (!string.IsNullOrWhiteSpace(id.Value)) aliases.Add(id.Value);
+                        if (!string.IsNullOrWhiteSpace(id.Value))
+                            aliases.Add(id.Value);
                         break;
                     case SecurityIdentifierKind.Sedol:
                         sedol = id.Value;
-                        if (!string.IsNullOrWhiteSpace(id.Value)) aliases.Add(id.Value);
+                        if (!string.IsNullOrWhiteSpace(id.Value))
+                            aliases.Add(id.Value);
                         break;
                 }
             }

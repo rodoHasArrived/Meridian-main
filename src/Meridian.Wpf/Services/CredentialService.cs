@@ -216,7 +216,7 @@ public sealed class CredentialService : IDisposable
                     _vault = JsonSerializer.Deserialize<Dictionary<string, StoredCredential>>(json) ?? new();
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 _vault = new();
             }
@@ -234,7 +234,7 @@ public sealed class CredentialService : IDisposable
                 var encrypted = ProtectedData.Protect(bytes, null, DataProtectionScope.CurrentUser);
                 File.WriteAllBytes(_vaultPath, encrypted);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
             }
         }
@@ -439,7 +439,7 @@ public sealed class CredentialService : IDisposable
                 }
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             lock (_metadataLock)
             {
@@ -461,7 +461,7 @@ public sealed class CredentialService : IDisposable
             var json = JsonSerializer.Serialize(snapshot, DesktopJsonOptions.PrettyPrint);
             await File.WriteAllTextAsync(_metadataPath, json);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
         }
     }
@@ -877,7 +877,7 @@ public sealed class CredentialService : IDisposable
             await UpdateMetadataAsync(resource, m => m.RefreshFailureCount++);
             return false;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             await UpdateMetadataAsync(resource, m => m.RefreshFailureCount++);
             return false;

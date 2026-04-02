@@ -42,7 +42,7 @@ public sealed class JumpListService
             JumpList.SetJumpList(System.Windows.Application.Current, jumpList);
 
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // Jump list is cosmetic; log and continue rather than crashing startup.
         }
@@ -59,7 +59,7 @@ public sealed class JumpListService
         {
             JumpList.AddToRecentCategory(label);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
         }
     }

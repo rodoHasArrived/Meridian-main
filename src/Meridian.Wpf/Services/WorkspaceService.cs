@@ -114,7 +114,7 @@ public sealed class WorkspaceService
                 await SaveWorkspacesAsync();
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
         }
     }
@@ -133,7 +133,7 @@ public sealed class WorkspaceService
             var json = JsonSerializer.Serialize(data, UiServices.DesktopJsonOptions.PrettyPrint);
             await File.WriteAllTextAsync(GetSettingsFilePath(), json);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
         }
     }
@@ -248,7 +248,7 @@ public sealed class WorkspaceService
             PersistActiveWorkspaceSnapshot();
             await SaveWorkspacesAsync();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
         }
     }
@@ -318,7 +318,7 @@ public sealed class WorkspaceService
                 return workspace;
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
         }
         return null;

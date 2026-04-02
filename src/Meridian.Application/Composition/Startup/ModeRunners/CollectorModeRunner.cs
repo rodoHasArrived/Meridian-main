@@ -1,6 +1,6 @@
-using Meridian.Application.Composition.Startup.StartupModels;
 using Meridian.Application.Composition;
 using Meridian.Application.Composition.Startup;
+using Meridian.Application.Composition.Startup.StartupModels;
 using Meridian.Application.Config;
 using Meridian.Application.Coordination;
 using Meridian.Application.Monitoring;

@@ -52,7 +52,7 @@ public sealed class SingleInstanceService : IDisposable
             _mutex     = new Mutex(initiallyOwned: true, MutexName, out _ownsMutex);
             return _ownsMutex;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // If the mutex cannot be created (e.g. permission error), assume primary
             // so startup is not blocked.
@@ -93,7 +93,7 @@ public sealed class SingleInstanceService : IDisposable
             pipe.Write(bytes, 0, bytes.Length);
             pipe.Flush();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
         }
     }
@@ -132,7 +132,7 @@ public sealed class SingleInstanceService : IDisposable
             {
                 break;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // Brief backoff before retrying to avoid a tight error loop.
                 await Task.Delay(500, ct).ConfigureAwait(false);

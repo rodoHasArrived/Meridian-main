@@ -83,7 +83,7 @@ public class ExportPresetServiceBase
         {
             throw;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
 
             if (_presets.Count == 0)
@@ -110,7 +110,7 @@ public class ExportPresetServiceBase
         {
             throw;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
         }
     }

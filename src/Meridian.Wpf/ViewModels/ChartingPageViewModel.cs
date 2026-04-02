@@ -104,7 +104,7 @@ public sealed class ChartingPageViewModel : BindableBase
             foreach (var symbol in result.Symbols)
                 SymbolItems.Add(new SymbolItem(symbol.Symbol));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // Symbols not available
         }

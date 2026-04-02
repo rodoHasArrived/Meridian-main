@@ -131,7 +131,7 @@ public sealed class ClipboardWatcherService : IDisposable
                 SourceText = text.Length > 200 ? text[..200] : text,
             });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
         }
     }
@@ -178,7 +178,7 @@ public sealed class ClipboardWatcherService : IDisposable
                 RemoveClipboardFormatListener(_hwndSource.Handle);
                 _hwndSource.RemoveHook(WndProc);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
             }
             _hwndSource = null;

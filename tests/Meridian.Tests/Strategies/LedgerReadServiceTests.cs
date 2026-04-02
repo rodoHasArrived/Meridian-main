@@ -6,10 +6,9 @@ using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
 using Moq;
 using Xunit;
-
-using LedgerImpl = Meridian.Ledger.Ledger;
 using LedgerAccount = Meridian.Ledger.LedgerAccount;
 using LedgerAccountType = Meridian.Ledger.LedgerAccountType;
+using LedgerImpl = Meridian.Ledger.Ledger;
 
 namespace Meridian.Tests.Strategies;
 

@@ -1085,7 +1085,7 @@ public sealed class StorageOptimizationAdvisorService
 
             return null;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return null;
         }
@@ -1180,7 +1180,7 @@ public sealed class StorageOptimizationAdvisorService
 
             return null;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return null;
         }
@@ -1198,7 +1198,7 @@ public sealed class StorageOptimizationAdvisorService
 
             return response.Success ? response.Data : null;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return null;
         }
@@ -1226,7 +1226,7 @@ public sealed class StorageOptimizationAdvisorService
 
             return response.Success ? response.Data : null;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return null;
         }
@@ -1244,7 +1244,7 @@ public sealed class StorageOptimizationAdvisorService
 
             return response.Success ? response.Data : null;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return null;
         }
@@ -1262,7 +1262,7 @@ public sealed class StorageOptimizationAdvisorService
 
             return response.Success ? response.Data : null;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return null;
         }
