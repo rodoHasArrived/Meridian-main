@@ -1,6 +1,6 @@
 # TODO / FIXME / NOTE Scan
 
-Total items: **208**
+Total items: **210**
 
 | File | Line | Tag | Linked Issue | Text |
 |---|---:|---|:---:|---|
@@ -150,6 +150,8 @@ Total items: **208**
 | `src/Meridian.Application/DirectLending/InMemoryDirectLendingService.Workflows.cs` | 101 | `NOTE` | ❌ | GetList(_feeBalances, loanId).Add(new FeeBalanceDto(Guid.NewGuid(), loanId, request.FeeType, request.EffectiveDate, request.Amount, request.Amount, stored.History[^1].EventId, request.Note, DateTimeOffset.UtcNow)); |
 | `src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs` | 397 | `NOTE` | ❌ | request.Note |
 | `src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs` | 420 | `NOTE` | ❌ | request.Note) |
+| `src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs` | 32 | `NOTE` | ❌ | // NOTE: GET /schedules, GET /schedules/{id}, POST /schedules, POST /schedules/{id}/enable, |
+| `src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs` | 109 | `NOTE` | ❌ | // NOTE: POST /schedules/{id}/enable and POST /schedules/{id}/disable are registered |
 | `src/Meridian.Application/Http/HtmlTemplates.cs` | 149 | `NOTE` | ❌ | <p><strong>Note:</strong> External templates not found. Using minimal fallback UI.</p> |
 | `src/Meridian.Application/Http/HtmlTemplates.cs` | 242 | `NOTE` | ❌ | <p><strong>Note:</strong> External templates not found. Using minimal fallback UI.</p> |
 | `src/Meridian.Application/Services/GovernanceExceptionService.cs` | 111 | `NOTE` | ❌ | /// <summary>Marks an exception as resolved with an optional closing note.</summary> |
