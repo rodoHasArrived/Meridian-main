@@ -1,6 +1,6 @@
 # Provider Registry
 
-> Auto-generated on 2026-04-01 20:31:07 UTC. Do not edit manually.
+> Auto-generated on 2026-04-02 07:06:15 UTC. Do not edit manually.
 
 | Provider Candidate |
 |---|
@@ -22,6 +22,7 @@
 | `src/Meridian.Core/Config/IConfigurationProvider.cs` |
 | `src/Meridian.Core/Exceptions/DataProviderException.cs` |
 | `src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs` |
+| `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaProviderModule.cs` |
 | `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs` |
@@ -29,6 +30,7 @@
 | `src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs` |
+| `src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Core/ISymbolSearchProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs` |
