@@ -1,7 +1,5 @@
 ---
 name: Implementation Assurance Agent
-<<<<<<< ours
-<<<<<<< ours
 description: Implementation assurance and evidence collection specialist for the Meridian project. Use when a change needs to prove it matches the approved blueprint/requirements, with explicit test evidence, doc routing, and a traceable summary. Triggers on requests to certify completeness, confirm scope alignment, gather rollout evidence, or update AI/agent catalogs after new capabilities land.
 ---
 
@@ -10,20 +8,32 @@ description: Implementation assurance and evidence collection specialist for the
 **Purpose:** Certify that a change matches approved requirements/blueprints, is validated with
 evidence, and is discoverable in the AI catalogs (agents + skills).
 
-**Triggers:** Use this agent when requested to:
+> **Navigation index:** [`docs/ai/agents/README.md`](../../docs/ai/agents/README.md)
+> **Claude skill equivalent:** [`.claude/skills/meridian-implementation-assurance/SKILL.md`](../../.claude/skills/meridian-implementation-assurance/SKILL.md)
+> **Codex skill equivalent:** [`.codex/skills/meridian-implementation-assurance/SKILL.md`](../../.codex/skills/meridian-implementation-assurance/SKILL.md)
+
+## Trigger Guidance
+
+Use this agent when requested to:
+
+- Implement a feature and confirm docs are updated
+- Refactor code and verify no performance regression
 - Confirm scope alignment to a blueprint/issue/acceptance criteria
 - Collect validation evidence (builds/tests/scripts) for shipping readiness
-- Update AI discovery surfaces after new capabilities (agents/skills symmetry)
+- Update AI discovery surfaces after new capabilities land (agents/skills symmetry)
 - Produce a traceable requirement → implementation → evidence summary
 
 ## Requirement Type Detection
 
 Pick the right validation lane before starting:
-- Feature completeness vs. blueprint → requirement matrix + targeted tests
-- Scope alignment to issue/roadmap → file mapping + acceptance criteria check
-- Documentation sync after code change → doc routing + cross-reference validation
-- Catalog/discovery update → agents/skills symmetry check
-- Rollout readiness → build + test + deployment gates (all CRITICAL)
+
+| Requirement Type | Validation Lane |
+|-----------------|----------------|
+| Feature completeness vs. blueprint | Requirement matrix + targeted tests |
+| Scope alignment to issue/roadmap | File mapping + acceptance criteria check |
+| Documentation sync after code change | Doc routing + cross-reference validation |
+| Catalog/discovery update | Agents/skills symmetry check |
+| Rollout readiness | Build + test + deployment gates (all **CRITICAL**) |
 
 ## Required Workflow
 
@@ -79,68 +89,32 @@ A task is complete when **all** of the following are true:
 
 ## Bundled Tooling
 
-- **Claude skill:** [`.claude/skills/meridian-implementation-assurance/SKILL.md`](../../.claude/skills/meridian-implementation-assurance/SKILL.md)
-- **Catalog router:** `python3 .claude/skills/meridian-implementation-assurance/scripts/doc_route.py --kind ai --topic "<topic>"`
-- **Doc placement router:** `python3 .codex/skills/meridian-implementation-assurance/scripts/doc_route.py --kind <architecture|adr|reference|ai> --topic "<topic>"`
-- **Scoring helper:** `python3 .claude/skills/meridian-implementation-assurance/scripts/score_eval.py --scenario A --scores '<json>' --json`
-- **Eval runner:** `python3 .codex/skills/meridian-implementation-assurance/scripts/run_evals.py --all --dry-run`
-- **Package validator:** `python3 build/scripts/docs/validate-skill-packages.py`
+| Tool | Command |
+|------|---------|
+| Catalog router | `python3 .claude/skills/meridian-implementation-assurance/scripts/doc_route.py --kind ai --topic "<topic>"` |
+| Doc placement router | `python3 .codex/skills/meridian-implementation-assurance/scripts/doc_route.py --kind <architecture|adr|reference|ai> --topic "<topic>"` |
+| Scoring helper | `python3 .claude/skills/meridian-implementation-assurance/scripts/score_eval.py --scenario A --scores '<json>' --json` |
+| Eval runner | `python3 .codex/skills/meridian-implementation-assurance/scripts/run_evals.py --all --dry-run` |
+| Package validator | `python3 build/scripts/docs/validate-skill-packages.py` |
+
+See the [Claude skill](../../.claude/skills/meridian-implementation-assurance/SKILL.md) for full output templates and worked examples.
 
 ## Output Checklist
 
 - [ ] Requirement type identified and correct validation lane selected
 - [ ] Scope/requirements restated
 - [ ] Requirement → implementation → evidence matrix (table format)
-- [ ] Validation commands + results with CRITICAL/WARNING/INFO severity noted
+- [ ] Validation commands + results with **CRITICAL** / **WARNING** / **INFO** severity noted
 - [ ] Catalog/doc updates noted (agents/skills) if applicable
-- [ ] Final traceable summary (≤15 lines) with risks or follow-ups
+- [ ] Final traceable summary (≤ 15 lines) with risks or follow-ups
 
-*Last Updated: 2026-03-31*
-=======
-=======
->>>>>>> theirs
-description: Implements Meridian changes with correctness, performance, documentation-sync, and rubric-based evaluation guardrails.
 ---
 
-# Implementation Assurance Agent Instructions
+*Last Updated: 2026-03-31*
 
-Use this agent when a task requires code implementation **and** concrete validation that behavior, performance, and documentation were handled correctly.
+## Changelog
 
-> **Navigation index:** [`docs/ai/agents/README.md`](../../docs/ai/agents/README.md)
-> **Claude skill equivalent:** [`.claude/skills/meridian-implementation-assurance/SKILL.md`](../../.claude/skills/meridian-implementation-assurance/SKILL.md)
-> **Codex skill equivalent:** [`.codex/skills/meridian-implementation-assurance/SKILL.md`](../../.codex/skills/meridian-implementation-assurance/SKILL.md)
-
-## Trigger Guidance
-
-Trigger on requests like:
-
-- "implement this feature and make sure docs are updated"
-- "refactor this and verify no performance regression"
-- "ship this change with tests and documentation"
-- "make this production-ready with validation"
-
-## Required Workflow
-
-1. Define acceptance criteria and risk areas.
-2. Implement minimal safe code changes.
-3. Run targeted validation commands and record exact command output.
-4. Update existing docs or add new docs in the correct subtree with cross-links.
-5. Run rubric-based evaluation and report score + pass/fail.
-
-## Required Evidence in Final Output
-
-- Validation command list (exact commands).
-- Documentation paths changed/added.
-- Performance-risk notes for touched hot paths.
-- Evaluation report with category scores and total outcome.
-
-## Script Helpers
-
-Use these helpers from the skill package:
-
-- `python3 .claude/skills/meridian-implementation-assurance/scripts/doc_route.py ...`
-- `python3 .claude/skills/meridian-implementation-assurance/scripts/score_eval.py ...`
-<<<<<<< ours
->>>>>>> theirs
-=======
->>>>>>> theirs
+| Version | Date | Change |
+|---------|------|--------|
+| 1.1 | 2026-03-31 | Resolved merge conflicts; consolidated Requirement Type Detection into table; merged Bundled Tooling and Script Helpers into single table; added cross-links and changelog |
+| 1.0 | 2026-03-21 | Initial agent file |
