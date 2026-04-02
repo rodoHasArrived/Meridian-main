@@ -204,12 +204,52 @@ jobs:
               stableSelector: '#swagger-ui, body'
             })
           );
-          // Screenshot 04: focused crop of Storage Configuration / Data Sources section for readability
+          // Screenshot 04: focused crop of Storage Configuration section
           await withRetry('status-overview', () =>
             shot('docs/screenshots/04-status-overview.png', `${BASE}/`, {
               fullPage: false,
               stableSelector: '#storage, body',
               clipSelector: '#storage'
+            })
+          );
+          // Screenshot 05: Data Provider selector / live-connection configuration
+          await withRetry('data-source', () =>
+            shot('docs/screenshots/05-data-source.png', `${BASE}/`, {
+              fullPage: false,
+              stableSelector: '#datasource, body',
+              clipSelector: '#datasource'
+            })
+          );
+          // Screenshot 06: Data Sources panel (failover, provider list)
+          await withRetry('data-sources', () =>
+            shot('docs/screenshots/06-data-sources.png', `${BASE}/`, {
+              fullPage: false,
+              stableSelector: '#datasources, body',
+              clipSelector: '#datasources'
+            })
+          );
+          // Screenshot 07: Historical Backfill controls
+          await withRetry('backfill', () =>
+            shot('docs/screenshots/07-backfill.png', `${BASE}/`, {
+              fullPage: false,
+              stableSelector: '#backfill, body',
+              clipSelector: '#backfill'
+            })
+          );
+          // Screenshot 08: Derivatives tracking panel
+          await withRetry('derivatives', () =>
+            shot('docs/screenshots/08-derivatives.png', `${BASE}/`, {
+              fullPage: false,
+              stableSelector: '#derivatives, body',
+              clipSelector: '#derivatives'
+            })
+          );
+          // Screenshot 09: Subscribed Symbols table
+          await withRetry('symbols', () =>
+            shot('docs/screenshots/09-symbols.png', `${BASE}/`, {
+              fullPage: false,
+              stableSelector: '#symbols, body',
+              clipSelector: '#symbols'
             })
           );
 
@@ -253,5 +293,10 @@ jobs:
             echo "| Main Dashboard | \`docs/screenshots/01-dashboard.png\` |"
             echo "| React Workstation Shell | \`docs/screenshots/02-workstation.png\` |"
             echo "| Swagger API Docs | \`docs/screenshots/03-swagger.png\` |"
-            echo "| Storage / Status Overview | \`docs/screenshots/04-status-overview.png\` |"
+            echo "| Storage Configuration | \`docs/screenshots/04-status-overview.png\` |"
+            echo "| Data Provider Selector | \`docs/screenshots/05-data-source.png\` |"
+            echo "| Data Sources Panel | \`docs/screenshots/06-data-sources.png\` |"
+            echo "| Historical Backfill | \`docs/screenshots/07-backfill.png\` |"
+            echo "| Derivatives Tracking | \`docs/screenshots/08-derivatives.png\` |"
+            echo "| Subscribed Symbols | \`docs/screenshots/09-symbols.png\` |"
           } >> "$GITHUB_STEP_SUMMARY"

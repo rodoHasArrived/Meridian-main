@@ -42,3 +42,43 @@ Interactive REST API documentation is available at `/swagger/index.html` and cov
 Mid-page view showing the **Storage Configuration** card (data root path, naming convention, date partitioning, preview path) and the top of the **Data Sources** panel with automatic failover toggle.
 
 ![Storage Configuration & Data Sources](https://github.com/user-attachments/assets/48bc62b6-4906-4483-af23-2632524c9f79)
+
+---
+
+## 05 – Data Provider Selector
+
+The **Data Provider** card at the top of the dashboard, showing the live-connection provider dropdown and per-provider credential/settings panel.
+
+![Data Provider Selector](05-data-source.png)
+
+---
+
+## 06 – Data Sources Panel
+
+The **Data Sources** panel listing all registered providers, their failover priority order, and the automatic-failover toggle.
+
+![Data Sources Panel](06-data-sources.png)
+
+---
+
+## 07 – Historical Backfill
+
+The **Historical Backfill** section, showing the provider selector, symbol and date-range inputs, and the rolling status terminal for in-progress backfill jobs.
+
+![Historical Backfill](07-backfill.png)
+
+---
+
+## 08 – Derivatives Tracking
+
+The **Derivatives** panel for configuring options / futures data collection, including underlying symbol entry and options-chain provider status.
+
+![Derivatives Tracking](08-derivatives.png)
+
+---
+
+## 09 – Subscribed Symbols
+
+The **Subscribed Symbols** table showing the active symbol list with data-type columns and the add/remove controls.
+
+![Subscribed Symbols](09-symbols.png)
