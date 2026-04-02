@@ -623,11 +623,12 @@
         <Setter Property="Background" Value="{StaticResource ConsoleBackgroundLightBrush}" />
         <Setter Property="Foreground" Value="{StaticResource ConsoleTextSecondaryBrush}" />
         <Setter Property="FontWeight" Value="SemiBold" />
-        <Setter Property="FontSize" Value="12" />
-        <Setter Property="Padding" Value="12,10" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="Padding" Value="12,9" />
         <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
         <Setter Property="BorderThickness" Value="0,0,1,1" />
         <Setter Property="SeparatorBrush" Value="{StaticResource ConsoleBorderBrush}" />
+        <Setter Property="Typography.Capitals" Value="AllSmallCaps" />
     </Style>
 
     <Style TargetType="DataGridCell">
@@ -750,10 +751,11 @@
         <Setter Property="Background" Value="{StaticResource ConsoleBackgroundLightBrush}" />
         <Setter Property="Foreground" Value="{StaticResource ConsoleTextSecondaryBrush}" />
         <Setter Property="FontWeight" Value="SemiBold" />
-        <Setter Property="FontSize" Value="12" />
-        <Setter Property="Padding" Value="12,8" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="Padding" Value="12,7" />
         <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
         <Setter Property="BorderThickness" Value="0,0,1,1" />
+        <Setter Property="Typography.Capitals" Value="AllSmallCaps" />
     </Style>
 
 </ResourceDictionary>

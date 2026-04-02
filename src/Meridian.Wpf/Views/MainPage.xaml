@@ -20,7 +20,7 @@
             <Setter Property="Padding" Value="0" />
             <Setter Property="Margin" Value="0,1,0,0" />
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-            <Setter Property="Foreground" Value="{StaticResource ConsoleTextSecondaryBrush}" />
+            <Setter Property="Foreground" Value="{StaticResource NavItemForegroundBrush}" />
             <Setter Property="FocusVisualStyle" Value="{x:Null}" />
             <Setter Property="Template">
                 <Setter.Value>
@@ -33,7 +33,7 @@
                             <!-- Left indicator bar: visible only when selected -->
                             <Rectangle x:Name="ActiveIndicator"
                                        Grid.Column="0"
-                                       Fill="{StaticResource NavActiveBorderBrush}"
+                                       Fill="{StaticResource SidebarActiveIndicatorBrush}"
                                        Visibility="Collapsed" />
                             <Border x:Name="ItemContent"
                                     Grid.Column="1"
@@ -44,13 +44,13 @@
                         </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ItemContent" Property="Background" Value="{StaticResource ConsoleBackgroundHoverBrush}" />
-                                <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
+                                <Setter TargetName="ItemContent" Property="Background" Value="{StaticResource SidebarHoverBrush}" />
+                                <Setter Property="Foreground" Value="{StaticResource NavItemForegroundHoverBrush}" />
                             </Trigger>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="ItemContent" Property="Background" Value="{StaticResource NavActiveBackgroundBrush}" />
+                                <Setter TargetName="ItemContent" Property="Background" Value="{StaticResource SidebarActiveBrush}" />
                                 <Setter TargetName="ActiveIndicator" Property="Visibility" Value="Visible" />
-                                <Setter Property="Foreground" Value="{StaticResource InfoColorBrush}" />
+                                <Setter Property="Foreground" Value="{StaticResource NavItemForegroundActiveBrush}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -73,37 +73,64 @@
             <Setter Property="Margin" Value="10,0,0,0" />
         </Style>
 
-        <!-- Marquee: uppercase muted section labels -->
+        <!-- Marquee: uppercase muted section labels — light text on dark sidebar -->
         <Style x:Key="ShellSectionLabelStyle" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource MeridianBodyFontFamily}" />
             <Setter Property="FontSize" Value="10" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="{StaticResource ConsoleTextMutedBrush}" />
+            <Setter Property="Foreground" Value="{StaticResource NavSectionLabelBrush}" />
             <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
             <Setter Property="TextWrapping" Value="Wrap" />
             <Setter Property="Typography.Capitals" Value="AllSmallCaps" />
         </Style>
 
-        <!-- Compact workspace tiles for the narrower sidebar -->
-        <Style x:Key="WorkspaceTileStyle" TargetType="Button" BasedOn="{StaticResource GhostButtonStyle}">
+        <!-- Marquee-style workspace tiles on dark sidebar background -->
+        <Style x:Key="WorkspaceTileStyle" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource SidebarTileBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource SidebarBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="{StaticResource NavItemForegroundBrush}" />
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             <Setter Property="VerticalContentAlignment" Value="Stretch" />
             <Setter Property="Padding" Value="10" />
             <Setter Property="MinHeight" Value="52" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template" Value="{StaticResource SidebarButtonTemplate}" />
         </Style>
 
-        <Style x:Key="ActiveWorkspaceTileStyle" TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
-            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-            <Setter Property="VerticalContentAlignment" Value="Stretch" />
-            <Setter Property="Padding" Value="10" />
-            <Setter Property="MinHeight" Value="52" />
+        <Style x:Key="ActiveWorkspaceTileStyle" TargetType="Button" BasedOn="{StaticResource WorkspaceTileStyle}">
+            <Setter Property="Background" Value="{StaticResource SidebarActiveBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource SidebarActiveIndicatorBrush}" />
+            <Setter Property="Foreground" Value="{StaticResource NavItemForegroundActiveBrush}" />
         </Style>
 
-        <Style x:Key="RecentPageButtonStyle" TargetType="Button" BasedOn="{StaticResource GhostButtonStyle}">
+        <Style x:Key="RecentPageButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="{StaticResource SidebarBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="{StaticResource NavItemForegroundBrush}" />
             <Setter Property="HorizontalAlignment" Value="Left" />
             <Setter Property="Padding" Value="8,4" />
             <Setter Property="Margin" Value="0,0,6,6" />
             <Setter Property="FontSize" Value="12" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template" Value="{StaticResource SidebarButtonTemplate}" />
+        </Style>
+
+        <!-- Shared style for the sidebar footer action buttons -->
+        <Style x:Key="FooterNavButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Foreground" Value="{StaticResource NavItemForegroundBrush}" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="Padding" Value="10,6" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template" Value="{StaticResource SidebarButtonTemplate}" />
         </Style>
         <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
     </Page.Resources>
@@ -130,9 +157,9 @@
                     VerticalAlignment="Top"
                     Margin="0,80,0,0"
                     Width="620"
-                    Background="{StaticResource ConsoleBackgroundDarkBrush}"
-                    CornerRadius="18"
-                    BorderBrush="{StaticResource ConsoleBorderBrush}"
+                    Background="{StaticResource SidebarBackgroundBrush}"
+                    CornerRadius="3"
+                    BorderBrush="{StaticResource SidebarBorderBrush}"
                     BorderThickness="1"
                     Padding="0"
                     MouseDown="CommandPaletteBorder_MouseDown">
@@ -141,9 +168,9 @@
                              Margin="16,16,16,6"
                              Padding="12,10"
                              FontSize="14"
-                             Background="{StaticResource ConsoleBackgroundMediumBrush}"
-                             Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                             BorderBrush="{StaticResource ConsoleBorderBrush}"
+                             Background="{StaticResource SidebarTileBrush}"
+                             Foreground="{StaticResource NavItemForegroundHoverBrush}"
+                             BorderBrush="{StaticResource SidebarBorderBrush}"
                              BorderThickness="1"
                              AutomationProperties.AutomationId="CommandPaletteInput"
                              AutomationProperties.Name="Command Palette Input"
@@ -167,7 +194,7 @@
                     <TextBlock Text="Ctrl+K to open - Esc to close - Enter to open selection"
                                FontSize="11"
                                Opacity="0.7"
-                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                               Foreground="{StaticResource NavSectionLabelBrush}"
                                HorizontalAlignment="Center"
                                Margin="0,0,0,14" />
                 </StackPanel>
@@ -231,11 +258,11 @@
                 </DockPanel>
             </Border>
 
-            <!-- ── Marquee-style flat white sidebar ── -->
+            <!-- ── Marquee-style dark navy sidebar ── -->
             <Border DockPanel.Dock="Left"
                     Width="220"
-                    Background="{StaticResource ShellRailBackgroundBrush}"
-                    BorderBrush="{StaticResource ConsoleBorderBrush}"
+                    Background="{StaticResource SidebarBackgroundBrush}"
+                    BorderBrush="{StaticResource SidebarBorderBrush}"
                     BorderThickness="0,0,1,0">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -248,7 +275,7 @@
                     <!-- Compact workspace selector -->
                     <Border Grid.Row="0"
                             Padding="12,10"
-                            BorderBrush="{StaticResource ConsoleBorderBrush}"
+                            BorderBrush="{StaticResource SidebarBorderBrush}"
                             BorderThickness="0,0,0,1">
                         <StackPanel>
                             <TextBlock Text="Workspaces"
@@ -273,10 +300,10 @@
                                         <Style TargetType="Button" BasedOn="{StaticResource WorkspaceTileStyle}">
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding IsResearchWorkspaceActive}" Value="True">
-                                                    <Setter Property="Background" Value="{StaticResource NavActiveBackgroundBrush}" />
-                                                    <Setter Property="BorderBrush" Value="{StaticResource InfoColorBrush}" />
+                                                    <Setter Property="Background" Value="{StaticResource SidebarActiveBrush}" />
+                                                    <Setter Property="BorderBrush" Value="{StaticResource SidebarActiveIndicatorBrush}" />
                                                     <Setter Property="BorderThickness" Value="1" />
-                                                    <Setter Property="Foreground" Value="{StaticResource InfoColorBrush}" />
+                                                    <Setter Property="Foreground" Value="{StaticResource NavItemForegroundActiveBrush}" />
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
@@ -298,10 +325,10 @@
                                         <Style TargetType="Button" BasedOn="{StaticResource WorkspaceTileStyle}">
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding IsTradingWorkspaceActive}" Value="True">
-                                                    <Setter Property="Background" Value="{StaticResource NavActiveBackgroundBrush}" />
-                                                    <Setter Property="BorderBrush" Value="{StaticResource InfoColorBrush}" />
+                                                    <Setter Property="Background" Value="{StaticResource SidebarActiveBrush}" />
+                                                    <Setter Property="BorderBrush" Value="{StaticResource SidebarActiveIndicatorBrush}" />
                                                     <Setter Property="BorderThickness" Value="1" />
-                                                    <Setter Property="Foreground" Value="{StaticResource InfoColorBrush}" />
+                                                    <Setter Property="Foreground" Value="{StaticResource NavItemForegroundActiveBrush}" />
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
@@ -323,10 +350,10 @@
                                         <Style TargetType="Button" BasedOn="{StaticResource WorkspaceTileStyle}">
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding IsDataOperationsWorkspaceActive}" Value="True">
-                                                    <Setter Property="Background" Value="{StaticResource NavActiveBackgroundBrush}" />
-                                                    <Setter Property="BorderBrush" Value="{StaticResource InfoColorBrush}" />
+                                                    <Setter Property="Background" Value="{StaticResource SidebarActiveBrush}" />
+                                                    <Setter Property="BorderBrush" Value="{StaticResource SidebarActiveIndicatorBrush}" />
                                                     <Setter Property="BorderThickness" Value="1" />
-                                                    <Setter Property="Foreground" Value="{StaticResource InfoColorBrush}" />
+                                                    <Setter Property="Foreground" Value="{StaticResource NavItemForegroundActiveBrush}" />
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
@@ -348,10 +375,10 @@
                                         <Style TargetType="Button" BasedOn="{StaticResource WorkspaceTileStyle}">
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding IsGovernanceWorkspaceActive}" Value="True">
-                                                    <Setter Property="Background" Value="{StaticResource NavActiveBackgroundBrush}" />
-                                                    <Setter Property="BorderBrush" Value="{StaticResource InfoColorBrush}" />
+                                                    <Setter Property="Background" Value="{StaticResource SidebarActiveBrush}" />
+                                                    <Setter Property="BorderBrush" Value="{StaticResource SidebarActiveIndicatorBrush}" />
                                                     <Setter Property="BorderThickness" Value="1" />
-                                                    <Setter Property="Foreground" Value="{StaticResource InfoColorBrush}" />
+                                                    <Setter Property="Foreground" Value="{StaticResource NavItemForegroundActiveBrush}" />
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
@@ -370,7 +397,7 @@
                     <!-- Current workspace label -->
                     <Border Grid.Row="1"
                             Padding="16,8"
-                            BorderBrush="{StaticResource ConsoleBorderBrush}"
+                            BorderBrush="{StaticResource SidebarBorderBrush}"
                             BorderThickness="0,0,0,1">
                         <StackPanel>
                             <TextBlock Text="{Binding ActiveNavigationLabel}"
@@ -637,13 +664,11 @@
                     <!-- Compact footer actions -->
                     <Border Grid.Row="3"
                             Padding="12,10"
-                            BorderBrush="{StaticResource ConsoleBorderBrush}"
+                            BorderBrush="{StaticResource SidebarBorderBrush}"
                             BorderThickness="0,1,0,0">
                         <StackPanel>
-                            <Button Style="{StaticResource GhostButtonStyle}"
-                                    HorizontalAlignment="Stretch"
+                            <Button Style="{StaticResource FooterNavButtonStyle}"
                                     Click="OnOpenCommandPaletteClick"
-                                    Padding="10,6" FontSize="12"
                                     AutomationProperties.Name="Open Command Palette"
                                     ToolTip="Quick Command (Ctrl+K)">
                                 <StackPanel Orientation="Horizontal">
@@ -654,11 +679,9 @@
                                                Margin="8,0,0,0" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
-                            <Button Style="{StaticResource GhostButtonStyle}"
-                                    HorizontalAlignment="Stretch"
-                                    Command="{Binding OpenNotificationsCommand}"
+                            <Button Style="{StaticResource FooterNavButtonStyle}"
                                     Margin="0,4,0,0"
-                                    Padding="10,6" FontSize="12"
+                                    Command="{Binding OpenNotificationsCommand}"
                                     ToolTip="Notifications">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="{StaticResource IconBell}"
@@ -668,11 +691,9 @@
                                                Margin="8,0,0,0" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
-                            <Button Style="{StaticResource GhostButtonStyle}"
-                                    HorizontalAlignment="Stretch"
-                                    Command="{Binding OpenHelpCommand}"
+                            <Button Style="{StaticResource FooterNavButtonStyle}"
                                     Margin="0,4,0,0"
-                                    Padding="10,6" FontSize="12"
+                                    Command="{Binding OpenHelpCommand}"
                                     AutomationProperties.Name="Help and Support">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="{StaticResource IconHelp}"
@@ -683,11 +704,9 @@
                                 </StackPanel>
                             </Button>
                             <Button x:Name="TickerStripToggleButton"
-                                    Style="{StaticResource GhostButtonStyle}"
-                                    HorizontalAlignment="Stretch"
-                                    Command="{Binding ToggleTickerStripCommand}"
+                                    Style="{StaticResource FooterNavButtonStyle}"
                                     Margin="0,4,0,0"
-                                    Padding="10,6" FontSize="12"
+                                    Command="{Binding ToggleTickerStripCommand}"
                                     AutomationProperties.Name="Toggle Ticker Strip"
                                     ToolTip="Toggle live ticker strip">
                                 <StackPanel Orientation="Horizontal">

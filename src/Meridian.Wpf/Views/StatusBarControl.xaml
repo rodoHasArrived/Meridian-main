@@ -5,37 +5,38 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              Height="28">
-    <Border Background="{StaticResource ConsoleBackgroundLightBrush}"
-            BorderBrush="{StaticResource ConsoleBorderBrush}"
+    <Border Background="{StaticResource StatusBarBackgroundBrush}"
+            BorderBrush="{StaticResource StatusBarBorderBrush}"
             BorderThickness="0,1,0,0">
         <DockPanel LastChildFill="False" Margin="16,0">
             <!-- Left side: status dot + provider count -->
-            <Ellipse DockPanel.Dock="Left" Width="8" Height="8" Margin="0,0,6,0"
+            <Ellipse DockPanel.Dock="Left" Width="7" Height="7" Margin="0,0,6,0"
                      Fill="{Binding StatusDotBrush}"
                      VerticalAlignment="Center"/>
             <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" FontSize="11"
-                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                       Foreground="{StaticResource StatusBarTextBrush}"
                        Text="{Binding ActiveProviderCount, StringFormat='Providers: {0}'}"/>
 
             <Rectangle DockPanel.Dock="Left" Width="1" Margin="12,6"
-                       Fill="{StaticResource ConsoleBorderBrush}" />
+                       Fill="{StaticResource StatusBarBorderBrush}" />
 
             <!-- Throughput -->
             <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" FontSize="11"
-                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                       Foreground="{StaticResource StatusBarTextBrush}"
                        Text="{Binding ThroughputLabel}"/>
 
             <Rectangle DockPanel.Dock="Left" Width="1" Margin="12,6"
-                       Fill="{StaticResource ConsoleBorderBrush}" />
+                       Fill="{StaticResource StatusBarBorderBrush}" />
 
             <!-- Backfills -->
             <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" FontSize="11"
-                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                       Foreground="{StaticResource StatusBarTextBrush}"
                        Text="{Binding ActiveBackfillCount, StringFormat='Backfills: {0}'}"/>
 
             <!-- Right side: errors badge + UTC clock -->
             <TextBlock DockPanel.Dock="Right" VerticalAlignment="Center" FontSize="11"
-                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                       FontFamily="{StaticResource MeridianDataFontFamily}"
+                       Foreground="{StaticResource StatusBarTextBrush}"
                        Text="{Binding UtcTime}" />
 
             <Border DockPanel.Dock="Right" Margin="12,4,8,4" CornerRadius="3" Padding="7,2"

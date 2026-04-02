@@ -2,12 +2,12 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!-- Marquee-inspired flat cards: white bg, subtle 1px border, 4px radius -->
+    <!-- Marquee-inspired flat cards: white bg, hairline 1px border, 3px radius -->
     <Style x:Key="CardStyle" TargetType="Border">
         <Setter Property="Background" Value="{StaticResource PremiumPanelBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="CornerRadius" Value="3" />
         <Setter Property="Padding" Value="20" />
     </Style>
 
@@ -19,7 +19,7 @@
         <Setter Property="Background" Value="{StaticResource ConsoleBackgroundLightBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="CornerRadius" Value="3" />
         <Setter Property="Padding" Value="14" />
     </Style>
 
@@ -28,7 +28,7 @@
         <Setter Property="Background" Value="{StaticResource ConsoleBackgroundHoverBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="CornerRadius" Value="3" />
         <Setter Property="Padding" Value="0" />
     </Style>
 
