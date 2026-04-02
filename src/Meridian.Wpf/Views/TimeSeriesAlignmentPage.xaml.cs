@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using Meridian.Ui.Services;
+using Meridian.Wpf.Models;
 using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Views;
@@ -200,11 +201,4 @@ public partial class TimeSeriesAlignmentPage : Page
         }
         StatusText.Text = $"Preset \"{AlignmentNameBox.Text}\" saved.";
     }
-}
-
-public sealed class AlignmentHistoryEntry
-{
-    public string Name { get; init; } = string.Empty;
-    public string DetailsText { get; init; } = string.Empty;
-    public string DateText { get; init; } = string.Empty;
 }

@@ -1,9 +1,13 @@
 <Page x:Class="Meridian.Wpf.Views.CollectionSessionPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:converters="clr-namespace:Meridian.Wpf.Converters"
       Background="{DynamicResource ShellWindowBackgroundBrush}"
       Loaded="OnPageLoaded"
       AutomationProperties.Name="Collection Session">
+    <Page.Resources>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </Page.Resources>
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
         <StackPanel MaxWidth="1200">
             <!-- Page Header -->
@@ -27,7 +31,7 @@
             <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
                 <StackPanel>
                     <TextBlock Text="Active Session" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12" />
-                    <Border x:Name="ActiveSessionPanel" Visibility="Collapsed"
+                    <Border Visibility="{Binding HasActiveSession, Converter={StaticResource BoolToVisibilityConverter}}"
                             BorderBrush="{StaticResource SuccessColorBrush}" BorderThickness="1"
                             Background="{StaticResource PremiumPanelBrush}" CornerRadius="12" Padding="12" Margin="0,0,0,8">
                         <Grid>
@@ -36,21 +40,21 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0">
-                                <TextBlock x:Name="ActiveSessionName" Text="" FontSize="16" FontWeight="SemiBold"
+                                <TextBlock Text="{Binding ActiveSessionName}" FontSize="16" FontWeight="SemiBold"
                                            Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
                                 <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
                                     <Ellipse Width="8" Height="8" Fill="{StaticResource SuccessColorBrush}" VerticalAlignment="Center" />
-                                    <TextBlock x:Name="ActiveSessionStatus" Text="Active" Margin="6,0,0,0"
+                                    <TextBlock Text="{Binding ActiveSessionStatus}" Margin="6,0,0,0"
                                                Foreground="{StaticResource SuccessColorBrush}" FontSize="12" />
-                                    <TextBlock x:Name="ActiveSessionDuration" Text="" Margin="16,0,0,0"
+                                    <TextBlock Text="{Binding ActiveSessionDuration}" Margin="16,0,0,0"
                                                Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="12" />
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                                     <TextBlock Text="Events: " Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
-                                    <TextBlock x:Name="ActiveSessionEvents" Text="0"
+                                    <TextBlock Text="{Binding ActiveSessionEvents}"
                                                Foreground="{StaticResource ConsoleTextPrimaryBrush}" FontSize="11" />
                                     <TextBlock Text="  |  Rate: " Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" Margin="8,0,0,0" />
-                                    <TextBlock x:Name="ActiveSessionRate" Text="0/s"
+                                    <TextBlock Text="{Binding ActiveSessionRate}"
                                                Foreground="{StaticResource ConsoleTextPrimaryBrush}" FontSize="11" />
                                 </StackPanel>
                             </StackPanel>
@@ -62,7 +66,8 @@
                             </StackPanel>
                         </Grid>
                     </Border>
-                    <TextBlock x:Name="NoActiveSessionText" Text="No active collection session."
+                    <TextBlock Text="No active collection session."
+                               Visibility="{Binding HasActiveSession, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Invert}"
                                Foreground="{StaticResource ConsoleTextMutedBrush}" />
                 </StackPanel>
             </Border>
@@ -84,9 +89,19 @@
             <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
                 <StackPanel>
                     <TextBlock Text="Session History" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12" />
-                    <TextBlock x:Name="SessionHistoryStatus" Text="Loading sessions..."
-                               Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,0,8" />
-                    <ItemsControl x:Name="SessionHistoryList">
+                    <TextBlock Text="{Binding SessionHistoryStatus}" Margin="0,0,0,8">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="{StaticResource ConsoleTextMutedBrush}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasSessionHistoryError}" Value="True">
+                                        <Setter Property="Foreground" Value="{StaticResource ErrorColorBrush}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <ItemsControl ItemsSource="{Binding Sessions}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Border BorderBrush="{StaticResource ConsoleTextMutedBrush}" BorderThickness="0,0,0,1"
@@ -144,7 +159,7 @@
             <Border Style="{StaticResource CardStyle}">
                 <StackPanel>
                     <TextBlock Text="Session Summary" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12" />
-                    <TextBlock x:Name="SessionSummaryText" Text="Select a completed session to view its summary."
+                    <TextBlock Text="{Binding SessionSummaryText}"
                                Foreground="{StaticResource ConsoleTextMutedBrush}" TextWrapping="Wrap"
                                FontFamily="Consolas" FontSize="11" />
                 </StackPanel>
