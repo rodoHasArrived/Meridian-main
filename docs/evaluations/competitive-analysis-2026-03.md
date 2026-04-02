@@ -1,8 +1,11 @@
 # Competitive Analysis — Algorithmic Trading & Market Data Platforms
 
-**Date:** 2026-03-27
+**Date:** 2026-04-02
+**Last Updated:** 2026-04-02 (initial version: 2026-03-27)
 **Author:** Architecture Review
 **Purpose:** Map the competitive landscape for platforms similar to Meridian, assess business model options, and surface concrete feature and capability recommendations.
+
+> **April 2026 update notes:** This revision reflects Meridian v1.7.2 state as of 2026-03-31 (React workstation shell live with Research/Trading/Data Operations/Governance screens; QuantScript C# scripting environment added; FRED and Robinhood historical providers added; Security Master productization in progress). Five new competitor entries added: §2.15 tastytrade / options-focused platforms, §2.16 AI-native trading platforms, §2.17 Goldman Sachs Marquee, §2.18 MATLAB (MathWorks), and §2.19 Wolfram Alpha / Mathematica. A supplementary quantitative research platform matrix (§4.2) compares Meridian against the three scientific computing platforms. Capability matrix, gap analysis, and improvement opportunities updated accordingly.
 
 ---
 
@@ -24,6 +27,11 @@
    - 2.12 [Allvue Systems (Direct Lending)](#212-allvue-systems-direct-lending)
    - 2.13 [Broadridge / Ipreo (Fund Operations)](#213-broadridge--ipreo-fund-operations)
    - 2.14 [FundStudio (Objectway)](#214-fundstudio-objectway)
+   - 2.15 [tastytrade & Options-Focused Retail Platforms](#215-tastytrade--options-focused-retail-platforms)
+   - 2.16 [AI-Native Trading and Research Platforms (Emerging)](#216-ai-native-trading-and-research-platforms-emerging)
+   - 2.17 [Goldman Sachs Marquee](#217-goldman-sachs-marquee)
+   - 2.18 [MATLAB (MathWorks)](#218-matlab-mathworks)
+   - 2.19 [Wolfram Alpha / Mathematica (Wolfram Language)](#219-wolfram-alpha--mathematica-wolfram-language)
 3. [Business Model Analysis](#3-business-model-analysis)
 4. [Meridian Capability Matrix vs Competitors](#4-meridian-capability-matrix-vs-competitors)
 5. [Feature Gap Analysis](#5-feature-gap-analysis)
@@ -75,7 +83,9 @@ This multi-segment scope is both Meridian's differentiation and its execution ri
 - Expensive at scale; no on-premises offering
 - Limited real-time microstructure data (tick-by-tick L2 depth is not well-served)
 
-**Meridian advantage:** Self-hosted tick storage with full L2 and trade data, native .NET performance, no cloud lock-in, direct brokerage connections (IB, Alpaca, StockSharp), and a direct lending module that QuantConnect has no analogue for.
+**Recent developments (2026 Q1):** LEAN 3.x extended the research environment with improved Jupyter integration and a `ResearchEnvironment` that allows code-identical strategy authoring and live-execution. Python data processing now has a typed `pandas`-compatible bar data layer. QuantConnect cloud added an AI Research Assistant mode (LLM-assisted strategy debugging).
+
+**Meridian advantage:** Self-hosted tick storage with full L2 and trade data, native .NET performance, no cloud lock-in, direct brokerage connections (IB, Alpaca, StockSharp), and a direct lending module that QuantConnect has no analogue for. Meridian's QuantScript C# scripting environment (Roslyn-based) offers comparable interactive strategy authoring without cloud dependency.
 
 **Gap vs Meridian:**
 - QuantConnect's strategy SDK is more user-friendly (Python support, online IDE, visual backtest reports)
@@ -211,6 +221,8 @@ This multi-segment scope is both Meridian's differentiation and its execution ri
 - No backtesting engine; developers must build their own
 - Market data history is limited (Polygon-backed; expensive for large history pulls)
 
+**Recent developments (2026 Q1):** Alpaca has meaningfully expanded its asset class coverage. Crypto trading (BTC, ETH, and 20+ tokens) is now available via the same API. International equities (via a partner venue) are in limited rollout. The Alpaca market data API has been upgraded with improved WebSocket reliability and new options chain snapshot endpoints.
+
 **Meridian advantage:** Full tick-level backtesting engine, multi-provider data, more asset class coverage via IB, self-hosted storage, direct lending module.
 
 **Gap vs Meridian:**
@@ -243,7 +255,9 @@ This multi-segment scope is both Meridian's differentiation and its execution ri
 - No direct lending or fund management capability
 - Setup complexity is high; documentation gaps
 
-**Meridian advantage:** Desktop WPF workstation, self-hosted tick storage with WAL, data quality monitoring, direct lending module, web dashboard, .NET ecosystem integration.
+**Recent developments (2026 Q1):** Nautilus Trader has continued maturing its live trading adapters, with new official adapters for Bybit and improved IB connectivity. The actor model concurrency layer has been stabilized. Nautilus v0.29+ introduced a cleaner `Strategy` ABC and improved `BacktestEngine` performance. Python stubs for IDE completion have improved developer ergonomics significantly.
+
+**Meridian advantage:** Desktop WPF workstation, React web workstation (Research/Trading/Data Operations/Governance screens), self-hosted tick storage with WAL, data quality monitoring, direct lending module, QuantScript interactive scripting environment.
 
 **Gap vs Meridian:**
 - Nautilus has a much cleaner separation of backtest vs live trading with the same strategy code running in both environments
@@ -302,6 +316,8 @@ This multi-segment scope is both Meridian's differentiation and its execution ri
 - Cost is significant at scale
 - No strategy execution, backtesting, or portfolio management
 - Requires external tooling for everything beyond raw data delivery
+
+**Recent developments (2026 Q1):** Databento expanded coverage to include crypto derivatives (Deribit, CME CF Bitcoin) and several European equity venues (LSE, Euronext). DBN format tooling matured: Rust and Python libraries now support streaming DBN decoding at near-zero allocation cost.
 
 **Meridian advantage:** Self-hosted storage, integrated backtesting and execution, GUI, direct lending — Meridian provides the full platform on top of which raw data is just one component.
 
@@ -521,6 +537,200 @@ This multi-segment scope is both Meridian's differentiation and its execution ri
 
 ---
 
+### 2.15 tastytrade & Options-Focused Retail Platforms
+
+**What it is:** tastytrade (formerly tastyworks) is an options and futures trading platform targeting active derivatives traders. Acquired by IG Group in 2021 (~$1B), it serves primarily US retail options traders with a strong educational media presence (tastytrade network). Schwab's thinkorswim and Webull's options tools occupy adjacent space.
+
+**Business model:**
+- Commission-free stock trades; $1/contract options (capped at $10/leg on opening)
+- Zero-commission futures (select products)
+- Revenue from payment for order flow, margin interest, and exchange fee rebates
+- Ad-supported financial media / streaming content
+
+**Strengths:**
+- Best-in-class retail options analytics: IV rank, IV percentile, probability of profit (PoP), realized vs. implied volatility comparison
+- Options chain viewer with real-time per-strike Greeks (delta, gamma, theta, vega, rho)
+- Risk graph: portfolio-level P&L profile across price scenarios and time decay
+- Position analysis tool: net delta, notional exposure, days to expiration summary
+- Tastytrade network: live streaming financial education and commentary integrated with the platform
+- Clean desktop + web + mobile across iOS/Android/Windows
+
+**Weaknesses:**
+- Primarily US equities and derivatives; limited international market access
+- No backtesting engine; strategy analysis is manual and forward-looking only
+- No programmable API for strategy automation; algorithmic execution is absent
+- No self-hosted data; platform-managed, tightly coupled to tastytrade brokerage
+- No fund management, direct lending, or institutional features
+
+**Meridian advantage:** Algorithmic execution (paper and live), tick-level backtesting with fill models, self-hosted data, direct lending module. Meridian has structural options data capabilities via `IOptionsChainProvider` and `OptionDataCollector`, though the visualization layer is not yet built.
+
+**Gap vs Meridian:**
+- Options analytics visualization: IV rank/percentile heatmaps, historical IV percentile charts per symbol
+- Options chain viewer with real-time Greeks displayed per strike and expiry
+- Implied volatility surface visualization (3D IV surface or 2D heatmap by strike/expiry)
+- Portfolio risk graph (P&L profile across underlying price scenarios at different dates)
+- P&L simulation at expiry for multi-leg spreads (vertical, condor, calendar, diagonal)
+- Options screener: filter by IV rank, PoP, days to expiry, premium/credit
+
+---
+
+### 2.16 AI-Native Trading and Research Platforms (Emerging)
+
+**What it is:** An emerging category of platforms that embed large language models (LLMs) and AI agents directly into trading research, strategy generation, and data exploration workflows. This segment is fragmented and rapidly evolving but already displacing time in platform-adjacent tools (Bloomberg Excel macros, Python notebooks).
+
+**Key participants (as of Q1 2026):**
+- **Composer AI** (Composer.trade v2): Natural language strategy builder ("Build a momentum strategy for S&P 500 sectors"). Integrates with Alpaca for automated execution.
+- **Reflexivity Research**: AI-powered market research aggregator that surfaces signal candidates from SEC filings, analyst reports, and news, outputting structured factor summaries.
+- **Bloomberg Intelligence (BICS + AI)**: Bloomberg's AI layer adds natural language querying over Terminal data (BICS, earnings models, ESG).
+- **FactSet's Mercury AI**: Natural language query engine over FactSet's fundamental and market data.
+- **QuantConnect AI Research Assistant**: LLM-assisted strategy debugging tool added to the cloud Research Environment in 2026 Q1.
+
+**Emerging capabilities:**
+- Natural language strategy specification: "Buy when RSI(14) crosses above 30 and volume is 1.5× 20-day average; sell after 5 days or 3% gain"
+- AI-generated research summaries combining fundamental data, news, technical signals, and cross-asset context
+- Conversational backtest refinement: "Why did the strategy underperform in March 2024?"
+- Automated parameter optimization via LLM-guided search and Bayesian reasoning
+- Auto-generated strategy documentation and risk narrative
+
+**Weaknesses:**
+- Hallucination risk in strategy logic remains significant; requires mandatory human validation before deployment
+- No self-hosted option; API-dependent on LLM provider infrastructure (OpenAI, Anthropic)
+- Audit trail for AI-generated strategies is minimal; strategy provenance is difficult to prove
+- LLM-generated strategies tend to be simple and historical-data-centric; sophisticated microstructure strategies are poorly served
+- Privacy risk: sending proprietary trading data to a third-party LLM endpoint is unacceptable for many institutional users
+
+**Meridian advantage:** Deterministic, auditable backtesting; self-hosted data; WAL-backed storage; typed strategy SDK contracts (`IBacktestStrategy`, `ILiveStrategy`); QuantScript C# scripting environment with Roslyn for compiled, deterministic strategy code. Meridian's MCP server architecture (`src/Meridian.Mcp/` and `src/Meridian.McpServer/`) is already designed as the integration boundary for AI tooling — completing this with a user-facing AI assistant mode would directly address this gap without sending trading data outside the user's infrastructure.
+
+**Gap vs Meridian:**
+- Natural language interface for strategy specification and exploratory research queries (e.g., "show me the 20 symbols with the highest recent IV/HV ratio in my collected data")
+- AI-assisted backtest result interpretation ("here is what drove the drawdown in Q3 2024")
+- LLM-powered symbol search and data exploration embedded in the QuantScript IDE
+- AI-generated documentation stubs for strategy parameters and backtesting runs
+- On-device / private LLM option: route AI queries to a locally-running model to preserve data privacy for institutional users
+
+---
+
+### 2.17 Goldman Sachs Marquee
+
+**What it is:** Goldman Sachs Marquee is GS's enterprise digital platform for buy-side clients — primarily hedge funds, asset managers, and institutional investors with a Goldman prime brokerage or sales-and-trading relationship. It provides a web-based portal and an open-source Python SDK (`gs-quant`) for programmatic access to GS's proprietary derivatives pricing models, risk analytics, portfolio construction tools, and alternative data signals. The platform embeds the same analytical models used by GS trading desks and is positioned as an "institutional research infrastructure as a service."
+
+**Business model:**
+- Platform access is free to GS clients — monetized through GS's prime brokerage, flow trading, and financing revenues
+- `gs-quant` Python library is Apache 2.0 open source; full API access requires GS client credentials
+- Proprietary data (GS macro signals, factor datasets, news analytics) are licensed separately or bundled with a prime relationship
+- No direct subscription pricing; access is relationship-gated — unsuitable for independent operators or small funds without a GS relationship
+
+**Strengths:**
+- **Derivatives pricing engine:** GS's proprietary models for equity options, rates, credit, FX, and structured products — same infrastructure used by GS traders. Covers stochastic vol (SVI, SABR, Bergomi), rates (Hull-White, LMM), credit (CDS curve bootstrapping), and multi-asset correlation models
+- **Marquee Data:** proprietary GS datasets including macro factor signals, earnings revision scores, sector rotation indicators, and corporate news sentiment — not available outside a GS relationship
+- **Portfolio risk analytics:** multi-asset VaR, CVaR, scenario analysis, stress testing using GS risk models; factor exposure decomposition (style, sector, country) in one API call
+- **gs-quant Python SDK:** open-source library providing Pythonic access to GS pricing, risk, and data APIs; widely used by GS client quants
+- **Marquee Quant Intelligence:** AI-assisted research surfacing pattern recognition and signal generation from GS proprietary datasets
+- **Prime brokerage integration:** Marquee can pull live position and margin data directly from GS prime custody, giving a real-time fund-level view using custodian-sourced data rather than estimated positions
+
+**Weaknesses:**
+- **GS relationship required:** the full platform — especially proprietary data, pricing APIs, and prime integration — is inaccessible without a Goldman client relationship. Independent operators or sub-$50M funds typically cannot qualify
+- No self-hosted option; all data and compute run on GS infrastructure
+- No self-hosted tick data collection, WAL storage, or data quality monitoring
+- No standalone backtesting engine; analytics are primarily forward-looking risk and pricing, not historical strategy replay
+- No direct lending or fund accounting for non-GS clients
+- Dependent on GS's continued commercial willingness to support the platform
+
+**Meridian advantage:** Self-hosted data collection, tick-level backtesting engine, WAL storage, open-source core with no client relationship required, direct lending module, Windows workstation. Any developer or fund manager can run Meridian without a GS prime relationship.
+
+**Gap vs Meridian:**
+- **Multi-asset derivatives pricing engine:** exact Black-Scholes variants, stochastic volatility surfaces (SVI, SABR), interest rates models (Hull-White, LMM), credit curve bootstrapping — Meridian has no pricing engine; options data is collected but not priced
+- **Proprietary alternative data:** GS macro signals, earnings revision indicators, sector rotation scores — Meridian's data layer is market microstructure; no proprietary factor datasets
+- **Portfolio-level risk analytics:** multi-asset VaR, CVaR, factor decomposition (Barra-style), scenario P&L attribution — nothing analogous in Meridian
+- **Stress testing with scenario simulation:** multi-asset portfolio P&L under user-defined market regimes (e.g., "rates +100bp, equities -15%, credit spreads +200bp")
+- **Prime brokerage position integration:** Marquee pulls custodian-reported positions directly; Meridian tracks strategy-estimated positions from its own execution layer only
+
+---
+
+### 2.18 MATLAB (MathWorks)
+
+**What it is:** MATLAB is the de facto numerical computing environment in quantitative finance, signal processing, and statistical modeling. MathWorks sells a toolbox ecosystem including **Financial Toolbox**, **Risk Management Toolbox**, **Econometrics Toolbox**, **Optimization Toolbox**, and **Trading Toolbox** — collectively the most widely deployed quant research toolkit in institutional finance outside Python.
+
+**Business model:**
+- Commercial per-seat annual licenses: MATLAB base ~$2,150/year; individual toolboxes ~$850–$1,500/year each
+- A full quant stack (MATLAB + Financial + Risk + Econometrics + Optimization toolboxes) can exceed $8,000/year per researcher
+- Academic tier: significantly reduced pricing (~$500 base); widely used in universities, which explains MATLAB's strong institutional recognition
+- MATLAB Online (cloud): ~$250/year for individual use, with limited compute
+- Enterprise site licenses: campus-wide or organization-wide deals negotiated with MathWorks
+- Revenue is purely software licensing; MathWorks is a private company
+
+**Strengths:**
+- **Vectorized numerical computing:** matrix operations, linear algebra, and numerical methods at production quality — the benchmark for performance in scientific computing workflows
+- **Financial Toolbox:** time-series analysis, present-value and yield calculations, interest rate instrument pricing, Black-Scholes and binomial tree models, technical indicator library, portfolio mean-variance optimization
+- **Risk Management Toolbox:** VaR/CVaR computation, credit risk (CreditMetrics, KMV), market risk stress testing, copula-based multi-asset models
+- **Econometrics Toolbox:** ARIMA, GARCH/ARCH volatility modeling, VAR, cointegration testing, state-space models, Kalman filtering, Bayesian estimation
+- **Optimization Toolbox:** quadratic programming, linear programming, genetic algorithms, simulated annealing — enables systematic portfolio construction and parameter search
+- **Trading Toolbox:** broker connections (Interactive Brokers, E*TRADE), real-time tick data subscriptions, algorithmic order submission — direct overlap with Meridian
+- **MATLAB Live Editor:** notebook-style interactive research environment with inline plots, LaTeX equation rendering, and output capture — the most widely used computational notebook in institutional quant research after Jupyter
+- **Parallel Computing Toolbox:** distributed parameter sweeps and Monte Carlo simulations across CPU/GPU cluster — essential for large-scale backtesting and optimization
+- Vast body of published quant academic research is distributed as MATLAB code, creating a significant pull for institutional users
+
+**Weaknesses:**
+- Expensive: the toolbox licensing model means production-quality quant research costs $4,000–$10,000/researcher/year
+- No self-hosted tick data collection, no WAL storage, no data quality monitoring
+- No integrated live execution workflow at scale; Trading Toolbox is functional but not production-grade for high-frequency or complex order management
+- MATLAB code is difficult to deploy to production; typical pattern is MATLAB for research → Python/C# rewrite for deployment — doubling development effort
+- Desktop-only for full capability; MATLAB Online has significant limitations
+- No direct lending, fund accounting, security master, or institutional workflow modules
+
+**Meridian advantage:** Self-hosted tick collection at zero marginal cost, tick-level backtesting using real stored data, WAL storage, open-source core, direct lending module, Windows workstation, QuantScript interactive scripting — all at infrastructure cost only, with no per-seat licensing. Meridian's QuantScript C# scripting environment provides interactive, REPL-style research without MATLAB's cost structure.
+
+**Gap vs Meridian:**
+- **Econometric modeling suite:** GARCH/ARCH volatility forecasting, ARIMA, VAR, cointegration tests — entirely absent from Meridian's analytics layer; critical for volatility-targeting strategies and macro research
+- **Numerical optimization solvers:** quadratic programming for portfolio mean-variance optimization, genetic algorithms for strategy parameter search, simulated annealing — no analogue in Meridian
+- **Signal processing:** FFT, wavelet decomposition, spectral analysis, digital filtering of market time series — not available in Meridian
+- **Notebook-style Live Editor:** cell-based research environment with inline plots, LaTeX math rendering, and rich output capture — QuantScript is an IDE, not a notebook; this is a significant UX difference for research workflows
+- **Parallel Computing:** distributed parameter sweeps for optimization and Monte Carlo simulations across CPU/GPU — Meridian's batch backtest is single-node
+- **Rich 3D and animated visualization:** surface plots, contour maps, animated time-series views — Meridian's charting is standard 2D
+
+---
+
+### 2.19 Wolfram Alpha / Mathematica (Wolfram Language)
+
+**What it is:** Wolfram Mathematica is a symbolic and numerical computation environment that has been used in quantitative finance for decades — primarily for pricing derivations, stochastic calculus, risk model development, and analytical solutions. Wolfram Alpha is the consumer-facing computational knowledge engine ("the world's knowledge engine"). Together they form the Wolfram ecosystem, which also includes the **Wolfram Finance Platform** extending Mathematica with derivative pricing and time series tools.
+
+**Business model:**
+- Mathematica: $495–$3,995/year depending on tier (student / academic / professional / enterprise)
+- Wolfram|Alpha Pro: $7.99/month (individual consumer)
+- Wolfram Cloud: $50–$500+/month depending on compute allocation
+- Wolfram Finance Platform: enterprise licensing negotiated case-by-case; typically six-figure institutional contracts
+- Wolfram Data Repository and curated datasets are partially free; premium financial datasets licensed separately
+
+**Strengths:**
+- **Symbolic computation:** exact algebra, calculus, differential equations — Mathematica can *derive* closed-form pricing formulas symbolically that no other platform in this competitive set can match. Example: symbolically deriving the delta of a barrier option under stochastic volatility and verifying it reduces correctly in limiting cases
+- **Exact pricing and analytics:** derive Black-Scholes, Garman-Kohlhagen, Vasicek, CIR, and Hull-White closed-form solutions symbolically, not numerically — critical for model validation work
+- **Built-in financial entities:** `FinancialData["AAPL", "Close", {2024, 2025}]`, `EntityValue["Economic Indicator", ...]` — Wolfram Language queries curated financial and economic datasets natively without any API integration
+- **Wolfram|Alpha natural language:** "What was the implied volatility of AAPL on March 15, 2024?" answered immediately with sourced data — the most accessible financial query interface of any platform in this analysis
+- **Notebook interface:** the richest interactive research experience of all competitors — equations render as LaTeX, plots are interactive, computations show intermediate symbolic steps, cells can mix prose, math, code, and visualization
+- **Wolfram Neural Net Repository:** access to pre-trained time series and financial models via a single function call; integrates directly with pricing and simulation notebooks
+- **Cross-domain integration:** seamlessly move from symbolic derivation → numerical simulation → Monte Carlo → visualization → LaTeX export in a single notebook, without switching tools
+- **Mathematica's `NDSolve` and `NIntegrate`:** high-quality numerical PDE solving and integration; used for complex derivatives pricing where no closed form exists (e.g., exotic barrier options, path-dependent structures)
+
+**Weaknesses:**
+- **Not a trading platform:** no live data collection, no execution, no WAL storage — purely a research and modeling environment
+- Financial data access through `FinancialData[]` is limited to curated, delayed datasets; real-time tick data is not available
+- Wolfram Language is niche relative to Python; the developer community is small and shrinking in financial applications
+- Mathematica notebooks are not easily version-controlled or code-reviewed using standard Git workflows
+- No live trading, backtesting engine with realistic fills, or portfolio management
+- Expensive for commercial use; pricing is opaque and varies significantly by institutional negotiation
+- Steep learning curve: Wolfram Language syntax is idiosyncratic and pattern-matching-based — different from every other language in this competitive set
+
+**Meridian advantage:** Self-hosted tick collection, backtesting with realistic fills (including L2 order book fill simulation), execution, direct lending, and workstation — Meridian is a complete trading and fund operations platform; Wolfram and MATLAB are research environments only. Meridian's QuantScript provides interactive C# research without Wolfram's licensing cost or language barrier.
+
+**Gap vs Meridian:**
+- **Symbolic derivation of pricing formulas and Greeks:** exact, analytical (not numerical) solutions — Meridian has no symbolic computation layer
+- **Natural language financial queries with sourced data:** "What was the beta of MSFT to the S&P 500 over the past year?" answered immediately — nothing like Wolfram Alpha exists in Meridian
+- **Notebook interface with inline equation rendering:** cell-based document that combines prose, LaTeX, code, and interactive plots — QuantScript is a scripting IDE; a notebook-first research experience is absent
+- **Built-in knowledge of financial instruments and economic indicators:** Wolfram Language's entity system contains structured knowledge about thousands of instruments, market indices, and macro indicators without any API integration
+- **Formal symbolic testing and verification:** prove that a pricing model satisfies boundary conditions symbolically; impossible in Python/C# environments
+
+---
+
 ## 3. Business Model Analysis
 
 ### 3.1 Current Meridian Positioning
@@ -551,35 +761,73 @@ The most defensible path for Meridian given its current capabilities is an **Ope
 
 ## 4. Meridian Capability Matrix vs Competitors
 
-| Capability | Meridian | QuantConnect | NinjaTrader | Nautilus | Databento | Bloomberg |
-|------------|----------|-------------|-------------|----------|-----------|-----------|
-| Self-hosted tick storage | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Tick-level backtesting | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ |
-| Live execution (paper) | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ |
-| Live execution (broker) | ✅ (IB/Alpaca/SS) | ✅ (60+ brokers) | ✅ (futures) | ✅ | ❌ | ✅ (AIM) |
-| Data quality monitoring | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| Multi-provider failover | ✅ | ❌ | ❌ | ⚠️ | ❌ | N/A |
-| L2 order book data | ✅ | ⚠️ | ✅ | ✅ | ✅ | ✅ |
-| Options data | ⚠️ | ✅ | ✅ | ⚠️ | ✅ | ✅ |
-| Futures data | ⚠️ (via SS/IB) | ✅ | ✅ | ✅ | ✅ | ✅ |
-| FX data | ⚠️ (via IB) | ✅ | ✅ | ✅ | ❌ | ✅ |
-| Crypto data | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ |
-| Fundamental data | ❌ | ⚠️ | ❌ | ❌ | ❌ | ✅ |
-| News / sentiment | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
-| Python strategy API | ❌ | ✅ | ❌ | ✅ | N/A | ✅ |
-| Web dashboard | ✅ | ✅ | ❌ | ❌ | ✅ | ✅ |
-| Desktop app (Windows) | ✅ | ❌ | ✅ | ❌ | ❌ | ✅ |
-| Direct lending module | ✅ | ❌ | ❌ | ❌ | ❌ | ⚠️ (credit analytics) |
-| Security master | ✅ | ❌ | ❌ | ⚠️ | ❌ | ✅ |
-| Fund ledger / accounting | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ (PORT) |
-| Community / marketplace | ❌ | ✅ | ✅ | ❌ | ❌ | ⚠️ |
-| Visual strategy builder | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Walk-forward optimization | ❌ | ✅ | ✅ | ❌ | N/A | N/A |
-| Order flow analytics | ❌ | ❌ | ✅ | ❌ | ⚠️ | ❌ |
-| Real-time symbol scanner | ❌ | ⚠️ | ✅ | ❌ | ❌ | ✅ |
-| Replay trading (live sim) | ❌ | ❌ | ✅ | ⚠️ | ❌ | ❌ |
-| FIX protocol | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ |
-| Open source | ✅ | ✅ (Lean) | ❌ | ✅ | ❌ | ❌ |
+> **Matrix updated:** 2026-04-02. Meridian column reflects v1.7.2 (2026-03-31). tastytrade column added. QuantConnect column updated to reflect LEAN 3.x and AI Research Assistant.
+
+| Capability | Meridian | QuantConnect | NinjaTrader | Nautilus | Databento | Bloomberg | tastytrade |
+|------------|----------|-------------|-------------|----------|-----------|-----------|-----------|
+| Self-hosted tick storage | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Tick-level backtesting | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
+| Live execution (paper) | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
+| Live execution (broker) | ✅ (IB/Alpaca/SS) | ✅ (60+ brokers) | ✅ (futures) | ✅ | ❌ | ✅ (AIM) | ✅ (own brokerage) |
+| Data quality monitoring | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ | ❌ |
+| Multi-provider failover | ✅ | ❌ | ❌ | ⚠️ | ❌ | N/A | ❌ |
+| L2 order book data | ✅ | ⚠️ | ✅ | ✅ | ✅ | ✅ | ❌ |
+| Options data | ⚠️ | ✅ | ✅ | ⚠️ | ✅ | ✅ | ✅ |
+| Options analytics (Greeks, IV surface) | ❌ | ⚠️ | ✅ | ❌ | ⚠️ | ✅ | ✅ |
+| Futures data | ⚠️ (via SS/IB) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| FX data | ⚠️ (via IB) | ✅ | ✅ | ✅ | ❌ | ✅ | ❌ |
+| Crypto data | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ | ❌ |
+| Fundamental data | ❌ | ⚠️ | ❌ | ❌ | ❌ | ✅ | ❌ |
+| Macro / economic data (FRED) | ✅ | ⚠️ | ❌ | ❌ | ❌ | ✅ | ❌ |
+| News / sentiment | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ |
+| Python strategy API | ❌ | ✅ | ❌ | ✅ | N/A | ✅ | N/A |
+| C# / interactive scripting (QuantScript) | ✅ | ✅ (Lean C# SDK) | ✅ (NinjaScript) | ❌ | N/A | ⚠️ (BQL) | ❌ |
+| Web dashboard | ✅ (React, 4 screens) | ✅ | ❌ | ❌ | ✅ | ✅ | ✅ |
+| Desktop app (Windows) | ✅ | ❌ | ✅ | ❌ | ❌ | ✅ | ✅ |
+| Direct lending module | ✅ | ❌ | ❌ | ❌ | ❌ | ⚠️ (credit analytics) | ❌ |
+| Security master | ⚠️ (services ready, productization ongoing) | ❌ | ❌ | ⚠️ | ❌ | ✅ | ❌ |
+| Fund ledger / accounting | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ (PORT) | ❌ |
+| Community / marketplace | ❌ | ✅ | ✅ | ❌ | ❌ | ⚠️ | ❌ |
+| Visual strategy builder | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Walk-forward optimization | ❌ | ✅ | ✅ | ❌ | N/A | N/A | N/A |
+| Order flow analytics | ❌ | ❌ | ✅ | ❌ | ⚠️ | ❌ | ❌ |
+| Real-time symbol scanner | ❌ | ⚠️ | ✅ | ❌ | ❌ | ✅ | ⚠️ (basic screener) |
+| Replay trading (live sim) | ❌ | ❌ | ✅ | ⚠️ | ❌ | ❌ | ❌ |
+| FIX protocol | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ | ❌ |
+| AI / LLM integration | ⚠️ (MCP server architecture) | ⚠️ (AI Research Assistant) | ❌ | ❌ | ❌ | ✅ (Bloomberg AI) | ❌ |
+| Open source | ✅ | ✅ (Lean) | ❌ | ✅ | ❌ | ❌ | ❌ |
+
+---
+
+### 4.2 Supplementary Matrix: Quantitative Research & Scientific Computing Platforms
+
+The three platforms added in §2.17–§2.19 (GS Marquee, MATLAB, Wolfram) do not directly compete on execution or data collection, but they define the benchmark for **quantitative research depth**. The table below compares Meridian against this cluster specifically.
+
+| Capability | Meridian | GS Marquee | MATLAB | Wolfram / Mathematica |
+|------------|----------|------------|--------|-----------------------|
+| Self-hosted tick storage | ✅ | ❌ | ❌ | ❌ |
+| Tick-level backtesting with fill simulation | ✅ | ❌ | ⚠️ (Trading Toolbox, limited) | ❌ |
+| Live brokerage execution | ✅ | ⚠️ (via GS prime) | ⚠️ (Trading Toolbox) | ❌ |
+| Data quality monitoring | ✅ | ⚠️ | ❌ | ❌ |
+| Interactive scripting / notebook | ⚠️ (QuantScript IDE) | ✅ (gs-quant notebooks) | ✅ (Live Editor) | ✅ (Mathematica notebooks) |
+| Python strategy SDK | ❌ | ✅ (gs-quant, Apache 2.0) | ✅ | ⚠️ (Wolfram Python) |
+| C# interactive scripting | ✅ (QuantScript / Roslyn) | ❌ | ❌ | ❌ |
+| Derivatives pricing engine | ❌ | ✅ (GS models, all asset classes) | ✅ (Financial Toolbox) | ✅ (symbolic + numerical) |
+| Symbolic / exact computation | ❌ | ❌ | ⚠️ (Symbolic Math Toolbox) | ✅ |
+| Econometric modeling (GARCH, ARIMA, VAR) | ❌ | ⚠️ | ✅ (Econometrics Toolbox) | ✅ |
+| Numerical optimization (QP, GA) | ❌ | ⚠️ | ✅ (Optimization Toolbox) | ✅ |
+| Signal processing (FFT, wavelets) | ❌ | ❌ | ✅ | ✅ |
+| Portfolio risk analytics (VaR, CVaR, factor) | ❌ | ✅ | ✅ (Risk Management Toolbox) | ⚠️ |
+| Stress testing / scenario simulation | ❌ | ✅ | ✅ | ⚠️ |
+| Macro / economic data (built-in) | ✅ (FRED provider) | ✅ (GS proprietary) | ⚠️ (via Bloomberg plug-in) | ✅ (Wolfram entity data) |
+| Natural language data queries | ❌ | ⚠️ (Quant Intelligence) | ❌ | ✅ (Wolfram|Alpha) |
+| Parallel computing (cluster/GPU) | ❌ | ✅ (GS cloud) | ✅ (Parallel Computing Toolbox) | ✅ (Wolfram Cloud) |
+| Direct lending module | ✅ | ❌ | ❌ | ❌ |
+| Fund ledger / accounting | ✅ | ❌ | ❌ | ❌ |
+| Open source | ✅ | ⚠️ (gs-quant SDK only) | ❌ | ❌ |
+| Requires institutional relationship | ❌ | ✅ (GS client required) | ❌ | ❌ |
+
+**Key takeaway:** Meridian is the only platform in this supplementary matrix that combines self-hosted data collection, backtesting, execution, and fund operations in a single open-source product. The scientific computing platforms (MATLAB, Wolfram) and GS Marquee each dominate Meridian in analytical depth — particularly in econometric modeling, numerical optimization, derivatives pricing, and symbolic computation. Closing these analytical gaps (see G21 and G22 in §5.3) would make Meridian competitive as a research environment, not just an infrastructure platform.
 
 ---
 
@@ -644,6 +892,8 @@ The following gaps are ordered by their **potential impact on user value**, cons
 **What it is:** Allow strategies to be authored in Python (via .NET's Python.NET or a subprocess-based sandbox), enabling the much larger Python quant community to use Meridian's data and execution infrastructure.
 
 **Why it matters:** Python is the dominant language for quantitative finance. Locking Meridian to C# only limits adoption to a niche audience. QuantConnect supports both C# and Python; Nautilus Trader is Python-first.
+
+**Current state:** Meridian now ships a **QuantScript C# scripting environment** (`src/Meridian.QuantScript/`) powered by Roslyn scripting. This gives interactive, REPL-style strategy authoring to C# users — addressing part of the "accessible interactive research" problem, but not the Python adoption problem.
 
 **Implementation path:**
 - Expose `IBacktestStrategy` and `ILiveStrategy` via a Python interop layer (Python.NET or gRPC subprocess)
@@ -736,12 +986,18 @@ The following gaps are ordered by their **potential impact on user value**, cons
 | G16 — ESG Data Provider | ESG scores and screening data (MSCI ESG, Sustainalytics) | M | Growing institutional requirement |
 | G17 — Covenant Compliance Monitor | Direct lending: automated covenant ratio calculation with breach alerts | S | `DirectLendingService` + alert dispatcher already exist |
 | G18 — Correlation Engine | Rolling correlation matrix across all collected symbols, exposed via API and dashboard heatmap | M | Mentioned in existing brainstorm as `CorrelationService` |
+| G19 — AI Research Assistant | Natural language interface for exploratory data queries, backtest result interpretation, and strategy parameter suggestions. Backed by private/local LLM to preserve data privacy. | M | Meridian MCP server (`src/Meridian.Mcp/`) is the existing architecture integration point; user-facing assistant mode is missing |
+| G20 — Options Analytics Visualization | IV rank/percentile heatmap, implied volatility surface, portfolio risk graph (P&L across price scenarios), per-strike Greeks in the options chain viewer | M | `IOptionsChainProvider` + `OptionDataCollector` exist; visualization layer not yet built; tastytrade is the competitive benchmark |
+| G21 — Notebook-Style Interactive Research | Cell-based computational notebook UX for QuantScript: mix prose, code, LaTeX math, and inline plots in a single document — the MATLAB Live Editor / Mathematica benchmark. Enables academic-style research reproducibility and shareable research documents | M | QuantScript IDE is functional; the remaining gap is notebook document model (cells, persistent output, LaTeX rendering). AvalonEdit already in the dependency set |
+| G22 — Portfolio Risk Analytics (VaR, Stress Testing) | Multi-asset VaR and CVaR computation, factor exposure decomposition, and scenario-based stress testing. GS Marquee and MATLAB Risk Management Toolbox are the benchmarks | M | No analogue in Meridian today; would require a new `RiskAnalyticsService` consuming stored position data from the execution layer and historical price data from storage |
 
 ---
 
 ## 6. Prioritized Recommendations
 
 The following ranking weights **strategic impact** (how much it differentiates Meridian or expands its user base), **implementation fit** (how well the existing architecture supports it), and **urgency** (competitive pressure or user need).
+
+> **Alignment with ROADMAP.md (2026-03-31):** The active roadmap prioritizes: (1) Provider reliability and data confidence, (2) Paper trading cockpit completion, (3) Native desktop workstation refresh. The Tier 1 recommendations below are sequenced accordingly — they build on the platform work already in progress rather than adding new greenfield surface area.
 
 ### Tier 1: Highest Priority
 
@@ -770,8 +1026,12 @@ The following ranking weights **strategic impact** (how much it differentiates M
 | 11 | **Investor Reporting Portal (G10)** | Enables direct lending SaaS business model; moderate effort |
 | 12 | **Alternative Data Providers (G7)** | Expands alpha signal surface; earnings calendar and economic calendar are quick wins |
 | 13 | **Strategy Parameter Optimizer (G12)** | Complements Walk-Forward; enables broader strategy research workflows |
-| 14 | **Microstructure Event Annotations (existing brainstorm)** | Annotating sweeps, blocks, halt-related events — already documented as a future item |
-| 15 | **Tax Lot Accounting (G15)** | Important for US taxable account holders; non-trivial accounting logic |
+| 14 | **Options Analytics Visualization (G20)** | tastytrade benchmark; `IOptionsChainProvider` already exists; IV surface + risk graph complete the options research workflow |
+| 15 | **AI Research Assistant (G19)** | Emerging competitive differentiator; Meridian MCP server architecture is the foundation; private/local LLM mode addresses institutional privacy requirement |
+| 16 | **Notebook-Style Interactive Research (G21)** | MATLAB Live Editor / Mathematica benchmark; AvalonEdit is already a dependency; differentiates QuantScript from a code editor into a research document platform |
+| 17 | **Portfolio Risk Analytics — VaR / Stress Testing (G22)** | GS Marquee benchmark; needed for any institutional or fund manager use case; positions Meridian as a risk management platform, not just a data and execution tool |
+| 18 | **Microstructure Event Annotations (existing brainstorm)** | Annotating sweeps, blocks, halt-related events — already documented as a future item |
+| 19 | **Tax Lot Accounting (G15)** | Important for US taxable account holders; non-trivial accounting logic |
 
 ---
 
@@ -888,8 +1148,9 @@ The gap analysis in §5 lists what Meridian lacks. This section takes the invers
 
 **How Meridian can outperform:**
 - Meridian's architecture already spans **data collection → quality monitoring → backtesting (with TCA) → paper execution → live brokerage execution → strategy lifecycle state management → fund ledger → reconciliation**. No competitor covers this entire chain.
+- As of v1.7.2, Meridian now ships a **React workstation shell** with Research, Trading, Data Operations, and Governance screens that expose these layers through a coherent web UI — no competitor has a comparable end-to-end open-source web workstation.
 - The differentiating improvements are the connective tissue between stages:
-  1. **Paper-to-live promotion workflow** with compliance gate (G in Phase F5 of the blueprint): before a strategy goes live, a compliance check evaluates mandate limits and risk parameters, preventing unauthorized live deployment.
+  1. **Paper-to-live promotion workflow** with compliance gate: before a strategy goes live, a compliance check evaluates mandate limits and risk parameters, preventing unauthorized live deployment.
   2. **Backtest-to-paper continuity**: replay the last N bars in paper mode after a backtest to warm up state before going live — eliminating the cold-start problem.
   3. **Post-trade attribution loop**: after live fills, automatically reconcile against the backtest's predicted fills using the TCA module, surfacing execution quality degradation over time.
 
@@ -968,6 +1229,50 @@ The gap analysis in §5 lists what Meridian lacks. This section takes the invers
 
 ---
 
+### 8.10 AI Research Assistant via Meridian MCP Architecture (vs Bloomberg AI, QuantConnect AI Research Assistant)
+
+**Competitor weakness:**
+- **Bloomberg Intelligence / AI** embeds LLM capabilities into the Terminal at ~$27,000/year per seat and routes all queries through Bloomberg's cloud infrastructure. Trading data and research context cannot be kept fully private; Bloomberg retains usage data under its terms of service.
+- **QuantConnect's AI Research Assistant** (added Q1 2026) runs in the cloud Research Environment. It is helpful for LEAN strategy debugging but cannot reach the user's self-hosted tick data or self-hosted backtests. All strategy code sent for AI assistance transits QuantConnect's servers.
+- Both platforms offer AI as a premium add-on layered onto closed infrastructure. Neither allows a user to run AI assistance on-premises against their own private data.
+
+**How Meridian can outperform:**
+- Meridian already ships an MCP (Model Context Protocol) server in `src/Meridian.Mcp/` and `src/Meridian.McpServer/` that exposes tools, resources, and prompts over a structured protocol — the architectural groundwork for AI integration is done. Completing this with a user-facing AI assistant mode would give Meridian a capability that no self-hosted trading platform currently offers.
+- The AI assistant can operate entirely within the user's network, querying local stored tick data, local backtests, and local provider configurations through the MCP tool layer — no trading data leaves the user's infrastructure. This is the critical privacy and compliance differentiation over Bloomberg AI and QuantConnect AI.
+- Concrete AI assistant capabilities that map directly to existing MCP tools:
+  - `KnownErrorTools` and `ConventionTools` (already implemented): answer developer questions about Meridian conventions without internet access
+  - `BackfillTools` and `StorageTools` (already implemented): query local data availability, gaps, and catalog
+  - New: `BacktestResultInterpreter` — given a backtest run ID, summarize performance, identify the top N drawdown periods, and suggest parameter adjustments
+  - New: `StrategySpecificationParser` — accept a natural language strategy description and emit a typed `BacktestRequest` C# object for the user to review and modify
+  - New: `DataExplorerQuery` — answer questions like "which of my collected symbols had the highest average spread in March 2026?" by querying the local storage catalog
+- The on-device LLM option (using `ollama` or another locally-served model) makes this viable for institutional users who cannot send data to a cloud API.
+
+**Target benchmark:** A Meridian user can ask "summarize last week's backtest results and explain why the strategy drew down on Tuesday" and receive a structured answer generated entirely within their local network, using only data stored in their Meridian instance.
+
+---
+
+### 8.11 QuantScript as a Scientific Computing Environment (vs MATLAB, Wolfram Mathematica)
+
+**Competitor weakness:**
+- **MATLAB** costs $4,000–$10,000/researcher/year for a production quant stack and requires a separate rewrite step before research code can be deployed to a live environment. Research and production code exist in entirely separate toolchains.
+- **Wolfram Mathematica** costs $495–$3,995/year and uses an idiosyncratic Wolfram Language that is difficult to integrate with mainstream CI/CD, code review, and version control workflows. Notebooks are not diff-friendly.
+- Both platforms require the researcher to maintain expertise in a specialized language (MATLAB, Wolfram Language) that has no transferable value in production software development.
+- Neither platform is self-hosted in the sense that matters for traders: the data they operate on comes from third-party feeds, not the researcher's own collected microstructure data. There is a fundamental data provenance gap — a MATLAB backtest runs on Bloomberg-sourced data, not the same tick data the live strategy will execute against.
+
+**How Meridian can outperform:**
+- Meridian's **QuantScript environment** (`src/Meridian.QuantScript/`) is already a Roslyn-based C# scripting layer with access to all platform services through dependency injection. The foundation exists; the gap is user-experience depth.
+- **Evolve QuantScript toward a notebook model:** the AvalonEdit dependency is already present (see `Directory.Packages.props`). Add a cell document model (prose, code, output cells) where each cell's output is captured and persisted inline — matching the MATLAB Live Editor experience with zero new licensing cost.
+  - Code cells: `IQuantDataContext` already provides `GetBars()`, `GetTrades()` — add `Compute()` for arbitrary indicator calculation
+  - Output cells: `PlotQueue` and `PlotRequest` are already implemented; route output to inline cell results rather than external windows
+  - Math cells: render LaTeX-formatted expressions in output (e.g., display a regression equation or P&L formula inline with results)
+- **Data provenance advantage:** every QuantScript notebook runs against the user's own collected microstructure data from the Meridian storage layer — the same tick data the live strategy executes against. MATLAB and Wolfram cannot offer this; they operate on third-party-sourced data that is always a step removed from execution reality.
+- **Econometric analytics via `TechnicalIndicatorService` extension:** add GARCH(1,1) volatility forecasting, rolling ARIMA residuals, and cointegration testing as built-in `IQuantDataContext` methods. These are the most commonly needed econometric tools in equity strategy research; implementing them in C# means the exact same code runs in research and in the live `StrategyLifecycleManager`.
+- **Parallel parameter sweep via batch backtest:** `BatchBacktestService` already exists — surface a `Sweep(parameterRanges, objective)` API in QuantScript that runs a parameter grid in parallel and returns a result matrix, matching the MATLAB `parfor` experience for strategy optimization.
+
+**Target benchmark:** A quant researcher opens a QuantScript notebook, writes a GARCH(1,1) volatility model in three lines using Meridian's own collected SPY tick data, runs a rolling backtest with 20 parameter combinations in parallel, and sees the results rendered as an inline equity curve grid — without exporting data to MATLAB or paying any per-seat licensing fee. The same notebook can be submitted as a strategy to the paper trading gateway in one additional line.
+
+---
+
 *This section should be reviewed alongside §5 (Feature Gap Analysis) and §6 (Prioritized Recommendations) to sequence implementation against strategic impact.*
 
 ---
@@ -987,6 +1292,15 @@ The gap analysis in §5 lists what Meridian lacks. This section takes the invers
 | VectorBT Pro | ~$500/year | Open core |
 | Composer.trade | ~$29/month | SaaS subscription |
 | Collective2 | $99–$299/month | SaaS + marketplace |
+| tastytrade | Free (funded account); $1/contract options | Brokerage |
+| Nautilus Trader | Free (Apache 2.0) | Open source |
+| Goldman Sachs Marquee | Free for GS clients (relationship-gated) | Institutional / prime brokerage |
+| MATLAB (base + 4 toolboxes) | $4,000–$10,000+/year/seat | Per-seat commercial license |
+| Wolfram Mathematica | $495–$3,995/year (professional) | Per-seat license |
+| Wolfram Finance Platform | Enterprise pricing (negotiated) | Enterprise license |
+| Wolfram\|Alpha Pro | $7.99/month | Consumer SaaS |
+
+> **AI integration pricing notes (2026):** Bloomberg AI is bundled in Terminal ($27K/year seat). QuantConnect AI Research Assistant is available on Professional plan ($100+/month). Standalone AI research tools (Reflexivity, Composer AI) typically run $29–$99/month. All cloud-based AI tools involve data privacy tradeoffs; on-premises alternatives (ollama + Meridian MCP) are effectively infrastructure-cost-only.
 
 ---
 
