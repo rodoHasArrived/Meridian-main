@@ -50,7 +50,6 @@ public sealed class UiServer : IAsyncDisposable
     };
 
     private readonly WebApplication _app;
-    private readonly DateTimeOffset _startTime = DateTimeOffset.UtcNow;
     private readonly ILogger<UiServer> _logger;
 
     /// <summary>
@@ -237,31 +236,13 @@ public sealed class UiServer : IAsyncDisposable
 
     private void ConfigureRoutes()
     {
-        // ==================== BASIC HEALTH ENDPOINTS ====================
-        // Kept inline for simplicity - these are used by container orchestration
-
-        _app.MapGet("/health", () =>
-        {
-            var uptime = DateTimeOffset.UtcNow - _startTime;
-            return Results.Json(new
-            {
-                status = "healthy",
-                timestamp = DateTimeOffset.UtcNow,
-                uptime = uptime.ToString(),
-                version = "1.6.1"
-            });
-        });
-
-        _app.MapGet("/healthz", () => Results.Ok("healthy"));
-        _app.MapGet("/ready", () => Results.Ok("ready"));
-        _app.MapGet("/readyz", () => Results.Ok("ready"));
-        _app.MapGet("/live", () => Results.Ok("alive"));
-        _app.MapGet("/livez", () => Results.Ok("alive"));
-
         // ==================== UNIQUE ENDPOINT MODULES ====================
         // Endpoints not included in MapUiEndpoints and must be registered explicitly.
 
-        // Status API (requires StatusEndpointHandlers, not included in MapUiEndpoints)
+        // Status API (requires StatusEndpointHandlers, not included in MapUiEndpoints).
+        // This registers all health/liveness/readiness probes (/health, /healthz, /ready,
+        // /readyz, /live, /livez) with proper handler logic (real readiness checks, full
+        // HealthCheckResponse). Do NOT register those routes inline above this call.
         var statusHandlers = _app.Services.GetRequiredService<StatusEndpointHandlers>();
         _app.MapStatusEndpoints(statusHandlers, s_jsonOptions);
 
