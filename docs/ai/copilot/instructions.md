@@ -1292,6 +1292,7 @@ Meridian-main
 │   │   │   └── StrategyPluginLoader.cs
 │   │   ├── Portfolio
 │   │   │   ├── ICommissionModel.cs
+│   │   │   ├── LinkedListExtensions.cs
 │   │   │   └── SimulatedPortfolio.cs
 │   │   ├── BatchBacktestService.cs
 │   │   ├── CorporateActionAdjustmentService.cs
@@ -1312,13 +1313,16 @@ Meridian-main
 │   │   ├── BacktestRequest.cs
 │   │   ├── BacktestResult.cs
 │   │   ├── CashFlowEntry.cs
+│   │   ├── ClosedLot.cs
 │   │   ├── FillEvent.cs
 │   │   ├── FinancialAccount.cs
 │   │   ├── FinancialAccountSnapshot.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── IBacktestContext.cs
 │   │   ├── IBacktestStrategy.cs
+│   │   ├── LotSelectionMethod.cs
 │   │   ├── Meridian.Backtesting.Sdk.csproj
+│   │   ├── OpenLot.cs
 │   │   ├── Order.cs
 │   │   ├── PortfolioSnapshot.cs
 │   │   ├── Position.cs
@@ -1416,6 +1420,7 @@ Meridian-main
 │   │   │   │   ├── OrderReplace.cs
 │   │   │   │   └── Trade.cs
 │   │   │   ├── CanonicalSymbol.cs
+│   │   │   ├── IPositionSnapshotStore.cs
 │   │   │   ├── MarketDataModels.cs
 │   │   │   ├── ProviderId.cs
 │   │   │   ├── ProviderSymbol.cs
@@ -1564,12 +1569,15 @@ Meridian-main
 │   │   ├── Exceptions
 │   │   │   └── UnsupportedOrderRequestException.cs
 │   │   ├── Interfaces
+│   │   │   ├── IAccountPortfolio.cs
 │   │   │   ├── IExecutionContext.cs
 │   │   │   ├── ILiveFeedAdapter.cs
 │   │   │   └── IOrderGateway.cs
 │   │   ├── Models
+│   │   │   ├── AccountKind.cs
 │   │   │   ├── ExecutionMode.cs
 │   │   │   ├── ExecutionPosition.cs
+│   │   │   ├── IMultiAccountPortfolioState.cs
 │   │   │   ├── IPortfolioState.cs
 │   │   │   ├── OrderAcknowledgement.cs
 │   │   │   ├── OrderGatewayCapabilities.cs
@@ -1583,7 +1591,10 @@ Meridian-main
 │   │   │   ├── OrderLifecycleManager.cs
 │   │   │   ├── PaperSessionOptions.cs
 │   │   │   ├── PaperSessionPersistenceService.cs
-│   │   │   └── PaperTradingPortfolio.cs
+│   │   │   ├── PaperTradingPortfolio.cs
+│   │   │   ├── PortfolioRegistry.cs
+│   │   │   ├── PositionReconciliationService.cs
+│   │   │   └── PositionSyncOptions.cs
 │   │   ├── BrokerageServiceRegistration.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── IRiskValidator.cs
@@ -1596,6 +1607,7 @@ Meridian-main
 │   ├── Meridian.Execution.Sdk
 │   │   ├── BrokerageConfiguration.cs
 │   │   ├── IBrokerageGateway.cs
+│   │   ├── IBrokeragePositionSync.cs
 │   │   ├── IExecutionGateway.cs
 │   │   ├── IOrderManager.cs
 │   │   ├── IPositionTracker.cs
@@ -2067,6 +2079,7 @@ Meridian-main
 │   │   │   ├── EventBuffer.cs
 │   │   │   ├── FileMaintenanceService.cs
 │   │   │   ├── FilePermissionsService.cs
+│   │   │   ├── JsonlPositionSnapshotStore.cs
 │   │   │   ├── LifecyclePolicyEngine.cs
 │   │   │   ├── MaintenanceScheduler.cs
 │   │   │   ├── MetadataTagService.cs
@@ -2105,7 +2118,9 @@ Meridian-main
 │   │   ├── Promotions
 │   │   │   └── BacktestToLivePromoter.cs
 │   │   ├── Services
+│   │   │   ├── AggregatePortfolioService.cs
 │   │   │   ├── CashFlowProjectionService.cs
+│   │   │   ├── IAggregatePortfolioService.cs
 │   │   │   ├── InMemoryReconciliationRunRepository.cs
 │   │   │   ├── IReconciliationRunRepository.cs
 │   │   │   ├── IReconciliationRunService.cs
@@ -2380,7 +2395,9 @@ Meridian-main
 │   └── Meridian.Wpf
 │       ├── Assets
 │       │   └── Icons
+│       │       ├── account-portfolio.svg
 │       │       ├── admin-maintenance.svg
+│       │       ├── aggregate-portfolio.svg
 │       │       ├── archive-health.svg
 │       │       ├── backfill.svg
 │       │       ├── backtest.svg
@@ -2519,11 +2536,13 @@ Meridian-main
 │       │   ├── ThemeTokens.xaml
 │       │   └── ThemeTypography.xaml
 │       ├── ViewModels
+│       │   ├── AccountPortfolioViewModel.cs
 │       │   ├── ActivityLogViewModel.cs
 │       │   ├── AddProviderWizardViewModel.cs
 │       │   ├── AdminMaintenanceViewModel.cs
 │       │   ├── AdvancedAnalyticsViewModel.cs
 │       │   ├── AgentViewModel.cs
+│       │   ├── AggregatePortfolioViewModel.cs
 │       │   ├── AnalysisExportViewModel.cs
 │       │   ├── AnalysisExportWizardViewModel.cs
 │       │   ├── BackfillViewModel.cs
@@ -2588,6 +2607,8 @@ Meridian-main
 │       │   ├── WatchlistViewModel.cs
 │       │   └── WelcomePageViewModel.cs
 │       ├── Views
+│       │   ├── AccountPortfolioPage.xaml
+│       │   ├── AccountPortfolioPage.xaml.cs
 │       │   ├── ActivityLogPage.xaml
 │       │   ├── ActivityLogPage.xaml.cs
 │       │   ├── AddProviderWizardPage.xaml
@@ -2598,6 +2619,8 @@ Meridian-main
 │       │   ├── AdvancedAnalyticsPage.xaml.cs
 │       │   ├── AgentPage.xaml
 │       │   ├── AgentPage.xaml.cs
+│       │   ├── AggregatePortfolioPage.xaml
+│       │   ├── AggregatePortfolioPage.xaml.cs
 │       │   ├── AnalysisExportPage.xaml
 │       │   ├── AnalysisExportPage.xaml.cs
 │       │   ├── AnalysisExportWizardPage.xaml
@@ -2775,6 +2798,7 @@ Meridian-main
 │   │   ├── FillModelTests.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── LedgerQueryTests.cs
+│   │   ├── LotLevelTrackingTests.cs
 │   │   ├── MarketImpactFillModelTests.cs
 │   │   ├── Meridian.Backtesting.Tests.csproj
 │   │   ├── SimulatedPortfolioTests.cs
@@ -2976,6 +3000,7 @@ Meridian-main
 │   │   │   └── StrongDomainTypeTests.cs
 │   │   ├── Execution
 │   │   │   ├── BrokerageGatewayAdapterTests.cs
+│   │   │   ├── MultiAccountPaperTradingPortfolioTests.cs
 │   │   │   ├── OrderManagementSystemTests.cs
 │   │   │   ├── PaperSessionPersistenceServiceTests.cs
 │   │   │   ├── PaperTradingGatewayTests.cs
@@ -3052,6 +3077,7 @@ Meridian-main
 │   │   │       └── TempDirectoryFixture.cs
 │   │   ├── Integration
 │   │   │   ├── EndpointTests
+│   │   │   │   ├── AccountPortfolioEndpointTests.cs
 │   │   │   │   ├── AuthEndpointTests.cs
 │   │   │   │   ├── BackfillEndpointTests.cs
 │   │   │   │   ├── CatalogEndpointTests.cs
@@ -3135,6 +3161,7 @@ Meridian-main
 │   │   │   ├── ParquetConversionServiceTests.cs
 │   │   │   ├── ParquetStorageSinkTests.cs
 │   │   │   ├── PortableDataPackagerTests.cs
+│   │   │   ├── PositionSnapshotStoreTests.cs
 │   │   │   ├── QuotaEnforcementServiceTests.cs
 │   │   │   ├── StorageCatalogServiceTests.cs
 │   │   │   ├── StorageChecksumServiceTests.cs
@@ -3145,6 +3172,7 @@ Meridian-main
 │   │   │   ├── WriteAheadLogFuzzTests.cs
 │   │   │   └── WriteAheadLogTests.cs
 │   │   ├── Strategies
+│   │   │   ├── AggregatePortfolioServiceTests.cs
 │   │   │   ├── CashFlowProjectionTests.cs
 │   │   │   ├── LedgerReadServiceTests.cs
 │   │   │   ├── PortfolioReadServiceTests.cs
