@@ -338,6 +338,7 @@ Use these documents together when planning or implementing new work:
 │       ├── prompt-generation.yml
 │       ├── python-package-conda.yml
 │       ├── readme-tree.yml
+│       ├── refresh-screenshots.yml
 │       ├── release.yml
 │       ├── repo-health.yml
 │       ├── reusable-ai-analysis.yml
@@ -3309,6 +3310,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-445 directories, 2736 files
+445 directories, 2737 files
 ```
 <!-- readme-tree end -->
