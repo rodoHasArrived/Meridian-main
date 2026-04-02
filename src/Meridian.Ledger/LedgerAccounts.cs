@@ -181,6 +181,115 @@ public static class LedgerAccounts
         return new("Short Securities Payable", LedgerAccountType.Liability, normalizedSymbol, NormalizeOptionalAccountId(financialAccountId));
     }
 
+    // -------------------------------------------------------------------------
+    // Multi-currency / FX accounts
+    // -------------------------------------------------------------------------
+
+    /// <summary>
+    /// Unrealized FX gain on a foreign-currency cash balance or position translated to
+    /// the reporting (base) currency.
+    /// </summary>
+    public static readonly LedgerAccount UnrealizedFxGain =
+        new("Unrealized FX Gain", LedgerAccountType.Revenue);
+
+    /// <summary>
+    /// Unrealized FX loss on a foreign-currency cash balance or position translated to
+    /// the reporting (base) currency.
+    /// </summary>
+    public static readonly LedgerAccount UnrealizedFxLoss =
+        new("Unrealized FX Loss", LedgerAccountType.Expense);
+
+    /// <summary>Realized FX gain crystallized when a foreign-currency cash balance is repatriated.</summary>
+    public static readonly LedgerAccount RealizedFxGain =
+        new("Realized FX Gain", LedgerAccountType.Revenue);
+
+    /// <summary>Realized FX loss crystallized when a foreign-currency cash balance is repatriated.</summary>
+    public static readonly LedgerAccount RealizedFxLoss =
+        new("Realized FX Loss", LedgerAccountType.Expense);
+
+    /// <summary>
+    /// Cash account for a specific <paramref name="currencyCode"/> balance.
+    /// Enables per-currency cash tracking in multi-currency portfolios.
+    /// </summary>
+    /// <param name="currencyCode">ISO 4217 currency code (e.g., "EUR", "GBP").</param>
+    /// <param name="financialAccountId">Optional brokerage account scope.</param>
+    public static LedgerAccount CashInCurrency(string currencyCode, string? financialAccountId = null)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(currencyCode);
+        var key = currencyCode.Trim().ToUpperInvariant();
+        return new($"Cash ({key})", LedgerAccountType.Asset, Symbol: key, NormalizeOptionalAccountId(financialAccountId));
+    }
+
+    // -------------------------------------------------------------------------
+    // Margin / financing accounts
+    // -------------------------------------------------------------------------
+
+    /// <summary>Margin loan payable — the debit balance owed to the broker for leveraged positions.</summary>
+    public static readonly LedgerAccount MarginLoanPayable =
+        new("Margin Loan Payable", LedgerAccountType.Liability);
+
+    /// <summary>Borrow fee expense charged daily on short-sold securities.</summary>
+    public static readonly LedgerAccount StockBorrowFeeExpense =
+        new("Stock Borrow Fee Expense", LedgerAccountType.Expense);
+
+    /// <summary>
+    /// Margin loan payable scoped to a specific brokerage account.
+    /// </summary>
+    public static LedgerAccount MarginLoanPayableFor(string financialAccountId) =>
+        CreateScoped("Margin Loan Payable", LedgerAccountType.Liability, financialAccountId);
+
+    /// <summary>
+    /// Stock borrow fee expense scoped to a specific brokerage account.
+    /// </summary>
+    public static LedgerAccount StockBorrowFeeExpenseFor(string financialAccountId) =>
+        CreateScoped("Stock Borrow Fee Expense", LedgerAccountType.Expense, financialAccountId);
+
+    // -------------------------------------------------------------------------
+    // Derivatives accounts
+    // -------------------------------------------------------------------------
+
+    /// <summary>
+    /// Option premium asset — the cost paid to acquire a long option position.
+    /// Amortized to zero on expiry; relieved on close or exercise.
+    /// </summary>
+    public static LedgerAccount OptionPremiumAsset(string symbol, string? financialAccountId = null)
+    {
+        var normalizedSymbol = NormalizeSymbol(symbol);
+        return new("Option Premium Asset", LedgerAccountType.Asset, normalizedSymbol, NormalizeOptionalAccountId(financialAccountId));
+    }
+
+    /// <summary>
+    /// Option premium liability — the premium received for writing (selling) an option.
+    /// Recognized as revenue on expiry; offset on close or assignment.
+    /// </summary>
+    public static LedgerAccount OptionPremiumLiability(string symbol, string? financialAccountId = null)
+    {
+        var normalizedSymbol = NormalizeSymbol(symbol);
+        return new("Option Premium Liability", LedgerAccountType.Liability, normalizedSymbol, NormalizeOptionalAccountId(financialAccountId));
+    }
+
+    /// <summary>
+    /// Daily mark-to-market cash settlement account for futures positions.
+    /// Debited or credited each day to reflect change in futures price.
+    /// </summary>
+    public static LedgerAccount FuturesMtmSettlement(string symbol, string? financialAccountId = null)
+    {
+        var normalizedSymbol = NormalizeSymbol(symbol);
+        return new("Futures MTM Settlement", LedgerAccountType.Asset, normalizedSymbol, NormalizeOptionalAccountId(financialAccountId));
+    }
+
+    // -------------------------------------------------------------------------
+    // Allocation accounts
+    // -------------------------------------------------------------------------
+
+    /// <summary>
+    /// Allocation control account used as a clearing entry when a block trade is split
+    /// across multiple sleeves or vehicles before individual sleeve ledgers are posted.
+    /// Must net to zero across all posts in the same allocation batch.
+    /// </summary>
+    public static readonly LedgerAccount AllocationControl =
+        new("Allocation Control", LedgerAccountType.Asset);
+
     private static LedgerAccount CreateScoped(string name, LedgerAccountType accountType, string financialAccountId)
         => new(name, accountType, FinancialAccountId: NormalizeAccountId(financialAccountId));
 

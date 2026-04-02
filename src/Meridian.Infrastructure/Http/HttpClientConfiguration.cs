@@ -33,6 +33,7 @@ public static class HttpClientNames
     public const string RobinhoodHistorical = "robinhood-historical";
     public const string RobinhoodMarketData = "robinhood-market-data";
     public const string RobinhoodBrokerage = "robinhood-brokerage";
+    public const string RobinhoodSymbolSearch = "robinhood-symbol-search";
 
     // Symbol search providers
     public const string AlpacaSymbolSearch = "alpaca-symbol-search";
