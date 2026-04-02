@@ -45,6 +45,7 @@ Meridian's active solution now spans:
 ### Users and operators
 
 - [Getting Started](getting-started/README.md)
+- [Workflow Guide](WORKFLOW_GUIDE.md) — step-by-step guide with screenshots for the web dashboard
 - [Help and FAQ](HELP.md)
 - [Dependencies Reference](DEPENDENCIES.md)
 - [Provider Setup Guides](providers/README.md)
