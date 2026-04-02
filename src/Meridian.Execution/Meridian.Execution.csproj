@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Meridian.Backtesting.Sdk\Meridian.Backtesting.Sdk.csproj" />
     <ProjectReference Include="..\Meridian.Execution.Sdk\Meridian.Execution.Sdk.csproj" />
     <ProjectReference Include="..\Meridian.Ledger\Meridian.Ledger.csproj" />
     <ProjectReference Include="..\Meridian.Application\Meridian.Application.csproj" />

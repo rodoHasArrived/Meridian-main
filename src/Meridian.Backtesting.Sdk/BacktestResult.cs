@@ -48,4 +48,5 @@ public sealed record BacktestResult(
     TimeSpan ElapsedTime,
     long TotalEventsProcessed,
     IReadOnlyList<TradeTicket>? TradeTickets = null,
-    TcaReport? TcaReport = null);
+    TcaReport? TcaReport = null,
+    IReadOnlyList<ClosedLot>? AllClosedLots = null);

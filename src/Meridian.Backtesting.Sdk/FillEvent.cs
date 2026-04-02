@@ -9,4 +9,10 @@ public sealed record FillEvent(
     decimal FillPrice,
     decimal Commission,
     DateTimeOffset FilledAt,
-    string? AccountId = null);
+    string? AccountId = null,
+    /// <summary>
+    /// When <see cref="LotSelectionMethod.SpecificId"/> is in effect, designates the
+    /// <see cref="OpenLot.LotId"/> that should be closed by this fill.
+    /// Ignored for buy fills and when no matching lot is found (falls back to FIFO).
+    /// </summary>
+    Guid? TargetLotId = null);

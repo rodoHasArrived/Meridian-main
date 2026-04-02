@@ -1,4 +1,5 @@
 using Meridian.Application.SecurityMaster;
+using Meridian.Backtesting.Sdk;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Meridian.Ledger;
@@ -84,6 +85,30 @@ public sealed class PaperTradingPortfolio : IPortfolioState
                     static p => p.Symbol,
                     static p => p.ToExecutionPosition(),
                     StringComparer.OrdinalIgnoreCase);
+            }
+        }
+    }
+
+    /// <summary>All currently open lots across every position in this session.</summary>
+    public IReadOnlyList<OpenLot> OpenLots
+    {
+        get
+        {
+            lock (_lock)
+            {
+                return _positions.Values.SelectMany(static p => p.Lots).ToArray();
+            }
+        }
+    }
+
+    /// <summary>All lots that have been closed since the session began.</summary>
+    public IReadOnlyList<ClosedLot> ClosedLots
+    {
+        get
+        {
+            lock (_lock)
+            {
+                return _positions.Values.SelectMany(static p => p.ClosedLots).ToArray();
             }
         }
     }
@@ -199,6 +224,15 @@ public sealed class PaperTradingPortfolio : IPortfolioState
         pos.Quantity = newQty;
         _cash -= notional + commission;
 
+        // Append a new open lot for lot-level tracking.
+        pos.Lots.AddLast(new OpenLot(
+            LotId: Guid.NewGuid(),
+            Symbol: symbol,
+            Quantity: (long)qty,
+            EntryPrice: price,
+            OpenedAt: ts,
+            OpenFillId: Guid.NewGuid()));
+
         if (_ledger is not null)
         {
             _ledger.PostLines(
@@ -263,6 +297,39 @@ public sealed class PaperTradingPortfolio : IPortfolioState
 
         _cash += proceeds - commission;
         _realisedPnl += realised;
+
+        // FIFO lot-level close: drain from the front of the lot queue.
+        var closeFillId = Guid.NewGuid();
+        var remaining = (long)closeQty;
+        while (remaining > 0 && pos.Lots.Count > 0)
+        {
+            var node = pos.Lots.First!;
+            var lot = node.Value;
+            var lotClose = Math.Min(lot.Quantity, remaining);
+
+            pos.ClosedLots.Add(new ClosedLot(
+                LotId: lot.LotId,
+                Symbol: lot.Symbol,
+                Quantity: lotClose,
+                EntryPrice: lot.EntryPrice,
+                OpenedAt: lot.OpenedAt,
+                OpenFillId: lot.OpenFillId,
+                ClosePrice: price,
+                ClosedAt: ts,
+                CloseFillId: closeFillId));
+
+            if (lot.Quantity <= remaining)
+            {
+                remaining -= lot.Quantity;
+                pos.Lots.RemoveFirst();
+            }
+            else
+            {
+                pos.Lots.RemoveFirst();
+                pos.Lots.AddFirst(lot with { Quantity = lot.Quantity - remaining });
+                remaining = 0;
+            }
+        }
 
         if (_ledger is not null)
         {
@@ -467,6 +534,12 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
     public decimal Quantity { get; set; }
     public decimal CostBasis { get; set; }
     public decimal MarketPrice { get; set; } = marketPrice;
+
+    /// <summary>FIFO queue of open lots for this position.</summary>
+    public LinkedList<OpenLot> Lots { get; } = new();
+
+    /// <summary>Append-only closed lot ledger for this position.</summary>
+    public List<ClosedLot> ClosedLots { get; } = [];
 
     public decimal MarketValue => Math.Abs(Quantity) * MarketPrice;
 
