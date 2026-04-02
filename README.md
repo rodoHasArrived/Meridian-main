@@ -925,6 +925,11 @@ Use these documents together when planning or implementing new work:
 │   │   ├── design-review-memo.md
 │   │   ├── environment-variables.md
 │   │   └── open-source-references.md
+│   ├── screenshots
+│   │   ├── 01-dashboard.png
+│   │   ├── 02-workstation.png
+│   │   ├── 03-swagger.png
+│   │   └── README.md
 │   ├── security
 │   │   ├── README.md
 │   │   └── known-vulnerabilities.md
@@ -3292,6 +3297,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-444 directories, 2720 files
+445 directories, 2724 files
 ```
 <!-- readme-tree end -->
