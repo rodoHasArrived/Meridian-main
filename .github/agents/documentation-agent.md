@@ -503,6 +503,7 @@ Meridian-main
 │   │   ├── deterministic-canonicalization.md
 │   │   ├── domains.md
 │   │   ├── layer-boundaries.md
+│   │   ├── ledger-architecture.md
 │   │   ├── overview.md
 │   │   ├── provider-management.md
 │   │   ├── README.md
@@ -964,6 +965,7 @@ Meridian-main
 │   │   │   │   ├── EtlFeatureRegistration.cs
 │   │   │   │   ├── HttpClientFeatureRegistration.cs
 │   │   │   │   ├── IServiceFeatureRegistration.cs
+│   │   │   │   ├── LedgerFeatureRegistration.cs
 │   │   │   │   ├── MaintenanceFeatureRegistration.cs
 │   │   │   │   ├── PipelineFeatureRegistration.cs
 │   │   │   │   ├── ProviderFeatureRegistration.cs

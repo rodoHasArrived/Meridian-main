@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-04-02 21:30:58 UTC. Do not edit manually.
+> Auto-generated on 2026-04-02 21:39:37 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -430,6 +430,7 @@ Meridian-main
 │   │   ├── deterministic-canonicalization.md
 │   │   ├── domains.md
 │   │   ├── layer-boundaries.md
+│   │   ├── ledger-architecture.md
 │   │   ├── overview.md
 │   │   ├── provider-management.md
 │   │   ├── README.md
@@ -891,6 +892,7 @@ Meridian-main
 │   │   │   │   ├── EtlFeatureRegistration.cs
 │   │   │   │   ├── HttpClientFeatureRegistration.cs
 │   │   │   │   ├── IServiceFeatureRegistration.cs
+│   │   │   │   ├── LedgerFeatureRegistration.cs
 │   │   │   │   ├── MaintenanceFeatureRegistration.cs
 │   │   │   │   ├── PipelineFeatureRegistration.cs
 │   │   │   │   ├── ProviderFeatureRegistration.cs
