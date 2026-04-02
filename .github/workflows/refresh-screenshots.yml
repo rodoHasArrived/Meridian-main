@@ -72,8 +72,11 @@ jobs:
             --project src/Meridian/Meridian.csproj \
             --no-build \
             -c Release \
-            -- --ui --http-port ${{ env.UI_PORT }} &
+            -- --ui --http-port ${{ env.UI_PORT }} > /tmp/dashboard.log 2>&1 &
           echo "MERIDIAN_PID=$!" >> "$GITHUB_ENV"
+          sleep 2
+          echo "Dashboard startup log:"
+          cat /tmp/dashboard.log || true
 
       - name: Wait for dashboard to be ready
         run: |
@@ -83,9 +86,16 @@ jobs:
               echo "Dashboard is up (attempt ${i})"
               exit 0
             fi
+            echo "Attempt ${i}/30 failed, retrying in 2 seconds..."
             sleep 2
           done
           echo "::error::Dashboard did not become ready within 60 seconds"
+          echo "Checking process status:"
+          ps aux | grep -i meridian || true
+          echo "Checking port ${{ env.UI_PORT }}:"
+          netstat -tlnp 2>/dev/null | grep ${{ env.UI_PORT }} || echo "Port ${{ env.UI_PORT }} not listening"
+          echo "Dashboard log tail:"
+          tail -50 /tmp/dashboard.log || true
           exit 1
 
       - name: Setup Node.js
