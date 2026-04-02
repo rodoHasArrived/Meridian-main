@@ -2453,6 +2453,53 @@ Use these documents together when planning or implementing new work:
 │       ├── App.xaml
 │       ├── App.xaml.cs
 │       ├── AssemblyInfo.cs
+│       ├── Assets
+│       │   └── Icons
+│       │       ├── README.md
+│       │       ├── admin-maintenance.svg
+│       │       ├── archive-health.svg
+│       │       ├── backfill.svg
+│       │       ├── backtest.svg
+│       │       ├── charting.svg
+│       │       ├── collection-sessions.svg
+│       │       ├── dashboard.svg
+│       │       ├── data-browser.svg
+│       │       ├── data-calendar.svg
+│       │       ├── data-export.svg
+│       │       ├── data-operations.svg
+│       │       ├── data-quality.svg
+│       │       ├── data-sampling.svg
+│       │       ├── data-sources.svg
+│       │       ├── diagnostics.svg
+│       │       ├── event-replay.svg
+│       │       ├── governance.svg
+│       │       ├── help.svg
+│       │       ├── index-subscription.svg
+│       │       ├── keyboard-shortcuts.svg
+│       │       ├── lean-integration.svg
+│       │       ├── live-data.svg
+│       │       ├── order-book.svg
+│       │       ├── portfolio-import.svg
+│       │       ├── provider-health.svg
+│       │       ├── research.svg
+│       │       ├── retention-assurance.svg
+│       │       ├── run-detail.svg
+│       │       ├── run-ledger.svg
+│       │       ├── run-mat.svg
+│       │       ├── run-portfolio.svg
+│       │       ├── schedule-manager.svg
+│       │       ├── security-master.svg
+│       │       ├── service-manager.svg
+│       │       ├── settings.svg
+│       │       ├── storage-optimization.svg
+│       │       ├── storage.svg
+│       │       ├── strategy-runs.svg
+│       │       ├── symbol-storage.svg
+│       │       ├── symbols.svg
+│       │       ├── system-health.svg
+│       │       ├── trading-hours.svg
+│       │       ├── trading.svg
+│       │       └── watchlist.svg
 │       ├── Behaviors
 │       │   ├── ParameterTemplateSelector.cs
 │       │   └── PlotRenderBehavior.cs
@@ -3310,6 +3357,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-445 directories, 2737 files
+447 directories, 2782 files
 ```
 <!-- readme-tree end -->
