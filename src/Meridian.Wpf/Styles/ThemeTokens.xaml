@@ -108,7 +108,7 @@
 
     <!-- Shell surfaces: flat, Marquee-inspired -->
     <SolidColorBrush x:Key="ShellWindowBackgroundBrush" Color="{StaticResource ConsoleBackgroundDark}" />
-    <SolidColorBrush x:Key="ShellRailBackgroundBrush"   Color="{StaticResource ConsoleBackgroundMedium}" />
+    <SolidColorBrush x:Key="ShellRailBackgroundBrush"   Color="{StaticResource SidebarBackground}" />
 
     <!-- Top bar: near-black, Marquee brand bar -->
     <SolidColorBrush x:Key="TopBarBackgroundBrush"      Color="{StaticResource TopBarBackground}" />
@@ -138,7 +138,46 @@
     <SolidColorBrush x:Key="OnSurfaceVariantBrush" Color="{StaticResource ConsoleTextSecondary}" />
     <SolidColorBrush x:Key="OutlineDimBrush"       Color="{StaticResource ConsoleBorderColor}" />
 
-    <!-- Nav active state: pale blue background + Goldman blue left indicator -->
-    <SolidColorBrush x:Key="NavActiveBackgroundBrush"   Color="#EFF6FF" />
-    <SolidColorBrush x:Key="NavActiveBorderBrush"       Color="{StaticResource ConsoleAccentBlue}" />
+    <!-- Nav active state: updated for dark sidebar -->
+    <SolidColorBrush x:Key="NavActiveBackgroundBrush"   Color="#1A2E45" />
+    <SolidColorBrush x:Key="NavActiveBorderBrush"       Color="#1B92D4" />
+
+    <!-- ── Marquee dark sidebar palette ── -->
+    <!-- Deep navy sidebar: inspired by GS Marquee trading terminal -->
+    <Color x:Key="SidebarBackground">#14202E</Color>
+    <Color x:Key="SidebarBorderColor">#1D2F40</Color>
+    <Color x:Key="SidebarHoverColor">#1A2D3F</Color>
+    <Color x:Key="SidebarActiveColor">#1A2E45</Color>
+    <Color x:Key="SidebarActiveIndicatorColor">#1B92D4</Color>
+    <Color x:Key="SidebarTileColor">#192637</Color>
+    <Color x:Key="SidebarTileHoverColor">#1E3048</Color>
+    <Color x:Key="NavItemText">#8DA0B5</Color>
+    <Color x:Key="NavItemTextHover">#E8EDF3</Color>
+    <Color x:Key="NavItemTextActive">#FFFFFF</Color>
+    <Color x:Key="NavSectionLabel">#4A5F72</Color>
+
+    <SolidColorBrush x:Key="SidebarBackgroundBrush"          Color="{StaticResource SidebarBackground}" />
+    <SolidColorBrush x:Key="SidebarBorderBrush"              Color="{StaticResource SidebarBorderColor}" />
+    <SolidColorBrush x:Key="SidebarHoverBrush"               Color="{StaticResource SidebarHoverColor}" />
+    <SolidColorBrush x:Key="SidebarActiveBrush"              Color="{StaticResource SidebarActiveColor}" />
+    <SolidColorBrush x:Key="SidebarActiveIndicatorBrush"     Color="{StaticResource SidebarActiveIndicatorColor}" />
+    <SolidColorBrush x:Key="SidebarTileBrush"                Color="{StaticResource SidebarTileColor}" />
+    <SolidColorBrush x:Key="SidebarTileHoverBrush"           Color="{StaticResource SidebarTileHoverColor}" />
+    <SolidColorBrush x:Key="NavItemForegroundBrush"          Color="{StaticResource NavItemText}" />
+    <SolidColorBrush x:Key="NavItemForegroundHoverBrush"     Color="{StaticResource NavItemTextHover}" />
+    <SolidColorBrush x:Key="NavItemForegroundActiveBrush"    Color="{StaticResource NavItemTextActive}" />
+    <SolidColorBrush x:Key="NavSectionLabelBrush"            Color="{StaticResource NavSectionLabel}" />
+
+    <!-- ── Dark terminal status bar palette ── -->
+    <Color x:Key="StatusBarBackground">#0A0F16</Color>
+    <Color x:Key="StatusBarTextColor">#7B8EA0</Color>
+    <Color x:Key="StatusBarBorderColor">#1D2F40</Color>
+
+    <SolidColorBrush x:Key="StatusBarBackgroundBrush"  Color="{StaticResource StatusBarBackground}" />
+    <SolidColorBrush x:Key="StatusBarTextBrush"        Color="{StaticResource StatusBarTextColor}" />
+    <SolidColorBrush x:Key="StatusBarBorderBrush"      Color="{StaticResource StatusBarBorderColor}" />
+
+    <!-- ── Command bar (split-pane toolbar) ── -->
+    <SolidColorBrush x:Key="CommandBarBackground"    Color="#F8F9FA" />
+    <SolidColorBrush x:Key="CommandBarBorderBrush"   Color="{StaticResource ConsoleBorderColor}" />
 </ResourceDictionary>
