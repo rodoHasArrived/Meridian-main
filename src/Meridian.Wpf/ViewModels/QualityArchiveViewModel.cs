@@ -1,7 +1,5 @@
 using System.Collections.ObjectModel;
 using System.Windows.Media;
-using System.Windows.Input;
-using CommunityToolkit.Mvvm.Input;
 using Meridian.Ui.Services.Services;
 
 namespace Meridian.Wpf.ViewModels;
@@ -21,15 +19,42 @@ public sealed class QualityCalendarCell
 /// ViewModel for displaying a perpetual symbol quality archive as a calendar heatmap.
 /// Last 90 days loaded on demand when symbol is selected and Load button is clicked.
 /// </summary>
-public sealed class QualityArchiveViewModel : BindableBase, IDisposable
+public sealed partial class QualityArchiveViewModel : BindableBase, IDisposable
 {
     private readonly IQualityArchiveStore _archiveStore;
-    private ICommand? _loadCommand;
-    private string _selectedSymbol = string.Empty;
+
+    // Simple two-way bindable property — public setter is fine for combo-box selection.
+    [ObservableProperty] private string _selectedSymbol = string.Empty;
+
+    // Read-only-from-outside properties — kept as manual properties with private setters.
     private ObservableCollection<QualityCalendarCell> _calendarCells = new();
+    public ObservableCollection<QualityCalendarCell> CalendarCells
+    {
+        get => _calendarCells;
+        private set => SetProperty(ref _calendarCells, value);
+    }
+
     private ObservableCollection<string> _symbols = new();
+    public ObservableCollection<string> Symbols
+    {
+        get => _symbols;
+        private set => SetProperty(ref _symbols, value);
+    }
+
     private bool _isLoading;
+    public bool IsLoading
+    {
+        get => _isLoading;
+        private set => SetProperty(ref _isLoading, value);
+    }
+
     private string _statusMessage = "Ready";
+    public string StatusMessage
+    {
+        get => _statusMessage;
+        private set => SetProperty(ref _statusMessage, value);
+    }
+
     private bool _isDisposed;
 
     public QualityArchiveViewModel(IQualityArchiveStore archiveStore)
@@ -38,60 +63,9 @@ public sealed class QualityArchiveViewModel : BindableBase, IDisposable
         _ = InitializeSymbolsAsync();
     }
 
-    public string SelectedSymbol
-    {
-        get => _selectedSymbol;
-        set => SetProperty(ref _selectedSymbol, value);
-    }
-
-    public ObservableCollection<QualityCalendarCell> CalendarCells
-    {
-        get => _calendarCells;
-        private set => SetProperty(ref _calendarCells, value);
-    }
-
-    public ObservableCollection<string> Symbols
-    {
-        get => _symbols;
-        private set => SetProperty(ref _symbols, value);
-    }
-
-    public bool IsLoading
-    {
-        get => _isLoading;
-        private set => SetProperty(ref _isLoading, value);
-    }
-
-    public string StatusMessage
-    {
-        get => _statusMessage;
-        private set => SetProperty(ref _statusMessage, value);
-    }
-
-    public ICommand LoadCommand => _loadCommand ??= new AsyncRelayCommand(OnLoadAsync);
-
-    private async Task InitializeSymbolsAsync()
-    {
-        try
-        {
-            var symbols = await _archiveStore.GetSymbolsAsync(CancellationToken.None).ConfigureAwait(true);
-            foreach (var sym in symbols)
-            {
-                Symbols.Add(sym);
-            }
-
-            if (Symbols.Count > 0)
-            {
-                SelectedSymbol = Symbols[0];
-            }
-        }
-        catch (Exception ex)
-        {
-            StatusMessage = $"Error loading symbols: {ex.Message}";
-        }
-    }
-
-    private async Task OnLoadAsync()
+    // LoadCommand is generated from [RelayCommand] on LoadAsync (matches XAML binding).
+    [RelayCommand]
+    private async Task LoadAsync()
     {
         if (string.IsNullOrWhiteSpace(SelectedSymbol))
         {
@@ -138,6 +112,27 @@ public sealed class QualityArchiveViewModel : BindableBase, IDisposable
         finally
         {
             IsLoading = false;
+        }
+    }
+
+    private async Task InitializeSymbolsAsync()
+    {
+        try
+        {
+            var symbols = await _archiveStore.GetSymbolsAsync(CancellationToken.None).ConfigureAwait(true);
+            foreach (var sym in symbols)
+            {
+                Symbols.Add(sym);
+            }
+
+            if (Symbols.Count > 0)
+            {
+                SelectedSymbol = Symbols[0];
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error loading symbols: {ex.Message}";
         }
     }
 
