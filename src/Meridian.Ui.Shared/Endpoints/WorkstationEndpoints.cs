@@ -639,10 +639,32 @@ public static class WorkstationEndpoints
             .ExcludeFromDescription();
 
         app.MapGet("/workstation/{*path}", (string? path, IWebHostEnvironment environment) =>
-            string.IsNullOrWhiteSpace(path) || !Path.HasExtension(path)
-                ? ServeWorkstationIndex(environment)
-                : Results.NotFound())
-            .ExcludeFromDescription();
+        {
+            if (string.IsNullOrWhiteSpace(path) || !Path.HasExtension(path))
+                return ServeWorkstationIndex(environment);
+
+            // Serve static assets (JS, CSS, etc.) directly from wwwroot/workstation/.
+            // UseStaticFiles() middleware runs after routing in WebApplication, so the
+            // catch-all route must serve these files explicitly.
+            var root = environment.WebRootPath ?? Path.Combine(environment.ContentRootPath, "wwwroot");
+            var filePath = Path.Combine(root, "workstation", path.Replace('/', Path.DirectorySeparatorChar));
+            if (!File.Exists(filePath))
+                return Results.NotFound();
+
+            var ext = Path.GetExtension(filePath).ToLowerInvariant();
+            var contentType = ext switch
+            {
+                ".js"   => "application/javascript",
+                ".css"  => "text/css",
+                ".png"  => "image/png",
+                ".svg"  => "image/svg+xml",
+                ".ico"  => "image/x-icon",
+                ".woff" => "font/woff",
+                ".woff2" => "font/woff2",
+                _       => "application/octet-stream"
+            };
+            return Results.File(filePath, contentType);
+        }).ExcludeFromDescription();
     }
 
     private static StrategyRunDiff BuildRunDiff(StrategyRunDetail baseRun, StrategyRunDetail targetRun)
