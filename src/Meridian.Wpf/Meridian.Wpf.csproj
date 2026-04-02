@@ -94,6 +94,9 @@
 
     <!-- QuantScript editor and chart rendering -->
     <PackageReference Include="ZstdSharp.Port" />
+
+    <!-- Financial candlestick charts (LiveCharts2 alongside ScottPlot) -->
+    <PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" />
   </ItemGroup>
 
   <!--
