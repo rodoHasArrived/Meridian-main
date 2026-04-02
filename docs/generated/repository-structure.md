@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-04-02 01:29:37 UTC. Do not edit manually.
+> Auto-generated on 2026-04-02 05:07:25 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -736,6 +736,11 @@ Meridian-main
 │   │   ├── design-review-memo.md
 │   │   ├── environment-variables.md
 │   │   ├── open-source-references.md
+│   │   └── README.md
+│   ├── screenshots
+│   │   ├── 01-dashboard.png
+│   │   ├── 02-workstation.png
+│   │   ├── 03-swagger.png
 │   │   └── README.md
 │   ├── security
 │   │   ├── known-vulnerabilities.md
