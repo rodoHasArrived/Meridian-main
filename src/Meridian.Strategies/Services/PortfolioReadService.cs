@@ -1,3 +1,4 @@
+using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Models;
 
@@ -55,6 +56,59 @@ public sealed class PortfolioReadService
         };
     }
 
+    /// <summary>
+    /// Builds a <see cref="RunLotSummary"/> from the most-recent snapshot's lot data,
+    /// optionally filtered to a single <paramref name="symbol"/>.
+    /// Returns <see langword="null"/> when the run has no recorded snapshots.
+    /// </summary>
+    public RunLotSummary? BuildLotSummary(StrategyRunEntry entry, string? symbol = null, DateTimeOffset? asOf = null)
+    {
+        ArgumentNullException.ThrowIfNull(entry);
+
+        var result = entry.Metrics;
+        var latestSnapshot = result?.Snapshots.LastOrDefault();
+        if (latestSnapshot is null)
+        {
+            return null;
+        }
+
+        var openLots = (latestSnapshot.OpenLots ?? [])
+            .Where(l => symbol is null || string.Equals(l.Symbol, symbol, StringComparison.OrdinalIgnoreCase))
+            .Select(l => new OpenLotSummary(
+                LotId: l.LotId,
+                Symbol: l.Symbol,
+                Quantity: l.Quantity,
+                EntryPrice: l.EntryPrice,
+                OpenedAt: l.OpenedAt,
+                CurrentUnrealizedPnl: 0m,  // price not available in summary context
+                IsLongTerm: l.IsLongTerm(asOf ?? latestSnapshot.Timestamp),
+                AccountId: l.AccountId))
+            .ToArray();
+
+        var closedLots = (latestSnapshot.ClosedLots ?? [])
+            .Where(l => symbol is null || string.Equals(l.Symbol, symbol, StringComparison.OrdinalIgnoreCase))
+            .Select(static l => new ClosedLotSummary(
+                LotId: l.LotId,
+                Symbol: l.Symbol,
+                Quantity: l.Quantity,
+                EntryPrice: l.EntryPrice,
+                ClosePrice: l.ClosePrice,
+                OpenedAt: l.OpenedAt,
+                ClosedAt: l.ClosedAt,
+                RealizedPnl: l.RealizedPnl,
+                IsLongTerm: l.IsLongTerm,
+                AccountId: l.AccountId))
+            .ToArray();
+
+        return new RunLotSummary(
+            RunId: entry.RunId,
+            TotalOpenLots: openLots.Length,
+            TotalClosedLots: closedLots.Length,
+            TotalRealizedPnl: closedLots.Sum(static cl => cl.RealizedPnl),
+            OpenLots: openLots,
+            ClosedLots: closedLots);
+    }
+
     private static PortfolioSummary? BuildBaseSummary(StrategyRunEntry entry)
     {
         ArgumentNullException.ThrowIfNull(entry);
@@ -85,6 +139,42 @@ public sealed class PortfolioReadService
         var unrealizedPnl = positions.Sum(static position => position.UnrealizedPnl);
         var financing = result!.Metrics.TotalMarginInterest - result.Metrics.TotalShortRebates;
 
+        // Include lot summaries when available in the snapshot.
+        OpenLotSummary[]? openLotSummaries = null;
+        ClosedLotSummary[]? closedLotSummaries = null;
+
+        if (latestSnapshot.OpenLots is { Count: > 0 } openLots)
+        {
+            openLotSummaries = openLots
+                .Select(l => new OpenLotSummary(
+                    LotId: l.LotId,
+                    Symbol: l.Symbol,
+                    Quantity: l.Quantity,
+                    EntryPrice: l.EntryPrice,
+                    OpenedAt: l.OpenedAt,
+                    CurrentUnrealizedPnl: 0m,
+                    IsLongTerm: l.IsLongTerm(latestSnapshot.Timestamp),
+                    AccountId: l.AccountId))
+                .ToArray();
+        }
+
+        if (latestSnapshot.ClosedLots is { Count: > 0 } closedLots)
+        {
+            closedLotSummaries = closedLots
+                .Select(static l => new ClosedLotSummary(
+                    LotId: l.LotId,
+                    Symbol: l.Symbol,
+                    Quantity: l.Quantity,
+                    EntryPrice: l.EntryPrice,
+                    ClosePrice: l.ClosePrice,
+                    OpenedAt: l.OpenedAt,
+                    ClosedAt: l.ClosedAt,
+                    RealizedPnl: l.RealizedPnl,
+                    IsLongTerm: l.IsLongTerm,
+                    AccountId: l.AccountId))
+                .ToArray();
+        }
+
         return new PortfolioSummary(
             PortfolioId: entry.PortfolioId ?? entry.RunId,
             RunId: entry.RunId,
@@ -100,7 +190,9 @@ public sealed class PortfolioReadService
             Commissions: result.Metrics.TotalCommissions,
             Financing: financing,
             Positions: positions,
-            FundProfileId: entry.FundProfileId);
+            FundProfileId: entry.FundProfileId,
+            OpenLots: openLotSummaries,
+            ClosedLots: closedLotSummaries);
     }
 
     private async Task<Dictionary<string, WorkstationSecurityReference?>> ResolveSecuritiesAsync(

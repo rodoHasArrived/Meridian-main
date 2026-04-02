@@ -168,7 +168,9 @@ public sealed record PortfolioSummary(
     IReadOnlyList<PortfolioPositionSummary> Positions,
     int SecurityResolvedCount = 0,
     int SecurityMissingCount = 0,
-    string? FundProfileId = null);
+    string? FundProfileId = null,
+    IReadOnlyList<OpenLotSummary>? OpenLots = null,
+    IReadOnlyList<ClosedLotSummary>? ClosedLots = null);
 
 /// <summary>
 /// Shared position row for workstation portfolio views.
@@ -417,3 +419,46 @@ public sealed record RunCashFlowSummary(
     decimal NetCashFlow,
     IReadOnlyList<CashFlowEntryDto> Entries,
     RunCashLadder Ladder);
+
+// ---------------------------------------------------------------------------
+// Lot-level tracking read models
+// ---------------------------------------------------------------------------
+
+/// <summary>
+/// Workstation-facing summary of a single open lot for a strategy run.
+/// </summary>
+public sealed record OpenLotSummary(
+    Guid LotId,
+    string Symbol,
+    long Quantity,
+    decimal EntryPrice,
+    DateTimeOffset OpenedAt,
+    decimal CurrentUnrealizedPnl,
+    bool IsLongTerm,
+    string? AccountId = null);
+
+/// <summary>
+/// Workstation-facing summary of a closed lot for a strategy run.
+/// </summary>
+public sealed record ClosedLotSummary(
+    Guid LotId,
+    string Symbol,
+    long Quantity,
+    decimal EntryPrice,
+    decimal ClosePrice,
+    DateTimeOffset OpenedAt,
+    DateTimeOffset ClosedAt,
+    decimal RealizedPnl,
+    bool IsLongTerm,
+    string? AccountId = null);
+
+/// <summary>
+/// Lot history for a single strategy run, optionally filtered to one symbol.
+/// </summary>
+public sealed record RunLotSummary(
+    string RunId,
+    int TotalOpenLots,
+    int TotalClosedLots,
+    decimal TotalRealizedPnl,
+    IReadOnlyList<OpenLotSummary> OpenLots,
+    IReadOnlyList<ClosedLotSummary> ClosedLots);

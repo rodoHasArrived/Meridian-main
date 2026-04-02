@@ -150,7 +150,8 @@ public sealed class BacktestEngine(
 
         var tradeTickets = BuildTradeTickets(allCashFlows);
         var tcaReport = PostSimulationTcaReporter.Generate(request, allFills);
-        return new BacktestResult(request, universe, allSnapshots, allCashFlows, allFills, metrics, ledger, sw.Elapsed, eventsProcessed, tradeTickets, tcaReport)
+        var allClosedLots = portfolio.GetAllClosedLots();
+        return new BacktestResult(request, universe, allSnapshots, allCashFlows, allFills, metrics, ledger, sw.Elapsed, eventsProcessed, tradeTickets, tcaReport, allClosedLots)
         {
             Coverage = BuildNativeArtifactCoverage(),
             EngineMetadata = BuildNativeEngineMetadata()
