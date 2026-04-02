@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-04-02 21:11:56 UTC. Do not edit manually.
+> Auto-generated on 2026-04-02 21:30:58 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -1647,7 +1647,9 @@ Meridian-main
 │   │   │   │   ├── PolygonSymbolSearchProvider.cs
 │   │   │   │   └── TradingParametersBackfillService.cs
 │   │   │   ├── Robinhood
+│   │   │   │   ├── RobinhoodBrokerageGateway.cs
 │   │   │   │   ├── RobinhoodHistoricalDataProvider.cs
+│   │   │   │   ├── RobinhoodMarketDataClient.cs
 │   │   │   │   └── RobinhoodSymbolSearchProvider.cs
 │   │   │   ├── StockSharp
 │   │   │   │   ├── Converters
@@ -2919,7 +2921,9 @@ Meridian-main
 │   │   │   │   ├── ProviderFactoryCredentialContextTests.cs
 │   │   │   │   ├── ProviderResilienceTests.cs
 │   │   │   │   ├── ProviderTemplateFactoryCredentialTests.cs
+│   │   │   │   ├── RobinhoodBrokerageGatewayTests.cs
 │   │   │   │   ├── RobinhoodHistoricalDataProviderTests.cs
+│   │   │   │   ├── RobinhoodMarketDataClientTests.cs
 │   │   │   │   ├── RobinhoodSymbolSearchProviderTests.cs
 │   │   │   │   ├── StockSharpConnectorFactoryTests.cs
 │   │   │   │   ├── StockSharpMessageConversionTests.cs

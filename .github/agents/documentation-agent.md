@@ -1720,7 +1720,9 @@ Meridian-main
 │   │   │   │   ├── PolygonSymbolSearchProvider.cs
 │   │   │   │   └── TradingParametersBackfillService.cs
 │   │   │   ├── Robinhood
+│   │   │   │   ├── RobinhoodBrokerageGateway.cs
 │   │   │   │   ├── RobinhoodHistoricalDataProvider.cs
+│   │   │   │   ├── RobinhoodMarketDataClient.cs
 │   │   │   │   └── RobinhoodSymbolSearchProvider.cs
 │   │   │   ├── StockSharp
 │   │   │   │   ├── Converters
@@ -2992,7 +2994,9 @@ Meridian-main
 │   │   │   │   ├── ProviderFactoryCredentialContextTests.cs
 │   │   │   │   ├── ProviderResilienceTests.cs
 │   │   │   │   ├── ProviderTemplateFactoryCredentialTests.cs
+│   │   │   │   ├── RobinhoodBrokerageGatewayTests.cs
 │   │   │   │   ├── RobinhoodHistoricalDataProviderTests.cs
+│   │   │   │   ├── RobinhoodMarketDataClientTests.cs
 │   │   │   │   ├── RobinhoodSymbolSearchProviderTests.cs
 │   │   │   │   ├── StockSharpConnectorFactoryTests.cs
 │   │   │   │   ├── StockSharpMessageConversionTests.cs
