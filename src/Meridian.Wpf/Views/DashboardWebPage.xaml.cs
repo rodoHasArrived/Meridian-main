@@ -72,11 +72,18 @@ public partial class DashboardWebPage : Page
 
     private static bool IsWebView2RuntimeMissingException(Exception ex)
     {
-        // WebView2 throws WebView2RuntimeNotFoundException or a COMException with HRESULT
-        // 0x80004005 when the Evergreen runtime is not installed.
-        return ex.GetType().Name.Contains("WebView2RuntimeNotFoundException", StringComparison.Ordinal)
-            || ex.Message.Contains("WebView2 Runtime", StringComparison.OrdinalIgnoreCase)
-            || (ex is System.Runtime.InteropServices.COMException com && com.HResult == unchecked((int)0x80004005));
+        // WebView2 throws a COMException with HRESULT 0x80004005 (E_FAIL) when the
+        // Evergreen runtime is not installed. Check the HRESULT directly rather than
+        // relying on the exception type name (which can change between SDK versions).
+        if (ex is System.Runtime.InteropServices.COMException com
+            && com.HResult == unchecked((int)0x80004005))
+        {
+            return true;
+        }
+
+        // Also guard against the message containing "WebView2 Runtime" as a belt-and-braces
+        // fallback for SDK versions that surface a different exception sub-type.
+        return ex.Message.Contains("WebView2 Runtime", StringComparison.OrdinalIgnoreCase);
     }
 
     private void ShowRuntimeMissingFallback()
