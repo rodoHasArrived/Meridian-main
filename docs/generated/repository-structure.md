@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-04-02 08:06:17 UTC. Do not edit manually.
+> Auto-generated on 2026-04-02 13:58:31 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -741,6 +741,7 @@ Meridian-main
 │   │   ├── 01-dashboard.png
 │   │   ├── 02-workstation.png
 │   │   ├── 03-swagger.png
+│   │   ├── 04-status-overview.png
 │   │   └── README.md
 │   ├── security
 │   │   ├── known-vulnerabilities.md
@@ -771,7 +772,8 @@ Meridian-main
 │   ├── DEPENDENCIES.md
 │   ├── HELP.md
 │   ├── README.md
-│   └── toc.yml
+│   ├── toc.yml
+│   └── WORKFLOW_GUIDE.md
 ├── issues
 │   ├── phase-1-5-add-equityclassification-discriminator-and-preferredterms-domain-model.md
 │   └── phase_1_5_1_add_equityclassification_discriminator_and_preferredterms_domain_model.md
