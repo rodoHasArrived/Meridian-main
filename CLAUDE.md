@@ -3228,6 +3228,7 @@ export TIINGO_API_TOKEN=your-token
 export FINNHUB_API_KEY=your-api-key
 export ALPHA_VANTAGE_API_KEY=your-api-key
 export NASDAQ_API_KEY=your-api-key
+export ROBINHOOD_ACCESS_TOKEN=your-access-token
 ```
 
 ### appsettings.json
@@ -3328,6 +3329,7 @@ The following provider-related classes are the current canonical inventory used 
 | `TiingoHistoricalDataProvider` | Tiingo historical bars |
 | `TwelveDataHistoricalDataProvider` | Twelve Data historical bars |
 | `YahooFinanceHistoricalDataProvider` | Yahoo Finance historical bars |
+| `RobinhoodHistoricalDataProvider` | Robinhood historical bars (unofficial API, requires `ROBINHOOD_ACCESS_TOKEN`) |
 
 ### Symbol search implementations
 | Provider Class | Role |

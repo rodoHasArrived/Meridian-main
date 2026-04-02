@@ -120,7 +120,8 @@ public sealed record BackfillProvidersConfig(
     AlphaVantageConfig? AlphaVantage = null,
     FinnhubConfig? Finnhub = null,
     FredConfig? Fred = null,
-    SyntheticMarketDataConfig? Synthetic = null
+    SyntheticMarketDataConfig? Synthetic = null,
+    RobinhoodConfig? Robinhood = null
 );
 
 /// <summary>
@@ -272,4 +273,18 @@ public sealed record FredConfig(
     string? ApiKey = null,
     int Priority = 28,
     int RateLimitPerMinute = 120
+);
+
+/// <summary>
+/// Robinhood historical data provider configuration.
+/// Uses the unofficial Robinhood API; requires a personal access token.
+/// No official public API exists — set ROBINHOOD_ACCESS_TOKEN via environment variable.
+/// </summary>
+/// <param name="Enabled">Enable this provider.</param>
+/// <param name="Priority">Priority in fallback chain (lower = tried first). Defaults to 35.</param>
+/// <param name="RateLimitPerHour">Maximum requests per hour. Defaults to 100 (conservative, undocumented limit).</param>
+public sealed record RobinhoodConfig(
+    bool Enabled = false,
+    int Priority = 35,
+    int RateLimitPerHour = 100
 );
