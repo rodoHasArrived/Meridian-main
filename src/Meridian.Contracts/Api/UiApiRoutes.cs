@@ -428,6 +428,17 @@ public static class UiApiRoutes
     public const string ExecutionSessionCreate = "/api/execution/sessions/create";
     public const string ExecutionSessionClose = "/api/execution/sessions/{sessionId}/close";
 
+    // Multi-account execution endpoints
+    public const string ExecutionAccounts = "/api/execution/accounts";
+    public const string ExecutionAccountById = "/api/execution/accounts/{accountId}";
+    public const string ExecutionAccountPositions = "/api/execution/accounts/{accountId}/positions";
+    public const string ExecutionPortfolioAggregate = "/api/execution/portfolio/aggregate";
+
+    // Cross-strategy portfolio workstation endpoints
+    public const string PortfolioAggregate = "/api/portfolio/aggregate";
+    public const string PortfolioExposure = "/api/portfolio/exposure";
+    public const string PortfolioSymbolExposure = "/api/portfolio/symbols/{symbol}/exposure";
+
     // Promotion workflow endpoints (Backtest → Paper → Live)
     public const string PromotionEvaluate = "/api/promotion/evaluate/{runId}";
     public const string PromotionApprove = "/api/promotion/approve";

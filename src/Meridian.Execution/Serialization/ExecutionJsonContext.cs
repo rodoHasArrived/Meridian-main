@@ -1,4 +1,6 @@
 using System.Text.Json.Serialization;
+using Meridian.Execution.Interfaces;
+using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
 
@@ -23,6 +25,13 @@ namespace Meridian.Execution.Serialization;
 [JsonSerializable(typeof(PersistedLedgerLineDto))]
 [JsonSerializable(typeof(List<PersistedLedgerLineDto>))]
 [JsonSerializable(typeof(PersistedLedgerAccountDto))]
+// Multi-account position snapshot types (Phase 4)
+[JsonSerializable(typeof(ExecutionAccountDetailSnapshot))]
+[JsonSerializable(typeof(List<ExecutionAccountDetailSnapshot>))]
+[JsonSerializable(typeof(MultiAccountPortfolioSnapshot))]
+[JsonSerializable(typeof(ExecutionPosition))]
+[JsonSerializable(typeof(List<ExecutionPosition>))]
+[JsonSerializable(typeof(AccountKind))]
 internal sealed partial class ExecutionJsonContext : JsonSerializerContext
 {
 }

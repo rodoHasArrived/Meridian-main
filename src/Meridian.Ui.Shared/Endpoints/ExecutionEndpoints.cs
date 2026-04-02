@@ -270,6 +270,91 @@ public static class ExecutionEndpoints
         .Produces(404)
         .Produces(503);
 
+        // --- Multi-account endpoints ---
+
+        group.MapGet("/accounts", (HttpContext context) =>
+        {
+            var portfolio = context.RequestServices.GetService<IPortfolioState>();
+            if (portfolio is null)
+                return Results.Problem("Paper trading portfolio is not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
+
+            if (portfolio is IMultiAccountPortfolioState multi)
+            {
+                var snapshots = multi.Accounts.Select(static a => a.TakeSnapshot()).ToArray();
+                return Results.Json(snapshots, jsonOptions);
+            }
+
+            // Backward-compat: wrap the single-account view as a list.
+            var single = BuildLegacySingleAccountSnapshot(portfolio);
+            return Results.Json(new[] { single }, jsonOptions);
+        })
+        .WithName("GetExecutionAccounts")
+        .Produces<IReadOnlyList<ExecutionAccountDetailSnapshot>>(200)
+        .Produces(503);
+
+        group.MapGet("/accounts/{accountId}", (string accountId, HttpContext context) =>
+        {
+            var portfolio = context.RequestServices.GetService<IPortfolioState>();
+            if (portfolio is null)
+                return Results.Problem("Paper trading portfolio is not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
+
+            if (portfolio is IMultiAccountPortfolioState multi)
+            {
+                var snapshot = multi.GetAccount(accountId)?.TakeSnapshot();
+                return snapshot is null ? Results.NotFound() : Results.Json(snapshot, jsonOptions);
+            }
+
+            if (string.Equals(accountId, "default", StringComparison.OrdinalIgnoreCase))
+                return Results.Json(BuildLegacySingleAccountSnapshot(portfolio), jsonOptions);
+
+            return Results.NotFound();
+        })
+        .WithName("GetExecutionAccountById")
+        .Produces<ExecutionAccountDetailSnapshot>(200)
+        .Produces(404)
+        .Produces(503);
+
+        group.MapGet("/accounts/{accountId}/positions", (string accountId, HttpContext context) =>
+        {
+            var portfolio = context.RequestServices.GetService<IPortfolioState>();
+            if (portfolio is null)
+                return Results.Problem("Paper trading portfolio is not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
+
+            if (portfolio is IMultiAccountPortfolioState multi)
+            {
+                var account = multi.GetAccount(accountId);
+                if (account is null) return Results.NotFound();
+                return Results.Json(account.Positions.Values.ToArray(), jsonOptions);
+            }
+
+            if (string.Equals(accountId, "default", StringComparison.OrdinalIgnoreCase))
+                return Results.Json(portfolio.Positions.Values.ToArray(), jsonOptions);
+
+            return Results.NotFound();
+        })
+        .WithName("GetExecutionAccountPositions")
+        .Produces<ExecutionPosition[]>(200)
+        .Produces(404)
+        .Produces(503);
+
+        group.MapGet("/portfolio/aggregate", (HttpContext context) =>
+        {
+            var portfolio = context.RequestServices.GetService<IPortfolioState>();
+            if (portfolio is null)
+                return Results.Problem("Paper trading portfolio is not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
+
+            if (portfolio is IMultiAccountPortfolioState multi)
+                return Results.Json(multi.GetAggregateSnapshot(), jsonOptions);
+
+            // Wrap single-account view.
+            var singleSnap = BuildLegacySingleAccountSnapshot(portfolio);
+            var aggregate = MultiAccountPortfolioSnapshot.FromAccounts([singleSnap]);
+            return Results.Json(aggregate, jsonOptions);
+        })
+        .WithName("GetExecutionPortfolioAggregate")
+        .Produces<MultiAccountPortfolioSnapshot>(200)
+        .Produces(503);
+
         // --- Position actions ---
 
         group.MapPost("/positions/{symbol}/close", async (string symbol, HttpContext context) =>
@@ -342,6 +427,27 @@ public static class ExecutionEndpoints
     private static ILogger GetLogger(IServiceProvider sp) =>
         sp.GetRequiredService<ILoggerFactory>()
           .CreateLogger("Meridian.Ui.Shared.Endpoints.ExecutionEndpoints");
+
+    private static ExecutionAccountDetailSnapshot BuildLegacySingleAccountSnapshot(IPortfolioState portfolio)
+    {
+        var positions = portfolio.Positions.Values.ToArray();
+        var longMv = positions.Where(static p => !p.IsShort).Sum(static p => (decimal)p.AbsoluteQuantity * p.AverageCostBasis);
+        var shortMv = positions.Where(static p => p.IsShort).Sum(static p => (decimal)p.AbsoluteQuantity * p.AverageCostBasis);
+        return new ExecutionAccountDetailSnapshot(
+            AccountId: "default",
+            DisplayName: "Default Paper Account",
+            Kind: AccountKind.Brokerage,
+            Cash: portfolio.Cash,
+            MarginBalance: 0m,
+            LongMarketValue: longMv,
+            ShortMarketValue: shortMv,
+            GrossExposure: longMv + shortMv,
+            NetExposure: longMv - shortMv,
+            UnrealisedPnl: portfolio.UnrealisedPnl,
+            RealisedPnl: portfolio.RealisedPnl,
+            Positions: positions,
+            AsOf: DateTimeOffset.UtcNow);
+    }
 }
 
 // --- DTOs for execution endpoints ---

@@ -75,6 +75,10 @@ public partial class RunRiskPage : Page { }
 // Position Blotter page
 public partial class PositionBlotterPage : Page { }
 
+// Multi-account & aggregate portfolio pages (Phase 6)
+public partial class AccountPortfolioPage : Page { }
+public partial class AggregatePortfolioPage : Page { }
+
 // Security Master workstation page
 public partial class SecurityMasterPage : Page { }
 
