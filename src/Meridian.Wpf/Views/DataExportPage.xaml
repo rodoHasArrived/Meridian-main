@@ -3,10 +3,15 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:conv="clr-namespace:Meridian.Wpf.Converters"
       mc:Ignorable="d"
       Background="{DynamicResource ShellWindowBackgroundBrush}"
       Loaded="OnPageLoaded"
       AutomationProperties.Name="Data Export">
+    <Page.Resources>
+        <conv:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <conv:InvertBoolConverter x:Key="InvertBoolConverter" />
+    </Page.Resources>
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
         <StackPanel MaxWidth="1100">
             <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24">
@@ -50,18 +55,20 @@
                             <TextBlock Text="Symbols" Style="{StaticResource FormLabelStyle}" />
                             <StackPanel Orientation="Horizontal">
                                 <TextBox x:Name="SymbolSearchBox"
+                                       Text="{Binding SymbolSearchText, UpdateSourceTrigger=PropertyChanged}"
                                          Style="{StaticResource FormTextBoxStyle}"
                                          MinWidth="140" />
                                 <Button Content="Add"
                                         Style="{StaticResource SecondaryButtonStyle}"
                                         Margin="8,0,0,0"
-                                        Click="AddSymbol_Click" />
+                                        Command="{Binding AddSymbolCommand}" />
                             </StackPanel>
                             <ListBox x:Name="SelectedSymbolsList"
                                      ItemsSource="{Binding SelectedSymbols}"
                                      Height="120"
                                      Margin="0,8,0,0" />
-                            <TextBlock x:Name="SymbolsValidationError"
+                            <TextBlock x:Name="SymbolsValidationError" Text="{Binding SymbolsValidationError}"
+                                       Visibility="{Binding IsSymbolsValidationErrorVisible, Converter={StaticResource BoolToVisibilityConverter}}"
                                        Foreground="{StaticResource ErrorColorBrush}"
                                        FontSize="11"
                                        Visibility="Collapsed"
@@ -70,14 +77,15 @@
 
                         <StackPanel Grid.Row="0" Grid.Column="1">
                             <TextBlock Text="Date Range" Style="{StaticResource FormLabelStyle}" />
-                            <DatePicker x:Name="ExportFromDate" Margin="0,0,0,8" />
-                            <DatePicker x:Name="ExportToDate" />
+                            <DatePicker x:Name="ExportFromDate" Margin="0,0,0,8" SelectedDate="{Binding ExportFromDate}" />
+                            <DatePicker x:Name="ExportToDate" SelectedDate="{Binding ExportToDate}" />
                             <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                                <Button Content="Today" Click="SetToday_Click" Margin="0,0,8,0" />
-                                <Button Content="Week" Click="SetWeek_Click" Margin="0,0,8,0" />
-                                <Button Content="Month" Click="SetMonth_Click" />
+                                <Button Content="Today" Command="{Binding SetTodayCommand}" Margin="0,0,8,0" />
+                                <Button Content="Week" Command="{Binding SetWeekCommand}" Margin="0,0,8,0" />
+                                <Button Content="Month" Command="{Binding SetMonthCommand}" />
                             </StackPanel>
-                            <TextBlock x:Name="DateValidationError"
+                            <TextBlock x:Name="DateValidationError" Text="{Binding DateValidationError}"
+                                       Visibility="{Binding IsDateValidationErrorVisible, Converter={StaticResource BoolToVisibilityConverter}}"
                                        Foreground="{StaticResource ErrorColorBrush}"
                                        FontSize="11"
                                        Visibility="Collapsed"
@@ -98,7 +106,7 @@
 
                         <StackPanel Grid.Row="1" Grid.Column="0">
                             <TextBlock Text="Export Format" Style="{StaticResource FormLabelStyle}" />
-                            <ComboBox x:Name="ExportFormatCombo" Style="{StaticResource FormComboBoxStyle}">
+                            <ComboBox x:Name="ExportFormatCombo" Style="{StaticResource FormComboBoxStyle}" SelectionChanged="ExportFormatCombo_SelectionChanged">
                                 <ComboBoxItem Content="CSV (Comma-Separated)" Tag="csv" />
                                 <ComboBoxItem Content="Parquet (Columnar)" Tag="parquet" />
                                 <ComboBoxItem Content="JSON Lines" Tag="jsonl" />
@@ -109,7 +117,7 @@
 
                         <StackPanel Grid.Row="1" Grid.Column="1">
                             <TextBlock Text="Compression" Style="{StaticResource FormLabelStyle}" />
-                            <ComboBox x:Name="CompressionCombo" Style="{StaticResource FormComboBoxStyle}">
+                            <ComboBox x:Name="CompressionCombo" Style="{StaticResource FormComboBoxStyle}" SelectionChanged="CompressionCombo_SelectionChanged">
                                 <ComboBoxItem Content="None" Tag="none" />
                                 <ComboBoxItem Content="Gzip" Tag="gzip" />
                                 <ComboBoxItem Content="LZ4 (Fast)" Tag="lz4" />
@@ -121,25 +129,27 @@
                             <Button x:Name="ExportButton"
                                     Content="Export Data"
                                     Style="{StaticResource AccentButtonStyle}"
-                                    Click="ExportData_Click" />
+                                    Command="{Binding ExportDataCommand}" />
                             <ProgressBar x:Name="ExportProgress"
                                          Width="120"
                                          Height="8"
                                          Margin="12,8,0,0"
-                                         Visibility="Collapsed" />
+                                         Visibility="{Binding IsExporting, Converter={StaticResource BoolToVisibilityConverter}}" />
                         </StackPanel>
                     </Grid>
 
-                    <StackPanel x:Name="ExportProgressPanel" Visibility="Collapsed" Margin="0,16,0,0">
+                    <StackPanel x:Name="ExportProgressPanel"
+                    Visibility="{Binding IsExportProgressVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                    Margin="0,16,0,0">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <TextBlock x:Name="ExportProgressLabel" Grid.Column="0" Text="Exporting..." />
-                            <TextBlock x:Name="ExportProgressPercent" Grid.Column="1" Text="0%" />
+                            <TextBlock x:Name="ExportProgressLabel" Grid.Column="0" Text="{Binding ExportProgressLabel}" />
+                            <TextBlock x:Name="ExportProgressPercent" Grid.Column="1" Text="{Binding ExportProgressPercent}" />
                         </Grid>
-                        <ProgressBar x:Name="ExportProgressBar" Minimum="0" Maximum="100" Value="0" />
+                        <ProgressBar x:Name="ExportProgressBar" Minimum="0" Maximum="100" Value="{Binding ExportProgressValue}" />
                     </StackPanel>
                 </StackPanel>
             </Border>
@@ -177,7 +187,7 @@
 
                         <StackPanel Grid.Row="0" Grid.Column="0">
                             <TextBlock Text="Database Type" Style="{StaticResource FormLabelStyle}" />
-                            <ComboBox x:Name="DatabaseTypeCombo"
+                            <ComboBox x:Name="DatabaseTypeCombo" SelectionChanged="DatabaseType_SelectionChanged"
                                       Style="{StaticResource FormComboBoxStyle}"
                                       SelectionChanged="DatabaseType_SelectionChanged">
                                 <ComboBoxItem Content="PostgreSQL" Tag="postgresql" />
@@ -191,32 +201,32 @@
 
                         <StackPanel Grid.Row="0" Grid.Column="1">
                             <TextBlock Text="Host" Style="{StaticResource FormLabelStyle}" />
-                            <TextBox x:Name="DatabaseHostBox" Style="{StaticResource FormTextBoxStyle}" />
+                            <TextBox x:Name="DatabaseHostBox" Style="{StaticResource FormTextBoxStyle}" Text="{Binding DatabaseHost, UpdateSourceTrigger=PropertyChanged}" />
                         </StackPanel>
 
                         <StackPanel Grid.Row="1" Grid.Column="0">
                             <TextBlock Text="Port" Style="{StaticResource FormLabelStyle}" />
-                            <TextBox x:Name="DatabasePortBox" Style="{StaticResource FormTextBoxStyle}" />
+                            <TextBox x:Name="DatabasePortBox" Style="{StaticResource FormTextBoxStyle}" Text="{Binding DatabasePort, UpdateSourceTrigger=PropertyChanged}" />
                         </StackPanel>
 
                         <StackPanel Grid.Row="1" Grid.Column="1">
                             <TextBlock Text="Database Name" Style="{StaticResource FormLabelStyle}" />
-                            <TextBox x:Name="DatabaseNameBox" Style="{StaticResource FormTextBoxStyle}" />
+                            <TextBox x:Name="DatabaseNameBox" Style="{StaticResource FormTextBoxStyle}" Text="{Binding DatabaseName, UpdateSourceTrigger=PropertyChanged}" />
                         </StackPanel>
 
                         <StackPanel Grid.Row="2" Grid.Column="0">
                             <TextBlock Text="Username" Style="{StaticResource FormLabelStyle}" />
-                            <TextBox x:Name="DatabaseUserBox" Style="{StaticResource FormTextBoxStyle}" />
+                            <TextBox x:Name="DatabaseUserBox" Style="{StaticResource FormTextBoxStyle}" Text="{Binding DatabaseUser, UpdateSourceTrigger=PropertyChanged}" />
                         </StackPanel>
 
                         <StackPanel Grid.Row="2" Grid.Column="1">
                             <TextBlock Text="Password" Style="{StaticResource FormLabelStyle}" />
+                             <PasswordBox x:Name="DatabasePasswordBox" Width="160" Margin="0,0,0,8" />
                             <StackPanel Orientation="Horizontal">
                                 <Button Content="Set Credentials"
                                         Style="{StaticResource SecondaryButtonStyle}"
                                         Click="SetDatabaseCredentials_Click" />
-                                <TextBlock x:Name="DbCredentialStatus"
-                                           Text="Not configured"
+                                <TextBlock x:Name="DbCredentialStatus" Text="{Binding DbCredentialStatus}"
                                            Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                                            Margin="8,6,0,0" />
                             </StackPanel>
@@ -248,7 +258,9 @@
                               Checked="EnableScheduledExportsToggle_Changed"
                               Unchecked="EnableScheduledExportsToggle_Changed" />
 
-                    <Grid x:Name="ScheduledExportsPanel" Margin="0,12,0,0">
+                    <Grid x:Name="ScheduledExportsPanel"
+                    IsEnabled="{Binding IsScheduleEnabled}"
+                    Margin="0,12,0,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="*" />
@@ -257,7 +269,7 @@
 
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="Frequency" Style="{StaticResource FormLabelStyle}" />
-                            <ComboBox x:Name="ScheduleFrequencyCombo" Style="{StaticResource FormComboBoxStyle}">
+                            <ComboBox x:Name="ScheduleFrequencyCombo" Style="{StaticResource FormComboBoxStyle}" SelectionChanged="ScheduleFrequency_SelectionChanged">
                                 <ComboBoxItem Content="Hourly" Tag="hourly" />
                                 <ComboBoxItem Content="Daily" Tag="daily" />
                                 <ComboBoxItem Content="Weekly" Tag="weekly" />
@@ -269,8 +281,9 @@
                             <TextBlock Text="Time (Local)" Style="{StaticResource FormLabelStyle}" />
                             <TextBox x:Name="ScheduleTimeBox"
                                      Style="{StaticResource FormTextBoxStyle}"
-                                     TextChanged="ScheduleTimeBox_TextChanged" />
-                            <TextBlock x:Name="ScheduleTimeError"
+                                     Text="{Binding ScheduleTimeText, UpdateSourceTrigger=LostFocus}" />
+                            <TextBlock x:Name="ScheduleTimeError" Text="{Binding ScheduleTimeError}"
+                                       Visibility="{Binding IsScheduleTimeErrorVisible, Converter={StaticResource BoolToVisibilityConverter}}"
                                        Foreground="{StaticResource ErrorColorBrush}"
                                        FontSize="11"
                                        Visibility="Collapsed"
@@ -319,7 +332,7 @@
                               Margin="0,8,0,0" />
 
                     <TextBlock Text="Webhook URL" Style="{StaticResource FormLabelStyle}" Margin="0,12,0,0" />
-                    <TextBox x:Name="WebhookUrlBox" Style="{StaticResource FormTextBoxStyle}" />
+                    <TextBox x:Name="WebhookUrlBox" Style="{StaticResource FormTextBoxStyle}" Text="{Binding WebhookUrl, UpdateSourceTrigger=PropertyChanged}" />
 
                     <Grid Margin="0,12,0,0">
                         <Grid.ColumnDefinitions>
@@ -329,7 +342,7 @@
 
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="Payload Format" Style="{StaticResource FormLabelStyle}" />
-                            <ComboBox x:Name="WebhookFormatCombo" Style="{StaticResource FormComboBoxStyle}">
+                            <ComboBox x:Name="WebhookFormatCombo" Style="{StaticResource FormComboBoxStyle}" SelectionChanged="WebhookFormat_SelectionChanged">
                                 <ComboBoxItem Content="JSON" Tag="json" />
                                 <ComboBoxItem Content="MessagePack" Tag="msgpack" />
                                 <ComboBoxItem Content="Protobuf" Tag="protobuf" />
@@ -338,7 +351,7 @@
 
                         <StackPanel Grid.Column="1">
                             <TextBlock Text="Batching" Style="{StaticResource FormLabelStyle}" />
-                            <ComboBox x:Name="WebhookBatchCombo" Style="{StaticResource FormComboBoxStyle}">
+                            <ComboBox x:Name="WebhookBatchCombo" Style="{StaticResource FormComboBoxStyle}" SelectionChanged="WebhookBatch_SelectionChanged">
                                 <ComboBoxItem Content="Real-time (each event)" Tag="realtime" />
                                 <ComboBoxItem Content="Micro-batch (100ms)" Tag="microbatch" />
                                 <ComboBoxItem Content="Batch (1 second)" Tag="batch" />
@@ -356,8 +369,9 @@
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
-                        <Button Content="Test Webhook" Click="TestWebhook_Click" />
-                        <TextBlock x:Name="WebhookTestResult"
+                        <Button Content="Test Webhook" Command="{Binding TestWebhookCommand}" />
+                        <TextBlock x:Name="WebhookTestResult" Text="{Binding WebhookTestResult}"
+                           Visibility="{Binding IsWebhookTestResultVisible, Converter={StaticResource BoolToVisibilityConverter}}"
                                    VerticalAlignment="Center"
                                    Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                                    Margin="12,0,0,0" />
@@ -384,15 +398,15 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
 
-                        <TextBox x:Name="LeanDataPathBox"
+                        <TextBox x:Name="LeanDataPathBox" Text="{Binding LeanDataPath, UpdateSourceTrigger=PropertyChanged}"
                                  Grid.Column="0"
                                  Style="{StaticResource FormTextBoxStyle}" />
-                        <Button Grid.Column="1" Content="Browse..." Click="BrowseLeanPath_Click" Margin="8,0,0,0" />
+                        <Button Grid.Column="1" Content="Browse..." Command="{Binding BrowseLeanPathCommand}" Margin="8,0,0,0" />
                     </Grid>
 
                     <StackPanel Margin="0,12,0,0">
                         <TextBlock Text="Resolution" Style="{StaticResource FormLabelStyle}" />
-                        <ComboBox x:Name="LeanResolutionCombo" Style="{StaticResource FormComboBoxStyle}">
+                        <ComboBox x:Name="LeanResolutionCombo" Style="{StaticResource FormComboBoxStyle}" SelectionChanged="LeanResolution_SelectionChanged">
                             <ComboBoxItem Content="Tick" Tag="tick" />
                             <ComboBoxItem Content="Second" Tag="second" />
                             <ComboBoxItem Content="Minute" Tag="minute" />
@@ -404,8 +418,8 @@
                     <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
                         <Button Content="Export to Lean Format"
                                 Style="{StaticResource AccentButtonStyle}"
-                                Click="ExportToLean_Click" />
-                        <Button Content="Verify Lean Data" Click="VerifyLeanData_Click" Margin="12,0,0,0" />
+                                Command="{Binding ExportToLeanCommand}" />
+                        <Button Content="Verify Lean Data" Command="{Binding VerifyLeanDataCommand}" Margin="12,0,0,0" />
                     </StackPanel>
                 </StackPanel>
             </Border>
@@ -436,20 +450,20 @@
                         </ListView.View>
                     </ListView>
 
-                    <TextBlock x:Name="NoExportHistoryText"
+                    <TextBlock x:Name="NoExportHistoryText" Visibility="{Binding IsNoExportHistoryVisible, Converter={StaticResource BoolToVisibilityConverter}}"
                                Text="No exports recorded yet."
                                Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                                Margin="0,8,0,0" />
                 </StackPanel>
             </Border>
 
-            <Border x:Name="ActionInfoPanel"
+            <Border x:Name="ActionInfoPanel" Visibility="{Binding IsActionInfoVisible, Converter={StaticResource BoolToVisibilityConverter}}"
                     Background="{StaticResource ConsoleBackgroundLightBrush}"
                     CornerRadius="8"
                     Padding="12"
                     Margin="0,24,0,0"
                     Visibility="Collapsed">
-                <TextBlock x:Name="ActionInfoText"
+                <TextBlock x:Name="ActionInfoText" Text="{Binding ActionInfoText}"
                            Foreground="{StaticResource ConsoleTextPrimaryBrush}"
                            TextWrapping="Wrap" />
             </Border>

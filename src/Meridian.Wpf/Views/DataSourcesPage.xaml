@@ -3,10 +3,14 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:conv="clr-namespace:Meridian.Wpf.Converters"
       mc:Ignorable="d"
       Background="{DynamicResource ShellWindowBackgroundBrush}"
       Loaded="OnPageLoaded"
       AutomationProperties.Name="Data Sources">
+    <Page.Resources>
+        <conv:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </Page.Resources>
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
         <StackPanel MaxWidth="1200">
             <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24">
@@ -44,19 +48,18 @@
                         <CheckBox x:Name="EnableFailoverToggle"
                                   Grid.Column="0"
                                   Content="Enable automatic failover"
-                                  Checked="EnableFailoverToggle_Changed"
-                                  Unchecked="EnableFailoverToggle_Changed"
+                                  IsChecked="{Binding FailoverEnabled}"
                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
 
                         <StackPanel Grid.Column="1">
                             <TextBlock Text="Failover Timeout (seconds)" Style="{StaticResource FormLabelStyle}" />
                             <TextBox x:Name="FailoverTimeoutBox"
                                      Style="{StaticResource FormTextBoxStyle}"
-                                     TextChanged="FailoverTimeoutBox_TextChanged" />
-                            <TextBlock x:Name="FailoverTimeoutError"
+                                     Text="{Binding FailoverTimeoutText, UpdateSourceTrigger=LostFocus}" />
+                            <TextBlock Text="{Binding FailoverTimeoutError}"
                                        Foreground="{StaticResource ErrorColorBrush}"
                                        FontSize="11"
-                                       Visibility="Collapsed"
+                                       Visibility="{Binding IsFailoverTimeoutErrorVisible, Converter={StaticResource BoolToVisibilityConverter}}"
                                        Margin="0,4,0,0" />
                         </StackPanel>
                     </Grid>
@@ -95,7 +98,8 @@
                             <ComboBox x:Name="DefaultRealTimeCombo"
                                       Style="{StaticResource FormComboBoxStyle}"
                                       DisplayMemberPath="Name"
-                                      SelectionChanged="DefaultRealTimeCombo_SelectionChanged" />
+                                      ItemsSource="{Binding RealTimeSources}"
+                                      SelectedItem="{Binding SelectedDefaultRealTimeSource}" />
                         </StackPanel>
 
                         <StackPanel Grid.Column="1">
@@ -103,7 +107,8 @@
                             <ComboBox x:Name="DefaultHistoricalCombo"
                                       Style="{StaticResource FormComboBoxStyle}"
                                       DisplayMemberPath="Name"
-                                      SelectionChanged="DefaultHistoricalCombo_SelectionChanged" />
+                                      ItemsSource="{Binding HistoricalSources}"
+                                      SelectedItem="{Binding SelectedDefaultHistoricalSource}" />
                         </StackPanel>
                     </Grid>
                 </StackPanel>
@@ -123,14 +128,14 @@
                                        FontSize="18" Foreground="{StaticResource InfoColorBrush}"
                                        VerticalAlignment="Center" />
                             <TextBlock Text="Configured Data Sources" Style="{StaticResource CardHeaderStyle}" Margin="8,0,0,0" />
-                            <TextBlock x:Name="SourceCountText" Text="(0)"
+                            <TextBlock Text="{Binding SourceCountText}"
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                                        Margin="8,2,0,0" />
                         </StackPanel>
 
                         <Button Grid.Column="1"
                                 Style="{StaticResource AccentButtonStyle}"
-                                Click="AddDataSource_Click">
+                                Command="{Binding AddSourceCommand}">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="{StaticResource IconAdd}"
                                            FontFamily="{StaticResource SymbolThemeFontFamily}"
@@ -212,23 +217,24 @@
                         </ListView.ItemTemplate>
                     </ListView>
 
-                    <TextBlock x:Name="NoSourcesText"
-                               Text="No data sources configured. Click 'Add Data Source' to get started."
+                    <TextBlock Text="No data sources configured. Click 'Add Data Source' to get started."
                                Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                                HorizontalAlignment="Center"
                                Margin="0,24"
-                               Visibility="Collapsed" />
+                               Visibility="{Binding IsNoSourcesVisible, Converter={StaticResource BoolToVisibilityConverter}}" />
                 </StackPanel>
             </Border>
 
-            <Border x:Name="EditPanel" Style="{StaticResource CardStyle}" Visibility="Collapsed">
+            <Border x:Name="EditPanel" Style="{StaticResource CardStyle}"
+                    Visibility="{Binding IsEditPanelVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                    IsVisibleChanged="EditPanel_IsVisibleChanged">
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
                         <TextBlock Text="{StaticResource IconEdit}"
                                    FontFamily="{StaticResource SymbolThemeFontFamily}"
                                    FontSize="18" Foreground="{StaticResource InfoColorBrush}"
                                    VerticalAlignment="Center" />
-                        <TextBlock x:Name="EditPanelTitle" Text="Add Data Source"
+                        <TextBlock Text="{Binding EditPanelTitle}"
                                    Style="{StaticResource CardHeaderStyle}" Margin="8,0,0,0" />
                     </StackPanel>
 
@@ -245,11 +251,11 @@
 
                         <StackPanel Grid.Row="0" Grid.Column="0">
                             <TextBlock Text="Name *" Style="{StaticResource FormLabelStyle}" />
-                            <TextBox x:Name="SourceNameBox" Style="{StaticResource FormTextBoxStyle}" />
-                            <TextBlock x:Name="SourceNameError"
+                            <TextBox x:Name="SourceNameBox" Style="{StaticResource FormTextBoxStyle}" Text="{Binding SourceNameText, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBlock Text="{Binding SourceNameError}"
                                        Foreground="{StaticResource ErrorColorBrush}"
                                        FontSize="11"
-                                       Visibility="Collapsed"
+                                       Visibility="{Binding IsSourceNameErrorVisible, Converter={StaticResource BoolToVisibilityConverter}}"
                                        Margin="0,4,0,0" />
                         </StackPanel>
 
@@ -275,24 +281,25 @@
 
                         <StackPanel Grid.Row="1" Grid.Column="1">
                             <TextBlock Text="Priority (lower = higher)" Style="{StaticResource FormLabelStyle}" />
-                            <TextBox x:Name="PriorityBox" Style="{StaticResource FormTextBoxStyle}" />
-                            <TextBlock x:Name="PriorityError"
+                            <TextBox x:Name="PriorityBox" Style="{StaticResource FormTextBoxStyle}" Text="{Binding PriorityText, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBlock Text="{Binding PriorityError}"
                                        Foreground="{StaticResource ErrorColorBrush}"
                                        FontSize="11"
-                                       Visibility="Collapsed"
+                                       Visibility="{Binding IsPriorityErrorVisible, Converter={StaticResource BoolToVisibilityConverter}}"
                                        Margin="0,4,0,0" />
                         </StackPanel>
 
                         <StackPanel Grid.Row="2" Grid.ColumnSpan="2">
                             <TextBlock Text="Description" Style="{StaticResource FormLabelStyle}" />
-                            <TextBox x:Name="DescriptionBox" Style="{StaticResource FormTextBoxStyle}" />
+                            <TextBox x:Name="DescriptionBox" Style="{StaticResource FormTextBoxStyle}" Text="{Binding DescriptionText, UpdateSourceTrigger=PropertyChanged}" />
                         </StackPanel>
                     </Grid>
 
                     <Border x:Name="IBSettingsPanel"
                             Background="{StaticResource ConsoleBackgroundLightBrush}"
                             CornerRadius="8" Padding="16"
-                            Margin="0,0,0,16">
+                            Margin="0,0,0,16"
+                            Visibility="{Binding IsIBPanelVisible, Converter={StaticResource BoolToVisibilityConverter}}">
                         <StackPanel>
                             <TextBlock Text="Interactive Brokers Settings" FontWeight="SemiBold" Margin="0,0,0,8" />
                             <Grid>
@@ -308,17 +315,17 @@
 
                                 <StackPanel Grid.Row="0" Grid.Column="0">
                                     <TextBlock Text="Host" Style="{StaticResource FormLabelStyle}" />
-                                    <TextBox x:Name="IBHostBox" Style="{StaticResource FormTextBoxStyle}" />
+                                    <TextBox x:Name="IBHostBox" Style="{StaticResource FormTextBoxStyle}" Text="{Binding IBHost, UpdateSourceTrigger=PropertyChanged}" />
                                 </StackPanel>
 
                                 <StackPanel Grid.Row="0" Grid.Column="1">
                                     <TextBlock Text="Port" Style="{StaticResource FormLabelStyle}" />
-                                    <TextBox x:Name="IBPortBox" Style="{StaticResource FormTextBoxStyle}" />
+                                    <TextBox x:Name="IBPortBox" Style="{StaticResource FormTextBoxStyle}" Text="{Binding IBPort, UpdateSourceTrigger=PropertyChanged}" />
                                 </StackPanel>
 
                                 <StackPanel Grid.Row="0" Grid.Column="2">
                                     <TextBlock Text="Client ID" Style="{StaticResource FormLabelStyle}" />
-                                    <TextBox x:Name="IBClientIdBox" Style="{StaticResource FormTextBoxStyle}" />
+                                    <TextBox x:Name="IBClientIdBox" Style="{StaticResource FormTextBoxStyle}" Text="{Binding IBClientId, UpdateSourceTrigger=PropertyChanged}" />
                                 </StackPanel>
 
                                 <CheckBox x:Name="IBPaperTradingCheck"
@@ -343,7 +350,7 @@
                             Background="{StaticResource ConsoleBackgroundLightBrush}"
                             CornerRadius="8" Padding="16"
                             Margin="0,0,0,16"
-                            Visibility="Collapsed">
+                            Visibility="{Binding IsAlpacaPanelVisible, Converter={StaticResource BoolToVisibilityConverter}}">
                         <StackPanel>
                             <TextBlock Text="Alpaca Settings" FontWeight="SemiBold" Margin="0,0,0,8" />
                             <Border Background="{StaticResource ConsoleAccentBlueAlpha10Brush}"
@@ -385,7 +392,7 @@
                             Background="{StaticResource ConsoleBackgroundLightBrush}"
                             CornerRadius="8" Padding="16"
                             Margin="0,0,0,16"
-                            Visibility="Collapsed">
+                            Visibility="{Binding IsPolygonPanelVisible, Converter={StaticResource BoolToVisibilityConverter}}">
                         <StackPanel>
                             <TextBlock Text="Polygon.io Settings" FontWeight="SemiBold" Margin="0,0,0,8" />
                             <Grid>
@@ -447,15 +454,17 @@
                         <Button x:Name="SaveSourceButton"
                                 Content="Save Data Source"
                                 Style="{StaticResource AccentButtonStyle}"
-                                Click="SaveDataSource_Click" />
+                                Click="SaveDataSource_Click"
+ />
                         <Button Content="Cancel"
-                                Click="CancelEdit_Click"
+                                Command="{Binding CancelEditCommand}"
                                 Margin="12,0,0,0" />
                         <ProgressBar x:Name="SaveProgress"
                                      Width="120"
                                      Height="8"
                                      Margin="12,8,0,0"
-                                     Visibility="Collapsed" />
+                                     IsIndeterminate="True"
+                                     Visibility="{Binding IsSaving, Converter={StaticResource BoolToVisibilityConverter}}" />
                     </StackPanel>
                 </StackPanel>
             </Border>
@@ -465,8 +474,8 @@
                     CornerRadius="8"
                     Padding="12"
                     Margin="0,24,0,0"
-                    Visibility="Collapsed">
-                <TextBlock x:Name="StatusText"
+                    Visibility="{Binding IsStatusVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+                <TextBlock Text="{Binding StatusMessage}"
                            Foreground="{StaticResource ConsoleTextPrimaryBrush}"
                            TextWrapping="Wrap" />
             </Border>
