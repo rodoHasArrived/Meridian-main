@@ -58,11 +58,12 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
 
     public RobinhoodBrokerageGateway(
         IHttpClientFactory httpClientFactory,
-        ILogger<RobinhoodBrokerageGateway> logger)
+        ILogger<RobinhoodBrokerageGateway> logger,
+        string? accessToken = null)
     {
         _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _accessToken = Environment.GetEnvironmentVariable(EnvAccessToken);
+        _accessToken = accessToken ?? Environment.GetEnvironmentVariable(EnvAccessToken);
 
         if (string.IsNullOrWhiteSpace(_accessToken))
             _logger.LogWarning(

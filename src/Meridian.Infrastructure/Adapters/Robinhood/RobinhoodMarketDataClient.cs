@@ -61,12 +61,13 @@ public sealed class RobinhoodMarketDataClient : IMarketDataClient
     public RobinhoodMarketDataClient(
         IHttpClientFactory httpClientFactory,
         QuoteCollector quoteCollector,
-        ILogger<RobinhoodMarketDataClient> logger)
+        ILogger<RobinhoodMarketDataClient> logger,
+        string? accessToken = null)
     {
         _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
         _quoteCollector = quoteCollector ?? throw new ArgumentNullException(nameof(quoteCollector));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _accessToken = Environment.GetEnvironmentVariable(EnvAccessToken);
+        _accessToken = accessToken ?? Environment.GetEnvironmentVariable(EnvAccessToken);
     }
 
     // ── IProviderMetadata ─────────────────────────────────────────────────

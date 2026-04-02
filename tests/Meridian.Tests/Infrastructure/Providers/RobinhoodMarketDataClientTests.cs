@@ -36,15 +36,11 @@ public sealed class RobinhoodMarketDataClientTests : IDisposable
         publisher = new CapturingPublisher();
         var quoteCollector = new QuoteCollector(publisher);
 
-        if (accessToken is not null)
-            Environment.SetEnvironmentVariable("ROBINHOOD_ACCESS_TOKEN", accessToken);
-        else
-            Environment.SetEnvironmentVariable("ROBINHOOD_ACCESS_TOKEN", null);
-
         return new RobinhoodMarketDataClient(
             new StubHttpClientFactory(handler),
             quoteCollector,
-            NullLogger<RobinhoodMarketDataClient>.Instance);
+            NullLogger<RobinhoodMarketDataClient>.Instance,
+            accessToken: accessToken);
     }
 
     // ── Provider metadata ────────────────────────────────────────────────

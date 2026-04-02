@@ -33,14 +33,10 @@ public sealed class RobinhoodBrokerageGatewayTests : IDisposable
         HttpMessageHandler handler,
         string? accessToken = "test-token")
     {
-        if (accessToken is not null)
-            Environment.SetEnvironmentVariable("ROBINHOOD_ACCESS_TOKEN", accessToken);
-        else
-            Environment.SetEnvironmentVariable("ROBINHOOD_ACCESS_TOKEN", null);
-
         return new RobinhoodBrokerageGateway(
             new StubHttpClientFactory(handler),
-            NullLogger<RobinhoodBrokerageGateway>.Instance);
+            NullLogger<RobinhoodBrokerageGateway>.Instance,
+            accessToken: accessToken);
     }
 
     private static StringContent BuildAccountResponse() =>
