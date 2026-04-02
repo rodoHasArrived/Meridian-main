@@ -17,13 +17,13 @@ Read `../_shared/project-context.md` before coding. Read `references/documentati
 
 A task delivered by this skill is complete when **all** of the following are true:
 
-- **Build passes:** at least one of `dotnet build` or `dotnet test` targeting the touched project runs without errors.
-- **Tests cover the change:** tests for happy path, failure path, and cancellation/disposal exist or are cited as a gap.
-- **Validation evidence is explicit:** the final response includes exact commands and their pass/fail results.
-- **Documentation is in sync:** existing docs covering the changed behavior are updated in-place, or a new doc is created in the correct subtree with a cross-link from the nearest index.
-- **Rubric score ≥ 8/10, no category at 0:** `scripts/score_eval.py` is run and the report is included in the response.
-- **Performance-sensitive paths are annotated:** any hot-path touched by the change includes an explicit note on allocation, async, or buffering risk.
-- **Summary is traceable:** the closing summary links requirement → files changed → validation artifact → doc update.
+- [ ] **Build passes:** at least one of `dotnet build` or `dotnet test` targeting the touched project runs without errors.
+- [ ] **Tests cover the change:** tests for happy path, failure path, and cancellation/disposal exist or are cited as a gap.
+- [ ] **Validation evidence is explicit:** the final response includes exact commands and their pass/fail results.
+- [ ] **Documentation is in sync:** existing docs covering the changed behavior are updated in-place, or a new doc is created in the correct subtree with a cross-link from the nearest index.
+- [ ] **Rubric score ≥ 8/10, no category at 0:** `scripts/score_eval.py` is run and the report is included in the response.
+- [ ] **Performance-sensitive paths are annotated:** any hot-path touched by the change includes an explicit note on allocation, async, or buffering risk.
+- [ ] **Summary is traceable:** the closing summary links requirement → files changed → validation artifact → doc update.
 
 ## Workflow
 

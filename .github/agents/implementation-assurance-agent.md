@@ -92,7 +92,7 @@ A task is complete when **all** of the following are true:
 | Tool | Command |
 |------|---------|
 | Catalog router | `python3 .claude/skills/meridian-implementation-assurance/scripts/doc_route.py --kind ai --topic "<topic>"` |
-| Doc placement router | `python3 .codex/skills/meridian-implementation-assurance/scripts/doc_route.py --kind <architecture\|adr\|reference\|ai> --topic "<topic>"` |
+| Doc placement router | `python3 .codex/skills/meridian-implementation-assurance/scripts/doc_route.py --kind <architecture|adr|reference|ai> --topic "<topic>"` |
 | Scoring helper | `python3 .claude/skills/meridian-implementation-assurance/scripts/score_eval.py --scenario A --scores '<json>' --json` |
 | Eval runner | `python3 .codex/skills/meridian-implementation-assurance/scripts/run_evals.py --all --dry-run` |
 | Package validator | `python3 build/scripts/docs/validate-skill-packages.py` |
