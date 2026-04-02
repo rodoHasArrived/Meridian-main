@@ -79,8 +79,8 @@ public sealed class ChartingPageViewModel : BindableBase
     private ICartesianAxis[] _candleXAxes = [new Axis { IsVisible = false }];
     public ICartesianAxis[] CandleXAxes { get => _candleXAxes; private set => SetProperty(ref _candleXAxes, value); }
 
-    private Axis[] _candleYAxes = [new Axis { IsVisible = false }];
-    public Axis[] CandleYAxes { get => _candleYAxes; private set => SetProperty(ref _candleYAxes, value); }
+    private ICartesianAxis[] _candleYAxes = [new Axis { IsVisible = false }];
+    public ICartesianAxis[] CandleYAxes { get => _candleYAxes; private set => SetProperty(ref _candleYAxes, value); }
 
     public string CurrentPrice { get => _currentPrice; private set => SetProperty(ref _currentPrice, value); }
     public string PriceChange { get => _priceChange; private set => SetProperty(ref _priceChange, value); }
@@ -202,8 +202,7 @@ public sealed class ChartingPageViewModel : BindableBase
         if (_chartData == null || _chartData.Candles.Count == 0) return;
 
         var financialPoints = _chartData.Candles
-            .Select(c => new FinancialPoint(c.Timestamp, (double)c.High, (double)c.Open, (double)c.Close, (double)c.Low))
-            .ToList();
+            .Select(c => new FinancialPoint(c.Timestamp, (double)c.High, (double)c.Open, (double)c.Close, (double)c.Low));
 
         CandleSeries =
         [
