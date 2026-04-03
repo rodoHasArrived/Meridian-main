@@ -217,15 +217,45 @@ public partial class MainWindow : Window
     }
 
     /// <summary>
-    /// Opens the command palette (Ctrl+K) using the inline overlay in <see cref="MainPage"/>.
-    /// Using the inline overlay keeps <c>CommandPaletteInput</c> inside the main window's
-    /// UI-Automation tree, which is required by the desktop screenshot automation script.
+    /// Opens the command palette (Ctrl+K).
+    /// Delegates to the inline overlay inside <see cref="MainPage"/> so that the
+    /// <c>CommandPaletteInput</c> UI-Automation element stays within the main-window
+    /// subtree and can be found by automation scripts.
+    /// Falls back to the standalone dialog when the frame does not yet hold a <see cref="MainPage"/>.
     /// </summary>
     private void ShowCommandPalette()
     {
-        if (RootFrame.Content is MainPage mainPage)
+        if (RootFrame.Content is MainPage page)
         {
-            mainPage.OpenCommandPalette();
+            page.ShowCommandPaletteOverlay();
+            return;
+        }
+
+        // Fallback: frame not yet loaded with MainPage — use the standalone dialog.
+        var paletteService = CommandPaletteService.Instance;
+        var palette = new CommandPaletteWindow(paletteService) { Owner = this };
+        paletteService.CommandExecuted += OnPaletteCommandExecuted;
+        try
+        {
+            palette.ShowDialog();
+        }
+        finally
+        {
+            paletteService.CommandExecuted -= OnPaletteCommandExecuted;
+        }
+    }
+
+    private void OnPaletteCommandExecuted(object? sender, PaletteCommandEventArgs e)
+    {
+        switch (e.Category)
+        {
+            case PaletteCommandCategory.Navigation:
+                _viewModel.NavigateCommand.Execute(e.ActionId);
+                break;
+
+            case PaletteCommandCategory.Action:
+                _viewModel.HandlePaletteAction(e.ActionId);
+                break;
         }
     }
 
