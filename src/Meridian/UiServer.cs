@@ -85,7 +85,6 @@ public sealed class UiServer : IAsyncDisposable
         // Use centralized service composition root
         var compositionOptions = CompositionOptions.WebDashboard with { ConfigPath = configPath };
         builder.Services.AddMarketDataServices(compositionOptions);
-<<<<<<< Updated upstream
 
         // Register the Ui.Shared ConfigStore wrapper so endpoint lambdas can resolve it from DI.
         // The wrapper delegates to the core ConfigStore already registered by AddMarketDataServices.
@@ -101,26 +100,12 @@ public sealed class UiServer : IAsyncDisposable
             var configStore = sp.GetRequiredService<Meridian.Ui.Shared.Services.ConfigStore>();
             return new Meridian.Ui.Shared.Services.BackfillCoordinator(configStore);
         });
-
-=======
-        builder.Services.AddSingleton<Meridian.Ui.Shared.Services.ConfigStore>(_ =>
-            new Meridian.Ui.Shared.Services.ConfigStore(configPath));
-        builder.Services.AddSingleton<Meridian.Ui.Shared.Services.BackfillCoordinator>(sp =>
-            new Meridian.Ui.Shared.Services.BackfillCoordinator(
-                sp.GetRequiredService<Meridian.Ui.Shared.Services.ConfigStore>()));
-        builder.Services.AddSingleton<UserProfileRegistry>();
->>>>>>> Stashed changes
         builder.Services.AddSingleton<StatusEndpointHandlers>(sp =>
-        {
-            var pipeline = sp.GetRequiredService<EventPipeline>();
-            var depthCollector = sp.GetRequiredService<MarketDepthCollector>();
-
-            return new StatusEndpointHandlers(
+            new StatusEndpointHandlers(
                 Metrics.GetSnapshot,
-                pipeline.GetStatistics,
-                () => depthCollector.GetRecentIntegrityEvents(),
-                () => null);
-        });
+                () => GetPipelineStatistics(sp),
+                () => GetIntegrityEvents(sp),
+                () => null));
 
         // Register session-based authentication service
         builder.Services.AddSingleton<Meridian.Ui.Shared.UserProfileRegistry>();
@@ -264,43 +249,17 @@ public sealed class UiServer : IAsyncDisposable
 
     private void ConfigureRoutes()
     {
-<<<<<<< Updated upstream
-        // ==================== UNIQUE ENDPOINT MODULES ====================
-        // Endpoints not included in MapUiEndpoints and must be registered explicitly.
-
-        // Status API (requires StatusEndpointHandlers, not included in MapUiEndpoints).
-        // This registers all health/liveness/readiness probes (/health, /healthz, /ready,
-        // /readyz, /live, /livez) with proper handler logic (real readiness checks, full
-        // HealthCheckResponse). Do NOT register those routes inline above this call.
         var statusHandlers = _app.Services.GetRequiredService<StatusEndpointHandlers>();
-        _app.MapStatusEndpoints(statusHandlers, s_jsonOptions);
 
-        // Data Packaging API (requires dataRoot, not included in MapUiEndpoints)
+        // Host-specific endpoint groups not covered by the shared UI endpoint aggregator.
         var config = _app.Services.GetRequiredService<Meridian.Application.UI.ConfigStore>().Load();
         _app.MapPackagingEndpoints(config.DataRoot);
-
-        // Archive Maintenance API (not included in MapUiEndpoints)
         _app.MapArchiveMaintenanceEndpoints();
 
-        // Canonicalization parity dashboard (not included in MapUiEndpoints)
-        _app.MapCanonicalizationEndpoints(s_jsonOptions);
-
-        // Dashboard root page (maps GET / → HTML, not included in MapUiEndpoints)
+        // Dashboard root page is host-specific and not included in MapUiEndpointsWithStatus.
         _app.MapDashboard();
 
-        // ==================== AGGREGATED ENDPOINT MODULES ====================
-        // All remaining API endpoints (config, backfill, storage, providers, etc.)
-        _app.MapUiEndpoints(s_jsonOptions);
-=======
-        // Shared UI API surface
-        var statusHandlers = _app.Services.GetRequiredService<StatusEndpointHandlers>();
         _app.MapUiEndpointsWithStatus(statusHandlers);
-
-        // Host-specific endpoint groups not covered by MapUiEndpointsWithStatus.
-        var config = _app.Services.GetRequiredService<Meridian.Application.UI.ConfigStore>().Load();
-        _app.MapPackagingEndpoints(config.DataRoot);
-        _app.MapArchiveMaintenanceEndpoints();
->>>>>>> Stashed changes
     }
 
     public async Task StartAsync(CancellationToken ct = default)
@@ -318,5 +277,51 @@ public sealed class UiServer : IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         await _app.DisposeAsync();
+    }
+
+    private static PipelineStatistics GetPipelineStatistics(IServiceProvider services)
+    {
+        try
+        {
+            return services.GetService<EventPipeline>()?.GetStatistics()
+                ?? new PipelineStatistics(
+                    PublishedCount: 0,
+                    DroppedCount: 0,
+                    ConsumedCount: 0,
+                    CurrentQueueSize: 0,
+                    PeakQueueSize: 0,
+                    QueueCapacity: 0,
+                    QueueUtilization: 0,
+                    AverageProcessingTimeUs: 0,
+                    TimeSinceLastFlush: TimeSpan.Zero,
+                    Timestamp: DateTimeOffset.UtcNow);
+        }
+        catch
+        {
+            return new PipelineStatistics(
+                PublishedCount: 0,
+                DroppedCount: 0,
+                ConsumedCount: 0,
+                CurrentQueueSize: 0,
+                PeakQueueSize: 0,
+                QueueCapacity: 0,
+                QueueUtilization: 0,
+                AverageProcessingTimeUs: 0,
+                TimeSinceLastFlush: TimeSpan.Zero,
+                Timestamp: DateTimeOffset.UtcNow);
+        }
+    }
+
+    private static IReadOnlyList<DepthIntegrityEvent> GetIntegrityEvents(IServiceProvider services)
+    {
+        try
+        {
+            return services.GetService<MarketDepthCollector>()?.GetRecentIntegrityEvents()
+                ?? Array.Empty<DepthIntegrityEvent>();
+        }
+        catch
+        {
+            return Array.Empty<DepthIntegrityEvent>();
+        }
     }
 }

@@ -4,11 +4,8 @@ using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-<<<<<<< Updated upstream
 using Microsoft.Extensions.DependencyInjection;
-=======
 using Microsoft.AspNetCore.Mvc;
->>>>>>> Stashed changes
 using AppSecurityMaster = Meridian.Application.SecurityMaster;
 
 namespace Meridian.Ui.Shared.Endpoints;
