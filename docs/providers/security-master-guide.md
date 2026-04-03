@@ -19,7 +19,7 @@ Security Master is the event-sourced golden record for all financial instruments
 - **Version-based concurrency** — Optimistic locking prevents concurrent amendment conflicts
 - **Corporate actions** — Immutable record of dividends, splits, mergers, and other adjustments
 - **Trading parameters** — Lot size, tick size, and trading status for order routing and fill models
-- **Full-text search** — Query by display name, issuer, or identifier with filtering by asset class and status
+- **Full-text search** — Query by display name, issuer, or identifier with optional active-only filtering
 - **Conflict detection** — Identifies duplicate or conflicting identifier registrations across providers
 - **Bulk import** — CSV/JSON file import and direct Polygon.io ingest via CLI or HTTP API
 
