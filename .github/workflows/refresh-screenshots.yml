@@ -23,6 +23,7 @@ on:
       - 'src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs'
       - 'src/Meridian.Ui.Shared/HtmlTemplateGenerator*.cs'
       - 'src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs'
+      - 'src/Meridian.Wpf/**'
   workflow_dispatch:
 
 permissions:
@@ -443,3 +444,261 @@ jobs:
             echo "| Workstation – Governance: Reconciliation | \`docs/screenshots/21-workstation-governance-reconciliation.png\` |"
             echo "| Workstation – Governance: Security Master | \`docs/screenshots/22-workstation-governance-security-master.png\` |"
           } >> "$GITHUB_STEP_SUMMARY"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # WPF Desktop Application Screenshots
+  # Runs on windows-latest after the web job so commits don't conflict.
+  # Launches the WPF app in fixture mode (MDC_FIXTURE_MODE=1), navigates key
+  # pages via the built-in Command Palette, and captures full-window PNGs.
+  # ─────────────────────────────────────────────────────────────────────────
+  desktop-screenshots:
+    name: WPF Desktop Screenshots
+    needs: refresh
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    env:
+      WPF_PROJECT: src/Meridian.Wpf/Meridian.Wpf.csproj
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          # Pull the latest commit so we build on top of web screenshots
+          ref: ${{ github.ref }}
+
+      - name: Setup .NET with Cache
+        uses: ./.github/actions/setup-dotnet-cache
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          cache-suffix: desktop-screenshots
+
+      - name: Restore WPF dependencies
+        run: dotnet restore ${{ env.WPF_PROJECT }} --verbosity minimal
+
+      - name: Build WPF app (Release)
+        run: >
+          dotnet build ${{ env.WPF_PROJECT }}
+          -c Release --no-restore
+          -p:TargetFramework=net9.0-windows
+          --verbosity minimal
+
+      - name: Copy sample config
+        shell: pwsh
+        run: Copy-Item config\appsettings.sample.json config\appsettings.json -Force
+
+      - name: Take WPF desktop screenshots
+        shell: pwsh
+        env:
+          MDC_FIXTURE_MODE: '1'
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference = 'Stop'
+
+          Add-Type -AssemblyName System.Drawing
+          Add-Type -AssemblyName System.Windows.Forms
+          [void][System.Reflection.Assembly]::LoadWithPartialName('UIAutomationClient')
+          [void][System.Reflection.Assembly]::LoadWithPartialName('UIAutomationTypes')
+
+          $OutputDir = 'docs\screenshots\desktop'
+          New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null
+
+          # ── Helpers ────────────────────────────────────────────────────
+
+          function Find-MeridianWindow {
+            $root = [System.Windows.Automation.AutomationElement]::RootElement
+            $all  = $root.FindAll(
+              [System.Windows.Automation.TreeScope]::Children,
+              [System.Windows.Automation.Condition]::TrueCondition
+            )
+            foreach ($w in $all) {
+              try { if ($w.Current.Name -match 'Meridian') { return $w } } catch {}
+            }
+            return $null
+          }
+
+          function Save-WindowCapture {
+            param(
+              [System.Windows.Automation.AutomationElement]$win,
+              [string]$path
+            )
+            $rect = $win.Current.BoundingRectangle
+            if ($rect.Width -lt 200 -or $rect.Height -lt 200) {
+              Write-Warning "  Skipping capture – window bounds too small ($($rect.Width)x$($rect.Height))"
+              return
+            }
+            $bmp = New-Object System.Drawing.Bitmap([int]$rect.Width, [int]$rect.Height)
+            $g   = [System.Drawing.Graphics]::FromImage($bmp)
+            try {
+              $g.CopyFromScreen(
+                [int]$rect.X, [int]$rect.Y, 0, 0,
+                [System.Drawing.Size]::new([int]$rect.Width, [int]$rect.Height)
+              )
+              $bmp.Save($path, [System.Drawing.Imaging.ImageFormat]::Png)
+              Write-Host "  Saved: $path"
+            } finally {
+              $g.Dispose()
+              $bmp.Dispose()
+            }
+          }
+
+          # Navigate using the built-in Command Palette (Ctrl+K → type → Enter).
+          # Returns $true on success.
+          function Invoke-Navigate {
+            param(
+              [System.Windows.Automation.AutomationElement]$win,
+              [string]$searchTerm
+            )
+            try {
+              $win.SetFocus()
+              Start-Sleep -Milliseconds 300
+
+              # Open command palette
+              [System.Windows.Forms.SendKeys]::SendWait('^k')
+              Start-Sleep -Milliseconds 600
+
+              # Locate the palette input field
+              $cond = New-Object System.Windows.Automation.PropertyCondition(
+                [System.Windows.Automation.AutomationElement]::AutomationIdProperty,
+                'CommandPaletteInput'
+              )
+              $inputEl = $null
+              for ($i = 0; $i -lt 12; $i++) {
+                $inputEl = $win.FindFirst(
+                  [System.Windows.Automation.TreeScope]::Descendants, $cond)
+                if ($inputEl) { break }
+                Start-Sleep -Milliseconds 200
+              }
+              if (-not $inputEl) {
+                Write-Warning "  Command palette not found for '$searchTerm'"
+                [System.Windows.Forms.SendKeys]::SendWait('{ESC}')
+                return $false
+              }
+
+              # Clear any previous text and type the search term
+              $vp = $inputEl.GetCurrentPattern(
+                [System.Windows.Automation.ValuePattern]::Pattern
+              ) -as [System.Windows.Automation.ValuePattern]
+              $vp.SetValue($searchTerm)
+              Start-Sleep -Milliseconds 400
+
+              # Accept the first result
+              [System.Windows.Forms.SendKeys]::SendWait('{ENTER}')
+              Start-Sleep -Milliseconds 1000
+              return $true
+            } catch {
+              Write-Warning "  Navigate error for '$searchTerm': $_"
+              return $false
+            }
+          }
+
+          # ── Launch app ─────────────────────────────────────────────────
+
+          $env:MDC_FIXTURE_MODE = '1'
+          Write-Host 'Starting WPF app in fixture mode...'
+          $proc = Start-Process `
+            -FilePath 'dotnet' `
+            -ArgumentList @(
+              'run', '--project', '${{ env.WPF_PROJECT }}',
+              '--no-build', '-c', 'Release'
+            ) `
+            -PassThru `
+            -WindowStyle Normal
+
+          try {
+            # ── Wait for window ─────────────────────────────────────────
+            $window = $null
+            Write-Host 'Waiting for Meridian window (up to 90 s)...'
+            for ($i = 0; $i -lt 45; $i++) {
+              Start-Sleep -Seconds 2
+              $window = Find-MeridianWindow
+              if ($window) { Write-Host 'Window detected.'; break }
+            }
+            if (-not $window) { throw 'Meridian window did not appear within 90 seconds.' }
+
+            # Allow UI to fully settle (fixture data loads synchronously)
+            Start-Sleep -Seconds 4
+
+            # ── Page list ───────────────────────────────────────────────
+            # slug → command-palette search term
+            $pages = [ordered]@{
+              'dashboard'      = 'Dashboard'
+              'providers'      = 'Providers'
+              'provider-health'= 'Provider Health'
+              'backfill'       = 'Backfill'
+              'symbols'        = 'Symbols'
+              'live-data'      = 'Live Data'
+              'storage'        = 'Storage'
+              'data-quality'   = 'Data Quality'
+              'data-browser'   = 'Data Browser'
+              'strategy-runs'  = 'Strategy Runs'
+              'backtest'       = 'Backtest'
+              'quant-script'   = 'Quant Script'
+              'security-master'= 'Security Master'
+              'diagnostics'    = 'Diagnostics'
+              'settings'       = 'Settings'
+            }
+
+            # ── Capture each page ───────────────────────────────────────
+            foreach ($entry in $pages.GetEnumerator()) {
+              $slug   = $entry.Key
+              $search = $entry.Value
+              Write-Host "Navigating to '$search'..."
+              $ok = Invoke-Navigate $window $search
+              # Re-fetch window reference after navigation
+              $window = Find-MeridianWindow
+              if ($window -and $ok) {
+                Save-WindowCapture $window "$OutputDir\wpf-$slug.png"
+              } else {
+                Write-Warning "  Skipping screenshot for '$search' (navigation failed or window lost)"
+              }
+            }
+
+            Write-Host "Desktop screenshots complete. Files written to $OutputDir"
+            Get-ChildItem $OutputDir -Filter '*.png' |
+              Select-Object Name, @{n='Size';e={"{0:N0} KB" -f ($_.Length/1KB)}} |
+              Format-Table -AutoSize
+
+          } finally {
+            Write-Host 'Stopping WPF app...'
+            # Kill the dotnet host and any child WPF process
+            try { $proc | Stop-Process -Force -ErrorAction SilentlyContinue } catch {}
+            Get-Process -Name 'Meridian.Wpf' -ErrorAction SilentlyContinue |
+              Stop-Process -Force -ErrorAction SilentlyContinue
+          }
+
+      - name: Commit WPF desktop screenshots
+        uses: stefanzweifel/git-auto-commit-action@v7
+        with:
+          commit_message: 'docs(screenshots): refresh WPF desktop screenshots'
+          file_pattern: docs/screenshots/desktop/*.png
+          commit_user_name: github-actions[bot]
+          commit_user_email: 41898282+github-actions[bot]@users.noreply.github.com
+          push_options: '--force-with-lease'
+
+      - name: Write workflow summary
+        if: always()
+        shell: pwsh
+        run: |
+          $rows = @(
+            'Dashboard'        , 'wpf-dashboard.png'
+            'Providers'        , 'wpf-providers.png'
+            'Provider Health'  , 'wpf-provider-health.png'
+            'Backfill'         , 'wpf-backfill.png'
+            'Symbols'          , 'wpf-symbols.png'
+            'Live Data'        , 'wpf-live-data.png'
+            'Storage'          , 'wpf-storage.png'
+            'Data Quality'     , 'wpf-data-quality.png'
+            'Data Browser'     , 'wpf-data-browser.png'
+            'Strategy Runs'    , 'wpf-strategy-runs.png'
+            'Backtest'         , 'wpf-backtest.png'
+            'Quant Script'     , 'wpf-quant-script.png'
+            'Security Master'  , 'wpf-security-master.png'
+            'Diagnostics'      , 'wpf-diagnostics.png'
+            'Settings'         , 'wpf-settings.png'
+          )
+          $lines = @('## WPF Desktop Screenshot Refresh', '', '| Page | File |', '|------|------|')
+          for ($i = 0; $i -lt $rows.Count; $i += 2) {
+            $lines += "| $($rows[$i]) | ``docs/screenshots/desktop/$($rows[$i+1])`` |"
+          }
+          $lines | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
