@@ -283,8 +283,8 @@ Polygon asset type codes mapped to Security Master asset classes:
 | Polygon Type | Asset Class |
 |-------------|-------------|
 | `CS`, `OS` | Equity |
-| `ETF`, `ETV`, `ETN` | Equity (fund sub-type) |
-| Other | OtherSecurity |
+| `ETF`, `ETV`, `ETN` | ETF |
+| Other | Equity |
 
 ---
 
