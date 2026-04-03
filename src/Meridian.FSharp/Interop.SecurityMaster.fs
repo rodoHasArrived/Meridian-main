@@ -51,7 +51,8 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
     let assetSpecificTermsJson =
         match record.Kind with
         | SecurityKind.Equity terms ->
-            JsonSerializer.Serialize({| schemaVersion = schemaVersion; shareClass = terms.ShareClass |})
+            let votingRightsCat = terms.VotingRightsCat |> Option.map VotingRightsCat.asString
+            JsonSerializer.Serialize({| schemaVersion = schemaVersion; shareClass = terms.ShareClass; votingRightsCat = votingRightsCat |})
         | SecurityKind.Option terms ->
             let (SecurityId underlyingId) = terms.UnderlyingId
             JsonSerializer.Serialize(
@@ -60,7 +61,8 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                    putCall = terms.PutCall
                    strike = terms.Strike
                    expiry = terms.Expiry
-                   multiplier = terms.Multiplier |})
+                   multiplier = terms.Multiplier
+                   underlyingInstrumentType = terms.UnderlyingInstrumentType |> Option.map int |})
         | SecurityKind.Future terms ->
             JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion
@@ -84,7 +86,8 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                    isCallable = terms.IsCallable
                    callDate = terms.CallDate
                    issuerName = terms.IssuerName
-                   seniority = terms.Seniority |})
+                   seniority = terms.Seniority
+                   subclass = terms.Subclass |> Option.map BondSubclass.asString |})
         | SecurityKind.FxSpot terms ->
             JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion
@@ -159,6 +162,7 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                 {| schemaVersion = schemaVersion
                    effectiveDate = terms.EffectiveDate
                    maturityDate = terms.MaturityDate
+                   calendarRefs = terms.CalendarRefs
                    legs =
                         terms.Legs
                         |> List.map (fun leg ->

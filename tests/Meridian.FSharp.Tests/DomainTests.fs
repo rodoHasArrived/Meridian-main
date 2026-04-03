@@ -202,6 +202,7 @@ let ``BondTerms callable bond preserves callDate`` () =
         CallDate = Some callDate
         IssuerName = Some "Corp A"
         Seniority = Some "Senior"
+        Subclass = Some BondSubclass.Corporate
     }
     terms.IsCallable |> should equal true
     terms.CallDate |> should equal (Some callDate)
@@ -275,3 +276,87 @@ let ``CorpActEvent.eventType returns correct string for each case`` () =
     CorpActEvent.eventType (CorpActEvent.SpinOff(sid, id, date, SecurityId(Guid.NewGuid()), 0.5m)) |> should equal "SpinOff"
     CorpActEvent.eventType (CorpActEvent.MergerAbsorption(sid, id, date, SecurityId(Guid.NewGuid()), 1m)) |> should equal "MergerAbsorption"
     CorpActEvent.eventType (CorpActEvent.RightsIssue(sid, id, date, 10m, 1m)) |> should equal "RightsIssue"
+    CorpActEvent.eventType (CorpActEvent.ReturnOfCapital(sid, id, date, None, 2.50m, "USD")) |> should equal "ReturnOfCapital"
+
+// ---------------------------------------------------------------------------
+// New domain additions — VotingRightsCat, BondSubclass, OptionTerms,
+// SwapTerms.CalendarRefs, ReturnOfCapital
+// ---------------------------------------------------------------------------
+
+[<Fact>]
+let ``EquityTerms carries VotingRightsCat correctly`` () =
+    let allCases = [
+        VotingRightsCat.FullVoting,    "FullVoting"
+        VotingRightsCat.LimitedVoting, "LimitedVoting"
+        VotingRightsCat.NonVoting,     "NonVoting"
+        VotingRightsCat.DualClass,     "DualClass"
+        VotingRightsCat.SuperVoting,   "SuperVoting"
+    ]
+    for (cat, expected) in allCases do
+        let terms = { ShareClass = None; VotingRightsCat = Some cat }
+        terms.VotingRightsCat |> should equal (Some cat)
+        VotingRightsCat.asString cat |> should equal expected
+
+[<Fact>]
+let ``EquityTerms VotingRightsCat OtherVotingRights carries string payload`` () =
+    let terms = { ShareClass = None; VotingRightsCat = Some (VotingRightsCat.OtherVotingRights "Restricted") }
+    match terms.VotingRightsCat with
+    | Some (VotingRightsCat.OtherVotingRights label) -> label |> should equal "Restricted"
+    | _ -> failwith "Expected OtherVotingRights"
+
+[<Fact>]
+let ``BondTerms factory carries BondSubclass correctly`` () =
+    let maturity = DateOnly(2032, 6, 1)
+    let terms = { BondTerms.fixedRate maturity 4.5m None None with Subclass = Some BondSubclass.Convertible }
+    terms.Subclass |> should equal (Some BondSubclass.Convertible)
+
+[<Fact>]
+let ``BondSubclass OtherBond carries string payload`` () =
+    let sub = BondSubclass.OtherBond "CovLite"
+    match sub with
+    | BondSubclass.OtherBond label -> label |> should equal "CovLite"
+    | _ -> failwith "Expected OtherBond"
+
+[<Fact>]
+let ``OptionTerms carries UnderlyingInstrumentType correctly`` () =
+    let sid = SecurityId(Guid.NewGuid())
+    let makeTerms instrType = {
+        UnderlyingId = sid
+        PutCall = "Call"
+        Strike = 150m
+        Expiry = DateOnly(2025, 12, 19)
+        Multiplier = 100m
+        UnderlyingInstrumentType = Some instrType
+    }
+    makeTerms Meridian.Contracts.Domain.Enums.InstrumentType.Equity
+    |> fun t -> t.UnderlyingInstrumentType |> should equal (Some Meridian.Contracts.Domain.Enums.InstrumentType.Equity)
+    makeTerms Meridian.Contracts.Domain.Enums.InstrumentType.Future
+    |> fun t -> t.UnderlyingInstrumentType |> should equal (Some Meridian.Contracts.Domain.Enums.InstrumentType.Future)
+    makeTerms Meridian.Contracts.Domain.Enums.InstrumentType.Index
+    |> fun t -> t.UnderlyingInstrumentType |> should equal (Some Meridian.Contracts.Domain.Enums.InstrumentType.Index)
+    makeTerms Meridian.Contracts.Domain.Enums.InstrumentType.Swap
+    |> fun t -> t.UnderlyingInstrumentType |> should equal (Some Meridian.Contracts.Domain.Enums.InstrumentType.Swap)
+    let noUnderlyingTerms = { makeTerms Meridian.Contracts.Domain.Enums.InstrumentType.Equity with UnderlyingInstrumentType = None }
+    noUnderlyingTerms.UnderlyingInstrumentType |> should equal None
+
+[<Fact>]
+let ``SwapTerms CalendarRefs is accessible and can hold multiple entries`` () =
+    let terms = {
+        EffectiveDate = DateOnly(2024, 1, 15)
+        MaturityDate = DateOnly(2034, 1, 15)
+        Legs = []
+        CalendarRefs = [ "TARGET2"; "FedWire" ]
+    }
+    terms.CalendarRefs |> should equal [ "TARGET2"; "FedWire" ]
+    terms.CalendarRefs |> List.length |> should equal 2
+
+[<Fact>]
+let ``ReturnOfCapital securityId and exDate are extracted correctly`` () =
+    let sid = SecurityId(Guid.NewGuid())
+    let id = CorpActId(Guid.NewGuid())
+    let exDate = DateOnly(2024, 9, 30)
+    let evt = CorpActEvent.ReturnOfCapital(sid, id, exDate, Some (DateOnly(2024, 10, 15)), 1.25m, "USD")
+    CorpActEvent.securityId evt |> should equal sid
+    CorpActEvent.corpActId evt |> should equal id
+    CorpActEvent.exDate evt |> should equal exDate
+    CorpActEvent.eventType evt |> should equal "ReturnOfCapital"

@@ -190,7 +190,7 @@ module SecurityMasterLegacyUpgrade =
                     EquityBehavior =
                         Some {
                             ShareClass = terms.ShareClass
-                            VotingRights = None
+                            VotingRights = terms.VotingRightsCat |> Option.map VotingRightsCat.asString
                             DistributionType = None
                         }
             }

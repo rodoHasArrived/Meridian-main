@@ -199,13 +199,16 @@ internal static class SecurityMasterMapping
 
         return assetClass switch
         {
-            "Equity" => SecurityKind.NewEquity(new EquityTerms(ToOption(GetOptionalString(json, "shareClass")))),
+            "Equity" => SecurityKind.NewEquity(new EquityTerms(
+                ToOption(GetOptionalString(json, "shareClass")),
+                ToVotingRightsCatOption(GetOptionalString(json, "votingRightsCat")))),
             "Option" => SecurityKind.NewOption(new OptionTerms(
                 SecurityId.NewSecurityId(GetRequiredGuid(json, "underlyingId")),
                 GetRequiredString(json, "putCall"),
                 GetRequiredDecimal(json, "strike"),
                 GetRequiredDateOnly(json, "expiry"),
-                GetRequiredDecimal(json, "multiplier"))),
+                GetRequiredDecimal(json, "multiplier"),
+                ToInstrumentTypeOption(GetOptionalInt(json, "underlyingInstrumentType")))),
             "Future" => SecurityKind.NewFuture(new FutureTerms(
                 GetRequiredString(json, "rootSymbol"),
                 GetRequiredString(json, "contractMonth"),
@@ -266,7 +269,8 @@ internal static class SecurityMasterMapping
             "Swap" => SecurityKind.NewSwap(new SwapTerms(
                 GetRequiredDateOnly(json, "effectiveDate"),
                 GetRequiredDateOnly(json, "maturityDate"),
-                ToFSharpList(GetRequiredArray(json, "legs").EnumerateArray().Select(ToSwapLeg)))),
+                ToFSharpList(GetRequiredArray(json, "legs").EnumerateArray().Select(ToSwapLeg)),
+                ToFSharpList(GetOptionalStringArray(json, "calendarRefs")))),
             "DirectLoan" => SecurityKind.NewDirectLoan(new DirectLoanTerms(
                 GetRequiredString(json, "borrower"),
                 ToOption(GetOptionalDateOnly(json, "maturity")),
@@ -316,7 +320,8 @@ internal static class SecurityMasterMapping
             GetOptionalBoolean(json, "isCallable") ?? false,
             ToOption(GetOptionalDateOnly(json, "callDate")),
             ToOption(GetOptionalString(json, "issuerName")),
-            ToOption(GetOptionalString(json, "seniority")));
+            ToOption(GetOptionalString(json, "seniority")),
+            ToBondSubclassOption(GetOptionalString(json, "subclass")));
     }
 
     private static SwapLeg ToSwapLeg(JsonElement json)
@@ -430,4 +435,47 @@ internal static class SecurityMasterMapping
         => json.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String && DateTimeOffset.TryParse(value.GetString(), out var date)
             ? date
             : throw new InvalidOperationException($"Missing required timestamp '{propertyName}'.");
+
+    private static IEnumerable<string> GetOptionalStringArray(JsonElement json, string propertyName)
+    {
+        if (json.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var item in value.EnumerateArray())
+            {
+                if (item.ValueKind == JsonValueKind.String)
+                    yield return item.GetString()!;
+            }
+        }
+    }
+
+    private static FSharpOption<Meridian.Contracts.Domain.Enums.InstrumentType> ToInstrumentTypeOption(int? raw)
+        => raw.HasValue
+            ? FSharpOption<Meridian.Contracts.Domain.Enums.InstrumentType>.Some((Meridian.Contracts.Domain.Enums.InstrumentType)raw.Value)
+            : FSharpOption<Meridian.Contracts.Domain.Enums.InstrumentType>.None;
+
+    private static FSharpOption<BondSubclass> ToBondSubclassOption(string? raw)
+        => raw switch
+        {
+            "Corporate"     => FSharpOption<BondSubclass>.Some(BondSubclass.Corporate),
+            "Government"    => FSharpOption<BondSubclass>.Some(BondSubclass.Government),
+            "Municipal"     => FSharpOption<BondSubclass>.Some(BondSubclass.Municipal),
+            "Convertible"   => FSharpOption<BondSubclass>.Some(BondSubclass.Convertible),
+            "HighYield"     => FSharpOption<BondSubclass>.Some(BondSubclass.HighYield),
+            "AssetBacked"   => FSharpOption<BondSubclass>.Some(BondSubclass.AssetBacked),
+            "MortgageBacked"=> FSharpOption<BondSubclass>.Some(BondSubclass.MortgageBacked),
+            not null        => FSharpOption<BondSubclass>.Some(BondSubclass.NewOtherBond(raw)),
+            null            => FSharpOption<BondSubclass>.None
+        };
+
+    private static FSharpOption<VotingRightsCat> ToVotingRightsCatOption(string? raw)
+        => raw switch
+        {
+            "FullVoting"    => FSharpOption<VotingRightsCat>.Some(VotingRightsCat.FullVoting),
+            "LimitedVoting" => FSharpOption<VotingRightsCat>.Some(VotingRightsCat.LimitedVoting),
+            "NonVoting"     => FSharpOption<VotingRightsCat>.Some(VotingRightsCat.NonVoting),
+            "DualClass"     => FSharpOption<VotingRightsCat>.Some(VotingRightsCat.DualClass),
+            "SuperVoting"   => FSharpOption<VotingRightsCat>.Some(VotingRightsCat.SuperVoting),
+            not null        => FSharpOption<VotingRightsCat>.Some(VotingRightsCat.NewOtherVotingRights(raw)),
+            null            => FSharpOption<VotingRightsCat>.None
+        };
 }

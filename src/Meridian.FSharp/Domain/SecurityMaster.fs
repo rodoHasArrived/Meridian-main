@@ -42,7 +42,31 @@ module CommonTerms =
                 Currency = normalizedCurrency terms
         }
 
-type EquityTerms = { ShareClass: string option }
+/// Categorisation of voting rights attached to an equity share class.
+[<RequireQualifiedAccess>]
+type VotingRightsCat =
+    | FullVoting
+    | LimitedVoting
+    | NonVoting
+    | DualClass
+    | SuperVoting
+    | OtherVotingRights of string
+
+[<RequireQualifiedAccess>]
+module VotingRightsCat =
+    let asString cat =
+        match cat with
+        | VotingRightsCat.FullVoting -> "FullVoting"
+        | VotingRightsCat.LimitedVoting -> "LimitedVoting"
+        | VotingRightsCat.NonVoting -> "NonVoting"
+        | VotingRightsCat.DualClass -> "DualClass"
+        | VotingRightsCat.SuperVoting -> "SuperVoting"
+        | VotingRightsCat.OtherVotingRights v -> v
+
+type EquityTerms = {
+    ShareClass: string option
+    VotingRightsCat: VotingRightsCat option
+}
 
 type OptionTerms = {
     UnderlyingId: SecurityId
@@ -50,6 +74,7 @@ type OptionTerms = {
     Strike: decimal
     Expiry: DateOnly
     Multiplier: decimal
+    UnderlyingInstrumentType: Meridian.Contracts.Domain.Enums.InstrumentType option
 }
 
 type FutureTerms = {
@@ -65,6 +90,31 @@ type BondCouponStructure =
     | Floating of index: string * spreadBps: decimal option * capRate: decimal option * floorRate: decimal option * dayCount: string option
     | ZeroCoupon
 
+/// Subcategory of a bond instrument.
+[<RequireQualifiedAccess>]
+type BondSubclass =
+    | Corporate
+    | Government
+    | Municipal
+    | Convertible
+    | HighYield
+    | AssetBacked
+    | MortgageBacked
+    | OtherBond of string
+
+[<RequireQualifiedAccess>]
+module BondSubclass =
+    let asString sub =
+        match sub with
+        | BondSubclass.Corporate -> "Corporate"
+        | BondSubclass.Government -> "Government"
+        | BondSubclass.Municipal -> "Municipal"
+        | BondSubclass.Convertible -> "Convertible"
+        | BondSubclass.HighYield -> "HighYield"
+        | BondSubclass.AssetBacked -> "AssetBacked"
+        | BondSubclass.MortgageBacked -> "MortgageBacked"
+        | BondSubclass.OtherBond v -> v
+
 type BondTerms = {
     Maturity: DateOnly
     IssueDate: DateOnly option
@@ -73,18 +123,19 @@ type BondTerms = {
     CallDate: DateOnly option
     IssuerName: string option
     Seniority: string option
+    Subclass: BondSubclass option
 }
 
 [<RequireQualifiedAccess>]
 module BondTerms =
     let fixedRate maturity couponRate dayCount issuerName =
-        { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.Fixed(couponRate, dayCount); IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None }
+        { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.Fixed(couponRate, dayCount); IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None; Subclass = None }
 
     let floatingRate maturity index spreadBps issuerName =
-        { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.Floating(index, spreadBps, None, None, None); IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None }
+        { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.Floating(index, spreadBps, None, None, None); IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None; Subclass = None }
 
     let zeroCoupon maturity issuerName =
-        { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.ZeroCoupon; IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None }
+        { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.ZeroCoupon; IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None; Subclass = None }
 
     let couponRate (terms: BondTerms) =
         match terms.Coupon with
@@ -178,6 +229,7 @@ type SwapTerms = {
     EffectiveDate: DateOnly
     MaturityDate: DateOnly
     Legs: SwapLeg list
+    CalendarRefs: string list
 }
 
 type Covenant = {
