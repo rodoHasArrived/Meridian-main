@@ -85,32 +85,48 @@ The **Subscribed Symbols** table showing the active symbol list with data-type c
 
 ---
 
-## 10 – Workstation: Research
+## 10 – System Status Panel
+
+The **System Status** section at the top of the dashboard showing the live metrics grid (published events, dropped events, integrity events, historical bars) and the scrolling activity log terminal.
+
+![System Status Panel](10-status.png)
+
+---
+
+## 11 – Login Page
+
+The **Sign In** page served at `/login`, used when Meridian Terminal is running in authenticated mode (`MDC_AUTH_MODE=required`). Shows the username/password form with the same dark terminal theme as the main dashboard.
+
+![Login Page](11-login.png)
+
+---
+
+## 12 – Workstation: Research
 
 The **Research** workspace of the React workstation shell, covering backtests, strategy run comparisons, QuantScript execution results, and experiment tracking.
 
-![Workstation – Research](10-workstation-research.png)
+![Workstation – Research](12-workstation-research.png)
 
 ---
 
-## 11 – Workstation: Trading
+## 13 – Workstation: Trading
 
 The **Trading** workspace of the React workstation shell, showing the paper-trading cockpit, live positions blotter, open orders, fills history, and risk guardrails.
 
-![Workstation – Trading](11-workstation-trading.png)
+![Workstation – Trading](13-workstation-trading.png)
 
 ---
 
-## 12 – Workstation: Data Operations
+## 14 – Workstation: Data Operations
 
 The **Data Operations** workspace of the React workstation shell, covering provider health, active backfills, storage tiers, exports, and symbol-management workflows.
 
-![Workstation – Data Operations](12-workstation-data-operations.png)
+![Workstation – Data Operations](14-workstation-data-operations.png)
 
 ---
 
-## 13 – Workstation: Governance
+## 15 – Workstation: Governance
 
 The **Governance** workspace of the React workstation shell, showing the fund ledger overview, risk audit history, reconciliation breaks, diagnostics, and operational settings.
 
-![Workstation – Governance](13-workstation-governance.png)
+![Workstation – Governance](15-workstation-governance.png)
