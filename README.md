@@ -870,6 +870,8 @@ Use these documents together when planning or implementing new work:
 │   ├── plans
 │   │   ├── README.md
 │   │   ├── assembly-performance-roadmap.md
+│   │   ├── backtest-studio-unification-blueprint.md
+│   │   ├── backtest-studio-unification-pr-sequenced-roadmap.md
 │   │   ├── codebase-audit-cleanup-roadmap.md
 │   │   ├── fund-management-module-implementation-backlog.md
 │   │   ├── fund-management-pr-sequenced-roadmap.md
@@ -1077,6 +1079,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── GapBackfillService.cs
 │   │   │   ├── HistoricalBackfillService.cs
 │   │   │   └── SymbolValidationSignal.cs
+│   │   ├── Backtesting
+│   │   │   └── BacktestStudioContracts.cs
 │   │   ├── Banking
 │   │   │   ├── BankingException.cs
 │   │   │   ├── IBankingService.cs
@@ -1389,6 +1393,7 @@ Use these documents together when planning or implementing new work:
 │   │       │   └── ValidateCredentialsStep.cs
 │   │       └── WizardWorkflowFactory.cs
 │   ├── Meridian.Backtesting
+│   │   ├── BacktestStudioRunOrchestrator.cs
 │   │   ├── BatchBacktestService.cs
 │   │   ├── CorporateActionAdjustmentService.cs
 │   │   ├── Engine
@@ -1406,6 +1411,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── GlobalUsings.cs
 │   │   ├── ICorporateActionAdjustmentService.cs
 │   │   ├── Meridian.Backtesting.csproj
+│   │   ├── MeridianNativeBacktestStudioEngine.cs
 │   │   ├── Metrics
 │   │   │   ├── BacktestMetricsEngine.cs
 │   │   │   ├── PostSimulationTcaReporter.cs
@@ -1443,6 +1449,10 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Order.cs
 │   │   ├── PortfolioSnapshot.cs
 │   │   ├── Position.cs
+│   │   ├── Strategies
+│   │   │   └── AdvancedCarry
+│   │   │       ├── AdvancedCarryDecisionEngine.cs
+│   │   │       └── AdvancedCarryModels.cs
 │   │   ├── StrategyParameterAttribute.cs
 │   │   ├── TcaReportModels.cs
 │   │   └── TradeTicket.cs
@@ -1451,6 +1461,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── BackfillApiModels.cs
 │   │   │   ├── ClientModels.cs
 │   │   │   ├── ErrorResponse.cs
+│   │   │   ├── LeanApiModels.cs
 │   │   │   ├── LiveDataModels.cs
 │   │   │   ├── OptionsModels.cs
 │   │   │   ├── ProviderCatalog.cs
@@ -2122,10 +2133,16 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── Contracts.cs
 │   │   │   ├── IQuantScriptCompiler.cs
 │   │   │   ├── IScriptRunner.cs
+│   │   │   ├── NotebookExecutionSession.cs
 │   │   │   ├── QuantScriptGlobals.cs
 │   │   │   ├── RoslynScriptCompiler.cs
+│   │   │   ├── ScriptExecutionCheckpoint.cs
 │   │   │   ├── ScriptRunResult.cs
 │   │   │   └── ScriptRunner.cs
+│   │   ├── Documents
+│   │   │   ├── IQuantScriptNotebookStore.cs
+│   │   │   ├── QuantScriptDocumentModels.cs
+│   │   │   └── QuantScriptNotebookStore.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── Meridian.QuantScript.csproj
 │   │   ├── Plotting
@@ -2429,6 +2446,7 @@ Use these documents together when planning or implementing new work:
 │   │       ├── ExportPresetServiceBase.cs
 │   │       ├── FixtureDataService.cs
 │   │       ├── FixtureModeDetector.cs
+│   │       ├── FixtureScenario.cs
 │   │       ├── FormValidationRules.cs
 │   │       ├── FormatHelpers.cs
 │   │       ├── HttpClientConfiguration.cs
@@ -2598,6 +2616,7 @@ Use these documents together when planning or implementing new work:
 │       │       ├── trading.svg
 │       │       └── watchlist.svg
 │       ├── Behaviors
+│       │   ├── AvalonEditNotebookBehavior.cs
 │       │   ├── ParameterTemplateSelector.cs
 │       │   └── PlotRenderBehavior.cs
 │       ├── Contracts
@@ -2944,6 +2963,7 @@ Use these documents together when planning or implementing new work:
 ├── tests
 │   ├── Directory.Build.props
 │   ├── Meridian.Backtesting.Tests
+│   │   ├── AdvancedCarryDecisionEngineTests.cs
 │   │   ├── BacktestEngineIntegrationTests.cs
 │   │   ├── BacktestMetricsEngineTests.cs
 │   │   ├── BacktestRequestConfigTests.cs
@@ -2956,6 +2976,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── LotLevelTrackingTests.cs
 │   │   ├── MarketImpactFillModelTests.cs
 │   │   ├── Meridian.Backtesting.Tests.csproj
+│   │   ├── MeridianNativeBacktestStudioEngineTests.cs
 │   │   ├── SimulatedPortfolioTests.cs
 │   │   ├── TcaReporterTests.cs
 │   │   ├── XirrCalculatorTests.cs
@@ -2998,6 +3019,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── PlotQueueTests.cs
 │   │   ├── PortfolioBuilderTests.cs
 │   │   ├── PriceSeriesTests.cs
+│   │   ├── QuantScriptNotebookStoreTests.cs
 │   │   ├── RoslynScriptCompilerTests.cs
 │   │   ├── ScriptRunnerTests.cs
 │   │   └── StatisticsEngineTests.cs
@@ -3016,6 +3038,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── RateLimiterTests.cs
 │   │   │   │   ├── ScheduledBackfillTests.cs
 │   │   │   │   └── TwelveDataNasdaqProviderContractTests.cs
+│   │   │   ├── Backtesting
+│   │   │   │   └── BacktestStudioRunOrchestratorTests.cs
 │   │   │   ├── Canonicalization
 │   │   │   │   ├── CanonicalizationFixtureDriftTests.cs
 │   │   │   │   ├── CanonicalizationGoldenFixtureTests.cs
@@ -3404,6 +3428,7 @@ Use these documents together when planning or implementing new work:
 │   │       ├── ErrorHandlingServiceTests.cs
 │   │       ├── EventReplayServiceTests.cs
 │   │       ├── FixtureDataServiceTests.cs
+│   │       ├── FixtureModeDetectorTests.cs
 │   │       ├── FormValidationServiceTests.cs
 │   │       ├── IntegrityEventsServiceTests.cs
 │   │       ├── LeanIntegrationServiceTests.cs
@@ -3480,6 +3505,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-456 directories, 2896 files
+461 directories, 2916 files
 ```
 <!-- readme-tree end -->
