@@ -1,3 +1,5 @@
+using Meridian.Execution.Sdk;
+
 namespace Meridian.Execution.Models;
 
 /// <summary>
@@ -16,7 +18,7 @@ public sealed record ExecutionPosition(
     long Quantity,
     decimal AverageCostBasis,
     decimal UnrealisedPnl,
-    decimal RealisedPnl)
+    decimal RealisedPnl) : IPosition
 {
     /// <summary>True when this is a short (negative) position.</summary>
     public bool IsShort => Quantity < 0;
@@ -26,4 +28,16 @@ public sealed record ExecutionPosition(
 
     /// <summary>Signed notional market value at <paramref name="lastPrice"/>.</summary>
     public decimal NotionalValue(decimal lastPrice) => Quantity * lastPrice;
+
+    // ── IPosition explicit implementations ──────────────────────────────────
+    // ExecutionPosition uses the British spelling (UnrealisedPnl / RealisedPnl) while
+    // IPosition standardises on the American spelling (UnrealizedPnl / RealizedPnl).
+    // Explicit implementations bridge the naming gap without renaming the record parameters,
+    // which would be a breaking wire-format change for JSON serialisation.
+
+    /// <inheritdoc cref="IPosition.UnrealizedPnl"/>
+    decimal IPosition.UnrealizedPnl => UnrealisedPnl;
+
+    /// <inheritdoc cref="IPosition.RealizedPnl"/>
+    decimal IPosition.RealizedPnl => RealisedPnl;
 }
