@@ -248,7 +248,7 @@ Import complete:
 
 ### CSV Format
 
-CSV files must include a header row. Required columns: `AssetClass`, `Ticker`, `DisplayName`, `Currency`. Optional columns follow the asset-class-specific term schema.
+CSV files must include a header row. Required columns: `Ticker`, `Name`, and `AssetClass` (case-insensitive). Optional columns include `Currency` (defaults to `USD` when omitted), `ISIN`, `CUSIP`, `FIGI`, and `Exchange`, followed by any asset-class-specific term columns supported by the importer.
 
 ### JSON Format
 
