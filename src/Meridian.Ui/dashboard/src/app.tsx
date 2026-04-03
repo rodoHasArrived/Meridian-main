@@ -8,6 +8,7 @@ import { useWorkstationData } from "@/hooks/use-workstation-data";
 import { WORKSPACES } from "@/lib/workspace";
 import { DataOperationsScreen } from "@/screens/data-operations-screen";
 import { GovernanceScreen } from "@/screens/governance-screen";
+import { OverviewScreen } from "@/screens/overview-screen";
 import { ResearchScreen } from "@/screens/research-screen";
 import { TradingScreen } from "@/screens/trading-screen";
 import type { WorkspaceKey } from "@/types";
@@ -15,7 +16,7 @@ import type { WorkspaceKey } from "@/types";
 export function App() {
   const [commandOpen, setCommandOpen] = useState(false);
   const { pathname } = useLocation();
-  const { session, research, trading, dataOperations, governance, loading, error, workspaceErrors } = useWorkstationData();
+  const { session, overview, research, trading, dataOperations, governance, loading, error, workspaceErrors, refresh } = useWorkstationData();
   const activeWorkspace = getWorkspaceForPath(pathname);
   const degradedWorkspaceCount = Object.keys(workspaceErrors).length;
   const bootstrapFailed = !loading && !session && !research && !trading;
@@ -30,6 +31,7 @@ export function App() {
             workspace={activeWorkspace}
             session={session}
             onOpenCommandPalette={() => setCommandOpen(true)}
+            onRefresh={refresh}
           />
 
           <div className="mt-8">
@@ -61,6 +63,7 @@ export function App() {
                 </Card>
               ) : (
               <Routes>
+                <Route path="/overview" element={<OverviewScreen data={overview} session={session} />} />
                 <Route path="/" element={<ResearchScreen data={research} />} />
                 <Route
                   path="/trading/*"
@@ -74,7 +77,7 @@ export function App() {
                   path="/governance/*"
                   element={<GovernanceScreen data={governance} />}
                 />
-                <Route path="*" element={<Navigate to="/" replace />} />
+                <Route path="*" element={<Navigate to="/overview" replace />} />
               </Routes>
             )}
           </div>
@@ -92,6 +95,10 @@ function getWorkspaceForPath(pathname: string) {
 }
 
 function normalizeWorkspace(pathname: string): WorkspaceKey {
+  if (pathname.startsWith("/overview")) {
+    return "overview";
+  }
+
   if (pathname.startsWith("/trading")) {
     return "trading";
   }
@@ -104,5 +111,9 @@ function normalizeWorkspace(pathname: string): WorkspaceKey {
     return "governance";
   }
 
-  return "research";
+  if (pathname === "/") {
+    return "research";
+  }
+
+  return "overview";
 }

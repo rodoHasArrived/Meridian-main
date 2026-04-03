@@ -1,4 +1,4 @@
-export type WorkspaceKey = "research" | "trading" | "data-operations" | "governance";
+export type WorkspaceKey = "overview" | "research" | "trading" | "data-operations" | "governance";
 
 export interface SessionInfo {
   displayName: string;
@@ -649,4 +649,86 @@ export interface BackfillProgressResponse {
   provider: string | null;
   symbols: BackfillProgressEntry[];
   message: string | null;
+}
+
+// --- System Overview types ---
+
+export interface SystemEventRecord {
+  id: string;
+  type: "info" | "warning" | "error";
+  message: string;
+  source: string;
+  timestamp: string;
+}
+
+export interface SystemOverviewResponse {
+  systemStatus: "Healthy" | "Degraded" | "Offline";
+  providersOnline: number;
+  providersTotal: number;
+  activeRuns: number;
+  openPositions: number;
+  activeBackfills: number;
+  symbolsMonitored: number;
+  storageHealth: "Healthy" | "Warning" | "Critical";
+  lastHeartbeatUtc: string;
+  metrics: MetricSnapshot[];
+  recentEvents: SystemEventRecord[];
+}
+
+// --- Symbol management types ---
+
+export interface SymbolRecord {
+  symbol: string;
+  status: "Active" | "Monitored" | "Archived" | "Error";
+  provider: string | null;
+  lastEventAt: string | null;
+  eventCount: number;
+  hasHistoricalData: boolean;
+}
+
+export interface SymbolStatistics {
+  totalSymbols: number;
+  monitoredSymbols: number;
+  archivedSymbols: number;
+  symbolsWithErrors: number;
+  totalEventsLast24h: number;
+}
+
+// --- Quality monitoring types ---
+
+export interface QualitySymbolScore {
+  symbol: string;
+  completenessScore: number;
+  freshnessScore: number;
+  gapCount: number;
+  anomalyCount: number;
+  health: "Healthy" | "Warning" | "Critical";
+}
+
+export interface QualityGapEntry {
+  symbol: string;
+  provider: string;
+  from: string;
+  to: string;
+  estimatedBars: number;
+  status: "Open" | "Resolved";
+}
+
+export interface QualityAnomalyEntry {
+  anomalyId: string;
+  symbol: string;
+  anomalyType: string;
+  message: string;
+  detectedAt: string;
+  acknowledged: boolean;
+}
+
+export interface QualityDashboardResponse {
+  overallScore: number;
+  completenessScore: number;
+  freshnessScore: number;
+  anomalyRate: number;
+  symbols: QualitySymbolScore[];
+  recentGaps: QualityGapEntry[];
+  recentAnomalies: QualityAnomalyEntry[];
 }

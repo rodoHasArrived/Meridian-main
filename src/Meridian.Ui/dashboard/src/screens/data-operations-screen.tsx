@@ -1,7 +1,8 @@
-import { CheckCircle, DatabaseZap, Download, RadioTower, RefreshCcw, XCircle } from "lucide-react";
+import { AlertCircle, CheckCircle, CheckCircle2, DatabaseZap, Download, Filter, Plus, RadioTower, RefreshCcw, Search, Tag, XCircle } from "lucide-react";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { MetricCard } from "@/components/meridian/metric-card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -11,9 +12,30 @@ import {
   DialogHeader,
   DialogTitle
 } from "@/components/ui/dialog";
-import { getBackfillProgress, previewBackfill, triggerBackfill } from "@/lib/api";
+import { Input } from "@/components/ui/input";
+import {
+  acknowledgeAnomaly,
+  addSymbol,
+  getBackfillProgress,
+  getQualityAnomalies,
+  getQualityDashboard,
+  getSymbols,
+  getSymbolsStatistics,
+  previewBackfill,
+  removeSymbol,
+  triggerBackfill
+} from "@/lib/api";
 import { cn } from "@/lib/utils";
-import type { BackfillProgressResponse, BackfillTriggerRequest, BackfillTriggerResult, DataOperationsWorkspaceResponse } from "@/types";
+import type {
+  BackfillProgressResponse,
+  BackfillTriggerRequest,
+  BackfillTriggerResult,
+  DataOperationsWorkspaceResponse,
+  QualityAnomalyEntry,
+  QualityDashboardResponse,
+  SymbolRecord,
+  SymbolStatistics
+} from "@/types";
 
 interface DataOperationsScreenProps {
   data: DataOperationsWorkspaceResponse | null;
@@ -37,6 +59,14 @@ const workstreamCopy: Record<string, { title: string; description: string }> = {
   exports: {
     title: "Export delivery focus",
     description: "Monitor operational export targets and handoff readiness without leaving the workstation shell."
+  },
+  symbols: {
+    title: "Symbol subscriptions",
+    description: "Manage the active symbol universe: add, remove, or archive symbols and review per-symbol data coverage."
+  },
+  quality: {
+    title: "Data quality monitoring",
+    description: "Track completeness scores, data gaps, and anomalies across all monitored symbols."
   }
 };
 
@@ -79,6 +109,14 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
 
     if (pathname.includes("/exports")) {
       return "exports";
+    }
+
+    if (pathname.includes("/symbols")) {
+      return "symbols";
+    }
+
+    if (pathname.includes("/quality")) {
+      return "quality";
     }
 
     return "providers";
@@ -398,6 +436,9 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
         onPreview={handlePreview}
         onRun={handleRun}
       />
+
+      {workstream === "symbols" && <SymbolsPanel />}
+      {workstream === "quality" && <QualityPanel />}
     </div>
   );
 }
@@ -601,12 +642,12 @@ function TriggerBackfillDialog({
               </Button>
               {canPreview ? (
                 <Button variant="secondary" onClick={onPreview} disabled={busy || !symbolsInput.trim()}>
-                  {phase === "previewing" ? "Previewing…" : "Preview"}
+                  {busy ? "Previewing…" : "Preview"}
                 </Button>
               ) : null}
               {canRun ? (
                 <Button onClick={onRun} disabled={busy}>
-                  {phase === "running" ? "Running…" : "Run backfill"}
+                  {busy ? "Running…" : "Run backfill"}
                 </Button>
               ) : null}
             </div>
@@ -643,6 +684,465 @@ function LabeledField({ label, children }: { label: string; children: React.Reac
     <div className="space-y-1.5">
       <label className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">{label}</label>
       {children}
+    </div>
+  );
+}
+
+// --- Symbols Panel ---
+
+const symbolStatusBadgeClass: Record<SymbolRecord["status"], string> = {
+  Active: "border-success/40 text-success",
+  Monitored: "border-blue-400/40 text-blue-400",
+  Archived: "border-border text-muted-foreground",
+  Error: "border-danger/40 text-danger"
+};
+
+function SymbolsPanel() {
+  const [symbols, setSymbols] = useState<SymbolRecord[] | null>(null);
+  const [stats, setStats] = useState<SymbolStatistics | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [addOpen, setAddOpen] = useState(false);
+  const [addSymbolInput, setAddSymbolInput] = useState("");
+  const [addProvider, setAddProvider] = useState("");
+  const [addBusy, setAddBusy] = useState(false);
+  const [addError, setAddError] = useState<string | null>(null);
+  const [removeTarget, setRemoveTarget] = useState<string | null>(null);
+
+  async function loadData() {
+    setLoading(true);
+    try {
+      const [syms, st] = await Promise.all([getSymbols(), getSymbolsStatistics()]);
+      setSymbols(syms);
+      setStats(st);
+    } catch {
+      setSymbols([]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => { void loadData(); }, []);
+
+  const filtered = useMemo(() => {
+    if (!symbols) return [];
+    const q = searchQuery.trim().toLowerCase();
+    return q ? symbols.filter((s) => s.symbol.toLowerCase().includes(q)) : symbols;
+  }, [symbols, searchQuery]);
+
+  async function handleAdd() {
+    if (!addSymbolInput.trim()) return;
+    setAddBusy(true);
+    setAddError(null);
+    try {
+      await addSymbol(addSymbolInput.trim().toUpperCase(), addProvider.trim() || undefined);
+      setAddOpen(false);
+      setAddSymbolInput("");
+      setAddProvider("");
+      await loadData();
+    } catch (err) {
+      setAddError(err instanceof Error ? err.message : "Failed to add symbol.");
+    } finally {
+      setAddBusy(false);
+    }
+  }
+
+  async function handleRemove(symbol: string) {
+    setRemoveTarget(symbol);
+    try {
+      await removeSymbol(symbol);
+      await loadData();
+    } catch {
+      // ignore
+    } finally {
+      setRemoveTarget(null);
+    }
+  }
+
+  return (
+    <section className="space-y-4">
+      {/* Stats row */}
+      {stats && (
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+          <StatPill label="Total" value={stats.totalSymbols} />
+          <StatPill label="Monitored" value={stats.monitoredSymbols} />
+          <StatPill label="Archived" value={stats.archivedSymbols} />
+          <StatPill label="Errors" value={stats.symbolsWithErrors} danger={stats.symbolsWithErrors > 0} />
+          <StatPill label="Events (24h)" value={stats.totalEventsLast24h} />
+        </div>
+      )}
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between gap-2 text-base">
+            <span className="flex items-center gap-2">
+              <Tag className="h-4 w-4 text-primary" />
+              Symbol subscriptions
+            </span>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => { void loadData(); }}>
+                <RefreshCcw className="size-3.5 mr-1.5" />
+                Refresh
+              </Button>
+              <Button size="sm" onClick={() => setAddOpen(true)}>
+                <Plus className="size-3.5 mr-1.5" />
+                Add symbol
+              </Button>
+            </div>
+          </CardTitle>
+          <CardDescription>
+            Manage the active symbol universe. Symbols here receive live data and are eligible for backfill.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {/* Search */}
+          <div className="relative mb-4">
+            <Search className="absolute left-2.5 top-2.5 size-3.5 text-muted-foreground" />
+            <Input
+              placeholder="Filter symbols…"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-8 h-8 text-sm"
+            />
+          </div>
+
+          {loading ? (
+            <p className="text-sm text-muted-foreground py-6 text-center">Loading symbols…</p>
+          ) : filtered.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-6 text-center">
+              {searchQuery ? "No symbols match your filter." : "No symbols subscribed. Add a symbol to get started."}
+            </p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-border/60 text-left text-xs sm:text-sm">
+                <thead>
+                  <tr className="text-muted-foreground text-xs uppercase tracking-wide">
+                    <th className="py-2 pr-4 font-medium">Symbol</th>
+                    <th className="py-2 pr-4 font-medium">Status</th>
+                    <th className="py-2 pr-4 font-medium">Provider</th>
+                    <th className="py-2 pr-4 font-medium">Last Event</th>
+                    <th className="py-2 pr-4 font-medium">Historical</th>
+                    <th className="py-2 font-medium" />
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/40">
+                  {filtered.map((sym) => (
+                    <tr key={sym.symbol} className="group hover:bg-muted/30 transition-colors">
+                      <td className="py-2 pr-4 font-mono font-medium">{sym.symbol}</td>
+                      <td className="py-2 pr-4">
+                        <Badge variant="outline" className={cn("text-xs", symbolStatusBadgeClass[sym.status])}>
+                          {sym.status}
+                        </Badge>
+                      </td>
+                      <td className="py-2 pr-4 text-muted-foreground">{sym.provider ?? "—"}</td>
+                      <td className="py-2 pr-4 text-muted-foreground">
+                        {sym.lastEventAt ? new Date(sym.lastEventAt).toLocaleTimeString() : "—"}
+                      </td>
+                      <td className="py-2 pr-4">
+                        {sym.hasHistoricalData
+                          ? <CheckCircle2 className="size-4 text-success" />
+                          : <span className="text-muted-foreground text-xs">—</span>
+                        }
+                      </td>
+                      <td className="py-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="opacity-0 group-hover:opacity-100 transition-opacity text-danger hover:text-danger text-xs h-6 px-2"
+                          disabled={removeTarget === sym.symbol}
+                          onClick={() => { void handleRemove(sym.symbol); }}
+                        >
+                          {removeTarget === sym.symbol ? "Removing…" : "Remove"}
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Add symbol dialog */}
+      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add symbol</DialogTitle>
+            <DialogDescription>
+              Enter a ticker symbol to subscribe to live data and enable backfill.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <LabeledField label="Symbol">
+              <Input
+                placeholder="e.g. AAPL"
+                value={addSymbolInput}
+                onChange={(e) => setAddSymbolInput(e.target.value.toUpperCase())}
+                className="font-mono"
+              />
+            </LabeledField>
+            <LabeledField label="Preferred provider (optional)">
+              <Input
+                placeholder="e.g. alpaca"
+                value={addProvider}
+                onChange={(e) => setAddProvider(e.target.value)}
+              />
+            </LabeledField>
+            {addError && (
+              <p className="text-sm text-danger">{addError}</p>
+            )}
+            <div className="flex justify-end gap-3 pt-2">
+              <Button variant="outline" onClick={() => setAddOpen(false)} disabled={addBusy}>Cancel</Button>
+              <Button onClick={() => { void handleAdd(); }} disabled={addBusy || !addSymbolInput.trim()}>
+                {addBusy ? "Adding…" : "Add symbol"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </section>
+  );
+}
+
+function StatPill({ label, value, danger }: { label: string; value: number; danger?: boolean }) {
+  return (
+    <div className="rounded-lg border border-border/60 bg-muted/20 px-3 py-2.5 text-center">
+      <p className={cn("text-lg font-semibold tabular-nums", danger && value > 0 ? "text-danger" : "text-foreground")}>
+        {value.toLocaleString()}
+      </p>
+      <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
+    </div>
+  );
+}
+
+// --- Quality Panel ---
+
+const qualityHealthClass: Record<string, string> = {
+  Healthy: "text-success",
+  Warning: "text-warning",
+  Critical: "text-danger"
+};
+
+function QualityPanel() {
+  const [dashboard, setDashboard] = useState<QualityDashboardResponse | null>(null);
+  const [anomalies, setAnomalies] = useState<QualityAnomalyEntry[] | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [ackBusy, setAckBusy] = useState<string | null>(null);
+
+  async function loadData() {
+    setLoading(true);
+    try {
+      const [dash, anoms] = await Promise.all([getQualityDashboard(), getQualityAnomalies()]);
+      setDashboard(dash);
+      setAnomalies(anoms);
+    } catch {
+      setDashboard(null);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => { void loadData(); }, []);
+
+  async function handleAcknowledge(anomalyId: string) {
+    setAckBusy(anomalyId);
+    try {
+      await acknowledgeAnomaly(anomalyId);
+      setAnomalies((prev) => prev?.map((a) =>
+        a.anomalyId === anomalyId ? { ...a, acknowledged: true } : a
+      ) ?? null);
+    } catch {
+      // ignore
+    } finally {
+      setAckBusy(null);
+    }
+  }
+
+  const unackAnomalies = anomalies?.filter((a) => !a.acknowledged) ?? [];
+
+  return (
+    <section className="space-y-4">
+      {/* Score overview */}
+      {dashboard && (
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <ScoreCard label="Overall Score" value={dashboard.overallScore} />
+          <ScoreCard label="Completeness" value={dashboard.completenessScore} />
+          <ScoreCard label="Freshness" value={dashboard.freshnessScore} />
+          <ScoreCard label="Anomaly Rate" value={dashboard.anomalyRate} invert />
+        </div>
+      )}
+
+      <div className="grid gap-4 xl:grid-cols-2">
+        {/* Per-symbol health */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between gap-2 text-base">
+              <span className="flex items-center gap-2">
+                <Filter className="h-4 w-4 text-primary" />
+                Symbol quality scores
+              </span>
+              <Button variant="outline" size="sm" onClick={() => { void loadData(); }}>
+                <RefreshCcw className="size-3.5 mr-1.5" />
+                Refresh
+              </Button>
+            </CardTitle>
+            <CardDescription>Completeness and freshness per monitored symbol.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <p className="text-sm text-muted-foreground py-6 text-center">Loading quality data…</p>
+            ) : !dashboard || dashboard.symbols.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-6 text-center">No symbol quality data available.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-border/60 text-left text-xs sm:text-sm">
+                  <thead>
+                    <tr className="text-muted-foreground text-xs uppercase tracking-wide">
+                      <th className="py-2 pr-4 font-medium">Symbol</th>
+                      <th className="py-2 pr-4 font-medium">Health</th>
+                      <th className="py-2 pr-4 font-medium">Completeness</th>
+                      <th className="py-2 pr-4 font-medium">Freshness</th>
+                      <th className="py-2 pr-4 font-medium">Gaps</th>
+                      <th className="py-2 font-medium">Anomalies</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/40">
+                    {dashboard.symbols.map((sym) => (
+                      <tr key={sym.symbol} className="hover:bg-muted/30 transition-colors">
+                        <td className="py-2 pr-4 font-mono font-medium">{sym.symbol}</td>
+                        <td className="py-2 pr-4">
+                          <span className={cn("text-xs font-medium", qualityHealthClass[sym.health] ?? "text-foreground")}>
+                            {sym.health}
+                          </span>
+                        </td>
+                        <td className="py-2 pr-4 tabular-nums">{(sym.completenessScore * 100).toFixed(1)}%</td>
+                        <td className="py-2 pr-4 tabular-nums">{(sym.freshnessScore * 100).toFixed(1)}%</td>
+                        <td className={cn("py-2 pr-4 tabular-nums", sym.gapCount > 0 && "text-warning")}>{sym.gapCount}</td>
+                        <td className={cn("py-2 tabular-nums", sym.anomalyCount > 0 && "text-danger")}>{sym.anomalyCount}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Unacknowledged anomalies */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <AlertCircle className="h-4 w-4 text-warning" />
+              Unacknowledged anomalies
+              {unackAnomalies.length > 0 && (
+                <Badge variant="outline" className="border-warning/40 text-warning text-xs ml-1">
+                  {unackAnomalies.length}
+                </Badge>
+              )}
+            </CardTitle>
+            <CardDescription>Anomalies that require operator attention.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <p className="text-sm text-muted-foreground py-6 text-center">Loading anomalies…</p>
+            ) : unackAnomalies.length === 0 ? (
+              <div className="flex flex-col items-center gap-2 py-6 text-center">
+                <CheckCircle2 className="size-6 text-success" />
+                <p className="text-sm text-muted-foreground">No unacknowledged anomalies.</p>
+              </div>
+            ) : (
+              <ul className="space-y-2">
+                {unackAnomalies.map((anomaly) => (
+                  <li
+                    key={anomaly.anomalyId}
+                    className="flex items-start gap-3 rounded-lg border border-border/50 p-3"
+                  >
+                    <AlertCircle className="size-4 text-warning shrink-0 mt-0.5" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium font-mono">{anomaly.symbol}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {anomaly.anomalyType} · {anomaly.message}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {new Date(anomaly.detectedAt).toLocaleString()}
+                      </p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="shrink-0 text-xs h-7"
+                      disabled={ackBusy === anomaly.anomalyId}
+                      onClick={() => { void handleAcknowledge(anomaly.anomalyId); }}
+                    >
+                      {ackBusy === anomaly.anomalyId ? "Acking…" : "Acknowledge"}
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Data gaps */}
+      {dashboard && dashboard.recentGaps.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Recent data gaps</CardTitle>
+            <CardDescription>Open data gaps detected across monitored symbols.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-border/60 text-left text-xs sm:text-sm">
+                <thead>
+                  <tr className="text-muted-foreground text-xs uppercase tracking-wide">
+                    <th className="py-2 pr-4 font-medium">Symbol</th>
+                    <th className="py-2 pr-4 font-medium">Provider</th>
+                    <th className="py-2 pr-4 font-medium">From</th>
+                    <th className="py-2 pr-4 font-medium">To</th>
+                    <th className="py-2 pr-4 font-medium">Est. Bars</th>
+                    <th className="py-2 font-medium">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/40">
+                  {dashboard.recentGaps.map((gap, i) => (
+                    <tr key={i} className="hover:bg-muted/30 transition-colors">
+                      <td className="py-2 pr-4 font-mono font-medium">{gap.symbol}</td>
+                      <td className="py-2 pr-4 text-muted-foreground">{gap.provider}</td>
+                      <td className="py-2 pr-4 text-muted-foreground">{new Date(gap.from).toLocaleDateString()}</td>
+                      <td className="py-2 pr-4 text-muted-foreground">{new Date(gap.to).toLocaleDateString()}</td>
+                      <td className="py-2 pr-4 tabular-nums">{gap.estimatedBars.toLocaleString()}</td>
+                      <td className="py-2">
+                        <Badge
+                          variant="outline"
+                          className={cn("text-xs", gap.status === "Open" ? "border-warning/40 text-warning" : "border-success/40 text-success")}
+                        >
+                          {gap.status}
+                        </Badge>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </section>
+  );
+}
+
+function ScoreCard({ label, value, invert }: { label: string; value: number; invert?: boolean }) {
+  const pct = Math.round(value * 100);
+  const tone = invert
+    ? (pct > 5 ? "text-danger" : pct > 2 ? "text-warning" : "text-success")
+    : (pct >= 90 ? "text-success" : pct >= 70 ? "text-warning" : "text-danger");
+
+  return (
+    <div className="rounded-lg border border-border/60 bg-muted/20 px-3 py-2.5 text-center">
+      <p className={cn("text-2xl font-semibold tabular-nums", tone)}>{pct}%</p>
+      <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
     </div>
   );
 }
