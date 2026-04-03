@@ -253,35 +253,50 @@ jobs:
               clipSelector: '#symbols'
             })
           );
+          // Screenshot 10: System Status panel (live metrics and activity log)
+          await withRetry('status', () =>
+            shot('docs/screenshots/10-status.png', `${BASE}/`, {
+              fullPage: false,
+              stableSelector: '#status, body',
+              clipSelector: '#status'
+            })
+          );
+          // Screenshot 11: Login page (sign-in form)
+          await withRetry('login', () =>
+            shot('docs/screenshots/11-login.png', `${BASE}/login`, {
+              fullPage: true,
+              stableSelector: 'form, body'
+            })
+          );
 
           // QuantScript / Workstation sub-pages
-          // Screenshot 10: Research workspace (backtests, run comparisons, QuantScript runs)
+          // Screenshot 12: Research workspace (backtests, run comparisons, QuantScript runs)
           await withRetry('workstation-research', () =>
-            shot('docs/screenshots/10-workstation-research.png', `${BASE}/workstation/`, {
+            shot('docs/screenshots/12-workstation-research.png', `${BASE}/workstation/`, {
               fullPage: true,
               stableSelector: 'main, body',
               waitMs: 500
             })
           );
-          // Screenshot 11: Trading workspace (paper cockpit, positions, blotter)
+          // Screenshot 13: Trading workspace (paper cockpit, positions, blotter)
           await withRetry('workstation-trading', () =>
-            shot('docs/screenshots/11-workstation-trading.png', `${BASE}/workstation/trading`, {
+            shot('docs/screenshots/13-workstation-trading.png', `${BASE}/workstation/trading`, {
               fullPage: true,
               stableSelector: 'main, body',
               waitMs: 500
             })
           );
-          // Screenshot 12: Data Operations workspace (providers, backfills, storage, exports)
+          // Screenshot 14: Data Operations workspace (providers, backfills, storage, exports)
           await withRetry('workstation-data-operations', () =>
-            shot('docs/screenshots/12-workstation-data-operations.png', `${BASE}/workstation/data-operations`, {
+            shot('docs/screenshots/14-workstation-data-operations.png', `${BASE}/workstation/data-operations`, {
               fullPage: true,
               stableSelector: 'main, body',
               waitMs: 500
             })
           );
-          // Screenshot 13: Governance workspace (ledger, risk, diagnostics, audit history)
+          // Screenshot 15: Governance workspace (ledger, risk, diagnostics, audit history)
           await withRetry('workstation-governance', () =>
-            shot('docs/screenshots/13-workstation-governance.png', `${BASE}/workstation/governance`, {
+            shot('docs/screenshots/15-workstation-governance.png', `${BASE}/workstation/governance`, {
               fullPage: true,
               stableSelector: 'main, body',
               waitMs: 500
@@ -408,6 +423,12 @@ jobs:
             echo "| Historical Backfill | \`docs/screenshots/07-backfill.png\` |"
             echo "| Derivatives Tracking | \`docs/screenshots/08-derivatives.png\` |"
             echo "| Subscribed Symbols | \`docs/screenshots/09-symbols.png\` |"
+            echo "| System Status Panel | \`docs/screenshots/10-status.png\` |"
+            echo "| Login Page | \`docs/screenshots/11-login.png\` |"
+            echo "| Workstation – Research | \`docs/screenshots/12-workstation-research.png\` |"
+            echo "| Workstation – Trading | \`docs/screenshots/13-workstation-trading.png\` |"
+            echo "| Workstation – Data Operations | \`docs/screenshots/14-workstation-data-operations.png\` |"
+            echo "| Workstation – Governance | \`docs/screenshots/15-workstation-governance.png\` |"
             echo "| Workstation – Research | \`docs/screenshots/10-workstation-research.png\` |"
             echo "| Workstation – Trading | \`docs/screenshots/11-workstation-trading.png\` |"
             echo "| Workstation – Data Operations | \`docs/screenshots/12-workstation-data-operations.png\` |"
