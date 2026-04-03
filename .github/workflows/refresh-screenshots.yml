@@ -492,7 +492,11 @@ jobs:
         env:
           MDC_FIXTURE_MODE: '1'
         run: |
-          pwsh -File scripts/dev/capture-desktop-screenshots.ps1
+          pwsh -File scripts/dev/capture-desktop-screenshots.ps1 `
+            -SkipBuild `
+            -ProjectPath "${{ env.WPF_PROJECT }}" `
+            -Configuration Release `
+            -Framework net9.0-windows
 
       - name: Commit WPF desktop screenshots
         uses: stefanzweifel/git-auto-commit-action@v7

@@ -3,6 +3,7 @@ param(
   [string]$ProjectPath = 'src/Meridian.Wpf/Meridian.Wpf.csproj',
   [string]$Configuration = 'Release',
   [string]$Framework = 'net9.0-windows',
+  [string]$ExeName = 'Meridian.Desktop.exe',
   [string]$OutputDir = 'docs/screenshots/desktop',
   [switch]$SkipBuild,
   [switch]$KeepAppOpen
@@ -135,15 +136,16 @@ if (-not (Test-Path 'config/appsettings.json')) {
 }
 
 if (-not $SkipBuild) {
-  Write-Host "Restoring $ProjectPath ..."
-  dotnet restore $ProjectPath --verbosity minimal
+  Write-Host "Restoring $ProjectPath ($Framework) ..."
+  dotnet restore $ProjectPath -p:TargetFramework=$Framework --verbosity minimal
 
   Write-Host "Building $ProjectPath ($Configuration, $Framework) ..."
   dotnet build $ProjectPath -c $Configuration --no-restore -p:TargetFramework=$Framework --verbosity minimal
 }
 
 $env:MDC_FIXTURE_MODE = '1'
-$exePath = "src/Meridian.Wpf/bin/$Configuration/$Framework/Meridian.Desktop.exe"
+$projectDir = Split-Path -Parent $ProjectPath
+$exePath = Join-Path $projectDir "bin/$Configuration/$Framework/$ExeName"
 $stdoutPath = 'wpf-startup-stdout.log'
 $stderrPath = 'wpf-startup-stderr.log'
 
