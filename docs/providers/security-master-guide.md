@@ -272,7 +272,7 @@ JSON files contain an array of `CreateSecurityRequest` objects:
 ]
 ```
 
-> **Note:** Set `securityId` to the nil UUID (`00000000-0000-0000-0000-000000000000`) when generating a new record from a file; the platform will assign the authoritative UUID on first `CreateAsync` call. To import with a known stable UUID (e.g. for idempotent re-runs), provide the same UUID each time — duplicate creates are silently skipped.
+> **Note:** Generate a new GUID for `securityId` for every new record before writing the file. Do **not** use the nil UUID (`00000000-0000-0000-0000-000000000000`): `CreateSecurityRequest.SecurityId` is required, and `CreateAsync` stores the value you provide as the authoritative ID. For idempotent re-runs, reuse the same stable non-nil GUID for the same record. When the importer sees a record that was already created with that `securityId`, it treats it as a duplicate/already-imported item rather than relying on the platform to replace the ID.
 
 ### Polygon Integration
 
