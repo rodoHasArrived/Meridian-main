@@ -107,6 +107,15 @@ type CorpActEvent =
         exDate: DateOnly *
         subscriptionPricePerShare: decimal *
         rightsPerShare: decimal
+    /// Return of capital: a non-dividend cash distribution that reduces cost basis
+    /// (tax-distinct from an ordinary dividend under US and most OECD regimes).
+    | ReturnOfCapital of
+        securityId: SecurityId *
+        corpActId: CorpActId *
+        exDate: DateOnly *
+        payDate: DateOnly option *
+        amountPerShare: decimal *
+        currency: string
 
 [<RequireQualifiedAccess>]
 module CorpActEvent =
@@ -117,6 +126,7 @@ module CorpActEvent =
         | CorpActEvent.SpinOff (secId, _, _, _, _) -> secId
         | CorpActEvent.MergerAbsorption (secId, _, _, _, _) -> secId
         | CorpActEvent.RightsIssue (secId, _, _, _, _) -> secId
+        | CorpActEvent.ReturnOfCapital (secId, _, _, _, _, _) -> secId
 
     let corpActId event =
         match event with
@@ -125,6 +135,7 @@ module CorpActEvent =
         | CorpActEvent.SpinOff (_, id, _, _, _) -> id
         | CorpActEvent.MergerAbsorption (_, id, _, _, _) -> id
         | CorpActEvent.RightsIssue (_, id, _, _, _) -> id
+        | CorpActEvent.ReturnOfCapital (_, id, _, _, _, _) -> id
 
     let exDate event =
         match event with
@@ -133,6 +144,7 @@ module CorpActEvent =
         | CorpActEvent.SpinOff (_, _, date, _, _) -> date
         | CorpActEvent.MergerAbsorption (_, _, date, _, _) -> date
         | CorpActEvent.RightsIssue (_, _, date, _, _) -> date
+        | CorpActEvent.ReturnOfCapital (_, _, date, _, _, _) -> date
 
     let eventType event =
         match event with
@@ -141,3 +153,4 @@ module CorpActEvent =
         | CorpActEvent.SpinOff _ -> "SpinOff"
         | CorpActEvent.MergerAbsorption _ -> "MergerAbsorption"
         | CorpActEvent.RightsIssue _ -> "RightsIssue"
+        | CorpActEvent.ReturnOfCapital _ -> "ReturnOfCapital"

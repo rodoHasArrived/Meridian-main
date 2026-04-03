@@ -87,6 +87,14 @@ type EquityBehaviorTerms = {
     DistributionType: string option
 }
 
+type DepositaryReceiptTerms = {
+    DepositaryBank: string option
+    OrdinaryShareRatio: decimal option
+    UnderlyingCurrency: string option
+    UnderlyingIsin: string option
+    UnderlyingCountry: string option
+}
+
 type FundTerms = {
     FundFamily: string option
     WeightedAverageMaturityDays: int option
@@ -117,6 +125,7 @@ type SecurityTermModules = {
     Financing: FinancingTerms option
     Issuer: IssuerTerms option
     EquityBehavior: EquityBehaviorTerms option
+    DepositaryReceipt: DepositaryReceiptTerms option
     Fund: FundTerms option
     TradingParameters: TradingParams option
 }
@@ -137,6 +146,7 @@ module SecurityTermModules =
         Financing = None
         Issuer = None
         EquityBehavior = None
+        DepositaryReceipt = None
         Fund = None
         TradingParameters = None
     }
