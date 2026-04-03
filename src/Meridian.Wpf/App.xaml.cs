@@ -243,6 +243,7 @@ public partial class App : System.Windows.Application
         services.AddSingleton(_ => WpfServices.NotificationService.Instance);
         services.AddSingleton(_ => WpfServices.KeyboardShortcutService.Instance);
         services.AddSingleton(_ => WpfServices.MessagingService.Instance);
+        services.AddSingleton<Meridian.Ui.Services.Contracts.IStatusService>(_ => WpfServices.StatusService.Instance);
         services.AddSingleton(_ => WpfServices.StatusService.Instance);
         services.AddSingleton(_ => WpfServices.FirstRunService.Instance);
 
