@@ -203,4 +203,21 @@
     <!-- ── Command bar (split-pane toolbar) ── -->
     <SolidColorBrush x:Key="CommandBarBackground"    Color="#F8F9FA" />
     <SolidColorBrush x:Key="CommandBarBorderBrush"   Color="{StaticResource ConsoleBorderColor}" />
+
+    <!-- ── Alias brushes used by individual views ── -->
+    <!-- ConsoleAccentBlueBrush: solid blue accent (same hue as InfoColorBrush) -->
+    <SolidColorBrush x:Key="ConsoleAccentBlueBrush"         Color="{StaticResource ConsoleAccentBlue}" />
+    <!-- ConsoleAccentBlueAlpha80Brush: 80 % opacity blue accent -->
+    <Color x:Key="ConsoleAccentBlueAlpha80">#CC1A6BB5</Color>
+    <SolidColorBrush x:Key="ConsoleAccentBlueAlpha80Brush"  Color="{StaticResource ConsoleAccentBlueAlpha80}" />
+    <!-- ConsoleBackgroundBrush / ConsoleTextBrush: short-name aliases -->
+    <SolidColorBrush x:Key="ConsoleBackgroundBrush"         Color="{StaticResource ConsoleBackgroundDark}" />
+    <SolidColorBrush x:Key="ConsoleTextBrush"               Color="{StaticResource ConsoleTextPrimary}" />
+    <!-- ErrorBrush: alias for ErrorColorBrush -->
+    <SolidColorBrush x:Key="ErrorBrush"                     Color="{StaticResource ConsoleAccentRed}" />
+    <!-- SuccessColorAlpha20Brush: alias for ConsoleAccentGreenAlpha20Brush -->
+    <SolidColorBrush x:Key="SuccessColorAlpha20Brush"       Color="{StaticResource ConsoleAccentGreenAlpha20}" />
+    <!-- ConsoleWindowBackgroundBrush / ConsoleWindowBorderBrush: shell-level aliases -->
+    <SolidColorBrush x:Key="ConsoleWindowBackgroundBrush"   Color="{StaticResource ConsoleBackgroundDark}" />
+    <SolidColorBrush x:Key="ConsoleWindowBorderBrush"       Color="{StaticResource ConsoleBorderColor}" />
 </ResourceDictionary>
