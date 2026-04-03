@@ -217,19 +217,24 @@ public partial class MainWindow : Window
     }
 
     /// <summary>
-    /// Opens the command palette dialog (Ctrl+K).
+    /// Opens the command palette (Ctrl+K).
+    /// Delegates to the inline overlay inside <see cref="MainPage"/> so that the
+    /// <c>CommandPaletteInput</c> UI-Automation element stays within the main-window
+    /// subtree and can be found by automation scripts.
+    /// Falls back to the standalone dialog when the frame does not yet hold a <see cref="MainPage"/>.
     /// </summary>
     private void ShowCommandPalette()
     {
-        var paletteService = CommandPaletteService.Instance;
-        var palette = new CommandPaletteWindow(paletteService)
+        if (RootFrame.Content is MainPage page)
         {
-            Owner = this
-        };
+            page.ShowCommandPaletteOverlay();
+            return;
+        }
 
-        // Subscribe to command execution
+        // Fallback: frame not yet loaded with MainPage — use the standalone dialog.
+        var paletteService = CommandPaletteService.Instance;
+        var palette = new CommandPaletteWindow(paletteService) { Owner = this };
         paletteService.CommandExecuted += OnPaletteCommandExecuted;
-
         try
         {
             palette.ShowDialog();
