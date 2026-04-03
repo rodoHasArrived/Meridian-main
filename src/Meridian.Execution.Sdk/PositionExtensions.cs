@@ -43,7 +43,7 @@ public static class PositionExtensions
     /// Converts an <see cref="IPosition"/> to an anonymous-style summary for display or logging
     /// without depending on a concrete type.
     /// </summary>
-    /// <param name="position">The position to summarise.</param>
+    /// <param name="position">The position to summarize.</param>
     /// <returns>
     /// A value tuple containing the key display fields from the position.
     /// </returns>

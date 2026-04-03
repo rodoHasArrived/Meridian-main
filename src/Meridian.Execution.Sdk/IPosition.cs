@@ -24,10 +24,10 @@ public interface IPosition
     /// <summary>Lot-weighted average entry price.</summary>
     decimal AverageCostBasis { get; }
 
-    /// <summary>Mark-to-market unrealised P&amp;L.</summary>
+    /// <summary>Mark-to-market unrealized P&amp;L.</summary>
     decimal UnrealizedPnl { get; }
 
-    /// <summary>Cumulative realised P&amp;L.</summary>
+    /// <summary>Cumulative realized P&amp;L.</summary>
     decimal RealizedPnl { get; }
 
     /// <summary>True when this is a short (negative-quantity) position.</summary>
