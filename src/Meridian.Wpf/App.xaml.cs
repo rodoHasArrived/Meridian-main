@@ -41,6 +41,7 @@ public partial class App : System.Windows.Application
 {
     private static bool     _isFirstRun;
     private static bool     _isFixtureMode;
+    private static bool     _mainWindowShown;
     private static string[] _launchArgs = [];
     private IHost? _host;
 
@@ -149,6 +150,7 @@ public partial class App : System.Windows.Application
         var mainWindow = Services.GetRequiredService<MainWindow>();
         Current.MainWindow = mainWindow;
         mainWindow.Show();
+        _mainWindowShown = true;
 
         // Register taskbar jump list tasks (Start Collector, Open Dashboard, etc.).
         WpfServices.JumpListService.Instance.Register();
@@ -851,12 +853,15 @@ public partial class App : System.Windows.Application
         var ex = e.Exception;
 
         // Determine whether the exception is likely recoverable (transient UI or I/O issues).
+        // InvalidOperationException is only recoverable after the main window has been shown;
+        // before that point it likely indicates a startup failure and must not be swallowed,
+        // otherwise the process keeps running with no visible window (CI hang).
         var isRecoverable =
-            ex is InvalidOperationException or
-                 System.Net.Http.HttpRequestException or
+            ex is System.Net.Http.HttpRequestException or
                  TimeoutException or
                  OperationCanceledException or
-                 System.IO.IOException;
+                 System.IO.IOException
+            || (ex is InvalidOperationException && _mainWindowShown);
 
         // Always log with structured logging so the error is visible in the log file.
         WpfServices.LoggingService.Instance.LogError("Dispatcher unhandled exception", ex);

@@ -599,10 +599,12 @@ jobs:
 
           # Launch the compiled executable directly rather than using dotnet run
           $exePath = "src\Meridian.Wpf\bin\Release\net9.0-windows\Meridian.Desktop.exe"
+          $exeDir  = Split-Path -Parent $exePath
           $logPath = "wpf-startup.log"
 
           $proc = Start-Process `
             -FilePath $exePath `
+            -WorkingDirectory $exeDir `
             -RedirectStandardOutput $logPath `
             -RedirectStandardError "$logPath.err" `
             -PassThru `
