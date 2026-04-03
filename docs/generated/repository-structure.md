@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-04-03 16:06:07 UTC. Do not edit manually.
+> Auto-generated on 2026-04-03 16:35:20 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -831,6 +831,7 @@ Meridian-main
 │   │   └── setup.sh
 │   ├── dev
 │   │   ├── build-ibapi-smoke.ps1
+│   │   ├── capture-desktop-screenshots.ps1
 │   │   ├── desktop-dev.ps1
 │   │   ├── diagnose-uwp-xaml.ps1
 │   │   └── install-git-hooks.sh

@@ -904,6 +904,7 @@ Meridian-main
 │   │   └── setup.sh
 │   ├── dev
 │   │   ├── build-ibapi-smoke.ps1
+│   │   ├── capture-desktop-screenshots.ps1
 │   │   ├── desktop-dev.ps1
 │   │   ├── diagnose-uwp-xaml.ps1
 │   │   └── install-git-hooks.sh
