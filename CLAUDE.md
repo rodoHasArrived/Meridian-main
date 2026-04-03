@@ -806,6 +806,8 @@ Meridian-main
 │   │   └── service-level-objectives.md
 │   ├── plans
 │   │   ├── assembly-performance-roadmap.md
+│   │   ├── backtest-studio-unification-blueprint.md
+│   │   ├── backtest-studio-unification-pr-sequenced-roadmap.md
 │   │   ├── codebase-audit-cleanup-roadmap.md
 │   │   ├── fund-management-module-implementation-backlog.md
 │   │   ├── fund-management-pr-sequenced-roadmap.md
@@ -1016,6 +1018,8 @@ Meridian-main
 │   │   │   ├── GapBackfillService.cs
 │   │   │   ├── HistoricalBackfillService.cs
 │   │   │   └── SymbolValidationSignal.cs
+│   │   ├── Backtesting
+│   │   │   └── BacktestStudioContracts.cs
 │   │   ├── Banking
 │   │   │   ├── BankingException.cs
 │   │   │   ├── IBankingService.cs
@@ -1350,11 +1354,13 @@ Meridian-main
 │   │   │   ├── ICommissionModel.cs
 │   │   │   ├── LinkedListExtensions.cs
 │   │   │   └── SimulatedPortfolio.cs
+│   │   ├── BacktestStudioRunOrchestrator.cs
 │   │   ├── BatchBacktestService.cs
 │   │   ├── CorporateActionAdjustmentService.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── ICorporateActionAdjustmentService.cs
-│   │   └── Meridian.Backtesting.csproj
+│   │   ├── Meridian.Backtesting.csproj
+│   │   └── MeridianNativeBacktestStudioEngine.cs
 │   ├── Meridian.Backtesting.Sdk
 │   │   ├── Ledger
 │   │   │   ├── BacktestLedger.cs
@@ -1363,6 +1369,10 @@ Meridian-main
 │   │   │   ├── LedgerAccounts.cs
 │   │   │   ├── LedgerAccountType.cs
 │   │   │   └── LedgerEntry.cs
+│   │   ├── Strategies
+│   │   │   └── AdvancedCarry
+│   │   │       ├── AdvancedCarryDecisionEngine.cs
+│   │   │       └── AdvancedCarryModels.cs
 │   │   ├── AssetEvent.cs
 │   │   ├── BacktestEngineMode.cs
 │   │   ├── BacktestProgressEvent.cs
@@ -1392,6 +1402,7 @@ Meridian-main
 │   │   │   ├── BackfillApiModels.cs
 │   │   │   ├── ClientModels.cs
 │   │   │   ├── ErrorResponse.cs
+│   │   │   ├── LeanApiModels.cs
 │   │   │   ├── LiveDataModels.cs
 │   │   │   ├── OptionsModels.cs
 │   │   │   ├── ProviderCatalog.cs
@@ -2061,10 +2072,16 @@ Meridian-main
 │   │   │   ├── Contracts.cs
 │   │   │   ├── IQuantScriptCompiler.cs
 │   │   │   ├── IScriptRunner.cs
+│   │   │   ├── NotebookExecutionSession.cs
 │   │   │   ├── QuantScriptGlobals.cs
 │   │   │   ├── RoslynScriptCompiler.cs
+│   │   │   ├── ScriptExecutionCheckpoint.cs
 │   │   │   ├── ScriptRunner.cs
 │   │   │   └── ScriptRunResult.cs
+│   │   ├── Documents
+│   │   │   ├── IQuantScriptNotebookStore.cs
+│   │   │   ├── QuantScriptDocumentModels.cs
+│   │   │   └── QuantScriptNotebookStore.cs
 │   │   ├── Plotting
 │   │   │   ├── PlotQueue.cs
 │   │   │   ├── PlotRequest.cs
@@ -2535,6 +2552,7 @@ Meridian-main
 │       │       ├── trading.svg
 │       │       └── watchlist.svg
 │       ├── Behaviors
+│       │   ├── AvalonEditNotebookBehavior.cs
 │       │   ├── ParameterTemplateSelector.cs
 │       │   └── PlotRenderBehavior.cs
 │       ├── Contracts
@@ -2883,6 +2901,7 @@ Meridian-main
 │       └── README.md
 ├── tests
 │   ├── Meridian.Backtesting.Tests
+│   │   ├── AdvancedCarryDecisionEngineTests.cs
 │   │   ├── BacktestEngineIntegrationTests.cs
 │   │   ├── BacktestMetricsEngineTests.cs
 │   │   ├── BacktestRequestConfigTests.cs
@@ -2895,6 +2914,7 @@ Meridian-main
 │   │   ├── LotLevelTrackingTests.cs
 │   │   ├── MarketImpactFillModelTests.cs
 │   │   ├── Meridian.Backtesting.Tests.csproj
+│   │   ├── MeridianNativeBacktestStudioEngineTests.cs
 │   │   ├── SimulatedPortfolioTests.cs
 │   │   ├── TcaReporterTests.cs
 │   │   ├── XirrCalculatorTests.cs
@@ -2937,6 +2957,7 @@ Meridian-main
 │   │   ├── PlotQueueTests.cs
 │   │   ├── PortfolioBuilderTests.cs
 │   │   ├── PriceSeriesTests.cs
+│   │   ├── QuantScriptNotebookStoreTests.cs
 │   │   ├── RoslynScriptCompilerTests.cs
 │   │   ├── ScriptRunnerTests.cs
 │   │   └── StatisticsEngineTests.cs
@@ -2955,6 +2976,8 @@ Meridian-main
 │   │   │   │   ├── RateLimiterTests.cs
 │   │   │   │   ├── ScheduledBackfillTests.cs
 │   │   │   │   └── TwelveDataNasdaqProviderContractTests.cs
+│   │   │   ├── Backtesting
+│   │   │   │   └── BacktestStudioRunOrchestratorTests.cs
 │   │   │   ├── Canonicalization
 │   │   │   │   ├── Fixtures
 │   │   │   │   │   ├── alpaca_trade_extended_hours.json
