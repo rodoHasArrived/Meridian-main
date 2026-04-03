@@ -202,7 +202,8 @@ public sealed class ChartingPageViewModel : BindableBase
         if (_chartData == null || _chartData.Candles.Count == 0) return;
 
         var financialPoints = _chartData.Candles
-            .Select(c => new FinancialPoint(c.Timestamp, (double)c.High, (double)c.Open, (double)c.Close, (double)c.Low));
+            .Select(c => new FinancialPoint(c.Timestamp, (double)c.High, (double)c.Open, (double)c.Close, (double)c.Low))
+            .ToList();
 
         CandleSeries =
         [
