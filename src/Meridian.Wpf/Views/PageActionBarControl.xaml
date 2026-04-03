@@ -75,7 +75,7 @@
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding IsPrimary}" Value="True">
                                             <Setter Property="Background" Value="{StaticResource ConsoleAccentGreenDimBrush}"/>
-                                            <Setter Property="BorderBrush" Value="{StaticResource ConsoleAccentGreen}"/>
+                                            <Setter Property="BorderBrush" Value="{StaticResource SuccessColorBrush}"/>
                                             <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}"/>
                                         </DataTrigger>
                                         <Trigger Property="IsMouseOver" Value="True">
