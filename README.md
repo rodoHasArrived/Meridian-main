@@ -1019,6 +1019,7 @@ Use these documents together when planning or implementing new work:
 │   ├── compare_benchmarks.py
 │   ├── dev
 │   │   ├── build-ibapi-smoke.ps1
+│   │   ├── capture-desktop-screenshots.ps1
 │   │   ├── desktop-dev.ps1
 │   │   ├── diagnose-uwp-xaml.ps1
 │   │   └── install-git-hooks.sh
@@ -3461,6 +3462,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-455 directories, 2878 files
+455 directories, 2879 files
 ```
 <!-- readme-tree end -->
