@@ -114,3 +114,75 @@ The **Data Operations** workspace of the React workstation shell, covering provi
 The **Governance** workspace of the React workstation shell, showing the fund ledger overview, risk audit history, reconciliation breaks, diagnostics, and operational settings.
 
 ![Workstation – Governance](13-workstation-governance.png)
+
+---
+
+## 14 – Workstation: Trading – Orders
+
+The **Orders blotter** deep-link within the Trading workspace, showing working and partially filled trading orders with status, fill quantity, and execution detail.
+
+![Workstation – Trading: Orders](14-workstation-trading-orders.png)
+
+---
+
+## 15 – Workstation: Trading – Positions
+
+The **Positions** deep-link within the Trading workspace, showing live positions, exposure, marks, and unrealized P&L.
+
+![Workstation – Trading: Positions](15-workstation-trading-positions.png)
+
+---
+
+## 16 – Workstation: Trading – Risk
+
+The **Risk guardrails** deep-link within the Trading workspace, showing the trading risk cockpit, position limits, drawdown stops, and order-rate throttle state.
+
+![Workstation – Trading: Risk](16-workstation-trading-risk.png)
+
+---
+
+## 17 – Workstation: Data Operations – Providers
+
+The **Provider health** deep-link within the Data Operations workspace, showing feed status, latency metrics, and operational notes for each registered provider.
+
+![Workstation – Data Operations: Providers](17-workstation-data-operations-providers.png)
+
+---
+
+## 18 – Workstation: Data Operations – Backfills
+
+The **Backfill queue** deep-link within the Data Operations workspace, showing active backfill jobs, progress, and review items.
+
+![Workstation – Data Operations: Backfills](18-workstation-data-operations-backfills.png)
+
+---
+
+## 19 – Workstation: Data Operations – Exports
+
+The **Storage exports** deep-link within the Data Operations workspace, showing export profiles and recent delivery targets.
+
+![Workstation – Data Operations: Exports](19-workstation-data-operations-exports.png)
+
+---
+
+## 20 – Workstation: Governance – Ledger
+
+The **Ledger overview** deep-link within the Governance workspace, showing cash flow summaries and audit-facing ledger details.
+
+![Workstation – Governance: Ledger](20-workstation-governance-ledger.png)
+
+---
+
+## 21 – Workstation: Governance – Reconciliation
+
+The **Reconciliation history** deep-link within the Governance workspace, showing open breaks, balanced runs, and reconciliation detail.
+
+![Workstation – Governance: Reconciliation](21-workstation-governance-reconciliation.png)
+
+---
+
+## 22 – Workstation: Governance – Security Master
+
+The **Security master coverage** deep-link within the Governance workspace, showing unresolved references and coverage risk across the instrument universe.
+
+![Workstation – Governance: Security Master](22-workstation-governance-security-master.png)
