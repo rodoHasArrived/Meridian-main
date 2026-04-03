@@ -1,9 +1,9 @@
 # Meridian — Now / Next / Later Roadmap
 
-**Generated:** 2026-03-31
+**Generated:** 2026-04-03
 **Format:** Now / Next / Later
-**Basis:** ROADMAP.md + FEATURE_INVENTORY.md + production-status.md + workstation/governance blueprints (2026-03-31)
-**Change from prior roadmap:** Reconciles the horizon plan with the 2026-03-31 status set, keeps the WPF workstation as an active Windows delivery track, and reframes Security Master as an existing platform seam that now needs operator-facing productization and governance integration.
+**Basis:** ROADMAP.md + FEATURE_INVENTORY.md + production-status.md + workstation/governance blueprints (2026-04-03)
+**Change from prior update (2026-03-31):** Marks WPF workstation shell modernization items as complete (Fluent theme, SVG icons, candlestick charting, zero-API-key startup, workflow guide, screenshot CI). Adds Phase 1.5 preferred/convertible equity domain extension to the Later optional wave.
 
 ---
 
@@ -52,15 +52,23 @@ The paper trading gateway and brokerage adapter framework are implemented. The g
 
 ---
 
-### 3. Native Desktop Workstation Refresh *(active again as of 2026-03-26)*
+### 3. Native Desktop Workstation Refresh *(active — shell modernization complete, page-level work ongoing)*
 
-The WPF workstation is no longer parked as a passive maintenance surface. Native desktop development has restarted around a Windows-first operator shell that complements the web dashboard for research, live monitoring, provider operations, and governance workflows.
+The WPF workstation shell has been substantially modernized. The focus now shifts to page-level workflow redesign and MVVM extraction.
 
-**Delivery scope:**
+**Completed (2026-04-03):**
 
-- Modernize the shell and navigation model in `src/Meridian.Wpf`
-- Redesign high-traffic workflow pages such as Live Data, Provider, Backfill, and Data Quality for clearer operator use
-- Reduce dense page chrome and improve workstation hierarchy, page context, and recent-task movement
+- ✅ Native Fluent theme via `ThemeMode="System"` in `App.xaml` (PR #524)
+- ✅ SVG icon set — Segoe MDL2 Assets glyphs replacing emoji icons across all pages (PR #512)
+- ✅ Candlestick charting — LiveCharts2 candlestick chart on Charting page (PR #522)
+- ✅ Zero-API-key startup — Synthetic provider default when no credentials are present (PR #513)
+- ✅ Workflow guide (`docs/WORKFLOW_GUIDE.md`) with live UI screenshots (PR #511)
+- ✅ CI: Refresh UI Screenshots GitHub Action (PR #515)
+- ✅ Route and health endpoint reliability — duplicate DFA route definitions and duplicate health endpoint registrations resolved (PRs #521, #519)
+
+**Remaining open scope:**
+
+- Redesign high-traffic workflow pages: Live Data, Provider, Backfill, and Data Quality for clearer operator use
 - Continue MVVM extraction where pages still depend heavily on code-behind orchestration
 
 **Exit gate:** The desktop workstation feels coherent and actively maintained across its core operator pages, not just present in the solution.
@@ -169,6 +177,7 @@ Depth multipliers that require a stable platform foundation to deliver value. No
 - Phase 16 assembly-level performance optimizations
 - Broader WPF workstation coverage after the current active shell/page refresh stabilizes
 - WPF desktop app (code in `src/Meridian.Wpf/` - included in solution build and back in active development)
+- **Phase 1.5 — Preferred & Convertible Equity domain extension:** add `EquityClassification` discriminated union, `PreferredTerms`, `ConvertibleTerms`, and `LiquidationPreference` types to `src/Meridian.FSharp/Domain/SecurityMaster.fs`; update `EquityTerms` to include optional `Classification` field; add unit tests and update `CLAUDE.domain-naming.md`. *(Issue: `issues/phase_1_5_1_add_equityclassification_discriminator_and_preferredterms_domain_model.md` — all acceptance criteria open)*
 
 ---
 

@@ -1,7 +1,7 @@
 # Meridian - Production Status
 
 **Version:** 1.7.2
-**Last Updated:** 2026-03-31
+**Last Updated:** 2026-04-03
 **Status:** Development / Pilot Ready (comprehensive fund-management planning active)
 
 This document summarizes the current production-readiness posture and the next product-delivery gaps from the current repository state.
@@ -27,7 +27,7 @@ The active plan now has two connected delivery tracks:
 | **Brokerage gateway framework** | **Implemented** | `BaseBrokerageGateway` + Alpaca, IB, StockSharp adapters; live-validated runtime paths pending |
 | Direct lending module | Implemented | PostgreSQL-backed services, workflows, and `/api/loans/*` endpoints |
 | CppTrader integration | Implemented | Host management, order gateway, ITCH ingestion, replay service |
-| WPF desktop shell | Active | Included in solution build; builds full WPF app on Windows, CI stub on Linux/macOS |
+| WPF desktop shell | Active | Fluent theme, SVG icons, candlestick charting, and zero-API-key startup landed (PRs #512, #513, #522, #524); MVVM extraction and high-traffic page redesign ongoing |
 | Shared run / portfolio / ledger model | In progress | First workstation browser/detail/portfolio/ledger flow is in code; broader paper/live coverage remains |
 | Security Master baseline | Implemented in code, not yet productized | Contracts, application, storage, and F# domain anchors exist |
 | Governance product surfaces | Planned | Trial balance, multi-ledger, cash-flow, reconciliation, investor reporting, and governed reporting are blueprint-backed but not fully implemented |
@@ -45,7 +45,8 @@ The active plan now has two connected delivery tracks:
 - Portfolio and ledger concepts already present in the codebase (double-entry accounting, F# ledger, trading state machines)
 - Security Master foundations already present in contracts, storage, application, and F# domain modules
 - Existing export infrastructure that can support future report-pack generation
-- WPF desktop application included in solution build (`src/Meridian.Wpf/`; builds full WPF app on Windows, CI stub on Linux/macOS)
+- WPF desktop application with modernized shell: native Fluent theme, SVG icon set, LiveCharts2 candlestick charting, and zero-API-key startup via Synthetic provider default
+- Workflow guide (`docs/WORKFLOW_GUIDE.md`) with live screenshots; CI screenshot-refresh workflow for ongoing visual validation
 - Comprehensive test coverage (~4,756 tests across 8 test projects)
 
 ## Current Gaps
@@ -112,3 +113,4 @@ The current planning set is synchronized around these documents:
 - [ ] Implement reconciliation workflows and break-review UX
 - [ ] Implement report generation and governed export/report-pack flows
 - [ ] Validate end-to-end observability and operator diagnostics against the final product surfaces
+- [ ] Implement Phase 1.5 preferred/convertible equity domain types (F# — `EquityClassification`, `PreferredTerms`, `ConvertibleTerms` in `SecurityMaster.fs`)

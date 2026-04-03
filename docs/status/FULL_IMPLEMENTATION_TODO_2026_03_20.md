@@ -1,6 +1,6 @@
 # Full Implementation Backlog (Non-Assembly Scope)
 
-**Last Updated:** 2026-03-31
+**Last Updated:** 2026-04-03
 **Status:** Active normalized backlog
 **Purpose:** Single current backlog for finishing the remaining planned non-assembly work
 
@@ -33,6 +33,10 @@ Closed platform work:
 - Strategy lifecycle control endpoints: `/api/strategies/status`, `/api/strategies/{id}/status`, `/api/strategies/{id}/pause`, `/api/strategies/{id}/stop`
 - `PaperSessionPersistenceService`, `IPortfolioState`, `IOrderGateway`, `IOrderManager`, `StrategyLifecycleManager` fully wired in DI
 - Brokerage gateway framework complete: `IBrokerageGateway`, `BaseBrokerageGateway`, `BrokerageGatewayAdapter`, plus Alpaca/IB/StockSharp adapter implementations
+- WPF shell modernization: native Fluent theme (`ThemeMode="System"`, PR #524), SVG icon set replacing emoji glyphs (PR #512), LiveCharts2 candlestick charting on Charting page (PR #522)
+- Zero-API-key startup: Synthetic provider default when no credentials are present (PR #513)
+- Route/health endpoint reliability: duplicate DFA route definitions and duplicate health endpoint registrations resolved (PRs #521, #519)
+- Workflow guide and live screenshots: `docs/WORKFLOW_GUIDE.md` with UI screenshots (PR #511); CI screenshot-refresh workflow (PR #515)
 
 Implemented foundations now available to build on:
 
@@ -223,6 +227,32 @@ Primary anchors:
 - `src/Meridian.Core/Config/CoordinationConfig.cs`
 - `tests/Meridian.Tests/Application/Coordination/`
 
+### Track K: Phase 1.5 — Preferred & Convertible Equity domain extension
+
+Goal: extend the F# Security Master domain model to support preferred and convertible equity classifications as a foundation for Phase 1.5 UFL Equity V2.
+
+Open work:
+
+- add `EquityClassification` discriminated union to `src/Meridian.FSharp/Domain/SecurityMaster.fs`
+- add `PreferredTerms` record: `DividendRate`, `DividendType` (Fixed/Floating/Cumulative), `RedemptionPrice`, `RedemptionDate`, `CallableDate`, `ParticipationTerms`, `LiquidationPreference`
+- add `ConvertibleTerms` record: underlying, conversion ratio, conversion price, and date windows
+- add `LiquidationPreference` union: `Pari`, `Senior of decimal`, `Subordinated`
+- update `EquityTerms` to include optional `Classification: EquityClassification option` field
+- add unit tests validating term constraints (backward-compatible with existing common equity flows)
+- update `docs/ai/claude/CLAUDE.domain-naming.md` with naming conventions (`PrefShrDef`, `ConvPrefDef`, `DivTr`, `RedTr`, `CallTr`, `ConvTr`)
+
+Primary anchors:
+
+- `src/Meridian.FSharp/Domain/SecurityMaster.fs`
+- `src/Meridian.FSharp/Domain/SecurityClassification.fs` (partial foundation already present: `PreferredEquity`, `PreferredShare`)
+- `issues/phase_1_5_1_add_equityclassification_discriminator_and_preferredterms_domain_model.md`
+- `PROJECTS/Phase_1.5_Preferred_and_Convertible_Equity_Support.md`
+- `docs/plans/ufl-equity-target-state-v2.md`
+
+Exit signal:
+
+All acceptance criteria in the issue file are checked: discriminated union, term records, unit tests, and naming doc update complete.
+
 ### Track J: Structural closure and documentation convergence
 
 Goal: keep the repo coherent as the remaining product work lands.
@@ -270,6 +300,7 @@ References:
 - Track H: L3 inference/simulation foundation
 - Track I: Multi-instance coordination
 - Track J: Remaining structural/documentation closure
+- Track K: Phase 1.5 preferred/convertible equity domain extension *(F# domain layer — all acceptance criteria open)*
 
 ---
 
