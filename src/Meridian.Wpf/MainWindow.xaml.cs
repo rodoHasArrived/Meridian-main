@@ -217,40 +217,15 @@ public partial class MainWindow : Window
     }
 
     /// <summary>
-    /// Opens the command palette dialog (Ctrl+K).
+    /// Opens the command palette (Ctrl+K) using the inline overlay in <see cref="MainPage"/>.
+    /// Using the inline overlay keeps <c>CommandPaletteInput</c> inside the main window's
+    /// UI-Automation tree, which is required by the desktop screenshot automation script.
     /// </summary>
     private void ShowCommandPalette()
     {
-        var paletteService = CommandPaletteService.Instance;
-        var palette = new CommandPaletteWindow(paletteService)
+        if (RootFrame.Content is MainPage mainPage)
         {
-            Owner = this
-        };
-
-        // Subscribe to command execution
-        paletteService.CommandExecuted += OnPaletteCommandExecuted;
-
-        try
-        {
-            palette.ShowDialog();
-        }
-        finally
-        {
-            paletteService.CommandExecuted -= OnPaletteCommandExecuted;
-        }
-    }
-
-    private void OnPaletteCommandExecuted(object? sender, PaletteCommandEventArgs e)
-    {
-        switch (e.Category)
-        {
-            case PaletteCommandCategory.Navigation:
-                _viewModel.NavigateCommand.Execute(e.ActionId);
-                break;
-
-            case PaletteCommandCategory.Action:
-                _viewModel.HandlePaletteAction(e.ActionId);
-                break;
+            mainPage.OpenCommandPalette();
         }
     }
 
