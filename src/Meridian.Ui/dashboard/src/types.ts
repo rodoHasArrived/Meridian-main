@@ -220,6 +220,29 @@ export interface BrokerageWiringStatus {
   notes: string;
 }
 
+export interface TradingRunDrillIn {
+  equityCurve: string;
+  fills: string;
+  attribution: string;
+  ledger: string | null;
+  cashFlows: string;
+  comparison: string;
+}
+
+export interface TradingRunMode {
+  runId: string;
+  mode: "backtest" | "paper" | "live";
+  status: string;
+  netPnl: number | null;
+  totalReturn: number | null;
+  drillIn: TradingRunDrillIn;
+}
+
+export interface TradingRunComparison {
+  strategyName: string;
+  modes: TradingRunMode[];
+}
+
 export interface TradingWorkspaceResponse {
   metrics: MetricSnapshot[];
   positions: TradingPosition[];
@@ -227,6 +250,8 @@ export interface TradingWorkspaceResponse {
   fills: TradingFill[];
   risk: TradingRiskState;
   brokerage: BrokerageWiringStatus;
+  comparisons?: TradingRunComparison[];
+  drillIn?: TradingRunDrillIn | null;
 }
 
 export interface GovernanceReconciliationRecord {

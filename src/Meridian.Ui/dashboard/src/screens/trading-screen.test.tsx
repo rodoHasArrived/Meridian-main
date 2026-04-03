@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { TradingScreen } from "@/screens/trading-screen";
 import * as api from "@/lib/api";
-import type { TradingWorkspaceResponse } from "@/types";
+import type { TradingRunDrillIn, TradingWorkspaceResponse } from "@/types";
 
 vi.mock("@/lib/api", async () => {
   const actual = await vi.importActual<typeof import("@/lib/api")>("@/lib/api");
@@ -90,5 +90,46 @@ describe("TradingScreen", () => {
     render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
     fireEvent.click(screen.getByTitle("Cancel order"));
     expect(screen.getByText(/cancel order PO-1/i)).toBeInTheDocument();
+  });
+
+  it("renders run mode comparisons panel when comparisons are present", () => {
+    const drillIn: TradingRunDrillIn = {
+      equityCurve: "/api/workstation/runs/bt-1/equity-curve",
+      fills: "/api/workstation/runs/bt-1/fills",
+      attribution: "/api/workstation/runs/bt-1/attribution",
+      ledger: null,
+      cashFlows: "/api/portfolio/bt-1/cash-flows",
+      comparison: "/api/workstation/runs/compare"
+    };
+    const dataWithComparisons: TradingWorkspaceResponse = {
+      ...data,
+      comparisons: [
+        {
+          strategyName: "mean-reversion-fx",
+          modes: [
+            { runId: "bt-1", mode: "backtest", status: "Completed", netPnl: 14500, totalReturn: 14.5, drillIn },
+            { runId: "pp-1", mode: "paper", status: "Running", netPnl: 3200, totalReturn: 3.2, drillIn: { ...drillIn, equityCurve: "/api/workstation/runs/pp-1/equity-curve" } }
+          ]
+        }
+      ]
+    };
+
+    render(
+      <MemoryRouter initialEntries={["/trading"]}>
+        <TradingScreen data={dataWithComparisons} />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByText("Strategy run comparisons")).toBeInTheDocument();
+    expect(screen.getByText("mean-reversion-fx")).toBeInTheDocument();
+    expect(screen.getByText("bt-1")).toBeInTheDocument();
+    expect(screen.getByText("pp-1")).toBeInTheDocument();
+    expect(screen.getByText("+$14,500")).toBeInTheDocument();
+    expect(screen.getByText("+$3,200")).toBeInTheDocument();
+  });
+
+  it("does not render run mode comparisons panel when comparisons are absent", () => {
+    render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
+    expect(screen.queryByText("Strategy run comparisons")).not.toBeInTheDocument();
   });
 });
