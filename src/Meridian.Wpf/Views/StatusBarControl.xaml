@@ -7,7 +7,7 @@
              mc:Ignorable="d"
              Height="28">
     <UserControl.Resources>
-        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </UserControl.Resources>
     <Border Background="{StaticResource StatusBarBackgroundBrush}"
             BorderBrush="{StaticResource StatusBarBorderBrush}"
