@@ -22,11 +22,6 @@ public partial class QuantScriptPage : Page
         Unloaded += OnPageUnloaded;
     }
 
-    public QuantScriptPage(QuantScriptViewModel viewModel) : this()
-    {
-        DataContext = viewModel;
-    }
-
     private void OnPageLoaded(object sender, RoutedEventArgs e)
     {
         _vm = DataContext as QuantScriptViewModel;
