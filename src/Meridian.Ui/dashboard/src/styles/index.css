@@ -79,7 +79,7 @@
 
 @layer components {
   .panel-surface {
-    @apply rounded-xl border border-border/80 bg-card/92 shadow-workstation backdrop-blur-sm;
+    @apply rounded-xl border border-border/80 bg-card shadow-workstation backdrop-blur-sm;
   }
 
   .panel-surface-strong {

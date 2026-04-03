@@ -10,6 +10,12 @@ export interface WorkspaceCommand {
 
 export const WORKSPACES: WorkspaceSummary[] = [
   {
+    key: "overview",
+    label: "Overview",
+    description: "System health, active sessions, key metrics, and cross-workspace status at a glance.",
+    status: "Live"
+  },
+  {
     key: "research",
     label: "Research",
     description: "Backtests, run comparisons, experiment tracking, and dataset validation.",
@@ -36,10 +42,24 @@ export const WORKSPACES: WorkspaceSummary[] = [
 ];
 
 export function workspacePath(key: WorkspaceKey) {
-  return key === "research" ? "/" : `/${key}`;
+  return key === "overview" ? "/overview" : key === "research" ? "/" : `/${key}`;
 }
 
 export const WORKSPACE_COMMANDS: WorkspaceCommand[] = [
+  {
+    id: "overview-status",
+    label: "Open system overview",
+    description: "View system health, provider status, and cross-workspace metrics.",
+    href: "/overview",
+    workspace: "overview"
+  },
+  {
+    id: "overview-providers",
+    label: "Check provider health",
+    description: "Quick scan of all provider statuses and connection health.",
+    href: "/overview",
+    workspace: "overview"
+  },
   {
     id: "research-run-queue",
     label: "Open active research run queue",
@@ -94,6 +114,20 @@ export const WORKSPACE_COMMANDS: WorkspaceCommand[] = [
     label: "Review storage exports",
     description: "Check export profiles and recent delivery targets.",
     href: "/data-operations/exports",
+    workspace: "data-operations"
+  },
+  {
+    id: "data-operations-symbols",
+    label: "Manage symbol subscriptions",
+    description: "Add, remove, or inspect monitored symbols and data coverage.",
+    href: "/data-operations/symbols",
+    workspace: "data-operations"
+  },
+  {
+    id: "data-operations-quality",
+    label: "Open data quality dashboard",
+    description: "Review completeness scores, gaps, and unacknowledged anomalies.",
+    href: "/data-operations/quality",
     workspace: "data-operations"
   },
   {

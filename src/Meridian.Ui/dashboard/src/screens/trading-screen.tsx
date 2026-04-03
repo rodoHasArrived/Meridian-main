@@ -11,7 +11,7 @@ import {
   DialogTitle
 } from "@/components/ui/dialog";
 import { MetricCard } from "@/components/meridian/metric-card";
-import { approvePromotion, cancelAllOrders, cancelOrder, closePosition, closePaperSession, createPaperSession, evaluatePromotion, getExecutionSessions, getPaperSessionDetail, getPromotionHistory, getReplayFiles, getReplayStatus, pauseReplay, pauseStrategy, resumeReplay, seekReplay, setReplaySpeed, startReplay, stopReplay, stopStrategy, submitOrder } from "@/lib/api";
+import { approvePromotion, cancelAllOrders, cancelOrder, closePosition, closePaperSession, createPaperSession, evaluatePromotion, getExecutionSessions, getPaperSessionDetail, getPromotionHistory, getReplayFiles, getReplayStatus, pauseReplay, pauseStrategy, resumeReplay, seekReplay, setReplaySpeed as apiSetReplaySpeed, startReplay, stopReplay, stopStrategy, submitOrder } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import type { OrderSubmitRequest, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, ReplayFileRecord, ReplayStatus, TradingActionResult, TradingWorkspaceResponse } from "@/types";
 
@@ -270,7 +270,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
       if (action === "resume") await resumeReplay(replayStatus.sessionId);
       if (action === "stop") await stopReplay(replayStatus.sessionId);
       if (action === "seek") await seekReplay(replayStatus.sessionId, Number(seekMs) || 0);
-      if (action === "speed") await setReplaySpeed(replayStatus.sessionId, Number(replaySpeed) || 1);
+      if (action === "speed") await apiSetReplaySpeed(replayStatus.sessionId, Number(replaySpeed) || 1);
       if (action === "stop") {
         setReplayStatus(null);
       } else {

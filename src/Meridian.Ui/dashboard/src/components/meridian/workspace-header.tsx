@@ -1,3 +1,4 @@
+import { RefreshCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { SessionInfo, WorkspaceSummary } from "@/types";
@@ -6,16 +7,21 @@ interface WorkspaceHeaderProps {
   workspace: WorkspaceSummary;
   session: SessionInfo | null;
   onOpenCommandPalette: () => void;
+  onRefresh?: () => void;
 }
 
-export function WorkspaceHeader({ workspace, session, onOpenCommandPalette }: WorkspaceHeaderProps) {
+export function WorkspaceHeader({ workspace, session, onOpenCommandPalette, onRefresh }: WorkspaceHeaderProps) {
   return (
     <header className="rounded-[1.75rem] border border-border bg-panel-strong/80 p-5 lg:p-6">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
       <div className="space-y-4">
         <div className="flex flex-wrap items-center gap-3">
           <Badge variant="outline">{workspace.label}</Badge>
-          {session ? <Badge variant={session.environment}>{session.environment.toUpperCase()}</Badge> : null}
+          {session ? (
+            <Badge variant={session.environment === "research" ? "default" : session.environment}>
+              {session.environment.toUpperCase()}
+            </Badge>
+          ) : null}
           <Badge variant={workspace.status === "Live" ? "success" : "warning"}>{workspace.status}</Badge>
         </div>
         <div className="space-y-2">
@@ -36,6 +42,11 @@ export function WorkspaceHeader({ workspace, session, onOpenCommandPalette }: Wo
             <span className="text-muted-foreground">Loading session</span>
           )}
         </div>
+        {onRefresh && (
+          <Button variant="ghost" size="sm" onClick={onRefresh} title="Refresh all workspace data">
+            <RefreshCcw className="size-4" />
+          </Button>
+        )}
         <Button variant="secondary" onClick={onOpenCommandPalette}>
           Open Command Palette
         </Button>
