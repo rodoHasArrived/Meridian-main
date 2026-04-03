@@ -288,6 +288,7 @@ public partial class App : System.Windows.Application
         // ── Pages (transient — created per navigation) ──────────────────────
         services.AddTransient<Meridian.Wpf.ViewModels.MainPageViewModel>();
         services.AddTransient<MainPage>();
+        services.AddTransient<Meridian.Wpf.ViewModels.DashboardViewModel>();
         services.AddTransient<DashboardPage>();
         services.AddTransient<WatchlistPage>();
         services.AddTransient<ProviderPage>();
