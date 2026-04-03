@@ -191,7 +191,11 @@ internal static class SecurityMasterMapping
             ToOption(GetOptionalString(json, "issuerName")),
             ToOption(GetOptionalString(json, "exchange")),
             ToOption(GetOptionalDecimal(json, "lotSize")),
-            ToOption(GetOptionalDecimal(json, "tickSize")));
+            ToOption(GetOptionalDecimal(json, "tickSize")),
+            ToOption(GetOptionalString(json, "primaryListingMic")),
+            ToOption(GetOptionalString(json, "countryOfIncorporation")),
+            ToOption(GetOptionalInt(json, "settlementCycleDays")),
+            ToOption(GetOptionalString(json, "holidayCalendarId")));
 
     private static SecurityKind ToSecurityKind(string assetClass, JsonElement json)
     {
@@ -205,12 +209,24 @@ internal static class SecurityMasterMapping
                 GetRequiredString(json, "putCall"),
                 GetRequiredDecimal(json, "strike"),
                 GetRequiredDateOnly(json, "expiry"),
-                GetRequiredDecimal(json, "multiplier"))),
+                GetRequiredDecimal(json, "multiplier"),
+                ToOption(GetOptionalString(json, "optChainId")),
+                FSharpOption<ExerciseStyle>.None,
+                ToOption(GetOptionalString(json, "settlementType")),
+                GetOptionalBoolean(json, "isAdjusted") ?? false,
+                ToOption(GetOptionalDateOnly(json, "lastTradingDt")))),
             "Future" => SecurityKind.NewFuture(new FutureTerms(
                 GetRequiredString(json, "rootSymbol"),
                 GetRequiredString(json, "contractMonth"),
                 GetRequiredDateOnly(json, "expiry"),
-                GetRequiredDecimal(json, "multiplier"))),
+                GetRequiredDecimal(json, "multiplier"),
+                ToOption(GetOptionalDateOnly(json, "lastTradingDt")),
+                ToOption(GetOptionalDateOnly(json, "firstNoticeDt")),
+                ToOption(GetOptionalDateOnly(json, "deliveryMonthDt")),
+                ToOption(GetOptionalString(json, "settlementType")),
+                ToOption(GetOptionalString(json, "deliveryLocationCode")),
+                GetOptionalBoolean(json, "isRollTarget") ?? false,
+                ToOption(GetOptionalInt(json, "rollWindowDays")))),
             "Bond" => SecurityKind.NewBond(ToBondTerms(json)),
             "FxSpot" => SecurityKind.NewFxSpot(new FxSpotTerms(
                 GetRequiredString(json, "baseCurrency"),
@@ -316,7 +332,8 @@ internal static class SecurityMasterMapping
             GetOptionalBoolean(json, "isCallable") ?? false,
             ToOption(GetOptionalDateOnly(json, "callDate")),
             ToOption(GetOptionalString(json, "issuerName")),
-            ToOption(GetOptionalString(json, "seniority")));
+            ToOption(GetOptionalString(json, "seniority")),
+            BondSubclass.Corporate);
     }
 
     private static SwapLeg ToSwapLeg(JsonElement json)

@@ -202,6 +202,7 @@ let ``BondTerms callable bond preserves callDate`` () =
         CallDate = Some callDate
         IssuerName = Some "Corp A"
         Seniority = Some "Senior"
+        Subclass = BondSubclass.Corporate
     }
     terms.IsCallable |> should equal true
     terms.CallDate |> should equal (Some callDate)
@@ -237,7 +238,7 @@ let ``CorpActEvent.securityId extracts securityId from MergerAbsorption`` () =
 [<Fact>]
 let ``CorpActEvent.securityId extracts securityId from RightsIssue`` () =
     let sid = SecurityId(Guid.NewGuid())
-    let evt = CorpActEvent.RightsIssue(sid, CorpActId(Guid.NewGuid()), DateOnly(2024, 6, 1), 15.00m, 2.0m)
+    let evt = CorpActEvent.RightsIssue(sid, CorpActId(Guid.NewGuid()), DateOnly(2024, 6, 1), 15.00m, 2.0m, true, None)
     CorpActEvent.securityId evt |> should equal sid
 
 [<Fact>]
@@ -258,7 +259,7 @@ let ``CorpActEvent.exDate extracts ex-date from all cases`` () =
     let split = CorpActEvent.StockSplit(sid, id, exDate, 3m)
     let spinOff = CorpActEvent.SpinOff(sid, id, exDate, SecurityId(Guid.NewGuid()), 0.25m)
     let merger = CorpActEvent.MergerAbsorption(sid, id, exDate, SecurityId(Guid.NewGuid()), 0.8m)
-    let rights = CorpActEvent.RightsIssue(sid, id, exDate, 10.00m, 1.0m)
+    let rights = CorpActEvent.RightsIssue(sid, id, exDate, 10.00m, 1.0m, true, None)
     CorpActEvent.exDate div |> should equal exDate
     CorpActEvent.exDate split |> should equal exDate
     CorpActEvent.exDate spinOff |> should equal exDate
@@ -274,4 +275,4 @@ let ``CorpActEvent.eventType returns correct string for each case`` () =
     CorpActEvent.eventType (CorpActEvent.StockSplit(sid, id, date, 2m)) |> should equal "StockSplit"
     CorpActEvent.eventType (CorpActEvent.SpinOff(sid, id, date, SecurityId(Guid.NewGuid()), 0.5m)) |> should equal "SpinOff"
     CorpActEvent.eventType (CorpActEvent.MergerAbsorption(sid, id, date, SecurityId(Guid.NewGuid()), 1m)) |> should equal "MergerAbsorption"
-    CorpActEvent.eventType (CorpActEvent.RightsIssue(sid, id, date, 10m, 1m)) |> should equal "RightsIssue"
+    CorpActEvent.eventType (CorpActEvent.RightsIssue(sid, id, date, 10m, 1m, true, None)) |> should equal "RightsIssue"

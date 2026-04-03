@@ -160,7 +160,7 @@ internal static class SecurityEconomicDefinitionAdapter
             equityBehavior = definition.Terms.EquityBehavior is null ? null : new
             {
                 shareClass = definition.Terms.EquityBehavior.Value.ShareClass is null ? null : definition.Terms.EquityBehavior.Value.ShareClass.Value,
-                votingRights = definition.Terms.EquityBehavior.Value.VotingRights is null ? null : definition.Terms.EquityBehavior.Value.VotingRights.Value,
+                votingRights = definition.Terms.EquityBehavior.Value.VotingRightsCat is null ? null : definition.Terms.EquityBehavior.Value.VotingRightsCat.Value.ToString(),
                 distributionType = definition.Terms.EquityBehavior.Value.DistributionType is null ? null : definition.Terms.EquityBehavior.Value.DistributionType.Value
             },
             fund = definition.Terms.Fund is null ? null : new

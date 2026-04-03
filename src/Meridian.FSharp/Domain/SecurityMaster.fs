@@ -25,6 +25,14 @@ type CommonTerms = {
     Exchange: string option
     LotSize: decimal option
     TickSize: decimal option
+    /// ISO 10383 Market Identifier Code of the primary listing venue (e.g. "XNAS", "XNYS").
+    PrimaryListingMic: string option
+    /// Country of legal incorporation; may differ from CountryOfRisk (e.g. Bermuda-domiciled NYSE-listed company).
+    CountryOfIncorporation: string option
+    /// Standard settlement lag in business days (e.g. 1 for T+1 US equities, 2 for most bonds and EU equities).
+    SettlementCycleDays: int option
+    /// Named holiday calendar used for settlement and accrual calculations (e.g. "NYSE", "LDN", "T2S").
+    HolidayCalendarId: string option
 }
 
 [<RequireQualifiedAccess>]
@@ -40,9 +48,17 @@ module CommonTerms =
             terms with
                 DisplayName = normalizedDisplayName terms
                 Currency = normalizedCurrency terms
+                PrimaryListingMic = terms.PrimaryListingMic |> Option.map (fun m -> m.Trim().ToUpperInvariant())
         }
 
 type EquityTerms = { ShareClass: string option }
+
+/// Exercise style for options and warrants.
+[<RequireQualifiedAccess>]
+type ExerciseStyle =
+    | American
+    | European
+    | Bermudan
 
 type OptionTerms = {
     UnderlyingId: SecurityId
@@ -50,6 +66,14 @@ type OptionTerms = {
     Strike: decimal
     Expiry: DateOnly
     Multiplier: decimal
+    /// Links this contract to its option chain / series aggregate.
+    OptChainId: string option
+    ExerciseStyle: ExerciseStyle option
+    /// "Physical" or "Cash".
+    SettlementType: string option
+    /// True when this contract has been adjusted for a corporate action (split, special dividend, etc.).
+    IsAdjusted: bool
+    LastTradingDt: DateOnly option
 }
 
 type FutureTerms = {
@@ -57,7 +81,31 @@ type FutureTerms = {
     ContractMonth: string
     Expiry: DateOnly
     Multiplier: decimal
+    LastTradingDt: DateOnly option
+    FirstNoticeDt: DateOnly option
+    DeliveryMonthDt: DateOnly option
+    /// "Physical" or "Cash".
+    SettlementType: string option
+    /// Delivery point code for physically settled commodity futures.
+    DeliveryLocationCode: string option
+    /// True when this contract is the current front-month / roll target.
+    IsRollTarget: bool
+    /// Number of calendar days before expiry when the roll window opens.
+    RollWindowDays: int option
 }
+
+/// Discriminated union identifying the bond's economic subclass.
+[<RequireQualifiedAccess>]
+type BondSubclass =
+    | Sovereign
+    | Corporate
+    | Municipal
+    | Agency
+    | Convertible
+    | InflationLinked
+    | FloatingRate
+    | AssetBacked
+    | Other of string
 
 [<RequireQualifiedAccess>]
 type BondCouponStructure =
@@ -73,18 +121,20 @@ type BondTerms = {
     CallDate: DateOnly option
     IssuerName: string option
     Seniority: string option
+    /// Economic subclass of this bond instrument.
+    Subclass: BondSubclass
 }
 
 [<RequireQualifiedAccess>]
 module BondTerms =
     let fixedRate maturity couponRate dayCount issuerName =
-        { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.Fixed(couponRate, dayCount); IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None }
+        { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.Fixed(couponRate, dayCount); IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None; Subclass = BondSubclass.Other "Unknown" }
 
     let floatingRate maturity index spreadBps issuerName =
-        { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.Floating(index, spreadBps, None, None, None); IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None }
+        { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.Floating(index, spreadBps, None, None, None); IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None; Subclass = BondSubclass.FloatingRate }
 
     let zeroCoupon maturity issuerName =
-        { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.ZeroCoupon; IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None }
+        { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.ZeroCoupon; IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None; Subclass = BondSubclass.Other "Unknown" }
 
     let couponRate (terms: BondTerms) =
         match terms.Coupon with
