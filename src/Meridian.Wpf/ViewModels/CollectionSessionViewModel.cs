@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Services;
+using NotificationService = Meridian.Wpf.Services.NotificationService;
 
 namespace Meridian.Wpf.ViewModels;
 
