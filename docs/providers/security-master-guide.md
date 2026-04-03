@@ -203,7 +203,7 @@ Marks a specific conflict as resolved. The `ConflictId` in the request body must
 ```
 POST /api/security-master/import
 ```
-Imports securities from a CSV or JSON payload over HTTP. Request body: `{ "fileContent": "...", "fileExtension": ".csv" }`. Returns an import result with `Imported`, `Skipped`, `Failed`, `ConflictsDetected`, and `Errors` counters.
+Imports securities from a CSV or JSON payload over HTTP. Request body: `{ "fileContent": "...", "fileExtension": ".csv" }`. Returns an import result with `Imported`, `Skipped`, `Failed`, and `ConflictsDetected` counters, plus an `Errors` list of error strings.
 
 ### Ingest Status
 ```
