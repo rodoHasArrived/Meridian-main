@@ -323,6 +323,48 @@ jobs:
           node take-screenshots.mjs
           echo "Screenshots captured:"
           ls -lh docs/screenshots/*.png
+          expected_files=(
+            docs/screenshots/01-dashboard.png
+            docs/screenshots/02-workstation.png
+            docs/screenshots/03-swagger.png
+            docs/screenshots/04-status-overview.png
+            docs/screenshots/05-data-source.png
+            docs/screenshots/06-data-sources.png
+            docs/screenshots/07-backfill.png
+            docs/screenshots/08-derivatives.png
+            docs/screenshots/09-symbols.png
+            docs/screenshots/10-status.png
+            docs/screenshots/11-login.png
+            docs/screenshots/12-workstation-research.png
+            docs/screenshots/13-workstation-trading.png
+            docs/screenshots/14-workstation-data-operations.png
+            docs/screenshots/14-workstation-trading-orders.png
+            docs/screenshots/15-workstation-governance.png
+            docs/screenshots/15-workstation-trading-positions.png
+            docs/screenshots/16-workstation-trading-risk.png
+            docs/screenshots/17-workstation-data-operations-providers.png
+            docs/screenshots/18-workstation-data-operations-backfills.png
+            docs/screenshots/19-workstation-data-operations-exports.png
+            docs/screenshots/20-workstation-governance-ledger.png
+            docs/screenshots/21-workstation-governance-reconciliation.png
+            docs/screenshots/22-workstation-governance-security-master.png
+          )
+          missing=0
+          for screenshot in "${expected_files[@]}"; do
+            if [ ! -f "$screenshot" ]; then
+              echo "::error::Missing expected screenshot: $screenshot"
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            echo "Available screenshot files:"
+            find docs/screenshots -maxdepth 1 -name '*.png' -print | sort
+            echo "Top-level docs/screenshots directory listing:"
+            ls -lah docs/screenshots || true
+            echo "Dashboard log tail (for troubleshooting render failures):"
+            tail -100 /tmp/dashboard.log || true
+            exit 1
+          fi
 
       - name: Stop dashboard
         if: always()
@@ -363,10 +405,6 @@ jobs:
             echo "| Workstation – Trading | \`docs/screenshots/13-workstation-trading.png\` |"
             echo "| Workstation – Data Operations | \`docs/screenshots/14-workstation-data-operations.png\` |"
             echo "| Workstation – Governance | \`docs/screenshots/15-workstation-governance.png\` |"
-            echo "| Workstation – Research | \`docs/screenshots/10-workstation-research.png\` |"
-            echo "| Workstation – Trading | \`docs/screenshots/11-workstation-trading.png\` |"
-            echo "| Workstation – Data Operations | \`docs/screenshots/12-workstation-data-operations.png\` |"
-            echo "| Workstation – Governance | \`docs/screenshots/13-workstation-governance.png\` |"
             echo "| Workstation – Trading: Orders | \`docs/screenshots/14-workstation-trading-orders.png\` |"
             echo "| Workstation – Trading: Positions | \`docs/screenshots/15-workstation-trading-positions.png\` |"
             echo "| Workstation – Trading: Risk | \`docs/screenshots/16-workstation-trading-risk.png\` |"
