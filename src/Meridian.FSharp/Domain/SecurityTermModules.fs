@@ -261,6 +261,57 @@ type VenueTerms = {
     OtcProtocol: string option
 }
 
+// ---------------------------------------------------------------------------
+// Structured / factorable bond terms (MBS, CMO, CLO, ABS, PO, IO, etc.)
+// ---------------------------------------------------------------------------
+
+/// Prepayment speed assumption used for cash-flow analytics on factorable bonds.
+[<RequireQualifiedAccess>]
+type PrepaymentModel =
+    /// PSA standard prepayment model expressed as a percentage (e.g. 150.0 = 150% PSA).
+    | Psa of speed: decimal
+    /// Constant Prepayment Rate — annualised fraction of the remaining pool (e.g. 0.06 = 6% CPR).
+    | Cpr of annualRate: decimal
+    /// Single Monthly Mortality — monthly equivalent of CPR.
+    | Smm of monthlyRate: decimal
+
+/// Analytics and pool-level data for factorable structured-credit instruments
+/// (MBS, CMO, CLO, ABS, PO strips, IO strips, CMO residuals, etc.).
+type StructuredProductTerms = {
+    /// Remaining principal balance as a fraction of original face value (0.0–1.0).
+    /// Declines over time as scheduled and unscheduled principal is returned.
+    Factor: decimal option
+    /// As-of date for the current Factor.
+    FactorDate: DateOnly option
+    /// Weighted-average coupon of the underlying loan pool (%).
+    WeightedAvgCoupon: decimal option
+    /// Weighted-average remaining maturity of the pool loans in months.
+    WeightedAvgMaturityMonths: int option
+    /// Weighted-average loan age of the pool in months (WALA).
+    WeightedAvgLoanAgeMos: int option
+    /// Collateral asset type backing the pool (e.g. "ResidentialMortgage",
+    /// "AutoLoan", "CreditCard", "StudentLoan", "LeveragedLoan").
+    CollateralType: string option
+    /// Pool or deal identifier (e.g. Fannie Mae pool number, CLO deal CUSIP).
+    PoolIdentifier: string option
+    /// Tranche class within a multi-class structure (e.g. "A1", "B", "M1", "Z", "IO", "PO").
+    TrancheClass: string option
+    /// Prepayment speed assumption used for pricing and average-life calculation.
+    PrepaymentAssumption: PrepaymentModel option
+    /// Estimated average life in years under the prepayment assumption.
+    AverageLifeYears: decimal option
+    /// True when this security receives only interest cash flows (IO strip or residual).
+    IsInterestOnly: bool
+    /// True when this security receives only principal cash flows (PO strip).
+    IsPrincipalOnly: bool
+    /// For IO strips: the outstanding notional balance of the underlying pool.
+    NotionalBalance: decimal option
+    /// Originator or guarantor name (e.g. "Fannie Mae", "Freddie Mac", "Ginnie Mae").
+    Originator: string option
+    /// Credit-enhancement level as a percentage of deal balance (subordination, OC, etc.).
+    CreditEnhancementPct: decimal option
+}
+
 /// Calendar reference for instruments subject to multiple holiday calendars.
 type CalendarRef = {
     CalendarId: string
@@ -298,6 +349,8 @@ type SecurityTermModules = {
     Esg: EsgTerms option
     Venue: VenueTerms option
     MultiCalendar: MultiCalendarTerms option
+    // --- Structured / factorable bond module ---
+    StructuredProduct: StructuredProductTerms option
 }
 
 [<RequireQualifiedAccess>]
@@ -325,4 +378,5 @@ module SecurityTermModules =
         Esg = None
         Venue = None
         MultiCalendar = None
+        StructuredProduct = None
     }

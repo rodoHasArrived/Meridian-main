@@ -239,6 +239,36 @@ module SecurityMasterLegacyUpgrade =
                         }
             }
         | SecurityKind.Bond terms ->
+            let isStructured =
+                match terms.Subclass with
+                | BondSubclass.MortgageBacked | BondSubclass.AgencyMbs | BondSubclass.CommercialMbs
+                | BondSubclass.Cmo | BondSubclass.Clo | BondSubclass.Cdo
+                | BondSubclass.AssetBacked
+                | BondSubclass.PrincipalOnly | BondSubclass.InterestOnly | BondSubclass.InverseInterestOnly -> true
+                | _ -> false
+            let structuredTerms =
+                if isStructured then
+                    Some {
+                        Factor = None
+                        FactorDate = None
+                        WeightedAvgCoupon = None
+                        WeightedAvgMaturityMonths = None
+                        WeightedAvgLoanAgeMos = None
+                        CollateralType = None
+                        PoolIdentifier = None
+                        TrancheClass = None
+                        PrepaymentAssumption = None
+                        AverageLifeYears = None
+                        IsInterestOnly =
+                            match terms.Subclass with
+                            | BondSubclass.InterestOnly | BondSubclass.InverseInterestOnly -> true
+                            | _ -> false
+                        IsPrincipalOnly = terms.Subclass = BondSubclass.PrincipalOnly
+                        NotionalBalance = None
+                        Originator = None
+                        CreditEnhancementPct = None
+                    }
+                else None
             {
                 SecurityTermModules.empty with
                     Maturity =
@@ -254,6 +284,7 @@ module SecurityMasterLegacyUpgrade =
                             PaymentFrequency = None
                             DayCount = BondTerms.dayCount terms
                         }
+                    StructuredProduct = structuredTerms
             }
         | SecurityKind.FxSpot _ ->
             SecurityTermModules.empty

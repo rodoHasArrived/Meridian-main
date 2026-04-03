@@ -104,7 +104,27 @@ type BondSubclass =
     | Convertible
     | InflationLinked
     | FloatingRate
+    // --- Asset-backed / structured credit ---
+    /// Generic asset-backed security (auto loans, credit cards, student loans, etc.).
     | AssetBacked
+    /// Agency or non-agency residential mortgage-backed security (pass-through pool).
+    | MortgageBacked
+    /// Agency MBS guaranteed by Fannie Mae, Freddie Mac, or Ginnie Mae.
+    | AgencyMbs
+    /// Commercial mortgage-backed security.
+    | CommercialMbs
+    /// Collateralized Mortgage Obligation — a CMO tranche carved from an MBS pool.
+    | Cmo
+    /// Collateralized Loan Obligation — CLO tranche backed by leveraged loans.
+    | Clo
+    /// Collateralized Debt Obligation — generic CDO tranche.
+    | Cdo
+    /// Principal-Only strip: receives only scheduled and unscheduled principal cash flows.
+    | PrincipalOnly
+    /// Interest-Only strip: receives only interest cash flows; notional-referenced.
+    | InterestOnly
+    /// Inverse Interest-Only strip: leveraged IO with inverse-floating coupon.
+    | InverseInterestOnly
     | Other of string
 
 [<RequireQualifiedAccess>]

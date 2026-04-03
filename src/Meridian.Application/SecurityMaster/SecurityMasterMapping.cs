@@ -309,6 +309,28 @@ internal static class SecurityMasterMapping
         };
     }
 
+    private static BondSubclass ParseBondSubclass(string? subclass) => subclass switch
+    {
+        "Sovereign"          => BondSubclass.Sovereign,
+        "Municipal"          => BondSubclass.Municipal,
+        "Agency"             => BondSubclass.Agency,
+        "Convertible"        => BondSubclass.Convertible,
+        "InflationLinked"    => BondSubclass.InflationLinked,
+        "FloatingRate"       => BondSubclass.FloatingRate,
+        "AssetBacked"        => BondSubclass.AssetBacked,
+        "MortgageBacked"     => BondSubclass.MortgageBacked,
+        "AgencyMbs"          => BondSubclass.AgencyMbs,
+        "CommercialMbs"      => BondSubclass.CommercialMbs,
+        "Cmo"                => BondSubclass.Cmo,
+        "Clo"                => BondSubclass.Clo,
+        "Cdo"                => BondSubclass.Cdo,
+        "PrincipalOnly"      => BondSubclass.PrincipalOnly,
+        "InterestOnly"       => BondSubclass.InterestOnly,
+        "InverseInterestOnly"=> BondSubclass.InverseInterestOnly,
+        null or ""           => BondSubclass.Corporate,
+        var other            => BondSubclass.NewOther(other)
+    };
+
     private static BondTerms ToBondTerms(JsonElement json)
     {
         var couponType = GetOptionalString(json, "couponType") ?? "Fixed";
@@ -333,7 +355,7 @@ internal static class SecurityMasterMapping
             ToOption(GetOptionalDateOnly(json, "callDate")),
             ToOption(GetOptionalString(json, "issuerName")),
             ToOption(GetOptionalString(json, "seniority")),
-            BondSubclass.Corporate);
+            ParseBondSubclass(GetOptionalString(json, "subclass")));
     }
 
     private static SwapLeg ToSwapLeg(JsonElement json)

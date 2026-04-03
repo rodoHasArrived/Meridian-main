@@ -276,3 +276,86 @@ let ``CorpActEvent.eventType returns correct string for each case`` () =
     CorpActEvent.eventType (CorpActEvent.SpinOff(sid, id, date, SecurityId(Guid.NewGuid()), 0.5m)) |> should equal "SpinOff"
     CorpActEvent.eventType (CorpActEvent.MergerAbsorption(sid, id, date, SecurityId(Guid.NewGuid()), 1m)) |> should equal "MergerAbsorption"
     CorpActEvent.eventType (CorpActEvent.RightsIssue(sid, id, date, 10m, 1m, true, None)) |> should equal "RightsIssue"
+
+// ---------------------------------------------------------------------------
+// Structured / factorable bond tests
+// ---------------------------------------------------------------------------
+
+[<Fact>]
+let ``BondSubclass MortgageBacked round-trips through BondTerms`` () =
+    let terms = BondTerms.fixedRate (DateOnly(2050, 1, 1)) 4.5m (Some "Act/360") (Some "Freddie Mac")
+    let mbs = { terms with Subclass = BondSubclass.MortgageBacked }
+    mbs.Subclass |> should equal BondSubclass.MortgageBacked
+    mbs.IsCallable |> should equal false
+
+[<Fact>]
+let ``BondSubclass PrincipalOnly carries IsPrincipalOnly intent`` () =
+    let terms = { BondTerms.zeroCoupon (DateOnly(2040, 6, 1)) (Some "Fannie Mae") with Subclass = BondSubclass.PrincipalOnly }
+    terms.Subclass |> should equal BondSubclass.PrincipalOnly
+
+[<Fact>]
+let ``BondSubclass InterestOnly carries InterestOnly intent`` () =
+    let terms = { BondTerms.fixedRate (DateOnly(2038, 3, 1)) 0m None None with Subclass = BondSubclass.InterestOnly }
+    terms.Subclass |> should equal BondSubclass.InterestOnly
+
+[<Fact>]
+let ``BondSubclass Clo is distinct from Cmo and AssetBacked`` () =
+    BondSubclass.Clo |> should not' (equal BondSubclass.Cmo)
+    BondSubclass.Clo |> should not' (equal BondSubclass.AssetBacked)
+
+[<Fact>]
+let ``StructuredProductTerms factor defaults to None for fresh record`` () =
+    let sp = {
+        Factor = Some 0.85m
+        FactorDate = Some (DateOnly(2025, 3, 1))
+        WeightedAvgCoupon = Some 6.25m
+        WeightedAvgMaturityMonths = Some 312
+        WeightedAvgLoanAgeMos = Some 24
+        CollateralType = Some "ResidentialMortgage"
+        PoolIdentifier = Some "FM12345"
+        TrancheClass = Some "A1"
+        PrepaymentAssumption = Some (PrepaymentModel.Psa 165m)
+        AverageLifeYears = Some 7.2m
+        IsInterestOnly = false
+        IsPrincipalOnly = false
+        NotionalBalance = None
+        Originator = Some "Freddie Mac"
+        CreditEnhancementPct = Some 6.0m
+    }
+    sp.Factor |> should equal (Some 0.85m)
+    sp.CollateralType |> should equal (Some "ResidentialMortgage")
+    sp.IsInterestOnly |> should equal false
+
+[<Fact>]
+let ``PrepaymentModel Psa carries correct speed`` () =
+    let model = PrepaymentModel.Psa 200m
+    match model with
+    | PrepaymentModel.Psa speed -> speed |> should equal 200m
+    | _ -> failwith "unexpected case"
+
+[<Fact>]
+let ``PrepaymentModel Cpr carries annual rate`` () =
+    let model = PrepaymentModel.Cpr 0.08m
+    match model with
+    | PrepaymentModel.Cpr rate -> rate |> should equal 0.08m
+    | _ -> failwith "unexpected case"
+
+[<Fact>]
+let ``SecurityTermModules empty has StructuredProduct None`` () =
+    SecurityTermModules.empty.StructuredProduct |> should equal None
+
+[<Fact>]
+let ``IO strip StructuredProductTerms sets IsInterestOnly true`` () =
+    let sp = {
+        Factor = None; FactorDate = None; WeightedAvgCoupon = None
+        WeightedAvgMaturityMonths = None; WeightedAvgLoanAgeMos = None
+        CollateralType = Some "ResidentialMortgage"
+        PoolIdentifier = None; TrancheClass = Some "IO"
+        PrepaymentAssumption = None; AverageLifeYears = None
+        IsInterestOnly = true; IsPrincipalOnly = false
+        NotionalBalance = Some 10_000_000m
+        Originator = None; CreditEnhancementPct = None
+    }
+    sp.IsInterestOnly |> should equal true
+    sp.IsPrincipalOnly |> should equal false
+    sp.NotionalBalance |> should equal (Some 10_000_000m)
