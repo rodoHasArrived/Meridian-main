@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-04-02 22:15:28 UTC. Do not edit manually.
+> Auto-generated on 2026-04-03 04:33:32 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -744,6 +744,24 @@ Meridian-main
 │   │   ├── 02-workstation.png
 │   │   ├── 03-swagger.png
 │   │   ├── 04-status-overview.png
+│   │   ├── 05-data-source.png
+│   │   ├── 06-data-sources.png
+│   │   ├── 07-backfill.png
+│   │   ├── 08-derivatives.png
+│   │   ├── 09-symbols.png
+│   │   ├── 10-workstation-research.png
+│   │   ├── 11-workstation-trading.png
+│   │   ├── 12-workstation-data-operations.png
+│   │   ├── 13-workstation-governance.png
+│   │   ├── 14-workstation-trading-orders.png
+│   │   ├── 15-workstation-trading-positions.png
+│   │   ├── 16-workstation-trading-risk.png
+│   │   ├── 17-workstation-data-operations-providers.png
+│   │   ├── 18-workstation-data-operations-backfills.png
+│   │   ├── 19-workstation-data-operations-exports.png
+│   │   ├── 20-workstation-governance-ledger.png
+│   │   ├── 21-workstation-governance-reconciliation.png
+│   │   ├── 22-workstation-governance-security-master.png
 │   │   └── README.md
 │   ├── security
 │   │   ├── known-vulnerabilities.md
@@ -1455,6 +1473,20 @@ Meridian-main
 │   │   │   ├── BaseBrokerageGateway.cs
 │   │   │   ├── BrokerageGatewayAdapter.cs
 │   │   │   └── PaperTradingGateway.cs
+│   │   ├── Allocation
+│   │   │   ├── AllocationResult.cs
+│   │   │   ├── AllocationRule.cs
+│   │   │   ├── BlockTradeAllocator.cs
+│   │   │   ├── IAllocationEngine.cs
+│   │   │   └── ProportionalAllocationEngine.cs
+│   │   ├── Derivatives
+│   │   │   ├── FuturePosition.cs
+│   │   │   ├── IDerivativePosition.cs
+│   │   │   └── OptionPosition.cs
+│   │   ├── Events
+│   │   │   ├── ITradeEventPublisher.cs
+│   │   │   ├── LedgerPostingConsumer.cs
+│   │   │   └── TradeExecutedEvent.cs
 │   │   ├── Exceptions
 │   │   │   └── UnsupportedOrderRequestException.cs
 │   │   ├── Interfaces
@@ -1462,6 +1494,11 @@ Meridian-main
 │   │   │   ├── IExecutionContext.cs
 │   │   │   ├── ILiveFeedAdapter.cs
 │   │   │   └── IOrderGateway.cs
+│   │   ├── Margin
+│   │   │   ├── IMarginModel.cs
+│   │   │   ├── MarginRequirement.cs
+│   │   │   ├── PortfolioMarginModel.cs
+│   │   │   └── RegTMarginModel.cs
 │   │   ├── Models
 │   │   │   ├── AccountKind.cs
 │   │   │   ├── ExecutionMode.cs
@@ -1472,6 +1509,10 @@ Meridian-main
 │   │   │   ├── OrderGatewayCapabilities.cs
 │   │   │   ├── OrderStatus.cs
 │   │   │   └── OrderStatusUpdate.cs
+│   │   ├── MultiCurrency
+│   │   │   ├── FxRate.cs
+│   │   │   ├── IFxRateProvider.cs
+│   │   │   └── MultiCurrencyCashBalance.cs
 │   │   ├── Serialization
 │   │   │   └── ExecutionJsonContext.cs
 │   │   ├── Services
@@ -1484,6 +1525,11 @@ Meridian-main
 │   │   │   ├── PortfolioRegistry.cs
 │   │   │   ├── PositionReconciliationService.cs
 │   │   │   └── PositionSyncOptions.cs
+│   │   ├── TaxLotAccounting
+│   │   │   ├── ITaxLotSelector.cs
+│   │   │   ├── TaxLotAccountingMethod.cs
+│   │   │   ├── TaxLotRelief.cs
+│   │   │   └── TaxLotSelectors.cs
 │   │   ├── BrokerageServiceRegistration.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── IRiskValidator.cs
@@ -1494,6 +1540,10 @@ Meridian-main
 │   │   ├── PaperTradingGateway.cs
 │   │   └── SecurityMasterGate.cs
 │   ├── Meridian.Execution.Sdk
+│   │   ├── Derivatives
+│   │   │   ├── FutureDetails.cs
+│   │   │   ├── OptionDetails.cs
+│   │   │   └── OptionGreeks.cs
 │   │   ├── BrokerageConfiguration.cs
 │   │   ├── IBrokerageGateway.cs
 │   │   ├── IBrokeragePositionSync.cs
@@ -1501,7 +1551,8 @@ Meridian-main
 │   │   ├── IOrderManager.cs
 │   │   ├── IPositionTracker.cs
 │   │   ├── Meridian.Execution.Sdk.csproj
-│   │   └── Models.cs
+│   │   ├── Models.cs
+│   │   └── TaxLot.cs
 │   ├── Meridian.FSharp
 │   │   ├── Calculations
 │   │   │   ├── Aggregations.fs
@@ -1664,6 +1715,7 @@ Meridian-main
 │   │   │   │   ├── RobinhoodBrokerageGateway.cs
 │   │   │   │   ├── RobinhoodHistoricalDataProvider.cs
 │   │   │   │   ├── RobinhoodMarketDataClient.cs
+│   │   │   │   ├── RobinhoodSymbolSearchModels.cs
 │   │   │   │   └── RobinhoodSymbolSearchProvider.cs
 │   │   │   ├── StockSharp
 │   │   │   │   ├── Converters
@@ -2888,6 +2940,13 @@ Meridian-main
 │   │   │   │   └── TradeModelTests.cs
 │   │   │   └── StrongDomainTypeTests.cs
 │   │   ├── Execution
+│   │   │   ├── Enhancements
+│   │   │   │   ├── AllocationEngineTests.cs
+│   │   │   │   ├── DerivativePositionTests.cs
+│   │   │   │   ├── EventDrivenDecouplingTests.cs
+│   │   │   │   ├── MarginModelTests.cs
+│   │   │   │   ├── MultiCurrencyTests.cs
+│   │   │   │   └── TaxLotAccountingTests.cs
 │   │   │   ├── BrokerageGatewayAdapterTests.cs
 │   │   │   ├── MultiAccountPaperTradingPortfolioTests.cs
 │   │   │   ├── OrderManagementSystemTests.cs
