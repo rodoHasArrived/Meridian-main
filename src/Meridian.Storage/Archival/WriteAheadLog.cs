@@ -544,7 +544,7 @@ public sealed class WriteAheadLog : IAsyncDisposable
         using var reader = new StreamReader(stream);
 
         // Skip header
-        var header = await reader.ReadLineAsync();
+        var header = await reader.ReadLineAsync(ct);
         if (header == null || !header.StartsWith(WalMagic))
         {
             _log.Warning("Invalid WAL header in {File}", walFile);
@@ -553,7 +553,7 @@ public sealed class WriteAheadLog : IAsyncDisposable
 
         while (!reader.EndOfStream && !ct.IsCancellationRequested)
         {
-            var line = await reader.ReadLineAsync();
+            var line = await reader.ReadLineAsync(ct);
             if (string.IsNullOrWhiteSpace(line))
                 continue;
 
@@ -738,7 +738,7 @@ public sealed class WriteAheadLog : IAsyncDisposable
                 using var reader = new StreamReader(stream);
 
                 // Read and validate header
-                var header = await reader.ReadLineAsync();
+                var header = await reader.ReadLineAsync(ct);
                 if (header == null || !header.StartsWith(WalMagic))
                 {
                     _log.Warning("Skipping WAL file with invalid header during repair: {File}", walFile);
@@ -747,7 +747,7 @@ public sealed class WriteAheadLog : IAsyncDisposable
 
                 while (!reader.EndOfStream && !ct.IsCancellationRequested)
                 {
-                    var line = await reader.ReadLineAsync();
+                    var line = await reader.ReadLineAsync(ct);
                     if (string.IsNullOrWhiteSpace(line))
                         continue;
 
@@ -815,9 +815,8 @@ public sealed class WriteAheadLog : IAsyncDisposable
                     await writer.FlushAsync();
                 }
 
-                // Replace original with repaired file
-                File.Delete(walFile);
-                File.Move(tempPath, walFile);
+                // Replace original with repaired file — single atomic rename, no crash window
+                File.Move(tempPath, walFile, overwrite: true);
 
                 repairedFiles++;
 

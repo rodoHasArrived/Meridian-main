@@ -543,8 +543,12 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
         {
             await SendAsync(
                 JsonSerializer.Serialize(new { action = "subscribe", @params = channel }),
-                CancellationToken.None).ConfigureAwait(false);
+                ct).ConfigureAwait(false);
             Log.Debug("Sent subscribe request for {Channel}", channel);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -558,8 +562,12 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
         {
             await SendAsync(
                 JsonSerializer.Serialize(new { action = "unsubscribe", @params = channel }),
-                CancellationToken.None).ConfigureAwait(false);
+                ct).ConfigureAwait(false);
             Log.Debug("Sent unsubscribe request for {Channel}", channel);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -679,7 +687,7 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
 
             _tradeCollector.OnTrade(trade);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OutOfMemoryException and not StackOverflowException)
         {
             Log.Warning(ex, "Failed to process Polygon trade message");
         }
@@ -737,7 +745,7 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
 
             _quoteCollector.OnQuote(quote);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OutOfMemoryException and not StackOverflowException)
         {
             Log.Warning(ex, "Failed to process Polygon quote message");
         }
@@ -811,7 +819,7 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
                 "Processed {Timeframe} aggregate for {Symbol}: O={Open} H={High} L={Low} C={Close} V={Volume}",
                 timeframe, symbol, open, high, low, close, volume);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OutOfMemoryException and not StackOverflowException)
         {
             Log.Warning(ex, "Failed to process Polygon aggregate message");
         }
