@@ -9,7 +9,7 @@ namespace Meridian.Wpf.Converters;
 /// Converts an <see cref="int"/> (or any numeric value) to a <see cref="Visibility"/> value.
 /// A value greater than zero maps to <see cref="Visibility.Visible"/>;
 /// zero or negative maps to <see cref="Visibility.Collapsed"/>.
-/// Pass <c>ConverterParameter="Inverse"</c> to reverse the mapping
+/// Pass <c>ConverterParameter="Inverse"</c> (or <c>"Invert"</c>) to reverse the mapping
 /// (e.g. show a placeholder when the count is zero).
 /// </summary>
 [ValueConversion(typeof(int), typeof(Visibility))]
@@ -20,13 +20,21 @@ public sealed class IntToVisibilityConverter : IValueConverter
         var invert = string.Equals(parameter as string, "Inverse", StringComparison.OrdinalIgnoreCase)
                      || string.Equals(parameter as string, "Invert", StringComparison.OrdinalIgnoreCase);
 
-        var intValue = value switch
+        int intValue;
+        try
         {
-            int i    => i,
-            long l   => (int)l,
-            double d => (int)d,
-            _        => System.Convert.ToInt32(value ?? 0)
-        };
+            intValue = value switch
+            {
+                int i    => i,
+                long l   => (int)l,
+                double d => (int)d,
+                _        => System.Convert.ToInt32(value ?? 0)
+            };
+        }
+        catch
+        {
+            intValue = 0;
+        }
 
         var isPositive = intValue > 0;
         return (isPositive ^ invert) ? Visibility.Visible : Visibility.Collapsed;
