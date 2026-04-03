@@ -2,9 +2,8 @@ using System;
 using System.Collections;
 using System.Linq;
 using System.Threading.Tasks;
-using CollectionSessionService = Meridian.Ui.Services.CollectionSessionService;
-using NotificationService = Meridian.Wpf.Services.NotificationService;
-using NotificationType = Meridian.Wpf.Services.NotificationType;
+using Meridian.Ui.Services;
+using Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.ViewModels;
 

@@ -1,7 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.Input;
-using Meridian.Ui.Services.Services;
+using Meridian.Ui.Services;
 
 namespace Meridian.Wpf.ViewModels;
 
