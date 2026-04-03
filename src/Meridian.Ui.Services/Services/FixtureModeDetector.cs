@@ -71,6 +71,36 @@ public sealed class FixtureModeDetector
     };
 
     /// <summary>
+    /// Gets the currently active fixture scenario.
+    /// Only meaningful when <see cref="IsFixtureMode"/> is true.
+    /// </summary>
+    public FixtureScenario ActiveScenario => FixtureDataService.Instance.ActiveScenario;
+
+    /// <summary>
+    /// Gets a short human-readable label for the active fixture scenario,
+    /// suitable for display in the fixture banner (e.g. "Connected (healthy)").
+    /// </summary>
+    public string ScenarioLabel => FixtureDataService.GetScenarioLabel(FixtureDataService.Instance.ActiveScenario);
+
+    /// <summary>
+    /// Advances the fixture data to the next scenario in the cycle and raises
+    /// <see cref="ModeChanged"/> so the UI banner refreshes.
+    /// Has no effect when <see cref="IsFixtureMode"/> is false.
+    /// </summary>
+    /// <returns>The new active scenario after cycling.</returns>
+    public FixtureScenario CycleScenario()
+    {
+        if (!_isFixtureMode)
+        {
+            return FixtureDataService.Instance.ActiveScenario;
+        }
+
+        var next = FixtureDataService.Instance.CycleToNextScenario();
+        ModeChanged?.Invoke(this, EventArgs.Empty);
+        return next;
+    }
+
+    /// <summary>
     /// Gets the banner background color suggestion.
     /// Fixture mode: amber/orange, Offline: red.
     /// </summary>
