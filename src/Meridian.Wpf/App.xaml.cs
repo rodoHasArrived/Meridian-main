@@ -6,12 +6,19 @@ using System.Windows.Threading;
 using System.Windows.Forms;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Meridian.Application.Services;
 using Meridian.Application.SecurityMaster;
 using Meridian.Backtesting;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.QuantScript;
+using Meridian.QuantScript.Api;
+using Meridian.QuantScript.Compilation;
+using Meridian.QuantScript.Plotting;
 using Meridian.Storage.SecurityMaster;
+using Meridian.Storage.Store;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
@@ -209,6 +216,9 @@ public partial class App : System.Windows.Application
         // Register shared desktop HttpClient configurations
         services.AddDesktopHttpClients();
 
+        // ILogger<T> infrastructure — must be first so all services can resolve loggers
+        services.AddLogging();
+
         // Shared API infrastructure
         services.AddSingleton(_ => ApiClientService.Instance);
 
@@ -336,6 +346,21 @@ public partial class App : System.Windows.Application
         services.AddTransient<AgentPage>();
         services.AddTransient<DashboardWebPage>();
 
+        // ── Missing pages (registered for DI-aware navigation) ───────────────
+        services.AddTransient<AggregatePortfolioPage>();
+        services.AddTransient<BatchBacktestPage>();
+        services.AddTransient<ClusterStatusPage>();
+        services.AddTransient<CredentialManagementPage>();
+        services.AddTransient<DirectLendingPage>();
+        services.AddTransient<OptionsPage>();
+        services.AddTransient<PositionBlotterPage>();
+        services.AddTransient<QualityArchivePage>();
+        services.AddTransient<QuantScriptPage>();
+        services.AddTransient<ResearchWorkspaceShellPage>();
+        services.AddTransient<RunCashFlowPage>();
+        services.AddTransient<RunRiskPage>();
+        services.AddTransient<TradingWorkspaceShellPage>();
+
         // ── Backtesting service ──────────────────────────────────────────────
         // Registered in RegisterStrategyWorkspaceServices so optional Security Master
         // collaborators can be attached when that feature is enabled.
@@ -369,6 +394,31 @@ public partial class App : System.Windows.Application
         services.AddTransient<Meridian.Wpf.ViewModels.WatchlistViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.SettingsViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.CollectionSessionViewModel>();
+
+        // ── Missing ViewModels ───────────────────────────────────────────────
+        services.AddTransient<Meridian.Wpf.ViewModels.BatchBacktestViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.ClusterStatusViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.CredentialManagementViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.QualityArchiveViewModel>();
+
+        // ── Quality archive store (ILogger<T> dependency — requires AddLogging()) ──
+        services.AddSingleton<IQualityArchiveStore, QualityArchiveStore>();
+
+        // ── QuantScript services ─────────────────────────────────────────────
+        services.Configure<QuantScriptOptions>(_ => { });
+        services.AddSingleton<PlotQueue>();
+        services.AddSingleton<WpfServices.IQuantScriptLayoutService, WpfServices.QuantScriptLayoutService>();
+        services.AddTransient<IQuantScriptCompiler, RoslynScriptCompiler>();
+        services.AddSingleton<IQuantDataContext>(sp =>
+        {
+            var opts = sp.GetService<IOptions<QuantScriptOptions>>()?.Value ?? new QuantScriptOptions();
+            var store = new JsonlMarketDataStore(opts.DefaultDataRoot);
+            var logger = sp.GetRequiredService<ILogger<QuantDataContext>>();
+            return new QuantDataContext(store, logger,
+                sp.GetService<ISecurityMasterQueryService>());
+        });
+        services.AddTransient<IScriptRunner, ScriptRunner>();
+        services.AddTransient<QuantScriptViewModel>();
 
         // ── Plugin loader service ────────────────────────────────────────────
         services.AddSingleton<Meridian.Infrastructure.DataSources.DataSourceRegistry>();
@@ -908,7 +958,7 @@ public partial class App : System.Windows.Application
         try
         {
             var version = Microsoft.Web.WebView2.Core.CoreWebView2Environment.GetAvailableBrowserVersionString();
-            WpfServices.LoggingService.Instance.LogInformation(
+            WpfServices.LoggingService.Instance.LogInfo(
                 $"[WebView2] Runtime available — version {version}");
         }
         catch
