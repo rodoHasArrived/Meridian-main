@@ -938,11 +938,17 @@ Use these documents together when planning or implementing new work:
 │   │   ├── 07-backfill.png
 │   │   ├── 08-derivatives.png
 │   │   ├── 09-symbols.png
+│   │   ├── 10-status.png
 │   │   ├── 10-workstation-research.png
+│   │   ├── 11-login.png
 │   │   ├── 11-workstation-trading.png
 │   │   ├── 12-workstation-data-operations.png
+│   │   ├── 12-workstation-research.png
 │   │   ├── 13-workstation-governance.png
+│   │   ├── 13-workstation-trading.png
+│   │   ├── 14-workstation-data-operations.png
 │   │   ├── 14-workstation-trading-orders.png
+│   │   ├── 15-workstation-governance.png
 │   │   ├── 15-workstation-trading-positions.png
 │   │   ├── 16-workstation-trading-risk.png
 │   │   ├── 17-workstation-data-operations-providers.png
@@ -2305,6 +2311,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   ├── data-operations-screen.tsx
 │   │   │   │   │   ├── governance-screen.test.tsx
 │   │   │   │   │   ├── governance-screen.tsx
+│   │   │   │   │   ├── overview-screen.tsx
 │   │   │   │   │   ├── research-screen.test.tsx
 │   │   │   │   │   ├── research-screen.tsx
 │   │   │   │   │   ├── trading-screen.test.tsx
@@ -2331,8 +2338,8 @@ Use these documents together when planning or implementing new work:
 │   │       │   └── dashboard.css
 │   │       └── workstation
 │   │           ├── assets
-│   │           │   ├── index-BLxm5sCJ.js
-│   │           │   └── index-erdiJ_gu.css
+│   │           │   ├── index-CnAc-D_d.js
+│   │           │   └── index-DLXsLZLB.css
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
@@ -3454,6 +3461,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-455 directories, 2871 files
+455 directories, 2878 files
 ```
 <!-- readme-tree end -->

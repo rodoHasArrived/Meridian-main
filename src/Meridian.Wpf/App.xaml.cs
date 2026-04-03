@@ -6,12 +6,19 @@ using System.Windows.Threading;
 using System.Windows.Forms;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Meridian.Application.Services;
 using Meridian.Application.SecurityMaster;
 using Meridian.Backtesting;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.QuantScript;
+using Meridian.QuantScript.Api;
+using Meridian.QuantScript.Compilation;
+using Meridian.QuantScript.Plotting;
 using Meridian.Storage.SecurityMaster;
+using Meridian.Storage.Store;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
@@ -209,6 +216,9 @@ public partial class App : System.Windows.Application
         // Register shared desktop HttpClient configurations
         services.AddDesktopHttpClients();
 
+        // ILogger<T> infrastructure — must be first so all services can resolve loggers
+        services.AddLogging();
+
         // Shared API infrastructure
         services.AddSingleton(_ => ApiClientService.Instance);
 
@@ -342,6 +352,21 @@ public partial class App : System.Windows.Application
         services.AddTransient<ResearchWorkspaceShellPage>();
         services.AddTransient<TradingWorkspaceShellPage>();
         services.AddTransient<RunRiskPage>();
+
+        // ── Missing pages (registered for DI-aware navigation) ───────────────
+        services.AddTransient<AggregatePortfolioPage>();
+        services.AddTransient<BatchBacktestPage>();
+        services.AddTransient<ClusterStatusPage>();
+        services.AddTransient<CredentialManagementPage>();
+        services.AddTransient<DirectLendingPage>();
+        services.AddTransient<OptionsPage>();
+        services.AddTransient<PositionBlotterPage>();
+        services.AddTransient<QualityArchivePage>();
+        services.AddTransient<QuantScriptPage>();
+        services.AddTransient<ResearchWorkspaceShellPage>();
+        services.AddTransient<RunCashFlowPage>();
+        services.AddTransient<RunRiskPage>();
+        services.AddTransient<TradingWorkspaceShellPage>();
 
         // ── Backtesting service ──────────────────────────────────────────────
         // Registered in RegisterStrategyWorkspaceServices so optional Security Master
