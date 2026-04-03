@@ -598,15 +598,13 @@ jobs:
           Write-Host 'Starting WPF app in fixture mode...'
 
           # Launch the compiled executable directly rather than using dotnet run
-          # to avoid process-tree complications and expose startup crashes immediately.
-          $exePath  = "src\Meridian.Wpf\bin\Release\net9.0-windows\Meridian.Desktop.exe"
-          $stdOut   = "wpf-startup-stdout.log"
-          $stdErr   = "wpf-startup-stderr.log"
+          $exePath = "src\Meridian.Wpf\bin\Release\net9.0-windows\Meridian.Desktop.exe"
+          $logPath = "wpf-startup.log"
 
           $proc = Start-Process `
             -FilePath $exePath `
-            -RedirectStandardOutput $stdOut `
-            -RedirectStandardError  $stdErr `
+            -RedirectStandardOutput $logPath `
+            -RedirectStandardError "$logPath.err" `
             -PassThru `
             -WindowStyle Normal
 
@@ -617,20 +615,20 @@ jobs:
             for ($i = 0; $i -lt 45; $i++) {
               Start-Sleep -Seconds 2
 
-              # Detect premature exit (crash / exception on startup)
+              # Check if the process exited prematurely
               if ($proc.HasExited) {
-                Write-Host "Application exited prematurely with code $($proc.ExitCode)."
-                if (Test-Path $stdOut) { Write-Host '--- stdout ---'; Get-Content $stdOut | Write-Host }
-                if (Test-Path $stdErr) { Write-Host '--- stderr ---'; Get-Content $stdErr | Write-Host }
-                throw "WPF process exited before the window appeared."
+                Write-Host "Application crashed or exited unexpectedly with code $($proc.ExitCode)."
+                if (Test-Path $logPath) { Get-Content $logPath | Write-Host }
+                if (Test-Path "$logPath.err") { Get-Content "$logPath.err" | Write-Host }
+                throw "WPF process exited prematurely."
               }
 
               $window = Find-MeridianWindow
               if ($window) { Write-Host 'Window detected.'; break }
             }
             if (-not $window) {
-              if (Test-Path $stdOut) { Write-Host '--- stdout ---'; Get-Content $stdOut | Write-Host }
-              if (Test-Path $stdErr) { Write-Host '--- stderr ---'; Get-Content $stdErr | Write-Host }
+              if (Test-Path $logPath) { Get-Content $logPath | Write-Host }
+              if (Test-Path "$logPath.err") { Get-Content "$logPath.err" | Write-Host }
               throw 'Meridian window did not appear within 90 seconds.'
             }
 
