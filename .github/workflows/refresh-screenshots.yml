@@ -679,7 +679,7 @@ jobs:
             Write-Host 'Stopping WPF app...'
             # Kill the dotnet host and any child WPF process
             try { $proc | Stop-Process -Force -ErrorAction SilentlyContinue } catch {}
-            Get-Process -Name 'Meridian.Wpf' -ErrorAction SilentlyContinue |
+            Get-Process -Name 'Meridian.Desktop' -ErrorAction SilentlyContinue |
               Stop-Process -Force -ErrorAction SilentlyContinue
           }
 
