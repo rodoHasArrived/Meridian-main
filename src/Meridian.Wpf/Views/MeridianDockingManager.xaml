@@ -19,11 +19,6 @@
                                    BorderThickness="1"
                                    Background="{DynamicResource ConsoleBackgroundDarkBrush}">
 
-            <!-- Default theme — overridden by Meridian's own token-driven styles below -->
-            <avalondock:DockingManager.Theme>
-                <avalondock:MetroTheme />
-            </avalondock:DockingManager.Theme>
-
             <avalondock:LayoutRoot>
                 <avalondock:LayoutPanel Orientation="Horizontal">
                     <!-- Primary document well — LoadPage() adds LayoutDocuments here -->
