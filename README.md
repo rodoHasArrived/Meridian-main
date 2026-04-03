@@ -942,6 +942,15 @@ Use these documents together when planning or implementing new work:
 │   │   ├── 11-workstation-trading.png
 │   │   ├── 12-workstation-data-operations.png
 │   │   ├── 13-workstation-governance.png
+│   │   ├── 14-workstation-trading-orders.png
+│   │   ├── 15-workstation-trading-positions.png
+│   │   ├── 16-workstation-trading-risk.png
+│   │   ├── 17-workstation-data-operations-providers.png
+│   │   ├── 18-workstation-data-operations-backfills.png
+│   │   ├── 19-workstation-data-operations-exports.png
+│   │   ├── 20-workstation-governance-ledger.png
+│   │   ├── 21-workstation-governance-reconciliation.png
+│   │   ├── 22-workstation-governance-security-master.png
 │   │   └── README.md
 │   ├── security
 │   │   ├── README.md
@@ -3445,6 +3454,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-455 directories, 2862 files
+455 directories, 2871 files
 ```
 <!-- readme-tree end -->
