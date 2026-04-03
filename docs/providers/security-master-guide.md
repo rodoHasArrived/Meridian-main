@@ -143,7 +143,7 @@ Resolves a security by an external identifier (ISIN, CUSIP, Ticker, FIGI, SEDOL,
 ```
 POST /api/security-master/search
 ```
-Full-text search by display name, issuer, or identifier. Supports filtering by asset class, status, and provider. Returns a paginated list of `SecuritySummaryDto` objects.
+Full-text search by display name, issuer, or identifier. Supports the optional `activeOnly` flag and pagination via `take` and `skip`. Returns a paginated list of `SecuritySummaryDto` objects.
 
 ### Retrieve Event History
 ```
