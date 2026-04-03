@@ -13,7 +13,7 @@ import {
 import { MetricCard } from "@/components/meridian/metric-card";
 import { approvePromotion, cancelAllOrders, cancelOrder, closePosition, closePaperSession, createPaperSession, evaluatePromotion, getExecutionSessions, getPaperSessionDetail, getPromotionHistory, getReplayFiles, getReplayStatus, pauseReplay, pauseStrategy, resumeReplay, seekReplay, setReplaySpeed as apiSetReplaySpeed, startReplay, stopReplay, stopStrategy, submitOrder } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import type { OrderSubmitRequest, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, ReplayFileRecord, ReplayStatus, TradingActionResult, TradingWorkspaceResponse } from "@/types";
+import type { OrderSubmitRequest, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, ReplayFileRecord, ReplayStatus, TradingActionResult, TradingRunComparison, TradingWorkspaceResponse } from "@/types";
 
 interface TradingScreenProps {
   data: TradingWorkspaceResponse | null;
@@ -676,6 +676,10 @@ export function TradingScreen({ data }: TradingScreenProps) {
         </CardContent>
       </Card>
 
+      {data.comparisons && data.comparisons.length > 0 && (
+        <RunComparisonsPanel comparisons={data.comparisons} />
+      )}
+
       <section className="grid gap-4 xl:grid-cols-2">
         {/* Paper session management */}
         <Card>
@@ -1026,6 +1030,75 @@ function ConfirmActionDialog({
         )}
       </DialogContent>
     </Dialog>
+  );
+}
+
+const COMPARISON_TABLE_COLUMNS = ["Mode", "Run ID", "Status", "Net P&L", "Return"] as const;
+
+function formatRunPnl(pnl: number | null): string {
+  if (pnl === null) return "—";
+  if (pnl >= 0) return `+$${pnl.toLocaleString()}`;
+  return `-$${Math.abs(pnl).toLocaleString()}`;
+}
+
+function formatRunReturn(ret: number | null): string {
+  if (ret === null) return "—";
+  if (ret >= 0) return `+${ret.toFixed(2)}%`;
+  return `${ret.toFixed(2)}%`;
+}
+
+function positiveNegativeTone(value: number | null): string {
+  if (value === null) return "";
+  return value >= 0 ? "text-success" : "text-warning";
+}
+
+function RunComparisonsPanel({ comparisons }: { comparisons: TradingRunComparison[] }) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base">
+          <CandlestickChart className="h-4 w-4 text-primary" />
+          Strategy run comparisons
+        </CardTitle>
+        <CardDescription>
+          Side-by-side backtest, paper, and live metrics for active strategies. Use these to assess
+          whether paper performance is tracking the backtest hypothesis before promoting to live.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {comparisons.map((comparison) => (
+          <div key={comparison.strategyName}>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              {comparison.strategyName}
+            </p>
+            <div className="overflow-x-auto rounded-xl border border-border/70">
+              <table className="min-w-full divide-y divide-border/60 text-left text-xs sm:text-sm">
+                <thead className="bg-secondary/30">
+                  <tr>
+                    {COMPARISON_TABLE_COLUMNS.map((col) => (
+                      <th key={col} className="px-3 py-2 font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                        {col}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/50">
+                  {comparison.modes.map((mode) => (
+                    <tr key={mode.runId} className="bg-background/20">
+                      <td className="px-3 py-2 font-mono capitalize text-foreground">{mode.mode}</td>
+                      <td className="px-3 py-2 font-mono text-foreground">{mode.runId}</td>
+                      <td className="px-3 py-2 font-mono text-foreground">{mode.status}</td>
+                      <td className={cn("px-3 py-2 font-mono", positiveNegativeTone(mode.netPnl))}>{formatRunPnl(mode.netPnl)}</td>
+                      <td className={cn("px-3 py-2 font-mono", positiveNegativeTone(mode.totalReturn))}>{formatRunReturn(mode.totalReturn)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ))}
+      </CardContent>
+    </Card>
   );
 }
 
