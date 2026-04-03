@@ -3,167 +3,153 @@ using System.IO;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Meridian.QuantScript;
+using Meridian.QuantScript.Api;
 using Meridian.QuantScript.Compilation;
-using Meridian.QuantScript.Plotting;
-using Meridian.Wpf.Tests.Support;
+using Meridian.QuantScript.Documents;
+using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Tests.ViewModels;
 
-/// <summary>
-/// Unit-tests for <see cref="QuantScriptViewModel"/> that do not require a live UI thread.
-/// Timer-dependent and file-watcher-dependent behaviour is exercised via the public command surface.
-/// </summary>
-public sealed class QuantScriptViewModelTests
+public sealed class QuantScriptViewModelTests : IDisposable
 {
-    // ── Helpers ───────────────────────────────────────────────────────────────
+    private readonly string _tempDirectory = Path.Combine(Path.GetTempPath(), "meridian-wpf-quantscript-tests", Guid.NewGuid().ToString("N"));
 
     private sealed class StubLayoutService : IQuantScriptLayoutService
     {
-        public (double LeftWidth, double RightWidth) LoadColumnWidths() => (300, 400);
-        public void SaveColumnWidths(double l, double r) { }
+        public (double ChartHeight, double EditorHeight) LoadRowHeights() => (300, 280);
+        public void SaveRowHeights(double chartHeight, double editorHeight) { }
         public int LoadLastActiveTab() => 0;
         public void SaveLastActiveTab(int tabIndex) { }
     }
 
-    private static QuantScriptViewModel CreateVm(
-        IScriptRunner? runner = null,
-        IQuantScriptCompiler? compiler = null)
+    private sealed class StubQuantDataContext : IQuantDataContext
     {
-        var fakeRunner   = runner   ?? new FakeScriptRunner();
-        var fakeCompiler = compiler ?? new FakeQuantScriptCompiler();
-        var plotQueue    = new PlotQueue();
-        var layout       = new StubLayoutService();
-        var options      = Options.Create(new QuantScriptOptions { ScriptsDirectory = Path.GetTempPath() });
-        var logger       = NullLogger<QuantScriptViewModel>.Instance;
+        public Task<PriceSeries> PricesAsync(string symbol, DateOnly from, DateOnly to, CancellationToken ct = default)
+            => Task.FromResult(new PriceSeries(symbol, [new PriceBar(from, 10, 11, 9, 10, 1000)]));
 
-        return new QuantScriptViewModel(fakeRunner, fakeCompiler, plotQueue, layout, options, logger);
-    }
+        public Task<PriceSeries> PricesAsync(string symbol, DateOnly from, DateOnly to, string? provider, CancellationToken ct = default)
+            => PricesAsync(symbol, from, to, ct);
 
-    // ── Initial state ─────────────────────────────────────────────────────────
+        public Task<IReadOnlyList<ScriptTrade>> TradesAsync(string symbol, DateOnly date, CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<ScriptTrade>>(Array.Empty<ScriptTrade>());
 
-    [Fact]
-    public void InitialState_IsRunning_IsFalse()
-    {
-        var vm = CreateVm();
-        vm.IsRunning.Should().BeFalse();
+        public Task<ScriptOrderBook?> OrderBookAsync(string symbol, DateTimeOffset timestamp, CancellationToken ct = default)
+            => Task.FromResult<ScriptOrderBook?>(null);
     }
 
     [Fact]
-    public void InitialState_CanRun_IsTrue()
+    public void NewNotebookCommand_CreatesSeededNotebook()
     {
         var vm = CreateVm();
-        vm.CanRun.Should().BeTrue();
+
+        vm.NewNotebookCommand.Execute(null);
+
+        vm.Cells.Should().ContainSingle();
+        vm.SelectedCell.Should().Be(vm.Cells[0]);
+        vm.Cells[0].SourceCode.Should().Contain("Data.Prices(\"SPY\")");
     }
 
     [Fact]
-    public void InitialState_StatusText_IsReady()
+    public void AddCellBelowCommand_InsertsAndSelectsNewCell()
     {
         var vm = CreateVm();
-        vm.StatusText.Should().Be("Ready");
+        vm.NewNotebookCommand.Execute(null);
+        var firstCell = vm.Cells[0];
+
+        vm.AddCellBelowCommand.Execute(firstCell);
+
+        vm.Cells.Should().HaveCount(2);
+        vm.SelectedCell.Should().Be(vm.Cells[1]);
+        vm.Cells[1].Status.Should().Be(QuantScriptCellStatus.NotRun);
     }
 
     [Fact]
-    public void InitialState_ConsoleOutput_IsEmpty()
+    public void EditingEarlierCell_MarksFollowingCellsStale()
     {
         var vm = CreateVm();
-        vm.ConsoleOutput.Should().BeEmpty();
+        vm.NewNotebookCommand.Execute(null);
+        vm.AddCellBelowCommand.Execute(vm.Cells[0]);
+        vm.Cells[0].Status = QuantScriptCellStatus.Success;
+        vm.Cells[1].Status = QuantScriptCellStatus.Success;
+
+        vm.Cells[0].SourceCode += Environment.NewLine + "Print(\"updated\");";
+
+        vm.Cells[0].Status.Should().Be(QuantScriptCellStatus.Stale);
+        vm.Cells[1].Status.Should().Be(QuantScriptCellStatus.Stale);
     }
 
     [Fact]
-    public void InitialState_Metrics_IsEmpty()
+    public async Task RunCellAndAdvanceCommand_AppendsNewCellAtNotebookEnd()
     {
-        var vm = CreateVm();
-        vm.Metrics.Should().BeEmpty();
-    }
+        var vm = CreateVm(useRealRunner: true);
+        vm.NewNotebookCommand.Execute(null);
 
-    // ── Tab header computed properties ────────────────────────────────────────
+        await vm.RunCellAndAdvanceCommand.ExecuteAsync(vm.Cells[0]);
 
-    [Fact]
-    public void ConsoleTabHeader_WhenEmpty_ShowsPlainLabel()
-    {
-        var vm = CreateVm();
-        vm.ConsoleTabHeader.Should().Be("Console");
+        vm.Cells.Should().HaveCount(2);
+        vm.SelectedCell.Should().Be(vm.Cells[1]);
+        vm.Cells[0].Status.Should().Be(QuantScriptCellStatus.Success);
     }
 
     [Fact]
-    public void MetricsTabHeader_WhenEmpty_ShowsPlainLabel()
+    public async Task RunCellCommand_ReplaysUsingPreviousCheckpoint()
     {
-        var vm = CreateVm();
-        vm.MetricsTabHeader.Should().Be("Metrics");
+        var vm = CreateVm(useRealRunner: true);
+        vm.NewNotebookCommand.Execute(null);
+        vm.Cells[0].SourceCode = "var x = 2;";
+        vm.AddCellBelowCommand.Execute(vm.Cells[0]);
+        vm.Cells[1].SourceCode = "Print($\"x={x}\");";
+
+        await vm.RunCellCommand.ExecuteAsync(vm.Cells[0]);
+        await vm.RunCellCommand.ExecuteAsync(vm.Cells[1]);
+
+        vm.Cells[1].Status.Should().Be(QuantScriptCellStatus.Success);
+        vm.Cells[1].OutputText.Should().Contain("x=2");
+        vm.Diagnostics.Should().Contain(entry => entry.Key == "Cell 2");
     }
 
-    [Fact]
-    public void ChartsTabHeader_WhenEmpty_ShowsPlainLabel()
+    private QuantScriptViewModel CreateVm(bool useRealRunner = false)
     {
-        var vm = CreateVm();
-        vm.ChartsTabHeader.Should().Be("Charts");
+        Directory.CreateDirectory(_tempDirectory);
+
+        var compiler = new RoslynScriptCompiler(
+            Options.Create(new QuantScriptOptions()),
+            NullLogger<RoslynScriptCompiler>.Instance);
+
+        IScriptRunner runner = useRealRunner
+            ? new ScriptRunner(
+                compiler,
+                new StubQuantDataContext(),
+                null!,
+                Options.Create(new QuantScriptOptions { RunTimeoutSeconds = 10 }),
+                NullLogger<ScriptRunner>.Instance)
+            : new Meridian.Wpf.Tests.Support.FakeScriptRunner();
+
+        return new QuantScriptViewModel(
+            runner,
+            compiler,
+            new NotebookExecutionSession(),
+            new QuantScriptNotebookStore(new QuantScriptOptions
+            {
+                ScriptsDirectory = _tempDirectory,
+                NotebookExtension = ".mqnb"
+            }),
+            new StubLayoutService(),
+            Options.Create(new QuantScriptOptions
+            {
+                ScriptsDirectory = _tempDirectory,
+                NotebookExtension = ".mqnb",
+                NotebookCellWarningThreshold = 3
+            }),
+            NullLogger<QuantScriptViewModel>.Instance);
     }
 
-    // ── ScriptSource property ─────────────────────────────────────────────────
-
-    [Fact]
-    public void ScriptSource_SetValue_RaisesPropertyChanged()
+    public void Dispose()
     {
-        var vm = CreateVm();
-        var raised = new List<string?>();
-        vm.PropertyChanged += (_, e) => raised.Add(e.PropertyName);
-
-        vm.ScriptSource = "// test";
-
-        raised.Should().Contain(nameof(vm.ScriptSource));
+        if (Directory.Exists(_tempDirectory))
+            Directory.Delete(_tempDirectory, true);
     }
-
-    // ── ClearConsole command ──────────────────────────────────────────────────
-
-    [Fact]
-    public void ClearConsoleCommand_Always_CanExecute()
-    {
-        var vm = CreateVm();
-        vm.ClearConsoleCommand.CanExecute(null).Should().BeTrue();
-    }
-
-    // ── NewScript command ─────────────────────────────────────────────────────
-
-    [Fact]
-    public void NewScriptCommand_Execute_ClearsScriptSource()
-    {
-        var vm = CreateVm();
-        vm.ScriptSource = "old content";
-
-        vm.NewScriptCommand.Execute(null);
-
-        vm.ScriptSource.Should().Contain("New QuantScript");
-    }
-
-    // ── Dispose ───────────────────────────────────────────────────────────────
-
-    [Fact]
-    public void Dispose_CalledTwice_DoesNotThrow()
-    {
-        var vm = CreateVm();
-        var act = () =>
-        {
-            vm.Dispose();
-            vm.Dispose();
-        };
-        act.Should().NotThrow();
-    }
-}
-
-/// <summary>
-/// No-op compiler for ViewModel tests that do not need real Roslyn compilation.
-/// </summary>
-internal sealed class FakeQuantScriptCompiler : IQuantScriptCompiler
-{
-    public Task<ScriptCompilationResult> CompileAsync(string source, CancellationToken ct = default)
-        => Task.FromResult(new ScriptCompilationResult(
-            Success: true,
-            CompilationTime: TimeSpan.FromMilliseconds(1),
-            Diagnostics: Array.Empty<ScriptDiagnostic>()));
-
-    public IReadOnlyList<ParameterDescriptor> ExtractParameters(string source)
-        => Array.Empty<ParameterDescriptor>();
 }
 #endif

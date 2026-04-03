@@ -20,7 +20,7 @@ public sealed class QuantScriptGlobals
 {
     private readonly List<ConsoleOutputEntry> _output = [];
     private readonly object _outputLock = new();
-    private readonly IReadOnlyDictionary<string, object?> _parameters;
+    private IReadOnlyDictionary<string, object?> _parameters = new Dictionary<string, object?>();
 
     internal QuantScriptGlobals(
         DataProxy data,
@@ -28,15 +28,12 @@ public sealed class QuantScriptGlobals
         CancellationToken ct,
         IReadOnlyDictionary<string, object?>? parameters = null)
     {
-        Data = data;
-        Backtest = backtest;
-        CancellationToken = ct;
-        _parameters = parameters ?? new Dictionary<string, object?>();
+        PrepareForExecution(data, backtest, ct, parameters);
     }
 
     // ── Primary APIs ─────────────────────────────────────────────────────────
-    public DataProxy Data { get; }
-    public BacktestProxy Backtest { get; }
+    public DataProxy Data { get; private set; } = null!;
+    public BacktestProxy Backtest { get; private set; } = null!;
 
     // ── Portfolio factory ────────────────────────────────────────────────────
     public PortfolioResult EqualWeight(params PriceSeries[] series) =>
@@ -106,7 +103,7 @@ public sealed class QuantScriptGlobals
     }
 
     // ── Cancellation ─────────────────────────────────────────────────────────
-    public CancellationToken CancellationToken { get; }
+    public CancellationToken CancellationToken { get; private set; }
 
     // ── Internal result access ────────────────────────────────────────────────
 
@@ -125,5 +122,29 @@ public sealed class QuantScriptGlobals
                 .Where(e => e.IsMetric)
                 .Select(e => new KeyValuePair<string, string>(e.MetricLabel ?? "", e.Text))
                 .ToList();
+    }
+
+    internal IReadOnlyList<ConsoleOutputEntry> GetConsoleEntries()
+    {
+        lock (_outputLock)
+            return _output.ToList();
+    }
+
+    internal int GetOutputCount()
+    {
+        lock (_outputLock)
+            return _output.Count;
+    }
+
+    internal void PrepareForExecution(
+        DataProxy data,
+        BacktestProxy backtest,
+        CancellationToken ct,
+        IReadOnlyDictionary<string, object?>? parameters = null)
+    {
+        Data = data;
+        Backtest = backtest;
+        CancellationToken = ct;
+        _parameters = parameters ?? new Dictionary<string, object?>();
     }
 }

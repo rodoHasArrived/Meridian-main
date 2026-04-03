@@ -29,7 +29,7 @@
       href: architecture/crystallized-storage-format.md
     - name: Deterministic Canonicalization
       href: architecture/deterministic-canonicalization.md
-    - name: Desktop Layers (Delayed Implementation)
+    - name: Desktop Layers
       href: architecture/desktop-layers.md
     - name: UI Redesign
       href: architecture/ui-redesign.md
@@ -77,10 +77,12 @@
       href: development/repository-organization-guide.md
     - name: Provider Implementation
       href: development/provider-implementation.md
-    - name: WPF Implementation Notes (Delayed Implementation)
+    - name: WPF Implementation Notes
       href: development/wpf-implementation-notes.md
-    - name: Desktop Testing Guide (Delayed Implementation)
+    - name: Desktop Testing Guide
       href: development/desktop-testing-guide.md
+    - name: Repository Rule Set
+      href: development/repository-rule-set.md
     - name: Central Package Management
       href: development/central-package-management.md
     - name: GitHub Actions Summary
@@ -91,6 +93,8 @@
       href: development/documentation-contribution-guide.md
     - name: Documentation Automation
       href: development/documentation-automation.md
+    - name: OTLP Trace Visualization
+      href: development/otlp-trace-visualization.md
     - name: Adding Custom Rules
       href: development/adding-custom-rules.md
     - name: Expanding Scripts
@@ -127,6 +131,8 @@
   items:
     - name: Overview
       href: status/README.md
+    - name: Plans Overview
+      href: plans/README.md
     - name: UFL Asset Packages
       href: plans/ufl-supported-assets-index.md
     - name: UFL Direct Lending V2

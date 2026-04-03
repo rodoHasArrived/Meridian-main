@@ -55,6 +55,9 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
         result.TotalEventsProcessed.Should().Be(0);
         result.Universe.Should().BeEmpty();
         result.Fills.Should().BeEmpty();
+        result.Coverage.TcaReport.Should().Be(BacktestArtifactStatus.Complete);
+        result.EngineMetadata.EngineId.Should().Be("MeridianNative");
+        result.TcaReport.Should().NotBeNull();
     }
 
     // ------------------------------------------------------------------ //
@@ -91,6 +94,30 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
         var result = await _engine.RunAsync(request, new NoOpStrategy());
 
         result.Snapshots.Should().HaveCount(4, "one snapshot is taken at end of each of the 4 requested days");
+    }
+
+    [Fact]
+    public async Task RunAsync_PopulatesCanonicalMetadataForNativeResults()
+    {
+        WriteBarJsonl("AAPL", new DateOnly(2024, 1, 2), new DateOnly(2024, 1, 3), basePrice: 185m);
+
+        var request = new BacktestRequest(
+            From: new DateOnly(2024, 1, 2),
+            To: new DateOnly(2024, 1, 3),
+            DataRoot: _dataRoot);
+
+        var result = await _engine.RunAsync(request, new NoOpStrategy());
+
+        result.Coverage.Should().Be(new BacktestArtifactCoverage(
+            BacktestArtifactStatus.Complete,
+            BacktestArtifactStatus.Complete,
+            BacktestArtifactStatus.Complete,
+            BacktestArtifactStatus.Complete,
+            BacktestArtifactStatus.Complete,
+            BacktestArtifactStatus.Complete));
+        result.EngineMetadata.EngineId.Should().Be("MeridianNative");
+        result.EngineMetadata.SourceFormat.Should().Be("Meridian.Backtesting.BacktestResult");
+        result.EngineMetadata.EngineVersion.Should().NotBeNullOrWhiteSpace();
     }
 
     // ------------------------------------------------------------------ //

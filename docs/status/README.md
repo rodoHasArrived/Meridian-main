@@ -1,10 +1,11 @@
 # Project Status Documentation
 
-**Last Updated:** 2026-03-21
-**Version:** 1.7.0
-**Current Delivery Theme:** Comprehensive fund-management delivery across workstation, governance, and fund-operations planning
+**Last Updated:** 2026-04-01
+**Version:** 1.7.3
+**Current Delivery Theme:** Connected workstation, governance, and fund-operations delivery with active blueprint-driven execution
 
 This folder contains the repository's authoritative planning, status, readiness, and implementation-tracking documents.
+Use this folder with [`../plans/README.md`](../plans/README.md) when you need both the current status snapshot and the active blueprint/roadmap set.
 
 ## Active document criteria
 
@@ -36,18 +37,20 @@ and each active file is periodically reviewed so the signal stays strong.
 2. [../plans/fund-management-product-vision-and-capability-matrix.md](../plans/fund-management-product-vision-and-capability-matrix.md)
 3. [../plans/fund-management-module-implementation-backlog.md](../plans/fund-management-module-implementation-backlog.md)
 4. [../plans/fund-management-pr-sequenced-roadmap.md](../plans/fund-management-pr-sequenced-roadmap.md)
-5. [../plans/trading-workstation-migration-blueprint.md](../plans/trading-workstation-migration-blueprint.md)
-6. [../plans/governance-fund-ops-blueprint.md](../plans/governance-fund-ops-blueprint.md)
-7. [FEATURE_INVENTORY.md](FEATURE_INVENTORY.md)
-8. [FULL_IMPLEMENTATION_TODO_2026_03_20.md](FULL_IMPLEMENTATION_TODO_2026_03_20.md)
-9. [production-status.md](production-status.md)
-10. [IMPROVEMENTS.md](IMPROVEMENTS.md)
+5. [../plans/README.md](../plans/README.md)
+6. [../plans/trading-workstation-migration-blueprint.md](../plans/trading-workstation-migration-blueprint.md)
+7. [../plans/governance-fund-ops-blueprint.md](../plans/governance-fund-ops-blueprint.md)
+8. [FEATURE_INVENTORY.md](FEATURE_INVENTORY.md)
+9. [FULL_IMPLEMENTATION_TODO_2026_03_20.md](FULL_IMPLEMENTATION_TODO_2026_03_20.md)
+10. [production-status.md](production-status.md)
+11. [IMPROVEMENTS.md](IMPROVEMENTS.md)
 
 ## Current Status Summary
 
 - **Platform state:** Development / Pilot Ready
 - **Workstation state:** Shared run, portfolio, and ledger foundations exist; broader workspace-first UX for research, implementation, and trade management is still being built
 - **Governance state:** Security Master, multi-ledger, trial-balance, cash-flow, reconciliation, investor reporting, and report-generation work is planned and blueprint-backed
+- **Execution planning state:** Active blueprint and PR-sequenced delivery plans now live under [`../plans/README.md`](../plans/README.md)
 - **Provider state:** Core providers are in place, but operator confidence still depends on ongoing hardening for Polygon, StockSharp, IB, and optional NYSE setup
 - **Documentation state:** Core planning docs are synchronized to the current blueprint set
 
@@ -55,6 +58,7 @@ and each active file is periodically reviewed so the signal stays strong.
 
 - [Trading Workstation Migration Blueprint](../plans/trading-workstation-migration-blueprint.md)
 - [Governance and Fund Operations Blueprint](../plans/governance-fund-ops-blueprint.md)
+- [Plans Overview](../plans/README.md)
 - [Fund Management Product Vision and Capability Matrix](../plans/fund-management-product-vision-and-capability-matrix.md)
 - [Fund Management Module Implementation Backlog](../plans/fund-management-module-implementation-backlog.md)
 - [Fund Management PR-Sequenced Execution Roadmap](../plans/fund-management-pr-sequenced-roadmap.md)

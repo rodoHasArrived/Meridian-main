@@ -1,10 +1,16 @@
 # Meridian - Project Roadmap
 
+<<<<<<< Updated upstream
 **Last Updated:** 2026-04-03
 **Status:** Active productization — WPF workstation refresh progressing, provider confidence and paper cockpit on critical path
 **Repository Snapshot (2026-04-03):** solution projects: 39 | `src/` projects: 28 | test projects: 9 | workflow files: 38
+=======
+**Last Updated:** 2026-04-01
+**Status:** Combined roadmap refresh aligned to the current repository, active workstation direction, and fund-operations target state
+**Repository Snapshot (2026-04-01):** solution projects: 36 | `src/` project files: 28 | test projects: 8 | workflow files: 38
+>>>>>>> Stashed changes
 
-Meridian is no longer primarily blocked on missing platform primitives. The core platform baseline is now broad and structurally strong across ingestion, storage, backtesting, execution, ledger, workstation contracts, and governance foundations. The main delivery problem has shifted from "can Meridian do this at all?" to "which operator workflows are complete enough to trust and use end to end?"
+Meridian is no longer primarily blocked on missing platform primitives. The core platform baseline is now broad and structurally strong across ingestion, storage, backtesting, execution, ledger, workstation contracts, and governance foundations. The main delivery problem has shifted from "can Meridian do this at all?" to "which operator workflows are complete enough to trust, operate, and audit end to end?"
 
 The active roadmap therefore centers on four outcomes:
 
@@ -18,6 +24,7 @@ Use this document with:
 - [`FEATURE_INVENTORY.md`](FEATURE_INVENTORY.md) - current capability status
 - [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md) - normalized non-assembly backlog
 - [`IMPROVEMENTS.md`](IMPROVEMENTS.md) - completed improvement history
+- [`production-status.md`](production-status.md) - current readiness posture and pre-production gaps
 - [`../plans/trading-workstation-migration-blueprint.md`](../plans/trading-workstation-migration-blueprint.md) - workstation target state
 - [`../plans/governance-fund-ops-blueprint.md`](../plans/governance-fund-ops-blueprint.md) - governance target state
 
@@ -29,12 +36,12 @@ Meridian's core platform pillars remain the same: data collection, backtesting, 
 
 - a large provider and storage baseline with WAL, JSONL, Parquet, backfill scheduling, gap analysis, and data quality monitoring
 - unified workstation-oriented contracts and bootstrap endpoints in `src/Meridian.Contracts/Workstation/` and `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs`
-- a React workstation shell with Research, Trading, Data Operations, and Governance screens in `src/Meridian.Ui/dashboard/src/`
-- a broad WPF desktop surface including run browser, run detail, portfolio, ledger, Security Master, and QuantScript view models in `src/Meridian.Wpf/`
+- a React workstation shell with Research, Trading, Data Operations, and Governance routes in `src/Meridian.Ui/dashboard/src/app.tsx`
+- shared run, portfolio, ledger, and reconciliation read services in `src/Meridian.Strategies/Services/`
 - execution, promotion, and strategy lifecycle APIs already wired in `ExecutionEndpoints.cs`, `PromotionEndpoints.cs`, and `StrategyLifecycleEndpoints.cs`
-- Security Master, ledger, reconciliation, and direct-lending foundations already in code
+- Security Master, ledger, reconciliation, direct-lending, and brokerage gateway foundations already in code
 
-That means the roadmap should now prioritize workflow completion, operator trust, and product integration over more platform-sprawl.
+That means the roadmap should now prioritize workflow completion, operator trust, governance productization, and product integration over more platform-sprawl.
 
 ---
 
@@ -42,7 +49,7 @@ That means the roadmap should now prioritize workflow completion, operator trust
 
 ### Complete
 
-These are conservative "in code and materially usable" claims as of 2026-03-31:
+These are conservative "in code and materially usable" claims as of 2026-04-01:
 
 - Core ingestion pipeline: bounded channels, backpressure handling, WAL durability, composite sinks, and graceful shutdown
 - Storage foundation: JSONL and Parquet sinks, tiered storage, packaging, export, lineage, catalog, quota enforcement, and lifecycle policies
@@ -52,7 +59,7 @@ These are conservative "in code and materially usable" claims as of 2026-03-31:
 - Execution foundation: paper trading gateway, risk rules, order abstractions, brokerage gateway framework, and REST endpoints for account, orders, sessions, health, and promotion
 - Workstation contracts and read models: shared strategy-run, portfolio, ledger, reconciliation, and Security Master DTO surfaces
 - React workstation shell: routed Research, Trading, Data Operations, and Governance screens with shared bootstrap loading
-- WPF workstation baseline: broad page inventory plus run browser, run detail, portfolio, ledger, Security Master, and QuantScript surfaces
+- WPF workstation baseline: broad page inventory plus Strategy Runs, run detail, portfolio, ledger, Security Master, and QuantScript surfaces
 - Governance foundations: ledger kernel, Security Master services, reconciliation DTOs and endpoints, direct-lending vertical slice, and export/reporting primitives
 - Improvement portfolio A-G and J: the active improvement tracker marks the historical platform-improvement set as complete
 - WPF workstation shell modernization: native Fluent theme via `ThemeMode="System"` (PR #524), SVG icon set replacing emoji glyphs (PR #512), LiveCharts2 candlestick charting on the Charting page (PR #522), and zero-API-key startup via Synthetic provider default (PR #513)
@@ -79,7 +86,7 @@ These are active productization tracks rather than greenfield invention:
 - deepen run browser, comparison, portfolio drill-in, attribution, and ledger views around the shared run model
 - unify native and Lean backtesting into one Backtest Studio workflow
 - validate one or more brokerage adapters against live vendor surfaces with audit trail and human approval controls
-- finish Security Master and governance productization around reconciliation, multi-ledger views, cash-flow analysis, and report packs
+- finish Security Master and governance productization around account or entity structure, reconciliation, multi-ledger views, cash-flow analysis, and report packs
 - continue the workstation migration so Research, Trading, Data Operations, and Governance feel like coherent workspaces rather than grouped pages
 
 ### Optional
@@ -131,7 +138,7 @@ These remain valuable but are not on the critical path to Meridian's core operat
 ### Next major productization layer
 
 - finish Security Master as a shared operator capability rather than a backend-only layer
-- connect governance surfaces across reconciliation, cash-flow, multi-ledger, and report-pack workflows
+- connect governance surfaces across account or entity structure, reconciliation, cash-flow, multi-ledger, and report-pack workflows
 - keep the workstation migration centered on orchestration services and shared read models instead of multiplying page-local logic
 
 ### Later but still meaningful
@@ -186,7 +193,7 @@ These remain valuable but are not on the critical path to Meridian's core operat
 
 ### 5. Governance productization
 
-**Gap:** Governance has strong ingredients in code, but the finished operator experience across Security Master, reconciliation, multi-ledger, cash-flow, and reporting is not yet complete.
+**Gap:** Governance has strong ingredients in code, but the finished operator experience across Security Master, account or entity structure, reconciliation, multi-ledger, cash-flow, and reporting is not yet complete.
 
 **Value:** This is a flagship differentiator because it extends Meridian beyond strategy tooling into fund-operations workflow.
 
@@ -204,6 +211,16 @@ These remain valuable but are not on the critical path to Meridian's core operat
 
 **Placement:** Continuous supporting track.
 
+### 7. Flagship product capabilities
+
+**Gap:** Meridian already has the ingredients for a distinctive self-hosted fund-management product, but the product story is still fragmented between strong workstation foundations and still-emerging governance workflows.
+
+**Value:** Converging strategy runs, portfolio, ledger, Security Master, direct lending, and governed reporting into one system is what makes Meridian more than a capable trading stack.
+
+**Unlocks:** A differentiated end-state that connects research, execution, portfolio oversight, and fund-operations without relying on disconnected external tools.
+
+**Placement:** Begins in later waves, but should shape decisions in every active wave.
+
 ---
 
 ## Target End Product
@@ -217,7 +234,7 @@ The operator can:
 - promote a run into paper trading through an explicit, auditable workflow
 - operate paper and later live-adjacent trading from a real cockpit with orders, fills, positions, risk controls, and session history
 - inspect run history, portfolio state, attribution, fills, and ledger outcomes through one shared strategy-run model
-- resolve Security Master issues, reconciliation breaks, cash-flow questions, and reporting outputs inside the Governance workspace instead of using disconnected tools
+- manage Security Master issues, account or entity structure, reconciliation breaks, cash-flow questions, direct-lending workflows, and reporting outputs inside the Governance workspace instead of using disconnected tools
 
 The major product surfaces are:
 
@@ -232,6 +249,7 @@ First-class capabilities in the finished product are:
 - backtest to paper workflow continuity
 - shared run, portfolio, and ledger visibility
 - governance and auditability built on the same platform model
+- Security Master and fund-operations tooling integrated into the same operator workflow
 
 Optional capabilities remain optional:
 
@@ -316,6 +334,7 @@ Optional capabilities remain optional:
 **Focus:**
 
 - finish Security Master workflow integration across workstation, portfolio, ledger, and reconciliation reads
+- add account or entity structure, governance navigation, and shared operator context instead of isolated fund-ops pages
 - deepen reconciliation queues and resolution workflows
 - add multi-ledger, trial-balance, and cash-flow views
 - generate governed report packs from shared export and audit seams

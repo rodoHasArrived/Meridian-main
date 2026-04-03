@@ -3,6 +3,7 @@ using Meridian.Contracts.Api;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using AppBackfillRequest = Meridian.Application.Backfill.BackfillRequest;
 
 namespace Meridian.Ui.Shared.Endpoints;
@@ -21,7 +22,7 @@ public static class CheckpointEndpoints
         var group = app.MapGroup("").WithTags("Checkpoints");
 
         // Get all checkpoint history
-        group.MapGet(UiApiRoutes.BackfillCheckpoints, (BackfillCoordinator backfill) =>
+        group.MapGet(UiApiRoutes.BackfillCheckpoints, ([FromServices] BackfillCoordinator backfill) =>
         {
             var status = backfill.TryReadLast();
             return status is null
@@ -87,7 +88,7 @@ public static class CheckpointEndpoints
         .Produces(200);
 
         // Get resumable jobs (incomplete/failed checkpoints)
-        group.MapGet(UiApiRoutes.BackfillCheckpointsResumable, (BackfillCoordinator backfill) =>
+        group.MapGet(UiApiRoutes.BackfillCheckpointsResumable, ([FromServices] BackfillCoordinator backfill) =>
         {
             var status = backfill.TryReadLast();
             if (status is null || status.Success)
@@ -114,7 +115,7 @@ public static class CheckpointEndpoints
         .Produces(200);
 
         // Get checkpoint for a specific job
-        group.MapGet("/api/backfill/checkpoints/{jobId}", (string jobId, BackfillCoordinator backfill) =>
+        group.MapGet("/api/backfill/checkpoints/{jobId}", (string jobId, [FromServices] BackfillCoordinator backfill) =>
         {
             var status = backfill.TryReadLast();
             if (status is null)
@@ -140,7 +141,7 @@ public static class CheckpointEndpoints
         .Produces(404);
 
         // Get pending symbols for a checkpoint
-        group.MapGet("/api/backfill/checkpoints/{jobId}/pending", (string jobId, BackfillCoordinator backfill) =>
+        group.MapGet("/api/backfill/checkpoints/{jobId}/pending", (string jobId, [FromServices] BackfillCoordinator backfill) =>
         {
             var status = backfill.TryReadLast();
             if (status is null)
@@ -190,7 +191,7 @@ public static class CheckpointEndpoints
         // Resume a checkpoint (trigger backfill for pending symbols)
         group.MapPost("/api/backfill/checkpoints/{jobId}/resume", async (
             string jobId,
-            BackfillCoordinator backfill) =>
+            [FromServices] BackfillCoordinator backfill) =>
         {
             var status = backfill.TryReadLast();
             if (status is null)

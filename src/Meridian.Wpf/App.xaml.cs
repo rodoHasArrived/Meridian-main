@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 using System.Windows.Forms;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Meridian.Application.Services;
 using Meridian.Application.SecurityMaster;
@@ -16,7 +16,7 @@ using Meridian.Contracts.SecurityMaster;
 using Meridian.QuantScript;
 using Meridian.QuantScript.Api;
 using Meridian.QuantScript.Compilation;
-using Meridian.QuantScript.Plotting;
+using Meridian.QuantScript.Documents;
 using Meridian.Storage.SecurityMaster;
 using Meridian.Storage.Store;
 using Meridian.Strategies.Interfaces;
@@ -130,7 +130,7 @@ public partial class App : System.Windows.Application
         _host = Host.CreateDefaultBuilder()
             .ConfigureServices((context, services) =>
             {
-                ConfigureServices(services);
+                ConfigureServices(services, context.Configuration);
             })
             .Build();
 
@@ -211,10 +211,11 @@ public partial class App : System.Windows.Application
     /// C1: DI-first registration — services registered by interface where possible.
     /// Pages registered as transient for constructor injection via NavigationService.
     /// </summary>
-    private static void ConfigureServices(IServiceCollection services)
+    private static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
     {
         // Register shared desktop HttpClient configurations
         services.AddDesktopHttpClients();
+        services.Configure<QuantScriptOptions>(configuration.GetSection(QuantScriptOptions.SectionName));
 
         // ILogger<T> infrastructure — must be first so all services can resolve loggers
         services.AddLogging();
@@ -336,6 +337,7 @@ public partial class App : System.Windows.Application
         services.AddTransient<DataBrowserPage>();
         services.AddTransient<BacktestPage>();
         services.AddTransient<RunMatPage>();
+        services.AddTransient<QuantScriptPage>();
         services.AddTransient<StrategyRunsPage>();
         services.AddTransient<RunDetailPage>();
         services.AddTransient<RunPortfolioPage>();
@@ -388,6 +390,7 @@ public partial class App : System.Windows.Application
         services.AddTransient<Meridian.Wpf.ViewModels.ProviderViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.DataQualityViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.RunMatViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.QuantScriptViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.StrategyRunBrowserViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.StrategyRunDetailViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.StrategyRunPortfolioViewModel>();
@@ -412,28 +415,24 @@ public partial class App : System.Windows.Application
                               Meridian.Ui.Services.Services.QualityArchiveStore>();
         services.AddTransient<Meridian.Wpf.ViewModels.QualityArchiveViewModel>();
 
-        // ── QuantScript services ─────────────────────────────────────────────
-        services.Configure<Meridian.QuantScript.QuantScriptOptions>(_ => { });
-        services.AddSingleton(sp =>
-        {
-            var dataRoot = Environment.GetEnvironmentVariable("MDC_DATA_PATH") ?? "data";
-            return new Meridian.Storage.Store.JsonlMarketDataStore(dataRoot);
-        });
-        services.AddSingleton<Meridian.QuantScript.Api.IQuantDataContext,
-                              Meridian.QuantScript.Api.QuantDataContext>();
-        services.AddSingleton<Meridian.QuantScript.Plotting.PlotQueue>();
-        services.AddSingleton<Meridian.QuantScript.Compilation.IQuantScriptCompiler,
-                              Meridian.QuantScript.Compilation.RoslynScriptCompiler>();
-        services.AddSingleton<Meridian.QuantScript.Compilation.IScriptRunner,
-                              Meridian.QuantScript.Compilation.ScriptRunner>();
-        services.AddSingleton<WpfServices.IQuantScriptLayoutService,
-                              WpfServices.QuantScriptLayoutService>();
-        services.AddTransient<Meridian.Wpf.ViewModels.QuantScriptViewModel>();
-
         // ── Plugin loader service ────────────────────────────────────────────
         services.AddSingleton<Meridian.Infrastructure.DataSources.DataSourceRegistry>();
         services.AddSingleton<Meridian.Application.Services.IPluginLoaderService,
                               Meridian.Application.Services.PluginLoaderService>();
+
+        // ── QuantScript notebook services ───────────────────────────────────
+        services.AddSingleton(sp =>
+        {
+            var options = sp.GetRequiredService<IOptions<QuantScriptOptions>>().Value;
+            return new JsonlMarketDataStore(options.DefaultDataRoot);
+        });
+        services.AddSingleton<IQuantDataContext, QuantDataContext>();
+        services.AddSingleton<IQuantScriptCompiler, RoslynScriptCompiler>();
+        services.AddSingleton<IQuantScriptNotebookStore>(sp =>
+            new QuantScriptNotebookStore(sp.GetRequiredService<IOptions<QuantScriptOptions>>().Value));
+        services.AddSingleton<WpfServices.IQuantScriptLayoutService, WpfServices.QuantScriptLayoutService>();
+        services.AddTransient<NotebookExecutionSession>();
+        services.AddTransient<IScriptRunner, ScriptRunner>();
     }
 
     private static void RegisterStrategyWorkspaceServices(IServiceCollection services)

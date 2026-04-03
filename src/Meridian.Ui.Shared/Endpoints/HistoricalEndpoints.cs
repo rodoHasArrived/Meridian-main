@@ -3,6 +3,7 @@ using Meridian.Application.Services;
 using Meridian.Contracts.Api;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -22,7 +23,7 @@ public static class HistoricalEndpoints
         // Query historical data
         group.MapGet("", async (
             HttpContext context,
-            HistoricalDataQueryService queryService,
+            [FromServices] HistoricalDataQueryService queryService,
             string symbol,
             DateOnly? from = null,
             DateOnly? to = null,
@@ -63,7 +64,7 @@ public static class HistoricalEndpoints
         .Produces(499);
 
         // Get available symbols
-        group.MapGet("/symbols", (HistoricalDataQueryService queryService) =>
+        group.MapGet("/symbols", ([FromServices] HistoricalDataQueryService queryService) =>
         {
             try
             {
@@ -80,7 +81,7 @@ public static class HistoricalEndpoints
         .Produces(400);
 
         // Get date range for a symbol
-        group.MapGet("/{symbol}/daterange", (HistoricalDataQueryService queryService, string symbol) =>
+        group.MapGet("/{symbol}/daterange", ([FromServices] HistoricalDataQueryService queryService, string symbol) =>
         {
             if (string.IsNullOrWhiteSpace(symbol))
             {

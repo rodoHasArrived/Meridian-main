@@ -8,6 +8,8 @@ This directory contains implementation roadmaps, sprint backlogs, and blueprint 
 |----------|---------|
 | [meridian-6-week-roadmap.md](meridian-6-week-roadmap.md) | Current sprint roadmap |
 | [trading-workstation-migration-blueprint.md](trading-workstation-migration-blueprint.md) | WPF workstation productization blueprint |
+| [backtest-studio-unification-blueprint.md](backtest-studio-unification-blueprint.md) | Wave 4 blueprint for unifying native and Lean backtesting |
+| [backtest-studio-unification-pr-sequenced-roadmap.md](backtest-studio-unification-pr-sequenced-roadmap.md) | PR-sized execution roadmap for Wave 4 Backtest Studio unification |
 | [governance-fund-ops-blueprint.md](governance-fund-ops-blueprint.md) | Governance and fund operations product blueprint |
 | [workstation-release-readiness-blueprint.md](workstation-release-readiness-blueprint.md) | Workstation release readiness checklist |
 | [workstation-sprint-1-implementation-backlog.md](workstation-sprint-1-implementation-backlog.md) | Sprint 1 implementation backlog |

@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Reflection;
 using Meridian.Application.SecurityMaster;
 using Meridian.Backtesting.FillModels;
 using Meridian.Backtesting.Metrics;
@@ -148,7 +149,11 @@ public sealed class BacktestEngine(
 
         var tradeTickets = BuildTradeTickets(allCashFlows);
         var tcaReport = PostSimulationTcaReporter.Generate(request, allFills);
-        return new BacktestResult(request, universe, allSnapshots, allCashFlows, allFills, metrics, ledger, sw.Elapsed, eventsProcessed, tradeTickets, tcaReport);
+        return new BacktestResult(request, universe, allSnapshots, allCashFlows, allFills, metrics, ledger, sw.Elapsed, eventsProcessed, tradeTickets, tcaReport)
+        {
+            Coverage = BuildNativeArtifactCoverage(),
+            EngineMetadata = BuildNativeEngineMetadata()
+        };
     }
 
     // ── Private helpers ──────────────────────────────────────────────────────
@@ -465,7 +470,35 @@ public sealed class BacktestEngine(
     private static BacktestResult CreateEmptyResult(BacktestRequest request, IReadOnlySet<string> universe, TimeSpan elapsed)
     {
         var metrics = BacktestMetricsEngine.Compute([], [], [], request);
-        return new BacktestResult(request, universe, [], [], [], metrics, new BacktestLedger(), elapsed, 0, []);
+        var tcaReport = PostSimulationTcaReporter.Generate(request, []);
+        return new BacktestResult(request, universe, [], [], [], metrics, new BacktestLedger(), elapsed, 0, [], tcaReport)
+        {
+            Coverage = BuildNativeArtifactCoverage(),
+            EngineMetadata = BuildNativeEngineMetadata()
+        };
+    }
+
+    private static BacktestArtifactCoverage BuildNativeArtifactCoverage() => new(
+        Snapshots: BacktestArtifactStatus.Complete,
+        CashFlows: BacktestArtifactStatus.Complete,
+        Fills: BacktestArtifactStatus.Complete,
+        TradeTickets: BacktestArtifactStatus.Complete,
+        Ledger: BacktestArtifactStatus.Complete,
+        TcaReport: BacktestArtifactStatus.Complete);
+
+    private static BacktestEngineMetadata BuildNativeEngineMetadata()
+    {
+        var assembly = typeof(BacktestEngine).Assembly;
+        var version =
+            assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
+            ?? assembly.GetName().Version?.ToString()
+            ?? "unknown";
+
+        return new BacktestEngineMetadata(
+            EngineId: "MeridianNative",
+            EngineVersion: version,
+            SourceFormat: "Meridian.Backtesting.BacktestResult",
+            Diagnostics: new Dictionary<string, string>());
     }
 
     private static IFillModel SelectFillModel(

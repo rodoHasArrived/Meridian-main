@@ -1,7 +1,7 @@
 # Meridian Documentation
 
 **Version:** 1.7.3
-**Last Updated:** 2026-03-30
+**Last Updated:** 2026-04-01
 
 This index is the main entry point for Meridian documentation. The current documentation set is synchronized around two connected product tracks inside a broader comprehensive fund-management objective:
 
@@ -13,9 +13,9 @@ This index is the main entry point for Meridian documentation. The current docum
 Meridian's active solution now spans:
 
 - a console/host application in `src/Meridian/`
-- application, domain, contracts, infrastructure, and storage layers in `src/Meridian.Application/`, `src/Meridian.Domain/`, `src/Meridian.Contracts/`, `src/Meridian.Infrastructure/`, and `src/Meridian.Storage/`
+- application, core, domain, contracts, infrastructure, and storage layers in `src/Meridian.Application/`, `src/Meridian.Core/`, `src/Meridian.Domain/`, `src/Meridian.Contracts/`, `src/Meridian.Infrastructure/`, `src/Meridian.Infrastructure.CppTrader/`, and `src/Meridian.Storage/`
 - execution, risk, strategy, provider, and backtesting seams in `src/Meridian.Execution*/`, `src/Meridian.Risk/`, `src/Meridian.Strategies/`, `src/Meridian.ProviderSdk/`, and `src/Meridian.Backtesting*/`
-- ledger, direct-lending, and F# support projects in `src/Meridian.Ledger/`, `src/Meridian.FSharp*/`
+- ledger, direct-lending, and F# support projects in `src/Meridian.Ledger/`, `src/Meridian.FSharp*/`, and `src/Meridian.IbApi.SmokeStub/`
 - web and desktop UI surfaces in `src/Meridian.Ui/`, `src/Meridian.Ui.Shared/`, `src/Meridian.Ui.Services/`, and `src/Meridian.Wpf/`
 - scripting and MCP surfaces in `src/Meridian.QuantScript/`, `src/Meridian.Mcp/`, and `src/Meridian.McpServer/`
 
@@ -23,8 +23,10 @@ Meridian's active solution now spans:
 
 - **New users** -> [Getting Started Guide](getting-started/README.md)
 - **Developers** -> [Repository Organization Guide](development/repository-organization-guide.md)
+- **Developer rules** -> [Repository Rule Set](development/repository-rule-set.md)
 - **Trading workstation migration** -> [Trading Workstation Migration Blueprint](plans/trading-workstation-migration-blueprint.md)
 - **Governance and fund operations expansion** -> [Governance and Fund Operations Blueprint](plans/governance-fund-ops-blueprint.md)
+- **Active delivery plans** -> [Plans Overview](plans/README.md)
 - **Direct lending target state** -> [UFL Direct Lending Target-State Package V2](plans/ufl-direct-lending-target-state-v2.md)
 - **Direct lending execution roadmap** -> [UFL Direct Lending Implementation Roadmap](plans/ufl-direct-lending-implementation-roadmap.md)
 - **UFL asset packages** -> [UFL Supported Asset Packages](plans/ufl-supported-assets-index.md)
@@ -60,10 +62,13 @@ Meridian's active solution now spans:
 - [Provider Implementation Guide](development/provider-implementation.md)
 - [WPF Implementation Notes](development/wpf-implementation-notes.md)
 - [Desktop Testing Guide](development/desktop-testing-guide.md)
+- [Repository Rule Set](development/repository-rule-set.md)
 - [Central Package Management Guide](development/central-package-management.md)
 - [F# Decision Rule](development/fsharp-decision-rule.md)
 - [Language Strategy](integrations/language-strategy.md)
 - [Documentation Contribution Guide](development/documentation-contribution-guide.md)
+- [Documentation Automation](development/documentation-automation.md)
+- [OTLP Trace Visualization](development/otlp-trace-visualization.md)
 
 ### Architecture and design
 
@@ -85,6 +90,7 @@ Meridian's active solution now spans:
 ### Status and planning
 
 - [Project Roadmap](status/ROADMAP.md)
+- [Plans Overview](plans/README.md)
 - [Feature Inventory](status/FEATURE_INVENTORY.md)
 - [Improvements Tracker](status/IMPROVEMENTS.md)
 - [Production Status](status/production-status.md)
@@ -101,14 +107,15 @@ Use these documents together when planning implementation:
 2. [plans/fund-management-product-vision-and-capability-matrix.md](plans/fund-management-product-vision-and-capability-matrix.md) for the formal product vision and phased capability view
 3. [plans/fund-management-module-implementation-backlog.md](plans/fund-management-module-implementation-backlog.md) for project-by-project backlog mapping and file anchors
 4. [plans/fund-management-pr-sequenced-roadmap.md](plans/fund-management-pr-sequenced-roadmap.md) for dependency-aware PR slices and parallel implementation lanes
-5. [plans/trading-workstation-migration-blueprint.md](plans/trading-workstation-migration-blueprint.md) for workstation structure
-6. [plans/governance-fund-ops-blueprint.md](plans/governance-fund-ops-blueprint.md) for Security Master, multi-ledger, cash-flow, reconciliation, and reporting
-7. [plans/ufl-supported-assets-index.md](plans/ufl-supported-assets-index.md) for the supported UFL asset packages across the current security-master model
-8. [plans/ufl-direct-lending-target-state-v2.md](plans/ufl-direct-lending-target-state-v2.md) for the direct-lending specialization of the governance and fund-ops target state
-9. [plans/ufl-direct-lending-implementation-roadmap.md](plans/ufl-direct-lending-implementation-roadmap.md) for the dependency-aware path from the current slice to the full direct-lending target state
-10. [status/FEATURE_INVENTORY.md](status/FEATURE_INVENTORY.md) for capability status
-11. [status/FULL_IMPLEMENTATION_TODO_2026_03_20.md](status/FULL_IMPLEMENTATION_TODO_2026_03_20.md) for the normalized non-assembly implementation backlog
-12. [status/IMPROVEMENTS.md](status/IMPROVEMENTS.md) for tracked implementation themes
+5. [plans/README.md](plans/README.md) for the active delivery-plan index across workstation, governance, backtesting, and refactor tracks
+6. [plans/trading-workstation-migration-blueprint.md](plans/trading-workstation-migration-blueprint.md) for workstation structure
+7. [plans/governance-fund-ops-blueprint.md](plans/governance-fund-ops-blueprint.md) for Security Master, multi-ledger, cash-flow, reconciliation, and reporting
+8. [plans/ufl-supported-assets-index.md](plans/ufl-supported-assets-index.md) for the supported UFL asset packages across the current security-master model
+9. [plans/ufl-direct-lending-target-state-v2.md](plans/ufl-direct-lending-target-state-v2.md) for the direct-lending specialization of the governance and fund-ops target state
+10. [plans/ufl-direct-lending-implementation-roadmap.md](plans/ufl-direct-lending-implementation-roadmap.md) for the dependency-aware path from the current slice to the full direct-lending target state
+11. [status/FEATURE_INVENTORY.md](status/FEATURE_INVENTORY.md) for capability status
+12. [status/FULL_IMPLEMENTATION_TODO_2026_03_20.md](status/FULL_IMPLEMENTATION_TODO_2026_03_20.md) for the normalized non-assembly implementation backlog
+13. [status/IMPROVEMENTS.md](status/IMPROVEMENTS.md) for tracked implementation themes
 
 ## Verified Build And Run References
 

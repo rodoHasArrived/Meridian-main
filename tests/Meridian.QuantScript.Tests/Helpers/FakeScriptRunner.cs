@@ -10,6 +10,7 @@ public sealed class FakeScriptRunner : IScriptRunner
 
     public string? LastSource { get; private set; }
     public IReadOnlyDictionary<string, object?>? LastParameters { get; private set; }
+    public ScriptExecutionCheckpoint? LastPreviousCheckpoint { get; private set; }
     public int CallCount { get; private set; }
 
     public FakeScriptRunner SetResult(ScriptRunResult result)
@@ -27,11 +28,13 @@ public sealed class FakeScriptRunner : IScriptRunner
     public Task<ScriptRunResult> RunAsync(
         string source,
         IReadOnlyDictionary<string, object?> parameters,
+        ScriptExecutionCheckpoint? previousCheckpoint = null,
         CancellationToken ct = default)
     {
         CallCount++;
         LastSource = source;
         LastParameters = parameters;
+        LastPreviousCheckpoint = previousCheckpoint;
 
         if (_exception is not null)
             throw _exception;
@@ -39,15 +42,17 @@ public sealed class FakeScriptRunner : IScriptRunner
         return Task.FromResult(_result ?? BuildDefault(source));
     }
 
-    private static ScriptRunResult BuildDefault(string source) => new(
-        Success: true,
-        Elapsed: TimeSpan.FromMilliseconds(50),
-        CompileTime: TimeSpan.FromMilliseconds(10),
-        PeakMemoryBytes: 0,
-        CompilationErrors: Array.Empty<ScriptDiagnostic>(),
-        RuntimeError: null,
-        ConsoleOutput: $"Script ran: {source.Length} chars",
-        Metrics: Array.Empty<KeyValuePair<string, string>>(),
-        Plots: Array.Empty<PlotRequest>(),
-        TradesSummary: Array.Empty<string>());
+    private static ScriptRunResult BuildDefault(string source) => new()
+    {
+        Success = true,
+        Elapsed = TimeSpan.FromMilliseconds(50),
+        CompileTime = TimeSpan.FromMilliseconds(10),
+        PeakMemoryBytes = 0,
+        CompilationErrors = Array.Empty<ScriptDiagnostic>(),
+        RuntimeError = null,
+        ConsoleEntries = [new ConsoleOutputEntry($"Script ran: {source.Length} chars")],
+        Metrics = Array.Empty<KeyValuePair<string, string>>(),
+        Plots = Array.Empty<PlotRequest>(),
+        TradesSummary = Array.Empty<string>()
+    };
 }

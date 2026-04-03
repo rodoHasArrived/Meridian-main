@@ -382,6 +382,7 @@ public static class UiApiRoutes
     public const string LeanBacktestDelete = "/api/lean/backtest/{backtestId}/delete";
     public const string LeanAutoExportStatus = "/api/lean/auto-export";
     public const string LeanAutoExportConfigure = "/api/lean/auto-export/configure";
+    public const string LeanResultsArtifact = "/api/lean/results/artifact";
     public const string LeanResultsIngest = "/api/lean/results/ingest";
     public const string LeanSymbolMap = "/api/lean/symbol-map";
 

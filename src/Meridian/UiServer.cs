@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using Meridian.Application.Composition;
 using Meridian.Application.Config;
 using Meridian.Application.Monitoring;
@@ -25,6 +26,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi;
+using AppBacktesting = global::Meridian.Application.Backtesting;
+using BacktestingEngine = global::Meridian.Backtesting.Engine;
+using BacktestingRuntime = global::Meridian.Backtesting;
 
 namespace Meridian;
 
@@ -64,6 +68,13 @@ public sealed class UiServer : IAsyncDisposable
         // Minimize logging from ASP.NET Core
         builder.Logging.SetMinimumLevel(LogLevel.Warning);
         builder.WebHost.UseUrls($"http://localhost:{port}");
+        builder.Services.ConfigureHttpJsonOptions(options =>
+        {
+            options.SerializerOptions.TypeInfoResolverChain.Insert(
+                0,
+                global::Meridian.Application.Serialization.MarketDataJsonContext.Default);
+            options.SerializerOptions.TypeInfoResolverChain.Add(new DefaultJsonTypeInfoResolver());
+        });
 
         // Allow reflection-based JSON binding for endpoint request types not covered by source-generated contexts.
         // This is required for minimal-API parameter binding (e.g. PackageRequest, ImportRequest).
@@ -74,6 +85,7 @@ public sealed class UiServer : IAsyncDisposable
         // Use centralized service composition root
         var compositionOptions = CompositionOptions.WebDashboard with { ConfigPath = configPath };
         builder.Services.AddMarketDataServices(compositionOptions);
+<<<<<<< Updated upstream
 
         // Register the Ui.Shared ConfigStore wrapper so endpoint lambdas can resolve it from DI.
         // The wrapper delegates to the core ConfigStore already registered by AddMarketDataServices.
@@ -90,6 +102,14 @@ public sealed class UiServer : IAsyncDisposable
             return new Meridian.Ui.Shared.Services.BackfillCoordinator(configStore);
         });
 
+=======
+        builder.Services.AddSingleton<Meridian.Ui.Shared.Services.ConfigStore>(_ =>
+            new Meridian.Ui.Shared.Services.ConfigStore(configPath));
+        builder.Services.AddSingleton<Meridian.Ui.Shared.Services.BackfillCoordinator>(sp =>
+            new Meridian.Ui.Shared.Services.BackfillCoordinator(
+                sp.GetRequiredService<Meridian.Ui.Shared.Services.ConfigStore>()));
+        builder.Services.AddSingleton<UserProfileRegistry>();
+>>>>>>> Stashed changes
         builder.Services.AddSingleton<StatusEndpointHandlers>(sp =>
         {
             var pipeline = sp.GetRequiredService<EventPipeline>();
@@ -110,6 +130,14 @@ public sealed class UiServer : IAsyncDisposable
         builder.Services.AddSingleton<PortfolioReadService>();
         builder.Services.AddSingleton<LedgerReadService>();
         builder.Services.AddSingleton<StrategyRunReadService>();
+        builder.Services.AddSingleton<BacktestingEngine.BacktestEngine>(sp =>
+            new BacktestingEngine.BacktestEngine(
+                sp.GetRequiredService<ILogger<BacktestingEngine.BacktestEngine>>(),
+                sp.GetRequiredService<Storage.Services.StorageCatalogService>(),
+                sp.GetService<Contracts.SecurityMaster.ISecurityMasterQueryService>(),
+                sp.GetService<BacktestingRuntime.ICorporateActionAdjustmentService>()));
+        builder.Services.AddSingleton<AppBacktesting.IBacktestStudioEngine, BacktestingRuntime.MeridianNativeBacktestStudioEngine>();
+        builder.Services.AddSingleton<BacktestingRuntime.BacktestStudioRunOrchestrator>();
         builder.Services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
         builder.Services.AddSingleton<ReconciliationProjectionService>();
         builder.Services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
@@ -236,6 +264,7 @@ public sealed class UiServer : IAsyncDisposable
 
     private void ConfigureRoutes()
     {
+<<<<<<< Updated upstream
         // ==================== UNIQUE ENDPOINT MODULES ====================
         // Endpoints not included in MapUiEndpoints and must be registered explicitly.
 
@@ -262,6 +291,16 @@ public sealed class UiServer : IAsyncDisposable
         // ==================== AGGREGATED ENDPOINT MODULES ====================
         // All remaining API endpoints (config, backfill, storage, providers, etc.)
         _app.MapUiEndpoints(s_jsonOptions);
+=======
+        // Shared UI API surface
+        var statusHandlers = _app.Services.GetRequiredService<StatusEndpointHandlers>();
+        _app.MapUiEndpointsWithStatus(statusHandlers);
+
+        // Host-specific endpoint groups not covered by MapUiEndpointsWithStatus.
+        var config = _app.Services.GetRequiredService<Meridian.Application.UI.ConfigStore>().Load();
+        _app.MapPackagingEndpoints(config.DataRoot);
+        _app.MapArchiveMaintenanceEndpoints();
+>>>>>>> Stashed changes
     }
 
     public async Task StartAsync(CancellationToken ct = default)
