@@ -822,11 +822,17 @@ Meridian-main
 │   │   ├── 07-backfill.png
 │   │   ├── 08-derivatives.png
 │   │   ├── 09-symbols.png
+│   │   ├── 10-status.png
 │   │   ├── 10-workstation-research.png
+│   │   ├── 11-login.png
 │   │   ├── 11-workstation-trading.png
 │   │   ├── 12-workstation-data-operations.png
+│   │   ├── 12-workstation-research.png
 │   │   ├── 13-workstation-governance.png
+│   │   ├── 13-workstation-trading.png
+│   │   ├── 14-workstation-data-operations.png
 │   │   ├── 14-workstation-trading-orders.png
+│   │   ├── 15-workstation-governance.png
 │   │   ├── 15-workstation-trading-positions.png
 │   │   ├── 16-workstation-trading-risk.png
 │   │   ├── 17-workstation-data-operations-providers.png
@@ -2182,6 +2188,7 @@ Meridian-main
 │   │   │   │   │   ├── data-operations-screen.tsx
 │   │   │   │   │   ├── governance-screen.test.tsx
 │   │   │   │   │   ├── governance-screen.tsx
+│   │   │   │   │   ├── overview-screen.tsx
 │   │   │   │   │   ├── research-screen.test.tsx
 │   │   │   │   │   ├── research-screen.tsx
 │   │   │   │   │   ├── trading-screen.test.tsx
@@ -2214,8 +2221,8 @@ Meridian-main
 │   │   │   │   └── dashboard.css
 │   │   │   └── workstation
 │   │   │       ├── assets
-│   │   │       │   ├── index-BLxm5sCJ.js
-│   │   │       │   └── index-erdiJ_gu.css
+│   │   │       │   ├── index-CnAc-D_d.js
+│   │   │       │   └── index-DLXsLZLB.css
 │   │   │       └── index.html
 │   │   ├── app.manifest
 │   │   ├── Meridian.Ui.csproj
