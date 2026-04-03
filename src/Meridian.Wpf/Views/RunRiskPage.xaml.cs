@@ -6,7 +6,7 @@ public partial class RunRiskPage
 {
     private readonly RunRiskViewModel _viewModel;
 
-    internal RunRiskPage(RunRiskViewModel viewModel)
+    public RunRiskPage(RunRiskViewModel viewModel)
     {
         _viewModel = viewModel;
         InitializeComponent();

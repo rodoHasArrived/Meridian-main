@@ -12,19 +12,22 @@ namespace Meridian.Wpf.Views;
 public partial class AccountPortfolioPage : Page
 {
     private readonly AccountPortfolioViewModel _viewModel;
-    private readonly string _accountId;
 
-    public AccountPortfolioPage(string accountId)
+    public AccountPortfolioPage(AccountPortfolioViewModel viewModel)
     {
         InitializeComponent();
-        _accountId = accountId;
-        _viewModel = new AccountPortfolioViewModel(ApiClientService.Instance);
+        _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
         DataContext = _viewModel;
+        Loaded += OnPageLoaded;
+        Unloaded += OnPageUnloaded;
     }
 
     private void OnPageLoaded(object sender, RoutedEventArgs e)
     {
-        _ = _viewModel.InitializeAsync(_accountId);
+        // InitializeAsync is triggered via the Parameter property set by NavigationService.
+        // If no parameter was passed (e.g. direct instantiation), initialize with empty id.
+        if (string.IsNullOrEmpty(_viewModel.AccountId))
+            _ = _viewModel.InitializeAsync(_viewModel.AccountId);
     }
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e)
