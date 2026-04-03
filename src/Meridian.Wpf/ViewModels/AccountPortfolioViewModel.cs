@@ -107,6 +107,23 @@ public sealed class AccountPortfolioViewModel : BindableBase, IDisposable
 
     public ObservableCollection<AccountPositionRow> Positions { get; } = [];
 
+    // ── Navigation parameter ──────────────────────────────────────────────────
+
+    private object? _parameter;
+
+    /// <summary>
+    /// Receives the account ID string set by NavigationService after page creation.
+    /// </summary>
+    public object? Parameter
+    {
+        get => _parameter;
+        set
+        {
+            if (SetProperty(ref _parameter, value) && value is string accountId)
+                _ = InitializeAsync(accountId);
+        }
+    }
+
     // ── Commands ──────────────────────────────────────────────────────────────
 
     public IAsyncRelayCommand RefreshCommand { get; }

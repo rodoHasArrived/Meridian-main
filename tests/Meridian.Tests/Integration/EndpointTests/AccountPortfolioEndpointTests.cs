@@ -31,6 +31,7 @@ public sealed class AccountPortfolioEndpointTests
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         PropertyNameCaseInsensitive = true,
+        Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() },
     };
 
     // ─── GET /api/execution/accounts ─────────────────────────────────────────
@@ -166,6 +167,14 @@ public sealed class AccountPortfolioEndpointTests
         });
         builder.WebHost.UseTestServer();
         configure?.Invoke(builder.Services);
+
+        // ExecutionEndpoints resolves IPortfolioState; tests register IMultiAccountPortfolioState.
+        // Forward IPortfolioState → IMultiAccountPortfolioState when the latter was registered.
+        if (builder.Services.Any(sd => sd.ServiceType == typeof(IMultiAccountPortfolioState)))
+        {
+            builder.Services.AddSingleton<IPortfolioState>(
+                sp => sp.GetRequiredService<IMultiAccountPortfolioState>());
+        }
 
         var app = builder.Build();
         app.MapExecutionEndpoints(JsonOpts);

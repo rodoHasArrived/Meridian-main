@@ -335,6 +335,13 @@ public partial class App : System.Windows.Application
         services.AddTransient<PluginManagementPage>();
         services.AddTransient<AgentPage>();
         services.AddTransient<DashboardWebPage>();
+        services.AddTransient<CredentialManagementPage>();
+        services.AddTransient<QuantScriptPage>();
+        services.AddTransient<AccountPortfolioPage>();
+        services.AddTransient<QualityArchivePage>();
+        services.AddTransient<ResearchWorkspaceShellPage>();
+        services.AddTransient<TradingWorkspaceShellPage>();
+        services.AddTransient<RunRiskPage>();
 
         // ── Backtesting service ──────────────────────────────────────────────
         // Registered in RegisterStrategyWorkspaceServices so optional Security Master
@@ -369,6 +376,34 @@ public partial class App : System.Windows.Application
         services.AddTransient<Meridian.Wpf.ViewModels.WatchlistViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.SettingsViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.CollectionSessionViewModel>();
+
+        // ── Credential management ────────────────────────────────────────────
+        services.AddSingleton<WpfServices.CredentialService>();
+        services.AddTransient<Meridian.Wpf.ViewModels.CredentialManagementViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.AccountPortfolioViewModel>();
+
+        // ── Quality archive ──────────────────────────────────────────────────
+        services.AddSingleton<Meridian.Ui.Services.Services.IQualityArchiveStore,
+                              Meridian.Ui.Services.Services.QualityArchiveStore>();
+        services.AddTransient<Meridian.Wpf.ViewModels.QualityArchiveViewModel>();
+
+        // ── QuantScript services ─────────────────────────────────────────────
+        services.Configure<Meridian.QuantScript.QuantScriptOptions>(_ => { });
+        services.AddSingleton(sp =>
+        {
+            var dataRoot = Environment.GetEnvironmentVariable("MDC_DATA_PATH") ?? "data";
+            return new Meridian.Storage.Store.JsonlMarketDataStore(dataRoot);
+        });
+        services.AddSingleton<Meridian.QuantScript.Api.IQuantDataContext,
+                              Meridian.QuantScript.Api.QuantDataContext>();
+        services.AddSingleton<Meridian.QuantScript.Plotting.PlotQueue>();
+        services.AddSingleton<Meridian.QuantScript.Compilation.IQuantScriptCompiler,
+                              Meridian.QuantScript.Compilation.RoslynScriptCompiler>();
+        services.AddSingleton<Meridian.QuantScript.Compilation.IScriptRunner,
+                              Meridian.QuantScript.Compilation.ScriptRunner>();
+        services.AddSingleton<WpfServices.IQuantScriptLayoutService,
+                              WpfServices.QuantScriptLayoutService>();
+        services.AddTransient<Meridian.Wpf.ViewModels.QuantScriptViewModel>();
 
         // ── Plugin loader service ────────────────────────────────────────────
         services.AddSingleton<Meridian.Infrastructure.DataSources.DataSourceRegistry>();
@@ -908,8 +943,8 @@ public partial class App : System.Windows.Application
         try
         {
             var version = Microsoft.Web.WebView2.Core.CoreWebView2Environment.GetAvailableBrowserVersionString();
-            WpfServices.LoggingService.Instance.LogInformation(
-                $"[WebView2] Runtime available — version {version}");
+            WpfServices.LoggingService.Instance.LogInfo(
+                "[WebView2] Runtime available", ("version", version));
         }
         catch
         {
