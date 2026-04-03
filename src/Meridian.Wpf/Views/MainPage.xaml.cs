@@ -56,6 +56,28 @@ public partial class MainPage : Page
 
     private void OnOpenCommandPaletteClick(object sender, RoutedEventArgs e)
     {
+        ShowCommandPaletteOverlay();
+    }
+
+    /// <summary>
+    /// Shows the inline command palette overlay and focuses the search input.
+    /// Called from the main window when the global Ctrl+K shortcut fires so that
+    /// the <c>CommandPaletteInput</c> element remains a descendant of the main window
+    /// and is therefore discoverable by UI-Automation tooling (e.g. screenshot scripts).
+    /// </summary>
+    public void ShowCommandPaletteOverlay()
+    {
+        _viewModel.ShowCommandPaletteCommand.Execute(null);
+        CommandPaletteTextBox.Focus();
+        CommandPaletteTextBox.SelectAll();
+    }
+
+    /// <summary>
+    /// Activates the inline command-palette overlay and focuses the search box.
+    /// Called by <see cref="MainWindow"/> when the user presses Ctrl+K.
+    /// </summary>
+    public void OpenCommandPalette()
+    {
         _viewModel.ShowCommandPaletteCommand.Execute(null);
         CommandPaletteTextBox.Focus();
         CommandPaletteTextBox.SelectAll();

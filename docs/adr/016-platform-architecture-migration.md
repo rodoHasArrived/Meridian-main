@@ -24,40 +24,46 @@ The platform is divided into **four named pillars** plus shared cross-cutting la
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                          UI Layer                                        │
-│         (Meridian.Wpf, .Ui, .Ui.Services, .Ui.Shared)        │
+│         (Meridian.Wpf, .Ui, .Ui.Services, .Ui.Shared)                  │
 └─────┬───────────────┬──────────────────┬────────────────────────────────┘
       │               │                  │
       ▼               ▼                  ▼
-┌──────────┐  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐
-│  DATA    │  │  BACKTESTING │  │  EXECUTION   │  │     STRATEGIES       │
-│COLLECTION│  │              │  │              │  │                      │
-│          │  │ .Backtesting │  │ .Execution   │  │ .Strategies          │
-│ .Infra.. │  │ .Backtesting │  │              │  │                      │
-│ .Domain  │  │   .Sdk       │  │              │  │                      │
-│ .App..   │  │              │  │              │  │                      │
-│ .Storage │  │              │  │              │  │                      │
-│ .Provider│  │              │  │              │  │                      │
-│   Sdk    │  │              │  │              │  │                      │
-└──────────┘  └──────────────┘  └──────────────┘  └──────────────────────┘
+┌──────────┐  ┌──────────────┐  ┌──────────────────┐  ┌──────────────────┐
+│  DATA    │  │  BACKTESTING │  │    EXECUTION     │  │   STRATEGIES     │
+│COLLECTION│  │              │  │                  │  │                  │
+│          │  │ .Backtesting │  │ .Execution       │  │ .Strategies      │
+│ .Infra.. │  │ .Backtesting │  │ .Execution.Sdk   │  │                  │
+│ .Domain  │  │   .Sdk       │  │ .Risk            │  │                  │
+│ .App..   │  │ .QuantScript │  │                  │  │                  │
+│ .Storage │  │              │  │                  │  │                  │
+│ .Provider│  │              │  │                  │  │                  │
+│   Sdk    │  │              │  │                  │  │                  │
+└──────────┘  └──────────────┘  └──────────────────┘  └──────────────────┘
       │               │                  │                   │
       └───────────────┴──────────────────┴───────────────────┘
                                   │
-                     ┌────────────▼────────────┐
-                     │     SHARED FOUNDATION    │
-                     │  .Contracts  .Core .FSharp│
-                     └──────────────────────────┘
+              ┌───────────────────▼──────────────────────┐
+              │           SHARED FOUNDATION               │
+              │  .Contracts  .Core  .FSharp  .FSharp.*    │
+              └────────────────────────────────┬──────────┘
+                                               │
+              ┌────────────────────────────────▼──────────┐
+              │          CROSS-CUTTING / TOOLING           │
+              │  .Ledger  .Mcp  .McpServer  .Infra.CppTrader│
+              └───────────────────────────────────────────┘
 ```
 
 ### Pillar Definitions
 
 | Pillar | Projects | Responsibility |
 |--------|----------|----------------|
-| **Data Collection** | `Meridian`, `.Application`, `.Domain`, `.Infrastructure`, `.Storage`, `.ProviderSdk` | Streaming ingestion, historical backfill, storage, data quality monitoring |
-| **Backtesting** | `Meridian.Backtesting`, `.Backtesting.Sdk` | Historical replay, fill simulation, portfolio tracking, strategy metrics |
-| **Execution** | `Meridian.Execution` | Live and simulated order routing, broker adapters, `IOrderGateway` |
+| **Data Collection** | `Meridian`, `.Application`, `.Domain`, `.Infrastructure`, `.Infrastructure.CppTrader`, `.Storage`, `.ProviderSdk` | Streaming ingestion, historical backfill, symbol search, storage, data quality monitoring |
+| **Backtesting** | `Meridian.Backtesting`, `.Backtesting.Sdk`, `.QuantScript` | Historical replay, fill simulation, portfolio tracking, strategy metrics, script-based research |
+| **Execution** | `Meridian.Execution`, `.Execution.Sdk`, `.Risk` | Live and simulated order routing, broker adapters, `IOrderGateway`, pre-trade risk rules |
 | **Strategies** | `Meridian.Strategies` | Strategy lifecycle management, run archive, promotion workflow |
-| **Shared Foundation** | `Meridian.Contracts`, `.Core`, `.FSharp` | Cross-cutting types, configuration, F# domain models |
+| **Shared Foundation** | `Meridian.Contracts`, `.Core`, `.FSharp`, `.FSharp.DirectLending.Aggregates`, `.FSharp.Ledger`, `.FSharp.Trading` | Cross-cutting types, configuration, F# domain models |
 | **UI** | `Meridian.Wpf`, `.Ui`, `.Ui.Services`, `.Ui.Shared` | Desktop and web surfaces |
+| **Tooling / Cross-cutting** | `Meridian.Ledger`, `.Mcp`, `.McpServer` | Double-entry ledger accounting, MCP server for LLM integrations |
 
 ### Allowed Dependencies (per-pillar)
 
@@ -67,6 +73,7 @@ Data Collection    ←  depends on Shared Foundation only
 Backtesting        ←  depends on Shared Foundation + Data Collection (read-only storage access)
 Execution          ←  depends on Shared Foundation + Data Collection (live feed access)
 Strategies         ←  depends on Shared Foundation + Backtesting.Sdk + Execution interfaces only
+Tooling            ←  depends on Shared Foundation (Ledger, Mcp)
 UI                 ←  depends on all pillars via service layer (Ui.Services acts as anti-corruption layer)
 ```
 
@@ -87,7 +94,12 @@ UI                 ←  depends on all pillars via service layer (Ui.Services ac
 | Component | Location | Purpose |
 |-----------|----------|---------|
 | Execution project | `src/Meridian.Execution/` | New pillar — order gateway and broker adapters |
+| Execution SDK | `src/Meridian.Execution.Sdk/` | Execution contracts and models |
+| Risk project | `src/Meridian.Risk/` | Pre-trade risk rules and composite validator |
 | Strategies project | `src/Meridian.Strategies/` | New pillar — strategy lifecycle and run archive |
+| QuantScript project | `src/Meridian.QuantScript/` | Research scripting, Roslyn-compiled quant scripts |
+| Ledger project | `src/Meridian.Ledger/` | Double-entry ledger for fund accounting |
+| McpServer project | `src/Meridian.McpServer/` | MCP server for LLM tool integrations |
 | Solution file | `Meridian.sln` | Solution folders mirror the four pillars |
 | IOrderGateway | `src/Meridian.Execution/Interfaces/IOrderGateway.cs` | ADR-015 canonical interface |
 | IStrategyLifecycle | `src/Meridian.Strategies/Interfaces/IStrategyLifecycle.cs` | Strategy lifecycle contract |
@@ -129,7 +141,7 @@ Add execution and strategy management as sub-folders within existing projects.
 **Cons:** Namespace pollution, no enforced separation, impossible to reference just the
 execution layer from an external strategy DLL, no clear ownership per pillar.
 
-**Why rejected:** The codebase is already large enough (779 source files) that
+**Why rejected:** The codebase is already large enough (1,313+ source files) that
 undifferentiated growth will cause onboarding and maintenance problems within months.
 
 ### Alternative 2: Full Microservices Split
@@ -157,10 +169,12 @@ later.
   data collection (e.g., a headless server running in cloud)
 - Strategy plugin DLLs only need to reference `.Backtesting.Sdk` or `.Execution`
   interfaces — not the full infrastructure graph
+- `Meridian.Risk` in the Execution pillar provides a reusable pre-trade safety net for
+  both paper and live gateways without duplicating rule logic
 
 ### Negative
 
-- Two new projects add initial scaffolding overhead
+- Multiple new projects add initial scaffolding overhead
 - Contributors must learn the pillar dependency rules before adding cross-pillar
   references
 - Solution file grows; Visual Studio solution folder navigation requires discipline
@@ -169,6 +183,11 @@ later.
 
 - `Meridian.*` prefix is retained — existing ADRs, CI badges, and
   documentation references remain valid
+- `Meridian.QuantScript` belongs with Backtesting because it compiles Roslyn scripts
+  that exercise `IBacktestStrategy`; it does not touch live order routing
+- `Meridian.Ledger` and `Meridian.McpServer` are cross-cutting concerns that depend
+  on Shared Foundation but are not assigned to a pillar — they are optional components
+  that deployments may include or exclude independently
 
 ## Compliance
 
@@ -196,8 +215,9 @@ visible at runtime.
 - [ADR-001: Provider Abstraction Pattern](001-provider-abstraction.md)
 - [ADR-003: Microservices Decomposition](003-microservices-decomposition.md) — future scaling option
 - [ADR-005: Attribute-Based Discovery](005-attribute-based-discovery.md)
+- [ADR-009: F# Type-Safe Domain](009-fsharp-interop.md) — four F# projects placed in Shared Foundation
 - [ADR-015: Strategy Execution Contract](015-strategy-execution-contract.md)
 
 ---
 
-*Last Updated: 2026-03-18*
+*Last Updated: 2026-04-03*

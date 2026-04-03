@@ -851,6 +851,22 @@ Meridian-main
 │   │   ├── open-source-references.md
 │   │   └── README.md
 │   ├── screenshots
+│   │   ├── desktop
+│   │   │   ├── wpf-backfill.png
+│   │   │   ├── wpf-backtest.png
+│   │   │   ├── wpf-dashboard.png
+│   │   │   ├── wpf-data-browser.png
+│   │   │   ├── wpf-data-quality.png
+│   │   │   ├── wpf-diagnostics.png
+│   │   │   ├── wpf-live-data.png
+│   │   │   ├── wpf-provider-health.png
+│   │   │   ├── wpf-providers.png
+│   │   │   ├── wpf-quant-script.png
+│   │   │   ├── wpf-security-master.png
+│   │   │   ├── wpf-settings.png
+│   │   │   ├── wpf-storage.png
+│   │   │   ├── wpf-strategy-runs.png
+│   │   │   └── wpf-symbols.png
 │   │   ├── 01-dashboard.png
 │   │   ├── 02-workstation.png
 │   │   ├── 03-swagger.png
@@ -942,6 +958,7 @@ Meridian-main
 │   │   └── setup.sh
 │   ├── dev
 │   │   ├── build-ibapi-smoke.ps1
+│   │   ├── capture-desktop-screenshots.ps1
 │   │   ├── desktop-dev.ps1
 │   │   ├── diagnose-uwp-xaml.ps1
 │   │   └── install-git-hooks.sh
@@ -2334,6 +2351,7 @@ Meridian-main
 │   │   │   ├── ExportPresetServiceBase.cs
 │   │   │   ├── FixtureDataService.cs
 │   │   │   ├── FixtureModeDetector.cs
+│   │   │   ├── FixtureScenario.cs
 │   │   │   ├── FormatHelpers.cs
 │   │   │   ├── FormValidationRules.cs
 │   │   │   ├── HttpClientConfiguration.cs
@@ -2512,9 +2530,11 @@ Meridian-main
 │       │   ├── BoolToVisibilityConverter.cs
 │       │   ├── ConsoleEntryKindToBrushConverter.cs
 │       │   ├── CountToVisibilityConverter.cs
+│       │   ├── IntToVisibilityConverter.cs
 │       │   ├── InvertBoolConverter.cs
 │       │   ├── NullToCollapsedConverter.cs
-│       │   └── StringToBoolConverter.cs
+│       │   ├── StringToBoolConverter.cs
+│       │   └── StringToVisibilityConverter.cs
 │       ├── Models
 │       │   ├── ActionEntry.cs
 │       │   ├── ActivityLogModels.cs
@@ -3306,6 +3326,7 @@ Meridian-main
 │   │   │   ├── ErrorHandlingServiceTests.cs
 │   │   │   ├── EventReplayServiceTests.cs
 │   │   │   ├── FixtureDataServiceTests.cs
+│   │   │   ├── FixtureModeDetectorTests.cs
 │   │   │   ├── FormValidationServiceTests.cs
 │   │   │   ├── IntegrityEventsServiceTests.cs
 │   │   │   ├── LeanIntegrationServiceTests.cs

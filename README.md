@@ -957,7 +957,23 @@ Use these documents together when planning or implementing new work:
 │   │   ├── 20-workstation-governance-ledger.png
 │   │   ├── 21-workstation-governance-reconciliation.png
 │   │   ├── 22-workstation-governance-security-master.png
-│   │   └── README.md
+│   │   ├── README.md
+│   │   └── desktop
+│   │       ├── wpf-backfill.png
+│   │       ├── wpf-backtest.png
+│   │       ├── wpf-dashboard.png
+│   │       ├── wpf-data-browser.png
+│   │       ├── wpf-data-quality.png
+│   │       ├── wpf-diagnostics.png
+│   │       ├── wpf-live-data.png
+│   │       ├── wpf-provider-health.png
+│   │       ├── wpf-providers.png
+│   │       ├── wpf-quant-script.png
+│   │       ├── wpf-security-master.png
+│   │       ├── wpf-settings.png
+│   │       ├── wpf-storage.png
+│   │       ├── wpf-strategy-runs.png
+│   │       └── wpf-symbols.png
 │   ├── security
 │   │   ├── README.md
 │   │   └── known-vulnerabilities.md
@@ -1019,6 +1035,7 @@ Use these documents together when planning or implementing new work:
 │   ├── compare_benchmarks.py
 │   ├── dev
 │   │   ├── build-ibapi-smoke.ps1
+│   │   ├── capture-desktop-screenshots.ps1
 │   │   ├── desktop-dev.ps1
 │   │   ├── diagnose-uwp-xaml.ps1
 │   │   └── install-git-hooks.sh
@@ -2338,8 +2355,8 @@ Use these documents together when planning or implementing new work:
 │   │       │   └── dashboard.css
 │   │       └── workstation
 │   │           ├── assets
-│   │           │   ├── index-CnAc-D_d.js
-│   │           │   └── index-DLXsLZLB.css
+│   │           │   ├── index-BykwJCPj.js
+│   │           │   └── index-Daqy6egl.css
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
@@ -2591,9 +2608,11 @@ Use these documents together when planning or implementing new work:
 │       │   ├── BoolToVisibilityConverter.cs
 │       │   ├── ConsoleEntryKindToBrushConverter.cs
 │       │   ├── CountToVisibilityConverter.cs
+│       │   ├── IntToVisibilityConverter.cs
 │       │   ├── InvertBoolConverter.cs
 │       │   ├── NullToCollapsedConverter.cs
-│       │   └── StringToBoolConverter.cs
+│       │   ├── StringToBoolConverter.cs
+│       │   └── StringToVisibilityConverter.cs
 │       ├── GlobalUsings.cs
 │       ├── MainWindow.xaml
 │       ├── MainWindow.xaml.cs
@@ -3461,6 +3480,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-455 directories, 2878 files
+456 directories, 2896 files
 ```
 <!-- readme-tree end -->

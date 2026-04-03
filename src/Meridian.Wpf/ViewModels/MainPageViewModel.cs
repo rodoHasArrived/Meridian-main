@@ -468,7 +468,9 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     {
         var query = CommandPaletteQuery.Trim();
         var pages = _navigationService.GetRegisteredPages()
-            .Where(page => string.IsNullOrWhiteSpace(query) || page.Contains(query, StringComparison.OrdinalIgnoreCase))
+            .Where(page => string.IsNullOrWhiteSpace(query)
+                || page.Contains(query, StringComparison.OrdinalIgnoreCase)
+                || (PageData.TryGetValue(page, out var pd) && pd.Title.Contains(query, StringComparison.OrdinalIgnoreCase)))
             .OrderBy(page => page, StringComparer.OrdinalIgnoreCase)
             .ToList();
 
