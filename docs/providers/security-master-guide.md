@@ -64,16 +64,16 @@ SELECT table_name FROM information_schema.tables WHERE table_schema = 'security_
 
 ### Configuration Reference
 
-Once the database connection is in place, fine-tune the service behavior through `SecurityMasterOptions`. All options can be set in `appsettings.json` or overridden via environment variables:
+Once the database connection is in place, review the `SecurityMasterOptions` defaults used by the application at startup. The current implementation documents runtime overrides through environment variables for the database settings below; the remaining options use built-in defaults unless changed in code:
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| `ConnectionString` | `""` | PostgreSQL connection string (required; see `MERIDIAN_SECURITY_MASTER_CONNECTION_STRING`) |
-| `Schema` | `security_master` | PostgreSQL schema name |
-| `SnapshotIntervalVersions` | `50` | Save an aggregate snapshot every N versions to speed up event replay |
-| `ProjectionReplayBatchSize` | `500` | Number of events to replay per batch when rebuilding projections |
-| `PreloadProjectionCache` | `true` | Warm the in-memory projection cache on startup |
-| `ResolveInactiveByDefault` | `true` | Include inactive (deactivated) securities when resolving by identifier |
+| Option | Default | Runtime override | Description |
+|--------|---------|------------------|-------------|
+| `ConnectionString` | `""` | `MERIDIAN_SECURITY_MASTER_CONNECTION_STRING` | PostgreSQL connection string (required) |
+| `Schema` | `security_master` | `MERIDIAN_SECURITY_MASTER_SCHEMA` | PostgreSQL schema name |
+| `SnapshotIntervalVersions` | `50` | None documented | Save an aggregate snapshot every N versions to speed up event replay |
+| `ProjectionReplayBatchSize` | `500` | None documented | Number of events to replay per batch when rebuilding projections |
+| `PreloadProjectionCache` | `true` | None documented | Warm the in-memory projection cache on startup |
+| `ResolveInactiveByDefault` | `true` | None documented | Include inactive (deactivated) securities when resolving by identifier |
 
 ---
 
