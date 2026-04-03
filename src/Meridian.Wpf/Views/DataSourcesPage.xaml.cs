@@ -113,6 +113,21 @@ public partial class DataSourcesPage : Page
             PolygonApiKeyBox.Password = _viewModel.PolygonApiKey;
     }
 
+    // ── Row-level Edit / Delete buttons ──────────────────────────────────
+    // Buttons in DataTemplates carry the source ID in their Tag property.
+
+    private void EditDataSource_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is System.Windows.Controls.Button { Tag: string id })
+            _viewModel.EditSourceCommand.Execute(id);
+    }
+
+    private async void DeleteDataSource_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is System.Windows.Controls.Button { Tag: string id })
+            await _viewModel.DeleteSourceCommand.ExecuteAsync(id);
+    }
+
     // ── Source enabled toggle (row-level; DataTemplate cannot bind commands
     //    from a parent context reliably without x:Name trickery) ──────────
 
