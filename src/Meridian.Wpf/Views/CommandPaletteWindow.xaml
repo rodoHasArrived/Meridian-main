@@ -53,6 +53,7 @@
                              CaretBrush="#FF89B4FA"
                              BorderThickness="0"
                              VerticalContentAlignment="Center"
+                             AutomationProperties.AutomationId="CommandPaletteInput"
                              TextChanged="OnSearchTextChanged" />
                     <TextBlock Grid.Column="1"
                                x:Name="PlaceholderText"

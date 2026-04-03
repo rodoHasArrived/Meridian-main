@@ -205,6 +205,12 @@ try {
   foreach ($entry in $pages.GetEnumerator()) {
     $slug = $entry.Key
     $search = $entry.Value
+
+    if (-not $window) {
+      Write-Warning "Skipping '$search' because the main window reference was lost."
+      continue
+    }
+
     Write-Host "Navigating to '$search' ..."
     $ok = Invoke-Navigate -Window $window -SearchTerm $search
     $window = Find-MeridianWindow
