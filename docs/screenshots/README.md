@@ -1,8 +1,9 @@
 # Meridian UI Screenshots
 
-Screenshots of the Meridian Terminal web dashboard running in default (no-provider) mode.
+Screenshots of the Meridian Terminal web dashboard and WPF desktop application.
+Web screenshots run on `ubuntu-latest`; desktop screenshots run on `windows-latest` in fixture mode.
 
-## How to run
+## How to run (web dashboard)
 
 ```bash
 dotnet build src/Meridian/Meridian.csproj -c Release /p:EnableWindowsTargeting=true
@@ -10,6 +11,19 @@ cd src/Meridian/bin/Release/net9.0
 MDC_AUTH_MODE=optional ./Meridian --ui --http-port 8200
 # open http://localhost:8200
 ```
+
+## How to run (WPF desktop)
+
+```powershell
+dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release -p:TargetFramework=net9.0-windows
+$env:MDC_FIXTURE_MODE = '1'
+dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj --no-build -c Release
+```
+
+Desktop screenshots are stored under [`desktop/`](desktop/) and are automatically
+refreshed by the `Refresh UI Screenshots` workflow on the same schedule as the web
+screenshots. They are captured using Windows UI Automation and the built-in Command
+Palette to navigate between pages.
 
 ---
 
@@ -186,3 +200,28 @@ The **Reconciliation history** deep-link within the Governance workspace, showin
 The **Security master coverage** deep-link within the Governance workspace, showing unresolved references and coverage risk across the instrument universe.
 
 ![Workstation – Governance: Security Master](22-workstation-governance-security-master.png)
+
+---
+
+## WPF Desktop Application
+
+The following screenshots are captured from the WPF desktop application running in
+fixture mode (`MDC_FIXTURE_MODE=1`). They live under the [`desktop/`](desktop/) subdirectory.
+
+| # | Page | File |
+|---|------|------|
+| D01 | Dashboard | [`desktop/wpf-dashboard.png`](desktop/wpf-dashboard.png) |
+| D02 | Providers | [`desktop/wpf-providers.png`](desktop/wpf-providers.png) |
+| D03 | Provider Health | [`desktop/wpf-provider-health.png`](desktop/wpf-provider-health.png) |
+| D04 | Backfill | [`desktop/wpf-backfill.png`](desktop/wpf-backfill.png) |
+| D05 | Symbols | [`desktop/wpf-symbols.png`](desktop/wpf-symbols.png) |
+| D06 | Live Data | [`desktop/wpf-live-data.png`](desktop/wpf-live-data.png) |
+| D07 | Storage | [`desktop/wpf-storage.png`](desktop/wpf-storage.png) |
+| D08 | Data Quality | [`desktop/wpf-data-quality.png`](desktop/wpf-data-quality.png) |
+| D09 | Data Browser | [`desktop/wpf-data-browser.png`](desktop/wpf-data-browser.png) |
+| D10 | Strategy Runs | [`desktop/wpf-strategy-runs.png`](desktop/wpf-strategy-runs.png) |
+| D11 | Backtest | [`desktop/wpf-backtest.png`](desktop/wpf-backtest.png) |
+| D12 | Quant Script | [`desktop/wpf-quant-script.png`](desktop/wpf-quant-script.png) |
+| D13 | Security Master | [`desktop/wpf-security-master.png`](desktop/wpf-security-master.png) |
+| D14 | Diagnostics | [`desktop/wpf-diagnostics.png`](desktop/wpf-diagnostics.png) |
+| D15 | Settings | [`desktop/wpf-settings.png`](desktop/wpf-settings.png) |
