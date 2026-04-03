@@ -5,6 +5,9 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              Height="28">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </UserControl.Resources>
     <Border Background="{StaticResource StatusBarBackgroundBrush}"
             BorderBrush="{StaticResource StatusBarBorderBrush}"
             BorderThickness="0,1,0,0">
