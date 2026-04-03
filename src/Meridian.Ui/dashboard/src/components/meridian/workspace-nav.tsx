@@ -23,57 +23,56 @@ export function WorkspaceNav() {
   }
 
   return (
-    <aside className="panel-surface-strong flex min-h-[calc(100vh-3rem)] w-full flex-col gap-8 p-5 lg:w-[320px]">
-      <div className="space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-primary/30 bg-primary/12 text-primary">
-            <BarChart3 className="h-6 w-6" />
-          </div>
-          <div>
-            <div className="font-display text-lg font-semibold">Meridian</div>
-            <div className="text-sm text-muted-foreground">Operator Workstation</div>
-          </div>
+    <aside
+      className="flex w-[220px] shrink-0 flex-col border-r border-border/45 bg-[hsl(var(--toolbar-bg))] min-h-screen"
+    >
+      {/* ── Logo / identity ── */}
+      <div className="flex h-12 shrink-0 items-center gap-2.5 border-b border-border/45 px-4">
+        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/15 text-primary">
+          <BarChart3 className="h-[15px] w-[15px]" />
         </div>
-        <div className="rounded-2xl border border-border/80 bg-secondary/35 px-4 py-4">
-          <div className="eyebrow-label">Operating Model</div>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            Workflow-centric shell for research, trading, operations, and governance with mode-aware visual posture.
-          </p>
+        <div>
+          <div className="text-[13px] font-bold leading-none">Meridian</div>
+          <div className="mt-0.5 text-[10px] text-muted-foreground/65">Operator Workstation</div>
         </div>
       </div>
 
-      <nav className="space-y-2" aria-label="Workspaces">
-        {WORKSPACES.map((workspace) => {
-          const Icon = icons[workspace.key];
-          const active = isActive(workspace.key);
-          return (
-            <Link
-              key={workspace.key}
-              to={workspacePath(workspace.key)}
-              className={cn(
-                "flex items-start gap-3 rounded-2xl border px-4 py-3 transition-all duration-200",
-                active
-                  ? "border-primary/30 bg-primary/10 text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
-                  : "border-transparent bg-transparent text-muted-foreground hover:border-border hover:bg-secondary/55 hover:text-foreground"
-              )}
-            >
-              <Icon className="mt-0.5 h-4 w-4 shrink-0" />
-              <span className="space-y-1">
-                <span className="block text-sm font-semibold">{workspace.label}</span>
-                <span className="block text-xs leading-5">{workspace.status}</span>
-              </span>
-            </Link>
-          );
-        })}
+      {/* ── Navigation items ── */}
+      <nav className="flex-1 px-2 py-3" aria-label="Workspaces">
+        <div className="space-y-px">
+          {WORKSPACES.map((workspace) => {
+            const Icon = icons[workspace.key];
+            const active = isActive(workspace.key);
+            return (
+              <Link
+                key={workspace.key}
+                to={workspacePath(workspace.key)}
+                className={cn(
+                  "flex items-center gap-2.5 rounded-md px-3 py-2 text-[13px] transition-all duration-150",
+                  active
+                    ? "bg-primary/12 font-semibold text-primary"
+                    : "font-medium text-muted-foreground hover:bg-secondary/40 hover:text-foreground"
+                )}
+              >
+                <Icon
+                  className={cn(
+                    "h-4 w-4 shrink-0",
+                    active ? "text-primary" : "text-muted-foreground/60"
+                  )}
+                />
+                <span className="flex-1">{workspace.label}</span>
+                {active && (
+                  <div className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary/80" />
+                )}
+              </Link>
+            );
+          })}
+        </div>
       </nav>
 
-      <div className="mt-auto rounded-2xl border border-border bg-secondary/45 px-4 py-5 text-sm text-slate-50">
-        <div className="eyebrow-label">Wave 3 Delivery</div>
-        <div className="mt-3 font-semibold text-foreground">Overview dashboard, symbol management, quality monitoring</div>
-        <p className="mt-2 leading-6 text-muted-foreground">
-          System overview with live health status, symbol subscription management, and per-symbol data quality monitoring
-          now available across all five workspaces.
-        </p>
+      {/* ── Footer ── */}
+      <div className="border-t border-border/35 px-4 py-3">
+        <p className="text-[10px] text-muted-foreground/35">v1.7.2 · Meridian Platform</p>
       </div>
     </aside>
   );
