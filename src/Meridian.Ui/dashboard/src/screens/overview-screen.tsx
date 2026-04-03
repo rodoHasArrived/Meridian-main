@@ -29,24 +29,34 @@ interface OverviewScreenProps {
   session: SessionInfo | null;
 }
 
+type OverviewTab = "overview" | "providers" | "risk" | "data-health" | "activity";
+
+const OVERVIEW_TABS: { key: OverviewTab; label: string }[] = [
+  { key: "overview", label: "Overview" },
+  { key: "providers", label: "Providers" },
+  { key: "risk", label: "Risk" },
+  { key: "data-health", label: "Data Health" },
+  { key: "activity", label: "Activity" }
+];
+
 const systemStatusConfig = {
   Healthy: {
     label: "All Systems Healthy",
     icon: CheckCircle2,
     className: "text-success",
-    bannerClass: "border-success/30 bg-success/5"
+    bannerClass: "border-success/25 bg-success/5"
   },
   Degraded: {
     label: "System Degraded",
     icon: AlertCircle,
     className: "text-warning",
-    bannerClass: "border-warning/30 bg-warning/5"
+    bannerClass: "border-warning/25 bg-warning/5"
   },
   Offline: {
     label: "System Offline",
     icon: XCircle,
     className: "text-danger",
-    bannerClass: "border-danger/30 bg-danger/5"
+    bannerClass: "border-danger/25 bg-danger/5"
   }
 } as const;
 
@@ -98,6 +108,7 @@ const workspaceLinks = [
 ] as const;
 
 export function OverviewScreen({ data, session }: OverviewScreenProps) {
+  const [activeTab, setActiveTab] = useState<OverviewTab>("overview");
   const [refreshing, setRefreshing] = useState(false);
   const [liveData, setLiveData] = useState<SystemOverviewResponse | null>(data);
 
@@ -118,29 +129,40 @@ export function OverviewScreen({ data, session }: OverviewScreenProps) {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Status banner */}
+    <div className="space-y-0">
+      {/* ── Marquee-style compact status bar ── */}
       <div
         className={cn(
-          "flex items-center gap-3 rounded-lg border px-4 py-3",
-          statusConfig?.bannerClass ?? "border-border bg-muted/30"
+          "mb-0 flex items-center gap-3 rounded-lg border px-4 py-2.5",
+          statusConfig?.bannerClass ?? "border-border/40 bg-muted/20"
         )}
       >
-        <StatusIcon className={cn("size-5 shrink-0", statusConfig?.className)} />
-        <div className="flex-1">
-          <p className={cn("text-sm font-medium", statusConfig?.className)}>
+        <StatusIcon className={cn("size-4 shrink-0", statusConfig?.className)} />
+        <div className="flex flex-1 items-center gap-4 min-w-0">
+          <p className={cn("text-[12px] font-semibold", statusConfig?.className)}>
             {statusConfig?.label ?? "Connecting to system…"}
           </p>
           {current && (
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {current.providersOnline} of {current.providersTotal} providers online
-              {" · "}
-              Storage: <span className={storageHealthConfig[current.storageHealth].className}>
-                {storageHealthConfig[current.storageHealth].label}
+            <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+              <span className="font-mono">
+                <span className="text-muted-foreground/60">Providers</span>{" "}
+                <span className={cn(
+                  current.providersOnline === current.providersTotal ? "text-success" :
+                  current.providersOnline === 0 ? "text-danger" : "text-warning"
+                )}>
+                  {current.providersOnline}/{current.providersTotal}
+                </span>
               </span>
-              {" · "}
-              Last heartbeat: {new Date(current.lastHeartbeatUtc).toLocaleTimeString()}
-            </p>
+              <span className="text-border/60">·</span>
+              <span>
+                Storage:{" "}
+                <span className={storageHealthConfig[current.storageHealth].className}>
+                  {storageHealthConfig[current.storageHealth].label}
+                </span>
+              </span>
+              <span className="text-border/60">·</span>
+              <span className="font-mono">{new Date(current.lastHeartbeatUtc).toLocaleTimeString()}</span>
+            </div>
           )}
         </div>
         <Button
@@ -148,13 +170,58 @@ export function OverviewScreen({ data, session }: OverviewScreenProps) {
           size="sm"
           onClick={() => { void handleRefresh(); }}
           disabled={refreshing}
-          className="shrink-0"
+          className="h-7 shrink-0 gap-1 px-2 text-xs"
         >
-          <RefreshCcw className={cn("size-4 mr-1.5", refreshing && "animate-spin")} />
-          {refreshing ? "Refreshing…" : "Refresh"}
+          <RefreshCcw className={cn("size-3", refreshing && "animate-spin")} />
+          {refreshing ? "…" : "Refresh"}
         </Button>
       </div>
 
+      {/* ── Marquee-style horizontal analysis tabs ── */}
+      <div className="mq-tab-nav my-4 rounded-lg">
+        {OVERVIEW_TABS.map((tab) => (
+          <button
+            key={tab.key}
+            className="mq-tab"
+            data-active={activeTab === tab.key}
+            onClick={() => setActiveTab(tab.key)}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* ── Tab content ── */}
+      {activeTab === "overview" && (
+        <OverviewTabContent current={current} session={session} />
+      )}
+      {activeTab === "providers" && (
+        <ProvidersTabContent current={current} />
+      )}
+      {activeTab === "risk" && (
+        <RiskTabContent current={current} />
+      )}
+      {activeTab === "data-health" && (
+        <DataHealthTabContent current={current} />
+      )}
+      {activeTab === "activity" && (
+        <ActivityTabContent current={current} />
+      )}
+    </div>
+  );
+}
+
+// ─── Tab content panels ────────────────────────────────────────────────────
+
+function OverviewTabContent({
+  current,
+  session
+}: {
+  current: SystemOverviewResponse | null;
+  session: SessionInfo | null;
+}) {
+  return (
+    <div className="space-y-4">
       {/* Metrics grid */}
       {current?.metrics && current.metrics.length > 0 ? (
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -196,79 +263,70 @@ export function OverviewScreen({ data, session }: OverviewScreenProps) {
         </div>
       )}
 
-      {/* Main content: recent events + workspace nav */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Recent activity */}
-        <Card className="lg:col-span-2">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Recent Activity</CardTitle>
-            <CardDescription>Latest system events across all workspaces.</CardDescription>
-          </CardHeader>
-          <CardContent>
+      {/* ── Marquee-style split panel: Recent Activity + Workspace Nav ── */}
+      <div className="mq-split-2 rounded-lg overflow-hidden">
+        {/* Left panel: recent events */}
+        <div className="mq-panel">
+          <div className="mq-panel-header">
+            <span className="mq-panel-title">Recent Activity</span>
+            <span className="text-[10px] text-muted-foreground/50">
+              {current?.recentEvents?.length ?? 0} events
+            </span>
+          </div>
+          <div>
             {current?.recentEvents && current.recentEvents.length > 0 ? (
-              <ul className="space-y-2">
-                {current.recentEvents.map((event) => (
-                  <EventRow key={event.id} event={event} />
-                ))}
-              </ul>
+              current.recentEvents.map((event) => (
+                <EventRow key={event.id} event={event} />
+              ))
             ) : (
-              <p className="text-sm text-muted-foreground py-4 text-center">
+              <p className="py-6 text-center text-xs text-muted-foreground">
                 {current ? "No recent events." : "Loading activity feed…"}
               </p>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        {/* Quick navigation */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Workspaces</CardTitle>
-            <CardDescription>Navigate to any workspace.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2">
-              {workspaceLinks.map((ws) => {
-                const Icon = ws.icon;
-                return (
-                  <li key={ws.key}>
-                    <Link
-                      to={ws.href}
-                      className="flex items-center gap-3 rounded-md p-2.5 transition-colors hover:bg-muted/50 group"
-                    >
-                      <Icon className={cn("size-4 shrink-0", ws.accent)} />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium leading-none">{ws.label}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5 truncate">{ws.description}</p>
-                      </div>
-                      <ArrowRight className="size-3.5 text-muted-foreground/50 shrink-0 group-hover:text-muted-foreground transition-colors" />
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </CardContent>
-        </Card>
-      </div>
+        {/* Right panel: workspace quick-nav */}
+        <div className="mq-panel">
+          <div className="mq-panel-header">
+            <span className="mq-panel-title">Workspaces</span>
+          </div>
+          <div>
+            {workspaceLinks.map((ws) => {
+              const Icon = ws.icon;
+              return (
+                <Link
+                  key={ws.key}
+                  to={ws.href}
+                  className="mq-data-row group gap-3"
+                >
+                  <Icon className={cn("size-3.5 shrink-0", ws.accent)} />
+                  <div className="flex flex-1 flex-col min-w-0">
+                    <span className="text-[12px] font-semibold text-foreground/90">{ws.label}</span>
+                    <span className="text-[10px] text-muted-foreground/65 truncate">{ws.description}</span>
+                  </div>
+                  <ArrowRight className="size-3 shrink-0 text-muted-foreground/30 transition-colors group-hover:text-muted-foreground" />
+                </Link>
+              );
+            })}
+          </div>
 
-      {/* Session context */}
-      {session && (
-        <Card className="border-border/50">
-          <CardContent className="pt-4 pb-4">
-            <div className="flex items-center gap-4 text-sm flex-wrap">
-              <span className="text-muted-foreground">
-                Signed in as <span className="text-foreground font-medium">{session.displayName}</span>
-              </span>
-              <span className="text-muted-foreground/50">·</span>
-              <span className="text-muted-foreground">
-                Role: <span className="text-foreground">{session.role}</span>
-              </span>
-              <span className="text-muted-foreground/50">·</span>
-              <span className="text-muted-foreground">
-                Environment:{" "}
+          {/* Session context at bottom of panel */}
+          {session && (
+            <div
+              className="px-4 py-2.5"
+              style={{ borderTop: "1px solid hsl(var(--border) / 0.30)" }}
+            >
+              <div className="flex flex-wrap items-center gap-3 text-[11px]">
+                <span className="text-muted-foreground/60">
+                  Signed in as{" "}
+                  <span className="font-medium text-foreground/80">{session.displayName}</span>
+                </span>
+                <span className="text-border/50">·</span>
                 <Badge
                   variant="outline"
                   className={cn(
-                    "text-xs capitalize",
+                    "h-[16px] px-1.5 text-[9px]",
                     session.environment === "live" && "border-danger/40 text-danger",
                     session.environment === "paper" && "border-warning/40 text-warning",
                     session.environment === "research" && "border-blue-400/40 text-blue-400"
@@ -276,16 +334,195 @@ export function OverviewScreen({ data, session }: OverviewScreenProps) {
                 >
                   {session.environment}
                 </Badge>
-              </span>
+              </div>
             </div>
-          </CardContent>
-        </Card>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ProvidersTabContent({ current }: { current: SystemOverviewResponse | null }) {
+  if (!current) {
+    return <EmptyTabState message="Loading provider data…" />;
+  }
+  return (
+    <div className="mq-split-2 rounded-lg overflow-hidden">
+      <div className="mq-panel">
+        <div className="mq-panel-header">
+          <span className="mq-panel-title">Provider Status</span>
+        </div>
+        <div className="mq-data-row">
+          <span className="mq-data-row-label">Online</span>
+          <span className={cn(
+            "mq-data-row-value",
+            current.providersOnline === current.providersTotal ? "text-success" : "text-warning"
+          )}>
+            {current.providersOnline} / {current.providersTotal}
+          </span>
+        </div>
+        <div className="mq-data-row">
+          <span className="mq-data-row-label">Active Backfills</span>
+          <span className={cn(
+            "mq-data-row-value",
+            current.activeBackfills > 0 ? "text-warning" : "text-foreground/80"
+          )}>
+            {current.activeBackfills}
+          </span>
+        </div>
+        <div className="mq-data-row">
+          <span className="mq-data-row-label">Monitored Symbols</span>
+          <span className="mq-data-row-value">{current.symbolsMonitored}</span>
+        </div>
+        <div className="mq-data-row">
+          <span className="mq-data-row-label">Active Runs</span>
+          <span className={cn(
+            "mq-data-row-value",
+            current.activeRuns > 0 ? "text-success" : "text-foreground/80"
+          )}>
+            {current.activeRuns}
+          </span>
+        </div>
+      </div>
+      <div className="mq-panel">
+        <div className="mq-panel-header">
+          <span className="mq-panel-title">Storage Health</span>
+        </div>
+        <div className="mq-data-row">
+          <span className="mq-data-row-label">Overall Status</span>
+          <span className={cn("mq-data-row-value", storageHealthConfig[current.storageHealth].className)}>
+            {storageHealthConfig[current.storageHealth].label}
+          </span>
+        </div>
+        <div className="mq-data-row">
+          <span className="mq-data-row-label">Last Heartbeat</span>
+          <span className="mq-data-row-value font-mono text-[11px]">
+            {new Date(current.lastHeartbeatUtc).toLocaleTimeString()}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RiskTabContent({ current }: { current: SystemOverviewResponse | null }) {
+  if (!current) {
+    return <EmptyTabState message="Loading risk data…" />;
+  }
+  return (
+    <div className="mq-panel rounded-lg overflow-hidden">
+      <div className="mq-panel-header">
+        <span className="mq-panel-title">Risk Summary</span>
+      </div>
+      <div className="mq-data-row">
+        <span className="mq-data-row-label">System Status</span>
+        <span className={cn(
+          "mq-data-row-value",
+          systemStatusConfig[current.systemStatus].className
+        )}>
+          {systemStatusConfig[current.systemStatus].label}
+        </span>
+      </div>
+      <div className="mq-data-row">
+        <span className="mq-data-row-label">Active Runs</span>
+        <span className="mq-data-row-value">{current.activeRuns}</span>
+      </div>
+      <div className="mq-data-row">
+        <span className="mq-data-row-label">Storage Health</span>
+        <span className={cn("mq-data-row-value", storageHealthConfig[current.storageHealth].className)}>
+          {storageHealthConfig[current.storageHealth].label}
+        </span>
+      </div>
+      <p className="px-4 py-3 text-[11px] text-muted-foreground/50">
+        Navigate to the Trading workspace for live risk metrics, position limits, and circuit breaker status.
+      </p>
+    </div>
+  );
+}
+
+function DataHealthTabContent({ current }: { current: SystemOverviewResponse | null }) {
+  if (!current) {
+    return <EmptyTabState message="Loading data health…" />;
+  }
+  return (
+    <div className="mq-split-2 rounded-lg overflow-hidden">
+      <div className="mq-panel">
+        <div className="mq-panel-header">
+          <span className="mq-panel-title">Ingestion Health</span>
+        </div>
+        <div className="mq-data-row">
+          <span className="mq-data-row-label">Providers Online</span>
+          <span className={cn(
+            "mq-data-row-value",
+            current.providersOnline === current.providersTotal ? "text-success" :
+            current.providersOnline === 0 ? "text-danger" : "text-warning"
+          )}>
+            {current.providersOnline} / {current.providersTotal}
+          </span>
+        </div>
+        <div className="mq-data-row">
+          <span className="mq-data-row-label">Active Backfills</span>
+          <span className="mq-data-row-value">{current.activeBackfills}</span>
+        </div>
+        <div className="mq-data-row">
+          <span className="mq-data-row-label">Symbols Monitored</span>
+          <span className="mq-data-row-value">{current.symbolsMonitored}</span>
+        </div>
+      </div>
+      <div className="mq-panel">
+        <div className="mq-panel-header">
+          <span className="mq-panel-title">Storage</span>
+        </div>
+        <div className="mq-data-row">
+          <span className="mq-data-row-label">Status</span>
+          <span className={cn("mq-data-row-value", storageHealthConfig[current.storageHealth].className)}>
+            {storageHealthConfig[current.storageHealth].label}
+          </span>
+        </div>
+        <div className="mq-data-row">
+          <span className="mq-data-row-label">Last Heartbeat</span>
+          <span className="mq-data-row-value">{new Date(current.lastHeartbeatUtc).toLocaleTimeString()}</span>
+        </div>
+        <p className="px-4 py-3 text-[11px] text-muted-foreground/50">
+          Full data quality monitoring is available in the Data Operations workspace.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function ActivityTabContent({ current }: { current: SystemOverviewResponse | null }) {
+  return (
+    <div className="mq-panel rounded-lg overflow-hidden">
+      <div className="mq-panel-header">
+        <span className="mq-panel-title">System Activity</span>
+        <span className="text-[10px] text-muted-foreground/50">
+          {current?.recentEvents?.length ?? 0} events
+        </span>
+      </div>
+      {current?.recentEvents && current.recentEvents.length > 0 ? (
+        current.recentEvents.map((event) => (
+          <EventRow key={event.id} event={event} />
+        ))
+      ) : (
+        <p className="py-8 text-center text-xs text-muted-foreground">
+          {current ? "No recent events." : "Loading activity feed…"}
+        </p>
       )}
     </div>
   );
 }
 
-// --- Sub-components ---
+// ─── Shared sub-components ─────────────────────────────────────────────────
+
+function EmptyTabState({ message }: { message: string }) {
+  return (
+    <div className="flex h-32 items-center justify-center text-sm text-muted-foreground">
+      {message}
+    </div>
+  );
+}
 
 interface StatCardProps {
   icon: React.ElementType;
@@ -304,8 +541,8 @@ const toneClass: Record<StatCardProps["tone"], string> = {
 function StatCard({ icon: Icon, label, value, tone }: StatCardProps) {
   return (
     <Card>
-      <CardContent className="pt-5 pb-4">
-        <div className="flex items-center gap-2 mb-2">
+      <CardContent className="pb-4 pt-5">
+        <div className="mb-2 flex items-center gap-2">
           <Icon className="size-4 text-muted-foreground" />
           <span className="text-xs text-muted-foreground">{label}</span>
         </div>
@@ -320,14 +557,14 @@ function EventRow({ event }: { event: SystemEventRecord }) {
   const Icon = config.icon;
 
   return (
-    <li className="flex items-start gap-2.5 py-1.5 border-b border-border/40 last:border-0">
-      <Icon className={cn("size-3.5 mt-0.5 shrink-0", config.className)} />
-      <div className="flex-1 min-w-0">
-        <p className="text-sm leading-snug">{event.message}</p>
-        <p className="text-xs text-muted-foreground mt-0.5">
+    <div className="mq-data-row gap-2.5">
+      <Icon className={cn("size-3 mt-0.5 shrink-0", config.className)} />
+      <div className="flex flex-1 flex-col min-w-0">
+        <p className="text-[12px] leading-snug text-foreground/85">{event.message}</p>
+        <p className="text-[10px] text-muted-foreground/60 mt-0.5">
           {event.source} · {new Date(event.timestamp).toLocaleTimeString()}
         </p>
       </div>
-    </li>
+    </div>
   );
 }
