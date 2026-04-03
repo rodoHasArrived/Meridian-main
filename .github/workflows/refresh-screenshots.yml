@@ -266,7 +266,7 @@ jobs:
           await withRetry('login', () =>
             shot('docs/screenshots/11-login.png', `${BASE}/login`, {
               fullPage: true,
-              stableSelector: '.login-card, body'
+              stableSelector: '.login-card'
             })
           );
 
