@@ -125,7 +125,7 @@ All endpoints share the base path `/api/security-master`. Security Master endpoi
 ```
 POST /api/security-master
 ```
-Creates a new security record. Returns `201 Created` with a `SecurityDetailDto` containing the generated UUID, version 1, and full economic terms. Supported asset classes: Equity, Bond, Option, Future, FxSpot, Deposit, MoneyMarketFund, CertificateOfDeposit, CommercialPaper, TreasuryBill, Repo, CashSweep, Swap, DirectLoan, OtherSecurity.
+Creates a new security record. Returns `201 Created` with a `SecurityDetailDto` containing the client-provided `securityId`, version 1, and full economic terms. Supported asset classes: Equity, Bond, Option, Future, FxSpot, Deposit, MoneyMarketFund, CertificateOfDeposit, CommercialPaper, TreasuryBill, Repo, CashSweep, Swap, DirectLoan, Commodity, CryptoCurrency, Cfd, Warrant, OtherSecurity.
 
 ### Retrieve by ID
 ```
