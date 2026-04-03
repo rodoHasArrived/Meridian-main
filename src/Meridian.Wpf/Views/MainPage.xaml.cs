@@ -72,6 +72,17 @@ public partial class MainPage : Page
         CommandPaletteTextBox.SelectAll();
     }
 
+    /// <summary>
+    /// Activates the inline command-palette overlay and focuses the search box.
+    /// Called by <see cref="MainWindow"/> when the user presses Ctrl+K.
+    /// </summary>
+    public void OpenCommandPalette()
+    {
+        _viewModel.ShowCommandPaletteCommand.Execute(null);
+        CommandPaletteTextBox.Focus();
+        CommandPaletteTextBox.SelectAll();
+    }
+
     private void OnContentFrameNavigated(object sender, WpfNavigationEventArgs e)
     {
         _viewModel.SyncNavigationState();
