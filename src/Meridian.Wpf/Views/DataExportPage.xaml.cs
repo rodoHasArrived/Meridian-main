@@ -82,12 +82,13 @@ public partial class DataExportPage : Page
         _viewModel.SelectedLeanResolution = GetComboTag(LeanResolutionCombo) ?? "minute";
     }
 
-    // ── Scheduled exports toggle ──────────────────────────────────────────
+    // ── Schedule toggle ───────────────────────────────────────────────────
+    // CheckBox.Checked/Unchecked cannot use IsChecked binding to a non-bool?
+    // property reliably with ToggleButton; we relay via code-behind.
 
     private void EnableScheduledExportsToggle_Changed(object sender, RoutedEventArgs e)
     {
-        if (sender is CheckBox cb)
-            _viewModel.IsScheduleEnabled = cb.IsChecked == true;
+        _viewModel.IsScheduleEnabled = EnableScheduledExportsToggle.IsChecked == true;
     }
 
     // ── Database PasswordBox (non-bindable) ───────────────────────────────
