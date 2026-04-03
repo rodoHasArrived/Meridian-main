@@ -938,6 +938,10 @@ Use these documents together when planning or implementing new work:
 │   │   ├── 07-backfill.png
 │   │   ├── 08-derivatives.png
 │   │   ├── 09-symbols.png
+│   │   ├── 10-workstation-research.png
+│   │   ├── 11-workstation-trading.png
+│   │   ├── 12-workstation-data-operations.png
+│   │   ├── 13-workstation-governance.png
 │   │   └── README.md
 │   ├── security
 │   │   ├── README.md
@@ -3441,6 +3445,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-455 directories, 2858 files
+455 directories, 2862 files
 ```
 <!-- readme-tree end -->
