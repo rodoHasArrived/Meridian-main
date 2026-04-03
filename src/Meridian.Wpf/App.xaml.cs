@@ -345,6 +345,13 @@ public partial class App : System.Windows.Application
         services.AddTransient<PluginManagementPage>();
         services.AddTransient<AgentPage>();
         services.AddTransient<DashboardWebPage>();
+        services.AddTransient<CredentialManagementPage>();
+        services.AddTransient<QuantScriptPage>();
+        services.AddTransient<AccountPortfolioPage>();
+        services.AddTransient<QualityArchivePage>();
+        services.AddTransient<ResearchWorkspaceShellPage>();
+        services.AddTransient<TradingWorkspaceShellPage>();
+        services.AddTransient<RunRiskPage>();
 
         // ── Missing pages (registered for DI-aware navigation) ───────────────
         services.AddTransient<AggregatePortfolioPage>();
@@ -395,30 +402,33 @@ public partial class App : System.Windows.Application
         services.AddTransient<Meridian.Wpf.ViewModels.SettingsViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.CollectionSessionViewModel>();
 
-        // ── Missing ViewModels ───────────────────────────────────────────────
-        services.AddTransient<Meridian.Wpf.ViewModels.BatchBacktestViewModel>();
-        services.AddTransient<Meridian.Wpf.ViewModels.ClusterStatusViewModel>();
+        // ── Credential management ────────────────────────────────────────────
+        services.AddSingleton<WpfServices.CredentialService>();
         services.AddTransient<Meridian.Wpf.ViewModels.CredentialManagementViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.AccountPortfolioViewModel>();
+
+        // ── Quality archive ──────────────────────────────────────────────────
+        services.AddSingleton<Meridian.Ui.Services.Services.IQualityArchiveStore,
+                              Meridian.Ui.Services.Services.QualityArchiveStore>();
         services.AddTransient<Meridian.Wpf.ViewModels.QualityArchiveViewModel>();
 
-        // ── Quality archive store (ILogger<T> dependency — requires AddLogging()) ──
-        services.AddSingleton<IQualityArchiveStore, QualityArchiveStore>();
-
         // ── QuantScript services ─────────────────────────────────────────────
-        services.Configure<QuantScriptOptions>(_ => { });
-        services.AddSingleton<PlotQueue>();
-        services.AddSingleton<WpfServices.IQuantScriptLayoutService, WpfServices.QuantScriptLayoutService>();
-        services.AddTransient<IQuantScriptCompiler, RoslynScriptCompiler>();
-        services.AddSingleton<IQuantDataContext>(sp =>
+        services.Configure<Meridian.QuantScript.QuantScriptOptions>(_ => { });
+        services.AddSingleton(sp =>
         {
-            var opts = sp.GetService<IOptions<QuantScriptOptions>>()?.Value ?? new QuantScriptOptions();
-            var store = new JsonlMarketDataStore(opts.DefaultDataRoot);
-            var logger = sp.GetRequiredService<ILogger<QuantDataContext>>();
-            return new QuantDataContext(store, logger,
-                sp.GetService<ISecurityMasterQueryService>());
+            var dataRoot = Environment.GetEnvironmentVariable("MDC_DATA_PATH") ?? "data";
+            return new Meridian.Storage.Store.JsonlMarketDataStore(dataRoot);
         });
-        services.AddTransient<IScriptRunner, ScriptRunner>();
-        services.AddTransient<QuantScriptViewModel>();
+        services.AddSingleton<Meridian.QuantScript.Api.IQuantDataContext,
+                              Meridian.QuantScript.Api.QuantDataContext>();
+        services.AddSingleton<Meridian.QuantScript.Plotting.PlotQueue>();
+        services.AddSingleton<Meridian.QuantScript.Compilation.IQuantScriptCompiler,
+                              Meridian.QuantScript.Compilation.RoslynScriptCompiler>();
+        services.AddSingleton<Meridian.QuantScript.Compilation.IScriptRunner,
+                              Meridian.QuantScript.Compilation.ScriptRunner>();
+        services.AddSingleton<WpfServices.IQuantScriptLayoutService,
+                              WpfServices.QuantScriptLayoutService>();
+        services.AddTransient<Meridian.Wpf.ViewModels.QuantScriptViewModel>();
 
         // ── Plugin loader service ────────────────────────────────────────────
         services.AddSingleton<Meridian.Infrastructure.DataSources.DataSourceRegistry>();
@@ -959,7 +969,7 @@ public partial class App : System.Windows.Application
         {
             var version = Microsoft.Web.WebView2.Core.CoreWebView2Environment.GetAvailableBrowserVersionString();
             WpfServices.LoggingService.Instance.LogInfo(
-                $"[WebView2] Runtime available — version {version}");
+                "[WebView2] Runtime available", ("version", version));
         }
         catch
         {

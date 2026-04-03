@@ -13,9 +13,11 @@ public partial class QuantScriptPage : Page
     private QuantScriptViewModel? _vm;
     private bool _suppressSync;
 
-    public QuantScriptPage()
+    public QuantScriptPage(QuantScriptViewModel viewModel)
     {
         InitializeComponent();
+        _vm = viewModel;
+        DataContext = _vm;
         Loaded += OnPageLoaded;
         Unloaded += OnPageUnloaded;
     }
