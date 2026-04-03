@@ -290,10 +290,10 @@ Polygon asset type codes mapped to Security Master asset classes:
 
 ## Conflict Detection
 
-Security Master automatically detects identifier conflicts during ingestion — situations where the same ISIN, CUSIP, FIGI, or Ticker is mapped to more than one security by different providers.
+Security Master automatically detects identifier conflicts during ingestion — situations where the same identifier on a projection is mapped to more than one security by different providers.
 
 **Workflow:**
-1. A conflict is raised and stored in memory when `CreateAsync` or `UpsertAliasAsync` detects an identifier already bound to a different `SecurityId`.
+1. Conflict detection is recorded via `ISecurityMasterConflictService.RecordConflictsForProjectionAsync` after `CreateAsync` and `AmendTermsAsync`.
 2. Conflicts are listed at `GET /api/security-master/conflicts`.
 3. Operators review and resolve conflicts via `POST /api/security-master/conflicts/{conflictId}/resolve`.
 
