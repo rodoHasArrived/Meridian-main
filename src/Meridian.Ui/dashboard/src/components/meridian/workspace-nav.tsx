@@ -24,14 +24,10 @@ export function WorkspaceNav() {
 
   return (
     <aside
-      className="flex shrink-0 flex-col border-r border-border/45"
-      style={{ width: 220, minHeight: "100vh", background: "hsl(var(--toolbar-bg))" }}
+      className="flex w-[220px] shrink-0 flex-col border-r border-border/45 bg-[hsl(var(--toolbar-bg))] min-h-screen"
     >
       {/* ── Logo / identity ── */}
-      <div
-        className="flex h-12 shrink-0 items-center gap-2.5 px-4"
-        style={{ borderBottom: "1px solid hsl(var(--border) / 0.45)" }}
-      >
+      <div className="flex h-12 shrink-0 items-center gap-2.5 border-b border-border/45 px-4">
         <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/15 text-primary">
           <BarChart3 className="h-[15px] w-[15px]" />
         </div>
@@ -75,10 +71,7 @@ export function WorkspaceNav() {
       </nav>
 
       {/* ── Footer ── */}
-      <div
-        className="px-4 py-3"
-        style={{ borderTop: "1px solid hsl(var(--border) / 0.35)" }}
-      >
+      <div className="border-t border-border/35 px-4 py-3">
         <p className="text-[10px] text-muted-foreground/35">v1.7.2 · Meridian Platform</p>
       </div>
     </aside>

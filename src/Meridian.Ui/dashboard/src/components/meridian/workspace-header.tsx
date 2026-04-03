@@ -61,6 +61,7 @@ export function WorkspaceHeader({ workspace, session, onOpenCommandPalette, onRe
             variant="outline"
             size="sm"
             onClick={onOpenCommandPalette}
+            aria-label="Open command palette (⌘K)"
             className="h-7 gap-1 border-border/50 px-2.5 text-xs"
           >
             <Command className="size-3" />
