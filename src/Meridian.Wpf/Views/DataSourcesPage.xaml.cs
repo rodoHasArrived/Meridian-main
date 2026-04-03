@@ -80,6 +80,21 @@ public partial class DataSourcesPage : Page
             PolygonApiKeyBox.Password = string.Empty;
     }
 
+    // ── Edit / delete row actions ─────────────────────────────────────────
+    // Buttons in the DataTemplate carry the source Id in their Tag property.
+
+    private void EditDataSource_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button { Tag: string sourceId })
+            _viewModel.EditSourceCommand.Execute(sourceId);
+    }
+
+    private async void DeleteDataSource_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button { Tag: string sourceId })
+            await _viewModel.DeleteSourceCommand.ExecuteAsync(sourceId);
+    }
+
     // ── Edit form initialization – syncs combo selections ─────────────────
     // Raised when the edit panel becomes visible with a pre-populated form.
 

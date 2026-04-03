@@ -336,7 +336,7 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
 
         if (result.Metrics.Count > 0 && result.Plots.Count == 0)
             ActiveResultsTab = 1; // Data Sheet
-        else if (result.Trades.Count > 0 && result.Plots.Count == 0)
+        else if (result.TradesSummary.Count > 0 && result.Plots.Count == 0)
             ActiveResultsTab = 4; // Backtest Output
 
         Diagnostics.Add(new DiagnosticEntry("Wall clock", $"{result.Elapsed.TotalSeconds:F2}s"));
