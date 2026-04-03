@@ -288,6 +288,80 @@ jobs:
             })
           );
 
+          // Workstation deep-link sub-pages
+          // Screenshot 14: Trading – Orders blotter
+          await withRetry('workstation-trading-orders', () =>
+            shot('docs/screenshots/14-workstation-trading-orders.png', `${BASE}/workstation/trading/orders`, {
+              fullPage: true,
+              stableSelector: 'main, body',
+              waitMs: 500
+            })
+          );
+          // Screenshot 15: Trading – Positions
+          await withRetry('workstation-trading-positions', () =>
+            shot('docs/screenshots/15-workstation-trading-positions.png', `${BASE}/workstation/trading/positions`, {
+              fullPage: true,
+              stableSelector: 'main, body',
+              waitMs: 500
+            })
+          );
+          // Screenshot 16: Trading – Risk guardrails
+          await withRetry('workstation-trading-risk', () =>
+            shot('docs/screenshots/16-workstation-trading-risk.png', `${BASE}/workstation/trading/risk`, {
+              fullPage: true,
+              stableSelector: 'main, body',
+              waitMs: 500
+            })
+          );
+          // Screenshot 17: Data Operations – Provider health
+          await withRetry('workstation-data-operations-providers', () =>
+            shot('docs/screenshots/17-workstation-data-operations-providers.png', `${BASE}/workstation/data-operations/providers`, {
+              fullPage: true,
+              stableSelector: 'main, body',
+              waitMs: 500
+            })
+          );
+          // Screenshot 18: Data Operations – Backfill queue
+          await withRetry('workstation-data-operations-backfills', () =>
+            shot('docs/screenshots/18-workstation-data-operations-backfills.png', `${BASE}/workstation/data-operations/backfills`, {
+              fullPage: true,
+              stableSelector: 'main, body',
+              waitMs: 500
+            })
+          );
+          // Screenshot 19: Data Operations – Storage exports
+          await withRetry('workstation-data-operations-exports', () =>
+            shot('docs/screenshots/19-workstation-data-operations-exports.png', `${BASE}/workstation/data-operations/exports`, {
+              fullPage: true,
+              stableSelector: 'main, body',
+              waitMs: 500
+            })
+          );
+          // Screenshot 20: Governance – Ledger overview
+          await withRetry('workstation-governance-ledger', () =>
+            shot('docs/screenshots/20-workstation-governance-ledger.png', `${BASE}/workstation/governance/ledger`, {
+              fullPage: true,
+              stableSelector: 'main, body',
+              waitMs: 500
+            })
+          );
+          // Screenshot 21: Governance – Reconciliation history
+          await withRetry('workstation-governance-reconciliation', () =>
+            shot('docs/screenshots/21-workstation-governance-reconciliation.png', `${BASE}/workstation/governance/reconciliation`, {
+              fullPage: true,
+              stableSelector: 'main, body',
+              waitMs: 500
+            })
+          );
+          // Screenshot 22: Governance – Security master coverage
+          await withRetry('workstation-governance-security-master', () =>
+            shot('docs/screenshots/22-workstation-governance-security-master.png', `${BASE}/workstation/governance/security-master`, {
+              fullPage: true,
+              stableSelector: 'main, body',
+              waitMs: 500
+            })
+          );
+
           await browser.close();
           SCRIPT
 
@@ -338,4 +412,13 @@ jobs:
             echo "| Workstation – Trading | \`docs/screenshots/11-workstation-trading.png\` |"
             echo "| Workstation – Data Operations | \`docs/screenshots/12-workstation-data-operations.png\` |"
             echo "| Workstation – Governance | \`docs/screenshots/13-workstation-governance.png\` |"
+            echo "| Workstation – Trading: Orders | \`docs/screenshots/14-workstation-trading-orders.png\` |"
+            echo "| Workstation – Trading: Positions | \`docs/screenshots/15-workstation-trading-positions.png\` |"
+            echo "| Workstation – Trading: Risk | \`docs/screenshots/16-workstation-trading-risk.png\` |"
+            echo "| Workstation – Data Operations: Providers | \`docs/screenshots/17-workstation-data-operations-providers.png\` |"
+            echo "| Workstation – Data Operations: Backfills | \`docs/screenshots/18-workstation-data-operations-backfills.png\` |"
+            echo "| Workstation – Data Operations: Exports | \`docs/screenshots/19-workstation-data-operations-exports.png\` |"
+            echo "| Workstation – Governance: Ledger | \`docs/screenshots/20-workstation-governance-ledger.png\` |"
+            echo "| Workstation – Governance: Reconciliation | \`docs/screenshots/21-workstation-governance-reconciliation.png\` |"
+            echo "| Workstation – Governance: Security Master | \`docs/screenshots/22-workstation-governance-security-master.png\` |"
           } >> "$GITHUB_STEP_SUMMARY"
