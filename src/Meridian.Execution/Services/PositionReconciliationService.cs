@@ -121,7 +121,7 @@ public sealed class PositionReconciliationService
                 var localAccount = portfolio.GetAccount(accountId);
 
                 var localPositions = localAccount?.Positions
-                    ?? new Dictionary<string, Meridian.Execution.Models.ExecutionPosition>(StringComparer.OrdinalIgnoreCase);
+                    ?? new Dictionary<string, IPosition>(StringComparer.OrdinalIgnoreCase);
 
                 var brokerageBySymbol = brokeragePositions.ToDictionary(
                     static p => p.Symbol, StringComparer.OrdinalIgnoreCase);

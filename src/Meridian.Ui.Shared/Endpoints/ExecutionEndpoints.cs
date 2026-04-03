@@ -48,7 +48,7 @@ public static class ExecutionEndpoints
             if (portfolio is null)
                 return Results.Problem("Paper trading portfolio is not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
 
-            var positions = portfolio.Positions.Values.ToArray();
+            var positions = portfolio.Positions.Values.Cast<ExecutionPosition>().ToArray();
             return Results.Json(positions, jsonOptions);
         })
         .WithName("GetExecutionPositions")
@@ -66,7 +66,7 @@ public static class ExecutionEndpoints
                 PortfolioValue: portfolio.PortfolioValue,
                 UnrealisedPnl: portfolio.UnrealisedPnl,
                 RealisedPnl: portfolio.RealisedPnl,
-                Positions: portfolio.Positions.Values.ToArray(),
+                Positions: portfolio.Positions.Values.Cast<ExecutionPosition>().ToArray(),
                 AsOf: DateTimeOffset.UtcNow);
 
             return Results.Json(snapshot, jsonOptions);
@@ -324,11 +324,11 @@ public static class ExecutionEndpoints
             {
                 var account = multi.GetAccount(accountId);
                 if (account is null) return Results.NotFound();
-                return Results.Json(account.Positions.Values.ToArray(), jsonOptions);
+                return Results.Json(account.Positions.Values.Cast<ExecutionPosition>().ToArray(), jsonOptions);
             }
 
             if (string.Equals(accountId, "default", StringComparison.OrdinalIgnoreCase))
-                return Results.Json(portfolio.Positions.Values.ToArray(), jsonOptions);
+                return Results.Json(portfolio.Positions.Values.Cast<ExecutionPosition>().ToArray(), jsonOptions);
 
             return Results.NotFound();
         })
@@ -430,7 +430,7 @@ public static class ExecutionEndpoints
 
     private static ExecutionAccountDetailSnapshot BuildLegacySingleAccountSnapshot(IPortfolioState portfolio)
     {
-        var positions = portfolio.Positions.Values.ToArray();
+        var positions = portfolio.Positions.Values.Cast<ExecutionPosition>().ToArray();
         var longMv = positions.Where(static p => !p.IsShort).Sum(static p => (decimal)p.AbsoluteQuantity * p.AverageCostBasis);
         var shortMv = positions.Where(static p => p.IsShort).Sum(static p => (decimal)p.AbsoluteQuantity * p.AverageCostBasis);
         return new ExecutionAccountDetailSnapshot(
