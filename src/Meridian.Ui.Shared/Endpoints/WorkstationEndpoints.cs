@@ -979,7 +979,7 @@ public static class WorkstationEndpoints
                 averagePrice = pos.AverageCostBasis.ToString("F2", CultureInfo.InvariantCulture),
                 markPrice = "—",
                 dayPnl = "—",
-                unrealizedPnl = FormatCurrency(pos.UnrealisedPnl),
+                unrealizedPnl = FormatCurrency(pos.UnrealizedPnl),
                 exposure = "—"
             }).ToArray();
         }

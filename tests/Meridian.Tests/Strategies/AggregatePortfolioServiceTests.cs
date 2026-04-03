@@ -2,6 +2,7 @@ using FluentAssertions;
 using Meridian.Execution.Interfaces;
 using Meridian.Execution.Models;
 using Meridian.Execution.Services;
+using Meridian.Execution.Sdk;
 using Meridian.Strategies.Services;
 
 namespace Meridian.Tests.Strategies;
@@ -178,7 +179,7 @@ public sealed class AggregatePortfolioServiceTests
         var pos = new ExecutionPosition(symbol, (long)qty, cost, 0m, 0m);
 
         var account = new StubAccountPortfolio("acc-1", "Default", AccountKind.Brokerage,
-            positions: new Dictionary<string, ExecutionPosition>(StringComparer.OrdinalIgnoreCase)
+            positions: new Dictionary<string, IPosition>(StringComparer.OrdinalIgnoreCase)
             {
                 [symbol] = pos,
             });
@@ -198,7 +199,7 @@ public sealed class AggregatePortfolioServiceTests
         public decimal PortfolioValue => Cash;
         public decimal UnrealisedPnl => _accounts.Sum(static a => a.UnrealisedPnl);
         public decimal RealisedPnl => _accounts.Sum(static a => a.RealisedPnl);
-        public IReadOnlyDictionary<string, ExecutionPosition> Positions =>
+        public IReadOnlyDictionary<string, IPosition> Positions =>
             _accounts.SelectMany(static a => a.Positions).ToDictionary(static kv => kv.Key, static kv => kv.Value);
         public IReadOnlyList<IAccountPortfolio> Accounts => _accounts;
         public IAccountPortfolio? GetAccount(string id) =>
@@ -213,7 +214,7 @@ public sealed class AggregatePortfolioServiceTests
             string accountId,
             string displayName,
             AccountKind kind,
-            IReadOnlyDictionary<string, ExecutionPosition> positions)
+            IReadOnlyDictionary<string, IPosition> positions)
         {
             AccountId = accountId;
             DisplayName = displayName;
@@ -226,8 +227,8 @@ public sealed class AggregatePortfolioServiceTests
         public AccountKind Kind { get; }
         public decimal Cash => 0m;
         public decimal MarginBalance => 0m;
-        public IReadOnlyDictionary<string, ExecutionPosition> Positions { get; }
-        public decimal UnrealisedPnl => Positions.Values.Sum(static p => p.UnrealisedPnl);
+        public IReadOnlyDictionary<string, IPosition> Positions { get; }
+        public decimal UnrealisedPnl => Positions.Values.Sum(static p => p.UnrealizedPnl);
         public decimal RealisedPnl => 0m;
         public decimal LongMarketValue => Positions.Values.Where(static p => p.Quantity > 0).Sum(static p => (decimal)p.AbsoluteQuantity * p.AverageCostBasis);
         public decimal ShortMarketValue => Positions.Values.Where(static p => p.Quantity < 0).Sum(static p => (decimal)p.AbsoluteQuantity * p.AverageCostBasis);
@@ -236,6 +237,6 @@ public sealed class AggregatePortfolioServiceTests
                 LongMarketValue, ShortMarketValue,
                 LongMarketValue + ShortMarketValue, LongMarketValue - ShortMarketValue,
                 UnrealisedPnl, RealisedPnl,
-                Positions.Values.ToArray(), DateTimeOffset.UtcNow);
+                Positions.Values.Cast<ExecutionPosition>().ToArray(), DateTimeOffset.UtcNow);
     }
 }

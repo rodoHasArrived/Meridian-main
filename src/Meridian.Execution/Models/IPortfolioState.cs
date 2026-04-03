@@ -1,3 +1,5 @@
+using Meridian.Execution.Sdk;
+
 namespace Meridian.Execution.Models;
 
 /// <summary>
@@ -18,6 +20,11 @@ public interface IPortfolioState
     /// <summary>Realised P&amp;L since the session began.</summary>
     decimal RealisedPnl { get; }
 
-    /// <summary>Open positions keyed by symbol.</summary>
-    IReadOnlyDictionary<string, ExecutionPosition> Positions { get; }
+    /// <summary>
+    /// Open positions keyed by symbol, typed against the cross-pillar <see cref="IPosition"/> interface.
+    /// Replaces the former <c>IReadOnlyDictionary&lt;string, ExecutionPosition&gt;</c> surface.
+    /// Callers that require the concrete <see cref="ExecutionPosition"/> type (e.g. serialisation
+    /// boundaries) should cast individual values: <c>portfolio.Positions.Values.Cast&lt;ExecutionPosition&gt;()</c>.
+    /// </summary>
+    IReadOnlyDictionary<string, IPosition> Positions { get; }
 }
