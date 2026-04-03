@@ -287,6 +287,21 @@ jobs:
               waitMs: 500
             })
           );
+          // Screenshot 14: System Status panel (live metrics, throughput, activity log)
+          await withRetry('system-status', () =>
+            shot('docs/screenshots/14-system-status.png', `${BASE}/`, {
+              fullPage: false,
+              stableSelector: '#status, body',
+              clipSelector: '#status'
+            })
+          );
+          // Screenshot 15: Login page
+          await withRetry('login', () =>
+            shot('docs/screenshots/15-login.png', `${BASE}/login`, {
+              fullPage: true,
+              stableSelector: 'form, main, body'
+            })
+          );
 
           await browser.close();
           SCRIPT
@@ -338,4 +353,6 @@ jobs:
             echo "| Workstation – Trading | \`docs/screenshots/11-workstation-trading.png\` |"
             echo "| Workstation – Data Operations | \`docs/screenshots/12-workstation-data-operations.png\` |"
             echo "| Workstation – Governance | \`docs/screenshots/13-workstation-governance.png\` |"
+            echo "| System Status Panel | \`docs/screenshots/14-system-status.png\` |"
+            echo "| Login Page | \`docs/screenshots/15-login.png\` |"
           } >> "$GITHUB_STEP_SUMMARY"
