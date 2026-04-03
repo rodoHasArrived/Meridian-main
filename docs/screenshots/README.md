@@ -85,32 +85,40 @@ The **Subscribed Symbols** table showing the active symbol list with data-type c
 
 ---
 
-## 10 – Workstation: Research
+## 10 – Status & Activity Log
 
-The **Research** workspace of the React workstation shell, covering backtests, strategy run comparisons, QuantScript execution results, and experiment tracking.
+Focused clip of the **Status** section at the top of the main dashboard, showing the four key metrics (Published Events, Dropped Events, Integrity Events, Historical Bars) and the terminal-style Activity Log.
 
-![Workstation – Research](10-workstation-research.png)
+![Status & Activity Log](10-status-section.png)
 
 ---
 
-## 11 – Workstation: Trading
+## 11 – Login Page
+
+The **Sign In** page served at `/login` when session-based authentication is enabled. Shows the Meridian Terminal login card with username and password fields.
+
+![Login Page](11-login.png)
+
+---
+
+## 12 – Workstation: Trading
 
 The **Trading** workspace of the React workstation shell, showing the paper-trading cockpit, live positions blotter, open orders, fills history, and risk guardrails.
 
-![Workstation – Trading](11-workstation-trading.png)
+![Workstation – Trading](12-workstation-trading.png)
 
 ---
 
-## 12 – Workstation: Data Operations
+## 13 – Workstation: Data Operations
 
 The **Data Operations** workspace of the React workstation shell, covering provider health, active backfills, storage tiers, exports, and symbol-management workflows.
 
-![Workstation – Data Operations](12-workstation-data-operations.png)
+![Workstation – Data Operations](13-workstation-data-operations.png)
 
 ---
 
-## 13 – Workstation: Governance
+## 14 – Workstation: Governance
 
 The **Governance** workspace of the React workstation shell, showing the fund ledger overview, risk audit history, reconciliation breaks, diagnostics, and operational settings.
 
-![Workstation – Governance](13-workstation-governance.png)
+![Workstation – Governance](14-workstation-governance.png)
