@@ -1,8 +1,8 @@
 # Meridian - Project Roadmap
 
-**Last Updated:** 2026-03-31
-**Status:** Full roadmap refresh aligned to the current repository and active workstation direction
-**Repository Snapshot (2026-03-31):** solution projects: 39 | `src/` projects: 28 | test projects: 9 | workflow files: 38
+**Last Updated:** 2026-04-03
+**Status:** Active productization — WPF workstation refresh progressing, provider confidence and paper cockpit on critical path
+**Repository Snapshot (2026-04-03):** solution projects: 39 | `src/` projects: 28 | test projects: 9 | workflow files: 38
 
 Meridian is no longer primarily blocked on missing platform primitives. The core platform baseline is now broad and structurally strong across ingestion, storage, backtesting, execution, ledger, workstation contracts, and governance foundations. The main delivery problem has shifted from "can Meridian do this at all?" to "which operator workflows are complete enough to trust and use end to end?"
 
@@ -55,6 +55,9 @@ These are conservative "in code and materially usable" claims as of 2026-03-31:
 - WPF workstation baseline: broad page inventory plus run browser, run detail, portfolio, ledger, Security Master, and QuantScript surfaces
 - Governance foundations: ledger kernel, Security Master services, reconciliation DTOs and endpoints, direct-lending vertical slice, and export/reporting primitives
 - Improvement portfolio A-G and J: the active improvement tracker marks the historical platform-improvement set as complete
+- WPF workstation shell modernization: native Fluent theme via `ThemeMode="System"` (PR #524), SVG icon set replacing emoji glyphs (PR #512), LiveCharts2 candlestick charting on the Charting page (PR #522), and zero-API-key startup via Synthetic provider default (PR #513)
+- Route and health endpoint reliability: duplicate DFA route definitions and duplicate health endpoint registrations resolved (PRs #521, #519)
+- Workflow guide and live screenshots: `docs/WORKFLOW_GUIDE.md` with live UI screenshots checked in (PR #511); CI screenshot-refresh workflow added (PR #515)
 
 ### Partial
 
@@ -66,7 +69,7 @@ These areas exist in code but are not yet complete enough to treat as finished o
 - The paper-trading cockpit exists as APIs plus a React trading screen, but end-to-end operator depth, live vendor validation, and session replay still need work.
 - Shared run, portfolio, ledger, fills, attribution, and reconciliation read paths exist, but cross-mode run history and comparison depth are not yet a finished product.
 - Security Master has real services and workstation models, but full downstream integration into governance, portfolio, ledger, and reconciliation workflows is still incomplete.
-- WPF workstation redevelopment is active, but the blueprint migration from page-dense navigation to workflow-first orchestration is still in progress.
+- WPF workstation shell modernization has landed (Fluent theme, SVG icons, candlestick charting), but the deeper migration from page-dense navigation to workflow-first orchestration — particularly MVVM extraction on high-traffic pages (Live Data, Provider, Backfill, Data Quality) — is still in progress.
 
 ### Planned
 
@@ -88,6 +91,7 @@ These remain valuable but are not on the critical path to Meridian's core operat
 - multi-instance coordination as a supported scale-out topology
 - Phase 16 assembly-level performance optimization
 - broader advanced research tooling after the core workstation workflows are operator-ready
+- Phase 1.5 preferred and convertible equity domain extension: `EquityClassification` discriminated union, `PreferredTerms`, `ConvertibleTerms`, and `LiquidationPreference` types in `src/Meridian.FSharp/Domain/SecurityMaster.fs` (issue tracked in `issues/phase_1_5_1_add_equityclassification_discriminator_and_preferredterms_domain_model.md`)
 
 ---
 
