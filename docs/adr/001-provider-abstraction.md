@@ -6,28 +6,31 @@
 
 ## Context
 
-The Meridian needs to support multiple data providers (Interactive Brokers, Alpaca, NYSE, etc.) for both real-time streaming and historical data retrieval. Each provider has different:
+The Meridian needs to support multiple data providers (Interactive Brokers, Alpaca, NYSE, Polygon, StockSharp, and 90+ others) for real-time streaming, historical data retrieval, and symbol search. Each provider has different:
 
 - API protocols (REST, WebSocket, proprietary)
 - Authentication mechanisms
 - Data formats
 - Rate limits and quotas
 - Supported data types (trades, quotes, depth)
+- Symbol universe and search capabilities
 
 Without proper abstraction, the core application would become tightly coupled to specific providers, making it difficult to:
 - Add new providers
 - Switch between providers
 - Run multiple providers concurrently
 - Handle provider-specific failures
+- Search symbols across heterogeneous catalogs
 
 ## Decision
 
-Implement a provider abstraction layer using two core interfaces:
+Implement a provider abstraction layer using three core interfaces:
 
 1. **`IMarketDataClient`** - For real-time streaming data
 2. **`IHistoricalDataProvider`** - For historical data retrieval
+3. **`ISymbolSearchProvider`** - For symbol lookup and autocomplete
 
-All providers must implement these interfaces, enabling provider-agnostic data consumption throughout the application.
+All providers must implement the appropriate interface(s), enabling provider-agnostic data consumption throughout the application.
 
 ## Implementation Links
 
@@ -37,10 +40,13 @@ All providers must implement these interfaces, enabling provider-agnostic data c
 |-----------|----------|---------|
 | Streaming Interface | `src/Meridian.ProviderSdk/IMarketDataClient.cs` | Real-time data contract |
 | Historical Interface | `src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs` | Historical data contract |
-| Alpaca Implementation | `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs` | Streaming provider |
-| IB Implementation | `src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs` | Streaming provider |
-| Yahoo Finance | `src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs` | Historical provider |
-| Stooq | `src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs` | Historical provider |
+| Symbol Search Interface | `src/Meridian.Infrastructure/Adapters/Core/ISymbolSearchProvider.cs` | Symbol lookup contract |
+| Alpaca Streaming | `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs` | Streaming provider |
+| IB Streaming | `src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs` | Streaming provider |
+| Yahoo Finance Historical | `src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs` | Historical provider |
+| Stooq Historical | `src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs` | Historical provider |
+| Polygon Symbol Search | `src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs` | Symbol search provider |
+| Alpaca Symbol Search | `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs` | Symbol search provider |
 | Composite Provider | `src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs` | Failover orchestration |
 | Interface Tests | `tests/Meridian.Tests/Infrastructure/` | Contract verification |
 
@@ -52,6 +58,7 @@ By coding to interfaces rather than implementations, the core domain logic remai
 - **Hot-swapping**: Switch providers without code changes
 - **Multi-provider**: Run IB and Alpaca simultaneously
 - **Graceful failover**: `CompositeHistoricalDataProvider` tries providers in priority order
+- **Symbol search**: Query multiple symbol catalogs through a unified interface
 
 ### Async-First Design
 Both interfaces are designed for async operation with `CancellationToken` support, ensuring responsive and cancellable operations.
@@ -139,6 +146,15 @@ public interface IHistoricalDataProvider
         string symbol, DateOnly? from, DateOnly? to,
         CancellationToken ct = default);
 }
+
+// All symbol search providers must implement:
+public interface ISymbolSearchProvider : IProviderMetadata
+{
+    string Name { get; }
+    Task<IReadOnlyList<SymbolSearchResult>> SearchAsync(
+        string query, int maxResults = 20,
+        CancellationToken ct = default);
+}
 ```
 
 ### Runtime Verification
@@ -154,7 +170,8 @@ public interface IHistoricalDataProvider
 - [Data Sources Documentation](../providers/data-sources.md)
 - [ADR-005: Attribute-Based Discovery](005-attribute-based-discovery.md) - Automatic provider registration via `[DataSource]` attribute
 - [ADR-010: HttpClientFactory](010-httpclient-factory.md) - HTTP client lifecycle for provider API calls
+- [ADR-015: Strategy Execution Contract](015-strategy-execution-contract.md) - `IOrderGateway` extends the same interface pattern to brokerage adapters
 
 ---
 
-*Last Updated: 2026-02-20*
+*Last Updated: 2026-04-03*
