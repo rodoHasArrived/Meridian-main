@@ -108,24 +108,33 @@ module SecurityIdentifier =
     /// Returns true when the check digit is valid.
     let validateCusip (cusip: string) =
         let v = if isNull cusip then String.Empty else cusip.Trim().ToUpperInvariant()
+        let tryGetCusipValue c =
+            if c >= '0' && c <= '9' then Some (int c - int '0')
+            elif c >= 'A' && c <= 'Z' then Some (int c - int 'A' + 10)
+            elif c = '*' then Some 36
+            elif c = '@' then Some 37
+            elif c = '#' then Some 38
+            else None
+
         if v.Length <> 9 then false
+        elif v.[8] < '0' || v.[8] > '9' then false
         else
-            let sum =
+            let digits =
                 v
                 |> Seq.take 8
-                |> Seq.mapi (fun i c ->
-                    let d =
-                        if c >= '0' && c <= '9' then int c - int '0'
-                        elif c >= 'A' && c <= 'Z' then int c - int 'A' + 10
-                        elif c = '*' then 36
-                        elif c = '@' then 37
-                        elif c = '#' then 38
-                        else 0
-                    if i % 2 = 1 then d * 2 else d)
-                |> Seq.sumBy (fun d -> d / 10 + d % 10)
-            let check = (10 - (sum % 10)) % 10
-            check = (int v.[8] - int '0')
+                |> Seq.map tryGetCusipValue
+                |> Seq.toArray
 
+            if digits |> Array.exists Option.isNone then false
+            else
+                let sum =
+                    digits
+                    |> Array.map Option.get
+                    |> Array.mapi (fun i d -> if i % 2 = 1 then d * 2 else d)
+                    |> Array.sumBy (fun d -> d / 10 + d % 10)
+
+                let check = (10 - (sum % 10)) % 10
+                check = (int v.[8] - int '0')
     /// Validates an LEI (Legal Entity Identifier, ISO 17442) using MOD 97-10 (ISO 7064).
     /// Returns true when the check digits are valid.
     let validateLei (lei: string) =
