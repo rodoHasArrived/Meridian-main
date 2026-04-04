@@ -1538,6 +1538,7 @@ Meridian-main
 │   │   ├── Treasury
 │   │   │   └── MoneyMarketFundDtos.cs
 │   │   ├── Workstation
+│   │   │   ├── FundLedgerDtos.cs
 │   │   │   ├── ReconciliationDtos.cs
 │   │   │   ├── SecurityMasterWorkstationDtos.cs
 │   │   │   └── StrategyRunReadModels.cs
@@ -2590,6 +2591,7 @@ Meridian-main
 │       │   ├── BlotterModels.cs
 │       │   ├── DashboardModels.cs
 │       │   ├── DataQualityModels.cs
+│       │   ├── FundProfileModels.cs
 │       │   ├── LeanModels.cs
 │       │   ├── LiveDataModels.cs
 │       │   ├── NotificationModels.cs
@@ -2622,8 +2624,11 @@ Meridian-main
 │       │   ├── ExportPresetService.cs
 │       │   ├── FirstRunService.cs
 │       │   ├── FormValidationService.cs
+│       │   ├── FundContextService.cs
+│       │   ├── FundLedgerReadService.cs
 │       │   ├── GlobalHotkeyService.cs
 │       │   ├── ICommandContextProvider.cs
+│       │   ├── IFundProfileCatalog.cs
 │       │   ├── InfoBarService.cs
 │       │   ├── IQuantScriptLayoutService.cs
 │       │   ├── JumpListService.cs
@@ -2691,6 +2696,8 @@ Meridian-main
 │       │   ├── EventReplayViewModel.cs
 │       │   ├── ExportPresetsViewModel.cs
 │       │   ├── FundAccountsViewModel.cs
+│       │   ├── FundLedgerViewModel.cs
+│       │   ├── FundProfileSelectionViewModel.cs
 │       │   ├── IndexSubscriptionViewModel.cs
 │       │   ├── IPageActionBarProvider.cs
 │       │   ├── LeanIntegrationViewModel.cs
@@ -2782,6 +2789,8 @@ Meridian-main
 │       │   ├── DataCalendarPage.xaml.cs
 │       │   ├── DataExportPage.xaml
 │       │   ├── DataExportPage.xaml.cs
+│       │   ├── DataOperationsWorkspaceShellPage.xaml
+│       │   ├── DataOperationsWorkspaceShellPage.xaml.cs
 │       │   ├── DataQualityPage.xaml
 │       │   ├── DataQualityPage.xaml.cs
 │       │   ├── DataSamplingPage.xaml
@@ -2801,6 +2810,12 @@ Meridian-main
 │       │   ├── ExportPresetsPage.xaml.cs
 │       │   ├── FundAccountsPage.xaml
 │       │   ├── FundAccountsPage.xaml.cs
+│       │   ├── FundLedgerPage.xaml
+│       │   ├── FundLedgerPage.xaml.cs
+│       │   ├── FundProfileSelectionPage.xaml
+│       │   ├── FundProfileSelectionPage.xaml.cs
+│       │   ├── GovernanceWorkspaceShellPage.xaml
+│       │   ├── GovernanceWorkspaceShellPage.xaml.cs
 │       │   ├── HelpPage.xaml
 │       │   ├── HelpPage.xaml.cs
 │       │   ├── IndexSubscriptionPage.xaml
@@ -2915,6 +2930,26 @@ Meridian-main
 │       ├── MainWindow.xaml.cs
 │       ├── Meridian.Wpf.csproj
 │       └── README.md
+├── temp
+│   ├── UiProbe
+│   │   ├── Program.cs
+│   │   └── UiProbe.csproj
+│   ├── dataquality-triage-verification-fixed.png
+│   ├── dataquality-triage-verification.png
+│   ├── meridian-ui-debug-2.png
+│   ├── meridian-ui-debug-3.png
+│   ├── meridian-ui-debug-4.png
+│   ├── meridian-ui-debug-5.png
+│   ├── meridian-ui-debug.png
+│   ├── patch1-verification.png
+│   ├── patch2-verification.png
+│   ├── patch3-before-switch.png
+│   ├── patch3-dataops-verification-2.png
+│   ├── patch3-dataops-verification.png
+│   ├── patch4-governance-verification-2.png
+│   ├── patch4-governance-verification-automation.png
+│   ├── patch4-governance-verification.png
+│   └── shell-cleanup-verification.png
 ├── tests
 │   ├── Meridian.Backtesting.Tests
 │   │   ├── AdvancedCarryDecisionEngineTests.cs
@@ -3449,6 +3484,7 @@ Meridian-main
 │   │   │   ├── RunMatViewModelTests.cs
 │   │   │   └── StrategyRunBrowserViewModelTests.cs
 │   │   ├── Views
+│   │   │   ├── DashboardPageSmokeTests.cs
 │   │   │   ├── QuantScriptPageTests.cs
 │   │   │   ├── RunMatUiSmokeTests.cs
 │   │   │   ├── RunMatWorkflowSmokeTests.cs
