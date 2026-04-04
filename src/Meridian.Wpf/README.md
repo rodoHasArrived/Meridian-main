@@ -13,6 +13,8 @@ The current WPF application already spans research, trading-adjacent, data-opera
 
 The repo now also includes persisted built-in workspace categories for `Research`, `Trading`, `Data Operations`, and `Governance`, plus shared run, portfolio, ledger, and early reconciliation seams that the desktop shell can grow into.
 
+The desktop shell now also layers a lightweight fund-context model above those workspaces: startup routes through a fund profile selector, the active fund is shown in the shell header, and workstation session restore is tracked per fund profile instead of as a single global session.
+
 ## Why WPF?
 
 This project was migrated from UWP/WinUI 3 to WPF for several reasons:
@@ -47,7 +49,9 @@ See [`docs/plans/trading-workstation-migration-blueprint.md`](../../docs/plans/t
 
 - `Services/NavigationService.cs` - page registration and navigation orchestration
 - `Services/WorkspaceService.cs` - persisted workspace templates and session restore
+- `Services/FundContextService.cs` - desktop-local fund profile catalog and active fund selection
 - `Services/StrategyRunWorkspaceService.cs` - shared run drill-in coordination
+- `Services/FundLedgerReadService.cs` - governance-first fund ledger aggregation above the ledger kernel
 - `Views/MainPage.xaml` - workstation-oriented shell navigation
 - `ViewModels/` - incremental MVVM extraction for richer surfaces
 
@@ -94,7 +98,8 @@ On first run, the application will:
 1. Check for existing configuration.
 2. Create or copy a default config when needed.
 3. Initialize services.
-4. Restore the last saved workspace/session state when available.
+4. Load the local fund profile catalog and require a fund selection before entering the workstation shell.
+5. Restore the last saved workspace/session state for the selected fund when available.
 
 ## Current Surface Map
 
@@ -105,7 +110,16 @@ Examples:
 - `Research`: `Dashboard`, `Backtest`, `StrategyRuns`, `LeanIntegration`, `Charts`, `RunMat`, `EventReplay`
 - `Trading`: `LiveData`, `StrategyRuns`, `RunPortfolio`, `RunLedger`, `OrderBook`, `PortfolioImport`, `TradingHours`, `Watchlist`
 - `Data Operations`: `Provider`, `Symbols`, `Backfill`, `Schedules`, `Storage`, `PackageManager`, `DataExport`
-- `Governance`: `DataQuality`, `RunLedger`, `ProviderHealth`, `SystemHealth`, `Diagnostics`, `RetentionAssurance`, `AdminMaintenance`, `Settings`
+- `Governance`: `FundLedger`, `DataQuality`, `RunLedger`, `ProviderHealth`, `SystemHealth`, `Diagnostics`, `RetentionAssurance`, `AdminMaintenance`, `Settings`
+
+## Backfill Surface
+
+The WPF backfill page now runs the real data-operations flow instead of desktop-only placeholders:
+
+- `Validate Data` runs the gap-analysis scan against the backend quality endpoints for the selected symbols and date range.
+- `Repair Gaps`, `Fill All Gaps`, and `Auto-Fill Gaps` execute immediate gap-fill requests through the shared backfill API/service path.
+- `Save Schedule` creates a persisted backfill schedule through `/api/backfill/schedules`, and `Run Now` triggers saved schedules through `/api/backfill/schedules/{id}/run`.
+- The desktop client now reads the schedule list from the schedule endpoints rather than inferring “scheduled jobs” from execution history payloads.
 
 ## Development Notes
 

@@ -23,7 +23,9 @@ public sealed record StrategyRunEntry(
     string? Engine = null,
     IReadOnlyDictionary<string, string>? ParameterSet = null,
     StrategyRunStatus? TerminalStatus = null,
-    string? ParentRunId = null)
+    string? ParentRunId = null,
+    string? FundProfileId = null,
+    string? FundDisplayName = null)
 {
     /// <summary>Creates a new run entry with a generated run ID and current timestamp.</summary>
     public static StrategyRunEntry Start(
@@ -34,7 +36,9 @@ public sealed record StrategyRunEntry(
         string? datasetReference = null,
         string? feedReference = null,
         string? engine = null,
-        IReadOnlyDictionary<string, string>? parameterSet = null) =>
+        IReadOnlyDictionary<string, string>? parameterSet = null,
+        string? fundProfileId = null,
+        string? fundDisplayName = null) =>
         new(
             RunId: runId ?? Guid.NewGuid().ToString("N"),
             StrategyId: strategyId,
@@ -54,7 +58,9 @@ public sealed record StrategyRunEntry(
                 RunType.Live => "BrokerLive",
                 _ => "Unknown"
             },
-            ParameterSet: parameterSet);
+            ParameterSet: parameterSet,
+            FundProfileId: fundProfileId,
+            FundDisplayName: fundDisplayName);
 
     /// <summary>Returns a copy of this entry marked as ended with the provided metrics.</summary>
     public StrategyRunEntry Complete(BacktestResult? metrics) =>

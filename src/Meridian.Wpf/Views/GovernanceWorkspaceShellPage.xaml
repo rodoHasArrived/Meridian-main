@@ -1,0 +1,301 @@
+<Page x:Class="Meridian.Wpf.Views.GovernanceWorkspaceShellPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:views="clr-namespace:Meridian.Wpf.Views"
+      mc:Ignorable="d"
+      d:DesignHeight="900" d:DesignWidth="1400"
+      Background="{DynamicResource ConsoleBackgroundDarkBrush}"
+      Loaded="OnPageLoaded"
+      Unloaded="OnPageUnloaded"
+      AutomationProperties.Name="Governance Workspace"
+      AutomationProperties.AutomationId="GovernanceWorkspaceShellPage">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" MinHeight="200" />
+        </Grid.RowDefinitions>
+
+        <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
+            <StackPanel MaxWidth="1400">
+
+                <Border Style="{StaticResource WorkspaceShellHeaderCardStyle}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Orientation="Horizontal">
+                            <Border Width="44" Height="44" CornerRadius="14"
+                                    Background="{StaticResource ConsoleAccentOrangeAlpha10Brush}"
+                                    BorderBrush="{StaticResource WarningColorBrush}" BorderThickness="1">
+                                <TextBlock Text="&#xE7BA;" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                           FontSize="24" Foreground="{StaticResource WarningColorBrush}"
+                                           VerticalAlignment="Center" HorizontalAlignment="Center" />
+                            </Border>
+                            <StackPanel Margin="12,0,0,0">
+                                <TextBlock Text="Governance" Style="{StaticResource PageTitleStyle}" />
+                                <TextBlock Text="Alerts, diagnostics, audit posture, and operator trust controls from one landing surface"
+                                           Style="{StaticResource CardDescriptionStyle}" />
+                                <TextBlock x:Name="ActiveFundText"
+                                           Text="No fund selected"
+                                           Style="{StaticResource CardHeaderStyle}"
+                                           Margin="0,10,0,0" />
+                                <TextBlock x:Name="ActiveFundDetailText"
+                                           Text="Choose a fund to open fund-first governance views."
+                                           Style="{StaticResource CardDescriptionStyle}" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,4,0">
+                            <Border Style="{StaticResource WorkspaceKpiTileStyle}" Margin="0,0,12,0"
+                                    ToolTip="Current trust and validation posture across governed surfaces">
+                                <StackPanel>
+                                    <TextBlock Text="Trust" FontSize="20" FontWeight="Bold"
+                                               Foreground="{StaticResource SuccessColorBrush}"
+                                               HorizontalAlignment="Center" />
+                                    <TextBlock Text="Quality Posture" FontSize="11"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                               HorizontalAlignment="Center" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource WorkspaceKpiTileStyle}" Margin="0,0,12,0"
+                                    ToolTip="Items that should be reviewed first by an operator">
+                                <StackPanel>
+                                    <TextBlock Text="Review" FontSize="20" FontWeight="Bold"
+                                               Foreground="{StaticResource WarningColorBrush}"
+                                               HorizontalAlignment="Center" />
+                                    <TextBlock Text="Alerts" FontSize="11"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                               HorizontalAlignment="Center" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource WorkspaceKpiTileStyle}"
+                                    ToolTip="Diagnostic and policy checks that should be revisited next">
+                                <StackPanel>
+                                    <TextBlock Text="Audit" FontSize="20" FontWeight="Bold"
+                                               Foreground="{StaticResource InfoColorBrush}"
+                                               HorizontalAlignment="Center" />
+                                    <TextBlock Text="Diagnostics" FontSize="11"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                               HorizontalAlignment="Center" />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource WorkspaceSectionCardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="Quick Actions" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,16" />
+                        <WrapPanel Orientation="Horizontal">
+                            <Button Content="&#xEE94;  Fund Ledger"
+                                    Click="OpenFundLedger_Click"
+                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    Margin="0,0,12,8"
+                                    AutomationProperties.Name="Open Fund Ledger" />
+                            <Button Content="&#xE9D9;  Trial Balance"
+                                    Click="OpenFundLedger_Click"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Margin="0,0,12,8"
+                                    AutomationProperties.Name="Open Trial Balance" />
+                            <Button Content="&#xE8EF;  Cash Flow"
+                                    Click="OpenFundLedger_Click"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Margin="0,0,12,8"
+                                    AutomationProperties.Name="Open Fund Cash Flow" />
+                            <Button Content="&#xE895;  Reconciliation"
+                                    Click="OpenFundLedger_Click"
+                                    Style="{StaticResource GhostButtonStyle}"
+                                    Margin="0,0,12,8"
+                                    AutomationProperties.Name="Open Reconciliation" />
+                            <Button Content="&#xE73E;  Data Quality"
+                                    Click="OpenDataQuality_Click"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Margin="0,0,12,8"
+                                    AutomationProperties.Name="Open Data Quality" />
+                            <Button Content="&#xE7BA;  Diagnostics"
+                                    Click="OpenDiagnostics_Click"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Margin="0,0,12,8"
+                                    AutomationProperties.Name="Open Diagnostics" />
+                            <Button Content="&#xE895;  System Health"
+                                    Click="OpenSystemHealth_Click"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Margin="0,0,12,8"
+                                    AutomationProperties.Name="Open System Health" />
+                            <Button Content="&#xE7F4;  Notifications"
+                                    Click="OpenNotifications_Click"
+                                    Style="{StaticResource GhostButtonStyle}"
+                                    Margin="0,0,12,8"
+                                    AutomationProperties.Name="Open Notifications" />
+                            <Button Content="&#xE713;  Settings"
+                                    Click="OpenSettings_Click"
+                                    Style="{StaticResource GhostButtonStyle}"
+                                    Margin="0,0,0,8"
+                                    AutomationProperties.Name="Open Settings" />
+                        </WrapPanel>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource WorkspaceSectionCardStyle}">
+                    <StackPanel>
+                        <Grid Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Operational Focus" Style="{StaticResource CardHeaderStyle}" />
+                            <Button Grid.Column="1" Content="Quality Console" Click="OpenDataQuality_Click"
+                                    Style="{StaticResource LinkButtonStyle}" />
+                        </Grid>
+
+                        <Border Style="{StaticResource WorkspaceQueueItemCardStyle}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Data quality and integrity"
+                                               FontSize="14" FontWeight="SemiBold"
+                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                    <TextBlock Text="Review validation posture, repair candidates, and provider comparisons before issues cascade into downstream workflows."
+                                               FontSize="11"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                               Margin="0,2,0,0" />
+                                </StackPanel>
+                                <Button Grid.Column="1" Content="Review"
+                                        Click="OpenDataQuality_Click"
+                                        Style="{StaticResource SecondaryButtonStyle}" />
+                            </Grid>
+                        </Border>
+
+                        <Border Style="{StaticResource WorkspaceQueueItemCardStyle}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Provider and host health"
+                                               FontSize="14" FontWeight="SemiBold"
+                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                    <TextBlock Text="Inspect provider reachability, system readiness, and host posture before operational changes are approved."
+                                               FontSize="11"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                               Margin="0,2,0,0" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                    <Button Content="Providers"
+                                            Click="OpenProviderHealth_Click"
+                                            Style="{StaticResource SecondaryButtonStyle}"
+                                            Margin="0,0,8,0" />
+                                    <Button Content="System"
+                                            Click="OpenSystemHealth_Click"
+                                            Style="{StaticResource GhostButtonStyle}" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <Border Style="{StaticResource WorkspaceQueueItemCardStyle}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Diagnostics and notifications"
+                                               FontSize="14" FontWeight="SemiBold"
+                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                    <TextBlock Text="Run deeper checks, inspect alert groups, and manage operator-facing notifications from a single governance posture."
+                                               FontSize="11"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                               Margin="0,2,0,0" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                    <Button Content="Diagnostics"
+                                            Click="OpenDiagnostics_Click"
+                                            Style="{StaticResource SecondaryButtonStyle}"
+                                            Margin="0,0,8,0" />
+                                    <Button Content="Alerts"
+                                            Click="OpenNotifications_Click"
+                                            Style="{StaticResource GhostButtonStyle}" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource WorkspaceSectionCardStyle}" Margin="0,0,0,0">
+                    <StackPanel>
+                        <Grid Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Recent Governance Work" Style="{StaticResource CardHeaderStyle}" />
+                            <Button Grid.Column="1" Content="Settings" Click="OpenSettings_Click"
+                                    Style="{StaticResource LinkButtonStyle}" />
+                        </Grid>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="16" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <Border Grid.Column="0" Style="{StaticResource WorkspaceQueueItemCardStyle}" Margin="0">
+                                <StackPanel>
+                                    <TextBlock Text="Notification center"
+                                               FontSize="14" FontWeight="SemiBold"
+                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                    <TextBlock Text="Review active grouped alerts, acknowledgements, and operator playbooks."
+                                               FontSize="11"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                               Margin="0,6,0,12" />
+                                    <Button Content="Open Notifications"
+                                            Click="OpenNotifications_Click"
+                                            Style="{StaticResource SecondaryButtonStyle}"
+                                            HorizontalAlignment="Left" />
+                                </StackPanel>
+                            </Border>
+
+                            <Border Grid.Column="2" Style="{StaticResource WorkspaceQueueItemCardStyle}" Margin="0">
+                                <StackPanel>
+                                    <TextBlock Text="Configuration and controls"
+                                               FontSize="14" FontWeight="SemiBold"
+                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                    <TextBlock Text="Move into workstation settings, credentials, and support surfaces when trust controls need to change."
+                                               FontSize="11"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                               Margin="0,6,0,12" />
+                                    <Button Content="Open Settings"
+                                            Click="OpenSettings_Click"
+                                            Style="{StaticResource SecondaryButtonStyle}"
+                                            HorizontalAlignment="Left" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <Border Grid.Row="1" Margin="12,0,12,12" Style="{StaticResource WorkspaceDockHostStyle}">
+            <StackPanel>
+                <TextBlock Text="Workspace Panels"
+                           Style="{StaticResource CardHeaderStyle}"
+                           Margin="4,0,0,6" />
+                <views:MeridianDockingManager x:Name="GovernanceDockManager"
+                                              Height="360"
+                                              PaneDropRequested="OnPaneDropRequested"
+                                              AutomationProperties.Name="Governance Dock Manager" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</Page>

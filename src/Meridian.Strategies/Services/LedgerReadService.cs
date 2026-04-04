@@ -105,7 +105,8 @@ public sealed class LedgerReadService
             RevenueBalance: SumBalance(accountSummaries, LedgerAccountType.Revenue),
             ExpenseBalance: SumBalance(accountSummaries, LedgerAccountType.Expense),
             TrialBalance: trialBalance,
-            Journal: journal);
+            Journal: journal,
+            FundProfileId: entry.FundProfileId);
     }
 
     private static decimal SumBalance(

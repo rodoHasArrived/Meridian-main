@@ -99,7 +99,8 @@ public sealed class PortfolioReadService
             UnrealizedPnl: unrealizedPnl,
             Commissions: result.Metrics.TotalCommissions,
             Financing: financing,
-            Positions: positions);
+            Positions: positions,
+            FundProfileId: entry.FundProfileId);
     }
 
     private async Task<Dictionary<string, WorkstationSecurityReference?>> ResolveSecuritiesAsync(

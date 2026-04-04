@@ -17,6 +17,12 @@ public partial class EditScheduledJobDialog : Window
     /// <summary>Gets the computed next-run display text based on frequency and time selections.</summary>
     public string NextRunText { get; private set; } = string.Empty;
 
+    /// <summary>Gets the selected frequency tag.</summary>
+    public string FrequencyTag => (FrequencyCombo.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "Daily";
+
+    /// <summary>Gets the selected local run time.</summary>
+    public string RunTimeText => TimeCombo.SelectedItem?.ToString() ?? "06:00";
+
     /// <summary>Gets whether the user requested deletion of this job.</summary>
     public bool ShouldDelete { get; private set; }
 
@@ -32,10 +38,19 @@ public partial class EditScheduledJobDialog : Window
             TimeCombo.Items.Add($"{hour:D2}:00");
             TimeCombo.Items.Add($"{hour:D2}:30");
         }
-        TimeCombo.SelectedIndex = 12; // default 06:00
+        var requestedTime = string.IsNullOrWhiteSpace(job.TimeText) ? "06:00" : job.TimeText;
+        TimeCombo.SelectedItem = requestedTime;
+        if (TimeCombo.SelectedItem == null)
+        {
+            TimeCombo.SelectedIndex = 12; // default 06:00
+        }
 
-        // Pre-select frequency based on job name heuristic
-        FrequencyCombo.SelectedIndex = job.Name.Contains("Weekly") ? 1 : 0;
+        FrequencyCombo.SelectedIndex = job.FrequencyTag switch
+        {
+            "Weekly" => 1,
+            "Monthly" => 2,
+            _ => 0
+        };
         UpdateDayComboVisibility();
     }
 

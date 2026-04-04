@@ -346,16 +346,20 @@ public partial class BackfillPage : Page
 
     // ── Validation / data ops ────────────────────────────────────────────────
 
-    private void ValidateData_Click(object sender, RoutedEventArgs e)
+    private async void ValidateData_Click(object sender, RoutedEventArgs e)
     {
-        // M3: stub notification belongs in ViewModel.
-        _viewModel.HandleValidateData();
+        var symbols = SymbolsBox.Text?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) ?? Array.Empty<string>();
+        var fromDate = FromDatePicker.SelectedDate ?? DateTime.Today.AddDays(-30);
+        var toDate = ToDatePicker.SelectedDate ?? DateTime.Today;
+        await _viewModel.ValidateDataAsync(symbols, fromDate, toDate);
     }
 
-    private void RepairGaps_Click(object sender, RoutedEventArgs e)
+    private async void RepairGaps_Click(object sender, RoutedEventArgs e)
     {
-        // M3: stub notification belongs in ViewModel.
-        _viewModel.HandleRepairGaps();
+        var symbols = SymbolsBox.Text?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) ?? Array.Empty<string>();
+        var fromDate = FromDatePicker.SelectedDate ?? DateTime.Today.AddDays(-30);
+        var toDate = ToDatePicker.SelectedDate ?? DateTime.Today;
+        await _viewModel.RepairGapsAsync(symbols, fromDate, toDate);
     }
 
     private void OpenWizard_Click(object sender, RoutedEventArgs e)
@@ -363,10 +367,12 @@ public partial class BackfillPage : Page
         _viewModel.NavigateToWizard();
     }
 
-    private void FillAllGaps_Click(object sender, RoutedEventArgs e)
+    private async void FillAllGaps_Click(object sender, RoutedEventArgs e)
     {
-        // M3: stub notification belongs in ViewModel.
-        _viewModel.HandleFillAllGaps();
+        var symbols = SymbolsBox.Text?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) ?? Array.Empty<string>();
+        var fromDate = FromDatePicker.SelectedDate ?? DateTime.Today.AddDays(-30);
+        var toDate = ToDatePicker.SelectedDate ?? DateTime.Today;
+        await _viewModel.FillAllGapsAsync(symbols, fromDate, toDate);
     }
 
     private void BrowseData_Click(object sender, RoutedEventArgs e)
@@ -416,19 +422,9 @@ public partial class BackfillPage : Page
         await _viewModel.ScanGapsAsync(symbols, fromDate, toDate);
     }
 
-    private void AutoFillGaps_Click(object sender, RoutedEventArgs e)
+    private async void AutoFillGaps_Click(object sender, RoutedEventArgs e)
     {
-        var symbolsWithGaps = _viewModel.GetSymbolsWithGaps();
-        if (symbolsWithGaps.Length == 0)
-        {
-            // M3: notification belongs in ViewModel.
-            _viewModel.HandleNoGapsFound();
-            return;
-        }
-
-        SymbolsBox.Text = string.Join(", ", symbolsWithGaps);
-        // M3: notification belongs in ViewModel.
-        _viewModel.HandleAutoFillGapsNotification(symbolsWithGaps);
+        await _viewModel.AutoFillGapsAsync();
     }
 
     // ── Schedule management ──────────────────────────────────────────────────
@@ -439,22 +435,27 @@ public partial class BackfillPage : Page
         _viewModel.SetScheduleEnabled(ScheduledBackfillToggle.IsChecked.GetValueOrDefault());
     }
 
-    private void SaveSchedule_Click(object sender, RoutedEventArgs e)
+    private async void SaveSchedule_Click(object sender, RoutedEventArgs e)
     {
-        // M3: stub notification belongs in ViewModel.
-        _viewModel.HandleSaveSchedule();
+        var frequency = (ScheduleFrequencyCombo.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "Daily";
+        var timeText = ScheduleTimeBox.Text?.Trim() ?? "06:00";
+        await _viewModel.SaveScheduleAsync(
+            ScheduledBackfillToggle.IsChecked.GetValueOrDefault(),
+            frequency,
+            timeText,
+            ScheduleAllSymbolsCheck.IsChecked.GetValueOrDefault(),
+            ScheduleSymbolsBox.Text ?? string.Empty);
     }
 
-    private void RunScheduledJob_Click(object sender, RoutedEventArgs e)
+    private async void RunScheduledJob_Click(object sender, RoutedEventArgs e)
     {
         if (sender is Button btn && btn.Tag is ScheduledJobInfo job)
         {
-            // M3: notification belongs in ViewModel.
-            _viewModel.HandleRunScheduledJob(job);
+            await _viewModel.RunScheduledJobAsync(job);
         }
     }
 
-    private void EditScheduledJob_Click(object sender, RoutedEventArgs e)
+    private async void EditScheduledJob_Click(object sender, RoutedEventArgs e)
     {
         if (sender is Button btn && btn.Tag is ScheduledJobInfo job)
         {
@@ -463,14 +464,15 @@ public partial class BackfillPage : Page
             {
                 if (dialog.ShouldDelete)
                 {
-                    _viewModel.DeleteScheduledJob(job);
-                    // M3: notification belongs in ViewModel.
-                    _viewModel.HandleJobDeletedNotification(job.Name);
+                    await _viewModel.DeleteScheduledJobAsync(job);
                 }
                 else
                 {
-                    // M2: collection mutation delegated to ViewModel method.
-                    _viewModel.UpdateScheduledJob(job, dialog.JobName, dialog.NextRunText);
+                    await _viewModel.UpdateScheduledJobAsync(
+                        job,
+                        dialog.JobName,
+                        dialog.FrequencyTag,
+                        dialog.RunTimeText);
                 }
             }
         }

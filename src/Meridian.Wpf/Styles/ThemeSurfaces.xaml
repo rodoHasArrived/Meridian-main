@@ -20,6 +20,39 @@
         <Setter Property="Margin" Value="0,0,0,16" />
     </Style>
 
+    <Style x:Key="WorkspaceShellHeaderCardStyle" TargetType="Border" BasedOn="{StaticResource SectionCardStyle}">
+        <Setter Property="Margin" Value="0,0,0,24" />
+    </Style>
+
+    <Style x:Key="WorkspaceSectionCardStyle" TargetType="Border" BasedOn="{StaticResource CardStyle}">
+        <Setter Property="Margin" Value="0,0,0,24" />
+    </Style>
+
+    <Style x:Key="WorkspaceKpiTileStyle" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource ConsoleBackgroundMediumBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="Padding" Value="16,10" />
+    </Style>
+
+    <Style x:Key="WorkspaceQueueItemCardStyle" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource ConsoleBackgroundLightBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="Padding" Value="16,12" />
+        <Setter Property="Margin" Value="0,0,0,8" />
+    </Style>
+
+    <Style x:Key="WorkspaceDockHostStyle" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource PremiumPanelBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="Padding" Value="16" />
+    </Style>
+
     <Style x:Key="CompactCardStyle" TargetType="Border">
         <Setter Property="Background" Value="{StaticResource ConsoleCardSurfaceBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />

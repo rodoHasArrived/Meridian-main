@@ -21,31 +21,36 @@ public sealed class StrategyRunWorkspaceService
 
     private readonly IStrategyRepository _store;
     private readonly StrategyRunReadService _readService;
+    private readonly FundContextService _fundContextService;
 
     public static StrategyRunWorkspaceService Instance => _instance ?? _fallbackInstance.Value;
 
     public StrategyRunWorkspaceService()
-        : this(new StrategyRunStore(), new PortfolioReadService(), new LedgerReadService())
+        : this(new StrategyRunStore(), new PortfolioReadService(), new LedgerReadService(), FundContextService.Instance)
     {
     }
 
     public StrategyRunWorkspaceService(
         IStrategyRepository store,
         PortfolioReadService portfolioReadService,
-        LedgerReadService ledgerReadService)
+        LedgerReadService ledgerReadService,
+        FundContextService? fundContextService = null)
         : this(store, new StrategyRunReadService(
             store ?? throw new ArgumentNullException(nameof(store)),
             portfolioReadService ?? throw new ArgumentNullException(nameof(portfolioReadService)),
-            ledgerReadService ?? throw new ArgumentNullException(nameof(ledgerReadService))))
+            ledgerReadService ?? throw new ArgumentNullException(nameof(ledgerReadService))),
+            fundContextService)
     {
     }
 
     public StrategyRunWorkspaceService(
         IStrategyRepository store,
-        StrategyRunReadService readService)
+        StrategyRunReadService readService,
+        FundContextService? fundContextService = null)
     {
         _store = store ?? throw new ArgumentNullException(nameof(store));
         _readService = readService ?? throw new ArgumentNullException(nameof(readService));
+        _fundContextService = fundContextService ?? FundContextService.Instance;
     }
 
     public static void SetInstance(StrategyRunWorkspaceService service)
@@ -92,13 +97,20 @@ public sealed class StrategyRunWorkspaceService
 
     public async Task<StrategyRunSummary?> GetLatestRunAsync(CancellationToken ct = default)
     {
-        var runs = await _readService.GetRunsAsync(null, ct: ct).ConfigureAwait(false);
+        var runs = await _readService.GetRunsAsync(strategyId: null, ct: ct).ConfigureAwait(false);
         return runs.FirstOrDefault();
     }
 
     public async Task<TradingWorkspaceSummary> GetTradingSummaryAsync(CancellationToken ct = default)
     {
-        var runs = await _readService.GetRunsAsync(null, ct: ct).ConfigureAwait(false);
+        var runs = await _readService.GetRunsAsync(strategyId: null, ct: ct).ConfigureAwait(false);
+        var activeFundProfileId = _fundContextService.CurrentFundProfile?.FundProfileId;
+        if (!string.IsNullOrWhiteSpace(activeFundProfileId))
+        {
+            runs = runs
+                .Where(run => string.Equals(run.FundProfileId, activeFundProfileId, StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+        }
 
         var paperRuns = runs.Where(r => r.Mode == StrategyRunMode.Paper).ToList();
         var liveRuns = runs.Where(r => r.Mode == StrategyRunMode.Live).ToList();
@@ -152,7 +164,7 @@ public sealed class StrategyRunWorkspaceService
 
     public async Task<ResearchWorkspaceSummary> GetResearchSummaryAsync(CancellationToken ct = default)
     {
-        var runs = await _readService.GetRunsAsync(null, ct: ct).ConfigureAwait(false);
+        var runs = await _readService.GetRunsAsync(strategyId: null, ct: ct).ConfigureAwait(false);
 
         var promoted = runs.Count(r =>
             r.Mode is StrategyRunMode.Paper or StrategyRunMode.Live);
@@ -205,6 +217,19 @@ public sealed class StrategyRunWorkspaceService
         };
     }
 
+    public async Task<IReadOnlyList<StrategyRunEntry>> GetRecordedRunsAsync(CancellationToken ct = default)
+    {
+        var results = new List<StrategyRunEntry>();
+        await foreach (var run in _store.GetAllRunsAsync(ct).WithCancellation(ct).ConfigureAwait(false))
+        {
+            results.Add(run);
+        }
+
+        return results
+            .OrderByDescending(run => run.StartedAt)
+            .ToArray();
+    }
+
     private static SolidColorBrush MapStatusBrush(StrategyRunStatus status) => status switch
     {
         StrategyRunStatus.Running => BrushRegistry.Info,
@@ -243,7 +268,9 @@ public sealed class StrategyRunWorkspaceService
             LedgerReference: $"{strategyId}-backtest-ledger",
             AuditReference: $"audit-{strategyId}-{completedAt:yyyyMMddHHmmss}",
             Engine: "MeridianNative",
-            ParameterSet: BuildParameterSet(request, result));
+            ParameterSet: BuildParameterSet(request, result),
+            FundProfileId: _fundContextService.CurrentFundProfile?.FundProfileId,
+            FundDisplayName: _fundContextService.CurrentFundProfile?.DisplayName);
 
         await _store.RecordRunAsync(entry, ct).ConfigureAwait(false);
 

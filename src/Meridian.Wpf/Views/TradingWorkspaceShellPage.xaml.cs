@@ -16,24 +16,30 @@ public partial class TradingWorkspaceShellPage : Page
 
     private readonly NavigationService _navigationService;
     private readonly StrategyRunWorkspaceService _runService;
+    private readonly FundContextService _fundContextService;
 
     public TradingWorkspaceShellPage(
         NavigationService navigationService,
-        StrategyRunWorkspaceService runService)
+        StrategyRunWorkspaceService runService,
+        FundContextService fundContextService)
     {
         InitializeComponent();
         _navigationService = navigationService;
         _runService = runService;
+        _fundContextService = fundContextService;
     }
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
     {
+        _fundContextService.ActiveFundProfileChanged += OnActiveFundProfileChanged;
+        UpdateActiveFundText();
         await RefreshAsync();
         await RestoreDockLayoutAsync();
     }
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e)
     {
+        _fundContextService.ActiveFundProfileChanged -= OnActiveFundProfileChanged;
         _ = SaveDockLayoutAsync();
     }
 
@@ -123,4 +129,30 @@ public partial class TradingWorkspaceShellPage : Page
 
     private void OpenTradingHours_Click(object sender, RoutedEventArgs e)
         => _navigationService.NavigateTo("TradingHours");
+
+    private async void OnActiveFundProfileChanged(object? sender, FundProfileChangedEventArgs e)
+    {
+        if (!Dispatcher.CheckAccess())
+        {
+            _ = Dispatcher.InvokeAsync(() => OnActiveFundProfileChanged(sender, e));
+            return;
+        }
+
+        UpdateActiveFundText();
+        await RefreshAsync();
+    }
+
+    private void UpdateActiveFundText()
+    {
+        var profile = _fundContextService.CurrentFundProfile;
+        if (profile is null)
+        {
+            ActiveFundText.Text = "No fund selected";
+            ActiveFundDetailText.Text = "Runs and KPIs will scope to the active fund profile.";
+            return;
+        }
+
+        ActiveFundText.Text = profile.DisplayName;
+        ActiveFundDetailText.Text = $"{profile.LegalEntityName} · {profile.BaseCurrency}";
+    }
 }

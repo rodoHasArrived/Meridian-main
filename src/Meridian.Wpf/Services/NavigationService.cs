@@ -88,6 +88,7 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         RegisterPage("RunDetail", typeof(RunDetailPage));
         RegisterPage("RunPortfolio", typeof(RunPortfolioPage));
         RegisterPage("RunLedger", typeof(RunLedgerPage));
+        RegisterPage("FundLedger", typeof(FundLedgerPage));
         RegisterPage("RunCashFlow", typeof(RunCashFlowPage));
         RegisterPage("PositionBlotter", typeof(PositionBlotterPage));
         RegisterPage("RunRisk", typeof(RunRiskPage));
@@ -131,6 +132,8 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         // Workspace shell landing pages
         RegisterPage("ResearchShell", typeof(ResearchWorkspaceShellPage));
         RegisterPage("TradingShell", typeof(TradingWorkspaceShellPage));
+        RegisterPage("DataOperationsShell", typeof(DataOperationsWorkspaceShellPage));
+        RegisterPage("GovernanceShell", typeof(GovernanceWorkspaceShellPage));
 
         // Workspaces & Notifications (2 pages)
         RegisterPage("Workspaces", typeof(WorkspacePage));

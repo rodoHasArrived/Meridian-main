@@ -27,6 +27,7 @@ public sealed class WorkspaceService
 
     private WorkspaceTemplate? _activeWorkspace;
     private SessionState? _lastSession;
+    private readonly Dictionary<string, SessionState> _sessionsByFundProfileId = new(StringComparer.OrdinalIgnoreCase);
     private readonly List<WorkspaceTemplate> _workspaces = new();
     private readonly Task _initialLoadTask;
 
@@ -40,6 +41,7 @@ public sealed class WorkspaceService
     public WorkspaceTemplate? ActiveWorkspace => _activeWorkspace;
     public SessionState? LastSession => _lastSession;
     public IReadOnlyList<WorkspaceTemplate> Workspaces => _workspaces.AsReadOnly();
+    public string? LastSelectedFundProfileId { get; private set; }
 
     private Task EnsureInitializedAsync() => _initialLoadTask;
 
@@ -69,6 +71,8 @@ public sealed class WorkspaceService
         public List<WorkspaceTemplate> Workspaces { get; set; } = new();
         public string? ActiveWorkspaceId { get; set; }
         public SessionState? LastSession { get; set; }
+        public string? LastSelectedFundProfileId { get; set; }
+        public Dictionary<string, SessionState> SessionsByFundProfileId { get; set; } = new(StringComparer.OrdinalIgnoreCase);
         /// <summary>
         /// Per-workspace AvalonDock layout XML, keyed by workspace ID (e.g., "trading", "research").
         /// </summary>
@@ -100,6 +104,20 @@ public sealed class WorkspaceService
                     }
 
                     _lastSession = data.LastSession;
+                    LastSelectedFundProfileId = data.LastSelectedFundProfileId;
+
+                    _sessionsByFundProfileId.Clear();
+                    foreach (var kvp in data.SessionsByFundProfileId)
+                    {
+                        _sessionsByFundProfileId[kvp.Key] = kvp.Value;
+                    }
+
+                    if (_sessionsByFundProfileId.Count == 0 &&
+                        _lastSession is not null &&
+                        !string.IsNullOrWhiteSpace(LastSelectedFundProfileId))
+                    {
+                        _sessionsByFundProfileId[LastSelectedFundProfileId] = _lastSession;
+                    }
 
                     if (data.DockLayouts.Count > 0)
                     {
@@ -138,6 +156,8 @@ public sealed class WorkspaceService
                 Workspaces = _workspaces.ToList(),
                 ActiveWorkspaceId = _activeWorkspace?.Id,
                 LastSession = _lastSession,
+                LastSelectedFundProfileId = LastSelectedFundProfileId,
+                SessionsByFundProfileId = new Dictionary<string, SessionState>(_sessionsByFundProfileId, StringComparer.OrdinalIgnoreCase),
                 DockLayouts = new Dictionary<string, string>(_dockLayouts, StringComparer.OrdinalIgnoreCase)
             };
 
@@ -249,6 +269,9 @@ public sealed class WorkspaceService
     }
 
     public async Task SaveSessionStateAsync(SessionState state, CancellationToken ct = default)
+        => await SaveSessionStateAsync(state, fundProfileId: null, ct).ConfigureAwait(false);
+
+    public async Task SaveSessionStateAsync(SessionState state, string? fundProfileId, CancellationToken ct = default)
     {
         try
         {
@@ -256,6 +279,13 @@ public sealed class WorkspaceService
             state.ActiveWorkspaceId ??= _activeWorkspace?.Id;
             state.SavedAt = DateTime.UtcNow;
             _lastSession = state;
+            var normalizedFundProfileId = NormalizeFundProfileId(fundProfileId);
+            if (!string.IsNullOrWhiteSpace(normalizedFundProfileId))
+            {
+                LastSelectedFundProfileId = normalizedFundProfileId;
+                _sessionsByFundProfileId[normalizedFundProfileId] = state;
+            }
+
             PersistActiveWorkspaceSnapshot();
             await SaveWorkspacesAsync();
         }
@@ -267,6 +297,33 @@ public sealed class WorkspaceService
     public SessionState? GetLastSessionState()
     {
         return _lastSession;
+    }
+
+    public SessionState? GetLastSessionState(string? fundProfileId)
+    {
+        var normalizedFundProfileId = NormalizeFundProfileId(fundProfileId);
+        if (string.IsNullOrWhiteSpace(normalizedFundProfileId))
+        {
+            return _lastSession;
+        }
+
+        if (_sessionsByFundProfileId.TryGetValue(normalizedFundProfileId, out var session))
+        {
+            _lastSession = session;
+            LastSelectedFundProfileId = normalizedFundProfileId;
+            return session;
+        }
+
+        _lastSession = new SessionState();
+        LastSelectedFundProfileId = normalizedFundProfileId;
+        return null;
+    }
+
+    public async Task SetLastSelectedFundProfileIdAsync(string? fundProfileId, CancellationToken ct = default)
+    {
+        await EnsureInitializedAsync();
+        LastSelectedFundProfileId = NormalizeFundProfileId(fundProfileId);
+        await SaveWorkspacesAsync(ct).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -381,6 +438,9 @@ public sealed class WorkspaceService
                 Pages = new List<WorkspacePage>
                 {
                     new WorkspacePage { PageTag = "LiveData", Title = "Live Data", IsDefault = true },
+                    new WorkspacePage { PageTag = "StrategyRuns", Title = "Strategy Runs" },
+                    new WorkspacePage { PageTag = "RunPortfolio", Title = "Run Portfolio" },
+                    new WorkspacePage { PageTag = "RunLedger", Title = "Run Ledger" },
                     new WorkspacePage { PageTag = "TradingHours", Title = "Trading Hours" },
                     new WorkspacePage { PageTag = "TradingShell", Title = "Trading Shell" }
                 }
@@ -434,6 +494,7 @@ public sealed class WorkspaceService
                 Pages = new List<WorkspacePage>
                 {
                     new WorkspacePage { PageTag = "DataQuality", Title = "Data Quality", IsDefault = true },
+                    new WorkspacePage { PageTag = "FundLedger", Title = "Fund Ledger" },
                     new WorkspacePage { PageTag = "RunLedger", Title = "Run Ledger" },
                     new WorkspacePage { PageTag = "ProviderHealth", Title = "Provider Health" },
                     new WorkspacePage { PageTag = "SystemHealth", Title = "System Health" },
@@ -500,6 +561,9 @@ public sealed class WorkspaceService
 
         return changed;
     }
+
+    private static string? NormalizeFundProfileId(string? fundProfileId)
+        => string.IsNullOrWhiteSpace(fundProfileId) ? null : fundProfileId.Trim();
 
     private bool MigrateLegacyWorkspaceState()
     {

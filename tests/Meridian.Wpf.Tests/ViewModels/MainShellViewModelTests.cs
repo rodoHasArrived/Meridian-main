@@ -1,7 +1,10 @@
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using Meridian.Ui.Services.Contracts;
 using Meridian.Ui.Services.Services;
+using Meridian.Contracts.Workstation;
+using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.ViewModels;
@@ -10,7 +13,7 @@ namespace Meridian.Wpf.Tests.ViewModels;
 
 public sealed class MainShellViewModelTests
 {
-    private static MainPageViewModel CreateMainPageViewModel()
+    private static MainPageViewModel CreateMainPageViewModel(FundContextService? fundContextService = null)
     {
         var navigationService = NavigationService.Instance;
         navigationService.Initialize(new Frame());
@@ -20,7 +23,7 @@ public sealed class MainShellViewModelTests
         fixtureModeDetector.SetFixtureMode(false);
         fixtureModeDetector.UpdateBackendReachability(true);
 
-        return new MainPageViewModel(navigationService, fixtureModeDetector);
+        return new MainPageViewModel(navigationService, fixtureModeDetector, fundContextService);
     }
 
     private static MainWindowViewModel CreateMainWindowViewModel()
@@ -129,5 +132,56 @@ public sealed class MainShellViewModelTests
             vm.ClipboardBannerVisibility.Should().Be(Visibility.Collapsed);
             vm.AddClipboardSymbolsCommand.CanExecute(null).Should().BeFalse();
         });
+    }
+
+    [Fact]
+    public void ActiveFundDisplay_WhenFundSelected_ShowsFundBadgeAndMetadata()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var fundContext = await CreateFundContextAsync();
+            using var vm = CreateMainPageViewModel(fundContext);
+
+            vm.ActiveFundVisibility.Should().Be(Visibility.Visible);
+            vm.ActiveFundName.Should().Be("Alpha Credit");
+            vm.ActiveFundSubtitle.Should().Contain("USD");
+        });
+    }
+
+    [Fact]
+    public void SwitchFundCommand_RaisesFundSwitchRequest()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var fundContext = await CreateFundContextAsync();
+            using var vm = CreateMainPageViewModel(fundContext);
+            var raised = false;
+            fundContext.FundSwitchRequested += (_, _) => raised = true;
+
+            vm.SwitchFundCommand.Execute(null);
+
+            raised.Should().BeTrue();
+        });
+    }
+
+    private static async Task<FundContextService> CreateFundContextAsync()
+    {
+        var storagePath = Path.Combine(
+            Path.GetTempPath(),
+            "meridian-main-shell-tests",
+            $"{Guid.NewGuid():N}.json");
+
+        var service = new FundContextService(storagePath);
+        await service.UpsertProfileAsync(new FundProfileDetail(
+            FundProfileId: "alpha-credit",
+            DisplayName: "Alpha Credit",
+            LegalEntityName: "Alpha Credit Master Fund LP",
+            BaseCurrency: "USD",
+            DefaultWorkspaceId: "governance",
+            DefaultLandingPageTag: "GovernanceShell",
+            DefaultLedgerScope: FundLedgerScope.Consolidated,
+            IsDefault: true));
+        await service.SelectFundProfileAsync("alpha-credit");
+        return service;
     }
 }

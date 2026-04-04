@@ -27,7 +27,7 @@
         <StackPanel MaxWidth="1400">
 
             <!-- ── Header ────────────────────────────────────────────────── -->
-            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24">
+            <Border Style="{StaticResource WorkspaceShellHeaderCardStyle}">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -51,8 +51,8 @@
 
                     <!-- KPI strip -->
                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,4,0">
-                        <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
-                                CornerRadius="10" Padding="16,10" Margin="0,0,12,0"
+                        <Border Style="{StaticResource WorkspaceKpiTileStyle}"
+                                Margin="0,0,12,0"
                                 ToolTip="Completed backtest runs">
                             <StackPanel>
                                 <TextBlock x:Name="TotalRunsText" Text="—" FontSize="20" FontWeight="Bold"
@@ -63,8 +63,8 @@
                                            HorizontalAlignment="Center" />
                             </StackPanel>
                         </Border>
-                        <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
-                                CornerRadius="10" Padding="16,10" Margin="0,0,12,0"
+                        <Border Style="{StaticResource WorkspaceKpiTileStyle}"
+                                Margin="0,0,12,0"
                                 ToolTip="Strategies promoted to paper or live">
                             <StackPanel>
                                 <TextBlock x:Name="PromotedText" Text="—" FontSize="20" FontWeight="Bold"
@@ -75,8 +75,7 @@
                                            HorizontalAlignment="Center" />
                             </StackPanel>
                         </Border>
-                        <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
-                                CornerRadius="10" Padding="16,10"
+                        <Border Style="{StaticResource WorkspaceKpiTileStyle}"
                                 ToolTip="Strategies awaiting promotion review">
                             <StackPanel>
                                 <TextBlock x:Name="PendingReviewText" Text="—" FontSize="20" FontWeight="Bold"
@@ -92,7 +91,7 @@
             </Border>
 
             <!-- ── Quick Actions ─────────────────────────────────────────── -->
-            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
+            <Border Style="{StaticResource WorkspaceSectionCardStyle}">
                 <StackPanel>
                     <TextBlock Text="Quick Actions" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,16" />
                     <WrapPanel Orientation="Horizontal">
@@ -126,7 +125,7 @@
             </Border>
 
             <!-- ── Recent Runs ───────────────────────────────────────────── -->
-            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
+            <Border Style="{StaticResource WorkspaceSectionCardStyle}">
                 <StackPanel>
                     <Grid Margin="0,0,0,12">
                         <Grid.ColumnDefinitions>
@@ -144,8 +143,7 @@
                                   AutomationProperties.Name="Recent Strategy Runs">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Border Background="{StaticResource ConsoleBackgroundLightBrush}"
-                                        CornerRadius="10" Padding="16,12" Margin="0,0,0,8">
+                                <Border Style="{StaticResource WorkspaceQueueItemCardStyle}">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*" />
@@ -203,7 +201,7 @@
             </Border>
 
             <!-- ── Promotion Pipeline ────────────────────────────────────── -->
-            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,0">
+            <Border Style="{StaticResource WorkspaceSectionCardStyle}" Margin="0,0,0,0">
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                         <TextBlock Text="Promotion Pipeline" Style="{StaticResource CardHeaderStyle}" />
@@ -222,8 +220,7 @@
                                   AutomationProperties.Name="Promotion Candidates">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Border Background="{StaticResource ConsoleBackgroundLightBrush}"
-                                        CornerRadius="10" Padding="16,12" Margin="0,0,0,8">
+                                <Border Style="{StaticResource WorkspaceQueueItemCardStyle}">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*" />
@@ -269,7 +266,7 @@
     </ScrollViewer>
 
         <!-- ── AvalonDock workspace panel ──────────────────────────────── -->
-        <Border Grid.Row="1" Margin="12,0,12,12">
+        <Border Grid.Row="1" Margin="12,0,12,12" Style="{StaticResource WorkspaceDockHostStyle}">
             <StackPanel>
                 <TextBlock Text="Workspace Panels"
                            Style="{StaticResource CardHeaderStyle}"

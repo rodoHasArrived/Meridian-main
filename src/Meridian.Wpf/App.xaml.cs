@@ -252,6 +252,8 @@ public partial class App : System.Windows.Application
         services.AddSingleton(_ => Meridian.Ui.Services.OnboardingTourService.Instance);
         services.AddSingleton(_ => WpfServices.WorkspaceService.Instance);
         services.AddSingleton(_ => Meridian.Ui.Services.AlertService.Instance);
+        services.AddSingleton(_ => WpfServices.FundContextService.Instance);
+        services.AddSingleton<WpfServices.IFundProfileCatalog>(sp => sp.GetRequiredService<WpfServices.FundContextService>());
 
         // ── Domain / feature services ───────────────────────────────────────
         services.AddSingleton(_ => WpfServices.BackendServiceManager.Instance);
@@ -287,6 +289,7 @@ public partial class App : System.Windows.Application
         services.AddSingleton<MainWindow>();
 
         // ── Pages (transient — created per navigation) ──────────────────────
+        services.AddTransient<FundProfileSelectionPage>();
         services.AddTransient<Meridian.Wpf.ViewModels.MainPageViewModel>();
         services.AddTransient<MainPage>();
         services.AddTransient<Meridian.Wpf.ViewModels.DashboardViewModel>();
@@ -346,6 +349,7 @@ public partial class App : System.Windows.Application
         services.AddTransient<RunDetailPage>();
         services.AddTransient<RunPortfolioPage>();
         services.AddTransient<RunLedgerPage>();
+        services.AddTransient<FundLedgerPage>();
         services.AddTransient<SecurityMasterPage>();
         services.AddTransient<Meridian.Wpf.ViewModels.SecurityMasterViewModel>();
         services.AddTransient<PluginManagementPage>();
@@ -357,6 +361,8 @@ public partial class App : System.Windows.Application
         services.AddTransient<QualityArchivePage>();
         services.AddTransient<ResearchWorkspaceShellPage>();
         services.AddTransient<TradingWorkspaceShellPage>();
+        services.AddTransient<DataOperationsWorkspaceShellPage>();
+        services.AddTransient<GovernanceWorkspaceShellPage>();
         services.AddTransient<RunRiskPage>();
 
         // ── Missing pages (registered for DI-aware navigation) ───────────────
@@ -387,9 +393,10 @@ public partial class App : System.Windows.Application
         services.AddSingleton(_ => Meridian.Ui.Services.BackfillService.Instance);
         services.AddSingleton(_ => WpfServices.TaskbarProgressService.Instance);
         services.AddSingleton(_ => WpfServices.TearOffPanelService.Instance);
-        services.AddSingleton(_ => WpfServices.StrategyRunWorkspaceService.Instance);
+        services.AddSingleton<WpfServices.FundLedgerReadService>();
 
         // ── ViewModels (transient — new instance per page navigation) ────────
+        services.AddTransient<Meridian.Wpf.ViewModels.FundProfileSelectionViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.BackfillViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.ProviderViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.DataQualityViewModel>();
@@ -399,6 +406,7 @@ public partial class App : System.Windows.Application
         services.AddTransient<Meridian.Wpf.ViewModels.StrategyRunDetailViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.StrategyRunPortfolioViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.StrategyRunLedgerViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.FundLedgerViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.RunRiskViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.PluginManagementViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.AgentViewModel>();
@@ -492,7 +500,8 @@ public partial class App : System.Windows.Application
         {
             var service = new WpfServices.StrategyRunWorkspaceService(
                 sp.GetRequiredService<IStrategyRepository>(),
-                sp.GetRequiredService<StrategyRunReadService>());
+                sp.GetRequiredService<StrategyRunReadService>(),
+                sp.GetRequiredService<WpfServices.FundContextService>());
             WpfServices.StrategyRunWorkspaceService.SetInstance(service);
             return service;
         });

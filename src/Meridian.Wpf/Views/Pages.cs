@@ -69,6 +69,7 @@ public partial class StrategyRunsPage : Page { }
 public partial class RunDetailPage : Page { }
 public partial class RunPortfolioPage : Page { }
 public partial class RunLedgerPage : Page { }
+public partial class FundLedgerPage : Page { }
 public partial class RunCashFlowPage : Page { }
 public partial class RunRiskPage : Page { }
 

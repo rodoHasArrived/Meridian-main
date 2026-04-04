@@ -1,9 +1,12 @@
+using System.IO;
 using FluentAssertions;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
+using Meridian.Strategies.Models;
 using Meridian.Strategies.Storage;
+using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.Tests.Services;
@@ -88,6 +91,136 @@ public sealed class StrategyRunWorkspaceServiceTests
             line.Symbol == "AAPL" &&
             line.Security != null &&
             line.Security.DisplayName == "Apple Inc.");
+    }
+
+    [Fact]
+    public async Task RecordBacktestRunAsync_WithActiveFund_StampsFundContextOnRunModels()
+    {
+        var fundContext = await CreateFundContextAsync();
+        var store = new StrategyRunStore();
+        var service = new StrategyRunWorkspaceService(
+            store,
+            new Meridian.Strategies.Services.PortfolioReadService(),
+            new Meridian.Strategies.Services.LedgerReadService(),
+            fundContext);
+
+        var runId = await service.RecordBacktestRunAsync(
+            new BacktestRequest(
+                From: new DateOnly(2026, 3, 1),
+                To: new DateOnly(2026, 3, 20),
+                Symbols: ["AAPL"],
+                InitialCash: 100_000m,
+                DataRoot: "./data/test"),
+            "Fund Scoped Backtest",
+            BuildResult());
+
+        var detail = await service.GetRunDetailAsync(runId);
+
+        detail.Should().NotBeNull();
+        detail!.Summary.FundProfileId.Should().Be("alpha-credit");
+        detail.Summary.FundDisplayName.Should().Be("Alpha Credit");
+        detail.Portfolio.Should().NotBeNull();
+        detail.Portfolio!.FundProfileId.Should().Be("alpha-credit");
+        detail.Ledger.Should().NotBeNull();
+        detail.Ledger!.FundProfileId.Should().Be("alpha-credit");
+    }
+
+    [Fact]
+    public async Task GetTradingSummaryAsync_WithActiveFund_FiltersLegacyRunsOutOfDefaultTradingPosture()
+    {
+        var fundContext = await CreateFundContextAsync();
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(new Meridian.Strategies.Models.StrategyRunEntry(
+            RunId: "fund-paper",
+            StrategyId: "alpha-1",
+            StrategyName: "Alpha",
+            RunType: RunType.Paper,
+            StartedAt: new DateTimeOffset(2026, 3, 21, 9, 0, 0, TimeSpan.Zero),
+            EndedAt: null,
+            Metrics: null,
+            FundProfileId: "alpha-credit",
+            FundDisplayName: "Alpha Credit"));
+        await store.RecordRunAsync(new Meridian.Strategies.Models.StrategyRunEntry(
+            RunId: "legacy-paper",
+            StrategyId: "legacy-1",
+            StrategyName: "Legacy",
+            RunType: RunType.Paper,
+            StartedAt: new DateTimeOffset(2026, 3, 21, 10, 0, 0, TimeSpan.Zero),
+            EndedAt: null,
+            Metrics: null));
+
+        var service = new StrategyRunWorkspaceService(
+            store,
+            new Meridian.Strategies.Services.PortfolioReadService(),
+            new Meridian.Strategies.Services.LedgerReadService(),
+            fundContext);
+
+        var summary = await service.GetTradingSummaryAsync();
+
+        summary.PaperRunCount.Should().Be(1);
+        summary.LiveRunCount.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task FundLedgerReadService_GetAsync_BuildsConsolidatedSummaryForSelectedFund()
+    {
+        var fundContext = await CreateFundContextAsync();
+        var store = new StrategyRunStore();
+        var runService = new StrategyRunWorkspaceService(
+            store,
+            new Meridian.Strategies.Services.PortfolioReadService(),
+            new Meridian.Strategies.Services.LedgerReadService(),
+            fundContext);
+        await runService.RecordBacktestRunAsync(
+            new BacktestRequest(
+                From: new DateOnly(2026, 3, 1),
+                To: new DateOnly(2026, 3, 20),
+                Symbols: ["AAPL"],
+                InitialCash: 100_000m,
+                DataRoot: "./data/test"),
+            "Ledger Fund Run",
+            BuildResult());
+
+        var ledgerService = new FundLedgerReadService(runService, fundContext);
+
+        var summary = await ledgerService.GetAsync(new FundLedgerQuery(
+            FundProfileId: "alpha-credit",
+            ScopeKind: FundLedgerScope.Consolidated));
+
+        summary.Should().NotBeNull();
+        summary!.FundProfileId.Should().Be("alpha-credit");
+        summary.FundDisplayName.Should().Be("Alpha Credit");
+        summary.JournalEntryCount.Should().Be(2);
+        summary.LedgerEntryCount.Should().BeGreaterThan(0);
+        summary.TrialBalance.Should().NotBeEmpty();
+        summary.Journal.Should().HaveCount(2);
+        summary.EntityCount.Should().Be(1);
+        summary.SleeveCount.Should().Be(1);
+        summary.VehicleCount.Should().Be(1);
+    }
+
+    private static async Task<FundContextService> CreateFundContextAsync()
+    {
+        var storagePath = Path.Combine(
+            Path.GetTempPath(),
+            "meridian-fund-context-tests",
+            $"{Guid.NewGuid():N}.json");
+
+        var service = new FundContextService(storagePath);
+        await service.UpsertProfileAsync(new FundProfileDetail(
+            FundProfileId: "alpha-credit",
+            DisplayName: "Alpha Credit",
+            LegalEntityName: "Alpha Credit Master Fund LP",
+            BaseCurrency: "USD",
+            DefaultWorkspaceId: "governance",
+            DefaultLandingPageTag: "GovernanceShell",
+            DefaultLedgerScope: FundLedgerScope.Consolidated,
+            EntityIds: ["entity-1"],
+            SleeveIds: ["sleeve-1"],
+            VehicleIds: ["vehicle-1"],
+            IsDefault: true));
+        await service.SelectFundProfileAsync("alpha-credit");
+        return service;
     }
 
     private static BacktestResult BuildResult()

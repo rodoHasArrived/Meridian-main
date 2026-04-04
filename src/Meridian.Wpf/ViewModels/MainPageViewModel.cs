@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Ui.Services.Services;
 using Meridian.Wpf.Contracts;
+using Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.ViewModels;
 
@@ -28,12 +29,15 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         {
             ["ResearchShell"] = new("Research Workspace", "Start from strategy runs, charts, replay, and analysis workflows."),
             ["TradingShell"] = new("Trading Workspace", "Start from live posture, positions, risk, and execution workflows."),
-            ["Dashboard"] = new("Dashboard", "High-trust operator view with live posture, alerts, and action shortcuts."),
+            ["DataOperationsShell"] = new("Data Operations Workspace", "Start from provider posture, backfills, symbols, and storage operations."),
+            ["GovernanceShell"] = new("Governance Workspace", "Start from quality posture, diagnostics, alerts, and control workflows."),
+            ["Dashboard"] = new("System Overview", "Legacy cross-workspace posture page for broad operational review."),
             ["Watchlist"] = new("Watchlist", "Track symbols, shortlist trade ideas, and stage new monitoring targets."),
             ["StrategyRuns"] = new("Strategy Runs", "Browse recorded runs and drill into outcomes across research workflows."),
             ["RunDetail"] = new("Run Detail", "Inspect the selected strategy run, diagnostics, and final execution state."),
             ["RunPortfolio"] = new("Run Portfolio", "Review portfolio holdings, exposure, and position detail for the selected run."),
             ["RunLedger"] = new("Run Ledger", "Inspect ledger entries, postings, and financial reconciliation for the selected run."),
+            ["FundLedger"] = new("Fund Ledger", "Inspect consolidated and scoped ledger balances for the active fund."),
             ["RunCashFlow"] = new("Run Cash Flow", "Review cash movement, projections, and funding impact for the selected run."),
             ["Charts"] = new("Charts", "Visualize price action, overlays, and investigation snapshots."),
             ["QuantScript"] = new("Quant Script", "Prototype research logic and iterate on calculations inside the workstation."),
@@ -89,20 +93,21 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         {
             ["research"] = "ResearchShell",
             ["trading"] = "TradingShell",
-            ["data-operations"] = "Provider",
-            ["governance"] = "DataQuality"
+            ["data-operations"] = "DataOperationsShell",
+            ["governance"] = "GovernanceShell"
         };
 
     private readonly INavigationService _navigationService;
     private readonly FixtureModeDetector _fixtureModeDetector;
+    private readonly FundContextService _fundContextService;
     private readonly ObservableCollection<string> _commandPalettePages = [];
     private readonly ObservableCollection<RecentPageEntry> _recentPages = [];
     private bool _suppressNavigation;
 
     private string _currentWorkspace = DefaultWorkspace;
     private string _currentPageTag = DefaultPageTag;
-    private string _currentPageTitle = "Dashboard";
-    private string _currentPageSubtitle = "High-trust operator view with live posture, alerts, and action shortcuts.";
+    private string _currentPageTitle = "Research Workspace";
+    private string _currentPageSubtitle = "Start from strategy runs, charts, replay, and analysis workflows.";
     private bool _tickerStripVisible;
     private Visibility _commandPaletteVisibility = Visibility.Collapsed;
     private string _commandPaletteQuery = string.Empty;
@@ -111,11 +116,18 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     private Visibility _recentPagesEmptyVisibility = Visibility.Visible;
     private Visibility _fixtureModeBannerVisibility = Visibility.Collapsed;
     private string _fixtureModeBannerText = string.Empty;
+    private string _activeFundName = "Select Fund";
+    private string _activeFundSubtitle = "Fund context required";
+    private Visibility _activeFundVisibility = Visibility.Collapsed;
 
-    public MainPageViewModel(INavigationService navigationService, FixtureModeDetector fixtureModeDetector)
+    public MainPageViewModel(
+        INavigationService navigationService,
+        FixtureModeDetector fixtureModeDetector,
+        FundContextService? fundContextService = null)
     {
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         _fixtureModeDetector = fixtureModeDetector ?? throw new ArgumentNullException(nameof(fixtureModeDetector));
+        _fundContextService = fundContextService ?? FundContextService.Instance;
 
         SplitPane = new SplitPaneViewModel();
         CommandPalettePages = new ReadOnlyObservableCollection<string>(_commandPalettePages);
@@ -132,9 +144,11 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         GoBackCommand = new RelayCommand(GoBack, () => _navigationService.CanGoBack);
         RefreshPageCommand = new RelayCommand(RefreshCurrentPage);
         DismissFixtureModeBannerCommand = new RelayCommand(() => FixtureModeBannerVisibility = Visibility.Collapsed);
+        SwitchFundCommand = new RelayCommand(() => _fundContextService.RequestSwitchFund());
 
         _navigationService.Navigated += OnNavigated;
         _fixtureModeDetector.ModeChanged += OnFixtureModeChanged;
+        _fundContextService.ActiveFundProfileChanged += OnActiveFundProfileChanged;
 
         var initialPage = _navigationService.GetBreadcrumbs().FirstOrDefault()?.PageTag ?? GetWorkspaceHomePageTag(DefaultWorkspace);
         ApplyCurrentPage(initialPage);
@@ -142,6 +156,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         RefreshRecentPages();
         SyncNavigationState();
         UpdateFixtureModeBanner();
+        UpdateActiveFundDisplay();
     }
 
     public INavigationService NavigationService => _navigationService;
@@ -173,6 +188,8 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     public IRelayCommand RefreshPageCommand { get; }
 
     public IRelayCommand DismissFixtureModeBannerCommand { get; }
+
+    public IRelayCommand SwitchFundCommand { get; }
 
     public string CurrentWorkspace
     {
@@ -298,6 +315,24 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         private set => SetProperty(ref _fixtureModeBannerText, value);
     }
 
+    public string ActiveFundName
+    {
+        get => _activeFundName;
+        private set => SetProperty(ref _activeFundName, value);
+    }
+
+    public string ActiveFundSubtitle
+    {
+        get => _activeFundSubtitle;
+        private set => SetProperty(ref _activeFundSubtitle, value);
+    }
+
+    public Visibility ActiveFundVisibility
+    {
+        get => _activeFundVisibility;
+        private set => SetProperty(ref _activeFundVisibility, value);
+    }
+
     public void ActivateShell()
     {
         if (_navigationService.GetBreadcrumbs().Count == 0)
@@ -319,6 +354,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     {
         _navigationService.Navigated -= OnNavigated;
         _fixtureModeDetector.ModeChanged -= OnFixtureModeChanged;
+        _fundContextService.ActiveFundProfileChanged -= OnActiveFundProfileChanged;
     }
 
     private void OnNavigated(object? sender, NavigationEventArgs e)
@@ -344,6 +380,11 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     private void OnFixtureModeChanged(object? sender, EventArgs e)
     {
         UpdateFixtureModeBanner();
+    }
+
+    private void OnActiveFundProfileChanged(object? sender, FundProfileChangedEventArgs e)
+    {
+        UpdateActiveFundDisplay();
     }
 
     private void SelectWorkspace(string? workspace, bool navigateToHome = false)
@@ -392,7 +433,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         "LiveData" or "TradingShell" or "TradingHours"
             => "trading",
 
-        "Provider" or "DataSources" or "Symbols" or "Backfill" or "Storage"
+        "DataOperationsShell" or "Provider" or "DataSources" or "Symbols" or "Backfill" or "Storage"
             or "DataExport" or "PackageManager" or "Schedules" or "DataBrowser"
             or "DataCalendar" or "DataSampling" or "TimeSeriesAlignment"
             or "ExportPresets" or "IndexSubscription" or "SymbolMapping" or "SymbolStorage"
@@ -400,9 +441,9 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             or "PortfolioImport"
             => "data-operations",
 
-        "DataQuality" or "ProviderHealth" or "SystemHealth" or "Diagnostics"
+        "GovernanceShell" or "DataQuality" or "ProviderHealth" or "SystemHealth" or "Diagnostics"
             or "Settings" or "AdminMaintenance" or "RetentionAssurance"
-            or "NotificationCenter" or "Help" or "RunLedger" or "ArchiveHealth"
+            or "NotificationCenter" or "Help" or "RunLedger" or "FundLedger" or "ArchiveHealth"
             or "ServiceManager" or "CollectionSessions" or "StorageOptimization"
             or "ActivityLog" or "MessagingHub" or "SecurityMaster" or "DirectLending"
             or "CredentialManagement" or "SetupWizard" or "KeyboardShortcuts"
@@ -492,6 +533,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     {
         var query = CommandPaletteQuery.Trim();
         var pages = _navigationService.GetRegisteredPages()
+            .Where(page => !ShouldHideFromDefaultPalette(page, query))
             .Where(page => string.IsNullOrWhiteSpace(query)
                 || page.Contains(query, StringComparison.OrdinalIgnoreCase)
                 || (PageData.TryGetValue(page, out var pd) && pd.Title.Contains(query, StringComparison.OrdinalIgnoreCase)))
@@ -536,16 +578,38 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         FixtureModeBannerText = _fixtureModeDetector.ModeLabel;
     }
 
+    private void UpdateActiveFundDisplay()
+    {
+        var activeFund = _fundContextService.CurrentFundProfile;
+        if (activeFund is null)
+        {
+            ActiveFundName = "Select Fund";
+            ActiveFundSubtitle = "Fund context required";
+            ActiveFundVisibility = Visibility.Collapsed;
+            return;
+        }
+
+        ActiveFundName = activeFund.DisplayName;
+        ActiveFundSubtitle = $"{activeFund.LegalEntityName} · {activeFund.BaseCurrency}";
+        ActiveFundVisibility = Visibility.Visible;
+    }
+
     private static int GetCommandPaletteSortBucket(string pageTag)
         => pageTag switch
         {
             "ResearchShell" => 0,
             "TradingShell" => 1,
-            "Provider" => 2,
-            "DataQuality" => 3,
-            "Dashboard" => 4,
-            _ => 5
+            "DataOperationsShell" => 2,
+            "GovernanceShell" => 3,
+            "Provider" => 4,
+            "DataQuality" => 5,
+            "Dashboard" => 98,
+            _ => 7
         };
+
+    private static bool ShouldHideFromDefaultPalette(string pageTag, string query)
+        => string.IsNullOrWhiteSpace(query)
+           && pageTag is "Dashboard" or "DashboardWeb" or "Workspaces" or "Welcome";
 
     private static string GetWorkspaceHomePageTag(string workspace)
         => WorkspaceHomePageTags.TryGetValue(workspace, out var pageTag)

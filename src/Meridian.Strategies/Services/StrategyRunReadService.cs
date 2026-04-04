@@ -292,7 +292,9 @@ public sealed class StrategyRunReadService
             AuditReference: run.AuditReference,
             Execution: BuildExecutionSummary(run),
             Promotion: BuildPromotionSummary(run),
-            Governance: BuildGovernanceSummary(run));
+            Governance: BuildGovernanceSummary(run),
+            FundProfileId: run.FundProfileId,
+            FundDisplayName: run.FundDisplayName);
     }
 
     private static StrategyRunExecutionSummary BuildExecutionSummary(StrategyRunEntry run)

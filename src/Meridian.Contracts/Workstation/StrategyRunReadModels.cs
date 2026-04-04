@@ -117,7 +117,9 @@ public sealed record StrategyRunSummary(
     string? AuditReference = null,
     StrategyRunExecutionSummary? Execution = null,
     StrategyRunPromotionSummary? Promotion = null,
-    StrategyRunGovernanceSummary? Governance = null);
+    StrategyRunGovernanceSummary? Governance = null,
+    string? FundProfileId = null,
+    string? FundDisplayName = null);
 
 /// <summary>
 /// Expanded detail for a single run, including derived portfolio and ledger views.
@@ -165,7 +167,8 @@ public sealed record PortfolioSummary(
     decimal Financing,
     IReadOnlyList<PortfolioPositionSummary> Positions,
     int SecurityResolvedCount = 0,
-    int SecurityMissingCount = 0);
+    int SecurityMissingCount = 0,
+    string? FundProfileId = null);
 
 /// <summary>
 /// Shared position row for workstation portfolio views.
@@ -196,7 +199,8 @@ public sealed record LedgerSummary(
     IReadOnlyList<LedgerTrialBalanceLine> TrialBalance,
     IReadOnlyList<LedgerJournalLine> Journal,
     int SecurityResolvedCount = 0,
-    int SecurityMissingCount = 0);
+    int SecurityMissingCount = 0,
+    string? FundProfileId = null);
 
 /// <summary>
 /// Shared trial-balance row for workstation ledger views.

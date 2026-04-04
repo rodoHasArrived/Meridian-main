@@ -1,0 +1,269 @@
+<Page x:Class="Meridian.Wpf.Views.DataOperationsWorkspaceShellPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:views="clr-namespace:Meridian.Wpf.Views"
+      mc:Ignorable="d"
+      d:DesignHeight="900" d:DesignWidth="1400"
+      Background="{DynamicResource ConsoleBackgroundDarkBrush}"
+      Loaded="OnPageLoaded"
+      Unloaded="OnPageUnloaded"
+      AutomationProperties.Name="Data Operations Workspace"
+      AutomationProperties.AutomationId="DataOperationsWorkspaceShellPage">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" MinHeight="200" />
+        </Grid.RowDefinitions>
+
+        <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
+            <StackPanel MaxWidth="1400">
+
+                <Border Style="{StaticResource WorkspaceShellHeaderCardStyle}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Orientation="Horizontal">
+                            <Border Width="44" Height="44" CornerRadius="14"
+                                    Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                                    BorderBrush="{StaticResource InfoColorBrush}" BorderThickness="1">
+                                <TextBlock Text="&#xE896;" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                           FontSize="24" Foreground="{StaticResource InfoColorBrush}"
+                                           VerticalAlignment="Center" HorizontalAlignment="Center" />
+                            </Border>
+                            <StackPanel Margin="12,0,0,0">
+                                <TextBlock Text="Data Operations" Style="{StaticResource PageTitleStyle}" />
+                                <TextBlock Text="Providers, backfills, symbols, and storage operations from one operator landing surface"
+                                           Style="{StaticResource CardDescriptionStyle}" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,4,0">
+                            <Border Style="{StaticResource WorkspaceKpiTileStyle}" Margin="0,0,12,0"
+                                    ToolTip="Current provider posture across the configured stack">
+                                <StackPanel>
+                                    <TextBlock Text="Ready" FontSize="20" FontWeight="Bold"
+                                               Foreground="{StaticResource SuccessColorBrush}"
+                                               HorizontalAlignment="Center" />
+                                    <TextBlock Text="Provider Posture" FontSize="11"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                               HorizontalAlignment="Center" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource WorkspaceKpiTileStyle}" Margin="0,0,12,0"
+                                    ToolTip="Historical ingestion work that should be reviewed next">
+                                <StackPanel>
+                                    <TextBlock Text="Queue" FontSize="20" FontWeight="Bold"
+                                               Foreground="{StaticResource WarningColorBrush}"
+                                               HorizontalAlignment="Center" />
+                                    <TextBlock Text="Backfills" FontSize="11"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                               HorizontalAlignment="Center" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource WorkspaceKpiTileStyle}"
+                                    ToolTip="Storage, packages, and collection sessions requiring operator attention">
+                                <StackPanel>
+                                    <TextBlock Text="Watch" FontSize="20" FontWeight="Bold"
+                                               Foreground="{StaticResource InfoColorBrush}"
+                                               HorizontalAlignment="Center" />
+                                    <TextBlock Text="Storage Watch" FontSize="11"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                               HorizontalAlignment="Center" />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource WorkspaceSectionCardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="Quick Actions" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,16" />
+                        <WrapPanel Orientation="Horizontal">
+                            <Button Content="&#xE8B9;  Providers"
+                                    Click="OpenProviders_Click"
+                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    Margin="0,0,12,8"
+                                    AutomationProperties.Name="Open Providers" />
+                            <Button Content="&#xE896;  Run Backfill"
+                                    Click="OpenBackfill_Click"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Margin="0,0,12,8"
+                                    AutomationProperties.Name="Open Backfill" />
+                            <Button Content="&#xE8EF;  Manage Symbols"
+                                    Click="OpenSymbols_Click"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Margin="0,0,12,8"
+                                    AutomationProperties.Name="Open Symbols" />
+                            <Button Content="&#xE8B7;  Review Storage"
+                                    Click="OpenStorage_Click"
+                                    Style="{StaticResource GhostButtonStyle}"
+                                    Margin="0,0,12,8"
+                                    AutomationProperties.Name="Open Storage" />
+                            <Button Content="&#xE823;  Collection Sessions"
+                                    Click="OpenCollectionSessions_Click"
+                                    Style="{StaticResource GhostButtonStyle}"
+                                    Margin="0,0,0,8"
+                                    AutomationProperties.Name="Open Collection Sessions" />
+                        </WrapPanel>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource WorkspaceSectionCardStyle}">
+                    <StackPanel>
+                        <Grid Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Operational Focus" Style="{StaticResource CardHeaderStyle}" />
+                            <Button Grid.Column="1" Content="Provider Console" Click="OpenProviders_Click"
+                                    Style="{StaticResource LinkButtonStyle}" />
+                        </Grid>
+
+                        <Border Style="{StaticResource WorkspaceQueueItemCardStyle}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Provider posture"
+                                               FontSize="14" FontWeight="SemiBold"
+                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                    <TextBlock Text="Validate upstream reachability, dry-run routing, and fallback ordering before deeper ingestion work."
+                                               FontSize="11"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                               Margin="0,2,0,0" />
+                                </StackPanel>
+                                <Button Grid.Column="1" Content="Review"
+                                        Click="OpenProviders_Click"
+                                        Style="{StaticResource SecondaryButtonStyle}" />
+                            </Grid>
+                        </Border>
+
+                        <Border Style="{StaticResource WorkspaceQueueItemCardStyle}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Backfill queue"
+                                               FontSize="14" FontWeight="SemiBold"
+                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                    <TextBlock Text="Inspect historical gap fill work, resumable jobs, and provider priority before running new coverage requests."
+                                               FontSize="11"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                               Margin="0,2,0,0" />
+                                </StackPanel>
+                                <Button Grid.Column="1" Content="Open"
+                                        Click="OpenBackfill_Click"
+                                        Style="{StaticResource SecondaryButtonStyle}" />
+                            </Grid>
+                        </Border>
+
+                        <Border Style="{StaticResource WorkspaceQueueItemCardStyle}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Symbol coverage and storage"
+                                               FontSize="14" FontWeight="SemiBold"
+                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                    <TextBlock Text="Curate symbols, inspect persistence layout, and verify the storage posture before export or archive work."
+                                               FontSize="11"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                               Margin="0,2,0,0" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                    <Button Content="Symbols"
+                                            Click="OpenSymbols_Click"
+                                            Style="{StaticResource SecondaryButtonStyle}"
+                                            Margin="0,0,8,0" />
+                                    <Button Content="Storage"
+                                            Click="OpenStorage_Click"
+                                            Style="{StaticResource GhostButtonStyle}" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource WorkspaceSectionCardStyle}" Margin="0,0,0,0">
+                    <StackPanel>
+                        <Grid Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Recent Operations" Style="{StaticResource CardHeaderStyle}" />
+                            <Button Grid.Column="1" Content="All Sessions" Click="OpenCollectionSessions_Click"
+                                    Style="{StaticResource LinkButtonStyle}" />
+                        </Grid>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="16" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <Border Grid.Column="0" Style="{StaticResource WorkspaceQueueItemCardStyle}" Margin="0">
+                                <StackPanel>
+                                    <TextBlock Text="Collection sessions"
+                                               FontSize="14" FontWeight="SemiBold"
+                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                    <TextBlock Text="Review ingest session history, recovery posture, and recent collection state."
+                                               FontSize="11"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                               Margin="0,6,0,12" />
+                                    <Button Content="Open Sessions"
+                                            Click="OpenCollectionSessions_Click"
+                                            Style="{StaticResource SecondaryButtonStyle}"
+                                            HorizontalAlignment="Left" />
+                                </StackPanel>
+                            </Border>
+
+                            <Border Grid.Column="2" Style="{StaticResource WorkspaceQueueItemCardStyle}" Margin="0">
+                                <StackPanel>
+                                    <TextBlock Text="Package and export operations"
+                                               FontSize="14" FontWeight="SemiBold"
+                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                    <TextBlock Text="Move from prepared datasets into package and export workflows when operational handoff is required."
+                                               FontSize="11"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                               Margin="0,6,0,12" />
+                                    <Button Content="Open Packages"
+                                            Click="OpenPackageManager_Click"
+                                            Style="{StaticResource SecondaryButtonStyle}"
+                                            HorizontalAlignment="Left" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <Border Grid.Row="1" Margin="12,0,12,12" Style="{StaticResource WorkspaceDockHostStyle}">
+            <StackPanel>
+                <TextBlock Text="Workspace Panels"
+                           Style="{StaticResource CardHeaderStyle}"
+                           Margin="4,0,0,6" />
+                <views:MeridianDockingManager x:Name="DataOperationsDockManager"
+                                              Height="360"
+                                              PaneDropRequested="OnPaneDropRequested"
+                                              AutomationProperties.Name="Data Operations Dock Manager" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</Page>
