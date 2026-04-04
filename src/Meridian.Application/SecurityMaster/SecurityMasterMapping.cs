@@ -327,6 +327,7 @@ internal static class SecurityMasterMapping
         "PrincipalOnly"      => BondSubclass.PrincipalOnly,
         "InterestOnly"       => BondSubclass.InterestOnly,
         "InverseInterestOnly"=> BondSubclass.InverseInterestOnly,
+        "Corporate"          => BondSubclass.Corporate,
         null or ""           => BondSubclass.Corporate,
         var other            => BondSubclass.NewOther(other)
     };
