@@ -54,7 +54,7 @@ type BankStatementLine = {
 }
 
 [<RequireQualifiedAccess>]
-module FundAccountDetails =
+module FundAccountDetailsOps =
     let tryGetCustodian = function
         | FundAccountDetails.Custodian d -> Some d
         | _ -> None

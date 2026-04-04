@@ -11,11 +11,11 @@ type FundAccountDetailsInterop private () =
 
     /// Returns true when the details represent a custodian (DTC, CREST, Euroclear, etc.) account.
     static member IsCustodian(details: FundAccountDetails) =
-        FundAccountDetails.isCustodian details
+        FundAccountDetailsOps.isCustodian details
 
     /// Returns true when the details represent a bank (cash/money-market) account.
     static member IsBank(details: FundAccountDetails) =
-        FundAccountDetails.isBank details
+        FundAccountDetailsOps.isBank details
 
     /// Creates a CustodianAccountDetails-backed FundAccountDetails instance.
     static member CreateCustodian(
@@ -67,18 +67,18 @@ type FundAccountDetailsInterop private () =
 
     /// Returns the custodian sub-account number if present, otherwise null.
     static member GetCustodianSubAccountNumber(details: FundAccountDetails) : string =
-        match FundAccountDetails.tryGetCustodian details with
+        match FundAccountDetailsOps.tryGetCustodian details with
         | Some d -> d.SubAccountNumber |> Option.defaultValue null
         | None   -> null
 
     /// Returns the bank IBAN if present, otherwise null.
     static member GetBankIban(details: FundAccountDetails) : string =
-        match FundAccountDetails.tryGetBank details with
+        match FundAccountDetailsOps.tryGetBank details with
         | Some d -> d.Iban |> Option.defaultValue null
         | None   -> null
 
     /// Returns the bank BIC/SWIFT if present, otherwise null.
     static member GetBankBicSwift(details: FundAccountDetails) : string =
-        match FundAccountDetails.tryGetBank details with
+        match FundAccountDetailsOps.tryGetBank details with
         | Some d -> d.BicSwift |> Option.defaultValue null
         | None   -> null

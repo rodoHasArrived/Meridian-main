@@ -6,10 +6,10 @@ open Xunit
 open FsUnit.Xunit
 open Meridian.FSharp.Domain
 
-// ── FundAccountDetails helpers ────────────────────────────────────────────────
+// ── FundAccountDetailsOps helpers ─────────────────────────────────────────────
 
 [<Fact>]
-let ``FundAccountDetails.tryGetCustodian returns Some for Custodian case`` () =
+let ``FundAccountDetailsOps.tryGetCustodian returns Some for Custodian case`` () =
     let details = FundAccountDetails.Custodian {
         SubAccountNumber          = Some "SUB-001"
         DtcParticipantCode        = Some "0352"
@@ -20,12 +20,12 @@ let ``FundAccountDetails.tryGetCustodian returns Some for Custodian case`` () =
         SafekeepingLocation       = Some "DTC"
         ServiceAgreementReference = None
     }
-    let result = FundAccountDetails.tryGetCustodian details
+    let result = FundAccountDetailsOps.tryGetCustodian details
     result |> should not' (equal None)
     result.Value.SubAccountNumber |> should equal (Some "SUB-001")
 
 [<Fact>]
-let ``FundAccountDetails.tryGetCustodian returns None for Bank case`` () =
+let ``FundAccountDetailsOps.tryGetCustodian returns None for Bank case`` () =
     let details = FundAccountDetails.Bank {
         AccountNumber        = "00112233"
         BankName             = "JPMorgan"
@@ -39,10 +39,10 @@ let ``FundAccountDetails.tryGetCustodian returns None for Bank case`` () =
         BeneficiaryName      = None
         BeneficiaryAddress   = None
     }
-    FundAccountDetails.tryGetCustodian details |> should equal None
+    FundAccountDetailsOps.tryGetCustodian details |> should equal None
 
 [<Fact>]
-let ``FundAccountDetails.tryGetBank returns Some for Bank case`` () =
+let ``FundAccountDetailsOps.tryGetBank returns Some for Bank case`` () =
     let details = FundAccountDetails.Bank {
         AccountNumber        = "99887766"
         BankName             = "Barclays"
@@ -56,12 +56,12 @@ let ``FundAccountDetails.tryGetBank returns Some for Bank case`` () =
         BeneficiaryName      = Some "Meridian Fund I LP"
         BeneficiaryAddress   = None
     }
-    let result = FundAccountDetails.tryGetBank details
+    let result = FundAccountDetailsOps.tryGetBank details
     result |> should not' (equal None)
     result.Value.SortCode |> should equal (Some "20-32-53")
 
 [<Fact>]
-let ``FundAccountDetails.tryGetBank returns None for Custodian case`` () =
+let ``FundAccountDetailsOps.tryGetBank returns None for Custodian case`` () =
     let details = FundAccountDetails.Custodian {
         SubAccountNumber          = None
         DtcParticipantCode        = None
@@ -72,10 +72,10 @@ let ``FundAccountDetails.tryGetBank returns None for Custodian case`` () =
         SafekeepingLocation       = None
         ServiceAgreementReference = None
     }
-    FundAccountDetails.tryGetBank details |> should equal None
+    FundAccountDetailsOps.tryGetBank details |> should equal None
 
 [<Fact>]
-let ``FundAccountDetails.isCustodian returns true for Custodian case`` () =
+let ``FundAccountDetailsOps.isCustodian returns true for Custodian case`` () =
     let details = FundAccountDetails.Custodian {
         SubAccountNumber          = None
         DtcParticipantCode        = None
@@ -86,10 +86,10 @@ let ``FundAccountDetails.isCustodian returns true for Custodian case`` () =
         SafekeepingLocation       = None
         ServiceAgreementReference = None
     }
-    FundAccountDetails.isCustodian details |> should equal true
+    FundAccountDetailsOps.isCustodian details |> should equal true
 
 [<Fact>]
-let ``FundAccountDetails.isBank returns true for Bank case`` () =
+let ``FundAccountDetailsOps.isBank returns true for Bank case`` () =
     let details = FundAccountDetails.Bank {
         AccountNumber        = "123"
         BankName             = "Test Bank"
@@ -98,7 +98,7 @@ let ``FundAccountDetails.isBank returns true for Bank case`` () =
         IntermediaryBankBic  = None; IntermediaryBankName = None
         BeneficiaryName      = None; BeneficiaryAddress = None
     }
-    FundAccountDetails.isBank details |> should equal true
+    FundAccountDetailsOps.isBank details |> should equal true
 
 // ── FundStructure account query helpers ───────────────────────────────────────
 
