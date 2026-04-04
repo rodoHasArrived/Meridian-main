@@ -1600,6 +1600,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Treasury
 │   │   │   └── MoneyMarketFundDtos.cs
 │   │   └── Workstation
+│   │       ├── FundLedgerDtos.cs
 │   │       ├── ReconciliationDtos.cs
 │   │       ├── SecurityMasterWorkstationDtos.cs
 │   │       └── StrategyRunReadModels.cs
@@ -2658,6 +2659,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── BlotterModels.cs
 │       │   ├── DashboardModels.cs
 │       │   ├── DataQualityModels.cs
+│       │   ├── FundProfileModels.cs
 │       │   ├── LeanModels.cs
 │       │   ├── LiveDataModels.cs
 │       │   ├── NotificationModels.cs
@@ -2691,8 +2693,11 @@ Use these documents together when planning or implementing new work:
 │       │   ├── ExportPresetService.cs
 │       │   ├── FirstRunService.cs
 │       │   ├── FormValidationService.cs
+│       │   ├── FundContextService.cs
+│       │   ├── FundLedgerReadService.cs
 │       │   ├── GlobalHotkeyService.cs
 │       │   ├── ICommandContextProvider.cs
+│       │   ├── IFundProfileCatalog.cs
 │       │   ├── IQuantScriptLayoutService.cs
 │       │   ├── InfoBarService.cs
 │       │   ├── JumpListService.cs
@@ -2760,6 +2765,8 @@ Use these documents together when planning or implementing new work:
 │       │   ├── EventReplayViewModel.cs
 │       │   ├── ExportPresetsViewModel.cs
 │       │   ├── FundAccountsViewModel.cs
+│       │   ├── FundLedgerViewModel.cs
+│       │   ├── FundProfileSelectionViewModel.cs
 │       │   ├── IPageActionBarProvider.cs
 │       │   ├── IndexSubscriptionViewModel.cs
 │       │   ├── LeanIntegrationViewModel.cs
@@ -2851,6 +2858,8 @@ Use these documents together when planning or implementing new work:
 │           ├── DataCalendarPage.xaml.cs
 │           ├── DataExportPage.xaml
 │           ├── DataExportPage.xaml.cs
+│           ├── DataOperationsWorkspaceShellPage.xaml
+│           ├── DataOperationsWorkspaceShellPage.xaml.cs
 │           ├── DataQualityPage.xaml
 │           ├── DataQualityPage.xaml.cs
 │           ├── DataSamplingPage.xaml
@@ -2870,6 +2879,12 @@ Use these documents together when planning or implementing new work:
 │           ├── ExportPresetsPage.xaml.cs
 │           ├── FundAccountsPage.xaml
 │           ├── FundAccountsPage.xaml.cs
+│           ├── FundLedgerPage.xaml
+│           ├── FundLedgerPage.xaml.cs
+│           ├── FundProfileSelectionPage.xaml
+│           ├── FundProfileSelectionPage.xaml.cs
+│           ├── GovernanceWorkspaceShellPage.xaml
+│           ├── GovernanceWorkspaceShellPage.xaml.cs
 │           ├── HelpPage.xaml
 │           ├── HelpPage.xaml.cs
 │           ├── IndexSubscriptionPage.xaml
@@ -2976,6 +2991,26 @@ Use these documents together when planning or implementing new work:
 │           ├── WelcomePage.xaml.cs
 │           ├── WorkspacePage.xaml
 │           └── WorkspacePage.xaml.cs
+├── temp
+│   ├── UiProbe
+│   │   ├── Program.cs
+│   │   └── UiProbe.csproj
+│   ├── dataquality-triage-verification-fixed.png
+│   ├── dataquality-triage-verification.png
+│   ├── meridian-ui-debug-2.png
+│   ├── meridian-ui-debug-3.png
+│   ├── meridian-ui-debug-4.png
+│   ├── meridian-ui-debug-5.png
+│   ├── meridian-ui-debug.png
+│   ├── patch1-verification.png
+│   ├── patch2-verification.png
+│   ├── patch3-before-switch.png
+│   ├── patch3-dataops-verification-2.png
+│   ├── patch3-dataops-verification.png
+│   ├── patch4-governance-verification-2.png
+│   ├── patch4-governance-verification-automation.png
+│   ├── patch4-governance-verification.png
+│   └── shell-cleanup-verification.png
 ├── tests
 │   ├── Directory.Build.props
 │   ├── Meridian.Backtesting.Tests
@@ -3513,6 +3548,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── RunMatViewModelTests.cs
 │   │   │   └── StrategyRunBrowserViewModelTests.cs
 │   │   └── Views
+│   │       ├── DashboardPageSmokeTests.cs
 │   │       ├── QuantScriptPageTests.cs
 │   │       ├── RunMatUiSmokeTests.cs
 │   │       ├── RunMatWorkflowSmokeTests.cs
@@ -3524,6 +3560,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-465 directories, 2931 files
+467 directories, 2965 files
 ```
 <!-- readme-tree end -->
