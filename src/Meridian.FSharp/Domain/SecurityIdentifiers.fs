@@ -143,16 +143,23 @@ module SecurityIdentifier =
         else
             // Rearrange: move first 4 chars to end, then expand letters to digits
             let rearranged = v.[4..] + v.[..3]
-            let numericStr =
+            let numericParts =
                 rearranged
                 |> Seq.map (fun c ->
-                    if c >= 'A' && c <= 'Z' then string (int c - int 'A' + 10)
-                    elif c >= '0' && c <= '9' then string (int c - int '0')
-                    else "")
-                |> String.concat ""
-            // MOD 97 on large integer via chunked processing
-            let mutable remainder = 0
-            for chunk in numericStr |> Seq.chunkBySize 9 do
-                let n = System.Int64.Parse(string remainder + System.String(chunk))
-                remainder <- int (n % 97L)
-            remainder = 1
+                    if c >= 'A' && c <= 'Z' then Some (string (int c - int 'A' + 10))
+                    elif c >= '0' && c <= '9' then Some (string (int c - int '0'))
+                    else None)
+                |> Seq.toArray
+            if numericParts |> Array.contains None then
+                false
+            else
+                let numericStr =
+                    numericParts
+                    |> Array.choose id
+                    |> String.concat ""
+                // MOD 97 on large integer via chunked processing
+                let mutable remainder = 0
+                for chunk in numericStr |> Seq.chunkBySize 9 do
+                    let n = System.Int64.Parse(string remainder + System.String(chunk))
+                    remainder <- int (n % 97L)
+                remainder = 1
