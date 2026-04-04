@@ -49,6 +49,7 @@ type OwnershipRelationshipType =
     | ClearsFor
     | CustodiesFor
     | AllocatesTo
+    | BanksFor
 
 type StructureNode = {
     NodeId: StructureNodeId
@@ -106,6 +107,39 @@ type LegalEntityDefinition = {
     IsActive: bool
 }
 
+/// Custody-specific settlement details attached to an AccountDefinition where AccountType = Custody.
+type CustodianAccountDetails = {
+    SubAccountNumber: string option
+    DtcParticipantCode: string option
+    CrestMemberCode: string option
+    EuroclearAccountNumber: string option
+    ClearstreamAccountNumber: string option
+    PrimebrokerGiveupCode: string option
+    SafekeepingLocation: string option          // e.g. "DTC" | "CREST" | "EUROCLEAR"
+    ServiceAgreementReference: string option
+}
+
+/// Banking-specific settlement details attached to an AccountDefinition where AccountType = Bank.
+type BankAccountDetails = {
+    AccountNumber: string
+    BankName: string
+    BranchName: string option
+    Iban: string option
+    BicSwift: string option
+    RoutingNumber: string option                // US ABA routing
+    SortCode: string option                     // UK sort code
+    IntermediaryBankBic: string option
+    IntermediaryBankName: string option
+    BeneficiaryName: string option
+    BeneficiaryAddress: string option
+}
+
+/// Extended account details discriminated by settlement network type.
+[<RequireQualifiedAccess>]
+type FundAccountDetails =
+    | Custodian of CustodianAccountDetails
+    | Bank of BankAccountDetails
+
 type AccountDefinition = {
     AccountId: AccountId
     AccountType: AccountType
@@ -124,6 +158,8 @@ type AccountDefinition = {
     LedgerReference: string option
     StrategyId: string option
     RunId: string option
+    // Populated for Custody and Bank account types; None for Brokerage/Margin/LedgerControl
+    AccountDetails: FundAccountDetails option
 }
 
 type OwnershipLink = {
@@ -163,3 +199,17 @@ module FundStructure =
 
     let assignmentIsActiveAt asOf (assignment: StructureAssignment) =
         isActiveAt asOf assignment.EffectiveFrom assignment.EffectiveTo true
+
+    /// Returns ownership links where the fund is the parent and the relationship is CustodiesFor.
+    let custodianAccountsForFund (fundNodeId: StructureNodeId) (links: OwnershipLink seq) =
+        links
+        |> Seq.filter (fun l ->
+            l.ParentNodeId = fundNodeId
+            && l.RelationshipType = OwnershipRelationshipType.CustodiesFor)
+
+    /// Returns ownership links where the fund is the parent and the relationship is BanksFor.
+    let bankAccountsForFund (fundNodeId: StructureNodeId) (links: OwnershipLink seq) =
+        links
+        |> Seq.filter (fun l ->
+            l.ParentNodeId = fundNodeId
+            && l.RelationshipType = OwnershipRelationshipType.BanksFor)
