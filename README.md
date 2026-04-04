@@ -1038,6 +1038,7 @@ Use these documents together when planning or implementing new work:
 │   ├── dev
 │   │   ├── build-ibapi-smoke.ps1
 │   │   ├── capture-desktop-screenshots.ps1
+│   │   ├── cleanup-generated.ps1
 │   │   ├── desktop-dev.ps1
 │   │   ├── diagnose-uwp-xaml.ps1
 │   │   └── install-git-hooks.sh
@@ -1601,6 +1602,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── MoneyMarketFundDtos.cs
 │   │   └── Workstation
 │   │       ├── FundLedgerDtos.cs
+│   │       ├── FundOperationsDtos.cs
 │   │       ├── ReconciliationDtos.cs
 │   │       ├── SecurityMasterWorkstationDtos.cs
 │   │       └── StrategyRunReadModels.cs
@@ -2683,6 +2685,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── BackgroundTaskSchedulerService.cs
 │       │   ├── BacktestService.cs
 │       │   ├── BrushRegistry.cs
+│       │   ├── CashFinancingReadService.cs
 │       │   ├── ClipboardWatcherService.cs
 │       │   ├── ConfigService.cs
 │       │   ├── ConnectionService.cs
@@ -2693,8 +2696,10 @@ Use these documents together when planning or implementing new work:
 │       │   ├── ExportPresetService.cs
 │       │   ├── FirstRunService.cs
 │       │   ├── FormValidationService.cs
+│       │   ├── FundAccountReadService.cs
 │       │   ├── FundContextService.cs
 │       │   ├── FundLedgerReadService.cs
+│       │   ├── FundProfileKeyTranslator.cs
 │       │   ├── GlobalHotkeyService.cs
 │       │   ├── ICommandContextProvider.cs
 │       │   ├── IFundProfileCatalog.cs
@@ -2709,6 +2714,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── OfflineTrackingPersistenceService.cs
 │       │   ├── PendingOperationsQueueService.cs
 │       │   ├── QuantScriptLayoutService.cs
+│       │   ├── ReconciliationReadService.cs
 │       │   ├── RetentionAssuranceService.cs
 │       │   ├── RunMatService.cs
 │       │   ├── SchemaService.cs
@@ -3515,6 +3521,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Meridian.Wpf.Tests.csproj
 │   │   ├── Services
 │   │   │   ├── AdminMaintenanceServiceTests.cs
+│   │   │   ├── AppServiceRegistrationTests.cs
 │   │   │   ├── BackgroundTaskSchedulerServiceTests.cs
 │   │   │   ├── ConfigServiceTests.cs
 │   │   │   ├── ConnectionServiceTests.cs
@@ -3540,9 +3547,11 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── FakeScriptRunner.cs
 │   │   │   ├── RunMatUiAutomationFacade.cs
 │   │   │   └── WpfTestThread.cs
+│   │   ├── TestAssemblyConfiguration.cs
 │   │   ├── ViewModels
 │   │   │   ├── CashFlowViewModelTests.cs
 │   │   │   ├── DataQualityViewModelCharacterizationTests.cs
+│   │   │   ├── FundLedgerViewModelTests.cs
 │   │   │   ├── MainShellViewModelTests.cs
 │   │   │   ├── QuantScriptViewModelTests.cs
 │   │   │   ├── RunMatViewModelTests.cs
@@ -3560,6 +3569,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-467 directories, 2965 files
+467 directories, 2974 files
 ```
 <!-- readme-tree end -->
