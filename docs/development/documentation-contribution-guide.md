@@ -394,7 +394,7 @@ Include descriptive text, not bare URLs:
 See `src/Meridian.Core/Config/AppConfig.cs` for implementation.
 
 # Reference other docs
-See [ROADMAP Phase 6](../status/ROADMAP.md#phase-6-duplicate--unused-code-cleanup).
+See [ROADMAP](../status/ROADMAP.md).
 
 # Reference external resources
 Based on [ADR-001](../adr/001-provider-abstraction.md).
@@ -713,4 +713,4 @@ If you have questions about documentation standards or suggestions for improveme
 
 ---
 
-*This guide is maintained as part of [Phase 8A documentation organization](../status/ROADMAP.md#phase-8-repository-organization--optimization).*
+*This guide is maintained as part of [documentation organization efforts](../status/ROADMAP.md).*

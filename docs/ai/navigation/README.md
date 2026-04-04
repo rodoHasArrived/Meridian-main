@@ -20,7 +20,7 @@ Meridian is large enough that broad recursive searching creates avoidable cost, 
 |----------|-----|
 | [`../generated/repo-navigation.json`](../generated/repo-navigation.json) | Canonical machine-readable repo map |
 | [`../generated/repo-navigation.md`](../generated/repo-navigation.md) | Human-readable routing digest |
-| [`../../build/scripts/docs/generate-ai-navigation.py`](../../build/scripts/docs/generate-ai-navigation.py) | Generator that refreshes both artifacts |
+| [`../../build/scripts/docs/generate-ai-navigation.py`](../../../build/scripts/docs/generate-ai-navigation.py) | Generator that refreshes both artifacts |
 
 The generator is the source of truth. Do not manually edit the generated files.
 

@@ -331,7 +331,7 @@ See `.github/workflows/desktop-builds.yml` for CI configuration.
 - [UI Fixture Mode Guide](./ui-fixture-mode-guide.md) - Complete offline development setup
 - [Desktop Support Policy](./policies/desktop-support-policy.md) - Contribution requirements
 - [Desktop Architecture](../architecture/desktop-layers.md) - Layer boundaries and design
-- [Desktop Improvements Roadmap](../status/ROADMAP.md#desktop-improvements) - Future plans
+- [Desktop Improvements Roadmap](../status/ROADMAP.md) - Future plans
 - [GitHub Actions Summary](./github-actions-summary.md) - CI/CD workflows
 
 ## Related Documentation

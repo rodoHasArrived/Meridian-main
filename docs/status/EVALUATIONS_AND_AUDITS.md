@@ -627,7 +627,7 @@ This document consolidates all architecture evaluations, code audits, desktop as
 performance. Assembly is **not** recommended for orchestration, I/O-bound, or framework-heavy
 paths.
 
-**Implementation roadmap:** See [Phase 16 in `ROADMAP.md`](ROADMAP.md#phase-16-assembly-level-performance-optimizations) for the full viability assessment, per-item delivery tasks, and exit criteria.
+**Implementation roadmap:** See [`ROADMAP.md`](ROADMAP.md) for the full viability assessment, per-item delivery tasks, and exit criteria.
 
 **Highest-potential candidates (7 evaluated; 6 viable for immediate delivery):**
 
