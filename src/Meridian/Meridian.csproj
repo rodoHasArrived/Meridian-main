@@ -94,4 +94,14 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+
+  <!-- Workstation UI bundle (Vite output from src/Meridian.Ui/dashboard).
+       Linked here so UiServer.ServeWorkstationIndex can find wwwroot/workstation/index.html
+       when the main Meridian executable hosts the web dashboard. -->
+  <ItemGroup>
+    <Content Include="..\Meridian.Ui\wwwroot\workstation\**\*"
+             Link="wwwroot\workstation\%(RecursiveDir)%(Filename)%(Extension)">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>
