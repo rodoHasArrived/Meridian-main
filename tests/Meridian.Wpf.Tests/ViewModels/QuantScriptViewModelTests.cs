@@ -2,6 +2,7 @@
 using System.IO;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.QuantScript;
 using Meridian.QuantScript.Api;
 using Meridian.QuantScript.Compilation;
@@ -37,6 +38,12 @@ public sealed class QuantScriptViewModelTests : IDisposable
 
         public Task<ScriptOrderBook?> OrderBookAsync(string symbol, DateTimeOffset timestamp, CancellationToken ct = default)
             => Task.FromResult<ScriptOrderBook?>(null);
+
+        public Task<SecurityDetailDto?> SecMasterAsync(string symbol, CancellationToken ct = default)
+            => Task.FromResult<SecurityDetailDto?>(null);
+
+        public Task<IReadOnlyList<CorporateActionDto>> CorporateActionsAsync(string symbol, CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<CorporateActionDto>>(Array.Empty<CorporateActionDto>());
     }
 
     [Fact]

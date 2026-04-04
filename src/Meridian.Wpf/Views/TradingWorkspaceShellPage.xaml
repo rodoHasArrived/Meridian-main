@@ -117,6 +117,11 @@
                                 Style="{StaticResource SecondaryButtonStyle}"
                                 Margin="0,0,12,8"
                                 AutomationProperties.Name="Import Positions" />
+                        <Button Content="&#xEE94;  Capital &amp; Controls"
+                                Click="OpenCapitalControls_Click"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Margin="0,0,12,8"
+                                AutomationProperties.Name="Open Capital and Controls" />
                         <Button Content="&#xE823;  Trading Hours"
                                 Click="OpenTradingHours_Click"
                                 Style="{StaticResource GhostButtonStyle}"
@@ -215,6 +220,56 @@
             </Border>
 
             <!-- ── Risk Rail ─────────────────────────────────────────────── -->
+            <Border Style="{StaticResource WorkspaceSectionCardStyle}" Margin="0,0,0,20">
+                <StackPanel>
+                    <Grid Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Capital &amp; Controls" Style="{StaticResource CardHeaderStyle}" />
+                        <Button Grid.Column="1" Content="Open Governance Detail" Click="OpenCapitalControls_Click"
+                                Style="{StaticResource LinkButtonStyle}" />
+                    </Grid>
+
+                    <UniformGrid Columns="4" Margin="0,0,0,12">
+                        <Border Style="{StaticResource WorkspaceQueueItemCardStyle}" Margin="0,0,12,0">
+                            <StackPanel>
+                                <TextBlock Text="Cash" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                <TextBlock x:Name="CapitalCashText" Text="—" FontSize="20" FontWeight="Bold"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource WorkspaceQueueItemCardStyle}" Margin="0,0,12,0">
+                            <StackPanel>
+                                <TextBlock Text="Gross Exposure" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                <TextBlock x:Name="CapitalGrossExposureText" Text="—" FontSize="20" FontWeight="Bold"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource WorkspaceQueueItemCardStyle}" Margin="0,0,12,0">
+                            <StackPanel>
+                                <TextBlock Text="Net Exposure" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                <TextBlock x:Name="CapitalNetExposureText" Text="—" FontSize="20" FontWeight="Bold"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource WorkspaceQueueItemCardStyle}">
+                            <StackPanel>
+                                <TextBlock Text="Financing" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                <TextBlock x:Name="CapitalFinancingText" Text="—" FontSize="20" FontWeight="Bold"
+                                           Foreground="{StaticResource WarningColorBrush}" />
+                            </StackPanel>
+                        </Border>
+                    </UniformGrid>
+
+                    <TextBlock x:Name="CapitalControlsDetailText"
+                               Text="Capital posture becomes richer as fund-scoped accounts and runs are linked."
+                               Style="{StaticResource CardDescriptionStyle}"
+                               TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+
             <Border Style="{StaticResource WorkspaceSectionCardStyle}" Margin="0,0,0,0">
                 <StackPanel>
                     <TextBlock Text="Risk Rail" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,16" />

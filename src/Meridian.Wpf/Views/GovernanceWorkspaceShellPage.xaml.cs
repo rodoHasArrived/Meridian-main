@@ -91,8 +91,29 @@ public partial class GovernanceWorkspaceShellPage : Page
     private void OpenSettings_Click(object sender, RoutedEventArgs e)
         => _navigationService.NavigateTo("Settings");
 
-    private void OpenFundLedger_Click(object sender, RoutedEventArgs e)
+    private void OpenFundOverview_Click(object sender, RoutedEventArgs e)
         => _navigationService.NavigateTo("FundLedger");
+
+    private void OpenFundAccounts_Click(object sender, RoutedEventArgs e)
+        => _navigationService.NavigateTo("FundAccounts");
+
+    private void OpenFundBanking_Click(object sender, RoutedEventArgs e)
+        => _navigationService.NavigateTo("FundBanking");
+
+    private void OpenFundPortfolio_Click(object sender, RoutedEventArgs e)
+        => _navigationService.NavigateTo("FundPortfolio");
+
+    private void OpenCashFinancing_Click(object sender, RoutedEventArgs e)
+        => _navigationService.NavigateTo("FundCashFinancing");
+
+    private void OpenTrialBalance_Click(object sender, RoutedEventArgs e)
+        => _navigationService.NavigateTo("FundTrialBalance");
+
+    private void OpenReconciliation_Click(object sender, RoutedEventArgs e)
+        => _navigationService.NavigateTo("FundReconciliation");
+
+    private void OpenAuditTrail_Click(object sender, RoutedEventArgs e)
+        => _navigationService.NavigateTo("FundAuditTrail");
 
     private void OnActiveFundProfileChanged(object? sender, FundProfileChangedEventArgs e)
     {

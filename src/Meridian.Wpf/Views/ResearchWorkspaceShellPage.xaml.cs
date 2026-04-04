@@ -135,11 +135,36 @@ public partial class ResearchWorkspaceShellPage : Page
     private void OpenLean_Click(object sender, RoutedEventArgs e)
         => _navigationService.NavigateTo("LeanIntegration");
 
+    private void OpenFundContext_Click(object sender, RoutedEventArgs e)
+        => _navigationService.NavigateTo("FundPortfolio");
+
+    private void OpenLatestPortfolio_Click(object sender, RoutedEventArgs e)
+    {
+        _ = OpenLatestRunArtifactAsync("RunPortfolio");
+    }
+
+    private void OpenLatestLedger_Click(object sender, RoutedEventArgs e)
+    {
+        _ = OpenLatestRunArtifactAsync("RunLedger");
+    }
+
     private void ReviewPromotion_Click(object sender, RoutedEventArgs e)
     {
         if (sender is Button { Tag: string runId })
         {
             _navigationService.NavigateTo("RunDetail", runId);
         }
+    }
+
+    private async Task OpenLatestRunArtifactAsync(string pageTag)
+    {
+        var latestRun = await _runService.GetLatestRunAsync();
+        if (latestRun is null)
+        {
+            _navigationService.NavigateTo(pageTag);
+            return;
+        }
+
+        _navigationService.NavigateTo(pageTag, latestRun.RunId);
     }
 }

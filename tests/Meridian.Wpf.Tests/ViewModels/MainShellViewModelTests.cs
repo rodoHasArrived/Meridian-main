@@ -16,8 +16,8 @@ public sealed class MainShellViewModelTests
     private static MainPageViewModel CreateMainPageViewModel(FundContextService? fundContextService = null)
     {
         var navigationService = NavigationService.Instance;
+        navigationService.ResetForTests();
         navigationService.Initialize(new Frame());
-        navigationService.ClearHistory();
 
         var fixtureModeDetector = FixtureModeDetector.Instance;
         fixtureModeDetector.SetFixtureMode(false);
@@ -29,8 +29,8 @@ public sealed class MainShellViewModelTests
     private static MainWindowViewModel CreateMainWindowViewModel()
     {
         var navigationService = NavigationService.Instance;
+        navigationService.ResetForTests();
         navigationService.Initialize(new Frame());
-        navigationService.ClearHistory();
 
         var fixtureModeDetector = FixtureModeDetector.Instance;
         fixtureModeDetector.SetFixtureMode(false);
@@ -48,7 +48,7 @@ public sealed class MainShellViewModelTests
     }
 
     [Fact]
-    public void ActivateShell_WhenHistoryIsEmpty_NavigatesToDashboard()
+    public void ActivateShell_WhenHistoryIsEmpty_NavigatesToResearchShell()
     {
         WpfTestThread.Run(() =>
         {
@@ -56,8 +56,8 @@ public sealed class MainShellViewModelTests
 
             vm.ActivateShell();
 
-            vm.CurrentPageTag.Should().Be("Dashboard");
-            vm.CurrentPageTitle.Should().Be("Dashboard");
+            vm.CurrentPageTag.Should().Be("ResearchShell");
+            vm.CurrentPageTitle.Should().Be("Research Workspace");
             vm.BackButtonVisibility.Should().Be(Visibility.Collapsed);
         });
     }
@@ -75,6 +75,25 @@ public sealed class MainShellViewModelTests
             vm.CommandPalettePages.Should().Contain("SymbolMapping");
             vm.CommandPalettePages.Should().NotContain("Dashboard");
             vm.SelectedCommandPalettePage.Should().Be("SymbolMapping");
+        });
+    }
+
+    [Fact]
+    public void CommandPaletteQuery_FindsFundOperationsRoutes()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var vm = CreateMainPageViewModel();
+
+            vm.CommandPaletteQuery = "fund";
+
+            vm.CommandPalettePages.Should().Contain("FundAccounts");
+            vm.CommandPalettePages.Should().Contain("FundBanking");
+            vm.CommandPalettePages.Should().Contain("FundPortfolio");
+            vm.CommandPalettePages.Should().Contain("FundCashFinancing");
+            vm.CommandPalettePages.Should().Contain("FundTrialBalance");
+            vm.CommandPalettePages.Should().Contain("FundReconciliation");
+            vm.CommandPalettePages.Should().Contain("FundAuditTrail");
         });
     }
 
@@ -100,6 +119,7 @@ public sealed class MainShellViewModelTests
         WpfTestThread.Run(() =>
         {
             var detector = FixtureModeDetector.Instance;
+            NavigationService.Instance.ResetForTests();
             detector.SetFixtureMode(false);
             detector.UpdateBackendReachability(true);
 

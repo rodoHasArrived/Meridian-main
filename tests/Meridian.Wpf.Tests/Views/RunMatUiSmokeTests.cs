@@ -20,6 +20,7 @@ public sealed class RunMatUiSmokeTests
             RunMatUiAutomationFacade.EnsureApplicationResources();
 
             var navigationService = NavigationService.Instance;
+            navigationService.ResetForTests();
             var serviceProvider = RunMatUiAutomationFacade.CreateMainPageServiceProvider();
             navigationService.SetServiceProvider(serviceProvider);
             var page = serviceProvider.GetRequiredService<MainPage>();
@@ -37,8 +38,8 @@ public sealed class RunMatUiSmokeTests
             AutomationProperties.GetAutomationId(commandPaletteInput).Should().Be("CommandPaletteInput");
             AutomationProperties.GetAutomationId(commandPaletteResults).Should().Be("CommandPaletteResults");
             AutomationProperties.GetAutomationId(contentFrame).Should().Be("ContentFrame");
-            shellAutomationState.Text.Should().Be("Dashboard");
-            viewModel.CurrentPageTitle.Should().Be("Dashboard");
+            shellAutomationState.Text.Should().Be("ResearchShell");
+            viewModel.CurrentPageTitle.Should().Be("Research Workspace");
 
             var runMatNavItem = researchNavList.Items
                 .OfType<ListBoxItem>()
@@ -49,7 +50,8 @@ public sealed class RunMatUiSmokeTests
 
             RunMatUiAutomationFacade.InvokeNavigateToPage(page, "RunMat");
 
-            contentFrame.Content.Should().BeOfType<RunMatPage>();
+            serviceProvider.GetRequiredService<RunMatPage>().Should().NotBeNull();
+            viewModel.CurrentPageTag.Should().Be("RunMat");
             shellAutomationState.Text.Should().Be("RunMat");
             viewModel.CurrentPageTitle.Should().Be("Run Mat");
 

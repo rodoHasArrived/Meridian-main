@@ -1,5 +1,6 @@
 using Meridian.Wpf.Services;
 using Meridian.Ui.Services;
+using System.IO;
 
 namespace Meridian.Wpf.Tests.Services;
 
@@ -9,7 +10,25 @@ namespace Meridian.Wpf.Tests.Services;
 /// </summary>
 public sealed class WorkspaceServiceTests
 {
-    private static WorkspaceService CreateService() => WorkspaceService.Instance;
+    private static readonly string TestSettingsFilePath = Path.Combine(
+        Path.GetTempPath(),
+        "Meridian.Wpf.Tests",
+        "workspace-service-tests",
+        "workspace-data.json");
+
+    private static WorkspaceService CreateService()
+    {
+        var service = WorkspaceService.Instance;
+        WorkspaceService.SetSettingsFilePathOverrideForTests(TestSettingsFilePath);
+        if (File.Exists(TestSettingsFilePath))
+        {
+            File.Delete(TestSettingsFilePath);
+        }
+
+        service.ResetForTests();
+        service.LoadWorkspacesAsync().GetAwaiter().GetResult();
+        return service;
+    }
 
     // ── Singleton ────────────────────────────────────────────────────
 

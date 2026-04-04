@@ -1,6 +1,8 @@
 using System.IO;
 using FluentAssertions;
 using Meridian.Backtesting.Sdk;
+using Meridian.Application.FundAccounts;
+using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
@@ -197,6 +199,208 @@ public sealed class StrategyRunWorkspaceServiceTests
         summary.EntityCount.Should().Be(1);
         summary.SleeveCount.Should().Be(1);
         summary.VehicleCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task FundAccountReadService_GetAccountsAsync_ProjectsGroupedFundAccounts()
+    {
+        var fundContext = await CreateFundContextAsync();
+        var fundAccountService = new InMemoryFundAccountService();
+        var fundId = FundProfileKeyTranslator.ToFundId("alpha-credit");
+        var bankAccountId = Guid.NewGuid();
+        var custodyAccountId = Guid.NewGuid();
+
+        await fundAccountService.CreateAccountAsync(new CreateAccountRequest(
+            AccountId: bankAccountId,
+            AccountType: AccountTypeDto.Bank,
+            AccountCode: "BANK-001",
+            DisplayName: "Operating Cash",
+            BaseCurrency: "USD",
+            EffectiveFrom: DateTimeOffset.UtcNow.AddDays(-5),
+            CreatedBy: "tests",
+            FundId: fundId,
+            BankDetails: new BankAccountDetailsDto(
+                AccountNumber: "1234567890",
+                BankName: "First Meridian Bank",
+                BranchName: "Phoenix",
+                Iban: null,
+                BicSwift: null,
+                RoutingNumber: "111000111",
+                SortCode: null,
+                IntermediaryBankBic: null,
+                IntermediaryBankName: null,
+                BeneficiaryName: "Alpha Credit",
+                BeneficiaryAddress: null)));
+
+        await fundAccountService.CreateAccountAsync(new CreateAccountRequest(
+            AccountId: custodyAccountId,
+            AccountType: AccountTypeDto.Custody,
+            AccountCode: "CUST-001",
+            DisplayName: "Prime Custody",
+            BaseCurrency: "USD",
+            EffectiveFrom: DateTimeOffset.UtcNow.AddDays(-5),
+            CreatedBy: "tests",
+            FundId: fundId,
+            CustodianDetails: new CustodianAccountDetailsDto(
+                SubAccountNumber: "SUB-01",
+                DtcParticipantCode: "DTC1",
+                CrestMemberCode: null,
+                EuroclearAccountNumber: null,
+                ClearstreamAccountNumber: null,
+                PrimebrokerGiveupCode: "PB01",
+                SafekeepingLocation: "NYC",
+                ServiceAgreementReference: "AG-1")));
+
+        await fundAccountService.RecordBalanceSnapshotAsync(new RecordAccountBalanceSnapshotRequest(
+            AccountId: bankAccountId,
+            AsOfDate: new DateOnly(2026, 4, 1),
+            Currency: "USD",
+            CashBalance: 150_000m,
+            Source: "bank-feed",
+            RecordedBy: "tests",
+            SecuritiesMarketValue: 5_000m,
+            PendingSettlement: 2_500m));
+
+        await fundAccountService.RecordBalanceSnapshotAsync(new RecordAccountBalanceSnapshotRequest(
+            AccountId: custodyAccountId,
+            AsOfDate: new DateOnly(2026, 4, 1),
+            Currency: "USD",
+            CashBalance: 25_000m,
+            Source: "custody-feed",
+            RecordedBy: "tests",
+            SecuritiesMarketValue: 300_000m));
+
+        await fundAccountService.ReconcileAccountAsync(new ReconcileAccountRequest(
+            AccountId: bankAccountId,
+            AsOfDate: new DateOnly(2026, 4, 1),
+            RequestedBy: "tests"));
+
+        var service = new FundAccountReadService(fundAccountService);
+
+        var accounts = await service.GetAccountsAsync(fundContext.CurrentFundProfile!.FundProfileId);
+
+        accounts.Should().HaveCount(2);
+        accounts.Should().ContainSingle(account =>
+            account.AccountId == bankAccountId &&
+            account.BankName == "First Meridian Bank" &&
+            account.AccountNumberMasked == "****7890" &&
+            account.ReconciliationRuns == 1 &&
+            account.NetAssetValue == 155_000m);
+        accounts.Should().ContainSingle(account =>
+            account.AccountId == custodyAccountId &&
+            account.AccountType == AccountTypeDto.Custody &&
+            account.SecuritiesMarketValue == 300_000m);
+    }
+
+    [Fact]
+    public async Task CashFinancingAndReconciliationReadServices_GetAsync_ReturnFundScopedPosture()
+    {
+        var fundContext = await CreateFundContextAsync();
+        var store = new StrategyRunStore();
+        var runService = new StrategyRunWorkspaceService(
+            store,
+            new Meridian.Strategies.Services.PortfolioReadService(),
+            new Meridian.Strategies.Services.LedgerReadService(),
+            fundContext);
+        await runService.RecordBacktestRunAsync(
+            new BacktestRequest(
+                From: new DateOnly(2026, 3, 1),
+                To: new DateOnly(2026, 3, 20),
+                Symbols: ["AAPL"],
+                InitialCash: 100_000m,
+                DataRoot: "./data/test"),
+            "Capital posture run",
+            BuildResult());
+
+        var fundAccountService = new InMemoryFundAccountService();
+        var fundId = FundProfileKeyTranslator.ToFundId("alpha-credit");
+        var bankAccountId = Guid.NewGuid();
+
+        await fundAccountService.CreateAccountAsync(new CreateAccountRequest(
+            AccountId: bankAccountId,
+            AccountType: AccountTypeDto.Bank,
+            AccountCode: "BANK-OPS",
+            DisplayName: "Operations Bank",
+            BaseCurrency: "USD",
+            EffectiveFrom: DateTimeOffset.UtcNow.AddDays(-5),
+            CreatedBy: "tests",
+            FundId: fundId,
+            BankDetails: new BankAccountDetailsDto(
+                AccountNumber: "555500001234",
+                BankName: "Northern Trust",
+                BranchName: null,
+                Iban: null,
+                BicSwift: null,
+                RoutingNumber: null,
+                SortCode: null,
+                IntermediaryBankBic: null,
+                IntermediaryBankName: null,
+                BeneficiaryName: "Alpha Credit",
+                BeneficiaryAddress: null)));
+
+        await fundAccountService.RecordBalanceSnapshotAsync(new RecordAccountBalanceSnapshotRequest(
+            AccountId: bankAccountId,
+            AsOfDate: new DateOnly(2026, 4, 2),
+            Currency: "USD",
+            CashBalance: 225_000m,
+            Source: "bank-feed",
+            RecordedBy: "tests",
+            SecuritiesMarketValue: 10_000m,
+            PendingSettlement: 5_000m));
+
+        await fundAccountService.IngestBankStatementAsync(new IngestBankStatementRequest(
+            BatchId: Guid.NewGuid(),
+            AccountId: bankAccountId,
+            StatementDate: new DateOnly(2026, 4, 2),
+            BankName: "Northern Trust",
+            FileName: "statement.csv",
+            Lines:
+            [
+                new BankStatementLineDto(
+                    StatementLineId: Guid.NewGuid(),
+                    BatchId: Guid.NewGuid(),
+                    AccountId: bankAccountId,
+                    StatementDate: new DateOnly(2026, 4, 2),
+                    ValueDate: new DateOnly(2026, 4, 2),
+                    Amount: 25_000m,
+                    Currency: "USD",
+                    TransactionType: "Wire",
+                    Description: "Capital contribution",
+                    ExternalReference: "wire-1",
+                    RunningBalance: 225_000m)
+            ],
+            LoadedBy: "tests"));
+
+        await fundAccountService.ReconcileAccountAsync(new ReconcileAccountRequest(
+            AccountId: bankAccountId,
+            AsOfDate: new DateOnly(2026, 4, 2),
+            RequestedBy: "tests"));
+
+        var accountReadService = new FundAccountReadService(fundAccountService);
+        var cashService = new CashFinancingReadService(runService, accountReadService);
+        var reconciliationService = new ReconciliationReadService(
+            fundAccountService,
+            accountReadService,
+            runService);
+
+        var cash = await cashService.GetAsync("alpha-credit", "USD");
+        var reconciliation = await reconciliationService.GetAsync("alpha-credit");
+        var bankSnapshots = await accountReadService.GetBankSnapshotsAsync("alpha-credit");
+
+        cash.TotalCash.Should().Be(225_000m);
+        cash.GrossExposure.Should().BeGreaterThan(0m);
+        cash.TotalEquity.Should().BeGreaterThan(0m);
+        cash.Highlights.Should().NotBeEmpty();
+
+        reconciliation.RunCount.Should().Be(1);
+        reconciliation.OpenBreakCount.Should().Be(0);
+        reconciliation.RecentRuns.Should().ContainSingle(item => item.AccountId == bankAccountId);
+
+        bankSnapshots.Should().ContainSingle(snapshot =>
+            snapshot.AccountId == bankAccountId &&
+            snapshot.BankName == "Northern Trust" &&
+            snapshot.StatementLineCount == 1 &&
+            snapshot.LatestTransactionType == "Wire");
     }
 
     private static async Task<FundContextService> CreateFundContextAsync()

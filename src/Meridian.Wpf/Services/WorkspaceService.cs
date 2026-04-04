@@ -24,6 +24,7 @@ public sealed class WorkspaceService
     private static readonly Lazy<WorkspaceService> _instance = new(() => new WorkspaceService());
 
     private const string WorkspacesFileName = "workspace-data.json";
+    private static string? _settingsFilePathOverride;
 
     private WorkspaceTemplate? _activeWorkspace;
     private SessionState? _lastSession;
@@ -56,6 +57,17 @@ public sealed class WorkspaceService
 
     private static string GetSettingsFilePath()
     {
+        if (!string.IsNullOrWhiteSpace(_settingsFilePathOverride))
+        {
+            var overrideDirectory = Path.GetDirectoryName(_settingsFilePathOverride);
+            if (!string.IsNullOrWhiteSpace(overrideDirectory))
+            {
+                Directory.CreateDirectory(overrideDirectory);
+            }
+
+            return _settingsFilePathOverride;
+        }
+
         var dir = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "Meridian");
@@ -654,6 +666,21 @@ public sealed class WorkspaceService
 
         builtIn = null!;
         return false;
+    }
+
+    internal static void SetSettingsFilePathOverrideForTests(string? filePath)
+    {
+        _settingsFilePathOverride = filePath;
+    }
+
+    internal void ResetForTests()
+    {
+        _activeWorkspace = null;
+        _lastSession = null;
+        LastSelectedFundProfileId = null;
+        _sessionsByFundProfileId.Clear();
+        _workspaces.Clear();
+        _dockLayouts.Clear();
     }
 
     private static void MergeMissingPages(WorkspaceTemplate workspace, IEnumerable<WorkspacePage> builtInPages)

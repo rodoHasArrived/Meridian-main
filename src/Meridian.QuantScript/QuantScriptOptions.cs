@@ -18,7 +18,7 @@ public sealed class QuantScriptOptions
     public int RunTimeoutSeconds { get; init; } = 300;
 
     /// <summary>Maximum seconds allowed for Roslyn compilation.</summary>
-    public int CompilationTimeoutSeconds { get; init; } = 15;
+    public int CompilationTimeoutSeconds { get; init; } = 60;
 
     /// <summary>
     /// When false (default), scripts are denied File/Network/Process access via

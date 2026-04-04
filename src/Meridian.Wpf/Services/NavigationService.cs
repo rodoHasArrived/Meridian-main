@@ -48,6 +48,17 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
     }
 
     /// <summary>
+    /// Resets singleton-held UI references so tests can start from a clean navigation state
+    /// even after earlier runs used a different STA dispatcher.
+    /// </summary>
+    internal void ResetForTests()
+    {
+        ResetNavigationHistory();
+        _frame = null;
+        _serviceProvider = null;
+    }
+
+    /// <summary>
     /// Initializes the navigation service with the main frame.
     /// </summary>
     public void Initialize(Frame frame)
@@ -89,6 +100,13 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         RegisterPage("RunPortfolio", typeof(RunPortfolioPage));
         RegisterPage("RunLedger", typeof(RunLedgerPage));
         RegisterPage("FundLedger", typeof(FundLedgerPage));
+        RegisterPage("FundAccounts", typeof(FundLedgerPage));
+        RegisterPage("FundBanking", typeof(FundLedgerPage));
+        RegisterPage("FundPortfolio", typeof(FundLedgerPage));
+        RegisterPage("FundCashFinancing", typeof(FundLedgerPage));
+        RegisterPage("FundTrialBalance", typeof(FundLedgerPage));
+        RegisterPage("FundReconciliation", typeof(FundLedgerPage));
+        RegisterPage("FundAuditTrail", typeof(FundLedgerPage));
         RegisterPage("RunCashFlow", typeof(RunCashFlowPage));
         RegisterPage("PositionBlotter", typeof(PositionBlotterPage));
         RegisterPage("RunRisk", typeof(RunRiskPage));

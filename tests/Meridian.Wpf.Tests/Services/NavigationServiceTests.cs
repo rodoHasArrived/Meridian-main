@@ -11,6 +11,13 @@ namespace Meridian.Wpf.Tests.Services;
 /// </summary>
 public sealed class NavigationServiceTests
 {
+    private static NavigationService ResetNavigationService()
+    {
+        var service = NavigationService.Instance;
+        service.ResetForTests();
+        return service;
+    }
+
     /// <summary>
     /// Runs an action on a dedicated STA thread. Required for tests that create WPF UI objects.
     /// </summary>
@@ -19,7 +26,11 @@ public sealed class NavigationServiceTests
         ExceptionDispatchInfo? captured = null;
         var thread = new Thread(() =>
         {
-            try { action(); }
+            try
+            {
+                ResetNavigationService();
+                action();
+            }
             catch (Exception ex) { captured = ExceptionDispatchInfo.Capture(ex); }
         });
         thread.SetApartmentState(ApartmentState.STA);
@@ -32,7 +43,7 @@ public sealed class NavigationServiceTests
     public void Instance_ShouldReturnSingleton()
     {
         // Arrange & Act
-        var instance1 = NavigationService.Instance;
+        var instance1 = ResetNavigationService();
         var instance2 = NavigationService.Instance;
 
         // Assert
@@ -63,7 +74,7 @@ public sealed class NavigationServiceTests
     public void Initialize_WithNullFrame_ShouldThrowArgumentNullException()
     {
         // Arrange
-        var service = NavigationService.Instance;
+        var service = ResetNavigationService();
 
         // Act
         Action act = () => service.Initialize(null!);
@@ -77,7 +88,7 @@ public sealed class NavigationServiceTests
     public void IsPageRegistered_WithUnknownPage_ShouldReturnFalse()
     {
         // Arrange
-        var service = NavigationService.Instance;
+        var service = ResetNavigationService();
 
         // Act
         var isRegistered = service.IsPageRegistered("NonExistentPage12345");
@@ -90,7 +101,7 @@ public sealed class NavigationServiceTests
     public void CanGoBack_BeforeInitialization_ShouldReturnFalse()
     {
         // Arrange
-        var service = NavigationService.Instance;
+        var service = ResetNavigationService();
 
         // Act & Assert – service is not yet initialized; both guards must hold
         service.IsInitialized.Should().BeFalse("Initialize has not been called yet");
@@ -119,7 +130,7 @@ public sealed class NavigationServiceTests
     public void GetRegisteredPages_ShouldReturnNonEmptyCollection()
     {
         // Arrange
-        var service = NavigationService.Instance;
+        var service = ResetNavigationService();
 
         // Act
         var registeredPages = service.GetRegisteredPages();
@@ -133,7 +144,7 @@ public sealed class NavigationServiceTests
     public void IsPageRegistered_WithKnownPage_ShouldReturnTrue()
     {
         // Arrange
-        var service = NavigationService.Instance;
+        var service = ResetNavigationService();
         var registeredPages = service.GetRegisteredPages();
         var firstPage = registeredPages.FirstOrDefault();
 
@@ -162,7 +173,7 @@ public sealed class NavigationServiceTests
     public void IsPageRegistered_TradingWorkflowPages_ShouldReturnTrue(string pageTag)
     {
         // Arrange
-        var service = NavigationService.Instance;
+        var service = ResetNavigationService();
 
         // Act
         var isRegistered = service.IsPageRegistered(pageTag);
@@ -217,6 +228,13 @@ public sealed class NavigationServiceTests
     [InlineData("Diagnostics")]
     [InlineData("Settings")]
     [InlineData("AdminMaintenance")]
+    [InlineData("FundAccounts")]
+    [InlineData("FundBanking")]
+    [InlineData("FundPortfolio")]
+    [InlineData("FundCashFinancing")]
+    [InlineData("FundTrialBalance")]
+    [InlineData("FundReconciliation")]
+    [InlineData("FundAuditTrail")]
     public void IsPageRegistered_GovernanceSectionPages_ShouldReturnTrue(string pageTag)
     {
         // Arrange

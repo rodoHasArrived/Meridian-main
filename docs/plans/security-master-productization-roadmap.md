@@ -1,7 +1,7 @@
 # Security Master Productization Roadmap
 
-**Last Updated:** 2026-03-30
-**Status:** In Progress — Wave 6 delivery
+**Last Updated:** 2026-04-04
+**Status:** In Progress — Wave 6 delivery with operator fund-ops integration
 **Owner:** Platform team
 **Audience:** Architecture, API, UI, and data contributors
 
@@ -54,9 +54,40 @@ The following capabilities were implemented as foundational work for this wave a
 - **`SecurityMasterRebuildOrchestrator`** — differential event-replay that picks up only new events since the last checkpoint, avoiding full re-projection on every restart. (`src/Meridian.Application/SecurityMaster/SecurityMasterRebuildOrchestrator.cs`)
 - **Full-text search migration** — Postgres `tsvector` column backed by a `gin` index and an `AFTER INSERT OR UPDATE` trigger, fed from `display_name`, `primary_identifier_value`, `asset_class`, `issuer_name`, `exchange_code`, and `currency`. (`src/Meridian.Storage/SecurityMaster/Migrations/002_security_master_fts.sql`)
 - **`ISecurityMasterQueryService.GetEconomicDefinitionByIdAsync`** — full aggregate rebuild on demand for governance drill-in surfaces.
-- **`SecurityMasterSecurityReferenceLookup`** (`ISecurityReferenceLookup`) — adapts the Security Master query service to portfolio/ledger workstation enrichment; resolves by `Ticker` identifier and derives sub-type from asset class. (`src/Meridian.Ui.Shared/Services/SecurityMasterSecurityReferenceLookup.cs`)
+- **`SecurityMasterSecurityReferenceLookup`** (`ISecurityReferenceLookup`) — adapts the Security Master query service to portfolio/ledger workstation enrichment; resolves by exact identifiers (`ISIN`, `CUSIP`, `SEDOL`, `FIGI`), provider-symbol syntaxes, normalized tickers, and venue/decorator-stripped workstation symbols before deriving sub-type from asset class. (`src/Meridian.Ui.Shared/Services/SecurityMasterSecurityReferenceLookup.cs`)
 - **Workstation DTOs** — `SecurityMasterWorkstationDto`, `SecurityClassificationSummaryDto`, `SecurityEconomicDefinitionSummaryDto`, `SecurityIdentityDrillInDto` in `Meridian.Contracts.Workstation`. (`src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs`)
 - **Security enrichment tests** — `SecurityEnrichmentTests` (portfolio/ledger resolution paths) and `SecurityMasterReferenceLookupTests` (unresolved identity, degraded metadata, sub-type derivation). (`tests/Meridian.Tests/SecurityMaster/`)
+
+---
+
+## Operator Fund Operations Delivery
+
+Security Master is now wired into the governance-first fund-operations workflow rather than stopping at backend enrichment.
+
+### What Was Delivered
+
+- **Fund-operations DTO expansion** — `FundWorkspaceSummary`, `FundAccountSummary`, `FundPortfolioPosition`, `FundReconciliationItem`, and `ReconciliationSummary` now carry Security Master coverage, entity/sleeve/vehicle structure, strategy/run linkage, and reconciliation security-issue counts. (`src/Meridian.Contracts/Workstation/FundOperationsDtos.cs`)
+- **Account and structure workflows** — governance account projections now expose `EntityId`, `SleeveId`, `VehicleId`, `StrategyId`, `RunId`, plus operator-readable `StructureLabel` and `WorkflowLabel` values so teams can work from legal-entity and strategy context instead of raw account rows. (`src/Meridian.Wpf/Services/FundAccountReadService.cs`)
+- **Fund portfolio operator drill-in** — aggregated fund positions now preserve Security Master identity metadata, show mapped/partial/unresolved coverage state, and support opening the selected position directly into the Security Master browser. (`src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs`, `src/Meridian.Wpf/Views/FundLedgerPage.xaml`)
+- **Strategy-run reconciliation integration** — governance reconciliation now loads strategy-run reconciliation results alongside account-level runs, surfaces `SecurityIssueCount`, distinguishes `ScopeLabel` (`Account` vs `Strategy Run`), and raises Security Master coverage breaks into the same operator queue. (`src/Meridian.Wpf/Services/ReconciliationReadService.cs`)
+- **Operator-facing WPF delivery** — the fund ledger page now shows structure/workflow context on accounts, Security Master coverage on portfolio rows, reconciliation coverage columns, and top-level overview text that calls out unresolved mappings and open reconciliation security coverage issues. (`src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs`, `src/Meridian.Wpf/Views/FundLedgerPage.xaml`)
+- **Desktop service registration** — reconciliation projection/run services are registered in the desktop composition root so strategy-run coverage and reconciliation drill-ins work in the WPF operator shell, not only in tests. (`src/Meridian.Wpf/App.xaml.cs`)
+- **Coverage-closing regression tests** — focused WPF and workstation tests now cover identifier heuristics, fund-ops Security Master carry-through, and strategy-level reconciliation security coverage. (`tests/Meridian.Tests/SecurityMaster/SecurityMasterReferenceLookupTests.cs`, `tests/Meridian.Wpf.Tests/ViewModels/FundLedgerViewModelTests.cs`)
+
+### Operator Outcome
+
+Operators can now answer all of the following from the fund-operations shell without dropping into backend diagnostics:
+
+- Which aggregated positions are still missing Security Master coverage.
+- Which accounts belong to which entity/sleeve/vehicle structure.
+- Which accounts are tied to strategy/run-driven workflows versus manual/external workflows.
+- Which reconciliation runs have open security-coverage issues, including strategy-run driven breaks.
+- Which unresolved position should be opened directly in Security Master for remediation.
+
+### Remaining Follow-on Work
+
+- Extend the same operator-first Security Master posture into additional governance surfaces that are still run-centric outside the fund-operations shell.
+- Add explicit remediation actions for unresolved mappings and reconciliation coverage breaks once the task/assignment workflow is finalized.
 
 ---
 

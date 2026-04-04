@@ -24,11 +24,10 @@ public partial class BackfillPage : Page
         WpfServices.WorkspaceService workspaceService,
         BackfillViewModel viewModel)
     {
-        InitializeComponent();
-
         _workspaceService = workspaceService;
         _viewModel = viewModel;
 
+        InitializeComponent();
         DataContext = _viewModel;
     }
 
@@ -137,18 +136,23 @@ public partial class BackfillPage : Page
         _viewModel.UpdateGranularityHint(granularity);
     }
 
-    private static string GetProviderName(ComboBox combo)
+    private static string GetProviderName(ComboBox? combo)
     {
-        return (combo.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "";
+        return (combo?.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "";
     }
 
-    private static string? GetComboSelectedTag(ComboBox combo)
+    private static string? GetComboSelectedTag(ComboBox? combo)
     {
-        return (combo.SelectedItem as ComboBoxItem)?.Tag?.ToString();
+        return (combo?.SelectedItem as ComboBoxItem)?.Tag?.ToString();
     }
 
-    private static void SelectComboItemByTag(ComboBox combo, string tag)
+    private static void SelectComboItemByTag(ComboBox? combo, string tag)
     {
+        if (combo is null)
+        {
+            return;
+        }
+
         foreach (var item in combo.Items)
         {
             if (item is ComboBoxItem cbi && cbi.Tag?.ToString() == tag)

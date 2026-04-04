@@ -189,8 +189,17 @@ internal sealed class RunMatUiAutomationFacade : IDisposable
         services.AddSingleton<StatusService>(_ => StatusService.Instance);
         services.AddSingleton<MessagingService>(_ => MessagingService.Instance);
         services.AddSingleton<Meridian.Wpf.Services.NotificationService>(_ => Meridian.Wpf.Services.NotificationService.Instance);
+        services.AddSingleton(_ => Meridian.Wpf.Services.LoggingService.Instance);
+        services.AddSingleton(_ => Meridian.Wpf.Services.TaskbarProgressService.Instance);
+        services.AddSingleton(_ => Meridian.Ui.Services.AlertService.Instance);
+        services.AddSingleton(_ => Meridian.Ui.Services.ActivityFeedService.Instance);
+        services.AddSingleton(_ => Meridian.Ui.Services.CommandPaletteService.Instance);
+        services.AddSingleton(_ => Meridian.Wpf.Services.WorkspaceService.Instance);
+        services.AddSingleton(_ => Meridian.Wpf.Services.StrategyRunWorkspaceService.Instance);
         services.AddSingleton(_ => FixtureModeDetector.Instance);
+        services.AddTransient<DashboardViewModel>();
         services.AddTransient<DashboardPage>();
+        services.AddTransient<ResearchWorkspaceShellPage>();
         var resolvedRunMatService = runMatService ?? RunMatService.Instance;
         services.AddSingleton(resolvedRunMatService);
         services.AddTransient(_ => CreateViewModel(resolvedRunMatService));

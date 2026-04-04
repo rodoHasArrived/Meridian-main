@@ -10,6 +10,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Meridian.Application.Services;
 using Meridian.Application.SecurityMaster;
+using Meridian.Application.FundAccounts;
 using Meridian.Backtesting;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.SecurityMaster;
@@ -239,7 +240,7 @@ public partial class App : System.Windows.Application
         services.AddSingleton<Meridian.Ui.Services.Contracts.ILoggingService>(_ => WpfServices.LoggingService.Instance);
         services.AddSingleton(_ => WpfServices.LoggingService.Instance);
 
-        services.AddSingleton(_ => WpfServices.ConfigService.Instance);
+        services.AddSingleton<WpfServices.ConfigService>(_ => WpfServices.ConfigService.Instance);
         services.AddSingleton(_ => WpfServices.ThemeService.Instance);
         services.AddSingleton(_ => WpfServices.NotificationService.Instance);
         services.AddSingleton(_ => WpfServices.KeyboardShortcutService.Instance);
@@ -250,7 +251,7 @@ public partial class App : System.Windows.Application
 
         // ── Onboarding / workspace services ──────────────────────────────────
         services.AddSingleton(_ => Meridian.Ui.Services.OnboardingTourService.Instance);
-        services.AddSingleton(_ => WpfServices.WorkspaceService.Instance);
+        services.AddSingleton<WpfServices.WorkspaceService>(_ => WpfServices.WorkspaceService.Instance);
         services.AddSingleton(_ => Meridian.Ui.Services.AlertService.Instance);
         services.AddSingleton(_ => WpfServices.FundContextService.Instance);
         services.AddSingleton<WpfServices.IFundProfileCatalog>(sp => sp.GetRequiredService<WpfServices.FundContextService>());
@@ -394,6 +395,10 @@ public partial class App : System.Windows.Application
         services.AddSingleton(_ => WpfServices.TaskbarProgressService.Instance);
         services.AddSingleton(_ => WpfServices.TearOffPanelService.Instance);
         services.AddSingleton<WpfServices.FundLedgerReadService>();
+        services.AddSingleton<IFundAccountService, InMemoryFundAccountService>();
+        services.AddSingleton<WpfServices.FundAccountReadService>();
+        services.AddSingleton<WpfServices.CashFinancingReadService>();
+        services.AddSingleton<WpfServices.ReconciliationReadService>();
 
         // ── ViewModels (transient — new instance per page navigation) ────────
         services.AddTransient<Meridian.Wpf.ViewModels.FundProfileSelectionViewModel>();
@@ -407,6 +412,7 @@ public partial class App : System.Windows.Application
         services.AddTransient<Meridian.Wpf.ViewModels.StrategyRunPortfolioViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.StrategyRunLedgerViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.FundLedgerViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.FundAccountsViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.RunRiskViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.PluginManagementViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.AgentViewModel>();
@@ -496,6 +502,9 @@ public partial class App : System.Windows.Application
         services.AddSingleton<PortfolioReadService>();
         services.AddSingleton<LedgerReadService>();
         services.AddSingleton<StrategyRunReadService>();
+        services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+        services.AddSingleton<ReconciliationProjectionService>();
+        services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
         services.AddSingleton(sp =>
         {
             var service = new WpfServices.StrategyRunWorkspaceService(

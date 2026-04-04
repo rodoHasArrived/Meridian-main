@@ -132,6 +132,17 @@ public abstract class NavigationServiceBase
     }
 
     /// <summary>
+    /// Clears tracked navigation history and event subscriptions without touching any
+    /// platform-specific UI state. Intended for deterministic test setup when a singleton
+    /// navigation service may still be holding references to UI objects from an earlier dispatcher.
+    /// </summary>
+    protected void ResetNavigationHistory()
+    {
+        _navigationHistory.Clear();
+        Navigated = null;
+    }
+
+    /// <summary>
     /// Registers a page in the page registry.
     /// </summary>
     /// <param name="tag">The unique tag for the page.</param>

@@ -38,7 +38,7 @@
                             </Border>
                             <StackPanel Margin="12,0,0,0">
                                 <TextBlock Text="Governance" Style="{StaticResource PageTitleStyle}" />
-                                <TextBlock Text="Alerts, diagnostics, audit posture, and operator trust controls from one landing surface"
+                                <TextBlock Text="Fund operations, diagnostics, audit posture, and operator trust controls from one landing surface"
                                            Style="{StaticResource CardDescriptionStyle}" />
                                 <TextBlock x:Name="ActiveFundText"
                                            Text="No fund selected"
@@ -63,12 +63,12 @@
                                 </StackPanel>
                             </Border>
                             <Border Style="{StaticResource WorkspaceKpiTileStyle}" Margin="0,0,12,0"
-                                    ToolTip="Items that should be reviewed first by an operator">
+                                    ToolTip="Fund-accounting and banking posture requiring review">
                                 <StackPanel>
-                                    <TextBlock Text="Review" FontSize="20" FontWeight="Bold"
+                                    <TextBlock Text="Fund" FontSize="20" FontWeight="Bold"
                                                Foreground="{StaticResource WarningColorBrush}"
                                                HorizontalAlignment="Center" />
-                                    <TextBlock Text="Alerts" FontSize="11"
+                                    <TextBlock Text="Ops" FontSize="11"
                                                Foreground="{StaticResource ConsoleTextMutedBrush}"
                                                HorizontalAlignment="Center" />
                                 </StackPanel>
@@ -90,28 +90,48 @@
 
                 <Border Style="{StaticResource WorkspaceSectionCardStyle}">
                     <StackPanel>
-                        <TextBlock Text="Quick Actions" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,16" />
+                            <TextBlock Text="Quick Actions" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,16" />
                         <WrapPanel Orientation="Horizontal">
-                            <Button Content="&#xEE94;  Fund Ledger"
-                                    Click="OpenFundLedger_Click"
+                            <Button Content="&#xEE94;  Fund Overview"
+                                    Click="OpenFundOverview_Click"
                                     Style="{StaticResource PrimaryButtonStyle}"
                                     Margin="0,0,12,8"
-                                    AutomationProperties.Name="Open Fund Ledger" />
+                                    AutomationProperties.Name="Open Fund Overview" />
+                            <Button Content="&#xE8B7;  Accounts"
+                                    Click="OpenFundAccounts_Click"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Margin="0,0,12,8"
+                                    AutomationProperties.Name="Open Fund Accounts" />
+                            <Button Content="&#xE8C7;  Banking"
+                                    Click="OpenFundBanking_Click"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Margin="0,0,12,8"
+                                    AutomationProperties.Name="Open Fund Banking" />
+                            <Button Content="&#xE8B5;  Portfolio"
+                                    Click="OpenFundPortfolio_Click"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Margin="0,0,12,8"
+                                    AutomationProperties.Name="Open Fund Portfolio" />
+                            <Button Content="&#xE8EF;  Cash &amp; Financing"
+                                    Click="OpenCashFinancing_Click"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Margin="0,0,12,8"
+                                    AutomationProperties.Name="Open Cash and Financing" />
                             <Button Content="&#xE9D9;  Trial Balance"
-                                    Click="OpenFundLedger_Click"
+                                    Click="OpenTrialBalance_Click"
                                     Style="{StaticResource SecondaryButtonStyle}"
                                     Margin="0,0,12,8"
                                     AutomationProperties.Name="Open Trial Balance" />
-                            <Button Content="&#xE8EF;  Cash Flow"
-                                    Click="OpenFundLedger_Click"
-                                    Style="{StaticResource SecondaryButtonStyle}"
-                                    Margin="0,0,12,8"
-                                    AutomationProperties.Name="Open Fund Cash Flow" />
                             <Button Content="&#xE895;  Reconciliation"
-                                    Click="OpenFundLedger_Click"
+                                    Click="OpenReconciliation_Click"
                                     Style="{StaticResource GhostButtonStyle}"
                                     Margin="0,0,12,8"
                                     AutomationProperties.Name="Open Reconciliation" />
+                            <Button Content="&#xE8A1;  Audit Trail"
+                                    Click="OpenAuditTrail_Click"
+                                    Style="{StaticResource GhostButtonStyle}"
+                                    Margin="0,0,12,8"
+                                    AutomationProperties.Name="Open Audit Trail" />
                             <Button Content="&#xE73E;  Data Quality"
                                     Click="OpenDataQuality_Click"
                                     Style="{StaticResource SecondaryButtonStyle}"
@@ -149,7 +169,7 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Column="0" Text="Operational Focus" Style="{StaticResource CardHeaderStyle}" />
-                            <Button Grid.Column="1" Content="Quality Console" Click="OpenDataQuality_Click"
+                            <Button Grid.Column="1" Content="Fund Ops" Click="OpenFundOverview_Click"
                                     Style="{StaticResource LinkButtonStyle}" />
                         </Grid>
 
@@ -160,16 +180,16 @@
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0">
-                                    <TextBlock Text="Data quality and integrity"
+                                    <TextBlock Text="Fund operations and banking"
                                                FontSize="14" FontWeight="SemiBold"
                                                Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                    <TextBlock Text="Review validation posture, repair candidates, and provider comparisons before issues cascade into downstream workflows."
+                                    <TextBlock Text="Review linked fund accounts, bank posture, cash movement, and trial-balance state before governance issues cascade downstream."
                                                FontSize="11"
                                                Foreground="{StaticResource ConsoleTextMutedBrush}"
                                                Margin="0,2,0,0" />
                                 </StackPanel>
                                 <Button Grid.Column="1" Content="Review"
-                                        Click="OpenDataQuality_Click"
+                                        Click="OpenFundOverview_Click"
                                         Style="{StaticResource SecondaryButtonStyle}" />
                             </Grid>
                         </Border>

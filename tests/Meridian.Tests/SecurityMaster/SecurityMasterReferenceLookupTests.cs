@@ -133,6 +133,93 @@ public sealed class SecurityMasterReferenceLookupTests
         result.SubType.Should().BeNull();
     }
 
+    [Fact]
+    public async Task GetBySymbolAsync_UsesIsinHeuristics_WhenRawValueLooksLikeIsin()
+    {
+        var securityId = Guid.NewGuid();
+        var detail = BuildDetail(
+            securityId,
+            "Bond",
+            [
+                new SecurityIdentifierDto(SecurityIdentifierKind.Isin, "US5949181045", true, DateTimeOffset.UtcNow.AddDays(-10), null, null)
+            ]);
+
+        var queryService = Substitute.For<ISecurityMasterQueryService>();
+        queryService
+            .GetByIdentifierAsync(SecurityIdentifierKind.Isin, "US5949181045", null, Arg.Any<CancellationToken>())
+            .Returns(detail);
+
+        var lookup = new SecurityMasterSecurityReferenceLookup(queryService);
+
+        var result = await lookup.GetBySymbolAsync("US5949181045");
+
+        result.Should().NotBeNull();
+        result!.SecurityId.Should().Be(securityId);
+        await queryService.Received().GetByIdentifierAsync(
+            SecurityIdentifierKind.Isin,
+            "US5949181045",
+            null,
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetBySymbolAsync_UsesProviderSymbolHeuristics_WhenProviderPrefixIsPresent()
+    {
+        var securityId = Guid.NewGuid();
+        var detail = BuildDetail(
+            securityId,
+            "Equity",
+            [
+                new SecurityIdentifierDto(SecurityIdentifierKind.ProviderSymbol, "AAPL", true, DateTimeOffset.UtcNow.AddDays(-10), null, "polygon")
+            ]);
+
+        var queryService = Substitute.For<ISecurityMasterQueryService>();
+        queryService
+            .GetByIdentifierAsync(SecurityIdentifierKind.ProviderSymbol, "AAPL", "polygon", Arg.Any<CancellationToken>())
+            .Returns(detail);
+
+        var lookup = new SecurityMasterSecurityReferenceLookup(queryService);
+
+        var result = await lookup.GetBySymbolAsync("polygon:AAPL");
+
+        result.Should().NotBeNull();
+        result!.SecurityId.Should().Be(securityId);
+        await queryService.Received().GetByIdentifierAsync(
+            SecurityIdentifierKind.ProviderSymbol,
+            "AAPL",
+            "polygon",
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetBySymbolAsync_StripsDescriptorSuffix_WhenTickerIncludesVenueText()
+    {
+        var securityId = Guid.NewGuid();
+        var detail = BuildDetail(
+            securityId,
+            "Equity",
+            [
+                new SecurityIdentifierDto(SecurityIdentifierKind.Ticker, "MSFT", true, DateTimeOffset.UtcNow.AddDays(-10), null, null)
+            ]);
+
+        var queryService = Substitute.For<ISecurityMasterQueryService>();
+        queryService
+            .GetByIdentifierAsync(SecurityIdentifierKind.Ticker, "MSFT", null, Arg.Any<CancellationToken>())
+            .Returns(detail);
+
+        var lookup = new SecurityMasterSecurityReferenceLookup(queryService);
+
+        var result = await lookup.GetBySymbolAsync("MSFT US Equity");
+
+        result.Should().NotBeNull();
+        result!.DisplayName.Should().Be("Microsoft Corp.");
+        await queryService.Received().GetByIdentifierAsync(
+            SecurityIdentifierKind.Ticker,
+            "MSFT",
+            null,
+            Arg.Any<CancellationToken>());
+    }
+
     [Theory]
     [InlineData("Bond", "Bond")]
     [InlineData("TreasuryBill", "TreasuryBill")]

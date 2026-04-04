@@ -38,6 +38,13 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             ["RunPortfolio"] = new("Run Portfolio", "Review portfolio holdings, exposure, and position detail for the selected run."),
             ["RunLedger"] = new("Run Ledger", "Inspect ledger entries, postings, and financial reconciliation for the selected run."),
             ["FundLedger"] = new("Fund Ledger", "Inspect consolidated and scoped ledger balances for the active fund."),
+            ["FundAccounts"] = new("Fund Accounts", "Review linked fund accounts, balances, and account-first drill-ins."),
+            ["FundBanking"] = new("Banking", "Review bank-operational balances, statements, and cash movement."),
+            ["FundPortfolio"] = new("Fund Portfolio", "Review portfolio posture across fund-scoped runs and linked accounts."),
+            ["FundCashFinancing"] = new("Cash & Financing", "Inspect total cash, financing costs, and settlement posture."),
+            ["FundTrialBalance"] = new("Trial Balance", "Inspect fund trial-balance lines for the active governance scope."),
+            ["FundReconciliation"] = new("Reconciliation", "Review fund account reconciliation posture and open breaks."),
+            ["FundAuditTrail"] = new("Audit Trail", "Review recent journal and reconciliation activity for the active fund."),
             ["RunCashFlow"] = new("Run Cash Flow", "Review cash movement, projections, and funding impact for the selected run."),
             ["Charts"] = new("Charts", "Visualize price action, overlays, and investigation snapshots."),
             ["QuantScript"] = new("Quant Script", "Prototype research logic and iterate on calculations inside the workstation."),
@@ -443,7 +450,9 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
         "GovernanceShell" or "DataQuality" or "ProviderHealth" or "SystemHealth" or "Diagnostics"
             or "Settings" or "AdminMaintenance" or "RetentionAssurance"
-            or "NotificationCenter" or "Help" or "RunLedger" or "FundLedger" or "ArchiveHealth"
+            or "NotificationCenter" or "Help" or "RunLedger" or "FundLedger" or "FundAccounts"
+            or "FundBanking" or "FundPortfolio" or "FundCashFinancing" or "FundTrialBalance"
+            or "FundReconciliation" or "FundAuditTrail" or "ArchiveHealth"
             or "ServiceManager" or "CollectionSessions" or "StorageOptimization"
             or "ActivityLog" or "MessagingHub" or "SecurityMaster" or "DirectLending"
             or "CredentialManagement" or "SetupWizard" or "KeyboardShortcuts"

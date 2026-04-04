@@ -17,16 +17,19 @@ public partial class TradingWorkspaceShellPage : Page
     private readonly NavigationService _navigationService;
     private readonly StrategyRunWorkspaceService _runService;
     private readonly FundContextService _fundContextService;
+    private readonly CashFinancingReadService _cashFinancingReadService;
 
     public TradingWorkspaceShellPage(
         NavigationService navigationService,
         StrategyRunWorkspaceService runService,
-        FundContextService fundContextService)
+        FundContextService fundContextService,
+        CashFinancingReadService cashFinancingReadService)
     {
         InitializeComponent();
         _navigationService = navigationService;
         _runService = runService;
         _fundContextService = fundContextService;
+        _cashFinancingReadService = cashFinancingReadService;
     }
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
@@ -68,6 +71,26 @@ public partial class TradingWorkspaceShellPage : Page
             {
                 ActivePositionsList.ItemsSource = null;
                 NoPositionsText.Visibility = Visibility.Visible;
+            }
+
+            var profile = _fundContextService.CurrentFundProfile;
+            if (profile is not null)
+            {
+                var capitalSummary = await _cashFinancingReadService.GetAsync(profile.FundProfileId, profile.BaseCurrency);
+                CapitalCashText.Text = capitalSummary.TotalCash.ToString("C2");
+                CapitalGrossExposureText.Text = capitalSummary.GrossExposure.ToString("C2");
+                CapitalNetExposureText.Text = capitalSummary.NetExposure.ToString("C2");
+                CapitalFinancingText.Text = capitalSummary.FinancingCost.ToString("C2");
+                CapitalControlsDetailText.Text = capitalSummary.Highlights.FirstOrDefault()
+                    ?? "Capital posture is available through the governance fund operations workspace.";
+            }
+            else
+            {
+                CapitalCashText.Text = "—";
+                CapitalGrossExposureText.Text = "—";
+                CapitalNetExposureText.Text = "—";
+                CapitalFinancingText.Text = "—";
+                CapitalControlsDetailText.Text = "Select a fund to unlock capital and controls drill-throughs.";
             }
         }
         catch (Exception ex)
@@ -129,6 +152,9 @@ public partial class TradingWorkspaceShellPage : Page
 
     private void OpenTradingHours_Click(object sender, RoutedEventArgs e)
         => _navigationService.NavigateTo("TradingHours");
+
+    private void OpenCapitalControls_Click(object sender, RoutedEventArgs e)
+        => _navigationService.NavigateTo("FundCashFinancing");
 
     private async void OnActiveFundProfileChanged(object? sender, FundProfileChangedEventArgs e)
     {
