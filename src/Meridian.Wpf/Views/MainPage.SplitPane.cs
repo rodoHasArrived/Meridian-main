@@ -9,6 +9,7 @@ public partial class MainPage
     private void OnSplitPaneHostLoaded(object sender, RoutedEventArgs e)
     {
         if (sender is not SplitPaneHostControl host) return;
+        _splitPaneHostReady = true;
 
         var firstFrame = host.GetPaneFrame(0);
         if (firstFrame is null) return;

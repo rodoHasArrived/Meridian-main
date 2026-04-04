@@ -12,6 +12,7 @@ public partial class MainPage : Page
 {
     private readonly WpfNavigationService _navigationService;
     private readonly MainPageViewModel _viewModel;
+    private bool _splitPaneHostReady;
 
     public MainPage(MainPageViewModel viewModel)
     {
@@ -24,7 +25,7 @@ public partial class MainPage : Page
 
     private void OnPageLoaded(object sender, RoutedEventArgs e)
     {
-        _navigationService.Initialize(ContentFrame);
+        InitializeNavigationTarget();
 
         _viewModel.ActivateShell();
     }
@@ -86,5 +87,22 @@ public partial class MainPage : Page
     private void OnContentFrameNavigated(object sender, WpfNavigationEventArgs e)
     {
         _viewModel.SyncNavigationState();
+    }
+
+    private void InitializeNavigationTarget()
+    {
+        if (_splitPaneHostReady)
+        {
+            var activePane = SplitPaneHost.GetPaneFrame(_viewModel.SplitPane.ActivePaneIndex)
+                ?? SplitPaneHost.GetPaneFrame(0);
+
+            if (activePane is not null)
+            {
+                _navigationService.Initialize(activePane);
+                return;
+            }
+        }
+
+        _navigationService.Initialize(ContentFrame);
     }
 }

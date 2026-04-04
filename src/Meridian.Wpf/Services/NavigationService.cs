@@ -191,13 +191,14 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         {
             var pageName = pageType.Name;
             LoggingService.Instance.LogError($"Navigation to {pageName} failed: {ex}");
+            var detail = BuildExceptionDetail(ex);
 
             _frame.Navigate(CreateNavigationErrorPage(pageName, ex));
 
             try
             {
                 MessageBox.Show(
-                    $"Navigation to '{pageName}' failed.\n\n{ex.Message}",
+                    $"Navigation to '{pageName}' failed.\n\n{detail}",
                     "Navigation Error",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
@@ -277,6 +278,7 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
 
     private static Page CreateNavigationErrorPage(string pageName, Exception ex)
     {
+        var detail = BuildExceptionDetail(ex);
         var panel = new StackPanel
         {
             Margin = new Thickness(24)
@@ -292,7 +294,7 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
 
         panel.Children.Add(new TextBlock
         {
-            Text = ex.Message,
+            Text = detail,
             TextWrapping = TextWrapping.Wrap
         });
 
@@ -300,5 +302,16 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         {
             Content = panel
         };
+    }
+
+    private static string BuildExceptionDetail(Exception ex)
+    {
+        var messages = new List<string>();
+        for (var current = ex; current is not null; current = current.InnerException)
+        {
+            messages.Add(current.Message);
+        }
+
+        return string.Join(Environment.NewLine + Environment.NewLine + "Inner: ", messages);
     }
 }

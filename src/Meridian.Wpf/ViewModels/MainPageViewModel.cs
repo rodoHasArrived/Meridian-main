@@ -12,7 +12,7 @@ namespace Meridian.Wpf.ViewModels;
 public sealed class MainPageViewModel : BindableBase, IDisposable
 {
     private const string DefaultWorkspace = "research";
-    private const string DefaultPageTag = "Dashboard";
+    private const string DefaultPageTag = "ResearchShell";
 
     private static readonly IReadOnlyDictionary<string, WorkspaceContent> WorkspaceData =
         new Dictionary<string, WorkspaceContent>(StringComparer.OrdinalIgnoreCase)
@@ -26,6 +26,8 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     private static readonly IReadOnlyDictionary<string, PageContent> PageData =
         new Dictionary<string, PageContent>(StringComparer.OrdinalIgnoreCase)
         {
+            ["ResearchShell"] = new("Research Workspace", "Start from strategy runs, charts, replay, and analysis workflows."),
+            ["TradingShell"] = new("Trading Workspace", "Start from live posture, positions, risk, and execution workflows."),
             ["Dashboard"] = new("Dashboard", "High-trust operator view with live posture, alerts, and action shortcuts."),
             ["Watchlist"] = new("Watchlist", "Track symbols, shortlist trade ideas, and stage new monitoring targets."),
             ["StrategyRuns"] = new("Strategy Runs", "Browse recorded runs and drill into outcomes across research workflows."),
@@ -82,6 +84,15 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             ["DirectLending"] = new("Direct Lending", "Review direct lending operations and portfolio workflows.")
         };
 
+    private static readonly IReadOnlyDictionary<string, string> WorkspaceHomePageTags =
+        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["research"] = "ResearchShell",
+            ["trading"] = "TradingShell",
+            ["data-operations"] = "Provider",
+            ["governance"] = "DataQuality"
+        };
+
     private readonly INavigationService _navigationService;
     private readonly FixtureModeDetector _fixtureModeDetector;
     private readonly ObservableCollection<string> _commandPalettePages = [];
@@ -110,7 +121,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         CommandPalettePages = new ReadOnlyObservableCollection<string>(_commandPalettePages);
         RecentPages = new ReadOnlyObservableCollection<RecentPageEntry>(_recentPages);
 
-        SelectWorkspaceCommand = new RelayCommand<string>(SelectWorkspace);
+        SelectWorkspaceCommand = new RelayCommand<string>(workspace => SelectWorkspace(workspace, navigateToHome: true));
         NavigateToPageCommand = new RelayCommand<string>(NavigateToPage);
         ShowCommandPaletteCommand = new RelayCommand(ShowCommandPalette);
         HideCommandPaletteCommand = new RelayCommand(HideCommandPalette);
@@ -125,7 +136,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         _navigationService.Navigated += OnNavigated;
         _fixtureModeDetector.ModeChanged += OnFixtureModeChanged;
 
-        var initialPage = _navigationService.GetBreadcrumbs().FirstOrDefault()?.PageTag ?? DefaultPageTag;
+        var initialPage = _navigationService.GetBreadcrumbs().FirstOrDefault()?.PageTag ?? GetWorkspaceHomePageTag(DefaultWorkspace);
         ApplyCurrentPage(initialPage);
         RefreshCommandPalettePages();
         RefreshRecentPages();
@@ -291,7 +302,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     {
         if (_navigationService.GetBreadcrumbs().Count == 0)
         {
-            NavigateToPage(CurrentPageTag);
+            NavigateToPage(GetWorkspaceHomePageTag(CurrentWorkspace));
             return;
         }
 
@@ -335,26 +346,39 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         UpdateFixtureModeBanner();
     }
 
-    private void SelectWorkspace(string? workspace)
+    private void SelectWorkspace(string? workspace, bool navigateToHome = false)
     {
         var normalized = workspace is not null && WorkspaceData.ContainsKey(workspace)
             ? workspace
             : DefaultWorkspace;
 
-        if (!SetProperty(ref _currentWorkspace, normalized))
+        var workspaceChanged = SetProperty(ref _currentWorkspace, normalized);
+        if (!workspaceChanged && !navigateToHome)
         {
             return;
         }
 
-        RaisePropertyChanged(nameof(WorkspaceHeading));
-        RaisePropertyChanged(nameof(WorkspaceDescription));
-        RaisePropertyChanged(nameof(WorkspaceSummary));
-        RaisePropertyChanged(nameof(ActiveNavigationLabel));
-        RaisePropertyChanged(nameof(RecentPagesHintText));
-        RaisePropertyChanged(nameof(IsResearchWorkspaceActive));
-        RaisePropertyChanged(nameof(IsTradingWorkspaceActive));
-        RaisePropertyChanged(nameof(IsDataOperationsWorkspaceActive));
-        RaisePropertyChanged(nameof(IsGovernanceWorkspaceActive));
+        if (workspaceChanged)
+        {
+            RaisePropertyChanged(nameof(WorkspaceHeading));
+            RaisePropertyChanged(nameof(WorkspaceDescription));
+            RaisePropertyChanged(nameof(WorkspaceSummary));
+            RaisePropertyChanged(nameof(ActiveNavigationLabel));
+            RaisePropertyChanged(nameof(RecentPagesHintText));
+            RaisePropertyChanged(nameof(IsResearchWorkspaceActive));
+            RaisePropertyChanged(nameof(IsTradingWorkspaceActive));
+            RaisePropertyChanged(nameof(IsDataOperationsWorkspaceActive));
+            RaisePropertyChanged(nameof(IsGovernanceWorkspaceActive));
+        }
+
+        if (navigateToHome)
+        {
+            var workspaceHomePageTag = GetWorkspaceHomePageTag(normalized);
+            if (!string.Equals(CurrentPageTag, workspaceHomePageTag, StringComparison.OrdinalIgnoreCase))
+            {
+                NavigateToPage(workspaceHomePageTag);
+            }
+        }
     }
 
     private static string? InferWorkspaceFromPage(string? pageTag) => pageTag switch
@@ -471,7 +495,8 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             .Where(page => string.IsNullOrWhiteSpace(query)
                 || page.Contains(query, StringComparison.OrdinalIgnoreCase)
                 || (PageData.TryGetValue(page, out var pd) && pd.Title.Contains(query, StringComparison.OrdinalIgnoreCase)))
-            .OrderBy(page => page, StringComparer.OrdinalIgnoreCase)
+            .OrderBy(page => GetCommandPaletteSortBucket(page))
+            .ThenBy(page => GetPageDisplayName(page), StringComparer.OrdinalIgnoreCase)
             .ToList();
 
         _commandPalettePages.Clear();
@@ -511,16 +536,32 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         FixtureModeBannerText = _fixtureModeDetector.ModeLabel;
     }
 
+    private static int GetCommandPaletteSortBucket(string pageTag)
+        => pageTag switch
+        {
+            "ResearchShell" => 0,
+            "TradingShell" => 1,
+            "Provider" => 2,
+            "DataQuality" => 3,
+            "Dashboard" => 4,
+            _ => 5
+        };
+
+    private static string GetWorkspaceHomePageTag(string workspace)
+        => WorkspaceHomePageTags.TryGetValue(workspace, out var pageTag)
+            ? pageTag
+            : DefaultPageTag;
+
     private string NormalizePageTag(string? pageTag)
     {
         if (string.IsNullOrWhiteSpace(pageTag))
         {
-            return DefaultPageTag;
+            return GetWorkspaceHomePageTag(CurrentWorkspace);
         }
 
         return _navigationService.IsPageRegistered(pageTag)
             ? pageTag
-            : DefaultPageTag;
+            : GetWorkspaceHomePageTag(CurrentWorkspace);
     }
 
     private static string GetPageDisplayName(string pageTag)

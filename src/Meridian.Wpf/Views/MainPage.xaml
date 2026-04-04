@@ -310,7 +310,7 @@
                                     </Button.Style>
                                     <StackPanel>
                                         <TextBlock Text="Research" FontSize="12" FontWeight="SemiBold" />
-                                        <TextBlock Text="Runs · Charts"
+                                        <TextBlock Text="Runs · Analysis"
                                                    Margin="0,2,0,0" FontSize="10"
                                                    Opacity="0.75" TextWrapping="Wrap" />
                                     </StackPanel>
@@ -335,7 +335,7 @@
                                     </Button.Style>
                                     <StackPanel>
                                         <TextBlock Text="Trading" FontSize="12" FontWeight="SemiBold" />
-                                        <TextBlock Text="Live · Orders"
+                                        <TextBlock Text="Positions · Risk"
                                                    Margin="0,2,0,0" FontSize="10"
                                                    Opacity="0.75" TextWrapping="Wrap" />
                                     </StackPanel>
@@ -360,7 +360,7 @@
                                     </Button.Style>
                                     <StackPanel>
                                         <TextBlock Text="Data Ops" FontSize="12" FontWeight="SemiBold" />
-                                        <TextBlock Text="Providers · Storage"
+                                        <TextBlock Text="Providers · Backfills"
                                                    Margin="0,2,0,0" FontSize="10"
                                                    Opacity="0.75" TextWrapping="Wrap" />
                                     </StackPanel>
@@ -385,7 +385,7 @@
                                     </Button.Style>
                                     <StackPanel>
                                         <TextBlock Text="Governance" FontSize="12" FontWeight="SemiBold" />
-                                        <TextBlock Text="Quality · Policy"
+                                        <TextBlock Text="Alerts · Audit"
                                                    Margin="0,2,0,0" FontSize="10"
                                                    Opacity="0.75" TextWrapping="Wrap" />
                                     </StackPanel>
@@ -419,12 +419,12 @@
                                          SelectedValue="{Binding CurrentPageTag, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                          AutomationProperties.AutomationId="ResearchNavList"
                                          AutomationProperties.Name="Research Navigation">
-                                    <ListBoxItem Tag="Dashboard"
-                                                 AutomationProperties.AutomationId="ResearchNavDashboard"
-                                                 AutomationProperties.Name="Dashboard Navigation">
+                                    <ListBoxItem Tag="ResearchShell"
+                                                 AutomationProperties.AutomationId="ResearchNavWorkspaceHome"
+                                                 AutomationProperties.Name="Research Workspace Navigation">
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Text="{StaticResource IconDashboard}" Style="{StaticResource ShellNavIconStyle}" />
-                                            <TextBlock Text="Dashboard" Style="{StaticResource ShellNavLabelStyle}" />
+                                            <TextBlock Text="Workspace Home" Style="{StaticResource ShellNavLabelStyle}" />
                                         </StackPanel>
                                     </ListBoxItem>
                                     <ListBoxItem Tag="LiveData"
@@ -493,6 +493,12 @@
                                          ItemContainerStyle="{StaticResource ShellNavItemStyle}"
                                          SelectedValuePath="Tag"
                                          SelectedValue="{Binding CurrentPageTag, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                    <ListBoxItem Tag="TradingShell">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{StaticResource IconDashboard}" Style="{StaticResource ShellNavIconStyle}" />
+                                            <TextBlock Text="Workspace Home" Style="{StaticResource ShellNavLabelStyle}" />
+                                        </StackPanel>
+                                    </ListBoxItem>
                                     <ListBoxItem Tag="Backtest">
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Text="{StaticResource IconPlay}" Style="{StaticResource ShellNavIconStyle}" />
