@@ -1132,6 +1132,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── ProviderFeatureRegistration.cs
 │   │   │   │   ├── StorageFeatureRegistration.cs
 │   │   │   │   └── SymbolManagementFeatureRegistration.cs
+│   │   │   ├── FundAccountsStartup.cs
 │   │   │   ├── HostAdapters.cs
 │   │   │   ├── HostStartup.cs
 │   │   │   ├── SecurityMasterStartup.cs
@@ -1207,6 +1208,9 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── EtlServices.cs
 │   │   ├── Filters
 │   │   │   └── MarketEventFilter.cs
+│   │   ├── FundAccounts
+│   │   │   ├── IFundAccountService.cs
+│   │   │   └── InMemoryFundAccountService.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── Http
 │   │   │   ├── BackfillCoordinator.cs
@@ -1563,6 +1567,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── ExportPreset.cs
 │   │   │   └── StandardPresets.cs
 │   │   ├── FundStructure
+│   │   │   ├── AccountManagementDtos.cs
+│   │   │   ├── AccountManagementOptions.cs
 │   │   │   ├── FundStructureCommands.cs
 │   │   │   ├── FundStructureDtos.cs
 │   │   │   └── FundStructureQueries.cs
@@ -1782,6 +1788,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Canonicalization
 │   │   │   └── MappingRules.fs
 │   │   ├── Domain
+│   │   │   ├── AccountStatements.fs
 │   │   │   ├── CashFlowProjection.fs
 │   │   │   ├── CashFlowRules.fs
 │   │   │   ├── DirectLending.fs
@@ -1800,6 +1807,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── Sides.fs
 │   │   ├── Generated
 │   │   │   └── Meridian.FSharp.Interop.g.cs
+│   │   ├── Interop.AccountDetails.fs
 │   │   ├── Interop.CashFlow.fs
 │   │   ├── Interop.DirectLending.fs
 │   │   ├── Interop.SecurityMaster.fs
@@ -2196,6 +2204,10 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── ExportResult.cs
 │   │   │   ├── ExportValidator.cs
 │   │   │   └── ExportVerificationReport.cs
+│   │   ├── FundAccounts
+│   │   │   ├── IFundAccountStore.cs
+│   │   │   └── Migrations
+│   │   │       └── 001_fund_accounts.sql
 │   │   ├── GlobalUsings.cs
 │   │   ├── Interfaces
 │   │   │   ├── IMarketDataStore.cs
@@ -2518,6 +2530,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── ExecutionEndpoints.cs
 │   │   │   ├── ExportEndpoints.cs
 │   │   │   ├── FailoverEndpoints.cs
+│   │   │   ├── FundAccountEndpoints.cs
 │   │   │   ├── HealthEndpoints.cs
 │   │   │   ├── HistoricalEndpoints.cs
 │   │   │   ├── IBEndpoints.cs
@@ -2746,6 +2759,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── DirectLendingViewModel.cs
 │       │   ├── EventReplayViewModel.cs
 │       │   ├── ExportPresetsViewModel.cs
+│       │   ├── FundAccountsViewModel.cs
 │       │   ├── IPageActionBarProvider.cs
 │       │   ├── IndexSubscriptionViewModel.cs
 │       │   ├── LeanIntegrationViewModel.cs
@@ -2854,6 +2868,8 @@ Use these documents together when planning or implementing new work:
 │           ├── EventReplayPage.xaml.cs
 │           ├── ExportPresetsPage.xaml
 │           ├── ExportPresetsPage.xaml.cs
+│           ├── FundAccountsPage.xaml
+│           ├── FundAccountsPage.xaml.cs
 │           ├── HelpPage.xaml
 │           ├── HelpPage.xaml.cs
 │           ├── IndexSubscriptionPage.xaml
@@ -2991,6 +3007,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Meridian.DirectLending.Tests.csproj
 │   │   └── PaymentApprovalTests.cs
 │   ├── Meridian.FSharp.Tests
+│   │   ├── AccountDetailsTests.fs
 │   │   ├── CalculationTests.fs
 │   │   ├── CanonicalizationTests.fs
 │   │   ├── CashFlowProjectorTests.fs
@@ -3089,6 +3106,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── EtlJobDefinitionStoreTests.cs
 │   │   │   │   ├── EtlJobOrchestratorTests.cs
 │   │   │   │   └── EtlNormalizationServiceTests.cs
+│   │   │   ├── FundAccounts
+│   │   │   │   └── FundAccountServiceTests.cs
 │   │   │   ├── Indicators
 │   │   │   │   └── TechnicalIndicatorServiceTests.cs
 │   │   │   ├── Monitoring
@@ -3505,6 +3524,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-461 directories, 2916 files
+465 directories, 2931 files
 ```
 <!-- readme-tree end -->

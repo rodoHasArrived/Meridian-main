@@ -1086,6 +1086,7 @@ Meridian-main
 │   │   │   │   └── StartupOrchestrator.cs
 │   │   │   ├── CircuitBreakerCallbackRouter.cs
 │   │   │   ├── DirectLendingStartup.cs
+│   │   │   ├── FundAccountsStartup.cs
 │   │   │   ├── HostAdapters.cs
 │   │   │   ├── HostStartup.cs
 │   │   │   ├── SecurityMasterStartup.cs
@@ -1146,6 +1147,9 @@ Meridian-main
 │   │   │   └── EtlServices.cs
 │   │   ├── Filters
 │   │   │   └── MarketEventFilter.cs
+│   │   ├── FundAccounts
+│   │   │   ├── IFundAccountService.cs
+│   │   │   └── InMemoryFundAccountService.cs
 │   │   ├── Http
 │   │   │   ├── Endpoints
 │   │   │   │   ├── ArchiveMaintenanceEndpoints.cs
@@ -1502,6 +1506,8 @@ Meridian-main
 │   │   │   ├── ExportPreset.cs
 │   │   │   └── StandardPresets.cs
 │   │   ├── FundStructure
+│   │   │   ├── AccountManagementDtos.cs
+│   │   │   ├── AccountManagementOptions.cs
 │   │   │   ├── FundStructureCommands.cs
 │   │   │   ├── FundStructureDtos.cs
 │   │   │   └── FundStructureQueries.cs
@@ -1721,6 +1727,7 @@ Meridian-main
 │   │   ├── Canonicalization
 │   │   │   └── MappingRules.fs
 │   │   ├── Domain
+│   │   │   ├── AccountStatements.fs
 │   │   │   ├── CashFlowProjection.fs
 │   │   │   ├── CashFlowRules.fs
 │   │   │   ├── DirectLending.fs
@@ -1753,6 +1760,7 @@ Meridian-main
 │   │   │   ├── TradeValidator.fs
 │   │   │   ├── ValidationPipeline.fs
 │   │   │   └── ValidationTypes.fs
+│   │   ├── Interop.AccountDetails.fs
 │   │   ├── Interop.CashFlow.fs
 │   │   ├── Interop.DirectLending.fs
 │   │   ├── Interop.fs
@@ -2135,6 +2143,10 @@ Meridian-main
 │   │   │   ├── ExportResult.cs
 │   │   │   ├── ExportValidator.cs
 │   │   │   └── ExportVerificationReport.cs
+│   │   ├── FundAccounts
+│   │   │   ├── Migrations
+│   │   │   │   └── 001_fund_accounts.sql
+│   │   │   └── IFundAccountStore.cs
 │   │   ├── Interfaces
 │   │   │   ├── IMarketDataStore.cs
 │   │   │   ├── ISourceRegistry.cs
@@ -2456,6 +2468,7 @@ Meridian-main
 │   │   │   ├── ExecutionEndpoints.cs
 │   │   │   ├── ExportEndpoints.cs
 │   │   │   ├── FailoverEndpoints.cs
+│   │   │   ├── FundAccountEndpoints.cs
 │   │   │   ├── HealthEndpoints.cs
 │   │   │   ├── HistoricalEndpoints.cs
 │   │   │   ├── IBEndpoints.cs
@@ -2677,6 +2690,7 @@ Meridian-main
 │       │   ├── DirectLendingViewModel.cs
 │       │   ├── EventReplayViewModel.cs
 │       │   ├── ExportPresetsViewModel.cs
+│       │   ├── FundAccountsViewModel.cs
 │       │   ├── IndexSubscriptionViewModel.cs
 │       │   ├── IPageActionBarProvider.cs
 │       │   ├── LeanIntegrationViewModel.cs
@@ -2785,6 +2799,8 @@ Meridian-main
 │       │   ├── EventReplayPage.xaml.cs
 │       │   ├── ExportPresetsPage.xaml
 │       │   ├── ExportPresetsPage.xaml.cs
+│       │   ├── FundAccountsPage.xaml
+│       │   ├── FundAccountsPage.xaml.cs
 │       │   ├── HelpPage.xaml
 │       │   ├── HelpPage.xaml.cs
 │       │   ├── IndexSubscriptionPage.xaml
@@ -2929,6 +2945,7 @@ Meridian-main
 │   │   ├── Meridian.DirectLending.Tests.csproj
 │   │   └── PaymentApprovalTests.cs
 │   ├── Meridian.FSharp.Tests
+│   │   ├── AccountDetailsTests.fs
 │   │   ├── CalculationTests.fs
 │   │   ├── CanonicalizationTests.fs
 │   │   ├── CashFlowProjectorTests.fs
@@ -3026,6 +3043,8 @@ Meridian-main
 │   │   │   │   ├── EtlJobDefinitionStoreTests.cs
 │   │   │   │   ├── EtlJobOrchestratorTests.cs
 │   │   │   │   └── EtlNormalizationServiceTests.cs
+│   │   │   ├── FundAccounts
+│   │   │   │   └── FundAccountServiceTests.cs
 │   │   │   ├── Indicators
 │   │   │   │   └── TechnicalIndicatorServiceTests.cs
 │   │   │   ├── Monitoring

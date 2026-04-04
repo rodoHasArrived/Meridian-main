@@ -265,6 +265,9 @@ public static class UiEndpoints
         // Direct lending endpoints
         app.MapDirectLendingEndpoints(jsonOptions);
 
+        // Fund accounts (custodian and bank) endpoints
+        app.MapFundAccountEndpoints(jsonOptions);
+
         // Security Master endpoints
         app.MapSecurityMasterEndpoints(jsonOptions);
 
@@ -374,6 +377,9 @@ public static class UiEndpoints
 
         // Direct lending endpoints
         app.MapDirectLendingEndpoints(jsonOptions);
+
+        // Fund accounts (custodian and bank) endpoints
+        app.MapFundAccountEndpoints(jsonOptions);
 
         // Security Master endpoints
         app.MapSecurityMasterEndpoints(jsonOptions);
