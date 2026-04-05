@@ -976,6 +976,7 @@ Meridian-main
 │   ├── dev
 │   │   ├── build-ibapi-smoke.ps1
 │   │   ├── capture-desktop-screenshots.ps1
+│   │   ├── cleanup-generated.ps1
 │   │   ├── desktop-dev.ps1
 │   │   ├── diagnose-uwp-xaml.ps1
 │   │   └── install-git-hooks.sh
@@ -1539,6 +1540,7 @@ Meridian-main
 │   │   │   └── MoneyMarketFundDtos.cs
 │   │   ├── Workstation
 │   │   │   ├── FundLedgerDtos.cs
+│   │   │   ├── FundOperationsDtos.cs
 │   │   │   ├── ReconciliationDtos.cs
 │   │   │   ├── SecurityMasterWorkstationDtos.cs
 │   │   │   └── StrategyRunReadModels.cs
@@ -2614,6 +2616,7 @@ Meridian-main
 │       │   ├── BackgroundTaskSchedulerService.cs
 │       │   ├── BacktestService.cs
 │       │   ├── BrushRegistry.cs
+│       │   ├── CashFinancingReadService.cs
 │       │   ├── ClipboardWatcherService.cs
 │       │   ├── ConfigService.cs
 │       │   ├── ConnectionService.cs
@@ -2624,8 +2627,10 @@ Meridian-main
 │       │   ├── ExportPresetService.cs
 │       │   ├── FirstRunService.cs
 │       │   ├── FormValidationService.cs
+│       │   ├── FundAccountReadService.cs
 │       │   ├── FundContextService.cs
 │       │   ├── FundLedgerReadService.cs
+│       │   ├── FundProfileKeyTranslator.cs
 │       │   ├── GlobalHotkeyService.cs
 │       │   ├── ICommandContextProvider.cs
 │       │   ├── IFundProfileCatalog.cs
@@ -2640,6 +2645,7 @@ Meridian-main
 │       │   ├── OfflineTrackingPersistenceService.cs
 │       │   ├── PendingOperationsQueueService.cs
 │       │   ├── QuantScriptLayoutService.cs
+│       │   ├── ReconciliationReadService.cs
 │       │   ├── RetentionAssuranceService.cs
 │       │   ├── RunMatService.cs
 │       │   ├── SchemaService.cs
@@ -3451,6 +3457,7 @@ Meridian-main
 │   ├── Meridian.Wpf.Tests
 │   │   ├── Services
 │   │   │   ├── AdminMaintenanceServiceTests.cs
+│   │   │   ├── AppServiceRegistrationTests.cs
 │   │   │   ├── BackgroundTaskSchedulerServiceTests.cs
 │   │   │   ├── ConfigServiceTests.cs
 │   │   │   ├── ConnectionServiceTests.cs
@@ -3479,6 +3486,7 @@ Meridian-main
 │   │   ├── ViewModels
 │   │   │   ├── CashFlowViewModelTests.cs
 │   │   │   ├── DataQualityViewModelCharacterizationTests.cs
+│   │   │   ├── FundLedgerViewModelTests.cs
 │   │   │   ├── MainShellViewModelTests.cs
 │   │   │   ├── QuantScriptViewModelTests.cs
 │   │   │   ├── RunMatViewModelTests.cs
@@ -3490,7 +3498,8 @@ Meridian-main
 │   │   │   ├── RunMatWorkflowSmokeTests.cs
 │   │   │   └── SplitPaneHostControlTests.cs
 │   │   ├── GlobalUsings.cs
-│   │   └── Meridian.Wpf.Tests.csproj
+│   │   ├── Meridian.Wpf.Tests.csproj
+│   │   └── TestAssemblyConfiguration.cs
 │   ├── scripts
 │   │   └── setup-verification.sh
 │   ├── coverlet.runsettings
