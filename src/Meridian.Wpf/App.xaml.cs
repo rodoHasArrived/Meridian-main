@@ -229,6 +229,7 @@ public partial class App : System.Windows.Application
         // ── Fixture mode service (offline mock data) ────────────────────────
         services.AddSingleton(_ => Meridian.Ui.Services.Services.FixtureDataService.Instance);
         services.AddSingleton(_ => Meridian.Ui.Services.Services.FixtureModeDetector.Instance);
+        services.AddSingleton(_ => ProviderManagementService.Instance);
 
         // ── Core services (by interface + concrete type) ────────────────────
         services.AddSingleton<IConnectionService>(_ => WpfServices.ConnectionService.Instance);
@@ -351,6 +352,7 @@ public partial class App : System.Windows.Application
         services.AddTransient<RunPortfolioPage>();
         services.AddTransient<RunLedgerPage>();
         services.AddTransient<FundLedgerPage>();
+        services.AddTransient<FundAccountsPage>();
         services.AddTransient<SecurityMasterPage>();
         services.AddTransient<Meridian.Wpf.ViewModels.SecurityMasterViewModel>();
         services.AddTransient<PluginManagementPage>();

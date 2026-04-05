@@ -271,8 +271,16 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     public Visibility CommandPaletteVisibility
     {
         get => _commandPaletteVisibility;
-        private set => SetProperty(ref _commandPaletteVisibility, value);
+        private set
+        {
+            if (SetProperty(ref _commandPaletteVisibility, value))
+            {
+                RaisePropertyChanged(nameof(IsCommandPaletteOpen));
+            }
+        }
     }
+
+    public bool IsCommandPaletteOpen => _commandPaletteVisibility == Visibility.Visible;
 
     public string CommandPaletteQuery
     {

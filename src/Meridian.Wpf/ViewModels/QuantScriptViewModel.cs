@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.Input;
@@ -55,6 +56,7 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
     private int _activeResultsTab;
     private string _notebookTitle = "QuantScript Notebook";
     private string? _documentWarningText;
+    private bool _hasUnsavedChanges;
 
     public QuantScriptViewModel(
         IScriptRunner runner,
@@ -92,7 +94,7 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
             cell => CanRun && cell is not null);
         StopCommand = new RelayCommand(StopExecution, () => IsRunning);
         NewNotebookCommand = new RelayCommand(CreateNewNotebook);
-        SaveNotebookCommand = new AsyncRelayCommand(SaveNotebookAsync);
+        SaveNotebookCommand = new AsyncRelayCommand(SaveNotebookAsync, () => !IsRunning);
         RefreshDocumentsCommand = new RelayCommand(RefreshDocuments);
         ClearConsoleCommand = new RelayCommand(() => ConsoleOutput.Clear());
         AddCellBelowCommand = new RelayCommand<QuantScriptCellViewModel?>(AddCellBelow);
@@ -112,6 +114,7 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         {
             UpdateDocumentWarning();
             DeleteCellCommand.NotifyCanExecuteChanged();
+            RaisePropertyChanged(nameof(DocumentDisplayName));
         };
     }
 
@@ -166,7 +169,16 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
     public string NotebookTitle
     {
         get => _notebookTitle;
-        set => SetProperty(ref _notebookTitle, value);
+        set
+        {
+            if (!SetProperty(ref _notebookTitle, value))
+                return;
+
+            if (!_isLoadingDocument)
+                HasUnsavedChanges = true;
+
+            RefreshNotebookChrome();
+        }
     }
 
     public string? DocumentWarningText
@@ -174,6 +186,32 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         get => _documentWarningText;
         private set => SetProperty(ref _documentWarningText, value);
     }
+
+    public bool HasUnsavedChanges
+    {
+        get => _hasUnsavedChanges;
+        private set
+        {
+            if (!SetProperty(ref _hasUnsavedChanges, value))
+                return;
+
+            RaisePropertyChanged(nameof(DocumentStateText));
+        }
+    }
+
+    public string DocumentDisplayName => _isLegacyImport
+        ? $"{NotebookTitle} (.csx import)"
+        : !string.IsNullOrWhiteSpace(_currentDocumentPath)
+            ? Path.GetFileName(_currentDocumentPath)
+            : "Unsaved notebook";
+
+    public string DocumentStateText => _isLegacyImport
+        ? "Imported legacy script"
+        : HasUnsavedChanges
+            ? "Unsaved changes"
+            : !string.IsNullOrWhiteSpace(_currentDocumentPath)
+                ? "Saved"
+                : "Draft";
 
     public PlotRequest? PrimaryChartRequest => Charts.Count > 0 ? Charts[0].Request : null;
 
@@ -208,6 +246,8 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
             RunCellCommand.NotifyCanExecuteChanged();
             RunCellAndAdvanceCommand.NotifyCanExecuteChanged();
             StopCommand.NotifyCanExecuteChanged();
+            SaveNotebookCommand.NotifyCanExecuteChanged();
+            RaisePropertyChanged(nameof(RunReadinessText));
         }
     }
 
@@ -241,7 +281,31 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         set => SetProperty(ref _activeResultsTab, value);
     }
 
-    public bool CanRun => !IsRunning;
+    public bool HasInvalidParameters => Parameters.Any(parameter => !parameter.IsValid);
+
+    public int InvalidParameterCount => Parameters.Count(parameter => !parameter.IsValid);
+
+    public string ParameterSummaryText => Parameters.Count == 0
+        ? "No script parameters"
+        : InvalidParameterCount > 0
+            ? $"{Parameters.Count} parameters | {InvalidParameterCount} invalid"
+            : $"{Parameters.Count} parameters ready";
+
+    public string ParameterHintText => Parameters.Count == 0
+        ? "Declare [ScriptParam] inputs in code to surface configurable notebook settings."
+        : InvalidParameterCount > 0
+            ? $"Fix {InvalidParameterCount} invalid parameter value(s) before running the notebook."
+            : "Parameter values stay with this session while you edit the notebook.";
+
+    public string RunReadinessText => HasInvalidParameters
+        ? "Execution is blocked until invalid parameters are fixed."
+        : IsRunning
+            ? "Execution is in progress."
+            : "Ready to run notebook cells.";
+
+    public string ShortcutHintText => "Ctrl+Enter run cell | Shift+Enter run and advance | Ctrl+S save | F5 run all";
+
+    public bool CanRun => !IsRunning && !HasInvalidParameters;
 
     public IAsyncRelayCommand RunAllCommand { get; }
 
@@ -346,6 +410,16 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         if (startIndex < 0 || targetIndex < 0 || startIndex >= Cells.Count || targetIndex >= Cells.Count)
             return;
 
+        if (HasInvalidParameters)
+        {
+            StatusText = "Fix invalid parameters";
+            ActiveResultsTab = 0;
+            AppendConsole(
+                $"Fix {InvalidParameterCount} invalid parameter value(s) in the sidebar before running the notebook.",
+                ConsoleEntryKind.Warning);
+            return;
+        }
+
         IsRunning = true;
         StatusText = startIndex == 0 && targetIndex == Cells.Count - 1 ? "Running notebook…" : "Running cell…";
         ProgressFraction = 0;
@@ -368,9 +442,9 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
                 cell.RuntimeError = null;
 
                 var previousCheckpoint = _executionSession.GetPreviousCheckpoint(identities, index);
+                // Resume on the WPF synchronization context so collection and brush updates stay UI-owned.
                 var result = await _runner
-                    .RunAsync(cell.SourceCode, parameters, previousCheckpoint, externalCt)
-                    .ConfigureAwait(false);
+                    .RunAsync(cell.SourceCode, parameters, previousCheckpoint, externalCt);
 
                 ApplyCellResult(cell, result);
 
@@ -526,11 +600,15 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
 
     private void CreateNewNotebook()
     {
+        _isLoadingDocument = true;
         _currentDocumentPath = null;
         _isLegacyImport = false;
         NotebookTitle = "QuantScript Notebook";
         LoadNotebookDocument(new QuantScriptNotebookDocument());
+        _isLoadingDocument = false;
+        HasUnsavedChanges = false;
         StatusText = "New notebook";
+        RefreshNotebookChrome();
     }
 
     private async Task SaveNotebookAsync(CancellationToken ct)
@@ -549,7 +627,9 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
 
         _currentDocumentPath = targetPath;
         _isLegacyImport = false;
+        HasUnsavedChanges = false;
         StatusText = $"Saved {Path.GetFileName(targetPath)}";
+        RefreshNotebookChrome();
 
         await RunOnUiThreadAsync(() =>
         {
@@ -562,7 +642,7 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
     private void RefreshDocuments()
     {
         Documents.Clear();
-        foreach (var document in _notebookStore.ListDocuments())
+        foreach (var document in _notebookStore.ListDocuments().OrderBy(item => item.Kind).ThenBy(item => item.Name, StringComparer.OrdinalIgnoreCase))
             Documents.Add(new QuantScriptDocumentEntry(document.Name, document.FullPath, document.Kind));
     }
 
@@ -593,6 +673,8 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
                 StatusText = document.Kind == QuantScriptDocumentKind.LegacyScript
                     ? $"Imported {document.Name}"
                     : $"Loaded {document.Name}";
+                HasUnsavedChanges = false;
+                RefreshNotebookChrome();
             }).ConfigureAwait(false);
         }
         catch (Exception ex)
@@ -630,6 +712,7 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         UpdateDocumentWarning();
         SelectCell(Cells[0]);
         RebuildAggregateResults();
+        RefreshNotebookChrome();
     }
 
     private void HandleCellEdited(QuantScriptCellViewModel editedCell)
@@ -645,6 +728,8 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         MarkCellsStale(index);
         UpdateParameters();
         RebuildAggregateResults();
+        HasUnsavedChanges = true;
+        RefreshNotebookChrome();
     }
 
     private void MarkCellsStale(int startIndex)
@@ -664,13 +749,24 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
 
     private void UpdateParameters()
     {
+        var existingValues = Parameters.ToDictionary(parameter => parameter.Name, parameter => parameter.RawValue, StringComparer.OrdinalIgnoreCase);
+        foreach (var parameter in Parameters)
+            parameter.PropertyChanged -= OnParameterPropertyChanged;
+
         Parameters.Clear();
         var source = string.Join(Environment.NewLine + Environment.NewLine, Cells.Select(cell => cell.SourceCode));
         foreach (var descriptor in _compiler.ExtractParameters(source))
         {
             var parameterType = ResolveParameterType(descriptor.TypeName);
-            Parameters.Add(new ParameterViewModel(descriptor.Name, descriptor.DefaultValue, parameterType));
+            var parameter = new ParameterViewModel(descriptor.Name, descriptor.DefaultValue, parameterType);
+            if (existingValues.TryGetValue(descriptor.Name, out var rawValue))
+                parameter.RawValue = rawValue;
+
+            parameter.PropertyChanged += OnParameterPropertyChanged;
+            Parameters.Add(parameter);
         }
+
+        RefreshParameterPresentation();
     }
 
     private static Type ResolveParameterType(string typeName)
@@ -704,6 +800,8 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         UpdateParameters();
         SelectCell(cell);
         RebuildAggregateResults();
+        HasUnsavedChanges = true;
+        RefreshNotebookChrome();
     }
 
     private void DeleteCell(QuantScriptCellViewModel? currentCell)
@@ -725,6 +823,8 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
             SelectCell(Cells[nextIndex]);
 
         RebuildAggregateResults();
+        HasUnsavedChanges = true;
+        RefreshNotebookChrome();
     }
 
     private void SelectCell(QuantScriptCellViewModel? cell)
@@ -745,6 +845,8 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
             var newCell = CreateEmptyCell();
             Cells.Add(newCell);
             SelectCell(newCell);
+            HasUnsavedChanges = true;
+            RefreshNotebookChrome();
             return;
         }
 
@@ -769,6 +871,36 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         DocumentWarningText = Cells.Count > _options.NotebookCellWarningThreshold
             ? $"Notebook has {Cells.Count} cells; performance may degrade without virtualization."
             : null;
+    }
+
+    private void OnParameterPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is nameof(ParameterViewModel.RawValue)
+            or nameof(ParameterViewModel.IsValid)
+            or nameof(ParameterViewModel.ValidationMessage))
+        {
+            RefreshParameterPresentation();
+        }
+    }
+
+    private void RefreshParameterPresentation()
+    {
+        RaisePropertyChanged(nameof(HasInvalidParameters));
+        RaisePropertyChanged(nameof(InvalidParameterCount));
+        RaisePropertyChanged(nameof(ParameterSummaryText));
+        RaisePropertyChanged(nameof(ParameterHintText));
+        RaisePropertyChanged(nameof(RunReadinessText));
+        RaisePropertyChanged(nameof(CanRun));
+        RunAllCommand.NotifyCanExecuteChanged();
+        RunCellCommand.NotifyCanExecuteChanged();
+        RunCellAndAdvanceCommand.NotifyCanExecuteChanged();
+    }
+
+    private void RefreshNotebookChrome()
+    {
+        RaisePropertyChanged(nameof(DocumentDisplayName));
+        RaisePropertyChanged(nameof(DocumentStateText));
+        RefreshParameterPresentation();
     }
 
     private void SetupFileWatcher()

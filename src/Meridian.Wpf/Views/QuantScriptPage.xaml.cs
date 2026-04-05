@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Threading;
 using ICSharpCode.AvalonEdit;
 using Meridian.Wpf.Models;
@@ -74,6 +75,26 @@ public partial class QuantScriptPage : Page
     {
         if (sender is TextEditor editor && editor.DataContext is QuantScriptCellViewModel cell)
             _vm.SelectCellCommand.Execute(cell);
+    }
+
+    private async void OnPagePreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.S && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+        {
+            if (_vm.SaveNotebookCommand.CanExecute(null))
+            {
+                e.Handled = true;
+                await _vm.SaveNotebookCommand.ExecuteAsync(null);
+            }
+
+            return;
+        }
+
+        if (e.Key == Key.F5 && Keyboard.Modifiers == ModifierKeys.None && _vm.RunAllCommand.CanExecute(null))
+        {
+            e.Handled = true;
+            await _vm.RunAllCommand.ExecuteAsync(null);
+        }
     }
 
     private void FocusSelectedEditor()

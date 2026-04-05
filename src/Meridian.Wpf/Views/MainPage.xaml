@@ -137,6 +137,14 @@
 
     <Page.InputBindings>
         <KeyBinding Key="K" Modifiers="Control" Command="{Binding ShowCommandPaletteCommand}" />
+        <KeyBinding Key="Oem5" Modifiers="Control" Command="{Binding SplitPane.SplitPaneCommand}" CommandParameter="Right" />
+        <KeyBinding Key="Oem5" Modifiers="Control+Shift" Command="{Binding SplitPane.SplitPaneCommand}" CommandParameter="Below" />
+        <KeyBinding Key="N" Modifiers="Control+Alt" Command="{Binding SplitPane.FloatPaneCommand}" />
+        <KeyBinding Key="R" Modifiers="Control+Shift" Command="{Binding SplitPane.ResetLayoutCommand}" />
+        <KeyBinding Key="D1" Modifiers="Control" Command="{Binding SplitPane.FocusPaneCommand}" CommandParameter="0" />
+        <KeyBinding Key="D2" Modifiers="Control" Command="{Binding SplitPane.FocusPaneCommand}" CommandParameter="1" />
+        <KeyBinding Key="D3" Modifiers="Control" Command="{Binding SplitPane.FocusPaneCommand}" CommandParameter="2" />
+        <KeyBinding Key="D4" Modifiers="Control" Command="{Binding SplitPane.FocusPaneCommand}" CommandParameter="3" />
     </Page.InputBindings>
 
     <Grid Background="{DynamicResource ShellWindowBackgroundBrush}">
@@ -147,7 +155,8 @@
                    AutomationProperties.Name="Shell Automation State" />
 
         <Grid x:Name="CommandPaletteOverlay"
-              Visibility="{Binding CommandPaletteVisibility}"
+              Visibility="{Binding CommandPaletteVisibility, FallbackValue=Collapsed, TargetNullValue=Collapsed}"
+              IsHitTestVisible="{Binding IsCommandPaletteOpen}"
               Panel.ZIndex="100"
               Background="#80000000"
               AutomationProperties.AutomationId="CommandPaletteOverlay"
@@ -185,6 +194,8 @@
                              Background="Transparent"
                              BorderThickness="0"
                              ItemContainerStyle="{StaticResource ShellNavItemStyle}"
+                             PreviewMouseLeftButtonDown="OnCommandPaletteResultsPreviewMouseLeftButtonDown"
+                             PreviewMouseMove="OnCommandPaletteResultsMouseMove"
                              SelectionChanged="CommandPaletteResults_SelectionChanged"
                              ItemsSource="{Binding CommandPalettePages}"
                              SelectedItem="{Binding SelectedCommandPalettePage, Mode=TwoWay}"
@@ -448,11 +459,13 @@
                         <StackPanel>
                             <StackPanel Visibility="{Binding IsResearchWorkspaceActive, Converter={StaticResource BoolToVisibility}}">
                                 <ListBox x:Name="ResearchNavList"
-                                         Background="Transparent"
-                                         BorderThickness="0"
-                                         ItemContainerStyle="{StaticResource ShellNavItemStyle}"
-                                         SelectedValuePath="Tag"
-                                         SelectedValue="{Binding CurrentPageTag, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        ItemContainerStyle="{StaticResource ShellNavItemStyle}"
+                                        PreviewMouseLeftButtonDown="OnNavigationListPreviewMouseLeftButtonDown"
+                                        PreviewMouseMove="OnNavigationListMouseMove"
+                                        SelectedValuePath="Tag"
+                                        SelectedValue="{Binding CurrentPageTag, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                          AutomationProperties.AutomationId="ResearchNavList"
                                          AutomationProperties.Name="Research Navigation">
                                     <ListBoxItem Tag="ResearchShell"
@@ -524,11 +537,13 @@
 
                             <StackPanel Visibility="{Binding IsTradingWorkspaceActive, Converter={StaticResource BoolToVisibility}}">
                                 <ListBox x:Name="TradingNavList"
-                                         Background="Transparent"
-                                         BorderThickness="0"
-                                         ItemContainerStyle="{StaticResource ShellNavItemStyle}"
-                                         SelectedValuePath="Tag"
-                                         SelectedValue="{Binding CurrentPageTag, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        ItemContainerStyle="{StaticResource ShellNavItemStyle}"
+                                        PreviewMouseLeftButtonDown="OnNavigationListPreviewMouseLeftButtonDown"
+                                        PreviewMouseMove="OnNavigationListMouseMove"
+                                        SelectedValuePath="Tag"
+                                        SelectedValue="{Binding CurrentPageTag, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                                     <ListBoxItem Tag="TradingShell">
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Text="{StaticResource IconDashboard}" Style="{StaticResource ShellNavIconStyle}" />
@@ -579,11 +594,13 @@
 
                             <StackPanel Visibility="{Binding IsDataOperationsWorkspaceActive, Converter={StaticResource BoolToVisibility}}">
                                 <ListBox x:Name="DataOpsNavList"
-                                         Background="Transparent"
-                                         BorderThickness="0"
-                                         ItemContainerStyle="{StaticResource ShellNavItemStyle}"
-                                         SelectedValuePath="Tag"
-                                         SelectedValue="{Binding CurrentPageTag, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        ItemContainerStyle="{StaticResource ShellNavItemStyle}"
+                                        PreviewMouseLeftButtonDown="OnNavigationListPreviewMouseLeftButtonDown"
+                                        PreviewMouseMove="OnNavigationListMouseMove"
+                                        SelectedValuePath="Tag"
+                                        SelectedValue="{Binding CurrentPageTag, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                                     <ListBoxItem Tag="DataOperationsShell">
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Text="{StaticResource IconDashboard}" Style="{StaticResource ShellNavIconStyle}" />
@@ -631,11 +648,13 @@
 
                             <StackPanel Visibility="{Binding IsGovernanceWorkspaceActive, Converter={StaticResource BoolToVisibility}}">
                                 <ListBox x:Name="GovernanceNavList"
-                                         Background="Transparent"
-                                         BorderThickness="0"
-                                         ItemContainerStyle="{StaticResource ShellNavItemStyle}"
-                                         SelectedValuePath="Tag"
-                                         SelectedValue="{Binding CurrentPageTag, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        ItemContainerStyle="{StaticResource ShellNavItemStyle}"
+                                        PreviewMouseLeftButtonDown="OnNavigationListPreviewMouseLeftButtonDown"
+                                        PreviewMouseMove="OnNavigationListMouseMove"
+                                        SelectedValuePath="Tag"
+                                        SelectedValue="{Binding CurrentPageTag, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                                     <ListBoxItem Tag="GovernanceShell">
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Text="{StaticResource IconDashboard}" Style="{StaticResource ShellNavIconStyle}" />
@@ -707,6 +726,9 @@
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Button Style="{StaticResource RecentPageButtonStyle}"
+                                                Tag="{Binding PageTag}"
+                                                PreviewMouseLeftButtonDown="OnRecentPageButtonPreviewMouseLeftButtonDown"
+                                                PreviewMouseMove="OnRecentPageButtonMouseMove"
                                                 Command="{Binding DataContext.NavigateToPageCommand, RelativeSource={RelativeSource AncestorType=Page}}"
                                                 CommandParameter="{Binding PageTag}"
                                                 Content="{Binding DisplayName}" />
@@ -964,11 +986,16 @@
                 </Border>
 
                 <DockPanel Grid.Row="2">
-                    <Border DockPanel.Dock="Top" Height="32"
+                    <Border DockPanel.Dock="Top" Height="42"
                             Background="{StaticResource CommandBarBackground}"
                             BorderBrush="{StaticResource CommandBarBorderBrush}" BorderThickness="0,0,0,1">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="8,0">
-                            <TextBlock Text="Layout:" VerticalAlignment="Center" FontSize="11" Margin="0,0,8,0" Opacity="0.7"/>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0">
+                            <TextBlock Text="Workspace Layout"
+                                       VerticalAlignment="Center"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Margin="0,0,10,0"
+                                       Opacity="0.8"/>
                             <ItemsControl ItemsSource="{Binding SplitPane.Layouts}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate>
@@ -979,11 +1006,35 @@
                                                         RelativeSource={RelativeSource AncestorType=Page}}"
                                                 CommandParameter="{Binding}"
                                                 ToolTip="{Binding Label}"
-                                                Padding="6,2" Margin="0,0,2,0" FontSize="13"
+                                                Padding="8,4"
+                                                Margin="0,0,4,0"
+                                                FontSize="13"
                                                 Content="{Binding Icon}"/>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
+                            <Rectangle Width="1" Height="18" Fill="{StaticResource ConsoleBorderBrush}" Margin="10,0" />
+                            <Button Content="Split Right"
+                                    Command="{Binding SplitPane.SplitPaneCommand}"
+                                    CommandParameter="Right"
+                                    Style="{StaticResource GhostButtonStyle}"
+                                    Margin="0,0,8,0" />
+                            <Button Content="Split Below"
+                                    Command="{Binding SplitPane.SplitPaneCommand}"
+                                    CommandParameter="Below"
+                                    Style="{StaticResource GhostButtonStyle}"
+                                    Margin="0,0,8,0" />
+                            <Button Content="Float"
+                                    Command="{Binding SplitPane.FloatPaneCommand}"
+                                    Style="{StaticResource GhostButtonStyle}"
+                                    Margin="0,0,8,0" />
+                            <Button Content="Save Layout"
+                                    Command="{Binding SplitPane.SaveLayoutPresetCommand}"
+                                    Style="{StaticResource GhostButtonStyle}"
+                                    Margin="0,0,8,0" />
+                            <Button Content="Reset"
+                                    Command="{Binding SplitPane.ResetLayoutCommand}"
+                                    Style="{StaticResource GhostButtonStyle}" />
                         </StackPanel>
                     </Border>
                     <!-- ContentFrame kept collapsed; code-behind references this name for initial init -->
@@ -996,6 +1047,7 @@
                            Navigated="OnContentFrameNavigated" />
                     <views:SplitPaneHostControl x:Name="SplitPaneHost"
                                                Layout="{Binding SplitPane.SelectedLayout}"
+                                               PaneDropRequested="OnSplitPanePaneDropRequested"
                                                Loaded="OnSplitPaneHostLoaded" />
                 </DockPanel>
             </Grid>

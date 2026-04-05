@@ -246,17 +246,7 @@ internal sealed class RunMatUiAutomationFacade : IDisposable
         }
     }
 
-    private static RunMatViewModel CreateViewModel(RunMatService runMatService)
-    {
-        var ctor = typeof(RunMatViewModel).GetConstructor(
-            BindingFlags.Instance | BindingFlags.NonPublic,
-            binder: null,
-            [typeof(RunMatService)],
-            modifiers: null);
-
-        ctor.Should().NotBeNull();
-        return (RunMatViewModel)ctor!.Invoke([runMatService]);
-    }
+    private static RunMatViewModel CreateViewModel(RunMatService runMatService) => new(runMatService);
 
     private static IAsyncRelayCommand GetRequiredAsyncCommand(Button button)
     {

@@ -66,6 +66,31 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         _frame = frame ?? throw new ArgumentNullException(nameof(frame));
     }
 
+    /// <summary>
+    /// Creates page content for a registered page tag without navigating the main frame.
+    /// Used by workstation shells that embed legacy pages inside docked panels.
+    /// </summary>
+    public FrameworkElement CreatePageContent(string pageTag, object? parameter = null)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(pageTag);
+
+        var pageType = GetPageType(pageTag)
+            ?? throw new InvalidOperationException($"Page tag '{pageTag}' is not registered.");
+        var page = CreatePage(pageType);
+
+        if (parameter != null && page is Page wpfPage && wpfPage.DataContext != null)
+        {
+            var parameterProperty = wpfPage.DataContext.GetType().GetProperty("Parameter");
+            parameterProperty?.SetValue(wpfPage.DataContext, parameter);
+        }
+
+        return page as FrameworkElement
+            ?? new ContentControl
+            {
+                Content = page
+            };
+    }
+
     /// <inheritdoc />
     protected override void RegisterAllPages()
     {
@@ -100,7 +125,7 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         RegisterPage("RunPortfolio", typeof(RunPortfolioPage));
         RegisterPage("RunLedger", typeof(RunLedgerPage));
         RegisterPage("FundLedger", typeof(FundLedgerPage));
-        RegisterPage("FundAccounts", typeof(FundLedgerPage));
+        RegisterPage("FundAccounts", typeof(FundAccountsPage));
         RegisterPage("FundBanking", typeof(FundLedgerPage));
         RegisterPage("FundPortfolio", typeof(FundLedgerPage));
         RegisterPage("FundCashFinancing", typeof(FundLedgerPage));
@@ -212,22 +237,8 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         {
             var pageName = pageType.Name;
             LoggingService.Instance.LogError($"Navigation to {pageName} failed: {ex}");
-            var detail = BuildExceptionDetail(ex);
 
             _frame.Navigate(CreateNavigationErrorPage(pageName, ex));
-
-            try
-            {
-                MessageBox.Show(
-                    $"Navigation to '{pageName}' failed.\n\n{detail}",
-                    "Navigation Error",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
-            }
-            catch
-            {
-                // Last-resort path: keep the error page visible even if the dialog fails.
-            }
 
             return false;
         }

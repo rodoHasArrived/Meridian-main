@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Application.Config;
+using Meridian.Application.ProviderRouting;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Configuration;
 using Meridian.Infrastructure.Adapters.Core;
@@ -389,6 +390,149 @@ public static class ProviderEndpoints
         .WithDescription("Returns catalog metadata for a single provider by ID.")
         .Produces<ProviderCatalogEntry>(200)
         .Produces(404);
+
+        group.MapGet(UiApiRoutes.ProviderOperationsConnections, async (ProviderConnectionService service) =>
+            Results.Json(await service.GetConnectionsAsync(), jsonOptions))
+        .WithName("GetProviderConnections")
+        .WithDescription("Returns relationship-aware provider connections.")
+        .Produces<ProviderConnectionDto[]>(200);
+
+        group.MapGet(UiApiRoutes.ProviderOperationsConnectionById, async (ProviderConnectionService service, string connectionId) =>
+        {
+            var result = await service.GetConnectionAsync(connectionId);
+            return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
+        })
+        .WithName("GetProviderConnectionById")
+        .WithDescription("Returns a single provider connection.")
+        .Produces<ProviderConnectionDto>(200)
+        .Produces(404);
+
+        group.MapPost(UiApiRoutes.ProviderOperationsConnections, async (ProviderConnectionService service, CreateProviderConnectionRequest request) =>
+        {
+            if (string.IsNullOrWhiteSpace(request.ProviderFamilyId) || string.IsNullOrWhiteSpace(request.DisplayName))
+                return Results.BadRequest("ProviderFamilyId and DisplayName are required.");
+
+            var result = await service.UpsertAsync(request);
+            return Results.Json(result, jsonOptions);
+        })
+        .WithName("UpsertProviderConnection")
+        .WithDescription("Creates or updates a relationship-aware provider connection.")
+        .Produces<ProviderConnectionDto>(200)
+        .Produces(400)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
+        group.MapDelete(UiApiRoutes.ProviderOperationsConnectionById, async (ProviderConnectionService service, string connectionId) =>
+        {
+            var deleted = await service.DeleteAsync(connectionId);
+            return deleted ? Results.Ok() : Results.NotFound();
+        })
+        .WithName("DeleteProviderConnection")
+        .WithDescription("Deletes a provider connection and dependent bindings.")
+        .Produces(200)
+        .Produces(404);
+
+        group.MapGet(UiApiRoutes.ProviderOperationsBindings, async (ProviderBindingService service) =>
+            Results.Json(await service.GetBindingsAsync(), jsonOptions))
+        .WithName("GetProviderBindings")
+        .WithDescription("Returns capability bindings.")
+        .Produces<ProviderBindingDto[]>(200);
+
+        group.MapPost(UiApiRoutes.ProviderOperationsBindings, async (ProviderBindingService service, UpdateProviderBindingRequest request) =>
+        {
+            if (string.IsNullOrWhiteSpace(request.Capability) || string.IsNullOrWhiteSpace(request.ConnectionId))
+                return Results.BadRequest("Capability and ConnectionId are required.");
+
+            var result = await service.UpsertAsync(request);
+            return Results.Json(result, jsonOptions);
+        })
+        .WithName("UpsertProviderBinding")
+        .WithDescription("Creates or updates a provider capability binding.")
+        .Produces<ProviderBindingDto>(200)
+        .Produces(400)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
+        group.MapDelete(UiApiRoutes.ProviderOperationsBindingById, async (ProviderBindingService service, string bindingId) =>
+        {
+            var deleted = await service.DeleteAsync(bindingId);
+            return deleted ? Results.Ok() : Results.NotFound();
+        })
+        .WithName("DeleteProviderBinding")
+        .WithDescription("Deletes a provider binding.")
+        .Produces(200)
+        .Produces(404);
+
+        group.MapGet(UiApiRoutes.ProviderOperationsPolicies, async (ProviderBindingService service) =>
+            Results.Json(await service.GetPoliciesAsync(), jsonOptions))
+        .WithName("GetProviderPolicies")
+        .WithDescription("Returns effective provider safety policies.")
+        .Produces<ProviderPolicyDto[]>(200);
+
+        group.MapPost(UiApiRoutes.ProviderOperationsRoutePreview, async (ProviderRouteExplainabilityService service, RoutePreviewRequest request) =>
+        {
+            if (string.IsNullOrWhiteSpace(request.Capability))
+                return Results.BadRequest("Capability is required.");
+
+            var result = await service.PreviewAsync(request);
+            return Results.Json(result, jsonOptions);
+        })
+        .WithName("PreviewProviderRoute")
+        .WithDescription("Previews routed provider selection with explainability.")
+        .Produces<RoutePreviewResponse>(200)
+        .Produces(400);
+
+        group.MapGet(UiApiRoutes.ProviderOperationsRouteHistory, async (ProviderRouteExplainabilityService service) =>
+            Results.Json(await service.GetHistoryAsync(), jsonOptions))
+        .WithName("GetProviderRouteHistory")
+        .WithDescription("Returns recent provider route preview history.")
+        .Produces<RoutePreviewResponse[]>(200);
+
+        group.MapGet(UiApiRoutes.ProviderOperationsPresets, async (ProviderPresetService service) =>
+            Results.Json(await service.GetPresetsAsync(), jsonOptions))
+        .WithName("GetProviderPresets")
+        .WithDescription("Returns built-in and configured provider presets.")
+        .Produces<ProviderPresetDto[]>(200);
+
+        group.MapPost(UiApiRoutes.ProviderOperationsApplyPreset, async (ProviderPresetService service, ApplyProviderPresetRequest request) =>
+        {
+            if (string.IsNullOrWhiteSpace(request.PresetId))
+                return Results.BadRequest("PresetId is required.");
+
+            var result = await service.ApplyAsync(request.PresetId);
+            return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
+        })
+        .WithName("ApplyProviderPreset")
+        .WithDescription("Activates a provider routing preset.")
+        .Produces<ProviderPresetDto>(200)
+        .Produces(400)
+        .Produces(404)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
+        group.MapGet(UiApiRoutes.ProviderOperationsCertifications, async (ProviderCertificationService service) =>
+            Results.Json(await service.GetCertificationsAsync(), jsonOptions))
+        .WithName("GetProviderCertifications")
+        .WithDescription("Returns provider certification records.")
+        .Produces<ProviderCertificationDto[]>(200);
+
+        group.MapPost(UiApiRoutes.ProviderOperationsCertificationRun, async (ProviderCertificationService service, RunCertificationRequest request) =>
+        {
+            if (string.IsNullOrWhiteSpace(request.ConnectionId))
+                return Results.BadRequest("ConnectionId is required.");
+
+            var result = await service.RunAsync(request.ConnectionId);
+            return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
+        })
+        .WithName("RunProviderCertification")
+        .WithDescription("Runs a provider certification pass for a connection.")
+        .Produces<ProviderCertificationDto>(200)
+        .Produces(400)
+        .Produces(404)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
+        group.MapGet(UiApiRoutes.ProviderOperationsTrust, async (ProviderTrustScoringService service) =>
+            Results.Json(await service.GetTrustSnapshotsAsync(), jsonOptions))
+        .WithName("GetProviderTrustSnapshots")
+        .WithDescription("Returns provider trust snapshots for configured connections.")
+        .Produces<ProviderTrustSnapshotDto[]>(200);
 
         // Alias: /api/config/data-sources → /api/config/datasources (for backward compatibility with tests)
         group.MapGet("/api/config/data-sources", (ConfigStore store) =>

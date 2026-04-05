@@ -128,6 +128,65 @@ public sealed class StrategyRunWorkspaceServiceTests
     }
 
     [Fact]
+    public async Task SetActiveRunContextAsync_ShouldExposePortfolioLedgerAndRiskPreview()
+    {
+        var store = new StrategyRunStore();
+        var service = new StrategyRunWorkspaceService(
+            store,
+            new Meridian.Strategies.Services.PortfolioReadService(),
+            new Meridian.Strategies.Services.LedgerReadService());
+
+        var runId = await service.RecordBacktestRunAsync(
+            new BacktestRequest(
+                From: new DateOnly(2026, 3, 1),
+                To: new DateOnly(2026, 3, 20),
+                Symbols: ["AAPL"],
+                InitialCash: 100_000m,
+                DataRoot: "./data/test"),
+            "Context Run",
+            BuildResult());
+
+        var context = await service.SetActiveRunContextAsync(runId);
+
+        context.Should().NotBeNull();
+        context!.RunId.Should().Be(runId);
+        context.StrategyName.Should().Be("Context Run");
+        context.PortfolioPreview.Should().Contain("positions");
+        context.LedgerPreview.Should().Contain("trial-balance");
+        context.CanPromoteToPaper.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task PromoteToPaperAsync_ShouldCreatePaperRunAndAdvanceActiveContext()
+    {
+        var store = new StrategyRunStore();
+        var service = new StrategyRunWorkspaceService(
+            store,
+            new Meridian.Strategies.Services.PortfolioReadService(),
+            new Meridian.Strategies.Services.LedgerReadService());
+
+        var sourceRunId = await service.RecordBacktestRunAsync(
+            new BacktestRequest(
+                From: new DateOnly(2026, 3, 1),
+                To: new DateOnly(2026, 3, 20),
+                Symbols: ["AAPL"],
+                InitialCash: 100_000m,
+                DataRoot: "./data/test"),
+            "Promotion Run",
+            BuildResult());
+
+        var promotedContext = await service.PromoteToPaperAsync(sourceRunId);
+        var summary = await service.GetTradingSummaryAsync();
+
+        promotedContext.Should().NotBeNull();
+        promotedContext!.ModeLabel.Should().Be("Paper");
+        promotedContext.RunId.Should().NotBe(sourceRunId);
+        summary.PaperRunCount.Should().Be(1);
+        summary.ActiveRunContext.Should().NotBeNull();
+        summary.ActiveRunContext!.RunId.Should().Be(promotedContext.RunId);
+    }
+
+    [Fact]
     public async Task GetTradingSummaryAsync_WithActiveFund_FiltersLegacyRunsOutOfDefaultTradingPosture()
     {
         var fundContext = await CreateFundContextAsync();

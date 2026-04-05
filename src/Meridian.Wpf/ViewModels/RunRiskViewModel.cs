@@ -147,7 +147,7 @@ public sealed class RunRiskViewModel : BindableBase
 
     // ── Constructor ───────────────────────────────────────────────────────────
 
-    internal RunRiskViewModel(
+    public RunRiskViewModel(
         StrategyRunWorkspaceService workspaceService,
         StrategyRunReadService readService,
         NavigationService navigationService)

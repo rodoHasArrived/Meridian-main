@@ -1,42 +1,98 @@
 using System.Windows;
+using System.Windows.Controls;
+using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.Views;
 
-// Partial extension of MainPage wiring the split-pane host to NavigationService.
-// Fields _navigationService and _viewModel are declared in MainPage.xaml.cs.
 public partial class MainPage
 {
     private void OnSplitPaneHostLoaded(object sender, RoutedEventArgs e)
     {
-        if (sender is not SplitPaneHostControl host) return;
+        if (sender is not SplitPaneHostControl host)
+        {
+            return;
+        }
+
         _splitPaneHostReady = true;
 
         var firstFrame = host.GetPaneFrame(0);
-        if (firstFrame is null) return;
-
-        // Redirect NavigationService from the collapsed ContentFrame to the live pane
-        _navigationService.Initialize(firstFrame);
-
-        // Re-navigate to the page that was loaded before we took over
-        _navigationService.NavigateTo(_viewModel.CurrentPageTag);
-
-        if (_viewModel is not null)
+        if (firstFrame is null)
         {
-            // When user changes layout, redirect active-pane navigation
-            _viewModel.SplitPane.LayoutChanged += (_, _) =>
-            {
-                var pane = host.GetPaneFrame(_viewModel.SplitPane.ActivePaneIndex);
-                if (pane is not null)
-                    _navigationService.Initialize(pane);
-            };
+            return;
+        }
 
-            // When active pane index changes, redirect navigation to that pane
-            _viewModel.SplitPane.ActivePaneChanged += (_, idx) =>
+        _navigationService.Initialize(firstFrame);
+        _viewModel.SplitPane.AssignPageToPane(_viewModel.CurrentPageTag, 0);
+        RefreshSplitPaneContent();
+
+        if (_viewModel is null)
+        {
+            return;
+        }
+
+        _viewModel.SplitPane.LayoutChanged += (_, _) =>
+        {
+            RefreshSplitPaneContent();
+            var pane = host.GetPaneFrame(_viewModel.SplitPane.ActivePaneIndex);
+            if (pane is not null)
             {
-                var pane = host.GetPaneFrame(idx);
-                if (pane is not null)
-                    _navigationService.Initialize(pane);
-            };
+                _navigationService.Initialize(pane);
+            }
+        };
+
+        _viewModel.SplitPane.ActivePaneChanged += (_, idx) =>
+        {
+            host.ActivePaneIndex = idx;
+            var pane = host.GetPaneFrame(idx);
+            if (pane is not null)
+            {
+                _navigationService.Initialize(pane);
+            }
+        };
+
+        _viewModel.SplitPane.PaneAssignmentsChanged += (_, _) => RefreshSplitPaneContent();
+        host.PaneActivated += (_, idx) => _viewModel.SplitPane.FocusPaneCommand.Execute(idx);
+    }
+
+    private void OnSplitPanePaneDropRequested(object sender, PaneDropEventArgs e)
+    {
+        if (e.Action == PaneDropAction.SplitRight)
+        {
+            _viewModel.SplitPane.SplitPaneCommand.Execute("Right");
+        }
+        else if (e.Action == PaneDropAction.SplitBelow)
+        {
+            _viewModel.SplitPane.SplitPaneCommand.Execute("Below");
+        }
+
+        _viewModel.SplitPane.AssignPageToPane(e.PageTag, e.TargetPaneIndex);
+        RefreshSplitPaneContent();
+    }
+
+    private void RefreshSplitPaneContent()
+    {
+        if (!_splitPaneHostReady)
+        {
+            return;
+        }
+
+        for (var i = 0; i < _viewModel.SplitPane.SelectedLayout.PaneCount; i++)
+        {
+            var frame = SplitPaneHost.GetPaneFrame(i);
+            var pageTag = _viewModel.SplitPane.GetAssignedPageTag(i);
+            if (frame is null || string.IsNullOrWhiteSpace(pageTag))
+            {
+                continue;
+            }
+
+            var content = _navigationService.CreatePageContent(pageTag);
+            if (frame.Content is Page page &&
+                page.GetType() == content.GetType())
+            {
+                continue;
+            }
+
+            frame.Navigate(content);
         }
     }
 }

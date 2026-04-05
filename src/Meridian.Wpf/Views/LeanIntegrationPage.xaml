@@ -203,7 +203,7 @@
                                 <TextBlock Text="{Binding BacktestProgressText}" Foreground="{DynamicResource ConsoleTextBrush}" />
                                 <TextBlock Grid.Column="1" Text="{Binding BacktestProgressPercent}" Foreground="{DynamicResource ConsoleTextBrush}" />
                             </Grid>
-                            <ProgressBar Minimum="0" Maximum="100" Value="{Binding BacktestProgress}" Margin="0,4,0,0" />
+                            <ProgressBar Minimum="0" Maximum="100" Value="{Binding BacktestProgress, Mode=OneWay}" Margin="0,4,0,0" />
                         </StackPanel>
                     </StackPanel>
                 </Border>

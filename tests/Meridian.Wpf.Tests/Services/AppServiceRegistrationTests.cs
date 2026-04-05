@@ -11,7 +11,7 @@ namespace Meridian.Wpf.Tests.Services;
 public sealed class AppServiceRegistrationTests
 {
     [Fact]
-    public void ConfigureServices_ShouldResolveSymbolsAndBackfillPages()
+    public void ConfigureServices_ShouldResolveSymbolsBackfillAndRunMatPages()
     {
         WpfTestThread.Run(() =>
         {
@@ -31,6 +31,7 @@ public sealed class AppServiceRegistrationTests
             serviceProvider.GetRequiredService<WorkspaceService>().Should().BeSameAs(WorkspaceService.Instance);
             serviceProvider.GetRequiredService<SymbolsPage>().Should().NotBeNull();
             serviceProvider.GetRequiredService<BackfillPage>().Should().NotBeNull();
+            serviceProvider.GetRequiredService<RunMatPage>().Should().NotBeNull();
             serviceProvider.GetRequiredService<FundLedgerPage>().Should().NotBeNull();
             serviceProvider.GetRequiredService<IFundAccountService>().Should().BeOfType<InMemoryFundAccountService>();
             serviceProvider.GetRequiredService<FundAccountReadService>().Should().NotBeNull();

@@ -82,6 +82,7 @@ public sealed class ParameterViewModel : BindableBase
     private bool _isValid = true;
     private string? _validationMessage;
     private object? _parsedValue;
+    private readonly string _defaultValueText;
 
     public ParameterViewModel(string name, object? defaultValue, Type? parameterType = null)
     {
@@ -89,11 +90,16 @@ public sealed class ParameterViewModel : BindableBase
         ParameterType = parameterType ?? typeof(string);
         _parsedValue = defaultValue;
         _rawValue = defaultValue?.ToString() ?? string.Empty;
+        _defaultValueText = defaultValue?.ToString() ?? "empty";
     }
 
     public string Name { get; }
 
     public Type ParameterType { get; }
+
+    public string TypeHintText => GetTypeHint(ParameterType);
+
+    public string DefaultValueText => _defaultValueText;
 
     public string RawValue
     {
@@ -111,6 +117,12 @@ public sealed class ParameterViewModel : BindableBase
         private set => SetProperty(ref _isValid, value);
     }
 
+    public bool BoolValue
+    {
+        get => bool.TryParse(_rawValue, out var parsed) && parsed;
+        set => RawValue = value.ToString();
+    }
+
     public string? ValidationMessage
     {
         get => _validationMessage;
@@ -122,6 +134,8 @@ public sealed class ParameterViewModel : BindableBase
         get => _parsedValue;
         private set => SetProperty(ref _parsedValue, value);
     }
+
+    public bool HasValidationError => !IsValid && !string.IsNullOrWhiteSpace(ValidationMessage);
 
     private void Validate()
     {
@@ -137,6 +151,21 @@ public sealed class ParameterViewModel : BindableBase
             ValidationMessage = $"Invalid {ParameterType.Name} value";
             ParsedValue = null;
         }
+
+        RaisePropertyChanged(nameof(BoolValue));
+        RaisePropertyChanged(nameof(HasValidationError));
+    }
+
+    private static string GetTypeHint(Type parameterType)
+    {
+        var normalized = Nullable.GetUnderlyingType(parameterType) ?? parameterType;
+        return normalized == typeof(int) ? "int"
+            : normalized == typeof(long) ? "long"
+            : normalized == typeof(double) ? "double"
+            : normalized == typeof(float) ? "float"
+            : normalized == typeof(decimal) ? "decimal"
+            : normalized == typeof(bool) ? "bool"
+            : normalized.Name;
     }
 }
 
