@@ -935,7 +935,7 @@ Meridian-main
 │   │   ├── ROADMAP_COMBINED.md
 │   │   ├── ROADMAP_NOW_NEXT_LATER_2026_03_25.md
 │   │   ├── rules-report.md
-│   │   ├── TARGET_END_PRODUCT.md
+│   │   ├── todo-scan-results.json
 │   │   └── TODO.md
 │   ├── DEPENDENCIES.md
 │   ├── HELP.md
