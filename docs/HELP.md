@@ -175,10 +175,10 @@ Configuration lives in `config/` at the repository root. The primary config file
 
 ```bash
 # View current configuration
-dotnet run --project src/Meridian/Meridian.csproj -- --config-check
+dotnet run --project src/Meridian/Meridian.csproj -- --show-config
 
 # Validate provider credentials
-dotnet run --project src/Meridian/Meridian.csproj -- --validate-providers
+dotnet run --project src/Meridian/Meridian.csproj -- --validate-credentials
 ```
 
 See [Getting Started](getting-started/README.md) for initial setup steps and provider configuration.
