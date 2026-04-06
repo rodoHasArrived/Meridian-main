@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-04-06 21:14:43 UTC. Do not edit manually.
+> Auto-generated on 2026-04-06 21:32:39 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -3113,19 +3113,24 @@ Meridian-main
 │   │   │   │   ├── FreeHistoricalProviderParsingTests.cs
 │   │   │   │   ├── FreeProviderContractTests.cs
 │   │   │   │   ├── HistoricalDataProviderContractTests.cs
+│   │   │   │   ├── IBHistoricalProviderContractTests.cs
+│   │   │   │   ├── IBMarketDataClientContractTests.cs
 │   │   │   │   ├── IBOrderSampleTests.cs
 │   │   │   │   ├── IBRuntimeGuidanceTests.cs
 │   │   │   │   ├── IBSimulationClientContractTests.cs
 │   │   │   │   ├── IBSimulationClientTests.cs
 │   │   │   │   ├── MarketDataClientContractTests.cs
+│   │   │   │   ├── NyseMarketDataClientContractTests.cs
 │   │   │   │   ├── NyseMarketDataClientTests.cs
 │   │   │   │   ├── NYSEMessageParsingTests.cs
+│   │   │   │   ├── NyseMessagePipelineTests.cs
 │   │   │   │   ├── NyseNationalTradesCsvParserTests.cs
 │   │   │   │   ├── NyseSharedLifecycleTests.cs
 │   │   │   │   ├── NyseTaqCollectorIntegrationTests.cs
 │   │   │   │   ├── PolygonCorporateActionFetcherTests.cs
 │   │   │   │   ├── PolygonMarketDataClientTests.cs
 │   │   │   │   ├── PolygonMessageParsingTests.cs
+│   │   │   │   ├── PolygonProviderContractTests.cs
 │   │   │   │   ├── PolygonRecordedSessionReplayTests.cs
 │   │   │   │   ├── PolygonSubscriptionTests.cs
 │   │   │   │   ├── ProviderBehaviorBuilderTests.cs
@@ -3137,7 +3142,9 @@ Meridian-main
 │   │   │   │   ├── RobinhoodMarketDataClientTests.cs
 │   │   │   │   ├── RobinhoodSymbolSearchProviderTests.cs
 │   │   │   │   ├── StockSharpConnectorFactoryTests.cs
+│   │   │   │   ├── StockSharpConverterEdgeCaseTests.cs
 │   │   │   │   ├── StockSharpMessageConversionTests.cs
+│   │   │   │   ├── StockSharpProviderContractTests.cs
 │   │   │   │   ├── StockSharpSubscriptionTests.cs
 │   │   │   │   ├── StreamingFailoverServiceTests.cs
 │   │   │   │   ├── SyntheticMarketDataProviderTests.cs
