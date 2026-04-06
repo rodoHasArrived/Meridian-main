@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-06T15:37:15Z",
+  "generatedAt": "2026-04-06T17:33:58Z",
   "generatorVersion": "1.0",
   "repositoryRoot": "/home/runner/work/Meridian-main/Meridian-main",
   "subsystems": [
@@ -664,7 +664,8 @@
         "..\\Meridian.Contracts\\Meridian.Contracts",
         "..\\Meridian.Core\\Meridian.Core",
         "..\\Meridian.Execution.Sdk\\Meridian.Execution.Sdk",
-        "..\\Meridian.Ledger\\Meridian.Ledger"
+        "..\\Meridian.Ledger\\Meridian.Ledger",
+        "..\\Meridian.Storage\\Meridian.Storage"
       ],
       "relatedDocs": []
     },
