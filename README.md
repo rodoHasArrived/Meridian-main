@@ -138,62 +138,64 @@ Use these documents together when planning or implementing new work:
 │   │   └── meridian-navigation.md
 │   ├── settings.json
 │   ├── settings.local.json
-│   └── skills
-│       ├── _shared
-│       │   └── project-context.md
-│       ├── meridian-blueprint
-│       │   ├── CHANGELOG.md
-│       │   ├── SKILL.md
-│       │   └── references
-│       │       ├── blueprint-patterns.md
-│       │       └── pipeline-position.md
-│       ├── meridian-brainstorm
-│       │   ├── CHANGELOG.md
-│       │   ├── SKILL.md
-│       │   ├── brainstorm-history.jsonl
-│       │   └── references
-│       │       ├── competitive-landscape.md
-│       │       └── idea-dimensions.md
-│       ├── meridian-code-review
-│       │   ├── CHANGELOG.md
-│       │   ├── SKILL.md
-│       │   ├── agents
-│       │   │   └── grader.md
-│       │   ├── eval-viewer
-│       │   │   ├── generate_review.py
-│       │   │   └── viewer.html
-│       │   ├── evals
-│       │   │   ├── benchmark_baseline.json
-│       │   │   └── evals.json
-│       │   ├── references
-│       │   │   ├── architecture.md
-│       │   │   └── schemas.md
-│       │   └── scripts
-│       │       ├── __init__.py
-│       │       ├── aggregate_benchmark.py
-│       │       ├── package_skill.py
-│       │       ├── quick_validate.py
-│       │       ├── run_eval.py
-│       │       └── utils.py
-│       ├── meridian-implementation-assurance
-│       │   ├── SKILL.md
-│       │   ├── references
-│       │   │   ├── documentation-routing.md
-│       │   │   └── evaluation-harness.md
-│       │   └── scripts
-│       │       ├── doc_route.py
-│       │       └── score_eval.py
-│       ├── meridian-provider-builder
-│       │   ├── CHANGELOG.md
-│       │   ├── SKILL.md
-│       │   └── references
-│       │       └── provider-patterns.md
-│       ├── meridian-test-writer
-│       │   ├── CHANGELOG.md
-│       │   ├── SKILL.md
-│       │   └── references
-│       │       └── test-patterns.md
-│       └── skills_provider.py
+│   ├── skills
+│   │   ├── _shared
+│   │   │   └── project-context.md
+│   │   ├── meridian-blueprint
+│   │   │   ├── CHANGELOG.md
+│   │   │   ├── SKILL.md
+│   │   │   └── references
+│   │   │       ├── blueprint-patterns.md
+│   │   │       └── pipeline-position.md
+│   │   ├── meridian-brainstorm
+│   │   │   ├── CHANGELOG.md
+│   │   │   ├── SKILL.md
+│   │   │   ├── brainstorm-history.jsonl
+│   │   │   └── references
+│   │   │       ├── competitive-landscape.md
+│   │   │       └── idea-dimensions.md
+│   │   ├── meridian-code-review
+│   │   │   ├── CHANGELOG.md
+│   │   │   ├── SKILL.md
+│   │   │   ├── agents
+│   │   │   │   └── grader.md
+│   │   │   ├── eval-viewer
+│   │   │   │   ├── generate_review.py
+│   │   │   │   └── viewer.html
+│   │   │   ├── evals
+│   │   │   │   ├── benchmark_baseline.json
+│   │   │   │   └── evals.json
+│   │   │   ├── references
+│   │   │   │   ├── architecture.md
+│   │   │   │   └── schemas.md
+│   │   │   └── scripts
+│   │   │       ├── __init__.py
+│   │   │       ├── aggregate_benchmark.py
+│   │   │       ├── package_skill.py
+│   │   │       ├── quick_validate.py
+│   │   │       ├── run_eval.py
+│   │   │       └── utils.py
+│   │   ├── meridian-implementation-assurance
+│   │   │   ├── SKILL.md
+│   │   │   ├── references
+│   │   │   │   ├── documentation-routing.md
+│   │   │   │   └── evaluation-harness.md
+│   │   │   └── scripts
+│   │   │       ├── doc_route.py
+│   │   │       └── score_eval.py
+│   │   ├── meridian-provider-builder
+│   │   │   ├── CHANGELOG.md
+│   │   │   ├── SKILL.md
+│   │   │   └── references
+│   │   │       └── provider-patterns.md
+│   │   ├── meridian-test-writer
+│   │   │   ├── CHANGELOG.md
+│   │   │   ├── SKILL.md
+│   │   │   └── references
+│   │   │       └── test-patterns.md
+│   │   └── skills_provider.py
+│   └── worktrees
+│       └── sweet-colden
 ├── .codex
 │   ├── config.toml
 │   ├── environments
@@ -212,7 +214,9 @@ Use these documents together when planning or implementing new work:
 │       │   └── references
 │       │       └── competitive-landscape.md
 │       ├── meridian-cleanup
-│       │   └── SKILL.md
+│       │   ├── SKILL.md
+│       │   └── scripts
+│       │       └── repo-updater.ps1
 │       ├── meridian-code-review
 │       │   └── SKILL.md
 │       ├── meridian-implementation-assurance
@@ -843,7 +847,6 @@ Use these documents together when planning or implementing new work:
 │   │   ├── adr-index.md
 │   │   ├── configuration-schema.md
 │   │   ├── documentation-coverage.md
-│   │   ├── interfaces.md
 │   │   ├── project-context.md
 │   │   ├── project-dependencies.md
 │   │   ├── provider-registry.md
@@ -862,6 +865,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── deployment.md
 │   │   ├── governance-operator-workflow.md
 │   │   ├── high-availability.md
+│   │   ├── live-execution-controls.md
 │   │   ├── msix-packaging.md
 │   │   ├── operator-runbook.md
 │   │   ├── performance-tuning.md
@@ -987,9 +991,12 @@ Use these documents together when planning or implementing new work:
 │   │   ├── FEATURE_INVENTORY.md
 │   │   ├── FULL_IMPLEMENTATION_TODO_2026_03_20.md
 │   │   ├── IMPROVEMENTS.md
+│   │   ├── OPPORTUNITY_SCAN.md
 │   │   ├── README.md
 │   │   ├── ROADMAP.md
+│   │   ├── ROADMAP_COMBINED.md
 │   │   ├── ROADMAP_NOW_NEXT_LATER_2026_03_25.md
+│   │   ├── TARGET_END_PRODUCT.md
 │   │   ├── TODO.md
 │   │   ├── api-docs-report.md
 │   │   ├── badge-sync-report.md
@@ -1132,6 +1139,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── MaintenanceFeatureRegistration.cs
 │   │   │   │   ├── PipelineFeatureRegistration.cs
 │   │   │   │   ├── ProviderFeatureRegistration.cs
+│   │   │   │   ├── ProviderRoutingFeatureRegistration.cs
 │   │   │   │   ├── StorageFeatureRegistration.cs
 │   │   │   │   └── SymbolManagementFeatureRegistration.cs
 │   │   │   ├── FundAccountsStartup.cs
@@ -1283,6 +1291,12 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── IngestionJobService.cs
 │   │   │   ├── PersistentDedupLedger.cs
 │   │   │   └── SchemaUpcasterRegistry.cs
+│   │   ├── ProviderRouting
+│   │   │   ├── ProviderBindingService.cs
+│   │   │   ├── ProviderConnectionService.cs
+│   │   │   ├── ProviderOperationsSupportServices.cs
+│   │   │   ├── ProviderRoutingEngine.cs
+│   │   │   └── ProviderRoutingMapper.cs
 │   │   ├── Results
 │   │   │   ├── ErrorCode.cs
 │   │   │   ├── OperationError.cs
@@ -1456,9 +1470,17 @@ Use these documents together when planning or implementing new work:
 │   │   ├── PortfolioSnapshot.cs
 │   │   ├── Position.cs
 │   │   ├── Strategies
-│   │   │   └── AdvancedCarry
-│   │   │       ├── AdvancedCarryDecisionEngine.cs
-│   │   │       └── AdvancedCarryModels.cs
+│   │   │   ├── AdvancedCarry
+│   │   │   │   ├── AdvancedCarryDecisionEngine.cs
+│   │   │   │   └── AdvancedCarryModels.cs
+│   │   │   └── OptionsOverwrite
+│   │   │       ├── BlackScholesCalculator.cs
+│   │   │       ├── CoveredCallOverwriteStrategy.cs
+│   │   │       ├── OptionsOverwriteFilters.cs
+│   │   │       ├── OptionsOverwriteMetricsCalculator.cs
+│   │   │       ├── OptionsOverwriteModels.cs
+│   │   │       ├── OptionsOverwriteParams.cs
+│   │   │       └── OptionsOverwriteScoring.cs
 │   │   ├── StrategyParameterAttribute.cs
 │   │   ├── TcaReportModels.cs
 │   │   └── TradeTicket.cs
@@ -1471,6 +1493,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── LiveDataModels.cs
 │   │   │   ├── OptionsModels.cs
 │   │   │   ├── ProviderCatalog.cs
+│   │   │   ├── ProviderRoutingApiModels.cs
 │   │   │   ├── Quality
 │   │   │   │   └── QualityApiModels.cs
 │   │   │   ├── StatusEndpointModels.cs
@@ -1496,6 +1519,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Configuration
 │   │   │   ├── AppConfigDto.cs
 │   │   │   ├── DerivativesConfigDto.cs
+│   │   │   ├── ProviderConnectionsConfigDto.cs
 │   │   │   └── SymbolConfig.cs
 │   │   ├── Credentials
 │   │   │   ├── CredentialModels.cs
@@ -1619,6 +1643,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── DataSourceKindConverter.cs
 │   │   │   ├── DerivativesConfig.cs
 │   │   │   ├── IConfigurationProvider.cs
+│   │   │   ├── ProviderConnectionsConfig.cs
 │   │   │   ├── StockSharpConfig.cs
 │   │   │   ├── SyntheticMarketDataConfig.cs
 │   │   │   └── ValidatedConfig.cs
@@ -1756,6 +1781,8 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Serialization
 │   │   │   └── ExecutionJsonContext.cs
 │   │   ├── Services
+│   │   │   ├── ExecutionAuditTrailService.cs
+│   │   │   ├── ExecutionOperatorControlService.cs
 │   │   │   ├── IPaperSessionStore.cs
 │   │   │   ├── JsonlFilePaperSessionStore.cs
 │   │   │   ├── OrderLifecycleManager.cs
@@ -2119,6 +2146,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── IHistoricalDataSource.cs
 │   │   ├── IMarketDataClient.cs
 │   │   ├── IOptionsChainProvider.cs
+│   │   ├── IProviderFamilyAdapter.cs
 │   │   ├── IProviderMetadata.cs
 │   │   ├── IProviderModule.cs
 │   │   ├── IRealtimeDataSource.cs
@@ -2126,6 +2154,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Meridian.ProviderSdk.csproj
 │   │   ├── ProviderHttpUtilities.cs
 │   │   ├── ProviderModuleLoader.cs
+│   │   ├── ProviderRoutingModels.cs
 │   │   └── RequiresCredentialAttribute.cs
 │   ├── Meridian.QuantScript
 │   │   ├── Api
@@ -2488,6 +2517,7 @@ Use these documents together when planning or implementing new work:
 │   │       ├── PortfolioImportService.cs
 │   │       ├── ProviderHealthService.cs
 │   │       ├── ProviderManagementService.cs
+│   │       ├── ProviderOperationsResults.cs
 │   │       ├── QualityArchiveStore.cs
 │   │       ├── RetentionAssuranceModels.cs
 │   │       ├── ScheduleManagerService.cs
@@ -2581,6 +2611,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── BackfillCoordinator.cs
 │   │   │   ├── ConfigStore.cs
 │   │   │   └── SecurityMasterSecurityReferenceLookup.cs
+│   │   ├── StaticAssetPathResolver.cs
 │   │   └── UserProfileRegistry.cs
 │   └── Meridian.Wpf
 │       ├── App.xaml
@@ -2666,6 +2697,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── DashboardModels.cs
 │       │   ├── DataQualityModels.cs
 │       │   ├── FundProfileModels.cs
+│       │   ├── FundReconciliationWorkbenchModels.cs
 │       │   ├── LeanModels.cs
 │       │   ├── LiveDataModels.cs
 │       │   ├── NotificationModels.cs
@@ -2704,6 +2736,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── FundContextService.cs
 │       │   ├── FundLedgerReadService.cs
 │       │   ├── FundProfileKeyTranslator.cs
+│       │   ├── FundReconciliationWorkbenchService.cs
 │       │   ├── GlobalHotkeyService.cs
 │       │   ├── ICommandContextProvider.cs
 │       │   ├── IFundProfileCatalog.cs
@@ -2735,7 +2768,8 @@ Use these documents together when planning or implementing new work:
 │       │   ├── TooltipService.cs
 │       │   ├── TypeForwards.cs
 │       │   ├── WatchlistService.cs
-│       │   └── WorkspaceService.cs
+│       │   ├── WorkspaceService.cs
+│       │   └── WorkstationReconciliationApiClient.cs
 │       ├── Styles
 │       │   ├── Animations.xaml
 │       │   ├── AppStyles.xaml
@@ -2774,7 +2808,9 @@ Use these documents together when planning or implementing new work:
 │       │   ├── DirectLendingViewModel.cs
 │       │   ├── EventReplayViewModel.cs
 │       │   ├── ExportPresetsViewModel.cs
+│       │   ├── FundAccountProviderPanelModels.cs
 │       │   ├── FundAccountsViewModel.cs
+│       │   ├── FundLedgerViewModel.Reconciliation.cs
 │       │   ├── FundLedgerViewModel.cs
 │       │   ├── FundProfileSelectionViewModel.cs
 │       │   ├── IPageActionBarProvider.cs
@@ -3018,6 +3054,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── MarketImpactFillModelTests.cs
 │   │   ├── Meridian.Backtesting.Tests.csproj
 │   │   ├── MeridianNativeBacktestStudioEngineTests.cs
+│   │   ├── OptionsOverwriteStrategyTests.cs
 │   │   ├── SimulatedPortfolioTests.cs
 │   │   ├── TcaReporterTests.cs
 │   │   ├── XirrCalculatorTests.cs
@@ -3172,6 +3209,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── MarketDataClientFactoryTests.cs
 │   │   │   │   ├── SpscRingBufferTests.cs
 │   │   │   │   └── WalEventPipelineTests.cs
+│   │   │   ├── ProviderRouting
+│   │   │   │   └── ProviderRoutingServiceTests.cs
 │   │   │   ├── ReconciliationRunServiceTests.cs
 │   │   │   ├── Services
 │   │   │   │   ├── CanonicalizingPublisherTests.cs
@@ -3231,6 +3270,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── MultiCurrencyTests.cs
 │   │   │   │   └── TaxLotAccountingTests.cs
 │   │   │   ├── MultiAccountPaperTradingPortfolioTests.cs
+│   │   │   ├── OrderManagementSystemGovernanceTests.cs
 │   │   │   ├── OrderManagementSystemTests.cs
 │   │   │   ├── PaperSessionPersistenceServiceTests.cs
 │   │   │   ├── PaperTradingGatewayTests.cs
@@ -3244,6 +3284,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── Etl
 │   │   │   │   └── CsvPartnerFileParserTests.cs
 │   │   │   ├── Providers
+│   │   │   │   ├── AlpacaCorporateActionProviderTests.cs
 │   │   │   │   ├── AlpacaCredentialAndReconnectTests.cs
 │   │   │   │   ├── AlpacaMessageParsingTests.cs
 │   │   │   │   ├── AlpacaQuotePipelineGoldenTests.cs
@@ -3409,6 +3450,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── CashFlowProjectionTests.cs
 │   │   │   ├── LedgerReadServiceTests.cs
 │   │   │   ├── PortfolioReadServiceTests.cs
+│   │   │   ├── PromotionServiceLiveGovernanceTests.cs
 │   │   │   ├── PromotionServiceTests.cs
 │   │   │   ├── ReconciliationProjectionServiceTests.cs
 │   │   │   ├── StrategyLifecycleManagerTests.cs
@@ -3438,7 +3480,9 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── MoneyMarketFundServiceTests.cs
 │   │   └── Ui
 │   │       ├── DirectLendingEndpointsTests.cs
+│   │       ├── ExecutionGovernanceEndpointsTests.cs
 │   │       ├── ExecutionWriteEndpointsTests.cs
+│   │       ├── StaticAssetPathResolverTests.cs
 │   │       └── WorkstationEndpointsTests.cs
 │   ├── Meridian.Ui.Tests
 │   │   ├── Collections
@@ -3512,6 +3556,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── ConnectionServiceTests.cs
 │   │   │   ├── ExportPresetServiceTests.cs
 │   │   │   ├── FirstRunServiceTests.cs
+│   │   │   ├── FundReconciliationWorkbenchServiceTests.cs
 │   │   │   ├── InfoBarServiceTests.cs
 │   │   │   ├── KeyboardShortcutServiceTests.cs
 │   │   │   ├── MessagingServiceTests.cs
@@ -3530,12 +3575,15 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Support
 │   │   │   ├── FakeQuantScriptCompiler.cs
 │   │   │   ├── FakeScriptRunner.cs
+│   │   │   ├── FakeWorkstationReconciliationApiClient.cs
 │   │   │   ├── RunMatUiAutomationFacade.cs
 │   │   │   └── WpfTestThread.cs
 │   │   ├── TestAssemblyConfiguration.cs
 │   │   ├── ViewModels
+│   │   │   ├── AddProviderWizardViewModelTests.cs
 │   │   │   ├── CashFlowViewModelTests.cs
 │   │   │   ├── DataQualityViewModelCharacterizationTests.cs
+│   │   │   ├── FundAccountsViewModelTests.cs
 │   │   │   ├── FundLedgerViewModelTests.cs
 │   │   │   ├── MainShellViewModelTests.cs
 │   │   │   ├── QuantScriptViewModelTests.cs
@@ -3543,10 +3591,13 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── StrategyRunBrowserViewModelTests.cs
 │   │   └── Views
 │   │       ├── DashboardPageSmokeTests.cs
+│   │       ├── MainPageSmokeTests.cs
+│   │       ├── NavigationPageSmokeTests.cs
 │   │       ├── QuantScriptPageTests.cs
 │   │       ├── RunMatUiSmokeTests.cs
 │   │       ├── RunMatWorkflowSmokeTests.cs
-│   │       └── SplitPaneHostControlTests.cs
+│   │       ├── SplitPaneHostControlTests.cs
+│   │       └── SystemHealthPageSmokeTests.cs
 │   ├── coverlet.runsettings
 │   ├── scripts
 │   │   └── setup-verification.sh
@@ -3554,6 +3605,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-468 directories, 2977 files
+472 directories, 3003 files
 ```
 <!-- readme-tree end -->
