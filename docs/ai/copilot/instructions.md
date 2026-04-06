@@ -2742,6 +2742,7 @@ Meridian-main
 │       │   ├── QuoteFloatViewModel.cs
 │       │   ├── RunMatViewModel.cs
 │       │   ├── RunRiskViewModel.cs
+│       │   ├── ScatterAnalysisViewModel.cs
 │       │   ├── SecurityMasterDeactivateViewModel.cs
 │       │   ├── SecurityMasterEditViewModel.cs
 │       │   ├── SecurityMasterViewModel.cs
@@ -2901,6 +2902,8 @@ Meridian-main
 │       │   ├── RunRiskPage.xaml.cs
 │       │   ├── SaveWatchlistDialog.xaml
 │       │   ├── SaveWatchlistDialog.xaml.cs
+│       │   ├── ScatterAnalysisPage.xaml
+│       │   ├── ScatterAnalysisPage.xaml.cs
 │       │   ├── ScheduleManagerPage.xaml
 │       │   ├── ScheduleManagerPage.xaml.cs
 │       │   ├── SecurityMasterPage.xaml

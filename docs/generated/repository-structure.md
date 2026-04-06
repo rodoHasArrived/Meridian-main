@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-04-06 21:46:23 UTC. Do not edit manually.
+> Auto-generated on 2026-04-06 22:09:47 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -2631,6 +2631,7 @@ Meridian-main
 │       │   ├── QuoteFloatViewModel.cs
 │       │   ├── RunMatViewModel.cs
 │       │   ├── RunRiskViewModel.cs
+│       │   ├── ScatterAnalysisViewModel.cs
 │       │   ├── SecurityMasterDeactivateViewModel.cs
 │       │   ├── SecurityMasterEditViewModel.cs
 │       │   ├── SecurityMasterViewModel.cs
@@ -2790,6 +2791,8 @@ Meridian-main
 │       │   ├── RunRiskPage.xaml.cs
 │       │   ├── SaveWatchlistDialog.xaml
 │       │   ├── SaveWatchlistDialog.xaml.cs
+│       │   ├── ScatterAnalysisPage.xaml
+│       │   ├── ScatterAnalysisPage.xaml.cs
 │       │   ├── ScheduleManagerPage.xaml
 │       │   ├── ScheduleManagerPage.xaml.cs
 │       │   ├── SecurityMasterPage.xaml
