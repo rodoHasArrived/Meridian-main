@@ -559,7 +559,6 @@ Use these documents together when planning or implementing new work:
 │   │   └── prometheus.yml
 │   └── systemd
 │       └── meridian.service
-├── desktop.ini
 ├── docs
 │   ├── DEPENDENCIES.md
 │   ├── HELP.md
@@ -2999,26 +2998,6 @@ Use these documents together when planning or implementing new work:
 │           ├── WelcomePage.xaml.cs
 │           ├── WorkspacePage.xaml
 │           └── WorkspacePage.xaml.cs
-├── temp
-│   ├── UiProbe
-│   │   ├── Program.cs
-│   │   └── UiProbe.csproj
-│   ├── dataquality-triage-verification-fixed.png
-│   ├── dataquality-triage-verification.png
-│   ├── meridian-ui-debug-2.png
-│   ├── meridian-ui-debug-3.png
-│   ├── meridian-ui-debug-4.png
-│   ├── meridian-ui-debug-5.png
-│   ├── meridian-ui-debug.png
-│   ├── patch1-verification.png
-│   ├── patch2-verification.png
-│   ├── patch3-before-switch.png
-│   ├── patch3-dataops-verification-2.png
-│   ├── patch3-dataops-verification.png
-│   ├── patch4-governance-verification-2.png
-│   ├── patch4-governance-verification-automation.png
-│   ├── patch4-governance-verification.png
-│   └── shell-cleanup-verification.png
 ├── tests
 │   ├── Directory.Build.props
 │   ├── Meridian.Backtesting.Tests

@@ -17,10 +17,12 @@ def utc_now() -> str:
 
 def is_excluded(path: Path) -> bool:
     excluded_parts = {
-        ".git", ".vs", ".idea", "bin", "obj", "node_modules",
-        "archive", "obj-codex", "TestResults",
+        "$HOME", ".ai", ".git", ".idea", ".vs", "__pycache__", "archive",
+        "artifacts", "bin", "bin-codex", "data", "desktop.ini",
+        "diagnostic-logs", "logs", "node_modules", "obj", "obj-codex",
+        "publish", "temp", "TestResults", "worktrees",
     }
-    return any(part in excluded_parts for part in path.parts)
+    return any(part in excluded_parts for part in path.parts) or path.suffix.lower() == ".log"
 
 
 def render_tree(root: Path) -> str:

@@ -202,25 +202,26 @@ Meridian-main
 │   │   ├── _shared
 │   │   │   └── project-context.md
 │   │   ├── meridian-blueprint
+│   │   │   ├── agents
 │   │   │   ├── references
 │   │   │   │   └── blueprint-patterns.md
 │   │   │   └── SKILL.md
 │   │   ├── meridian-brainstorm
+│   │   │   ├── agents
 │   │   │   ├── references
 │   │   │   │   └── competitive-landscape.md
 │   │   │   └── SKILL.md
 │   │   ├── meridian-cleanup
+│   │   │   ├── agents
+│   │   │   ├── scripts
+│   │   │   │   └── repo-updater.ps1
 │   │   │   └── SKILL.md
 │   │   ├── meridian-code-review
+│   │   │   ├── agents
 │   │   │   └── SKILL.md
 │   │   ├── meridian-implementation-assurance
+│   │   │   ├── agents
 │   │   │   ├── evals
-│   │   │   │   ├── artifacts
-│   │   │   │   │   ├── eval-1.jsonl
-│   │   │   │   │   ├── eval-2.jsonl
-│   │   │   │   │   ├── eval-3.jsonl
-│   │   │   │   │   ├── eval-4.jsonl
-│   │   │   │   │   └── eval-5.jsonl
 │   │   │   │   ├── benchmark_baseline.json
 │   │   │   │   ├── evals.json
 │   │   │   │   ├── meridian-implementation-assurance.prompts.csv
@@ -234,6 +235,7 @@ Meridian-main
 │   │   │   │   └── score_eval.py
 │   │   │   └── SKILL.md
 │   │   ├── meridian-provider-builder
+│   │   │   ├── agents
 │   │   │   ├── references
 │   │   │   │   └── provider-patterns.md
 │   │   │   └── SKILL.md
@@ -242,10 +244,12 @@ Meridian-main
 │   │   │   │   └── openai.yaml
 │   │   │   └── SKILL.md
 │   │   ├── meridian-roadmap-strategist
+│   │   │   ├── agents
 │   │   │   ├── references
 │   │   │   │   └── roadmap-source-map.md
 │   │   │   └── SKILL.md
 │   │   ├── meridian-test-writer
+│   │   │   ├── agents
 │   │   │   ├── references
 │   │   │   │   └── test-patterns.md
 │   │   │   └── SKILL.md
@@ -351,6 +355,7 @@ Meridian-main
 │   ├── PULL_REQUEST_TEMPLATE.md
 │   ├── pull_request_template_desktop.md
 │   └── spellcheck-config.yml
+├── .vscode
 ├── benchmarks
 │   ├── Meridian.Benchmarks
 │   │   ├── Budget
@@ -450,9 +455,6 @@ Meridian-main
 │       │   └── install.sh
 │       ├── lib
 │       │   └── BuildNotification.psm1
-│       ├── publish
-│       │   ├── publish.ps1
-│       │   └── publish.sh
 │       ├── run
 │       │   ├── start-collector.ps1
 │       │   ├── start-collector.sh
@@ -466,6 +468,7 @@ Meridian-main
 │       ├── validate-tooling-metadata.py
 │       └── validate_budget.py
 ├── config
+│   ├── appsettings.json
 │   ├── appsettings.sample.json
 │   ├── appsettings.schema.json
 │   ├── condition-codes.json
@@ -500,6 +503,232 @@ Meridian-main
 │   └── systemd
 │       └── meridian.service
 ├── docs
+│   ├── _site
+│   │   ├── public
+│   │   │   ├── architecture-7HQA4BMR-HSKY6TUH.min.js
+│   │   │   ├── architecture-7HQA4BMR-HSKY6TUH.min.js.map
+│   │   │   ├── architectureDiagram-VXUJARFQ-KGMRTIN6.min.js
+│   │   │   ├── architectureDiagram-VXUJARFQ-KGMRTIN6.min.js.map
+│   │   │   ├── blockDiagram-VD42YOAC-ZDZZSUGS.min.js
+│   │   │   ├── blockDiagram-VD42YOAC-ZDZZSUGS.min.js.map
+│   │   │   ├── bootstrap-icons-CVBWLLHT.woff2
+│   │   │   ├── bootstrap-icons-VQNJTM6Q.woff
+│   │   │   ├── c4Diagram-YG6GDRKO-DXUAXJQ4.min.js
+│   │   │   ├── c4Diagram-YG6GDRKO-DXUAXJQ4.min.js.map
+│   │   │   ├── chunk-2SNPQT3V.min.js
+│   │   │   ├── chunk-2SNPQT3V.min.js.map
+│   │   │   ├── chunk-3EXUMIIG.min.js
+│   │   │   ├── chunk-3EXUMIIG.min.js.map
+│   │   │   ├── chunk-3INE33PR.min.js
+│   │   │   ├── chunk-3INE33PR.min.js.map
+│   │   │   ├── chunk-3OUT3TPH.min.js
+│   │   │   ├── chunk-3OUT3TPH.min.js.map
+│   │   │   ├── chunk-4S6YPXQK.min.js
+│   │   │   ├── chunk-4S6YPXQK.min.js.map
+│   │   │   ├── chunk-4TS2OR5T.min.js
+│   │   │   ├── chunk-4TS2OR5T.min.js.map
+│   │   │   ├── chunk-54TWZ5TY.min.js
+│   │   │   ├── chunk-54TWZ5TY.min.js.map
+│   │   │   ├── chunk-A6K5RA3E.min.js
+│   │   │   ├── chunk-A6K5RA3E.min.js.map
+│   │   │   ├── chunk-AJUMGIIP.min.js
+│   │   │   ├── chunk-AJUMGIIP.min.js.map
+│   │   │   ├── chunk-E24YF7OQ.min.js
+│   │   │   ├── chunk-E24YF7OQ.min.js.map
+│   │   │   ├── chunk-E5F23VE2.min.js
+│   │   │   ├── chunk-E5F23VE2.min.js.map
+│   │   │   ├── chunk-EEHY3DYQ.min.js
+│   │   │   ├── chunk-EEHY3DYQ.min.js.map
+│   │   │   ├── chunk-ETRULKCA.min.js
+│   │   │   ├── chunk-ETRULKCA.min.js.map
+│   │   │   ├── chunk-FMXZD665.min.js
+│   │   │   ├── chunk-FMXZD665.min.js.map
+│   │   │   ├── chunk-GK7N7244.min.js
+│   │   │   ├── chunk-GK7N7244.min.js.map
+│   │   │   ├── chunk-HC7FQI6W.min.js
+│   │   │   ├── chunk-HC7FQI6W.min.js.map
+│   │   │   ├── chunk-JVHSDEBR.min.js
+│   │   │   ├── chunk-JVHSDEBR.min.js.map
+│   │   │   ├── chunk-LZQT2EPB.min.js
+│   │   │   ├── chunk-LZQT2EPB.min.js.map
+│   │   │   ├── chunk-MHEKKGJI.min.js
+│   │   │   ├── chunk-MHEKKGJI.min.js.map
+│   │   │   ├── chunk-N67HA43X.min.js
+│   │   │   ├── chunk-N67HA43X.min.js.map
+│   │   │   ├── chunk-N6ZAD3XD.min.js
+│   │   │   ├── chunk-N6ZAD3XD.min.js.map
+│   │   │   ├── chunk-NH4WOWME.min.js
+│   │   │   ├── chunk-NH4WOWME.min.js.map
+│   │   │   ├── chunk-NIOXHGTH.min.js
+│   │   │   ├── chunk-NIOXHGTH.min.js.map
+│   │   │   ├── chunk-PRZSMPW3.min.js
+│   │   │   ├── chunk-PRZSMPW3.min.js.map
+│   │   │   ├── chunk-PTL4EUOE.min.js
+│   │   │   ├── chunk-PTL4EUOE.min.js.map
+│   │   │   ├── chunk-Q3DJRCL6.min.js
+│   │   │   ├── chunk-Q3DJRCL6.min.js.map
+│   │   │   ├── chunk-R5JLOOQ4.min.js
+│   │   │   ├── chunk-R5JLOOQ4.min.js.map
+│   │   │   ├── chunk-RKNBT2XG.min.js
+│   │   │   ├── chunk-RKNBT2XG.min.js.map
+│   │   │   ├── chunk-RT4YZ5LP.min.js
+│   │   │   ├── chunk-RT4YZ5LP.min.js.map
+│   │   │   ├── chunk-RYZVLCMM.min.js
+│   │   │   ├── chunk-RYZVLCMM.min.js.map
+│   │   │   ├── chunk-SO4CA2BC.min.js
+│   │   │   ├── chunk-SO4CA2BC.min.js.map
+│   │   │   ├── chunk-THYUWZOH.min.js
+│   │   │   ├── chunk-THYUWZOH.min.js.map
+│   │   │   ├── chunk-UTUKU3GN.min.js
+│   │   │   ├── chunk-UTUKU3GN.min.js.map
+│   │   │   ├── chunk-VBFLGJ4I.min.js
+│   │   │   ├── chunk-VBFLGJ4I.min.js.map
+│   │   │   ├── chunk-VRHQABE3.min.js
+│   │   │   ├── chunk-VRHQABE3.min.js.map
+│   │   │   ├── chunk-VUATWGGE.min.js
+│   │   │   ├── chunk-VUATWGGE.min.js.map
+│   │   │   ├── chunk-VWR4RBLO.min.js
+│   │   │   ├── chunk-VWR4RBLO.min.js.map
+│   │   │   ├── chunk-YH5AELPI.min.js
+│   │   │   ├── chunk-YH5AELPI.min.js.map
+│   │   │   ├── chunk-ZZ5OZH5U.min.js
+│   │   │   ├── chunk-ZZ5OZH5U.min.js.map
+│   │   │   ├── classDiagram-2ON5EDUG-5SBIWUHZ.min.js
+│   │   │   ├── classDiagram-2ON5EDUG-5SBIWUHZ.min.js.map
+│   │   │   ├── classDiagram-v2-WZHVMYZB-TAORDNWI.min.js
+│   │   │   ├── classDiagram-v2-WZHVMYZB-TAORDNWI.min.js.map
+│   │   │   ├── cose-bilkent-S5V4N54A-XGWYIFZU.min.js
+│   │   │   ├── cose-bilkent-S5V4N54A-XGWYIFZU.min.js.map
+│   │   │   ├── dagre-6UL2VRFP-WRF7QIKJ.min.js
+│   │   │   ├── dagre-6UL2VRFP-WRF7QIKJ.min.js.map
+│   │   │   ├── diagram-PSM6KHXK-6XVDVCNN.min.js
+│   │   │   ├── diagram-PSM6KHXK-6XVDVCNN.min.js.map
+│   │   │   ├── diagram-QEK2KX5R-ANXNVOWI.min.js
+│   │   │   ├── diagram-QEK2KX5R-ANXNVOWI.min.js.map
+│   │   │   ├── diagram-S2PKOQOG-R5H3BYOG.min.js
+│   │   │   ├── diagram-S2PKOQOG-R5H3BYOG.min.js.map
+│   │   │   ├── docfx.min.css
+│   │   │   ├── docfx.min.css.map
+│   │   │   ├── docfx.min.js
+│   │   │   ├── docfx.min.js.map
+│   │   │   ├── erDiagram-Q2GNP2WA-2DUCMKWP.min.js
+│   │   │   ├── erDiagram-Q2GNP2WA-2DUCMKWP.min.js.map
+│   │   │   ├── es-OLHPHTZN.min.js
+│   │   │   ├── es-OLHPHTZN.min.js.map
+│   │   │   ├── flowDiagram-NV44I4VS-2WDGJL6V.min.js
+│   │   │   ├── flowDiagram-NV44I4VS-2WDGJL6V.min.js.map
+│   │   │   ├── ganttDiagram-JELNMOA3-WKG2G7KL.min.js
+│   │   │   ├── ganttDiagram-JELNMOA3-WKG2G7KL.min.js.map
+│   │   │   ├── gitGraph-G5XIXVHT-5P63GIXF.min.js
+│   │   │   ├── gitGraph-G5XIXVHT-5P63GIXF.min.js.map
+│   │   │   ├── gitGraphDiagram-V2S2FVAM-AC3RAYBN.min.js
+│   │   │   ├── gitGraphDiagram-V2S2FVAM-AC3RAYBN.min.js.map
+│   │   │   ├── info-VBDWY6EO-45NTTHKC.min.js
+│   │   │   ├── info-VBDWY6EO-45NTTHKC.min.js.map
+│   │   │   ├── infoDiagram-HS3SLOUP-T6VIWO4Z.min.js
+│   │   │   ├── infoDiagram-HS3SLOUP-T6VIWO4Z.min.js.map
+│   │   │   ├── journeyDiagram-XKPGCS4Q-JEGRGMRA.min.js
+│   │   │   ├── journeyDiagram-XKPGCS4Q-JEGRGMRA.min.js.map
+│   │   │   ├── kanban-definition-3W4ZIXB7-2MX6XAD3.min.js
+│   │   │   ├── kanban-definition-3W4ZIXB7-2MX6XAD3.min.js.map
+│   │   │   ├── katex-S6UHCMAO.min.js
+│   │   │   ├── katex-S6UHCMAO.min.js.map
+│   │   │   ├── lunr.ar-T5RB65S3.min.js
+│   │   │   ├── lunr.ar-T5RB65S3.min.js.map
+│   │   │   ├── lunr.da-PWP6VHF3.min.js
+│   │   │   ├── lunr.da-PWP6VHF3.min.js.map
+│   │   │   ├── lunr.de-YTQD3U4Z.min.js
+│   │   │   ├── lunr.de-YTQD3U4Z.min.js.map
+│   │   │   ├── lunr.du-BRSPPVIK.min.js
+│   │   │   ├── lunr.du-BRSPPVIK.min.js.map
+│   │   │   ├── lunr.el-GSMVITNF.min.js
+│   │   │   ├── lunr.el-GSMVITNF.min.js.map
+│   │   │   ├── lunr.es-TMWXNTEB.min.js
+│   │   │   ├── lunr.es-TMWXNTEB.min.js.map
+│   │   │   ├── lunr.fi-DCMK3HPH.min.js
+│   │   │   ├── lunr.fi-DCMK3HPH.min.js.map
+│   │   │   ├── lunr.fr-BIEUHT6A.min.js
+│   │   │   ├── lunr.fr-BIEUHT6A.min.js.map
+│   │   │   ├── lunr.he-3XIBHNST.min.js
+│   │   │   ├── lunr.he-3XIBHNST.min.js.map
+│   │   │   ├── lunr.hi-XAK4O6OM.min.js
+│   │   │   ├── lunr.hi-XAK4O6OM.min.js.map
+│   │   │   ├── lunr.hu-BR5CPHUG.min.js
+│   │   │   ├── lunr.hu-BR5CPHUG.min.js.map
+│   │   │   ├── lunr.hy-D3Y25GE2.min.js
+│   │   │   ├── lunr.hy-D3Y25GE2.min.js.map
+│   │   │   ├── lunr.it-FIHVEPOG.min.js
+│   │   │   ├── lunr.it-FIHVEPOG.min.js.map
+│   │   │   ├── lunr.ja-W662ZMBR.min.js
+│   │   │   ├── lunr.ja-W662ZMBR.min.js.map
+│   │   │   ├── lunr.jp-GEPF3WWC.min.js
+│   │   │   ├── lunr.jp-GEPF3WWC.min.js.map
+│   │   │   ├── lunr.kn-XYRMGBUF.min.js
+│   │   │   ├── lunr.kn-XYRMGBUF.min.js.map
+│   │   │   ├── lunr.ko-3AGDXUA6.min.js
+│   │   │   ├── lunr.ko-3AGDXUA6.min.js.map
+│   │   │   ├── lunr.nl-ES43LYEP.min.js
+│   │   │   ├── lunr.nl-ES43LYEP.min.js.map
+│   │   │   ├── lunr.no-DVZDCRDZ.min.js
+│   │   │   ├── lunr.no-DVZDCRDZ.min.js.map
+│   │   │   ├── lunr.pt-IR3GUKJP.min.js
+│   │   │   ├── lunr.pt-IR3GUKJP.min.js.map
+│   │   │   ├── lunr.ro-OKXPYU7H.min.js
+│   │   │   ├── lunr.ro-OKXPYU7H.min.js.map
+│   │   │   ├── lunr.ru-YVXJXXRH.min.js
+│   │   │   ├── lunr.ru-YVXJXXRH.min.js.map
+│   │   │   ├── lunr.sa-EMGR2JYC.min.js
+│   │   │   ├── lunr.sa-EMGR2JYC.min.js.map
+│   │   │   ├── lunr.sv-V5Y5V565.min.js
+│   │   │   ├── lunr.sv-V5Y5V565.min.js.map
+│   │   │   ├── lunr.ta-FBYGEW4O.min.js
+│   │   │   ├── lunr.ta-FBYGEW4O.min.js.map
+│   │   │   ├── lunr.te-Q4BE2RTS.min.js
+│   │   │   ├── lunr.te-Q4BE2RTS.min.js.map
+│   │   │   ├── lunr.th-Y3A7RQCT.min.js
+│   │   │   ├── lunr.th-Y3A7RQCT.min.js.map
+│   │   │   ├── lunr.tr-QG3Z2T5M.min.js
+│   │   │   ├── lunr.tr-QG3Z2T5M.min.js.map
+│   │   │   ├── lunr.vi-US2GP5QY.min.js
+│   │   │   ├── lunr.vi-US2GP5QY.min.js.map
+│   │   │   ├── main.css
+│   │   │   ├── main.js
+│   │   │   ├── mermaid.core-PFJTYFYY.min.js
+│   │   │   ├── mermaid.core-PFJTYFYY.min.js.map
+│   │   │   ├── mindmap-definition-VGOIOE7T-U3K4237W.min.js
+│   │   │   ├── mindmap-definition-VGOIOE7T-U3K4237W.min.js.map
+│   │   │   ├── packet-DYOGHKS2-LXE7KUMN.min.js
+│   │   │   ├── packet-DYOGHKS2-LXE7KUMN.min.js.map
+│   │   │   ├── pie-VRWISCQL-AS5BBOPD.min.js
+│   │   │   ├── pie-VRWISCQL-AS5BBOPD.min.js.map
+│   │   │   ├── pieDiagram-ADFJNKIX-HBO5BR7U.min.js
+│   │   │   ├── pieDiagram-ADFJNKIX-HBO5BR7U.min.js.map
+│   │   │   ├── quadrantDiagram-AYHSOK5B-MPT2AMYK.min.js
+│   │   │   ├── quadrantDiagram-AYHSOK5B-MPT2AMYK.min.js.map
+│   │   │   ├── radar-ZZBFDIW7-ZADWEJSO.min.js
+│   │   │   ├── radar-ZZBFDIW7-ZADWEJSO.min.js.map
+│   │   │   ├── requirementDiagram-UZGBJVZJ-AZRYVSDH.min.js
+│   │   │   ├── requirementDiagram-UZGBJVZJ-AZRYVSDH.min.js.map
+│   │   │   ├── sankeyDiagram-TZEHDZUN-QXK6IZ5S.min.js
+│   │   │   ├── sankeyDiagram-TZEHDZUN-QXK6IZ5S.min.js.map
+│   │   │   ├── search-worker.min.js
+│   │   │   ├── search-worker.min.js.map
+│   │   │   ├── sequenceDiagram-WL72ISMW-IJ57HCHS.min.js
+│   │   │   ├── sequenceDiagram-WL72ISMW-IJ57HCHS.min.js.map
+│   │   │   ├── stateDiagram-FKZM4ZOC-QYRU3EIY.min.js
+│   │   │   ├── stateDiagram-FKZM4ZOC-QYRU3EIY.min.js.map
+│   │   │   ├── stateDiagram-v2-4FDKWEC3-VMH4N7EX.min.js
+│   │   │   ├── stateDiagram-v2-4FDKWEC3-VMH4N7EX.min.js.map
+│   │   │   ├── tex-svg-full-LF5I37CT.min.js
+│   │   │   ├── tex-svg-full-LF5I37CT.min.js.map
+│   │   │   ├── timeline-definition-IT6M3QCI-BEU2P6B2.min.js
+│   │   │   ├── timeline-definition-IT6M3QCI-BEU2P6B2.min.js.map
+│   │   │   ├── treemap-GDKQZRPO-N4KMX3ZB.min.js
+│   │   │   ├── treemap-GDKQZRPO-N4KMX3ZB.min.js.map
+│   │   │   ├── xychartDiagram-PRI3JC2R-7XFWDBE2.min.js
+│   │   │   └── xychartDiagram-PRI3JC2R-7XFWDBE2.min.js.map
+│   │   ├── favicon.ico
+│   │   └── logo.svg
 │   ├── adr
 │   │   ├── 001-provider-abstraction.md
 │   │   ├── 002-tiered-storage-architecture.md
@@ -778,7 +1007,6 @@ Meridian-main
 │   │   ├── adr-index.md
 │   │   ├── configuration-schema.md
 │   │   ├── documentation-coverage.md
-│   │   ├── interfaces.md
 │   │   ├── project-context.md
 │   │   ├── project-dependencies.md
 │   │   ├── provider-registry.md
@@ -797,6 +1025,7 @@ Meridian-main
 │   │   ├── deployment.md
 │   │   ├── governance-operator-workflow.md
 │   │   ├── high-availability.md
+│   │   ├── live-execution-controls.md
 │   │   ├── msix-packaging.md
 │   │   ├── operator-runbook.md
 │   │   ├── performance-tuning.md
@@ -932,12 +1161,16 @@ Meridian-main
 │   │   ├── IMPROVEMENTS.md
 │   │   ├── link-repair-report.md
 │   │   ├── metrics-dashboard.md
+│   │   ├── OPPORTUNITY_SCAN.md
 │   │   ├── production-status.md
 │   │   ├── provider-validation-matrix.md
 │   │   ├── README.md
 │   │   ├── ROADMAP.md
+│   │   ├── ROADMAP_COMBINED.md
 │   │   ├── ROADMAP_NOW_NEXT_LATER_2026_03_25.md
 │   │   ├── rules-report.md
+│   │   ├── TARGET_END_PRODUCT.md
+│   │   ├── todo-scan-results.json
 │   │   └── TODO.md
 │   ├── DEPENDENCIES.md
 │   ├── HELP.md
@@ -1068,6 +1301,7 @@ Meridian-main
 │   │   │   │   ├── MaintenanceFeatureRegistration.cs
 │   │   │   │   ├── PipelineFeatureRegistration.cs
 │   │   │   │   ├── ProviderFeatureRegistration.cs
+│   │   │   │   ├── ProviderRoutingFeatureRegistration.cs
 │   │   │   │   ├── StorageFeatureRegistration.cs
 │   │   │   │   └── SymbolManagementFeatureRegistration.cs
 │   │   │   ├── Startup
@@ -1219,6 +1453,12 @@ Meridian-main
 │   │   │   ├── IngestionJobService.cs
 │   │   │   ├── PersistentDedupLedger.cs
 │   │   │   └── SchemaUpcasterRegistry.cs
+│   │   ├── ProviderRouting
+│   │   │   ├── ProviderBindingService.cs
+│   │   │   ├── ProviderConnectionService.cs
+│   │   │   ├── ProviderOperationsSupportServices.cs
+│   │   │   ├── ProviderRoutingEngine.cs
+│   │   │   └── ProviderRoutingMapper.cs
 │   │   ├── Results
 │   │   │   ├── ErrorCode.cs
 │   │   │   ├── OperationError.cs
@@ -1411,6 +1651,7 @@ Meridian-main
 │   │   │   ├── LiveDataModels.cs
 │   │   │   ├── OptionsModels.cs
 │   │   │   ├── ProviderCatalog.cs
+│   │   │   ├── ProviderRoutingApiModels.cs
 │   │   │   ├── StatusEndpointModels.cs
 │   │   │   ├── StatusModels.cs
 │   │   │   ├── UiApiClient.cs
@@ -1434,6 +1675,7 @@ Meridian-main
 │   │   ├── Configuration
 │   │   │   ├── AppConfigDto.cs
 │   │   │   ├── DerivativesConfigDto.cs
+│   │   │   ├── ProviderConnectionsConfigDto.cs
 │   │   │   └── SymbolConfig.cs
 │   │   ├── Credentials
 │   │   │   ├── CredentialModels.cs
@@ -1557,6 +1799,7 @@ Meridian-main
 │   │   │   ├── DataSourceKindConverter.cs
 │   │   │   ├── DerivativesConfig.cs
 │   │   │   ├── IConfigurationProvider.cs
+│   │   │   ├── ProviderConnectionsConfig.cs
 │   │   │   ├── StockSharpConfig.cs
 │   │   │   ├── SyntheticMarketDataConfig.cs
 │   │   │   └── ValidatedConfig.cs
@@ -1685,6 +1928,8 @@ Meridian-main
 │   │   ├── Serialization
 │   │   │   └── ExecutionJsonContext.cs
 │   │   ├── Services
+│   │   │   ├── ExecutionAuditTrailService.cs
+│   │   │   ├── ExecutionOperatorControlService.cs
 │   │   │   ├── IPaperSessionStore.cs
 │   │   │   ├── JsonlFilePaperSessionStore.cs
 │   │   │   ├── OrderLifecycleManager.cs
@@ -2055,12 +2300,14 @@ Meridian-main
 │   │   ├── IMarketDataClient.cs
 │   │   ├── ImplementsAdrAttribute.cs
 │   │   ├── IOptionsChainProvider.cs
+│   │   ├── IProviderFamilyAdapter.cs
 │   │   ├── IProviderMetadata.cs
 │   │   ├── IProviderModule.cs
 │   │   ├── IRealtimeDataSource.cs
 │   │   ├── Meridian.ProviderSdk.csproj
 │   │   ├── ProviderHttpUtilities.cs
 │   │   ├── ProviderModuleLoader.cs
+│   │   ├── ProviderRoutingModels.cs
 │   │   └── RequiresCredentialAttribute.cs
 │   ├── Meridian.QuantScript
 │   │   ├── Api
@@ -2421,6 +2668,7 @@ Meridian-main
 │   │   │   ├── PortfolioImportService.cs
 │   │   │   ├── ProviderHealthService.cs
 │   │   │   ├── ProviderManagementService.cs
+│   │   │   ├── ProviderOperationsResults.cs
 │   │   │   ├── QualityArchiveStore.cs
 │   │   │   ├── RetentionAssuranceModels.cs
 │   │   │   ├── ScheduledMaintenanceService.cs
@@ -2516,6 +2764,7 @@ Meridian-main
 │   │   ├── LeanSymbolMapper.cs
 │   │   ├── LoginSessionService.cs
 │   │   ├── Meridian.Ui.Shared.csproj
+│   │   ├── StaticAssetPathResolver.cs
 │   │   └── UserProfileRegistry.cs
 │   └── Meridian.Wpf
 │       ├── Assets
@@ -2594,6 +2843,7 @@ Meridian-main
 │       │   ├── DashboardModels.cs
 │       │   ├── DataQualityModels.cs
 │       │   ├── FundProfileModels.cs
+│       │   ├── FundReconciliationWorkbenchModels.cs
 │       │   ├── LeanModels.cs
 │       │   ├── LiveDataModels.cs
 │       │   ├── NotificationModels.cs
@@ -2631,6 +2881,7 @@ Meridian-main
 │       │   ├── FundContextService.cs
 │       │   ├── FundLedgerReadService.cs
 │       │   ├── FundProfileKeyTranslator.cs
+│       │   ├── FundReconciliationWorkbenchService.cs
 │       │   ├── GlobalHotkeyService.cs
 │       │   ├── ICommandContextProvider.cs
 │       │   ├── IFundProfileCatalog.cs
@@ -2662,7 +2913,8 @@ Meridian-main
 │       │   ├── TooltipService.cs
 │       │   ├── TypeForwards.cs
 │       │   ├── WatchlistService.cs
-│       │   └── WorkspaceService.cs
+│       │   ├── WorkspaceService.cs
+│       │   └── WorkstationReconciliationApiClient.cs
 │       ├── Styles
 │       │   ├── Animations.xaml
 │       │   ├── AppStyles.xaml
@@ -2701,8 +2953,10 @@ Meridian-main
 │       │   ├── DirectLendingViewModel.cs
 │       │   ├── EventReplayViewModel.cs
 │       │   ├── ExportPresetsViewModel.cs
+│       │   ├── FundAccountProviderPanelModels.cs
 │       │   ├── FundAccountsViewModel.cs
 │       │   ├── FundLedgerViewModel.cs
+│       │   ├── FundLedgerViewModel.Reconciliation.cs
 │       │   ├── FundProfileSelectionViewModel.cs
 │       │   ├── IndexSubscriptionViewModel.cs
 │       │   ├── IPageActionBarProvider.cs
@@ -2936,26 +3190,6 @@ Meridian-main
 │       ├── MainWindow.xaml.cs
 │       ├── Meridian.Wpf.csproj
 │       └── README.md
-├── temp
-│   ├── UiProbe
-│   │   ├── Program.cs
-│   │   └── UiProbe.csproj
-│   ├── dataquality-triage-verification-fixed.png
-│   ├── dataquality-triage-verification.png
-│   ├── meridian-ui-debug-2.png
-│   ├── meridian-ui-debug-3.png
-│   ├── meridian-ui-debug-4.png
-│   ├── meridian-ui-debug-5.png
-│   ├── meridian-ui-debug.png
-│   ├── patch1-verification.png
-│   ├── patch2-verification.png
-│   ├── patch3-before-switch.png
-│   ├── patch3-dataops-verification-2.png
-│   ├── patch3-dataops-verification.png
-│   ├── patch4-governance-verification-2.png
-│   ├── patch4-governance-verification-automation.png
-│   ├── patch4-governance-verification.png
-│   └── shell-cleanup-verification.png
 ├── tests
 │   ├── Meridian.Backtesting.Tests
 │   │   ├── AdvancedCarryDecisionEngineTests.cs
@@ -3125,6 +3359,8 @@ Meridian-main
 │   │   │   │   ├── MarketDataClientFactoryTests.cs
 │   │   │   │   ├── SpscRingBufferTests.cs
 │   │   │   │   └── WalEventPipelineTests.cs
+│   │   │   ├── ProviderRouting
+│   │   │   │   └── ProviderRoutingServiceTests.cs
 │   │   │   ├── Services
 │   │   │   │   ├── DataQuality
 │   │   │   │   │   ├── AnomalyDetectorTests.cs
@@ -3185,6 +3421,7 @@ Meridian-main
 │   │   │   │   └── TaxLotAccountingTests.cs
 │   │   │   ├── BrokerageGatewayAdapterTests.cs
 │   │   │   ├── MultiAccountPaperTradingPortfolioTests.cs
+│   │   │   ├── OrderManagementSystemGovernanceTests.cs
 │   │   │   ├── OrderManagementSystemTests.cs
 │   │   │   ├── PaperSessionPersistenceServiceTests.cs
 │   │   │   ├── PaperTradingGatewayTests.cs
@@ -3215,6 +3452,7 @@ Meridian-main
 │   │   │   │   │       ├── polygon-recorded-session-nvda-multi-batch.json
 │   │   │   │   │       ├── polygon-recorded-session-spy-etf.json
 │   │   │   │   │       └── polygon-recorded-session-tsla-opening-cross.json
+│   │   │   │   ├── AlpacaCorporateActionProviderTests.cs
 │   │   │   │   ├── AlpacaCredentialAndReconnectTests.cs
 │   │   │   │   ├── AlpacaMessageParsingTests.cs
 │   │   │   │   ├── AlpacaQuotePipelineGoldenTests.cs
@@ -3360,6 +3598,7 @@ Meridian-main
 │   │   │   ├── CashFlowProjectionTests.cs
 │   │   │   ├── LedgerReadServiceTests.cs
 │   │   │   ├── PortfolioReadServiceTests.cs
+│   │   │   ├── PromotionServiceLiveGovernanceTests.cs
 │   │   │   ├── PromotionServiceTests.cs
 │   │   │   ├── ReconciliationProjectionServiceTests.cs
 │   │   │   ├── StrategyLifecycleManagerTests.cs
@@ -3388,7 +3627,9 @@ Meridian-main
 │   │   │   └── MoneyMarketFundServiceTests.cs
 │   │   ├── Ui
 │   │   │   ├── DirectLendingEndpointsTests.cs
+│   │   │   ├── ExecutionGovernanceEndpointsTests.cs
 │   │   │   ├── ExecutionWriteEndpointsTests.cs
+│   │   │   ├── StaticAssetPathResolverTests.cs
 │   │   │   └── WorkstationEndpointsTests.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── Meridian.Tests.csproj
@@ -3463,6 +3704,7 @@ Meridian-main
 │   │   │   ├── ConnectionServiceTests.cs
 │   │   │   ├── ExportPresetServiceTests.cs
 │   │   │   ├── FirstRunServiceTests.cs
+│   │   │   ├── FundReconciliationWorkbenchServiceTests.cs
 │   │   │   ├── InfoBarServiceTests.cs
 │   │   │   ├── KeyboardShortcutServiceTests.cs
 │   │   │   ├── MessagingServiceTests.cs
@@ -3481,11 +3723,14 @@ Meridian-main
 │   │   ├── Support
 │   │   │   ├── FakeQuantScriptCompiler.cs
 │   │   │   ├── FakeScriptRunner.cs
+│   │   │   ├── FakeWorkstationReconciliationApiClient.cs
 │   │   │   ├── RunMatUiAutomationFacade.cs
 │   │   │   └── WpfTestThread.cs
 │   │   ├── ViewModels
+│   │   │   ├── AddProviderWizardViewModelTests.cs
 │   │   │   ├── CashFlowViewModelTests.cs
 │   │   │   ├── DataQualityViewModelCharacterizationTests.cs
+│   │   │   ├── FundAccountsViewModelTests.cs
 │   │   │   ├── FundLedgerViewModelTests.cs
 │   │   │   ├── MainShellViewModelTests.cs
 │   │   │   ├── QuantScriptViewModelTests.cs
@@ -3493,10 +3738,13 @@ Meridian-main
 │   │   │   └── StrategyRunBrowserViewModelTests.cs
 │   │   ├── Views
 │   │   │   ├── DashboardPageSmokeTests.cs
+│   │   │   ├── MainPageSmokeTests.cs
+│   │   │   ├── NavigationPageSmokeTests.cs
 │   │   │   ├── QuantScriptPageTests.cs
 │   │   │   ├── RunMatUiSmokeTests.cs
 │   │   │   ├── RunMatWorkflowSmokeTests.cs
-│   │   │   └── SplitPaneHostControlTests.cs
+│   │   │   ├── SplitPaneHostControlTests.cs
+│   │   │   └── SystemHealthPageSmokeTests.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── Meridian.Wpf.Tests.csproj
 │   │   └── TestAssemblyConfiguration.cs
@@ -3515,7 +3763,6 @@ Meridian-main
 ├── .markdownlint.json
 ├── .vsconfig
 ├── CLAUDE.md
-├── desktop.ini
 ├── Directory.Build.props
 ├── Directory.Packages.props
 ├── environment.yml
@@ -3525,7 +3772,8 @@ Meridian-main
 ├── Meridian.sln
 ├── package-lock.json
 ├── package.json
-└── README.md
+├── README.md
+└── test-build.ps1
 ```
 
 Full annotated file tree: [`docs/ai/claude/CLAUDE.structure.md`](docs/ai/claude/CLAUDE.structure.md)
