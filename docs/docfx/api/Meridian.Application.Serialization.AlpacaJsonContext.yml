@@ -29,7 +29,7 @@ items:
   type: Class
   source:
     id: AlpacaJsonContext
-    path: C:\Users\Andrew James Rowden\OneDrive\Documents\OneDrive\Documents\Desktop\Meridian-main\src\Meridian.Core\obj\Release\net9.0\System.Text.Json.SourceGeneration\System.Text.Json.SourceGeneration.JsonSourceGenerator\AlpacaJsonContext.AlpacaTradeMessage.g.cs
+    path: C:\Users\Andrew James Rowden\OneDrive\Documents\OneDrive\Documents\Desktop\Meridian-main\src\Meridian.Core\obj\Release\net9.0\System.Text.Json.SourceGeneration\System.Text.Json.SourceGeneration.JsonSourceGenerator\AlpacaJsonContext.String.g.cs
     startLine: 10
   assemblies:
   - Meridian.Core
@@ -108,6 +108,87 @@ items:
     arguments:
     - type: System.Type
       value: Meridian.Application.Serialization.AlpacaMessage[]
+- uid: Meridian.Application.Serialization.AlpacaJsonContext.Int32
+  commentId: P:Meridian.Application.Serialization.AlpacaJsonContext.Int32
+  id: Int32
+  parent: Meridian.Application.Serialization.AlpacaJsonContext
+  langs:
+  - csharp
+  - vb
+  name: Int32
+  nameWithType: AlpacaJsonContext.Int32
+  fullName: Meridian.Application.Serialization.AlpacaJsonContext.Int32
+  type: Property
+  source:
+    id: Int32
+    path: C:\Users\Andrew James Rowden\OneDrive\Documents\OneDrive\Documents\Desktop\Meridian-main\src\Meridian.Core\obj\Release\net9.0\System.Text.Json.SourceGeneration\System.Text.Json.SourceGeneration.JsonSourceGenerator\AlpacaJsonContext.Int32.g.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Serialization
+  summary: Defines the source generated JSON serialization contract metadata for a given type.
+  example: []
+  syntax:
+    content: public JsonTypeInfo<int> Int32 { get; }
+    parameters: []
+    return:
+      type: System.Text.Json.Serialization.Metadata.JsonTypeInfo{System.Int32}
+    content.vb: Public ReadOnly Property Int32 As JsonTypeInfo(Of Integer)
+  overload: Meridian.Application.Serialization.AlpacaJsonContext.Int32*
+- uid: Meridian.Application.Serialization.AlpacaJsonContext.NullableInt32
+  commentId: P:Meridian.Application.Serialization.AlpacaJsonContext.NullableInt32
+  id: NullableInt32
+  parent: Meridian.Application.Serialization.AlpacaJsonContext
+  langs:
+  - csharp
+  - vb
+  name: NullableInt32
+  nameWithType: AlpacaJsonContext.NullableInt32
+  fullName: Meridian.Application.Serialization.AlpacaJsonContext.NullableInt32
+  type: Property
+  source:
+    id: NullableInt32
+    path: C:\Users\Andrew James Rowden\OneDrive\Documents\OneDrive\Documents\Desktop\Meridian-main\src\Meridian.Core\obj\Release\net9.0\System.Text.Json.SourceGeneration\System.Text.Json.SourceGeneration.JsonSourceGenerator\AlpacaJsonContext.NullableInt32.g.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Serialization
+  summary: Defines the source generated JSON serialization contract metadata for a given type.
+  example: []
+  syntax:
+    content: public JsonTypeInfo<int?> NullableInt32 { get; }
+    parameters: []
+    return:
+      type: System.Text.Json.Serialization.Metadata.JsonTypeInfo{System.Nullable{System.Int32}}
+    content.vb: Public ReadOnly Property NullableInt32 As JsonTypeInfo(Of Integer?)
+  overload: Meridian.Application.Serialization.AlpacaJsonContext.NullableInt32*
+- uid: Meridian.Application.Serialization.AlpacaJsonContext.StringArray
+  commentId: P:Meridian.Application.Serialization.AlpacaJsonContext.StringArray
+  id: StringArray
+  parent: Meridian.Application.Serialization.AlpacaJsonContext
+  langs:
+  - csharp
+  - vb
+  name: StringArray
+  nameWithType: AlpacaJsonContext.StringArray
+  fullName: Meridian.Application.Serialization.AlpacaJsonContext.StringArray
+  type: Property
+  source:
+    id: StringArray
+    path: C:\Users\Andrew James Rowden\OneDrive\Documents\OneDrive\Documents\Desktop\Meridian-main\src\Meridian.Core\obj\Release\net9.0\System.Text.Json.SourceGeneration\System.Text.Json.SourceGeneration.JsonSourceGenerator\AlpacaJsonContext.StringArray.g.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Serialization
+  summary: Defines the source generated JSON serialization contract metadata for a given type.
+  example: []
+  syntax:
+    content: public JsonTypeInfo<string[]> StringArray { get; }
+    parameters: []
+    return:
+      type: System.Text.Json.Serialization.Metadata.JsonTypeInfo{System.String[]}
+    content.vb: Public ReadOnly Property StringArray As JsonTypeInfo(Of String())
+  overload: Meridian.Application.Serialization.AlpacaJsonContext.StringArray*
 - uid: Meridian.Application.Serialization.AlpacaJsonContext.Int64
   commentId: P:Meridian.Application.Serialization.AlpacaJsonContext.Int64
   id: Int64
@@ -135,6 +216,33 @@ items:
       type: System.Text.Json.Serialization.Metadata.JsonTypeInfo{System.Int64}
     content.vb: Public ReadOnly Property Int64 As JsonTypeInfo(Of Long)
   overload: Meridian.Application.Serialization.AlpacaJsonContext.Int64*
+- uid: Meridian.Application.Serialization.AlpacaJsonContext.AlpacaMessageArray
+  commentId: P:Meridian.Application.Serialization.AlpacaJsonContext.AlpacaMessageArray
+  id: AlpacaMessageArray
+  parent: Meridian.Application.Serialization.AlpacaJsonContext
+  langs:
+  - csharp
+  - vb
+  name: AlpacaMessageArray
+  nameWithType: AlpacaJsonContext.AlpacaMessageArray
+  fullName: Meridian.Application.Serialization.AlpacaJsonContext.AlpacaMessageArray
+  type: Property
+  source:
+    id: AlpacaMessageArray
+    path: C:\Users\Andrew James Rowden\OneDrive\Documents\OneDrive\Documents\Desktop\Meridian-main\src\Meridian.Core\obj\Release\net9.0\System.Text.Json.SourceGeneration\System.Text.Json.SourceGeneration.JsonSourceGenerator\AlpacaJsonContext.AlpacaMessageArray.g.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Serialization
+  summary: Defines the source generated JSON serialization contract metadata for a given type.
+  example: []
+  syntax:
+    content: public JsonTypeInfo<AlpacaMessage[]> AlpacaMessageArray { get; }
+    parameters: []
+    return:
+      type: System.Text.Json.Serialization.Metadata.JsonTypeInfo{Meridian.Application.Serialization.AlpacaMessage[]}
+    content.vb: Public ReadOnly Property AlpacaMessageArray As JsonTypeInfo(Of AlpacaMessage())
+  overload: Meridian.Application.Serialization.AlpacaJsonContext.AlpacaMessageArray*
 - uid: Meridian.Application.Serialization.AlpacaJsonContext.GetTypeInfo(System.Type)
   commentId: M:Meridian.Application.Serialization.AlpacaJsonContext.GetTypeInfo(System.Type)
   id: GetTypeInfo(System.Type)
@@ -167,33 +275,6 @@ items:
     content.vb: Public Overrides Function GetTypeInfo(type As Type) As JsonTypeInfo
   overridden: System.Text.Json.Serialization.JsonSerializerContext.GetTypeInfo(System.Type)
   overload: Meridian.Application.Serialization.AlpacaJsonContext.GetTypeInfo*
-- uid: Meridian.Application.Serialization.AlpacaJsonContext.AlpacaMessage
-  commentId: P:Meridian.Application.Serialization.AlpacaJsonContext.AlpacaMessage
-  id: AlpacaMessage
-  parent: Meridian.Application.Serialization.AlpacaJsonContext
-  langs:
-  - csharp
-  - vb
-  name: AlpacaMessage
-  nameWithType: AlpacaJsonContext.AlpacaMessage
-  fullName: Meridian.Application.Serialization.AlpacaJsonContext.AlpacaMessage
-  type: Property
-  source:
-    id: AlpacaMessage
-    path: C:\Users\Andrew James Rowden\OneDrive\Documents\OneDrive\Documents\Desktop\Meridian-main\src\Meridian.Core\obj\Release\net9.0\System.Text.Json.SourceGeneration\System.Text.Json.SourceGeneration.JsonSourceGenerator\AlpacaJsonContext.AlpacaMessage.g.cs
-    startLine: 18
-  assemblies:
-  - Meridian.Core
-  namespace: Meridian.Application.Serialization
-  summary: Defines the source generated JSON serialization contract metadata for a given type.
-  example: []
-  syntax:
-    content: public JsonTypeInfo<AlpacaMessage> AlpacaMessage { get; }
-    parameters: []
-    return:
-      type: System.Text.Json.Serialization.Metadata.JsonTypeInfo{Meridian.Application.Serialization.AlpacaMessage}
-    content.vb: Public ReadOnly Property AlpacaMessage As JsonTypeInfo(Of AlpacaMessage)
-  overload: Meridian.Application.Serialization.AlpacaJsonContext.AlpacaMessage*
 - uid: Meridian.Application.Serialization.AlpacaJsonContext.AlpacaQuoteMessage
   commentId: P:Meridian.Application.Serialization.AlpacaJsonContext.AlpacaQuoteMessage
   id: AlpacaQuoteMessage
@@ -221,87 +302,6 @@ items:
       type: System.Text.Json.Serialization.Metadata.JsonTypeInfo{Meridian.Application.Serialization.AlpacaQuoteMessage}
     content.vb: Public ReadOnly Property AlpacaQuoteMessage As JsonTypeInfo(Of AlpacaQuoteMessage)
   overload: Meridian.Application.Serialization.AlpacaJsonContext.AlpacaQuoteMessage*
-- uid: Meridian.Application.Serialization.AlpacaJsonContext.String
-  commentId: P:Meridian.Application.Serialization.AlpacaJsonContext.String
-  id: String
-  parent: Meridian.Application.Serialization.AlpacaJsonContext
-  langs:
-  - csharp
-  - vb
-  name: String
-  nameWithType: AlpacaJsonContext.String
-  fullName: Meridian.Application.Serialization.AlpacaJsonContext.String
-  type: Property
-  source:
-    id: String
-    path: C:\Users\Andrew James Rowden\OneDrive\Documents\OneDrive\Documents\Desktop\Meridian-main\src\Meridian.Core\obj\Release\net9.0\System.Text.Json.SourceGeneration\System.Text.Json.SourceGeneration.JsonSourceGenerator\AlpacaJsonContext.String.g.cs
-    startLine: 18
-  assemblies:
-  - Meridian.Core
-  namespace: Meridian.Application.Serialization
-  summary: Defines the source generated JSON serialization contract metadata for a given type.
-  example: []
-  syntax:
-    content: public JsonTypeInfo<string> String { get; }
-    parameters: []
-    return:
-      type: System.Text.Json.Serialization.Metadata.JsonTypeInfo{System.String}
-    content.vb: Public ReadOnly Property [String] As JsonTypeInfo(Of String)
-  overload: Meridian.Application.Serialization.AlpacaJsonContext.String*
-- uid: Meridian.Application.Serialization.AlpacaJsonContext.StringArray
-  commentId: P:Meridian.Application.Serialization.AlpacaJsonContext.StringArray
-  id: StringArray
-  parent: Meridian.Application.Serialization.AlpacaJsonContext
-  langs:
-  - csharp
-  - vb
-  name: StringArray
-  nameWithType: AlpacaJsonContext.StringArray
-  fullName: Meridian.Application.Serialization.AlpacaJsonContext.StringArray
-  type: Property
-  source:
-    id: StringArray
-    path: C:\Users\Andrew James Rowden\OneDrive\Documents\OneDrive\Documents\Desktop\Meridian-main\src\Meridian.Core\obj\Release\net9.0\System.Text.Json.SourceGeneration\System.Text.Json.SourceGeneration.JsonSourceGenerator\AlpacaJsonContext.StringArray.g.cs
-    startLine: 18
-  assemblies:
-  - Meridian.Core
-  namespace: Meridian.Application.Serialization
-  summary: Defines the source generated JSON serialization contract metadata for a given type.
-  example: []
-  syntax:
-    content: public JsonTypeInfo<string[]> StringArray { get; }
-    parameters: []
-    return:
-      type: System.Text.Json.Serialization.Metadata.JsonTypeInfo{System.String[]}
-    content.vb: Public ReadOnly Property StringArray As JsonTypeInfo(Of String())
-  overload: Meridian.Application.Serialization.AlpacaJsonContext.StringArray*
-- uid: Meridian.Application.Serialization.AlpacaJsonContext.AlpacaMessageArray
-  commentId: P:Meridian.Application.Serialization.AlpacaJsonContext.AlpacaMessageArray
-  id: AlpacaMessageArray
-  parent: Meridian.Application.Serialization.AlpacaJsonContext
-  langs:
-  - csharp
-  - vb
-  name: AlpacaMessageArray
-  nameWithType: AlpacaJsonContext.AlpacaMessageArray
-  fullName: Meridian.Application.Serialization.AlpacaJsonContext.AlpacaMessageArray
-  type: Property
-  source:
-    id: AlpacaMessageArray
-    path: C:\Users\Andrew James Rowden\OneDrive\Documents\OneDrive\Documents\Desktop\Meridian-main\src\Meridian.Core\obj\Release\net9.0\System.Text.Json.SourceGeneration\System.Text.Json.SourceGeneration.JsonSourceGenerator\AlpacaJsonContext.AlpacaMessageArray.g.cs
-    startLine: 18
-  assemblies:
-  - Meridian.Core
-  namespace: Meridian.Application.Serialization
-  summary: Defines the source generated JSON serialization contract metadata for a given type.
-  example: []
-  syntax:
-    content: public JsonTypeInfo<AlpacaMessage[]> AlpacaMessageArray { get; }
-    parameters: []
-    return:
-      type: System.Text.Json.Serialization.Metadata.JsonTypeInfo{Meridian.Application.Serialization.AlpacaMessage[]}
-    content.vb: Public ReadOnly Property AlpacaMessageArray As JsonTypeInfo(Of AlpacaMessage())
-  overload: Meridian.Application.Serialization.AlpacaJsonContext.AlpacaMessageArray*
 - uid: Meridian.Application.Serialization.AlpacaJsonContext.Decimal
   commentId: P:Meridian.Application.Serialization.AlpacaJsonContext.Decimal
   id: Decimal
@@ -329,6 +329,33 @@ items:
       type: System.Text.Json.Serialization.Metadata.JsonTypeInfo{System.Decimal}
     content.vb: Public ReadOnly Property [Decimal] As JsonTypeInfo(Of Decimal)
   overload: Meridian.Application.Serialization.AlpacaJsonContext.Decimal*
+- uid: Meridian.Application.Serialization.AlpacaJsonContext.AlpacaMessage
+  commentId: P:Meridian.Application.Serialization.AlpacaJsonContext.AlpacaMessage
+  id: AlpacaMessage
+  parent: Meridian.Application.Serialization.AlpacaJsonContext
+  langs:
+  - csharp
+  - vb
+  name: AlpacaMessage
+  nameWithType: AlpacaJsonContext.AlpacaMessage
+  fullName: Meridian.Application.Serialization.AlpacaJsonContext.AlpacaMessage
+  type: Property
+  source:
+    id: AlpacaMessage
+    path: C:\Users\Andrew James Rowden\OneDrive\Documents\OneDrive\Documents\Desktop\Meridian-main\src\Meridian.Core\obj\Release\net9.0\System.Text.Json.SourceGeneration\System.Text.Json.SourceGeneration.JsonSourceGenerator\AlpacaJsonContext.AlpacaMessage.g.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Serialization
+  summary: Defines the source generated JSON serialization contract metadata for a given type.
+  example: []
+  syntax:
+    content: public JsonTypeInfo<AlpacaMessage> AlpacaMessage { get; }
+    parameters: []
+    return:
+      type: System.Text.Json.Serialization.Metadata.JsonTypeInfo{Meridian.Application.Serialization.AlpacaMessage}
+    content.vb: Public ReadOnly Property AlpacaMessage As JsonTypeInfo(Of AlpacaMessage)
+  overload: Meridian.Application.Serialization.AlpacaJsonContext.AlpacaMessage*
 - uid: Meridian.Application.Serialization.AlpacaJsonContext.Default
   commentId: P:Meridian.Application.Serialization.AlpacaJsonContext.Default
   id: Default
@@ -441,60 +468,6 @@ items:
   nameWithType.vb: AlpacaJsonContext.New(JsonSerializerOptions)
   fullName.vb: Meridian.Application.Serialization.AlpacaJsonContext.New(System.Text.Json.JsonSerializerOptions)
   name.vb: New(JsonSerializerOptions)
-- uid: Meridian.Application.Serialization.AlpacaJsonContext.Int32
-  commentId: P:Meridian.Application.Serialization.AlpacaJsonContext.Int32
-  id: Int32
-  parent: Meridian.Application.Serialization.AlpacaJsonContext
-  langs:
-  - csharp
-  - vb
-  name: Int32
-  nameWithType: AlpacaJsonContext.Int32
-  fullName: Meridian.Application.Serialization.AlpacaJsonContext.Int32
-  type: Property
-  source:
-    id: Int32
-    path: C:\Users\Andrew James Rowden\OneDrive\Documents\OneDrive\Documents\Desktop\Meridian-main\src\Meridian.Core\obj\Release\net9.0\System.Text.Json.SourceGeneration\System.Text.Json.SourceGeneration.JsonSourceGenerator\AlpacaJsonContext.Int32.g.cs
-    startLine: 18
-  assemblies:
-  - Meridian.Core
-  namespace: Meridian.Application.Serialization
-  summary: Defines the source generated JSON serialization contract metadata for a given type.
-  example: []
-  syntax:
-    content: public JsonTypeInfo<int> Int32 { get; }
-    parameters: []
-    return:
-      type: System.Text.Json.Serialization.Metadata.JsonTypeInfo{System.Int32}
-    content.vb: Public ReadOnly Property Int32 As JsonTypeInfo(Of Integer)
-  overload: Meridian.Application.Serialization.AlpacaJsonContext.Int32*
-- uid: Meridian.Application.Serialization.AlpacaJsonContext.NullableInt32
-  commentId: P:Meridian.Application.Serialization.AlpacaJsonContext.NullableInt32
-  id: NullableInt32
-  parent: Meridian.Application.Serialization.AlpacaJsonContext
-  langs:
-  - csharp
-  - vb
-  name: NullableInt32
-  nameWithType: AlpacaJsonContext.NullableInt32
-  fullName: Meridian.Application.Serialization.AlpacaJsonContext.NullableInt32
-  type: Property
-  source:
-    id: NullableInt32
-    path: C:\Users\Andrew James Rowden\OneDrive\Documents\OneDrive\Documents\Desktop\Meridian-main\src\Meridian.Core\obj\Release\net9.0\System.Text.Json.SourceGeneration\System.Text.Json.SourceGeneration.JsonSourceGenerator\AlpacaJsonContext.NullableInt32.g.cs
-    startLine: 18
-  assemblies:
-  - Meridian.Core
-  namespace: Meridian.Application.Serialization
-  summary: Defines the source generated JSON serialization contract metadata for a given type.
-  example: []
-  syntax:
-    content: public JsonTypeInfo<int?> NullableInt32 { get; }
-    parameters: []
-    return:
-      type: System.Text.Json.Serialization.Metadata.JsonTypeInfo{System.Nullable{System.Int32}}
-    content.vb: Public ReadOnly Property NullableInt32 As JsonTypeInfo(Of Integer?)
-  overload: Meridian.Application.Serialization.AlpacaJsonContext.NullableInt32*
 - uid: Meridian.Application.Serialization.AlpacaJsonContext.AlpacaTradeMessage
   commentId: P:Meridian.Application.Serialization.AlpacaJsonContext.AlpacaTradeMessage
   id: AlpacaTradeMessage
@@ -522,6 +495,33 @@ items:
       type: System.Text.Json.Serialization.Metadata.JsonTypeInfo{Meridian.Application.Serialization.AlpacaTradeMessage}
     content.vb: Public ReadOnly Property AlpacaTradeMessage As JsonTypeInfo(Of AlpacaTradeMessage)
   overload: Meridian.Application.Serialization.AlpacaJsonContext.AlpacaTradeMessage*
+- uid: Meridian.Application.Serialization.AlpacaJsonContext.String
+  commentId: P:Meridian.Application.Serialization.AlpacaJsonContext.String
+  id: String
+  parent: Meridian.Application.Serialization.AlpacaJsonContext
+  langs:
+  - csharp
+  - vb
+  name: String
+  nameWithType: AlpacaJsonContext.String
+  fullName: Meridian.Application.Serialization.AlpacaJsonContext.String
+  type: Property
+  source:
+    id: String
+    path: C:\Users\Andrew James Rowden\OneDrive\Documents\OneDrive\Documents\Desktop\Meridian-main\src\Meridian.Core\obj\Release\net9.0\System.Text.Json.SourceGeneration\System.Text.Json.SourceGeneration.JsonSourceGenerator\AlpacaJsonContext.String.g.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Serialization
+  summary: Defines the source generated JSON serialization contract metadata for a given type.
+  example: []
+  syntax:
+    content: public JsonTypeInfo<string> String { get; }
+    parameters: []
+    return:
+      type: System.Text.Json.Serialization.Metadata.JsonTypeInfo{System.String}
+    content.vb: Public ReadOnly Property [String] As JsonTypeInfo(Of String)
+  overload: Meridian.Application.Serialization.AlpacaJsonContext.String*
 references:
 - uid: Meridian.Application.Serialization
   commentId: N:Meridian.Application.Serialization
@@ -918,6 +918,163 @@ references:
     name: Metadata
     isExternal: true
     href: https://learn.microsoft.com/dotnet/api/system.text.json.serialization.metadata
+- uid: Meridian.Application.Serialization.AlpacaJsonContext.Int32*
+  commentId: Overload:Meridian.Application.Serialization.AlpacaJsonContext.Int32
+  href: Meridian.Application.Serialization.AlpacaJsonContext.html#Meridian_Application_Serialization_AlpacaJsonContext_Int32
+  name: Int32
+  nameWithType: AlpacaJsonContext.Int32
+  fullName: Meridian.Application.Serialization.AlpacaJsonContext.Int32
+- uid: System.Text.Json.Serialization.Metadata.JsonTypeInfo{System.Int32}
+  commentId: T:System.Text.Json.Serialization.Metadata.JsonTypeInfo{System.Int32}
+  parent: System.Text.Json.Serialization.Metadata
+  definition: System.Text.Json.Serialization.Metadata.JsonTypeInfo`1
+  href: https://learn.microsoft.com/dotnet/api/system.text.json.serialization.metadata.jsontypeinfo-1
+  name: JsonTypeInfo<int>
+  nameWithType: JsonTypeInfo<int>
+  fullName: System.Text.Json.Serialization.Metadata.JsonTypeInfo<int>
+  nameWithType.vb: JsonTypeInfo(Of Integer)
+  fullName.vb: System.Text.Json.Serialization.Metadata.JsonTypeInfo(Of Integer)
+  name.vb: JsonTypeInfo(Of Integer)
+  spec.csharp:
+  - uid: System.Text.Json.Serialization.Metadata.JsonTypeInfo`1
+    name: JsonTypeInfo
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text.json.serialization.metadata.jsontypeinfo-1
+  - name: <
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '>'
+  spec.vb:
+  - uid: System.Text.Json.Serialization.Metadata.JsonTypeInfo`1
+    name: JsonTypeInfo
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text.json.serialization.metadata.jsontypeinfo-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: System.Text.Json.Serialization.Metadata.JsonTypeInfo`1
+  commentId: T:System.Text.Json.Serialization.Metadata.JsonTypeInfo`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.text.json.serialization.metadata.jsontypeinfo-1
+  name: JsonTypeInfo<T>
+  nameWithType: JsonTypeInfo<T>
+  fullName: System.Text.Json.Serialization.Metadata.JsonTypeInfo<T>
+  nameWithType.vb: JsonTypeInfo(Of T)
+  fullName.vb: System.Text.Json.Serialization.Metadata.JsonTypeInfo(Of T)
+  name.vb: JsonTypeInfo(Of T)
+  spec.csharp:
+  - uid: System.Text.Json.Serialization.Metadata.JsonTypeInfo`1
+    name: JsonTypeInfo
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text.json.serialization.metadata.jsontypeinfo-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Text.Json.Serialization.Metadata.JsonTypeInfo`1
+    name: JsonTypeInfo
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text.json.serialization.metadata.jsontypeinfo-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Serialization.AlpacaJsonContext.NullableInt32*
+  commentId: Overload:Meridian.Application.Serialization.AlpacaJsonContext.NullableInt32
+  href: Meridian.Application.Serialization.AlpacaJsonContext.html#Meridian_Application_Serialization_AlpacaJsonContext_NullableInt32
+  name: NullableInt32
+  nameWithType: AlpacaJsonContext.NullableInt32
+  fullName: Meridian.Application.Serialization.AlpacaJsonContext.NullableInt32
+- uid: System.Text.Json.Serialization.Metadata.JsonTypeInfo{System.Nullable{System.Int32}}
+  commentId: T:System.Text.Json.Serialization.Metadata.JsonTypeInfo{System.Nullable{System.Int32}}
+  parent: System.Text.Json.Serialization.Metadata
+  definition: System.Text.Json.Serialization.Metadata.JsonTypeInfo`1
+  href: https://learn.microsoft.com/dotnet/api/system.text.json.serialization.metadata.jsontypeinfo-1
+  name: JsonTypeInfo<int?>
+  nameWithType: JsonTypeInfo<int?>
+  fullName: System.Text.Json.Serialization.Metadata.JsonTypeInfo<int?>
+  nameWithType.vb: JsonTypeInfo(Of Integer?)
+  fullName.vb: System.Text.Json.Serialization.Metadata.JsonTypeInfo(Of Integer?)
+  name.vb: JsonTypeInfo(Of Integer?)
+  spec.csharp:
+  - uid: System.Text.Json.Serialization.Metadata.JsonTypeInfo`1
+    name: JsonTypeInfo
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text.json.serialization.metadata.jsontypeinfo-1
+  - name: <
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+  - name: '>'
+  spec.vb:
+  - uid: System.Text.Json.Serialization.Metadata.JsonTypeInfo`1
+    name: JsonTypeInfo
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text.json.serialization.metadata.jsontypeinfo-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+  - name: )
+- uid: Meridian.Application.Serialization.AlpacaJsonContext.StringArray*
+  commentId: Overload:Meridian.Application.Serialization.AlpacaJsonContext.StringArray
+  href: Meridian.Application.Serialization.AlpacaJsonContext.html#Meridian_Application_Serialization_AlpacaJsonContext_StringArray
+  name: StringArray
+  nameWithType: AlpacaJsonContext.StringArray
+  fullName: Meridian.Application.Serialization.AlpacaJsonContext.StringArray
+- uid: System.Text.Json.Serialization.Metadata.JsonTypeInfo{System.String[]}
+  commentId: T:System.Text.Json.Serialization.Metadata.JsonTypeInfo{System.String[]}
+  parent: System.Text.Json.Serialization.Metadata
+  definition: System.Text.Json.Serialization.Metadata.JsonTypeInfo`1
+  href: https://learn.microsoft.com/dotnet/api/system.text.json.serialization.metadata.jsontypeinfo-1
+  name: JsonTypeInfo<string[]>
+  nameWithType: JsonTypeInfo<string[]>
+  fullName: System.Text.Json.Serialization.Metadata.JsonTypeInfo<string[]>
+  nameWithType.vb: JsonTypeInfo(Of String())
+  fullName.vb: System.Text.Json.Serialization.Metadata.JsonTypeInfo(Of String())
+  name.vb: JsonTypeInfo(Of String())
+  spec.csharp:
+  - uid: System.Text.Json.Serialization.Metadata.JsonTypeInfo`1
+    name: JsonTypeInfo
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text.json.serialization.metadata.jsontypeinfo-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  - name: '>'
+  spec.vb:
+  - uid: System.Text.Json.Serialization.Metadata.JsonTypeInfo`1
+    name: JsonTypeInfo
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text.json.serialization.metadata.jsontypeinfo-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+  - name: )
 - uid: Meridian.Application.Serialization.AlpacaJsonContext.Int64*
   commentId: Overload:Meridian.Application.Serialization.AlpacaJsonContext.Int64
   href: Meridian.Application.Serialization.AlpacaJsonContext.html#Meridian_Application_Serialization_AlpacaJsonContext_Int64
@@ -959,23 +1116,34 @@ references:
     isExternal: true
     href: https://learn.microsoft.com/dotnet/api/system.int64
   - name: )
-- uid: System.Text.Json.Serialization.Metadata.JsonTypeInfo`1
-  commentId: T:System.Text.Json.Serialization.Metadata.JsonTypeInfo`1
-  isExternal: true
+- uid: Meridian.Application.Serialization.AlpacaJsonContext.AlpacaMessageArray*
+  commentId: Overload:Meridian.Application.Serialization.AlpacaJsonContext.AlpacaMessageArray
+  href: Meridian.Application.Serialization.AlpacaJsonContext.html#Meridian_Application_Serialization_AlpacaJsonContext_AlpacaMessageArray
+  name: AlpacaMessageArray
+  nameWithType: AlpacaJsonContext.AlpacaMessageArray
+  fullName: Meridian.Application.Serialization.AlpacaJsonContext.AlpacaMessageArray
+- uid: System.Text.Json.Serialization.Metadata.JsonTypeInfo{Meridian.Application.Serialization.AlpacaMessage[]}
+  commentId: T:System.Text.Json.Serialization.Metadata.JsonTypeInfo{Meridian.Application.Serialization.AlpacaMessage[]}
+  parent: System.Text.Json.Serialization.Metadata
+  definition: System.Text.Json.Serialization.Metadata.JsonTypeInfo`1
   href: https://learn.microsoft.com/dotnet/api/system.text.json.serialization.metadata.jsontypeinfo-1
-  name: JsonTypeInfo<T>
-  nameWithType: JsonTypeInfo<T>
-  fullName: System.Text.Json.Serialization.Metadata.JsonTypeInfo<T>
-  nameWithType.vb: JsonTypeInfo(Of T)
-  fullName.vb: System.Text.Json.Serialization.Metadata.JsonTypeInfo(Of T)
-  name.vb: JsonTypeInfo(Of T)
+  name: JsonTypeInfo<AlpacaMessage[]>
+  nameWithType: JsonTypeInfo<AlpacaMessage[]>
+  fullName: System.Text.Json.Serialization.Metadata.JsonTypeInfo<Meridian.Application.Serialization.AlpacaMessage[]>
+  nameWithType.vb: JsonTypeInfo(Of AlpacaMessage())
+  fullName.vb: System.Text.Json.Serialization.Metadata.JsonTypeInfo(Of Meridian.Application.Serialization.AlpacaMessage())
+  name.vb: JsonTypeInfo(Of AlpacaMessage())
   spec.csharp:
   - uid: System.Text.Json.Serialization.Metadata.JsonTypeInfo`1
     name: JsonTypeInfo
     isExternal: true
     href: https://learn.microsoft.com/dotnet/api/system.text.json.serialization.metadata.jsontypeinfo-1
   - name: <
-  - name: T
+  - uid: Meridian.Application.Serialization.AlpacaMessage
+    name: AlpacaMessage
+    href: Meridian.Application.Serialization.AlpacaMessage.html
+  - name: '['
+  - name: ']'
   - name: '>'
   spec.vb:
   - uid: System.Text.Json.Serialization.Metadata.JsonTypeInfo`1
@@ -985,7 +1153,11 @@ references:
   - name: (
   - name: Of
   - name: " "
-  - name: T
+  - uid: Meridian.Application.Serialization.AlpacaMessage
+    name: AlpacaMessage
+    href: Meridian.Application.Serialization.AlpacaMessage.html
+  - name: (
+  - name: )
   - name: )
 - uid: System.Text.Json.Serialization.JsonSerializerContext.GetTypeInfo(System.Type)
   commentId: M:System.Text.Json.Serialization.JsonSerializerContext.GetTypeInfo(System.Type)
@@ -1039,45 +1211,6 @@ references:
   name: JsonTypeInfo
   nameWithType: JsonTypeInfo
   fullName: System.Text.Json.Serialization.Metadata.JsonTypeInfo
-- uid: Meridian.Application.Serialization.AlpacaJsonContext.AlpacaMessage*
-  commentId: Overload:Meridian.Application.Serialization.AlpacaJsonContext.AlpacaMessage
-  href: Meridian.Application.Serialization.AlpacaJsonContext.html#Meridian_Application_Serialization_AlpacaJsonContext_AlpacaMessage
-  name: AlpacaMessage
-  nameWithType: AlpacaJsonContext.AlpacaMessage
-  fullName: Meridian.Application.Serialization.AlpacaJsonContext.AlpacaMessage
-- uid: System.Text.Json.Serialization.Metadata.JsonTypeInfo{Meridian.Application.Serialization.AlpacaMessage}
-  commentId: T:System.Text.Json.Serialization.Metadata.JsonTypeInfo{Meridian.Application.Serialization.AlpacaMessage}
-  parent: System.Text.Json.Serialization.Metadata
-  definition: System.Text.Json.Serialization.Metadata.JsonTypeInfo`1
-  href: https://learn.microsoft.com/dotnet/api/system.text.json.serialization.metadata.jsontypeinfo-1
-  name: JsonTypeInfo<AlpacaMessage>
-  nameWithType: JsonTypeInfo<AlpacaMessage>
-  fullName: System.Text.Json.Serialization.Metadata.JsonTypeInfo<Meridian.Application.Serialization.AlpacaMessage>
-  nameWithType.vb: JsonTypeInfo(Of AlpacaMessage)
-  fullName.vb: System.Text.Json.Serialization.Metadata.JsonTypeInfo(Of Meridian.Application.Serialization.AlpacaMessage)
-  name.vb: JsonTypeInfo(Of AlpacaMessage)
-  spec.csharp:
-  - uid: System.Text.Json.Serialization.Metadata.JsonTypeInfo`1
-    name: JsonTypeInfo
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.text.json.serialization.metadata.jsontypeinfo-1
-  - name: <
-  - uid: Meridian.Application.Serialization.AlpacaMessage
-    name: AlpacaMessage
-    href: Meridian.Application.Serialization.AlpacaMessage.html
-  - name: '>'
-  spec.vb:
-  - uid: System.Text.Json.Serialization.Metadata.JsonTypeInfo`1
-    name: JsonTypeInfo
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.text.json.serialization.metadata.jsontypeinfo-1
-  - name: (
-  - name: Of
-  - name: " "
-  - uid: Meridian.Application.Serialization.AlpacaMessage
-    name: AlpacaMessage
-    href: Meridian.Application.Serialization.AlpacaMessage.html
-  - name: )
 - uid: Meridian.Application.Serialization.AlpacaJsonContext.AlpacaQuoteMessage*
   commentId: Overload:Meridian.Application.Serialization.AlpacaJsonContext.AlpacaQuoteMessage
   href: Meridian.Application.Serialization.AlpacaJsonContext.html#Meridian_Application_Serialization_AlpacaJsonContext_AlpacaQuoteMessage
@@ -1116,135 +1249,6 @@ references:
   - uid: Meridian.Application.Serialization.AlpacaQuoteMessage
     name: AlpacaQuoteMessage
     href: Meridian.Application.Serialization.AlpacaQuoteMessage.html
-  - name: )
-- uid: Meridian.Application.Serialization.AlpacaJsonContext.String*
-  commentId: Overload:Meridian.Application.Serialization.AlpacaJsonContext.String
-  href: Meridian.Application.Serialization.AlpacaJsonContext.html#Meridian_Application_Serialization_AlpacaJsonContext_String
-  name: String
-  nameWithType: AlpacaJsonContext.String
-  fullName: Meridian.Application.Serialization.AlpacaJsonContext.String
-- uid: System.Text.Json.Serialization.Metadata.JsonTypeInfo{System.String}
-  commentId: T:System.Text.Json.Serialization.Metadata.JsonTypeInfo{System.String}
-  parent: System.Text.Json.Serialization.Metadata
-  definition: System.Text.Json.Serialization.Metadata.JsonTypeInfo`1
-  href: https://learn.microsoft.com/dotnet/api/system.text.json.serialization.metadata.jsontypeinfo-1
-  name: JsonTypeInfo<string>
-  nameWithType: JsonTypeInfo<string>
-  fullName: System.Text.Json.Serialization.Metadata.JsonTypeInfo<string>
-  nameWithType.vb: JsonTypeInfo(Of String)
-  fullName.vb: System.Text.Json.Serialization.Metadata.JsonTypeInfo(Of String)
-  name.vb: JsonTypeInfo(Of String)
-  spec.csharp:
-  - uid: System.Text.Json.Serialization.Metadata.JsonTypeInfo`1
-    name: JsonTypeInfo
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.text.json.serialization.metadata.jsontypeinfo-1
-  - name: <
-  - uid: System.String
-    name: string
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.string
-  - name: '>'
-  spec.vb:
-  - uid: System.Text.Json.Serialization.Metadata.JsonTypeInfo`1
-    name: JsonTypeInfo
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.text.json.serialization.metadata.jsontypeinfo-1
-  - name: (
-  - name: Of
-  - name: " "
-  - uid: System.String
-    name: String
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.string
-  - name: )
-- uid: Meridian.Application.Serialization.AlpacaJsonContext.StringArray*
-  commentId: Overload:Meridian.Application.Serialization.AlpacaJsonContext.StringArray
-  href: Meridian.Application.Serialization.AlpacaJsonContext.html#Meridian_Application_Serialization_AlpacaJsonContext_StringArray
-  name: StringArray
-  nameWithType: AlpacaJsonContext.StringArray
-  fullName: Meridian.Application.Serialization.AlpacaJsonContext.StringArray
-- uid: System.Text.Json.Serialization.Metadata.JsonTypeInfo{System.String[]}
-  commentId: T:System.Text.Json.Serialization.Metadata.JsonTypeInfo{System.String[]}
-  parent: System.Text.Json.Serialization.Metadata
-  definition: System.Text.Json.Serialization.Metadata.JsonTypeInfo`1
-  href: https://learn.microsoft.com/dotnet/api/system.text.json.serialization.metadata.jsontypeinfo-1
-  name: JsonTypeInfo<string[]>
-  nameWithType: JsonTypeInfo<string[]>
-  fullName: System.Text.Json.Serialization.Metadata.JsonTypeInfo<string[]>
-  nameWithType.vb: JsonTypeInfo(Of String())
-  fullName.vb: System.Text.Json.Serialization.Metadata.JsonTypeInfo(Of String())
-  name.vb: JsonTypeInfo(Of String())
-  spec.csharp:
-  - uid: System.Text.Json.Serialization.Metadata.JsonTypeInfo`1
-    name: JsonTypeInfo
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.text.json.serialization.metadata.jsontypeinfo-1
-  - name: <
-  - uid: System.String
-    name: string
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.string
-  - name: '['
-  - name: ']'
-  - name: '>'
-  spec.vb:
-  - uid: System.Text.Json.Serialization.Metadata.JsonTypeInfo`1
-    name: JsonTypeInfo
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.text.json.serialization.metadata.jsontypeinfo-1
-  - name: (
-  - name: Of
-  - name: " "
-  - uid: System.String
-    name: String
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.string
-  - name: (
-  - name: )
-  - name: )
-- uid: Meridian.Application.Serialization.AlpacaJsonContext.AlpacaMessageArray*
-  commentId: Overload:Meridian.Application.Serialization.AlpacaJsonContext.AlpacaMessageArray
-  href: Meridian.Application.Serialization.AlpacaJsonContext.html#Meridian_Application_Serialization_AlpacaJsonContext_AlpacaMessageArray
-  name: AlpacaMessageArray
-  nameWithType: AlpacaJsonContext.AlpacaMessageArray
-  fullName: Meridian.Application.Serialization.AlpacaJsonContext.AlpacaMessageArray
-- uid: System.Text.Json.Serialization.Metadata.JsonTypeInfo{Meridian.Application.Serialization.AlpacaMessage[]}
-  commentId: T:System.Text.Json.Serialization.Metadata.JsonTypeInfo{Meridian.Application.Serialization.AlpacaMessage[]}
-  parent: System.Text.Json.Serialization.Metadata
-  definition: System.Text.Json.Serialization.Metadata.JsonTypeInfo`1
-  href: https://learn.microsoft.com/dotnet/api/system.text.json.serialization.metadata.jsontypeinfo-1
-  name: JsonTypeInfo<AlpacaMessage[]>
-  nameWithType: JsonTypeInfo<AlpacaMessage[]>
-  fullName: System.Text.Json.Serialization.Metadata.JsonTypeInfo<Meridian.Application.Serialization.AlpacaMessage[]>
-  nameWithType.vb: JsonTypeInfo(Of AlpacaMessage())
-  fullName.vb: System.Text.Json.Serialization.Metadata.JsonTypeInfo(Of Meridian.Application.Serialization.AlpacaMessage())
-  name.vb: JsonTypeInfo(Of AlpacaMessage())
-  spec.csharp:
-  - uid: System.Text.Json.Serialization.Metadata.JsonTypeInfo`1
-    name: JsonTypeInfo
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.text.json.serialization.metadata.jsontypeinfo-1
-  - name: <
-  - uid: Meridian.Application.Serialization.AlpacaMessage
-    name: AlpacaMessage
-    href: Meridian.Application.Serialization.AlpacaMessage.html
-  - name: '['
-  - name: ']'
-  - name: '>'
-  spec.vb:
-  - uid: System.Text.Json.Serialization.Metadata.JsonTypeInfo`1
-    name: JsonTypeInfo
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.text.json.serialization.metadata.jsontypeinfo-1
-  - name: (
-  - name: Of
-  - name: " "
-  - uid: Meridian.Application.Serialization.AlpacaMessage
-    name: AlpacaMessage
-    href: Meridian.Application.Serialization.AlpacaMessage.html
-  - name: (
-  - name: )
   - name: )
 - uid: Meridian.Application.Serialization.AlpacaJsonContext.Decimal*
   commentId: Overload:Meridian.Application.Serialization.AlpacaJsonContext.Decimal
@@ -1286,6 +1290,45 @@ references:
     name: Decimal
     isExternal: true
     href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: )
+- uid: Meridian.Application.Serialization.AlpacaJsonContext.AlpacaMessage*
+  commentId: Overload:Meridian.Application.Serialization.AlpacaJsonContext.AlpacaMessage
+  href: Meridian.Application.Serialization.AlpacaJsonContext.html#Meridian_Application_Serialization_AlpacaJsonContext_AlpacaMessage
+  name: AlpacaMessage
+  nameWithType: AlpacaJsonContext.AlpacaMessage
+  fullName: Meridian.Application.Serialization.AlpacaJsonContext.AlpacaMessage
+- uid: System.Text.Json.Serialization.Metadata.JsonTypeInfo{Meridian.Application.Serialization.AlpacaMessage}
+  commentId: T:System.Text.Json.Serialization.Metadata.JsonTypeInfo{Meridian.Application.Serialization.AlpacaMessage}
+  parent: System.Text.Json.Serialization.Metadata
+  definition: System.Text.Json.Serialization.Metadata.JsonTypeInfo`1
+  href: https://learn.microsoft.com/dotnet/api/system.text.json.serialization.metadata.jsontypeinfo-1
+  name: JsonTypeInfo<AlpacaMessage>
+  nameWithType: JsonTypeInfo<AlpacaMessage>
+  fullName: System.Text.Json.Serialization.Metadata.JsonTypeInfo<Meridian.Application.Serialization.AlpacaMessage>
+  nameWithType.vb: JsonTypeInfo(Of AlpacaMessage)
+  fullName.vb: System.Text.Json.Serialization.Metadata.JsonTypeInfo(Of Meridian.Application.Serialization.AlpacaMessage)
+  name.vb: JsonTypeInfo(Of AlpacaMessage)
+  spec.csharp:
+  - uid: System.Text.Json.Serialization.Metadata.JsonTypeInfo`1
+    name: JsonTypeInfo
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text.json.serialization.metadata.jsontypeinfo-1
+  - name: <
+  - uid: Meridian.Application.Serialization.AlpacaMessage
+    name: AlpacaMessage
+    href: Meridian.Application.Serialization.AlpacaMessage.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Text.Json.Serialization.Metadata.JsonTypeInfo`1
+    name: JsonTypeInfo
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text.json.serialization.metadata.jsontypeinfo-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Serialization.AlpacaMessage
+    name: AlpacaMessage
+    href: Meridian.Application.Serialization.AlpacaMessage.html
   - name: )
 - uid: System.Text.Json.JsonSerializerOptions
   commentId: T:System.Text.Json.JsonSerializerOptions
@@ -1368,90 +1411,6 @@ references:
   nameWithType.vb: AlpacaJsonContext.New
   fullName.vb: Meridian.Application.Serialization.AlpacaJsonContext.New
   name.vb: New
-- uid: Meridian.Application.Serialization.AlpacaJsonContext.Int32*
-  commentId: Overload:Meridian.Application.Serialization.AlpacaJsonContext.Int32
-  href: Meridian.Application.Serialization.AlpacaJsonContext.html#Meridian_Application_Serialization_AlpacaJsonContext_Int32
-  name: Int32
-  nameWithType: AlpacaJsonContext.Int32
-  fullName: Meridian.Application.Serialization.AlpacaJsonContext.Int32
-- uid: System.Text.Json.Serialization.Metadata.JsonTypeInfo{System.Int32}
-  commentId: T:System.Text.Json.Serialization.Metadata.JsonTypeInfo{System.Int32}
-  parent: System.Text.Json.Serialization.Metadata
-  definition: System.Text.Json.Serialization.Metadata.JsonTypeInfo`1
-  href: https://learn.microsoft.com/dotnet/api/system.text.json.serialization.metadata.jsontypeinfo-1
-  name: JsonTypeInfo<int>
-  nameWithType: JsonTypeInfo<int>
-  fullName: System.Text.Json.Serialization.Metadata.JsonTypeInfo<int>
-  nameWithType.vb: JsonTypeInfo(Of Integer)
-  fullName.vb: System.Text.Json.Serialization.Metadata.JsonTypeInfo(Of Integer)
-  name.vb: JsonTypeInfo(Of Integer)
-  spec.csharp:
-  - uid: System.Text.Json.Serialization.Metadata.JsonTypeInfo`1
-    name: JsonTypeInfo
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.text.json.serialization.metadata.jsontypeinfo-1
-  - name: <
-  - uid: System.Int32
-    name: int
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.int32
-  - name: '>'
-  spec.vb:
-  - uid: System.Text.Json.Serialization.Metadata.JsonTypeInfo`1
-    name: JsonTypeInfo
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.text.json.serialization.metadata.jsontypeinfo-1
-  - name: (
-  - name: Of
-  - name: " "
-  - uid: System.Int32
-    name: Integer
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.int32
-  - name: )
-- uid: Meridian.Application.Serialization.AlpacaJsonContext.NullableInt32*
-  commentId: Overload:Meridian.Application.Serialization.AlpacaJsonContext.NullableInt32
-  href: Meridian.Application.Serialization.AlpacaJsonContext.html#Meridian_Application_Serialization_AlpacaJsonContext_NullableInt32
-  name: NullableInt32
-  nameWithType: AlpacaJsonContext.NullableInt32
-  fullName: Meridian.Application.Serialization.AlpacaJsonContext.NullableInt32
-- uid: System.Text.Json.Serialization.Metadata.JsonTypeInfo{System.Nullable{System.Int32}}
-  commentId: T:System.Text.Json.Serialization.Metadata.JsonTypeInfo{System.Nullable{System.Int32}}
-  parent: System.Text.Json.Serialization.Metadata
-  definition: System.Text.Json.Serialization.Metadata.JsonTypeInfo`1
-  href: https://learn.microsoft.com/dotnet/api/system.text.json.serialization.metadata.jsontypeinfo-1
-  name: JsonTypeInfo<int?>
-  nameWithType: JsonTypeInfo<int?>
-  fullName: System.Text.Json.Serialization.Metadata.JsonTypeInfo<int?>
-  nameWithType.vb: JsonTypeInfo(Of Integer?)
-  fullName.vb: System.Text.Json.Serialization.Metadata.JsonTypeInfo(Of Integer?)
-  name.vb: JsonTypeInfo(Of Integer?)
-  spec.csharp:
-  - uid: System.Text.Json.Serialization.Metadata.JsonTypeInfo`1
-    name: JsonTypeInfo
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.text.json.serialization.metadata.jsontypeinfo-1
-  - name: <
-  - uid: System.Int32
-    name: int
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.int32
-  - name: '?'
-  - name: '>'
-  spec.vb:
-  - uid: System.Text.Json.Serialization.Metadata.JsonTypeInfo`1
-    name: JsonTypeInfo
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.text.json.serialization.metadata.jsontypeinfo-1
-  - name: (
-  - name: Of
-  - name: " "
-  - uid: System.Int32
-    name: Integer
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.int32
-  - name: '?'
-  - name: )
 - uid: Meridian.Application.Serialization.AlpacaJsonContext.AlpacaTradeMessage*
   commentId: Overload:Meridian.Application.Serialization.AlpacaJsonContext.AlpacaTradeMessage
   href: Meridian.Application.Serialization.AlpacaJsonContext.html#Meridian_Application_Serialization_AlpacaJsonContext_AlpacaTradeMessage
@@ -1490,4 +1449,45 @@ references:
   - uid: Meridian.Application.Serialization.AlpacaTradeMessage
     name: AlpacaTradeMessage
     href: Meridian.Application.Serialization.AlpacaTradeMessage.html
+  - name: )
+- uid: Meridian.Application.Serialization.AlpacaJsonContext.String*
+  commentId: Overload:Meridian.Application.Serialization.AlpacaJsonContext.String
+  href: Meridian.Application.Serialization.AlpacaJsonContext.html#Meridian_Application_Serialization_AlpacaJsonContext_String
+  name: String
+  nameWithType: AlpacaJsonContext.String
+  fullName: Meridian.Application.Serialization.AlpacaJsonContext.String
+- uid: System.Text.Json.Serialization.Metadata.JsonTypeInfo{System.String}
+  commentId: T:System.Text.Json.Serialization.Metadata.JsonTypeInfo{System.String}
+  parent: System.Text.Json.Serialization.Metadata
+  definition: System.Text.Json.Serialization.Metadata.JsonTypeInfo`1
+  href: https://learn.microsoft.com/dotnet/api/system.text.json.serialization.metadata.jsontypeinfo-1
+  name: JsonTypeInfo<string>
+  nameWithType: JsonTypeInfo<string>
+  fullName: System.Text.Json.Serialization.Metadata.JsonTypeInfo<string>
+  nameWithType.vb: JsonTypeInfo(Of String)
+  fullName.vb: System.Text.Json.Serialization.Metadata.JsonTypeInfo(Of String)
+  name.vb: JsonTypeInfo(Of String)
+  spec.csharp:
+  - uid: System.Text.Json.Serialization.Metadata.JsonTypeInfo`1
+    name: JsonTypeInfo
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text.json.serialization.metadata.jsontypeinfo-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Text.Json.Serialization.Metadata.JsonTypeInfo`1
+    name: JsonTypeInfo
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text.json.serialization.metadata.jsontypeinfo-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
   - name: )
