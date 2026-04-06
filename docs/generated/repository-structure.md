@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-04-06 15:06:17 UTC. Do not edit manually.
+> Auto-generated on 2026-04-06 15:26:36 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -1713,6 +1713,9 @@ Meridian-main
 │   │   │   │   ├── ResponseHandler.cs
 │   │   │   │   ├── SymbolSearchUtility.cs
 │   │   │   │   └── WebSocketProviderBase.cs
+│   │   │   ├── Edgar
+│   │   │   │   ├── EdgarSecurityMasterIngestProvider.cs
+│   │   │   │   └── EdgarSymbolSearchProvider.cs
 │   │   │   ├── Failover
 │   │   │   │   ├── FailoverAwareMarketDataClient.cs
 │   │   │   │   ├── StreamingFailoverRegistry.cs
@@ -3094,6 +3097,7 @@ Meridian-main
 │   │   │   │   ├── AlpacaQuotePipelineGoldenTests.cs
 │   │   │   │   ├── AlpacaQuoteRoutingTests.cs
 │   │   │   │   ├── BackfillRetryAfterTests.cs
+│   │   │   │   ├── EdgarSymbolSearchProviderTests.cs
 │   │   │   │   ├── FailoverAwareMarketDataClientTests.cs
 │   │   │   │   ├── FreeHistoricalProviderParsingTests.cs
 │   │   │   │   ├── FreeProviderContractTests.cs
